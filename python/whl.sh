@@ -15,7 +15,9 @@
 # limitations under the License.
 
 
-# TODO(mattmoor): Rewrite this in Python.
+# TODO(mattmoor): Ideally we'd rewrite this in Python for portability, but
+# since the executes during WORKSPACE instantiation that would require
+# redistributing PAR files, since we cannot invoke built tools at that time.
 WHL="$1"
 REQUIREMENTS="$2"
 PKG=$(basename "${WHL}" | cut -d'-' -f 1)
@@ -72,21 +74,9 @@ py_library(
   deps = [$(
   DELIM=
   for d in ${DEPS[@]}; do
-    # Use the dictionary?
     echo -n "${DELIM}packages(\"${d}\")"
     DELIM=,
   done
   )],
-)
-EOF
-
-# A convenience for terseness.
-mkdir lib
-cat > "lib/BUILD" <<EOF
-package(default_visibility = ["//visibility:public"])
-
-py_library(
-  name = "lib",
-  deps = ["//:pkg"],
 )
 EOF

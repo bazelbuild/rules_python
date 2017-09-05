@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO(mattmoor): Rewrite this in Python.
+# TODO(mattmoor): Ideally we'd rewrite this in Python for portability, but
+# since the executes during WORKSPACE instantiation that would require
+# redistributing PAR files, since we cannot invoke built tools at that time.
 NAME="$1"
 REQUIREMENTS_TXT="$2"
 REQUIREMENTS_BZL="$3"
@@ -69,7 +71,7 @@ done)
 _packages = {
 $(for p in ${PACKAGES}; do
   whl="$(basename ${p})"
-  echo "\"$(package_name ${whl})\": \"@$(repository_name ${whl})//lib\","
+  echo "\"$(package_name ${whl})\": \"@$(repository_name ${whl})//:pkg\","
 done)
 }
 
