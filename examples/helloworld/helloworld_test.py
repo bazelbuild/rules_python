@@ -12,11 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def py_library(*args, **kwargs):
-  native.py_library(*args, **kwargs)
+import unittest
 
-def py_binary(*args, **kwargs):
-  native.py_binary(*args, **kwargs)
+from examples.helloworld import helloworld
 
-def py_test(*args, **kwargs):
-  native.py_test(*args, **kwargs)
+
+class HelloWorldTest(unittest.TestCase):
+
+  def test_helloworld(self):
+    hw = helloworld.HelloWorld()
+    hw.SayHello()
+
+  def test_helloworld_async(self):
+    hw = helloworld.HelloWorld()
+    hw.SayHelloAsync()
+    hw.Stop()
+
+  def test_helloworld_multiple(self):
+    hw = helloworld.HelloWorld()
+    hw.SayHelloAsync()
+    hw.SayHelloAsync()
+    hw.SayHelloAsync()
+    hw.SayHelloAsync()
+    hw.Stop()
+
+
+if __name__ == '__main__':
+  unittest.main()

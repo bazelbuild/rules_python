@@ -11,12 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package(default_visibility = ["//visibility:public"])
 
-def py_library(*args, **kwargs):
-  native.py_library(*args, **kwargs)
+licenses(["notice"])  # Apache 2.0
 
-def py_binary(*args, **kwargs):
-  native.py_binary(*args, **kwargs)
+load("@examples_helloworld//:requirements.bzl", "packages")
+load("//python:python.bzl", "py_library", "py_test")
 
-def py_test(*args, **kwargs):
-  native.py_test(*args, **kwargs)
+py_library(
+    name = "helloworld",
+    srcs = ["helloworld.py"],
+    deps = [packages("futures")],
+)
+
+py_test(
+    name = "helloworld_test",
+    srcs = ["helloworld_test.py"],
+    deps = [":helloworld"],
+)

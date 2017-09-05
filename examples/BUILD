@@ -11,12 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+package(default_visibility = ["//visibility:public"])
 
-def py_library(*args, **kwargs):
-  native.py_library(*args, **kwargs)
-
-def py_binary(*args, **kwargs):
-  native.py_binary(*args, **kwargs)
-
-def py_test(*args, **kwargs):
-  native.py_test(*args, **kwargs)
+licenses(["notice"])  # Apache 2.0

@@ -11,12 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+workspace(name = "io_bazel_rules_python")
 
-def py_library(*args, **kwargs):
-  native.py_library(*args, **kwargs)
+# Imports for examples
+load("//python:pip.bzl", "pip_import")
 
-def py_binary(*args, **kwargs):
-  native.py_binary(*args, **kwargs)
+pip_import(
+    name = "examples_helloworld",
+    requirements = "//examples/helloworld:requirements.txt",
+)
 
-def py_test(*args, **kwargs):
-  native.py_test(*args, **kwargs)
+load(
+    "@examples_helloworld//:requirements.bzl",
+    _helloworld_install = "pip_install",
+)
+
+_helloworld_install()

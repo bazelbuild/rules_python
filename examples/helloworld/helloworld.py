@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def py_library(*args, **kwargs):
-  native.py_library(*args, **kwargs)
+from concurrent import futures
 
-def py_binary(*args, **kwargs):
-  native.py_binary(*args, **kwargs)
 
-def py_test(*args, **kwargs):
-  native.py_test(*args, **kwargs)
+class HelloWorld(object):
+  def __init__(self):
+    self._threadpool = futures.ThreadPoolExecutor(max_workers=5)
+
+  def SayHello(self):
+    print("Hello World")
+
+  def SayHelloAsync(self):
+    self._threadpool.submit(self.SayHello)
+
+  def Stop(self):
+    self._threadpool.shutdown(wait = True)
