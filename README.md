@@ -66,7 +66,7 @@ pip_import(
 
 # Load the pip_install symbol for my_deps, and create the dependencies'
 # repositories.
-load("@my_deps//:requirements.txt", "pip_install")
+load("@my_deps//:requirements.bzl", "pip_install")
 pip_install()
 ```
 
