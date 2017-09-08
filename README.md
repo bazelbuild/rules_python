@@ -4,10 +4,10 @@
 
 ## Rules
 
-* [pip_import](#pip_import)
-* [py_library](#py_library)
-* [py_binary](#py_binary)
-* [py_test](#py_test)
+* [pip_import](docs/python/pip.md#pip_import)
+* [py_library](docs/python/python.md#py_library)
+* [py_binary](docs/python/python.md#py_binary)
+* [py_test](docs/python/python.md#py_test)
 
 ## Overview
 
@@ -90,58 +90,3 @@ py_library(
     ]
 )
 ```
-
-
-<a name="py_library"></a>
-## py_library
-
-See Bazel core [documentation](https://docs.bazel.build/versions/master/be/python.html#py_library).
-
-<a name="py_binary"></a>
-## py_binary
-
-See Bazel core [documentation](https://docs.bazel.build/versions/master/be/python.html#py_binary).
-
-<a name="py_test"></a>
-## py_test
-
-See Bazel core [documentation](https://docs.bazel.build/versions/master/be/python.html#py_test).
-
-<a name="pip_import"></a>
-## pip_import
-
-```python
-pip_import(name, requirements)
-```
-
-A repository rule that imports a `requirements.txt` file and generates
-`requirements.bzl`.
-
-<table class="table table-condensed table-bordered table-params">
-  <colgroup>
-    <col class="col-param" />
-    <col class="param-description" />
-  </colgroup>
-  <thead>
-    <tr>
-      <th colspan="2">Attributes</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>name</code></td>
-      <td>
-        <p><code>Name, required</code></p>
-        <p>Unique name for this repository rule.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><code>requirements</code></td>
-      <td>
-        <p><code>A requirements.txt file; required</code></p>
-        <p>This takes the path to a the <code>requirements.txt</code> file that
-	   expresses the Python library dependencies in an idiomatic manner.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>

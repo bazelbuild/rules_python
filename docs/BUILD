@@ -15,10 +15,38 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+# To regenerate html docs, run:
+#   ./update_docs.sh
+
+load("@io_bazel_skydoc//skylark:skylark.bzl", "skylark_doc", "skylark_library")
+
+skylark_library(
+    name = "whl",
+    srcs = ["//python:whl.bzl"],
+)
+
+skylark_library(
+    name = "pip",
+    srcs = ["//python:pip.bzl"],
+)
+
+skylark_library(
+    name = "python",
+    srcs = ["//python:python.bzl"],
+)
+
+skylark_doc(
+    name = "docs-md",
+    format = "markdown",
+    overview = True,
+    site_root = ".",
+    deps = [":python", ":pip", ":whl"],
+)
+
+skylark_doc(
+    name = "docs-html",
+    format = "html",
+    overview = True,
+    site_root = ".",
+    deps = [":python", ":pip", ":whl"],
+)

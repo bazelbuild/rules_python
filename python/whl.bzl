@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule for importing .whl files as py_library."""
+"""Import .whl files into Bazel."""
 
 def _whl_impl(repository_ctx):
   """Core implementation of whl_library."""
@@ -40,3 +40,26 @@ whl_library = repository_rule(
     },
     implementation = _whl_impl,
 )
+"""A rule for importing <code>.whl</code> dependencies into Bazel.
+
+<b>This rule is currently used to implement <code>pip_import</code>,
+it is not intended to work standalone, and the interface may change.</b>
+See <code>pip_import</code> for proper usage.
+
+This rule imports a <code>.whl</code> file as a <code>py_library</code>:
+<pre><code>whl_library(
+    name = "foo",
+    whl = ":my-whl-file",
+    requirements = "name of pip_import rule",
+)
+</code></pre>
+
+This rule defines a <code>@foo//:pkg</code> <code>py_library</code> target.
+
+Args:
+  whl: The path to the .whl file (the name is expected to follow [this
+    convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention))
+
+  requirements: The name of the pip_import repository rule from which to
+    load this .whl's dependencies.
+"""

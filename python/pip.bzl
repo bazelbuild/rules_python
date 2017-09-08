@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A rule for importing Python dependencies via requirements.txt."""
+"""Import pip requirements into Bazel."""
 
 def _import_impl(repository_ctx):
   """Core implementation of pip_import."""
@@ -44,6 +44,47 @@ pip_import = repository_rule(
     },
     implementation = _import_impl,
 )
+"""A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+
+This rule imports a <code>requirements.txt</code> file and generates a new
+<code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
+pattern:
+<pre><code>pip_import(
+    name = "foo",
+    requirements = ":requirements.txt",
+)
+load("@foo//:requirements.bzl", "pip_install")
+pip_install()
+</code></pre>
+
+You can then reference imported dependencies from your <code>BUILD</code>
+file with:
+<pre><code>load("@foo//:requirements.bzl", "packages")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       packages("futures"),
+       packages("mock"),
+    ],
+)
+</code></pre>
+
+Or alternatively:
+<pre><code>load("@foo//:requirements.bzl", "all_packages")
+py_binary(
+    name = "baz",
+    ...
+    deps = [
+       ":foo",
+    ] + all_packages,
+)
+</code></pre>
+
+Args:
+  requirements: The label of a requirements.txt file.
+"""
 
 def pip_repositories():
   """Pull in dependencies needed for pulling in pip dependencies.
