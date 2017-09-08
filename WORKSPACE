@@ -34,6 +34,33 @@ load("@io_bazel_skydoc//skylark:skylark.bzl", "skydoc_repositories")
 
 skydoc_repositories()
 
+# Test data for WHL tool testing.
+http_file(
+    name = "grpc_whl",
+    sha256 = "c232d6d168cb582e5eba8e1c0da8d64b54b041dd5ea194895a2fe76050916561",
+    # From https://pypi.python.org/pypi/grpcio/1.6.0
+    url = ("https://pypi.python.org/packages/c6/28/" +
+           "67651b4eabe616b27472c5518f9b2aa3f63beab8f62100b26f05ac428639/" +
+           "grpcio-1.6.0-cp27-cp27m-manylinux1_i686.whl"),
+)
+
+http_file(
+    name = "futures_whl",
+    sha256 = "c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f",
+    # From https://pypi.python.org/pypi/futures
+    url = ("https://pypi.python.org/packages/a6/1c/" +
+           "72a18c8c7502ee1b38a604a5c5243aa8c2a64f4bba4e6631b1b8972235dd/" +
+           "futures-3.1.1-py2-none-any.whl"),
+)
+
+http_file(
+    name = "mock_whl",
+    sha256 = "5ce3c71c5545b472da17b72268978914d0252980348636840bd34a00b5cc96c1",
+    # From https://pypi.python.org/pypi/mock
+    url = ("https://pypi.python.org/packages/e6/35/" +
+           "f187bdf23be87092bd0f1200d43d23076cee4d0dec109f195173fd3ebc79/" +
+           "mock-2.0.0-py2.py3-none-any.whl"),
+)
 
 # Imports for examples
 load("//python:pip.bzl", "pip_import")

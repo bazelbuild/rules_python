@@ -17,9 +17,10 @@ def _whl_impl(repository_ctx):
   """Core implementation of whl_library."""
 
   result = repository_ctx.execute([
+    "python",
     repository_ctx.path(repository_ctx.attr._script),
-    repository_ctx.path(repository_ctx.attr.whl),
-    repository_ctx.attr.requirements,
+    "--whl", repository_ctx.path(repository_ctx.attr.whl),
+    "--requirements", repository_ctx.attr.requirements,
   ])
   if result.return_code:
     fail("whl_library failed: %s (%s)" % (result.stdout, result.stderr))
@@ -34,7 +35,7 @@ whl_library = repository_rule(
         "requirements": attr.string(),
         "_script": attr.label(
             executable = True,
-            default = Label("//python:whl.sh"),
+            default = Label("//python:whl.py"),
             cfg = "host",
         ),
     },

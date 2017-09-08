@@ -22,3 +22,21 @@ exports_files([
     "whl.bzl",
     "whl.sh",
 ])
+
+load(":python.bzl", "py_library", "py_test")
+
+py_library(
+    name = "whl",
+    srcs = ["whl.py"],
+)
+
+py_test(
+    name = "whl_test",
+    srcs = ["whl_test.py"],
+    data = [
+        "@futures_whl//file",
+        "@grpc_whl//file",
+        "@mock_whl//file",
+    ],
+    deps = [":whl"],
+)
