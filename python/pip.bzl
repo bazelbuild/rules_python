@@ -46,6 +46,7 @@ pip_import = repository_rule(
     },
     implementation = _import_impl,
 )
+
 """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
 
 This rule imports a <code>requirements.txt</code> file and generates a new

@@ -40,7 +40,11 @@ skylark_doc(
     format = "markdown",
     overview = True,
     site_root = ".",
-    deps = [":python", ":pip", ":whl"],
+    deps = [
+        ":pip",
+        ":python",
+        ":whl",
+    ],
 )
 
 skylark_doc(
@@ -48,5 +52,9 @@ skylark_doc(
     format = "html",
     overview = True,
     site_root = ".",
-    deps = [":python", ":pip", ":whl"],
+    deps = [
+        ":pip",
+        ":python",
+        ":whl",
+    ],
 )

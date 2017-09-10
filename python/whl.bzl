@@ -41,6 +41,7 @@ whl_library = repository_rule(
     },
     implementation = _whl_impl,
 )
+
 """A rule for importing <code>.whl</code> dependencies into Bazel.
 
 <b>This rule is currently used to implement <code>pip_import</code>,
