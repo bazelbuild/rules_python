@@ -32,14 +32,14 @@ try:
   # Fallback on using it as a CLI.
   from pip._vendor import requests
 
-  from pip import main as pip_main
-  # def pip_main(argv):
-  #   # Extract the certificates from the PAR following the example of get-pip.py
-  #   # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
-  #   cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
-  #   with open(cert_path, "wb") as cert:
-  #     cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
-  #   return _pip_main(argv + ["--cert", os.path.basename(cert_path)])
+  from pip import main as _pip_main
+  def pip_main(argv):
+    # Extract the certificates from the PAR following the example of get-pip.py
+    # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
+    cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
+    with open(cert_path, "wb") as cert:
+      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
+    return _pip_main(argv + ["--cert", cert_path])
 
 except:
   import subprocess
