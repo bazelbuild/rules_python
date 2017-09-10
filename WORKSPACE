@@ -34,6 +34,27 @@ load("@io_bazel_skydoc//skylark:skylark.bzl", "skydoc_repositories")
 
 skydoc_repositories()
 
+# Requirements for building our piptool.
+load("//python:pip.bzl", "pip_import")
+
+pip_import(
+    name = "piptool_deps",
+    requirements = "//python:requirements.txt",
+)
+
+load(
+    "@piptool_deps//:requirements.bzl",
+    _piptool_install = "pip_install",
+)
+
+_piptool_install()
+
+git_repository(
+    name = "subpar",
+    remote = "https://github.com/google/subpar",
+    tag = "1.0.0",
+)
+
 # Test data for WHL tool testing.
 http_file(
     name = "grpc_whl",
@@ -63,8 +84,6 @@ http_file(
 )
 
 # Imports for examples
-load("//python:pip.bzl", "pip_import")
-
 pip_import(
     name = "examples_helloworld",
     requirements = "//examples/helloworld:requirements.txt",

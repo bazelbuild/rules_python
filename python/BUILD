@@ -23,7 +23,7 @@ exports_files([
     "whl.sh",
 ])
 
-load(":python.bzl", "py_library", "py_test")
+load(":python.bzl", "py_binary", "py_library", "py_test")
 
 py_library(
     name = "whl",
@@ -39,4 +39,17 @@ py_test(
         "@mock_whl//file",
     ],
     deps = [":whl"],
+)
+
+load("@subpar//:subpar.bzl", "par_binary")
+load("@piptool_deps//:requirements.bzl", "all_packages")
+
+# TODO(mattmoor): Bundle this tool as a PAR without any
+# system-installed pre-requisites.  See TODOs in piptool.py.
+par_binary(
+    name = "piptool",
+    srcs = ["piptool.py"],
+    deps = [
+        ":whl",
+    ] + all_packages,
 )

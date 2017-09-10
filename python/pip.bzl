@@ -19,13 +19,15 @@ def _import_impl(repository_ctx):
   # Add an empty top-level BUILD file.
   repository_ctx.file("BUILD", "")
 
+  # To see the output, pass: quiet=False
   result = repository_ctx.execute([
-    repository_ctx.path(repository_ctx.attr._script),
-    repository_ctx.attr.name,
-    repository_ctx.path(repository_ctx.attr.requirements),
-    repository_ctx.path("requirements.bzl"),
-    repository_ctx.path(""),
+    "python", repository_ctx.path(repository_ctx.attr._script),
+    "--name", repository_ctx.attr.name,
+    "--input", repository_ctx.path(repository_ctx.attr.requirements),
+    "--output", repository_ctx.path("requirements.bzl"),
+    "--directory", repository_ctx.path(""),
   ])
+
   if result.return_code:
     fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
 
@@ -38,7 +40,7 @@ pip_import = repository_rule(
         ),
         "_script": attr.label(
             executable = True,
-            default = Label("//python:pip.sh"),
+            default = Label("//python:piptool.py"),
             cfg = "host",
         ),
     },

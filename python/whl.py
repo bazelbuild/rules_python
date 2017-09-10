@@ -24,17 +24,20 @@ class Wheel(object):
   def __init__(self, path):
     self._path = path
 
-  def _basename(self):
-      return os.path.basename(self._path)
+  def path(self):
+    return self._path
+
+  def basename(self):
+    return os.path.basename(self.path())
 
   def distribution(self):
     # See https://www.python.org/dev/peps/pep-0427/#file-name-convention
-    parts = self._basename().split('-')
+    parts = self.basename().split('-')
     return parts[0]
 
   def version(self):
     # See https://www.python.org/dev/peps/pep-0427/#file-name-convention
-    parts = self._basename().split('-')
+    parts = self.basename().split('-')
     return parts[1]
 
   def _dist_info(self):
@@ -44,7 +47,7 @@ class Wheel(object):
   def metadata(self):
     # Extract the structured data from metadata.json in the WHL's dist-info
     # directory.
-    with zipfile.ZipFile(self._path, 'r') as whl:
+    with zipfile.ZipFile(self.path(), 'r') as whl:
       with whl.open(os.path.join(self._dist_info(), 'metadata.json')) as f:
         return json.loads(f.read())
 
@@ -59,6 +62,11 @@ class Wheel(object):
         # TODO(mattmoor): What's the best way to support "extras"?
         # https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras
         continue
+      if 'environment' in requirement:
+        # TODO(mattmoor): What's the best way to support "environment"?
+        # This typically communicates things like python version (look at
+        # "wheel" for a good example)
+        continue
       requires = requirement.get('requires', [])
       for entry in requires:
         # Strip off any trailing versioning data.
@@ -66,7 +74,7 @@ class Wheel(object):
         yield parts[0]
 
   def expand(self, directory):
-    with zipfile.ZipFile(self._path, 'r') as whl:
+    with zipfile.ZipFile(self.path(), 'r') as whl:
       whl.extractall(directory)
 
 
