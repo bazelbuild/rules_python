@@ -78,7 +78,7 @@ of this, the generated `requirements.bzl` also contains a `packages` method,
 which can be used directly in `deps=[]` to reference an imported `py_library`.
 
 ```python
-load("@my_deps//:requirements.txt", "packages")
+load("@my_deps//:requirements.bzl", "packages")
 
 py_library(
     name = "mylib",
