@@ -51,7 +51,7 @@ except:
 # being invoked as a raw .py file.  Once bundled, we should be able
 # to remove this fallback on a stub implementation of Wheel.
 try:
-  from python.whl import Wheel
+  from rules_python.whl import Wheel
 except:
   class Wheel(object):
 

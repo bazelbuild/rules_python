@@ -35,7 +35,7 @@ whl_library = repository_rule(
         "requirements": attr.string(),
         "_script": attr.label(
             executable = True,
-            default = Label("//python:whl.py"),
+            default = Label("//rules_python:whl.py"),
             cfg = "host",
         ),
     },

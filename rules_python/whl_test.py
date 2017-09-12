@@ -15,7 +15,7 @@
 import os
 import unittest
 
-from python import whl
+from rules_python import whl
 
 
 def TestData(name):

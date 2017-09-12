@@ -43,7 +43,7 @@ pip_import = repository_rule(
         ),
         "_script": attr.label(
             executable = True,
-            default = Label("//python:piptool.py"),
+            default = Label("//rules_python:piptool.py"),
             cfg = "host",
         ),
     },
