@@ -132,7 +132,7 @@ _packages = {{
 
 all_packages = _packages.values()
 
-def packages(name):
+def package(name):
   name = name.replace("-", "_")
   return _packages[name]
 """.format(input=args.input,

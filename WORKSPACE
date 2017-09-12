@@ -95,3 +95,15 @@ load(
 )
 
 _helloworld_install()
+
+pip_import(
+    name = "examples_version",
+    requirements = "//examples/version:requirements.txt",
+)
+
+load(
+    "@examples_version//:requirements.bzl",
+    _version_install = "pip_install",
+)
+
+_version_install()

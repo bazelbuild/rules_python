@@ -13,10 +13,13 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-def _import_impl(repository_ctx):
+def _pip_import_impl(repository_ctx):
   """Core implementation of pip_import."""
 
   # Add an empty top-level BUILD file.
+  # This is because Bazel requires BUILD files along all paths accessed
+  # via //this/sort/of:path and we wouldn't be able to load our generated
+  # requirements.bzl without it.
   repository_ctx.file("BUILD", "")
 
   # To see the output, pass: quiet=False
@@ -44,7 +47,7 @@ pip_import = repository_rule(
             cfg = "host",
         ),
     },
-    implementation = _import_impl,
+    implementation = _pip_import_impl,
 )
 
 """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
@@ -62,14 +65,14 @@ pip_install()
 
 You can then reference imported dependencies from your <code>BUILD</code>
 file with:
-<pre><code>load("@foo//:requirements.bzl", "packages")
+<pre><code>load("@foo//:requirements.bzl", "package")
 py_library(
     name = "bar",
     ...
     deps = [
        "//my/other:dep",
-       packages("futures"),
-       packages("mock"),
+       package("futures"),
+       package("mock"),
     ],
 )
 </code></pre>

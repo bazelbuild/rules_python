@@ -49,14 +49,14 @@ pip_install()
 
 You can then reference imported dependencies from your <code>BUILD</code>
 file with:
-<pre><code>load("@foo//:requirements.bzl", "packages")
+<pre><code>load("@foo//:requirements.bzl", "package")
 py_library(
     name = "bar",
     ...
     deps = [
        "//my/other:dep",
-       packages("futures"),
-       packages("mock"),
+       package("futures"),
+       package("mock"),
     ],
 )
 </code></pre>

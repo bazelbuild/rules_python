@@ -11,21 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+import pip
+import unittest
 
-load("@examples_helloworld//:requirements.bzl", "package")
-load("//python:python.bzl", "py_library", "py_test")
 
-py_library(
-    name = "helloworld",
-    srcs = ["helloworld.py"],
-    deps = [package("futures")],
-)
+class VersionTest(unittest.TestCase):
 
-py_test(
-    name = "helloworld_test",
-    srcs = ["helloworld_test.py"],
-    deps = [":helloworld"],
-)
+  def test_version(self):
+    parts = pip.__version__.split('.')
+    self.assertEqual(3, len(parts))
+    major_version = int(parts[0])
+    minor_version = int(parts[1])
+    revision = int(parts[2])
+    self.assertEqual(major_version, 9)
+    self.assertEqual(minor_version, 0)
+    self.assertEqual(revision, 1)
+
+
+if __name__ == '__main__':
+  unittest.main()

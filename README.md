@@ -74,11 +74,11 @@ pip_install()
 
 Once a set of dependencies has been imported via `pip_import` and `pip_install`
 we can start consuming them in our `py_{binary,library,test}` rules.  In support
-of this, the generated `requirements.bzl` also contains a `packages` method,
+of this, the generated `requirements.bzl` also contains a `package` method,
 which can be used directly in `deps=[]` to reference an imported `py_library`.
 
 ```python
-load("@my_deps//:requirements.bzl", "packages")
+load("@my_deps//:requirements.bzl", "package")
 
 py_library(
     name = "mylib",
@@ -86,7 +86,7 @@ py_library(
     deps = [
         ":myotherlib",
 	# This takes the name as specified in requirements.txt
-	packages("importeddep"),
+	package("importeddep"),
     ]
 )
 ```

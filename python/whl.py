@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The packages modules defines classes for interacting with Python packages."""
+"""The whl modules defines classes for interacting with Python packages."""
 
 import argparse
 import json
@@ -42,6 +42,8 @@ class Wheel(object):
 
   def _dist_info(self):
     # Return the name of the dist-info directory within the .whl file.
+    # e.g. google_cloud-0.27.0-py2.py3-none-any.whl ->
+    #      google_cloud-0.27.0.dist-info
     return '{}-{}.dist-info'.format(self.distribution(), self.version())
 
   def metadata(self):
@@ -101,7 +103,7 @@ def main():
     f.write("""
 package(default_visibility = ["//visibility:public"])
 
-load("{requirements}", "packages")
+load("{requirements}", "package")
 
 py_library(
   name = "pkg",
@@ -114,7 +116,7 @@ py_library(
      )""".format(
        requirements=args.requirements,
        dependencies=','.join([
-         'packages("%s")' % d
+         'package("%s")' % d
          for d in whl.dependencies()
        ])))
     
