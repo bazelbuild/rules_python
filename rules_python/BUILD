@@ -15,10 +15,33 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+load("//python:python.bzl", "py_binary", "py_library", "py_test")
+
+py_library(
+    name = "whl",
+    srcs = ["whl.py"],
+)
+
+py_test(
+    name = "whl_test",
+    srcs = ["whl_test.py"],
+    data = [
+        "@futures_whl//file",
+        "@grpc_whl//file",
+        "@mock_whl//file",
+    ],
+    deps = [":whl"],
+)
+
+load("@subpar//:subpar.bzl", "par_binary")
+load("@piptool_deps//:requirements.bzl", "all_packages")
+
+# TODO(mattmoor): Bundle this tool as a PAR without any
+# system-installed pre-requisites.  See TODOs in piptool.py.
+par_binary(
+    name = "piptool",
+    srcs = ["piptool.py"],
+    deps = [
+        ":whl",
+    ] + all_packages,
+)

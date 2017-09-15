@@ -4,14 +4,17 @@
 
 ## Rules
 
-* [py_library](#py_library)
-* [py_binary](#py_binary)
+* [pip_import](docs/python/pip.md#pip_import)
+* [py_library](docs/python/python.md#py_library)
+* [py_binary](docs/python/python.md#py_binary)
+* [py_test](docs/python/python.md#py_test)
 
 ## Overview
 
-This is a placeholder repository that provides aliases for the native Bazel
-python rules.  In the future, this will also become the home for rules that
-download `pip` packages, and other non-Core Python functionality.
+This repository provides Python rules for Bazel.  Currently, support for
+rules that are available from Bazel core are simple aliases to that bundled
+functionality.  On top of that, this repository provides support for installing
+dependencies typically managed via `pip`.
 
 ## Setup
 
@@ -23,6 +26,11 @@ git_repository(
     remote = "https://github.com/bazelbuild/rules_python.git",
     commit = "{HEAD}",
 )
+
+# Only needed for PIP support:
+load("//python:pip.bzl", "pip_repositories")
+
+pip_repositories()
 ```
 
 Then in your `BUILD` files load the python rules with:
@@ -30,7 +38,7 @@ Then in your `BUILD` files load the python rules with:
 ``` python
 load(
   "@io_bazel_rules_python//python:python.bzl",
-  "py_binary", "py_library"
+  "py_binary", "py_library", "py_test",
 )
 
 py_binary(
@@ -39,12 +47,76 @@ py_binary(
 )
 ```
 
-<a name="py_library"></a>
-## py_library
+## Importing `pip` dependencies
 
-See Bazel core [documentation](https://docs.bazel.build/versions/master/be/python.html#py_library).
+These rules are designed to have developers continue using `requirements.txt`
+to express their dependencies in a Python idiomatic manner.  These dependencies
+are imported into the Bazel dependency graph via a two-phased process in
+`WORKSPACE`:
 
-<a name="py_binary"></a>
-## py_binary
+```python
+load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
 
-See Bazel core [documentation](https://docs.bazel.build/versions/master/be/python.html#py_binary).
+# This rule translates the specified requirements.txt into
+# @my_deps//:requirements.bzl, which itself exposes a pip_install method.
+pip_import(
+   name = "my_deps",
+   requirements = "//path/to:requirements.txt",
+)
+
+# Load the pip_install symbol for my_deps, and create the dependencies'
+# repositories.
+load("@my_deps//:requirements.bzl", "pip_install")
+pip_install()
+```
+
+## Consuming `pip` dependencies
+
+Once a set of dependencies has been imported via `pip_import` and `pip_install`
+we can start consuming them in our `py_{binary,library,test}` rules.  In support
+of this, the generated `requirements.bzl` also contains a `package` method,
+which can be used directly in `deps=[]` to reference an imported `py_library`.
+
+```python
+load("@my_deps//:requirements.bzl", "package")
+
+py_library(
+    name = "mylib",
+    srcs = ["mylib.py"],
+    deps = [
+        ":myotherlib",
+	# This takes the name as specified in requirements.txt
+	package("importeddep"),
+    ]
+)
+```
+
+## Canonical `whl_library` naming
+
+It is notable that `whl_library` rules imported via `pip_import` are canonically
+named, following the pattern: `pypi__{distribution}_{version}`.  Characters in
+these components that are illegal in Bazel label names (e.g. `-`, `.`) are
+replaced with `_`.
+
+This canonical naming helps avoid redundant work to import the same library
+multiple times.  It is expected that this naming will remain stable, so folks
+should be able to reliably depend directly on e.g. `@pypi__futures_3_1_1//:pkg`
+for dependencies, however, it is recommended that folks stick with the `package`
+pattern in case the need arises for us to make changes to this format in the
+future.
+
+## Updating `docs/`
+
+All of the content (except `BUILD`) under `docs/` is generated.  To update the
+documentation simply run this in the root of the repository:
+```shell
+./update_docs.sh
+```
+
+## Updating `tools/`
+
+All of the content (except `BUILD`) under `tools/` is generated.  To update the
+documentation simply run this in the root of the repository:
+```shell
+./update_tools.sh
+```

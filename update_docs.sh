@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2017 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+set -euo pipefail
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+bazel build //docs/...
+unzip -d docs/ -o bazel-bin/docs/docs-md-skydoc.zip
+unzip -d docs/ -o bazel-bin/docs/docs-html-skydoc.zip

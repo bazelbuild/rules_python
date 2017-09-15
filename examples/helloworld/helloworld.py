@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+from concurrent import futures
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+
+class HelloWorld(object):
+  def __init__(self):
+    self._threadpool = futures.ThreadPoolExecutor(max_workers=5)
+
+  def SayHello(self):
+    print("Hello World")
+
+  def SayHelloAsync(self):
+    self._threadpool.submit(self.SayHello)
+
+  def Stop(self):
+    self._threadpool.shutdown(wait = True)

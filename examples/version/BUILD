@@ -15,10 +15,11 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+load("@examples_version//:requirements.bzl", "package")
+load("//python:python.bzl", "py_test")
+
+py_test(
+    name = "version_test",
+    srcs = ["version_test.py"],
+    deps = [package("pip")],
+)

@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+import pip
+import unittest
 
-exports_files([
-    "pip.bzl",
-    "pip.sh",
-    "python.bzl",
-    "whl.bzl",
-    "whl.sh",
-])
+
+class VersionTest(unittest.TestCase):
+
+  def test_version(self):
+    self.assertEqual(pip.__version__, '9.0.1')
+
+
+if __name__ == '__main__':
+  unittest.main()
