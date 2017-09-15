@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import pkgutil
+import re
 import sys
 import tempfile
 import zipfile
@@ -66,6 +67,16 @@ except:
       parts = self.basename().split('-')
       return parts[0]
 
+    def version(self):
+      # See https://www.python.org/dev/peps/pep-0427/#file-name-convention
+      parts = self.basename().split('-')
+      return parts[1]
+
+    def repository_name(self):
+      # Returns the canonical name of the Bazel repository for this package.
+      canonical = 'pypi__{}_{}'.format(self.distribution(), self.version())
+      # Escape any illegal characters with underscore.
+      return re.sub('[-.]', '_', canonical)
 
 parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')
@@ -98,19 +109,16 @@ def main():
         if fname.endswith('.whl'):
           yield os.path.join(root, fname)
 
-  def repo_name(wheel):
-    return '{repo}_{pkg}'.format(
-      repo=args.name, pkg=wheel.distribution())
-
   def whl_library(wheel):
     # Indentation here matters.  whl_library must be within the scope
-    # of the function below.
+    # of the function below.  We also avoid reimporting an existing WHL.
     return """
-  whl_library(
-      name = "{repo_name}",
-      whl = "@{name}//:{path}",
-      requirements = "@{name}//:requirements.bzl",
-  )""".format(name=args.name, repo_name=repo_name(wheel),
+  if "{repo_name}" not in native.existing_rules():
+    whl_library(
+        name = "{repo_name}",
+        whl = "@{name}//:{path}",
+        requirements = "@{name}//:requirements.bzl",
+    )""".format(name=args.name, repo_name=wheel.repository_name(),
               path=wheel.basename())
 
   whls = [Wheel(path) for path in list_whls()]
@@ -138,7 +146,7 @@ def package(name):
 """.format(input=args.input,
            whl_libraries='\n'.join(map(whl_library, whls)),
            mappings=','.join([
-             '"%s": "@%s//:pkg"' % (wheel.distribution(), repo_name(wheel))
+             '"%s": "@%s//:pkg"' % (wheel.distribution(), wheel.repository_name())
              for wheel in whls
            ])))
 

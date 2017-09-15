@@ -90,3 +90,17 @@ py_library(
     ]
 )
 ```
+
+## Canonical `whl_library` naming
+
+It is notable that `whl_library` rules imported via `pip_import` are canonically
+named, following the pattern: `pypi__{distribution}_{version}`.  Characters in
+these components that are illegal in Bazel label names (e.g. `-`, `.`) are
+replaced with `_`.
+
+This canonical naming helps avoid redundant work to import the same library
+multiple times.  It is expected that this naming will remain stable, so folks
+should be able to reliably depend directly on e.g. `@pypi__futures_3_1_1//:pkg`
+for dependencies, however, it is recommended that folks stick with the `package`
+pattern in case the need arises for us to make changes to this format in the
+future.
