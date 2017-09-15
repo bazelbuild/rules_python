@@ -15,5 +15,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["LICENSE"])
+# This is generated and updated by ./update_piptool.sh
+exports_files(["piptool.par"])
 

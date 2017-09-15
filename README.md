@@ -104,3 +104,19 @@ should be able to reliably depend directly on e.g. `@pypi__futures_3_1_1//:pkg`
 for dependencies, however, it is recommended that folks stick with the `package`
 pattern in case the need arises for us to make changes to this format in the
 future.
+
+## Updating `docs/`
+
+All of the content (except `BUILD`) under `docs/` is generated.  To update the
+documentation simply run this in the root of the repository:
+```shell
+./update_docs.sh
+```
+
+## Updating `tools/`
+
+All of the content (except `BUILD`) under `tools/` is generated.  To update the
+documentation simply run this in the root of the repository:
+```shell
+./update_tools.sh
+```
