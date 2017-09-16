@@ -15,13 +15,13 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@examples_helloworld//:requirements.bzl", "package")
+load("@examples_helloworld//:requirements.bzl", "requirement")
 load("//python:python.bzl", "py_library", "py_test")
 
 py_library(
     name = "helloworld",
     srcs = ["helloworld.py"],
-    deps = [package("futures")],
+    deps = [requirement("futures")],
 )
 
 py_test(

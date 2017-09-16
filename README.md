@@ -74,11 +74,11 @@ pip_install()
 
 Once a set of dependencies has been imported via `pip_import` and `pip_install`
 we can start consuming them in our `py_{binary,library,test}` rules.  In support
-of this, the generated `requirements.bzl` also contains a `package` method,
+of this, the generated `requirements.bzl` also contains a `requirement` method,
 which can be used directly in `deps=[]` to reference an imported `py_library`.
 
 ```python
-load("@my_deps//:requirements.bzl", "package")
+load("@my_deps//:requirements.bzl", "requirement")
 
 py_library(
     name = "mylib",
@@ -86,7 +86,7 @@ py_library(
     deps = [
         ":myotherlib",
 	# This takes the name as specified in requirements.txt
-	package("importeddep"),
+	requirement("importeddep"),
     ]
 )
 ```
@@ -101,9 +101,9 @@ replaced with `_`.
 This canonical naming helps avoid redundant work to import the same library
 multiple times.  It is expected that this naming will remain stable, so folks
 should be able to reliably depend directly on e.g. `@pypi__futures_3_1_1//:pkg`
-for dependencies, however, it is recommended that folks stick with the `package`
-pattern in case the need arises for us to make changes to this format in the
-future.
+for dependencies, however, it is recommended that folks stick with the
+`requirement` pattern in case the need arises for us to make changes to this
+format in the future.
 
 ## Updating `docs/`
 
