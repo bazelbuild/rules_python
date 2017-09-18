@@ -134,15 +134,15 @@ load("@io_bazel_rules_python//python:whl.bzl", "whl_library")
 def pip_install():
   {whl_libraries}
 
-_packages = {{
+_requirements = {{
   {mappings}
 }}
 
-all_packages = _packages.values()
+all_requirements = _requirements.values()
 
-def package(name):
+def requirement(name):
   name = name.replace("-", "_")
-  return _packages[name]
+  return _requirements[name]
 """.format(input=args.input,
            whl_libraries='\n'.join(map(whl_library, whls)),
            mappings=','.join([

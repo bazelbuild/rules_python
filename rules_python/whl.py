@@ -110,7 +110,7 @@ def main():
     f.write("""
 package(default_visibility = ["//visibility:public"])
 
-load("{requirements}", "package")
+load("{requirements}", "requirement")
 
 py_library(
   name = "pkg",
@@ -123,7 +123,7 @@ py_library(
      )""".format(
        requirements=args.requirements,
        dependencies=','.join([
-         'package("%s")' % d
+         'requirement("%s")' % d
          for d in whl.dependencies()
        ])))
     
