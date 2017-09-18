@@ -57,7 +57,8 @@ class Wheel(object):
     # Extract the structured data from metadata.json in the WHL's dist-info
     # directory.
     with zipfile.ZipFile(self.path(), 'r') as whl:
-      with whl.open(os.path.join(self._dist_info(), 'metadata.json')) as f:
+      # zipfile always uses unix-style path delimiters, so avoid os.path.join
+      with whl.open(self._dist_info() + '/metadata.json') as f:
         return json.loads(f.read())
 
   def name(self):
