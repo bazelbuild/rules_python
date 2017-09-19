@@ -28,7 +28,7 @@ git_repository(
 )
 
 # Only needed for PIP support:
-load("//python:pip.bzl", "pip_repositories")
+load("@io_bazel_rules_python//python:pip.bzl", "pip_repositories")
 
 pip_repositories()
 ```
