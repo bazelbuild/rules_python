@@ -141,12 +141,12 @@ _requirements = {{
 all_requirements = _requirements.values()
 
 def requirement(name):
-  name = name.replace("-", "_")
+  name = name.replace("-", "_").lower()
   return _requirements[name]
 """.format(input=args.input,
            whl_libraries='\n'.join(map(whl_library, whls)),
            mappings=','.join([
-             '"%s": "@%s//:pkg"' % (wheel.distribution(), wheel.repository_name())
+             '"%s": "@%s//:pkg"' % (wheel.distribution().lower(), wheel.repository_name())
              for wheel in whls
            ])))
 
