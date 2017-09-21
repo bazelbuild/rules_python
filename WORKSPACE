@@ -17,7 +17,7 @@ workspace(name = "io_bazel_rules_python")
 git_repository(
     name = "io_bazel_rules_sass",
     remote = "https://github.com/bazelbuild/rules_sass.git",
-    tag = "0.0.2",
+    tag = "0.0.3",
 )
 
 load("@io_bazel_rules_sass//sass:sass.bzl", "sass_repositories")
@@ -27,7 +27,7 @@ sass_repositories()
 git_repository(
     name = "io_bazel_skydoc",
     remote = "https://github.com/bazelbuild/skydoc.git",
-    tag = "0.1.3",
+    commit = "e9be81cf5be41e4200749f5d8aa2db7955f8aacc",
 )
 
 load("@io_bazel_skydoc//skylark:skylark.bzl", "skydoc_repositories")
