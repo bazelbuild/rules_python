@@ -33,6 +33,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(set(wheel.dependencies()),
                      set(['enum34', 'futures', 'protobuf', 'six']))
     self.assertEqual('pypi__grpcio_1_6_0', wheel.repository_name())
+    self.assertEqual([], wheel.extras())
 
   def test_futures_whl(self):
     td = TestData('futures_3_1_1_whl/file/futures-3.1.1-py2-none-any.whl')
@@ -42,6 +43,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.version(), '3.1.1')
     self.assertEqual(set(wheel.dependencies()), set())
     self.assertEqual('pypi__futures_3_1_1', wheel.repository_name())
+    self.assertEqual([], wheel.extras())
 
   def test_whl_with_METADATA_file(self):
     td = TestData('futures_2_2_0_whl/file/futures-2.2.0-py2.py3-none-any.whl')
@@ -61,6 +63,23 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(set(wheel.dependencies()),
                      set(['pbr', 'six']))
     self.assertEqual('pypi__mock_2_0_0', wheel.repository_name())
+    self.assertEqual(['docs', 'test'], wheel.extras())
+    self.assertEqual(set(wheel.dependencies(extra='docs')), set())
+    self.assertEqual(set(wheel.dependencies(extra='test')), set(['unittest2']))
+
+  def test_google_cloud_language_whl(self):
+    td = TestData('google_cloud_language_whl/file/' +
+                  'google_cloud_language-0.29.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(wheel.name(), 'google-cloud-language')
+    self.assertEqual(wheel.distribution(), 'google_cloud_language')
+    self.assertEqual(wheel.version(), '0.29.0')
+    self.assertEqual(set(wheel.dependencies()),
+                     set(['google-gax', 'google-cloud-core',
+                          'googleapis-common-protos[grpc]']))
+    self.assertEqual('pypi__google_cloud_language_0_29_0',
+                     wheel.repository_name())
+    self.assertEqual([], wheel.extras())
 
 if __name__ == '__main__':
   unittest.main()

@@ -16,12 +16,17 @@
 def _whl_impl(repository_ctx):
   """Core implementation of whl_library."""
 
-  result = repository_ctx.execute([
+  args = [
     "python",
     repository_ctx.path(repository_ctx.attr._script),
     "--whl", repository_ctx.path(repository_ctx.attr.whl),
     "--requirements", repository_ctx.attr.requirements,
-  ])
+  ]
+
+  if repository_ctx.attr.extras:
+    args += ["--extras", ",".join(repository_ctx.attr.extras)]
+
+  result = repository_ctx.execute(args)
   if result.return_code:
     fail("whl_library failed: %s (%s)" % (result.stdout, result.stderr))
 
@@ -33,6 +38,7 @@ whl_library = repository_rule(
             single_file = True,
         ),
         "requirements": attr.string(),
+        "extras": attr.string_list(),
         "_script": attr.label(
             executable = True,
             default = Label("//rules_python:whl.py"),
@@ -64,4 +70,7 @@ Args:
 
   requirements: The name of the pip_import repository rule from which to
     load this .whl's dependencies.
+
+  extras: A subset of the "extras" available from this <code>.whl</code> for which
+    <code>requirements</code> has the dependencies.
 """

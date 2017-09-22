@@ -15,35 +15,15 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("//python:python.bzl", "py_binary", "py_library", "py_test")
-
-py_library(
-    name = "whl",
-    srcs = ["whl.py"],
-)
+load("@examples_extras//:requirements.bzl", "requirement")
+load("//python:python.bzl", "py_test")
 
 py_test(
-    name = "whl_test",
-    srcs = ["whl_test.py"],
-    data = [
-        "@futures_3_1_1_whl//file",
-        "@futures_2_2_0_whl//file",
-        "@google_cloud_language_whl//file",
-        "@grpc_whl//file",
-        "@mock_whl//file",
-    ],
-    deps = [":whl"],
-)
-
-load("@subpar//:subpar.bzl", "par_binary")
-load("@piptool_deps//:requirements.bzl", "all_requirements")
-
-# TODO(mattmoor): Bundle this tool as a PAR without any
-# system-installed pre-requisites.  See TODOs in piptool.py.
-par_binary(
-    name = "piptool",
-    srcs = ["piptool.py"],
+    name = "extras_test",
+    srcs = ["extras_test.py"],
     deps = [
-        ":whl",
-    ] + all_requirements,
+        requirement("google-cloud-language"),
+        # Make sure that we can resolve the "extra" dependency
+        requirement("googleapis-common-protos[grpc]"),
+    ],
 )
