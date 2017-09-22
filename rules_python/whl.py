@@ -70,13 +70,21 @@ class Wheel(object):
   def name(self):
     return self.metadata().get('name')
 
-  def dependencies(self):
+  def dependencies(self, extra=None):
+    """Access the dependencies of this Wheel.
+
+    Args:
+      extra: if specified, include the additional dependencies
+            of the named "extra".
+
+    Yields:
+      the names of requirements from the metadata.json
+    """
     # TODO(mattmoor): Is there a schema to follow for this?
     run_requires = self.metadata().get('run_requires', [])
     for requirement in run_requires:
-      if 'extra' in requirement:
-        # TODO(mattmoor): What's the best way to support "extras"?
-        # https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras
+      if requirement.get('extra') != extra:
+        # Match the requirements for the extra we're looking for.
         continue
       if 'environment' in requirement:
         # TODO(mattmoor): What's the best way to support "environment"?
@@ -88,6 +96,9 @@ class Wheel(object):
         # Strip off any trailing versioning data.
         parts = re.split('[ ><=()]', entry)
         yield parts[0]
+
+  def extras(self):
+    return self.metadata().get('extras', [])
 
   def expand(self, directory):
     with zipfile.ZipFile(self.path(), 'r') as whl:
@@ -112,6 +123,9 @@ parser.add_argument('--requirements', action='store',
 parser.add_argument('--directory', action='store', default='.',
                     help='The directory into which to expand things.')
 
+parser.add_argument('--extras', action='append',
+                    help='The set of extras for which to generate library targets.')
+
 def main():
   args = parser.parse_args()
   whl = Wheel(args.whl)
@@ -126,19 +140,33 @@ package(default_visibility = ["//visibility:public"])
 load("{requirements}", "requirement")
 
 py_library(
-  name = "pkg",
-  srcs = glob(["**/*.py"]),
-  data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
-  # This makes this directory a top-level in the python import
-  # search path for anything that depends on this.
-  imports = ["."],
-  deps = [{dependencies}],
-     )""".format(
-       requirements=args.requirements,
-       dependencies=','.join([
-         'requirement("%s")' % d
-         for d in whl.dependencies()
-       ])))
+    name = "pkg",
+    srcs = glob(["**/*.py"]),
+    data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    # This makes this directory a top-level in the python import
+    # search path for anything that depends on this.
+    imports = ["."],
+    deps = [{dependencies}],
+)
+{extras}""".format(
+  requirements=args.requirements,
+  dependencies=','.join([
+    'requirement("%s")' % d
+    for d in whl.dependencies()
+  ]),
+  extras='\n\n'.join([
+    """py_library(
+    name = "{extra}",
+    deps = [
+        ":pkg",{deps}
+    ],
+)""".format(extra=extra,
+            deps=','.join([
+                'requirement("%s")' % dep
+                for dep in whl.dependencies(extra)
+            ]))
+    for extra in args.extras or []
+  ])))
 
 if __name__ == '__main__':
   main()

@@ -106,6 +106,10 @@ for dependencies, however, it is recommended that folks stick with the
 `requirement` pattern in case the need arises for us to make changes to this
 format in the future.
 
+["Extras"](
+https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras)
+will have a target of the extra name (in place of `pkg` above).
+
 ## Updating `docs/`
 
 All of the content (except `BUILD`) under `docs/` is generated.  To update the
