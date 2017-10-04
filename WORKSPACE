@@ -107,3 +107,15 @@ load(
 )
 
 _version_install()
+
+pip_import(
+    name = "examples_boto",
+    requirements = "//examples/boto:requirements.txt",
+)
+
+load(
+    "@examples_boto//:requirements.bzl",
+    _boto_install = "pip_install",
+)
+
+_boto_install()
