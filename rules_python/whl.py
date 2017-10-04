@@ -79,7 +79,7 @@ class Wheel(object):
       requires = requirement.get('requires', [])
       for entry in requires:
         # Strip off any trailing versioning data.
-        parts = entry.split(' ', 1)
+        parts = re.split('[ ><=()]', entry)
         yield parts[0]
 
   def expand(self, directory):
