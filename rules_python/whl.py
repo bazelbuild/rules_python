@@ -58,7 +58,7 @@ class Wheel(object):
     # directory.
     with zipfile.ZipFile(self.path(), 'r') as whl:
       with whl.open(os.path.join(self._dist_info(), 'metadata.json')) as f:
-        return json.loads(f.read())
+        return json.loads(f.read().decode("utf-8"))
 
   def name(self):
     return self.metadata().get('name')
