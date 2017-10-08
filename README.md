@@ -24,6 +24,7 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 git_repository(
     name = "io_bazel_rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
+    # NOT VALID!  Replace this with a Git commit SHA.
     commit = "{HEAD}",
 )
 
