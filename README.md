@@ -1,6 +1,6 @@
 # Bazel Python Rules
 
-[![Build Status](http://ci.bazel.io/buildStatus/icon?job=rules_python)](http://ci.bazel.io/job/rules_python)
+[![Build Status](https://ci.bazel.io/buildStatus/icon?job=rules_python)](https://ci.bazel.io/job/rules_python)
 
 ## Rules
 
