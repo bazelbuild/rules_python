@@ -22,12 +22,8 @@ import sys
 import tempfile
 import zipfile
 
-# TODO(mattmoor): When this tool is invoked bundled as a PAR file,
-# but not as a py_binary, we get a warning that indicates the system
-# installed version of PIP is being picked up instead of our bundled
-# version, which should be 9.0.1, e.g.
-#   You are using pip version 1.5.4, however version 9.0.1 is available.
-#   You should consider upgrading via the 'pip install --upgrade pip' command.
+# PIP erroneously emits an error when bundled as a PAR file.  We
+# disable the version check to silence it.
 try:
   # Make sure we're using a suitable version of pip as a library.
   # Fallback on using it as a CLI.
@@ -40,7 +36,8 @@ try:
     cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
     with open(cert_path, "wb") as cert:
       cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
-    return _pip_main(argv + ["--cert", cert_path])
+    argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
+    return _pip_main(argv)
 
 except:
   import subprocess
