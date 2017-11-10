@@ -14,36 +14,67 @@
 """The piptool module imports pip requirements into Bazel rules."""
 
 import argparse
+import atexit
 import json
 import os
 import pkgutil
 import re
+import shutil
 import sys
 import tempfile
 import zipfile
 
-# PIP erroneously emits an error when bundled as a PAR file.  We
-# disable the version check to silence it.
-try:
-  # Make sure we're using a suitable version of pip as a library.
-  # Fallback on using it as a CLI.
-  from pip._vendor import requests
+# Note: We carefully import the following modules in a particular
+# order, since these modules modify the import path and machinery.
+import pkg_resources
 
-  from pip import main as _pip_main
-  def pip_main(argv):
-    # Extract the certificates from the PAR following the example of get-pip.py
-    # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
-    cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
-    with open(cert_path, "wb") as cert:
-      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
-    argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
+
+def extract_packages(package_names):
+    """Extract zipfile contents to disk and add to import path"""
+
+    # Set a safe extraction dir
+    extraction_tmpdir = tempfile.mkdtemp()
+    atexit.register(lambda: shutil.rmtree(
+        extraction_tmpdir, ignore_errors=True))
+    pkg_resources.set_extraction_path(extraction_tmpdir)
+
+    # Extract each package to disk
+    dirs_to_add = []
+    for package_name in package_names:
+        req = pkg_resources.Requirement.parse(package_name)
+        extraction_dir = pkg_resources.resource_filename(req, '')
+        dirs_to_add.append(extraction_dir)
+
+    # Add extracted directories to import path ahead of their zip file
+    # counterparts.
+    sys.path[0:0] = dirs_to_add
+    existing_pythonpath = os.environ['PYTHONPATH'].split(':')
+    os.environ['PYTHONPATH'] = ':'.join(dirs_to_add + existing_pythonpath)
+
+
+# Wheel, pip, and setuptools are much happier running from actual
+# files on disk, rather than entries in a zipfile.  Extract zipfile
+# contents, add those contents to the path, then import them.
+extract_packages(['pip', 'setuptools', 'wheel'])
+
+# Defeat pip's attempt to mangle sys.path
+saved_sys_path = sys.path
+sys.path = sys.path[:]
+import pip
+sys.path = saved_sys_path
+
+import setuptools
+import wheel
+
+# Make sure we're using a suitable version of pip as a library.
+# Fallback on using it as a CLI.
+from pip._vendor import requests
+
+from pip import main as _pip_main
+def pip_main(argv):
+    argv = ["--disable-pip-version-check"] + argv
     return _pip_main(argv)
 
-except:
-  import subprocess
-
-  def pip_main(argv):
-    return subprocess.call(['pip'] + argv)
 
 # TODO(mattmoor): We can't easily depend on other libraries when
 # being invoked as a raw .py file.  Once bundled, we should be able
