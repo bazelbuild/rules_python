@@ -57,8 +57,15 @@ class Wheel(object):
     # Extract the structured data from metadata.json in the WHL's dist-info
     # directory.
     with zipfile.ZipFile(self.path(), 'r') as whl:
-      with whl.open(os.path.join(self._dist_info(), 'metadata.json')) as f:
-        return json.loads(f.read().decode("utf-8"))
+      # first check for metadata.json
+      try:
+        with whl.open(os.path.join(self._dist_info(), 'metadata.json')) as f:
+          return json.loads(f.read().decode("utf-8"))
+      except KeyError:
+          pass
+      # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
+      with whl.open(os.path.join(self._dist_info(), 'METADATA')) as f:
+        return self._parse_metadata(f.read().decode("utf-8"))
 
   def name(self):
     return self.metadata().get('name')
@@ -85,6 +92,12 @@ class Wheel(object):
   def expand(self, directory):
     with zipfile.ZipFile(self.path(), 'r') as whl:
       whl.extractall(directory)
+
+  # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
+  def _parse_metadata(self, content):
+    # TODO: handle fields other than just name
+    name_pattern = re.compile('Name: (.*)')
+    return { 'name': name_pattern.search(content).group(1) }
 
 
 parser = argparse.ArgumentParser(
@@ -126,6 +139,6 @@ py_library(
          'requirement("%s")' % d
          for d in whl.dependencies()
        ])))
-    
+
 if __name__ == '__main__':
   main()
