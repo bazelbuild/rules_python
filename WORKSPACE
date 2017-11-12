@@ -66,12 +66,21 @@ http_file(
 )
 
 http_file(
-    name = "futures_whl",
+    name = "futures_3_1_1_whl",
     sha256 = "c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f",
     # From https://pypi.python.org/pypi/futures
     url = ("https://pypi.python.org/packages/a6/1c/" +
            "72a18c8c7502ee1b38a604a5c5243aa8c2a64f4bba4e6631b1b8972235dd/" +
            "futures-3.1.1-py2-none-any.whl"),
+)
+
+http_file(
+    name = "futures_2_2_0_whl",
+    sha256 = "9fd22b354a4c4755ad8c7d161d93f5026aca4cfe999bd2e53168f14765c02cd6",
+    # From https://pypi.python.org/pypi/futures/2.2.0
+    url = ("https://pypi.python.org/packages/d7/1d/" +
+           "68874943aa37cf1c483fc61def813188473596043158faa6511c04a038b4/" +
+           "futures-2.2.0-py2.py3-none-any.whl"),
 )
 
 http_file(
