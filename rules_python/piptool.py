@@ -66,14 +66,10 @@ sys.path = saved_sys_path
 import setuptools
 import wheel
 
-# Make sure we're using a suitable version of pip as a library.
-# Fallback on using it as a CLI.
-from pip._vendor import requests
 
-from pip import main as _pip_main
 def pip_main(argv):
     argv = ["--disable-pip-version-check"] + argv
-    return _pip_main(argv)
+    return pip.main(argv)
 
 
 # TODO(mattmoor): We can't easily depend on other libraries when
