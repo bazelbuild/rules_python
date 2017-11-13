@@ -168,7 +168,7 @@ def requirement(name):
   name = name.replace("-", "_").lower()
   return _requirements[name]
 """.format(input=args.input,
-           whl_libraries='\n'.join(map(whl_library, whls)),
+           whl_libraries='\n'.join(map(whl_library, whls)) if whls else "pass",
            mappings=','.join([
              '"%s": "@%s//:pkg"' % (wheel.distribution().lower(), wheel.repository_name())
              for wheel in whls
