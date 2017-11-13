@@ -35,13 +35,22 @@ class WheelTest(unittest.TestCase):
     self.assertEqual('pypi__grpcio_1_6_0', wheel.repository_name())
 
   def test_futures_whl(self):
-    td = TestData('futures_whl/file/futures-3.1.1-py2-none-any.whl')
+    td = TestData('futures_3_1_1_whl/file/futures-3.1.1-py2-none-any.whl')
     wheel = whl.Wheel(td)
     self.assertEqual(wheel.name(), 'futures')
     self.assertEqual(wheel.distribution(), 'futures')
     self.assertEqual(wheel.version(), '3.1.1')
     self.assertEqual(set(wheel.dependencies()), set())
     self.assertEqual('pypi__futures_3_1_1', wheel.repository_name())
+
+  def test_whl_with_METADATA_file(self):
+    td = TestData('futures_2_2_0_whl/file/futures-2.2.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(wheel.name(), 'futures')
+    self.assertEqual(wheel.distribution(), 'futures')
+    self.assertEqual(wheel.version(), '2.2.0')
+    self.assertEqual(set(wheel.dependencies()), set())
+    self.assertEqual('pypi__futures_2_2_0', wheel.repository_name())
 
   def test_mock_whl(self):
     td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
