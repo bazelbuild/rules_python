@@ -138,8 +138,10 @@ _requirements = {{
 all_requirements = _requirements.values()
 
 def requirement(name):
-  name = name.replace("-", "_").lower()
-  return _requirements[name]
+  name_key = name.replace("-", "_").lower()
+  if name_key not in requirements:
+    fail("Could not find pip-provided dependency: '%s'" % name)
+  return _requirements[name_key]
 """.format(input=args.input,
            whl_libraries='\n'.join(map(whl_library, whls)) if whls else "pass",
            mappings=','.join([
