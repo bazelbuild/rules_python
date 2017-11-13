@@ -166,7 +166,7 @@ all_requirements = _requirements.values()
 
 def requirement(name):
   name_key = name.replace("-", "_").lower()
-  if name_key not in requirements:
+  if name_key not in _requirements:
     fail("Could not find pip-provided dependency: '%s'" % name)
   return _requirements[name_key]
 """.format(input=args.input,
