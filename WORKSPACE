@@ -52,7 +52,7 @@ _piptool_install()
 git_repository(
     name = "subpar",
     remote = "https://github.com/google/subpar",
-    tag = "1.0.0",
+    tag = "1.1.0",
 )
 
 # Test data for WHL tool testing.
