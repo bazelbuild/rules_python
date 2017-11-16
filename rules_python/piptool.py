@@ -48,8 +48,10 @@ def extract_packages(package_names):
     # Add extracted directories to import path ahead of their zip file
     # counterparts.
     sys.path[0:0] = dirs_to_add
-    existing_pythonpath = os.environ['PYTHONPATH'].split(':')
-    os.environ['PYTHONPATH'] = ':'.join(dirs_to_add + existing_pythonpath)
+    existing_pythonpath = os.environ.get('PYTHONPATH')
+    if existing_pythonpath:
+        dirs_to_add.extend(existing_pythonpath.split(':'))
+    os.environ['PYTHONPATH'] = ':'.join(dirs_to_add)
 
 
 # Wheel, pip, and setuptools are much happier running from actual
@@ -68,7 +70,12 @@ import wheel
 
 
 def pip_main(argv):
-    argv = ["--disable-pip-version-check"] + argv
+    # Extract the certificates from the PAR following the example of get-pip.py
+    # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
+    cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
+    with open(cert_path, "wb") as cert:
+      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
+    argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
     return pip.main(argv)
 
 
