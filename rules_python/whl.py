@@ -110,6 +110,10 @@ class Wheel(object):
     name_pattern = re.compile('Name: (.*)')
     return { 'name': name_pattern.search(content).group(1) }
 
+class SplitByCommaAndAppend(argparse._AppendAction):
+  def __call__(self, parser, namespace, values, option_string=None):
+    for val in values.split(','):
+      super(SplitByCommaAndAppend, self).__call__(parser, namespace, val, option_string)
 
 parser = argparse.ArgumentParser(
     description='Unpack a WHL file as a py_library.')
@@ -123,7 +127,7 @@ parser.add_argument('--requirements', action='store',
 parser.add_argument('--directory', action='store', default='.',
                     help='The directory into which to expand things.')
 
-parser.add_argument('--extras', action='append',
+parser.add_argument('--extras', action=SplitByCommaAndAppend,
                     help='The set of extras for which to generate library targets.')
 
 def main():
