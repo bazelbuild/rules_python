@@ -24,7 +24,10 @@ def _whl_impl(repository_ctx):
   ]
 
   if repository_ctx.attr.extras:
-    args += ["--extras", ",".join(repository_ctx.attr.extras)]
+    args += [
+      "--extras=%s" % extra
+      for extra in repository_ctx.attr.extras
+    ]
 
   result = repository_ctx.execute(args)
   if result.return_code:
