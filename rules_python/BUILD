@@ -16,10 +16,14 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 load("//python:python.bzl", "py_binary", "py_library", "py_test")
+load("@piptool_deps//:requirements.bzl", "requirement")
 
 py_library(
     name = "whl",
     srcs = ["whl.py"],
+    deps = [
+        requirement("setuptools"),
+    ],
 )
 
 py_test(
@@ -32,18 +36,29 @@ py_test(
         "@grpc_whl//file",
         "@mock_whl//file",
     ],
-    deps = [":whl"],
+    deps = [
+        ":whl",
+        requirement("mock"),
+    ],
 )
 
 load("@subpar//:subpar.bzl", "par_binary")
-load("@piptool_deps//:requirements.bzl", "all_requirements")
 
-# TODO(mattmoor): Bundle this tool as a PAR without any
-# system-installed pre-requisites.  See TODOs in piptool.py.
 par_binary(
     name = "piptool",
     srcs = ["piptool.py"],
     deps = [
         ":whl",
-    ] + all_requirements,
+        requirement("pip"),
+        requirement("wheel"),
+    ],
+)
+
+par_binary(
+    name = "whltool",
+    srcs = ["whl.py"],
+    main = "whl.py",
+    deps = [
+        ":whl",
+    ],
 )
