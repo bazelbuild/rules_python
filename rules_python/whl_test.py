@@ -15,6 +15,8 @@
 import os
 import unittest
 
+from mock import patch
+
 from rules_python import whl
 
 
@@ -54,32 +56,65 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(set(wheel.dependencies()), set())
     self.assertEqual('pypi__futures_2_2_0', wheel.repository_name())
 
-  def test_mock_whl(self):
+  @patch('platform.python_version', return_value='2.7.13')
+  def test_mock_whl(self, *args):
     td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
     wheel = whl.Wheel(td)
     self.assertEqual(wheel.name(), 'mock')
     self.assertEqual(wheel.distribution(), 'mock')
     self.assertEqual(wheel.version(), '2.0.0')
     self.assertEqual(set(wheel.dependencies()),
-                     set(['pbr', 'six']))
+                     set(['funcsigs', 'pbr', 'six']))
     self.assertEqual('pypi__mock_2_0_0', wheel.repository_name())
+
+  @patch('platform.python_version', return_value='3.3.0')
+  def test_mock_whl_3_3(self, *args):
+    td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(set(wheel.dependencies()),
+                     set(['pbr', 'six']))
+
+  @patch('platform.python_version', return_value='2.7.13')
+  def test_mock_whl_extras(self, *args):
+    td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
     self.assertEqual(['docs', 'test'], wheel.extras())
-    self.assertEqual(set(wheel.dependencies(extra='docs')), set())
+    self.assertEqual(set(wheel.dependencies(extra='docs')), set(['sphinx']))
     self.assertEqual(set(wheel.dependencies(extra='test')), set(['unittest2']))
 
-  def test_google_cloud_language_whl(self):
+  @patch('platform.python_version', return_value='3.0.0')
+  def test_mock_whl_extras_3_0(self, *args):
+    td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(['docs', 'test'], wheel.extras())
+    self.assertEqual(set(wheel.dependencies(extra='docs')), set(['sphinx', 'Pygments', 'jinja2']))
+    self.assertEqual(set(wheel.dependencies(extra='test')), set(['unittest2']))
+
+  @patch('platform.python_version', return_value='2.7.13')
+  def test_google_cloud_language_whl(self, *args):
     td = TestData('google_cloud_language_whl/file/' +
                   'google_cloud_language-0.29.0-py2.py3-none-any.whl')
     wheel = whl.Wheel(td)
     self.assertEqual(wheel.name(), 'google-cloud-language')
     self.assertEqual(wheel.distribution(), 'google_cloud_language')
     self.assertEqual(wheel.version(), '0.29.0')
+    expected_deps = ['google-gax', 'google-cloud-core',
+                     'googleapis-common-protos[grpc]', 'enum34']
     self.assertEqual(set(wheel.dependencies()),
-                     set(['google-gax', 'google-cloud-core',
-                          'googleapis-common-protos[grpc]']))
+                     set(expected_deps))
     self.assertEqual('pypi__google_cloud_language_0_29_0',
                      wheel.repository_name())
     self.assertEqual([], wheel.extras())
+
+  @patch('platform.python_version', return_value='3.4.0')
+  def test_google_cloud_language_whl_3_4(self, *args):
+    td = TestData('google_cloud_language_whl/file/' +
+                  'google_cloud_language-0.29.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    expected_deps = ['google-gax', 'google-cloud-core',
+                     'googleapis-common-protos[grpc]']
+    self.assertEqual(set(wheel.dependencies()),
+                     set(expected_deps))
 
 if __name__ == '__main__':
   unittest.main()

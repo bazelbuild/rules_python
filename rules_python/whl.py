@@ -16,6 +16,7 @@
 import argparse
 import json
 import os
+import pkg_resources
 import re
 import zipfile
 
@@ -86,10 +87,10 @@ class Wheel(object):
       if requirement.get('extra') != extra:
         # Match the requirements for the extra we're looking for.
         continue
-      if 'environment' in requirement:
-        # TODO(mattmoor): What's the best way to support "environment"?
-        # This typically communicates things like python version (look at
-        # "wheel" for a good example)
+      marker = requirement.get('environment')
+      if marker and not pkg_resources.evaluate_marker(marker):
+        # The current environment does not match the provided PEP 508 marker,
+        # so ignore this requirement.
         continue
       requires = requirement.get('requires', [])
       for entry in requires:

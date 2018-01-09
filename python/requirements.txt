@@ -1,2 +1,6 @@
 pip==9.0.1
+setuptools==38.2.4
 wheel==0.30.0a0
+
+# For tests
+mock==2.0.0
