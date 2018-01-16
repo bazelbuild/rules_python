@@ -17,7 +17,6 @@ import argparse
 import json
 import os
 import pkg_resources
-import posixpath
 import re
 import zipfile
 
@@ -61,12 +60,12 @@ class Wheel(object):
     with zipfile.ZipFile(self.path(), 'r') as whl:
       # first check for metadata.json
       try:
-        with whl.open(posixpath.join(self._dist_info(), 'metadata.json')) as f:
+        with whl.open(self._dist_info() + '/metadata.json') as f:
           return json.loads(f.read().decode("utf-8"))
       except KeyError:
           pass
       # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
-      with whl.open(posixpath.join(self._dist_info(), 'METADATA')) as f:
+      with whl.open(self._dist_info() + '/METADATA') as f:
         return self._parse_metadata(f.read().decode("utf-8"))
 
   def name(self):
