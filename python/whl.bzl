@@ -77,3 +77,45 @@ Args:
   extras: A subset of the "extras" available from this <code>.whl</code> for which
     <code>requirements</code> has the dependencies.
 """
+
+
+def _whl_impl_v2(repository_ctx):
+  """Core implementation of whl_library."""
+
+  args = [
+     "python",
+     repository_ctx.path(repository_ctx.attr._script),
+  ] + [
+    '--whl=%s' % repository_ctx.path(whl)
+      for whl in repository_ctx.attr.whls
+  ] + [
+    "--requirements", repository_ctx.attr.requirements
+  ]
+  print('_whl_impl_v2')
+
+  if repository_ctx.attr.extras:
+    args += [
+      "--extras=%s" % extra
+      for extra in repository_ctx.attr.extras
+    ]
+
+  result = repository_ctx.execute(args)
+  if result.return_code:
+    fail("whl_library failed: %s (%s)" % (result.stdout, result.stderr))
+
+whl_library_v2 = repository_rule(
+    attrs = {
+        "whls": attr.label_list(
+            allow_files = True,
+            mandatory = True,
+        ),
+        "requirements": attr.string(),
+        "extras": attr.string_list(),
+        "_script": attr.label(
+            executable = True,
+            default = Label("//tools:whltool_v2.par"),
+            cfg = "host",
+        ),
+    },
+    implementation = _whl_impl_v2,
+)

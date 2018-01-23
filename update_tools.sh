@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -euo pipefail
+#set -euo pipefail
 
-bazel build //rules_python:piptool.par //rules_python:whltool.par
-cp bazel-bin/rules_python/piptool.par tools/piptool.par
-cp bazel-bin/rules_python/whltool.par tools/whltool.par
+bazel build //rules_python:piptool.par //rules_python:piptool_v2.par \
+            //rules_python:whltool.par //rules_python:whltool_v2.par
+
+cp bazel-bin/rules_python/piptool.par    tools/piptool.par
+cp bazel-bin/rules_python/piptool_v2.par tools/piptool_v2.par
+cp bazel-bin/rules_python/whltool.par    tools/whltool.par
+cp bazel-bin/rules_python/whltool_v2.par tools/whltool_v2.par

@@ -26,6 +26,14 @@ py_library(
     ],
 )
 
+py_library(
+    name = "whl_v2",
+    srcs = ["whl_v2.py"],
+    deps = [
+        requirement("setuptools"),
+    ],
+)
+
 py_test(
     name = "whl_test",
     srcs = ["whl_test.py"],
@@ -60,5 +68,24 @@ par_binary(
     main = "whl.py",
     deps = [
         ":whl",
+    ],
+)
+
+par_binary(
+    name = "piptool_v2",
+    srcs = ["piptool_v2.py"],
+    deps = [
+        ":whl_v2",
+        requirement("pip"),
+        requirement("wheel"),
+    ],
+)
+
+par_binary(
+    name = "whltool_v2",
+    srcs = ["whl_v2.py"],
+    main = "whl_v2.py",
+    deps = [
+        ":whl_v2",
     ],
 )

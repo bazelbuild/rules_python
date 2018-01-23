@@ -21,15 +21,22 @@ def _pip_import_impl(repository_ctx):
   # via //this/sort/of:path and we wouldn't be able to load our generated
   # requirements.bzl without it.
   repository_ctx.file("BUILD", "")
-
+  print(repository_ctx.attr.platforms)
   # To see the output, pass: quiet=False
-  result = repository_ctx.execute([
+  args = [
     "python", repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
     "--directory", repository_ctx.path(""),
-  ])
+#    "--python-version", repository_ctx.attr.python_versoin,
+  ]
+  if repository_ctx.attr.platforms:
+    args += [
+        '--platform=%s' % platform
+        for platform in repository_ctx.attr.platforms
+    ]
+  result = repository_ctx.execute(args)
 
   if result.return_code:
     fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -46,8 +53,65 @@ pip_import = repository_rule(
             default = Label("//tools:piptool.par"),
             cfg = "host",
         ),
+        "platforms": attr.string_list(
+#            mandatory = True,
+#            doc = "List of platforms for which .whl files are downloaded.",
+        ),
+        "python_version": attr.string(
+        ),
     },
     implementation = _pip_import_impl,
+)
+
+def _pip_import_impl_v2(repository_ctx):
+  """Core implementation of pip_import."""
+
+  # Add an empty top-level BUILD file.
+  # This is because Bazel requires BUILD files along all paths accessed
+  # via //this/sort/of:path and we wouldn't be able to load our generated
+  # requirements.bzl without it.
+  repository_ctx.file("BUILD", "")
+  print(repository_ctx.attr.platforms)
+  # To see the output, pass: quiet=False
+  args = [
+    "python", repository_ctx.path(repository_ctx.attr._script),
+    "--name", repository_ctx.attr.name,
+    "--input", repository_ctx.path(repository_ctx.attr.requirements),
+    "--output", repository_ctx.path("requirements.bzl"),
+    "--directory", repository_ctx.path(""),
+#    "--python-version", repository_ctx.attr.python_versoin,
+  ]
+  if repository_ctx.attr.platforms:
+    args += [
+        '--platform=%s' % platform
+        for platform in repository_ctx.attr.platforms
+    ]
+  result = repository_ctx.execute(args)
+  print('stdout', result.stdout)
+
+  if result.return_code:
+    fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
+
+pip_import_v2 = repository_rule(
+    attrs = {
+        "requirements": attr.label(
+            allow_files = True,
+            mandatory = True,
+            single_file = True,
+        ),
+        "_script": attr.label(
+            executable = True,
+            default = Label("//tools:piptool_v2.par"),
+            cfg = "host",
+        ),
+        "platforms": attr.string_list(
+#            mandatory = True,
+#            doc = "List of platforms for which .whl files are downloaded.",
+        ),
+        "python_version": attr.string(
+        ),
+    },
+    implementation = _pip_import_impl_v2,
 )
 
 """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
