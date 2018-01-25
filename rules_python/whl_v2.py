@@ -22,7 +22,6 @@ import zipfile
 
 
 class Wheel(object):
-
     def __init__(self, path, platform):
         self._path = path
         self._platform = platform
@@ -59,6 +58,7 @@ class Wheel(object):
         return '{}-{}.dist-info'.format(self.distribution(), self.version())
 
     def metadata(self):
+        # PEP-426
         # Extract the structured data from metadata.json in the WHL's dist-info
         # directory.
         with zipfile.ZipFile(self.path(), 'r') as whl:
@@ -116,6 +116,30 @@ class Wheel(object):
         return {'name': name_pattern.search(content).group(1)}
 
 
+class WheelSet(object):
+    def __init__(self, whl):
+        self._whls = [whl]
+        self._distribution = whl.distribution()
+        self._repository_name = whl.repository_name()
+
+    def append(self, whl):
+        assert whl.distribution() == self._distribution
+        assert whl.repository_name() == self._repository_name
+        self._whls.append(whl)
+
+    @property
+    def wheels(self):
+        return self._whls
+
+    @property
+    def distribution(self):
+        return self._distribution
+
+    @property
+    def repository_name(self):
+        return self._repository_name
+
+
 parser = argparse.ArgumentParser(
     description='Unpack a WHL file as a py_library.')
 
@@ -131,7 +155,6 @@ parser.add_argument('--directory', action='store', default='.',
 parser.add_argument('--extras', action='append',
                     help='The set of extras for which to generate library targets.')
 
-import logging
 
 def main():
     args = parser.parse_args()
@@ -139,8 +162,6 @@ def main():
 
     # Extract the files into the current directory
     [whl.expand(args.directory) for whl in whls]
-
-    print([whl.dependencies() for whl in whls])
 
     with open(os.path.join(args.directory, 'BUILD'), 'w') as f:
         f.write("""
@@ -170,10 +191,10 @@ py_library(
                     ":pkg",{deps}
                 ],
             )""".format(extra=extra,
-            deps=','.join([
-                'requirement("%s")' % dep
-                for dep in whls[0].dependencies(extra)
-            ]))
+                        deps=','.join([
+                            'requirement("%s")' % dep
+                            for dep in whls[0].dependencies(extra)
+                        ]))
                 for extra in args.extras or []
             ])))
 

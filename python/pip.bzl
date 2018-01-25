@@ -21,21 +21,16 @@ def _pip_import_impl(repository_ctx):
   # via //this/sort/of:path and we wouldn't be able to load our generated
   # requirements.bzl without it.
   repository_ctx.file("BUILD", "")
-  print(repository_ctx.attr.platforms)
   # To see the output, pass: quiet=False
+  print('execute python')
+
   args = [
     "python", repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
     "--directory", repository_ctx.path(""),
-#    "--python-version", repository_ctx.attr.python_versoin,
   ]
-  if repository_ctx.attr.platforms:
-    args += [
-        '--platform=%s' % platform
-        for platform in repository_ctx.attr.platforms
-    ]
   result = repository_ctx.execute(args)
 
   if result.return_code:
@@ -53,12 +48,6 @@ pip_import = repository_rule(
             default = Label("//tools:piptool.par"),
             cfg = "host",
         ),
-        "platforms": attr.string_list(
-#            mandatory = True,
-#            doc = "List of platforms for which .whl files are downloaded.",
-        ),
-        "python_version": attr.string(
-        ),
     },
     implementation = _pip_import_impl,
 )
@@ -70,24 +59,40 @@ def _pip_import_impl_v2(repository_ctx):
   # This is because Bazel requires BUILD files along all paths accessed
   # via //this/sort/of:path and we wouldn't be able to load our generated
   # requirements.bzl without it.
+  ctx = repository_ctx
   repository_ctx.file("BUILD", "")
-  print(repository_ctx.attr.platforms)
   # To see the output, pass: quiet=False
+#  for dep in ctx.attr.local_whls:
+#      for file in dep.file:
+#        copy = ctx.actions.declare_file('{}.local/{}'.format(ctx.label.name, file.basename))
+#        ctx.actions.run_shell(
+#            inputs=[file],
+#            outputs=[copy],
+#            command="cp {} {}".format(file.path, copy.path)
+#        )
+  local_whls_dirs = []
+  for dep in ctx.attr.local_whls_dirs:
+    local_whls_dirs.append(repository_ctx.path(dep))
+
   args = [
     "python", repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
     "--directory", repository_ctx.path(""),
-#    "--python-version", repository_ctx.attr.python_versoin,
+#    "--python-version", repository_ctx.attr.python_version,
   ]
-  if repository_ctx.attr.platforms:
-    args += [
-        '--platform=%s' % platform
-        for platform in repository_ctx.attr.platforms
-    ]
+  args += [
+    "--local-whls-dir=%s" % repository_ctx.path(dep)
+    for dep in ctx.attr.local_whls_dirs
+  ]
+#  if repository_ctx.attr.platforms:
+  args += [
+      '--platform=%s' % platform
+      for platform in repository_ctx.attr.platforms
+  ]
   result = repository_ctx.execute(args)
-  print('stdout', result.stdout)
+  print(result.stdout)
 
   if result.return_code:
     fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -105,11 +110,14 @@ pip_import_v2 = repository_rule(
             cfg = "host",
         ),
         "platforms": attr.string_list(
+            mandatory = True,
+        ),
+        "local_whls_dirs": attr.label_list(
+            allow_files = True,
+        ),
+#        "python_version": attr.string(
 #            mandatory = True,
-#            doc = "List of platforms for which .whl files are downloaded.",
-        ),
-        "python_version": attr.string(
-        ),
+#        ),
     },
     implementation = _pip_import_impl_v2,
 )

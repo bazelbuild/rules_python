@@ -91,7 +91,6 @@ def _whl_impl_v2(repository_ctx):
   ] + [
     "--requirements", repository_ctx.attr.requirements
   ]
-  print('_whl_impl_v2')
 
   if repository_ctx.attr.extras:
     args += [

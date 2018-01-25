@@ -13,6 +13,7 @@
 # limitations under the License.
 """The piptool module imports pip requirements into Bazel rules."""
 
+import logging
 import argparse
 import atexit
 import json
@@ -67,12 +68,8 @@ import pip
 
 sys.path = saved_sys_path
 
-import setuptools
-import wheel
-
 
 def pip_main(argv):
-    print('pip_main', argv)
     # Extract the certificates from the PAR following the example of get-pip.py
     # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
     cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
@@ -82,7 +79,7 @@ def pip_main(argv):
     return pip.main(argv)
 
 
-from rules_python.whl_v2 import Wheel
+from rules_python.whl_v2 import Wheel, WheelSet
 
 parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')
@@ -100,11 +97,15 @@ parser.add_argument('--directory', action='store',
                     help=('The directory into which to put .whl files.'))
 
 parser.add_argument('--platform', action='append',
-                    help=('The platforms for which .whl files need to be downloaded.'))
+                    help=('The platforms for which .whl files must downloaded.'))
+
+parser.add_argument('--local-whls-dir', action='append',
+                    help=('Local directories with .whl files.'))
 
 
-# parser.add_argument('--python-version', action='append',
-#                     help=('The version of python.'))
+# parser.add_argument('--python-version', action='store',
+#                     help=('The python version for which .whl files must be downloaded.'))
+
 
 def determine_possible_extras(whls):
     """Determines the list of possible "extras" for each .whl
@@ -121,18 +122,18 @@ def determine_possible_extras(whls):
       values are lists of possible extras.
     """
     whl_map = {
-        (whl.distribution(), whl.platform()): whl
+        whl.distribution(): whl
         for whl in whls
     }
 
     # TODO(mattmoor): Consider memoizing if this recursion ever becomes
     # expensive enough to warrant it.
-    def is_possible(distro, platform, extra):
+    def is_possible(distro, extra):
         distro = distro.replace("-", "_")
         # If we don't have the .whl at all, then this isn't possible.
         if distro not in whl_map:
             return False
-        whl = whl_map[(distro, platform)]
+        whl = whl_map[distro]
         # If we have the .whl, and we don't need anything extra then
         # we can satisfy this dependency.
         if not extra:
@@ -140,13 +141,12 @@ def determine_possible_extras(whls):
         # If we do need something extra, then check the extra's
         # dependencies to make sure they are fully satisfied.
         for extra_dep in whl.dependencies(extra=extra):
-            logging.error('dependency: {}'.format(extra_dep))
             req = pkg_resources.Requirement.parse(extra_dep)
             # Check that the dep and any extras are all possible.
-            if not is_possible(req.project_name, platform, None):
+            if not is_possible(req.project_name, None):
                 return False
             for e in req.extras:
-                if not is_possible(req.project_name, platform, e):
+                if not is_possible(req.project_name, e):
                     return False
         # If all of the dependencies of the extra are satisfiable then
         # it is possible to construct this dependency.
@@ -156,36 +156,31 @@ def determine_possible_extras(whls):
         whl: [
             extra
             for extra in whl.extras()
-            if is_possible(whl.distribution(), whl.platform(), extra)
+            if is_possible(whl.distribution(), extra)
         ]
         for whl in whls
     }
 
 
-def whl_library(name, possible_extras, wheels):
-    logging.debug(name, possible_extras, wheels)
+def whl_library(name, extras, wheels):
     # Indentation here matters.  whl_library must be within the scope
     # of the function below.  We also avoid reimporting an existing WHL.
     whls = ["@{name}//{platform}:{path}".format(name=name, platform=w.platform(), path=w.basename()) for w in wheels]
-    extras = []
     repository_name = set([w.repository_name() for w in wheels])
     assert len(repository_name) == 1
     repository_name = repository_name.pop()
-    # extras = ','.join([
-    #     '"%s"' % extra
-    #     for extra in possible_extras.get(wheel, [])
-    # ])
-    return """if "{repo_name}" not in native.existing_rules():
-      print("{repo_name}")
-      whl_library_v2(
-        name = "{repo_name}",
-        whls = {whls},
-        requirements = "@{name}//:requirements.bzl",
-        extras = {extras}
-      )""".format(name=name,
-                  repo_name=repository_name,
-                  whls=whls,
-                  extras=extras)
+
+    return """
+  if "{repo_name}" not in native.existing_rules():
+    whl_library_v2(
+      name = "{repo_name}",
+      whls = {whls},
+      requirements = "@{name}//:requirements.bzl",
+      extras = {extras}
+    )""".format(name=name,
+                repo_name=repository_name,
+                whls=whls,
+                extras=list(extras))
 
 
 def list_whls(directory, full=True):
@@ -197,74 +192,71 @@ def list_whls(directory, full=True):
                     yield os.path.join(root, fname)
                 else:
                     yield fname
-
-
-import logging
-
-FORMAT = '%(asctime)-15s %(clientip)s %(user)-8s %(message)s'
-logging.basicConfig(format=FORMAT)
-
-
 def main():
     args = parser.parse_args()
-
     logging.info(args)
-    # sys.exit(1)
     # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
-    # if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
-    #   sys.exit(1)
     if args.platform:
         for platform in args.platform:
-            dir = os.path.join(args.directory, platform)
-            if pip_main(["download", "-d", dir, '--platform', platform,
-                         "--only-binary", ":all:", "-r", args.input]):
+            platform_dir = os.path.join(args.directory, platform)
+
+            pip_args = ["download", "-d", platform_dir, "-f", platform_dir]
+            if args.local_whls_dir is not None:
+                for whls_dir in args.local_whls_dir:
+                    pip_args.append('-f')
+                    pip_args.append(os.path.dirname(whls_dir))
+            pip_args += ['--platform', platform, "--only-binary", ":all:", "-r", args.input]
+            if pip_main(pip_args):
                 sys.exit(1)
-            with open(os.path.join(dir, 'BUILD'), 'w') as f:
+            with open(os.path.join(platform_dir, 'BUILD'), 'w') as f:
                 f.write("""package(default_visibility = ["//visibility:public"])\n\n""" +
-                        """exports_files({wheels})""".format(wheels=list(list_whls(dir, False))))
+                        """exports_files({wheels})""".format(wheels=list(list_whls(platform_dir, False))))
 
 
     else:
         sys.exit(1)
-    logging.info("Files are downloaded")
+    logging.info("Wheel files are downloaded")
+
     # Enumerate the .whl files we downloaded.
-
-    whls = {}
-
+    whls_set = {}
     for platform in args.platform:
-        logging.info("%s", args.directory + '/' + platform)
-        logging.info(list(list_whls(args.directory + '/' + platform)))
-        for w in list([Wheel(path, platform) for path in list_whls(args.directory + '/' + platform)]):
-            distribution = w.distribution().lower()
-            if distribution in whls:
-                whls[distribution].append(w)
+        for whl in list([Wheel(path, platform) for path in list_whls(args.directory + '/' + platform)]):
+            distribution = whl.distribution()
+            if distribution in whls_set:
+                whls_set[distribution].append(whl)
             else:
-                whls[distribution] = [w]
-    logging.info("wheels: %s", whls)
-    # possible_extras = determine_possible_extras(whls)
-    #         logging.info(possible_extras)
-    #
-    # whl_targets = ','.join([
-    #     ','.join([
-    #                  '"%s": "@%s//:pkg"' % (whl.distribution().lower(), whl.repository_name())
-    #              ] + [
-    #                  # For every extra that is possible from this requirements.txt
-    #                  '"%s[%s]": "@%s//:%s"' % (whl.distribution().lower(), extra.lower(),
-    #                                            whl.repository_name(), extra)
-    #                  # for extra in possible_extras.get(whl, [])
-    #                  for extra in []
-    #              ])
-    #     for whl in whls
-    # ])
-    #
+                whls_set[distribution] = WheelSet(whl)
+    logging.info("wheel set is created")
+
+    possible_extras = None
+    for _, _whls in whls_set.items():
+        extras = determine_possible_extras(_whls.wheels)
+        if possible_extras is None:
+            possible_extras = {k.distribution(): v for k, v in extras.items()}
+        else:
+            for k, v in extras.items():
+                if k.distribution() in possible_extras:
+                    possible_extras[k.distribution()].extend(v)
+                else:
+                    possible_extras[k.distribution()] = v
+
+    logging.info("possible extras created")
+
     whl_targets = ','.join([
         ','.join([
-            '"%s": "@%s//:pkg"' % (whl, whls[whl][0].repository_name())
-        ]) for whl in whls])
+                     '"%s": "@%s//:pkg"' % (_whls_s.distribution.lower(), _whls_s.repository_name)
+                 ] + [
+                     # For every extra that is possible from this requirements.txt
+                     '"%s[%s]": "@%s//:%s"' % (_whls_s.distribution.lower(), extra.lower(),
+                                               _whls_s.repository_name, extra)
+                     for extra in set(possible_extras.get(_whls_s.distribution, []))
+                     # for extra in []
+                 ])
+        for _, _whls_s in whls_set.items()
+    ])
 
-    logging.info("Generating %s", args.output)
-    #     logging.info("Map: %s", list(map(lambda x: whl_library(args.name, possible_extras, x), whls)))
-    logging.info("Map: %s", list(map(lambda x: whl_library(args.name, [], whls[x]), whls)))
+    logging.info("Write to %s", args.output)
+
     try:
         with open(args.output, 'w') as f:
             f.write("""\
@@ -275,7 +267,6 @@ def main():
 load("@io_bazel_rules_python//python:whl.bzl", "whl_library_v2")
 
 def pip_install():
-  print("pip_install")
   
   {whl_libraries}
 
@@ -283,7 +274,6 @@ _requirements = {{
   {mappings}
 }}
 
-print("test")
 all_requirements = _requirements.values()
 
 def requirement(name):
@@ -292,7 +282,9 @@ def requirement(name):
     fail("Could not find pip-provided dependency: '%s'" % name)
   return _requirements[name_key]
 """.format(input=args.input,
-           whl_libraries='\n'.join(map(lambda x: whl_library(args.name, [], whls[x]), whls)) if whls else "pass",
+           whl_libraries='\n'.join(
+               map(lambda x: whl_library(args.name, set(possible_extras[x]), whls_set[x].wheels),
+                   whls_set)) if whls_set else "pass",
            mappings=whl_targets))
     except BaseException as e:
         logging.error("Failed to write to file: %s", e)
