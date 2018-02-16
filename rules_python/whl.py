@@ -48,6 +48,9 @@ class Wheel(object):
     # Escape any illegal characters with underscore.
     return re.sub('[-.]', '_', canonical)
 
+  def platform(self):
+    return self.basename().split('-')[-1]
+
   def _dist_info(self):
     # Return the name of the dist-info directory within the .whl file.
     # e.g. google_cloud-0.27.0-py2.py3-none-any.whl ->
