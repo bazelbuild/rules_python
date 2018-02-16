@@ -1,4 +1,6 @@
-# Bazel Python Rules
+# Experimental Bazel Python Rules
+
+Status: This is **ALPHA** software.
 
 [![Build Status](https://ci.bazel.io/buildStatus/icon?job=rules_python)](https://ci.bazel.io/job/rules_python)
 
