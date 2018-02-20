@@ -17,7 +17,7 @@ def _whl_impl(repository_ctx):
   """Core implementation of whl_library."""
 
   args = [
-    "python",
+    "python3",
     repository_ctx.path(repository_ctx.attr._script),
     "--whl", repository_ctx.path(repository_ctx.attr.whl),
     "--requirements", repository_ctx.attr.requirements,

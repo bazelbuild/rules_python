@@ -24,7 +24,7 @@ def _pip_import_impl(repository_ctx):
 
   # To see the output, pass: quiet=False
   result = repository_ctx.execute([
-    "python", repository_ctx.path(repository_ctx.attr._script),
+    "python3", repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
