@@ -2,7 +2,7 @@
 
 Status: This is **ALPHA** software.
 
-[![Build Status](https://ci.bazel.io/buildStatus/icon?job=rules_python)](https://ci.bazel.io/job/rules_python)
+[![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg)](https://buildkite.com/bazel/python-rules-python-postsubmit)
 
 ## Rules
 
