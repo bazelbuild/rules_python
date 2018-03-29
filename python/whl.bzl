@@ -17,7 +17,7 @@ def _whl_impl(repository_ctx):
   """Core implementation of whl_library."""
 
   args = [
-    "python",
+    repository_ctx.attr.python_interpreter,
     repository_ctx.path(repository_ctx.attr._script),
     "--whl", repository_ctx.path(repository_ctx.attr.whl),
     "--requirements", repository_ctx.attr.requirements,
@@ -35,6 +35,7 @@ def _whl_impl(repository_ctx):
 
 whl_library = repository_rule(
     attrs = {
+        "python_interpreter": attr.string(),
         "whl": attr.label(
             allow_files = True,
             mandatory = True,

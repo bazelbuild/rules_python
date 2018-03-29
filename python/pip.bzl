@@ -25,6 +25,7 @@ def _shared_pip_import_impl(python_interpreter, repository_ctx):
   # To see the output, pass: quiet=False
   result = repository_ctx.execute([
     python_interpreter, repository_ctx.path(repository_ctx.attr._script),
+    "--python_interpreter", python_interpreter,
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),

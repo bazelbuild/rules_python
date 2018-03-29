@@ -84,6 +84,9 @@ from rules_python.whl import Wheel
 parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')
 
+parser.add_argument('--python_interpreter', action='store',
+                    help=('The python python interpreter to use '))
+
 parser.add_argument('--name', action='store',
                     help=('The namespace of the import.'))
 
@@ -175,10 +178,12 @@ def main():
   if "{repo_name}" not in native.existing_rules():
     whl_library(
         name = "{repo_name}",
+        python_interpreter = "{python_interpreter}",
         whl = "@{name}//:{path}",
         requirements = "@{name}//:requirements.bzl",
         extras = [{extras}]
     )""".format(name=args.name, repo_name=wheel.repository_name(),
+                python_interpreter=args.python_interpreter,
                 path=wheel.basename(),
                 extras=','.join([
                   '"%s"' % extra
