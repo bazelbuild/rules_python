@@ -14,24 +14,24 @@
 """Import pip requirements into Bazel."""
 
 def _shared_pip_import_impl(python_interpreter, repository_ctx):
-    """Core implementation of pip_import."""
-    # Add an empty top-level BUILD file.
-    # This is because Bazel requires BUILD files along all paths accessed
-    # via //this/sort/of:path and we wouldn't be able to load our generated
-    # requirements.bzl without it.
-    repository_ctx.file("BUILD", "")
+  """Core implementation of pip_import."""
+  # Add an empty top-level BUILD file.
+  # This is because Bazel requires BUILD files along all paths accessed
+  # via //this/sort/of:path and we wouldn't be able to load our generated
+  # requirements.bzl without it.
+  repository_ctx.file("BUILD", "")
 
-    # To see the output, pass: quiet=False
-    result = repository_ctx.execute([
-      python_interpreter, repository_ctx.path(repository_ctx.attr._script),
-      "--name", repository_ctx.attr.name,
-      "--input", repository_ctx.path(repository_ctx.attr.requirements),
-      "--output", repository_ctx.path("requirements.bzl"),
-      "--directory", repository_ctx.path(""),
-    ])
+  # To see the output, pass: quiet=False
+  result = repository_ctx.execute([
+    python_interpreter, repository_ctx.path(repository_ctx.attr._script),
+    "--name", repository_ctx.attr.name,
+    "--input", repository_ctx.path(repository_ctx.attr.requirements),
+    "--output", repository_ctx.path("requirements.bzl"),
+    "--directory", repository_ctx.path(""),
+  ])
 
-    if result.return_code:
-      fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
+  if result.return_code:
+    fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
 
 _shared_attrs = {
     "requirements": attr.label(
