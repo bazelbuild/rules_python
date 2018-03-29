@@ -15,6 +15,7 @@
 
 def _shared_pip_import_impl(python_interpreter, repository_ctx):
   """Core implementation of pip_import."""
+
   # Add an empty top-level BUILD file.
   # This is because Bazel requires BUILD files along all paths accessed
   # via //this/sort/of:path and we wouldn't be able to load our generated
