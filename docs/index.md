@@ -42,6 +42,17 @@
   <tbody>
     <tr>
       <td>
+        <a href="./python/pip.html#pip3_import">
+          <code>pip3_import</code>
+        </a>
+      </td>
+      <td>
+        <p>A rule for importing &lt;code&gt;requirements.txt&lt;/code&gt; dependencies into Bazel.</p>
+
+      </td>
+    </tr>
+    <tr>
+      <td>
         <a href="./python/pip.html#pip_import">
           <code>pip_import</code>
         </a>
