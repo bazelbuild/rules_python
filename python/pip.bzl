@@ -13,7 +13,7 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-def _pip_import_impl(repository_ctx):
+def _pip_import_impl(repository_ctx, binary_name):
   """Core implementation of pip_import."""
 
   # Add an empty top-level BUILD file.
@@ -24,7 +24,7 @@ def _pip_import_impl(repository_ctx):
 
   # To see the output, pass: quiet=False
   result = repository_ctx.execute([
-    "python", repository_ctx.path(repository_ctx.attr._script),
+    binary_name, repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
@@ -33,6 +33,14 @@ def _pip_import_impl(repository_ctx):
 
   if result.return_code:
     fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
+
+def _pip2_import_impl(repository_ctx):
+  """System python implementation. Assumes this links to python 2."""
+  _pip_import_impl(repository_ctx, "python")
+
+def _pip3_import_impl(repository_ctx):
+  """Python 3 implementation."""
+  _pip_import_impl(repository_ctx, "python3")
 
 pip_import = repository_rule(
     attrs = {
@@ -47,15 +55,32 @@ pip_import = repository_rule(
             cfg = "host",
         ),
     },
-    implementation = _pip_import_impl,
+    implementation = _pip2_import_impl,
 )
 
-"""A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+pip3_import = repository_rule(
+    attrs = {
+        "requirements": attr.label(
+            allow_files = True,
+            mandatory = True,
+            single_file = True,
+        ),
+        "_script": attr.label(
+            executable = True,
+            default = Label("//tools:piptool.par"),
+            cfg = "host",
+        ),
+    },
+    implementation = _pip3_import_impl,
+)
 
-This rule imports a <code>requirements.txt</code> file and generates a new
+"""Rules for importing <code>requirements.txt</code> dependencies into Bazel.
+
+These rules import a <code>requirements.txt</code> file and generate a new
 <code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
 pattern:
-<pre><code>pip_import(
+<pre><code># Use pip3_import to force Python 3.
+pip_import(
     name = "foo",
     requirements = ":requirements.txt",
 )
