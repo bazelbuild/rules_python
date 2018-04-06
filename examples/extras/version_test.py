@@ -19,7 +19,7 @@ import unittest
 class VersionTest(unittest.TestCase):
 
   def test_version(self):
-    self.assertEqual(pip.__version__, '9.0.1')
+    self.assertEqual(pip.__version__, '9.0.3')
 
 
 if __name__ == '__main__':
