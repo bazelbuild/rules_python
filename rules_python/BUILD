@@ -35,6 +35,7 @@ py_test(
         "@google_cloud_language_whl//file",
         "@grpc_whl//file",
         "@mock_whl//file",
+        "@wheel_0_31_1_whl//file",
     ],
     deps = [
         ":whl",

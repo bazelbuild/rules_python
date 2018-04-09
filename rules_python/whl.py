@@ -16,9 +16,81 @@
 import argparse
 import json
 import os
-import pkg_resources
 import re
+import rfc822
+import sys
 import zipfile
+
+from pkg_resources._vendor.packaging import markers
+import pkg_resources
+
+def recurse_split_extra(parsed_parts):
+  extra = ''
+  remaining = []
+
+  i = 0
+  for part in parsed_parts:
+    if isinstance(part, list):
+      # parenthesized expressions are lists
+      sub_extra, sub_remaining = recurse_split_extra(part)
+      if sub_extra != '':
+        assert extra == ''
+        extra = sub_extra
+      remaining.append(sub_remaining)
+    elif isinstance(part, tuple):
+      if isinstance(part[0], markers.Variable) and part[0].value == 'extra':
+        # Found the extra part: parse it and skip it
+        op = part[1]
+        value = part[2]
+        assert isinstance(op, markers.Op) and op.value == '=='
+        assert isinstance(value, markers.Value)
+        assert len(value.value) > 0
+        assert extra == ''
+        extra = value.value
+
+        # if the previous item is now a dangling boolean operator: trim it
+        if len(remaining) > 0 and isinstance(remaining[-1], basestring):
+          remaining = remaining[:-1]
+      else:
+        remaining.append(part)
+    elif isinstance(part, basestring):
+      # must be an operator: just append it
+      remaining.append(part)
+    else:
+      raise Exception('unhandled part: ' + repr(part))
+
+  # if the first item is a dangling boolean operator: trim it
+  if len(remaining) > 0 and isinstance(remaining[0], basestring):
+    remaining = remaining[1:]
+  return extra, remaining
+
+def recurse_str(parsed_parts):
+  out = ''
+  for part in parsed_parts:
+    if isinstance(part, list):
+      out += '(' + recurse_str(part) + ')'
+    elif isinstance(part, tuple):
+      out += ' '.join(p.serialize() for p in part)
+    elif isinstance(part, basestring):
+      out += ' ' + part + ' '
+    else:
+      raise Exception('unhandled part: ' + repr(part))
+  return out
+
+
+def split_extra_from_environment_marker(environment_marker):
+  '''
+  Splits an environment marker into (extra, remaining environment). It parses the expression,
+  then finds the "extra==X" clause. That clause is removed, and the expression is serialized.
+  '''
+
+  marker = markers.Marker(environment_marker)
+  extra, remaining = recurse_split_extra(marker._markers)
+
+  # rebuild the string
+  environment_string = recurse_str(remaining)
+
+  return extra, environment_string
 
 
 class Wheel(object):
@@ -66,7 +138,7 @@ class Wheel(object):
           pass
       # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
       with whl.open(self._dist_info() + '/METADATA') as f:
-        return self._parse_metadata(f.read().decode("utf-8"))
+        return self._parse_metadata(f)
 
   def name(self):
     return self.metadata().get('name')
@@ -105,12 +177,52 @@ class Wheel(object):
     with zipfile.ZipFile(self.path(), 'r') as whl:
       whl.extractall(directory)
 
-  # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
-  def _parse_metadata(self, content):
-    # TODO: handle fields other than just name
-    name_pattern = re.compile('Name: (.*)')
-    return { 'name': name_pattern.search(content).group(1) }
+  # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0566/
+  def _parse_metadata(self, file_object):
+    # the METADATA file is in PKG-INFO format, which is a sequence of RFC822 headers:
+    # https://www.python.org/dev/peps/pep-0241/
+    message = rfc822.Message(file_object)
 
+    # Requires-Dist format:
+    # https://packaging.python.org/specifications/core-metadata/#requires-dist-multiple-use
+    requires_extra = {}
+    extras = set()
+    for header in message.getallmatchingheaders('Requires-Dist'):
+      header_parts = header.strip().split(':', 2)
+      specification = header_parts[1].strip()
+
+      package_and_version = specification
+      environment_marker = ''
+      extra = ''
+      if ';' in specification:
+        parts = specification.split(';', 2)
+        package_and_version = parts[0].strip()
+        environment_marker = parts[1].strip()
+
+        extra, environment_marker = split_extra_from_environment_marker(environment_marker)
+
+      if extra != '':
+        extras.add(extra)
+      key = (extra, environment_marker)
+      requires = requires_extra.get(key, [])
+      requires.append(package_and_version)
+      requires_extra[key] = requires
+
+    run_requires = []
+    for (extra, environment_marker), requires in requires_extra.items():
+      value = {'requires': requires}
+      if extra:
+        value['extra'] = extra
+      if environment_marker:
+        value['environment'] = environment_marker
+      run_requires.append(value)
+
+    return {
+      'name': message['Name'],
+      'version': message['Version'],
+      'run_requires': run_requires,
+      'extras': list(extras),
+    }
 
 parser = argparse.ArgumentParser(
     description='Unpack a WHL file as a py_library.')
