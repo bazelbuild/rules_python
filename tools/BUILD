@@ -16,15 +16,20 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 # This is generated and updated by ./update_tools.sh
-exports_files(["piptool.par", "whltool.par"])
+exports_files([
+    "piptool.par",
+    "piptool_wrapper.py",
+    "whltool.par" +
+    "whltool_wrapper.py",
+])
 
-py_test(
-    name = "par_test",
-    srcs = ["par_test.py"],
-    data = [
-        "//rules_python:piptool.par",
-        "//rules_python:whltool.par",
-        ":piptool.par",
-        ":whltool.par",
-    ],
-)
+#py_test(
+#    name = "par_test",
+#    srcs = ["par_test.py"],
+#    data = [
+#        ":piptool.par",
+#        ":whltool.par",
+#        "//rules_python:piptool.par",
+#        "//rules_python:whltool.par",
+#    ],
+#)

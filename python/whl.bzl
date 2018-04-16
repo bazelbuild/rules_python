@@ -44,7 +44,7 @@ whl_library = repository_rule(
         "extras": attr.string_list(),
         "_script": attr.label(
             executable = True,
-            default = Label("//tools:whltool.par"),
+            default = Label("//tools:whltool_wrapper.py"),
             cfg = "host",
         ),
     },
