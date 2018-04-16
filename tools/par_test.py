@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 import difflib
 import hashlib
 import os
@@ -21,6 +23,13 @@ import zipfile
 
 def TestData(name):
   return os.path.join(os.environ['TEST_SRCDIR'], 'io_bazel_rules_python', name)
+
+
+print('================')
+with open(TestData('rules_python/piptool')) as f:
+    content = f.read()
+    print(content)
+print('================')
 
 
 def _format_toc(filename):
