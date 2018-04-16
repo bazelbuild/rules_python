@@ -16,6 +16,18 @@
 
 set -euo pipefail
 
-bazel build //rules_python:piptool.par //rules_python:whltool.par
-cp bazel-bin/rules_python/piptool.par tools/piptool.par
-cp bazel-bin/rules_python/whltool.par tools/whltool.par
+usage() {
+  echo "Usage: $0 [--nodocker]" 1>&2
+  exit 1
+}
+
+if [ "$#" -eq 0 ] ; then
+  docker build --no-cache -f tools/update_tools/Dockerfile --tag rules_python:update_tools .
+  docker run -v"$PWD":/opt/rules_python_source rules_python:update_tools
+elif [ "$#" -eq 1 -a "$1" == "--nodocker" ] ; then
+  bazel build //rules_python:piptool.par //rules_python:whltool.par
+  cp bazel-bin/rules_python/piptool.par tools/piptool.par
+  cp bazel-bin/rules_python/whltool.par tools/whltool.par
+else
+  usage
+fi
