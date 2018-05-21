@@ -87,7 +87,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--name', action='store',
                     help=('The namespace of the import.'))
 
-parser.add_argument('--input', action='store',
+parser.add_argument('--input', action='store', nargs='+',
                     help=('The requirements.txt file to import.'))
 
 parser.add_argument('--output', action='store',
@@ -154,7 +154,8 @@ def main():
   args = parser.parse_args()
 
   # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
-  if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
+  if pip_main(["wheel", "-w", args.directory] + [p for x in [
+      ('-r',  i) for i in args.input] for p in x]):
     sys.exit(1)
 
   # Enumerate the .whl files we downloaded.
@@ -219,7 +220,7 @@ def requirement(name):
   if name_key not in _requirements:
     fail("Could not find pip-provided dependency: '%s'" % name)
   return _requirements[name_key]
-""".format(input=args.input,
+""".format(input=" ".join(args.input),
            whl_libraries='\n'.join(map(whl_library, whls)) if whls else "pass",
            mappings=whl_targets))
 
