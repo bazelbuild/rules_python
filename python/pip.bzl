@@ -23,13 +23,24 @@ def _pip_import_impl(repository_ctx):
   repository_ctx.file("BUILD", "")
 
   # To see the output, pass: quiet=False
-  result = repository_ctx.execute([
+  args = [
     "python", repository_ctx.path(repository_ctx.attr._script),
     "--name", repository_ctx.attr.name,
     "--input", repository_ctx.path(repository_ctx.attr.requirements),
     "--output", repository_ctx.path("requirements.bzl"),
     "--directory", repository_ctx.path(""),
-  ])
+  ]
+
+  if repository_ctx.attr.prebuilt:
+    args.extend([
+      "--prebuilt",
+      repository_ctx.path(repository_ctx.attr.prebuilt),
+    ])
+
+  if repository_ctx.attr.generate_prebuilt_and_exit:
+    args.append('--generate-prebuilt-and-exit')
+
+  result = repository_ctx.execute(args)
 
   if result.return_code:
     fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -40,6 +51,14 @@ pip_import = repository_rule(
             allow_files = True,
             mandatory = True,
             single_file = True,
+        ),
+        "prebuilt": attr.label(
+            allow_files = True,
+            mandatory = False,
+            single_file = True,
+        ),
+        "generate_prebuilt_and_exit": attr.bool(
+            default = False,
         ),
         "_script": attr.label(
             executable = True,
