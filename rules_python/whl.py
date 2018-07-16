@@ -83,6 +83,7 @@ class Wheel(object):
     """
     # TODO(mattmoor): Is there a schema to follow for this?
     run_requires = self.metadata().get('run_requires', [])
+    deps = set()
     for requirement in run_requires:
       if requirement.get('extra') != extra:
         # Match the requirements for the extra we're looking for.
@@ -96,7 +97,9 @@ class Wheel(object):
       for entry in requires:
         # Strip off any trailing versioning data.
         parts = re.split('[ ><=()]', entry)
-        yield parts[0]
+        deps.add(parts[0])
+
+    return deps
 
   def extras(self):
     return self.metadata().get('extras', [])
@@ -105,11 +108,20 @@ class Wheel(object):
     with zipfile.ZipFile(self.path(), 'r') as whl:
       whl.extractall(directory)
 
-  # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
+  # _parse_metadata parses METADATA files according to PEP 314, 345, and 566.
   def _parse_metadata(self, content):
-    # TODO: handle fields other than just name
+    # TODO: handle more fields
     name_pattern = re.compile('Name: (.*)')
-    return { 'name': name_pattern.search(content).group(1) }
+    name = name_pattern.search(content).group(1),
+
+    lines = content.splitlines()
+    requires_pattern = re.compile('(Requires|Requires-Dist): (.*)')
+    requires = [ m.group(2) for m in [ requires_pattern.search(l) for l in lines ] if m ]
+
+    return { 
+            'name': name,
+            'run_requires': [{'requires': requires}],
+            }
 
 
 parser = argparse.ArgumentParser(
