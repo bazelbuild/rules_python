@@ -49,11 +49,19 @@ _shared_attrs = {
 }
 
 def _pip_import_impl(repository_ctx):
-    _shared_pip_import_impl("python2", repository_ctx)
+    _shared_pip_import_impl("python", repository_ctx)
 
 pip_import = repository_rule(
     attrs = _shared_attrs,
     implementation = _pip_import_impl,
+)
+
+def _pip2_import_impl(repository_ctx):
+    _shared_pip_import_impl("python2", repository_ctx)
+
+pip2_import = repository_rule(
+    attrs = _shared_attrs,
+    implementation = _pip2_import_impl,
 )
 
 def _pip3_import_impl(repository_ctx):
