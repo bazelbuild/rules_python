@@ -6,7 +6,7 @@ updated: 2018-11-02
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
-  - TBD
+  - [mrovner@](https://github.com/mrovner)
 discussion thread: [bazel #6583](https://github.com/bazelbuild/bazel/issues/6583)
 ---
 
