@@ -14,7 +14,7 @@ discussion thread: [bazel #6583](https://github.com/bazelbuild/bazel/issues/6583
 
 ## Abstract
 
-The "Python mode" configuration value controls whether Python 2 or Python 3 is used to run Python targets built by Bazel. This doc reviews the existing mechanisms for setting the Python mode (the "tri-state model") and describes a simplified mechanism that should replace it (the "boolean model").
+The "Python mode" configuration value controls whether Python 2 or Python 3 is used to run Python targets built by Bazel. This design document reviews the existing mechanisms for setting the Python mode (the "tri-state model") and describes a simplified mechanism that should replace it (the "boolean model").
 
 Links to Github issues are given where applicable. See also [bazel #6444](https://github.com/bazelbuild/bazel/issues/6444) for a tracking list of Python mode issues.
 
@@ -76,7 +76,7 @@ Since `py_binary` will now change the mode as needed, there is no need to explic
 
 ### Output roots
 
-Since there are only two modes, there need only be two output roots. This avoids action conflicts without any fancy tricks.
+Since there are only two modes, there need only be two output roots. This avoids action conflicts without resorting to creating a redundant third output root, or trying to coerce two similar-but-distinct modes to map onto the same output root.
 
 Since the mode is not being reset across data dependencies, it is possible that compared to the tri-value model, the boolean model causes some data dependencies to be built in two configurations instead of just one. This is considered to be an acceptable tradeoff of the boolean model. Note that there exist other cases where redundant rebuilding occurs regardless of which model we use.
 
