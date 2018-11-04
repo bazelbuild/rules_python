@@ -72,8 +72,7 @@ http_file(
     # From https://pypi.python.org/pypi/futures
     url = ("https://pypi.python.org/packages/a6/1c/" +
            "72a18c8c7502ee1b38a604a5c5243aa8c2a64f4bba4e6631b1b8972235dd/" +
-           "futures-3.1.1-py2-none-any.whl"),
-)
+           "futures-3.1.1-py2-none-any.whl"),)
 
 http_file(
     name = "futures_2_2_0_whl",
@@ -100,6 +99,15 @@ http_file(
     url = ("https://pypi.python.org/packages/6e/86/" +
            "cae57e4802e72d9e626ee5828ed5a646cf4016b473a4a022f1038dba3460/" +
            "google_cloud_language-0.29.0-py2.py3-none-any.whl"),
+)
+
+http_file(
+    name = "pyspark_tar",
+    sha256 = "8680dcbc98e95a32f89bea70e114e139eae3543c094f063d548863522bdc4370",
+    # From https://pypi.python.org/pypi/grpcio/1.6.0
+	url = ("https://files.pythonhosted.org/packages/65/d7/" +
+		   "2a3b0de1178478fc00201b083d50b3d2d1affe4eac92dad3408219c5c607" + 
+		   "/pyspark-2.1.2.tar.gz"),
 )
 
 # Imports for examples

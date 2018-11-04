@@ -35,10 +35,13 @@ py_test(
         "@google_cloud_language_whl//file",
         "@grpc_whl//file",
         "@mock_whl//file",
+		"@pyspark_tar//file",
     ],
     deps = [
         ":whl",
         requirement("mock"),
+        requirement("pip"),
+        requirement("wheel"),
     ],
 )
 
