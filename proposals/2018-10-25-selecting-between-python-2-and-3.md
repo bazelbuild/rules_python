@@ -1,6 +1,6 @@
 ---
 title: Selecting Between Python 2 and 3
-status: Draft
+status: Under review
 created: 2018-10-25
 updated: 2018-11-02
 authors:
