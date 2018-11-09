@@ -14,9 +14,10 @@
 
 import os
 import unittest
+import pip
 
-from mock import patch
-
+from stat import *
+from mock import patch 
 from rules_python import whl
 
 
@@ -115,6 +116,21 @@ class WheelTest(unittest.TestCase):
                      'googleapis-common-protos[grpc]']
     self.assertEqual(set(wheel.dependencies()),
                      set(expected_deps))
+
+  @patch('platform.python_version', return_value='2.7.13')
+  def test_expand_executable(self, *args):
+      td = TestData('pyspark_tar/file/pyspark-2.1.2.tar.gz')
+      pip.main(["wheel", "-w", os.path.dirname(td), td])
+
+      td = TestData('pyspark_tar/file/' + 
+                    'pyspark-2.1.2-py2.py3-none-any.whl')
+      wheel = whl.Wheel(td)
+      wheel.expand(TestData('pyspark_tar/file/expand'))
+
+      attributes = os.stat(TestData('pyspark_tar/file/expand/pyspark/bin/spark-submit'))
+
+      print attributes
+      self.assertEqual(attributes[0] & S_IXUSR, S_IXUSR)
 
 if __name__ == '__main__':
   unittest.main()

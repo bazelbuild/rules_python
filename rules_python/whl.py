@@ -19,7 +19,9 @@ import os
 import pkg_resources
 import re
 import zipfile
+from stat import S_IXUSR
 
+ZIP_UNIX_SYSTEM = 3
 
 class Wheel(object):
 
@@ -103,7 +105,15 @@ class Wheel(object):
 
   def expand(self, directory):
     with zipfile.ZipFile(self.path(), 'r') as whl:
-      whl.extractall(directory)
+      #FROM: https://stackoverflow.com/questions/42326428/zipfile-in-python-file-permission
+        for info in whl.infolist():
+            extracted_path = whl.extract(info, directory)
+
+            if info.create_system == ZIP_UNIX_SYSTEM and os.path.isfile(extracted_path):
+                unix_attributes = info.external_attr >> 16
+                if unix_attributes & S_IXUSR:
+                    os.chmod(extracted_path, os.stat(extracted_path).st_mode | S_IXUSR)
+
 
   # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
   def _parse_metadata(self, content):
