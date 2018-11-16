@@ -27,7 +27,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 git_repository(
     name = "io_bazel_rules_sass",
-    commit = "8b61ad6953fde55031658e1731c335220f881369",  # Taken from skydoc's WORKSPACE
+    # Same commit as Skydoc uses in its own WORKSPACE.
+    commit = "8b61ad6953fde55031658e1731c335220f881369",  # 2018-10-26
     remote = "https://github.com/bazelbuild/rules_sass.git",
 )
 
