@@ -13,15 +13,18 @@
 # limitations under the License.
 """The piptool module imports pip requirements into Bazel rules."""
 
+from __future__ import print_function
+
 import argparse
 import atexit
 import json
 import os
-import pkgutil
 import pkg_resources
+import pkgutil
 import re
 import shutil
 import sys
+import tarfile
 import tempfile
 import zipfile
 
@@ -81,6 +84,49 @@ def pip_main(argv):
 
 from rules_python.whl import Wheel
 
+def unpack_prebuilt(prebuilt_path, extract_directory, requirements_file):
+  """
+  Unpacks the prebuilt tarball in the specified directory and verifies that the
+  requirements.txt in the package matches the one specified in the workspace.
+
+  Returns True on success otherwise False.
+  """
+  tar = tarfile.open(prebuilt_path)
+  tar.extractall(extract_directory)
+
+  repo_requirements_file = open(requirements_file).read()
+  tar_requirements_file = open(os.path.join(extract_directory, 'requirements.txt')).read()
+
+  if tar_requirements_file != repo_requirements_file:
+      print(
+        'requirements.txt file in the prebuilt archive does not match the one '
+        'specified in the repository. Regenerate the tarfile by setting '
+        '`generate_prebuilt_and_exit` on the `pip_import()` target and try '
+        'again.',
+        file=sys.stderr,
+      )
+      return False
+
+  return True
+
+def generate_prebuilt(extract_directory, requirements_file):
+  if pip_main(["wheel", "-w", extract_directory, "-r", requirements_file]):
+    sys.exit(1)
+
+  prebuilt_path = os.path.join(extract_directory, 'prebuilt.tar.gz')
+
+  with tarfile.open(prebuilt_path, 'w:gz') as tar:
+    for whl in list_whls(extract_directory):
+      tar.add(whl, arcname=os.path.basename(whl))
+
+    tar.add(requirements_file, arcname='requirements.txt')
+
+  print(
+    'Created prebuilt at: {}'.format(os.path.join(os.getcwd(), prebuilt_path)),
+    file=sys.stderr,
+  )
+
+
 parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')
 
@@ -95,6 +141,20 @@ parser.add_argument('--output', action='store',
 
 parser.add_argument('--directory', action='store',
                     help=('The directory into which to put .whl files.'))
+
+parser.add_argument('--prebuilt', action='store',
+                    help=('An optional tar.gz file to use in place of installation via pip'))
+
+parser.add_argument('--generate-prebuilt-and-exit', action='store_true',
+                    help=('If set, generates a prebuilt archive and exit.'))
+
+def list_whls(directory):
+  """ Enumerate .whl files in the specified directory. """
+  dir = directory + '/'
+  for root, unused_dirnames, filenames in os.walk(dir):
+    for fname in filenames:
+      if fname.endswith('.whl'):
+        yield os.path.join(root, fname)
 
 def determine_possible_extras(whls):
   """Determines the list of possible "extras" for each .whl
@@ -153,19 +213,18 @@ def determine_possible_extras(whls):
 def main():
   args = parser.parse_args()
 
-  # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
-  if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
+  if args.generate_prebuilt_and_exit:
+    generate_prebuilt(args.directory, args.input)
     sys.exit(1)
 
-  # Enumerate the .whl files we downloaded.
-  def list_whls():
-    dir = args.directory + '/'
-    for root, unused_dirnames, filenames in os.walk(dir):
-      for fname in filenames:
-        if fname.endswith('.whl'):
-          yield os.path.join(root, fname)
+  if args.prebuilt:
+    if not unpack_prebuilt(args.prebuilt, args.directory, args.input):
+      sys.exit(1)
+  # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
+  elif pip_main(["wheel", "-w", args.directory, "-r", args.input]):
+    sys.exit(1)
 
-  whls = [Wheel(path) for path in list_whls()]
+  whls = [Wheel(path) for path in list_whls(args.directory)]
   possible_extras = determine_possible_extras(whls)
 
   def whl_library(wheel):
