@@ -15,7 +15,7 @@
 
 import argparse
 import collections
-import email.parser
+import rfc822
 import json
 import os
 import pkg_resources
@@ -112,14 +112,16 @@ class Wheel(object):
 
   # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
   def _parse_metadata(self, content):
+    def get_header_value(header):
+      return header.strip().split(':', 2)[1].strip()
     metadata = {}
-    pkg_info = email.parser.Parser().parse(content)
+    pkg_info = rfc822.Message(content)
     metadata['name'] = pkg_info.get('Name')
-    extras = pkg_info.get_all('Provides-Extra')
+    extras = [get_header_value(h) for h in pkg_info.getallmatchingheaders('Provides-Extra')]
     if extras:
       metadata['extras'] = list(set(extras))
 
-    reqs_dist = pkg_info.get_all('Requires-Dist') or []
+    reqs_dist = [get_header_value(h) for h in pkg_info.getallmatchingheaders('Requires-Dist')]
     requires = collections.defaultdict(set)
     for value in sorted(reqs_dist):
       extra_match = EXTRA_RE.search(value)
