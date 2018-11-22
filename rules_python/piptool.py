@@ -64,6 +64,7 @@ extract_packages(['pip', 'setuptools', 'wheel'])
 saved_sys_path = sys.path
 sys.path = sys.path[:]
 import pip
+from pip._internal import main as _pip_main
 sys.path = saved_sys_path
 
 import setuptools
@@ -72,12 +73,12 @@ import wheel
 
 def pip_main(argv):
     # Extract the certificates from the PAR following the example of get-pip.py
-    # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
+    # https://github.com/pypa/get-pip/blob/b3d0f6c0faa8e02322efb00715f8460965eb5d5f/3.3/get-pip.py
     cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
     with open(cert_path, "wb") as cert:
-      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
+      cert.write(pkgutil.get_data("pip._vendor.certifi", "cacert.pem"))
     argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
-    return pip.main(argv)
+    return _pip_main(argv)
 
 from rules_python.whl import Wheel
 
@@ -156,7 +157,7 @@ def determine_possible_extras(whls):
 def main():
   args = parser.parse_args()
 
-  # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
+  # https://github.com/pypa/pip/blob/6af9de97bbd2427f82942e476c590a2db22ea1ff/src/pip/_internal/__init__.py#L54
   if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
     sys.exit(1)
 
