@@ -13,25 +13,25 @@
 # limitations under the License.
 
 def py_library(*args, **kwargs):
-  """See the Bazel core py_library documentation.
+    """See the Bazel core py_library documentation.
 
-  [available here](
-  https://docs.bazel.build/versions/master/be/python.html#py_library).
-  """
-  native.py_library(*args, **kwargs)
+    [available here](
+    https://docs.bazel.build/versions/master/be/python.html#py_library).
+    """
+    native.py_library(*args, **kwargs)
 
 def py_binary(*args, **kwargs):
-  """See the Bazel core py_binary documentation.
+    """See the Bazel core py_binary documentation.
 
-  [available here](
-  https://docs.bazel.build/versions/master/be/python.html#py_binary).
-  """
-  native.py_binary(*args, **kwargs)
+    [available here](
+    https://docs.bazel.build/versions/master/be/python.html#py_binary).
+    """
+    native.py_binary(*args, **kwargs)
 
 def py_test(*args, **kwargs):
-  """See the Bazel core py_test documentation.
+    """See the Bazel core py_test documentation.
 
-  [available here](
-  https://docs.bazel.build/versions/master/be/python.html#py_test).
-  """
-  native.py_test(*args, **kwargs)
+    [available here](
+    https://docs.bazel.build/versions/master/be/python.html#py_test).
+    """
+    native.py_test(*args, **kwargs)
