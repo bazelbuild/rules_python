@@ -28,7 +28,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 git_repository(
     name = "io_bazel_rules_sass",
     # Same commit as Skydoc uses in its own WORKSPACE.
-    commit = "8b61ad6953fde55031658e1731c335220f881369",  # 2018-10-26
+    commit = "8ccf4f1c351928b55d5dddf3672e3667f6978d60",  # 2018-11-23
     remote = "https://github.com/bazelbuild/rules_sass.git",
 )
 
@@ -52,7 +52,7 @@ sass_repositories()
 
 git_repository(
     name = "io_bazel_skydoc",
-    commit = "77e5399258f6d91417d23634fce97d73b40cf337",  # 2018-10-29
+    commit = "1cdb612e31448c2f6eb25b8aa67d406152275482",  # 2018-11-27
     remote = "https://github.com/bazelbuild/skydoc.git",
 )
 
