@@ -18,6 +18,7 @@ import json
 import os
 import pkg_resources
 import re
+import sys
 import zipfile
 
 
@@ -134,6 +135,20 @@ def main():
   # Extract the files into the current directory
   whl.expand(args.directory)
 
+  test_path = os.path.join(args.directory, 'import_test.sh')
+  with open(test_path, 'w') as f:
+    f.write("""#!/bin/bash
+set -euo pipefail
+cd $(dirname "${{TEST_BINARY}}")
+{python_interpreter} -c 'import {name}'
+""".format(
+    python_interpreter=sys.executable,
+    name=whl.name(),
+  ))
+  mode = os.stat(test_path).st_mode
+  mode |= (mode & 0o444) >> 2    # copy R bits to X
+  os.chmod(test_path, mode)
+
   with open(os.path.join(args.directory, 'BUILD'), 'w') as f:
     f.write("""
 package(default_visibility = ["//visibility:public"])
@@ -148,6 +163,13 @@ py_library(
     # search path for anything that depends on this.
     imports = ["."],
     deps = [{dependencies}],
+)
+
+sh_test(
+    name = "import_test",
+    data = [":pkg"],
+    size = "small",
+    srcs = ["import_test.sh"],
 )
 {extras}""".format(
   requirements=args.requirements,
