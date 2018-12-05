@@ -2,7 +2,7 @@
 title: Selecting Between Python 2 and 3
 status: Under review
 created: 2018-10-25
-updated: 2018-11-02
+updated: 2018-12-05
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -70,6 +70,8 @@ Under the boolean model, `null` is eliminated as a valid value for the Python mo
 
 Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified.
 
+Instead of directly inspecting a command-line flag, `config_setting`s should depend on a new canonical Starlark-defined feature flag. The feature flag's value is always one of `"PY2"` or `"PY3"`.
+
 ### Data dependencies
 
 Since `py_binary` will now change the mode as needed, there is no need to explicitly reset the mode to a particular value (`null`) when crossing `data` attributes. Python 3 targets can freely depend on Python 2 targets and vice versa, so long as the dependency is not via the `deps` attribute in a way that violates `srcs_version` validation (see below).
@@ -78,7 +80,7 @@ Since `py_binary` will now change the mode as needed, there is no need to explic
 
 Since there are only two modes, there need only be two output roots. This avoids action conflicts without resorting to creating a redundant third output root, or trying to coerce two similar-but-distinct modes to map onto the same output root.
 
-Since the mode is not being reset across data dependencies, it is possible that compared to the tri-value model, the boolean model causes some data dependencies to be built in two configurations instead of just one. This is considered to be an acceptable tradeoff of the boolean model. Note that there exist other cases where redundant rebuilding occurs regardless of which model we use.
+Since the mode is not being reset across data dependencies, it is possible that compared to the tri-state model, the boolean model causes some data dependencies to be built in two configurations instead of just one. This is considered to be an acceptable tradeoff of the boolean model. Note that there exist other cases where redundant rebuilding occurs regardless of which model we use.
 
 ### Libraries at the top level
 
@@ -86,7 +88,7 @@ We want to be able to build a `py_library` at the top level without having to sp
 
 We add two new boolean fields to a provider returned by `py_library`. This bools correspond to whether or not there are any Python 2-only and Python 3-only sources (respectively) in the library's transitive closure. It is easy to compute these bits as boolean ORs as the providers are merged. `py_binary` simply checks these bits against its own Python mode.
 
-It is possible that a library is only ever used by Python 3 binaries, but when the library is built as part of a `bazel build :all` command it gets the Python 2 mode by default. This happens even if the library is annotated with `srcs_version` set to `PY3`. In general this should cause no harm aside from some repeated build work.
+It is possible that a library is only ever used by Python 3 binaries, but when the library is built as part of a `bazel build :all` command it gets the Python 2 mode by default. This happens even if the library is annotated with `srcs_version` set to `PY3`. Generally this should cause no harm aside from some repeated build work. In the future we can add the same version attribute that `py_binary` has to `py_library`, so the target definition can be made unambiguous.
 
 Aside from failures due to validation, there is currently a bug whereby building a `PY2` library in `PY3` mode can invoke a stub wrapper that fails ([bazel #1393](https://github.com/bazelbuild/bazel/issues/1393)). We will remove the stub and the behavior that attempted to call it.
 
@@ -94,9 +96,9 @@ Aside from failures due to validation, there is currently a bug whereby building
 
 The attribute `default_python_version` of `py_binary` is renamed to `python_version`. The flag `--force_python` is renamed to `--python_version`. (An alternative naming scheme would have been to use "python_major_version", but this is more verbose and inconsistent with `srcs_version`.)
 
-The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target will never fail, regardless of the Python mode. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
+The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-`select()` is able to inspect the value of `"python_version"`, and it will always match either "PY2" or "PY3".
+A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `feature_flags` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is not allowed to use `"force_python"` in a `config_setting`.
 
 The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`.
 
@@ -105,6 +107,8 @@ All of these new API and behavioral changes are guarded behind a flag `--experim
 For deprecation purposes, a flag `--experimental_no_force_python` is introduced, which will later be renamed `--incompatible_no_force_python`. When enabled, it is an error to set the `--force_python` flag, set the `default_python_version` attribute, or read the `"force_python"` state in a `config_setting`.
 
 Strictly speaking, Python 3 support is currently marked "experimental" in documentation, so in theory we may be able to make these changes without introducing new incompatible and experimental flags. However these changes will likely affect many users of the Python rules, so flags would be more user-friendly. Bazel is also transitioning to a policy wherein all experimental APIs must be flag-guarded, regardless of any disclaimers in their documentation.
+
+The changes to `select()`-ing on the Python version are blocked by 1) completion of the implementation of feature flags, and 2) adding a mechanism to prohibit a given native flag from appearing in a `config_setting`.
 
 ## Changelog
 
