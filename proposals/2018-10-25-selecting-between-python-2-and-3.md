@@ -70,8 +70,6 @@ Under the boolean model, `null` is eliminated as a valid value for the Python mo
 
 Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified. The current version will be inspectable using `config_setting` to read a setting whose value is always one of `"PY2"` or `"PY3"`.
 
-Instead of directly inspecting a command-line flag, `config_setting`s should depend on a new canonical Starlark-defined feature flag. The feature flag's value is always one of `"PY2"` or `"PY3"`.
-
 ### Data dependencies
 
 Since `py_binary` will now change the mode as needed, there is no need to explicitly reset the mode to a particular value (`null`) when crossing `data` attributes. Python 3 targets can freely depend on Python 2 targets and vice versa, so long as the dependency is not via the `deps` attribute in a way that violates `srcs_version` validation (see below).
