@@ -96,7 +96,7 @@ The attribute `default_python_version` of `py_binary` is renamed to `python_vers
 
 The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `feature_flags` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is not allowed to use `"force_python"` in a `config_setting`.
+A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is not allowed to use `"force_python"` in a `config_setting`.
 
 The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`.
 
