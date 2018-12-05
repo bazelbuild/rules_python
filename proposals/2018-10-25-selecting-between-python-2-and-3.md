@@ -68,9 +68,7 @@ In the tri-state model, this can be addressed by allowing `py_library` to change
 
 Under the boolean model, `null` is eliminated as a valid value for the Python mode. Instead, the mode will immediately default to either `PY2` or `PY3`. The mode is no longer sticky, but changes as needed whenever a new `py_binary` target is reached.
 
-Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified.
-
-Instead of directly inspecting a command-line flag, `config_setting`s should depend on a new canonical Starlark-defined feature flag. The feature flag's value is always one of `"PY2"` or `"PY3"`.
+Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified. The current version will be inspectable using `config_setting` to read a setting whose value is always one of `"PY2"` or `"PY3"`.
 
 ### Data dependencies
 
@@ -116,3 +114,4 @@ Date         | Change
 ------------ | ------
 2018-10-25   | Initial version
 2018-11-02   | Refine migration path
+2018-12-05   | Refine plan for `select()`
