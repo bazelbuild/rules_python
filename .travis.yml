@@ -11,6 +11,13 @@ addons:
         key_url: 'https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg'
     packages:
       - bazel
+matrix:
+  include:
+    - python: 3.7
+      language: python
+      dist: xenial  # travis-ci/travis-ci#9069
+      install: pip install flake8
+      script: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
 
 install:
   - go get -u github.com/bazelbuild/buildifier/buildifier
