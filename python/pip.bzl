@@ -23,18 +23,21 @@ def _pip_import_impl(repository_ctx):
     repository_ctx.file("BUILD", "")
 
     # To see the output, pass: quiet=False
-    result = repository_ctx.execute([
-        "python",
-        repository_ctx.path(repository_ctx.attr._script),
-        "--name",
-        repository_ctx.attr.name,
-        "--input",
-        repository_ctx.path(repository_ctx.attr.requirements),
-        "--output",
-        repository_ctx.path("requirements.bzl"),
-        "--directory",
-        repository_ctx.path(""),
-    ])
+    result = repository_ctx.execute(
+        [
+            "python",
+            repository_ctx.path(repository_ctx.attr._script),
+            "--name",
+            repository_ctx.attr.name,
+            "--input",
+            repository_ctx.path(repository_ctx.attr.requirements),
+            "--output",
+            repository_ctx.path("requirements.bzl"),
+            "--directory",
+            repository_ctx.path(""),
+        ]  + repository_ctx.attr.extra_args,
+        environment = repository_ctx.attr.environment,
+      )
 
     if result.return_code:
         fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -45,6 +48,8 @@ pip_import = repository_rule(
             mandatory = True,
             allow_single_file = True,
         ),
+        "environment": attr.string_dict(),
+        "extra_args": attr.string_list(),
         "_script": attr.label(
             executable = True,
             default = Label("//tools:piptool.par"),

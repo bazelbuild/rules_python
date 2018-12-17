@@ -151,10 +151,10 @@ def determine_possible_extras(whls):
   }
 
 def main():
-  args = parser.parse_args()
+  args, unknown = parser.parse_known_args()
 
   # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
-  if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
+  if pip_main(["wheel", "-w", args.directory] + unknown + ["-r", args.input]):
     sys.exit(1)
 
   # Enumerate the .whl files we downloaded.
