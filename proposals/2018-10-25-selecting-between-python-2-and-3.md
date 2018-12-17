@@ -96,7 +96,7 @@ The attribute `default_python_version` of `py_binary` is renamed to `python_vers
 
 The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is not allowed to use `"force_python"` in a `config_setting`.
+A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is deprecated and unsupported to use `"force_python"` or `"python_version"` in a `config_setting`; ideally that will be disallowed because it can lead to action conflicts, but currently there's no mechanism to prevent it.
 
 The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`.
 
@@ -106,12 +106,10 @@ For deprecation purposes, a flag `--experimental_no_force_python` is introduced,
 
 Strictly speaking, Python 3 support is currently marked "experimental" in documentation, so in theory we may be able to make these changes without introducing new incompatible and experimental flags. However these changes will likely affect many users of the Python rules, so flags would be more user-friendly. Bazel is also transitioning to a policy wherein all experimental APIs must be flag-guarded, regardless of any disclaimers in their documentation.
 
-The changes to `select()`-ing on the Python version are blocked by 1) completion of the implementation of feature flags, and 2) adding a mechanism to prohibit a given native flag from appearing in a `config_setting`.
-
 ## Changelog
 
 Date         | Change
 ------------ | ------
 2018-10-25   | Initial version
 2018-11-02   | Refine migration path
-2018-12-05   | Refine plan for `select()`
+2018-12-17   | Refine plan for `select()`
