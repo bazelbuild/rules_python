@@ -2,7 +2,7 @@
 title: Selecting Between Python 2 and 3
 status: Under review
 created: 2018-10-25
-updated: 2018-11-02
+updated: 2018-12-17
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -68,7 +68,7 @@ In the tri-state model, this can be addressed by allowing `py_library` to change
 
 Under the boolean model, `null` is eliminated as a valid value for the Python mode. Instead, the mode will immediately default to either `PY2` or `PY3`. The mode is no longer sticky, but changes as needed whenever a new `py_binary` target is reached.
 
-Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified.
+Since there is no longer a third value corresponding to "uncommitted", a target can no longer tell whether it was set to `PY2` mode explicitly (by a flag or a `py_binary`), or if it was set by default because no mode was specified. The current version will be inspectable using `config_setting` to read a setting whose value is always one of `"PY2"` or `"PY3"`.
 
 ### Data dependencies
 
@@ -78,7 +78,7 @@ Since `py_binary` will now change the mode as needed, there is no need to explic
 
 Since there are only two modes, there need only be two output roots. This avoids action conflicts without resorting to creating a redundant third output root, or trying to coerce two similar-but-distinct modes to map onto the same output root.
 
-Since the mode is not being reset across data dependencies, it is possible that compared to the tri-value model, the boolean model causes some data dependencies to be built in two configurations instead of just one. This is considered to be an acceptable tradeoff of the boolean model. Note that there exist other cases where redundant rebuilding occurs regardless of which model we use.
+Since the mode is not being reset across data dependencies, it is possible that compared to the tri-state model, the boolean model causes some data dependencies to be built in two configurations instead of just one. This is considered to be an acceptable tradeoff of the boolean model. Note that there exist other cases where redundant rebuilding occurs regardless of which model we use.
 
 ### Libraries at the top level
 
@@ -86,7 +86,7 @@ We want to be able to build a `py_library` at the top level without having to sp
 
 We add two new boolean fields to a provider returned by `py_library`. This bools correspond to whether or not there are any Python 2-only and Python 3-only sources (respectively) in the library's transitive closure. It is easy to compute these bits as boolean ORs as the providers are merged. `py_binary` simply checks these bits against its own Python mode.
 
-It is possible that a library is only ever used by Python 3 binaries, but when the library is built as part of a `bazel build :all` command it gets the Python 2 mode by default. This happens even if the library is annotated with `srcs_version` set to `PY3`. In general this should cause no harm aside from some repeated build work.
+It is possible that a library is only ever used by Python 3 binaries, but when the library is built as part of a `bazel build :all` command it gets the Python 2 mode by default. This happens even if the library is annotated with `srcs_version` set to `PY3`. Generally this should cause no harm aside from some repeated build work. In the future we can add the same version attribute that `py_binary` has to `py_library`, so the target definition can be made unambiguous.
 
 Aside from failures due to validation, there is currently a bug whereby building a `PY2` library in `PY3` mode can invoke a stub wrapper that fails ([bazel #1393](https://github.com/bazelbuild/bazel/issues/1393)). We will remove the stub and the behavior that attempted to call it.
 
@@ -94,9 +94,9 @@ Aside from failures due to validation, there is currently a bug whereby building
 
 The attribute `default_python_version` of `py_binary` is renamed to `python_version`. The flag `--force_python` is renamed to `--python_version`. (An alternative naming scheme would have been to use "python_major_version", but this is more verbose and inconsistent with `srcs_version`.)
 
-The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target will never fail, regardless of the Python mode. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
+The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-`select()` is able to inspect the value of `"python_version"`, and it will always match either "PY2" or "PY3".
+A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is deprecated and unsupported to use `"force_python"` or `"python_version"` in a `config_setting`; ideally that will be disallowed because it can lead to action conflicts, but currently there's no mechanism to prevent it.
 
 The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`.
 
@@ -112,3 +112,4 @@ Date         | Change
 ------------ | ------
 2018-10-25   | Initial version
 2018-11-02   | Refine migration path
+2018-12-17   | Refine plan for `select()`
