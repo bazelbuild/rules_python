@@ -102,7 +102,7 @@ A new `select()`-able target is created at `@bazel_tools//tools/python:python_ve
 
 ## Migration and compatibility
 
-A flag `--experimental_better_python_version_mixing` is introduced to gate the new features. When enabled, it makes available the `--force_python` flag, `python_version` attribute, and new `py` provider fields. It also causes Bazel to use the new non-sticky transition semantics and deferred `srcs_version` validation. The old flag and attribute remain available but use the new semantics. When both the old and new flags are present on the command line, or when both the old and new attributes are present on the same target, the new one takes precedence.
+A flag `--experimental_better_python_version_mixing` is introduced to gate the new features. When enabled, it makes available the `--python_version` flag, `python_version` attribute, and new `py` provider fields. It also causes Bazel to use the new non-sticky transition semantics and deferred `srcs_version` validation. The old flag and attribute remain available but use the new semantics. When both the old and new flags are present on the command line, or when both the old and new attributes are present on the same target, the new one takes precedence.
 
 The experimental flag also disallows `select()`-ing on `"force_python"`. Users should first migrate their targets to use `@bazel_tools//tools/python:python_version`, which is made available even without the experimental flag, and which returns the correct mode that a target would be built in under either the old or new semantics.
 
