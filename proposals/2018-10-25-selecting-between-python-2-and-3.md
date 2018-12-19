@@ -2,7 +2,7 @@
 title: Selecting Between Python 2 and 3
 status: Under review
 created: 2018-10-25
-updated: 2018-12-17
+updated: 2018-12-19
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -90,19 +90,23 @@ It is possible that a library is only ever used by Python 3 binaries, but when t
 
 Aside from failures due to validation, there is currently a bug whereby building a `PY2` library in `PY3` mode can invoke a stub wrapper that fails ([bazel #1393](https://github.com/bazelbuild/bazel/issues/1393)). We will remove the stub and the behavior that attempted to call it.
 
-## API changes and backward compatibility
+## API changes
 
 The attribute `default_python_version` of `py_binary` is renamed to `python_version`. The flag `--force_python` is renamed to `--python_version`. (An alternative naming scheme would have been to use "python_major_version", but this is more verbose and inconsistent with `srcs_version`.)
 
 The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-A new `select()`-able target is created at `@bazel_tools//python:python_version`. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that the native `--python_version` flag can migrate to it. It is deprecated and unsupported to use `"force_python"` or `"python_version"` in a `config_setting`; ideally that will be disallowed because it can lead to action conflicts, but currently there's no mechanism to prevent it.
-
 The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`.
 
-All of these new API and behavioral changes are guarded behind a flag `--experimental_better_python_version_mixing`. Both the new and old APIs manipulate the same underlying Python mode. But with the flag enabled, the Python mode behaves the new way even when it is set via the old API. In particular, the Python mode is never `null` even when processing non-Python targets with no top-level flags; in that case the mode will simply be the default value of `--python_version`. Consequently, using `select()` to inspect the mode will always match either `PY2` or `PY3` even when the select is over `"force_python"` rather than `"python_version"`. When both the new and old APIs are given on the same target or as flags on the same command line, the new one takes precedence.
+A new `select()`-able target is created at `@bazel_tools//tools/python:python_version` to return the current Python mode. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. (In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that it can replace the native `--python_version` flag.) It is disallowed to use `"python_version"` in a `config_setting`.
 
-For deprecation purposes, a flag `--experimental_no_force_python` is introduced, which will later be renamed `--incompatible_no_force_python`. When enabled, it is an error to set the `--force_python` flag, set the `default_python_version` attribute, or read the `"force_python"` state in a `config_setting`.
+## Migration and compatibility
+
+A flag `--experimental_better_python_version_mixing` is introduced to gate the new features. When enabled, it makes available the `--python_version` flag, `python_version` attribute, and new `py` provider fields. It also causes Bazel to use the new non-sticky transition semantics and deferred `srcs_version` validation. The old flag and attribute remain available but use the new semantics. When both the old and new flags are present on the command line, or when both the old and new attributes are present on the same target, the new one takes precedence.
+
+The experimental flag also disallows `select()`-ing on `"force_python"`. Users should first migrate their targets to use `@bazel_tools//tools/python:python_version`, which is made available even without the experimental flag, and which returns the correct mode that a target would be built in under either the old or new semantics.
+
+For deprecation purposes, a flag `--experimental_no_force_python` is introduced, which will later be renamed `--incompatible_no_force_python`. When enabled, it is an error to set the `--force_python` flag or `default_python_version` attribute. It also switches `--experimental_better_python_version_mixing` on.
 
 Strictly speaking, Python 3 support is currently marked "experimental" in documentation, so in theory we may be able to make these changes without introducing new incompatible and experimental flags. However these changes will likely affect many users of the Python rules, so flags would be more user-friendly. Bazel is also transitioning to a policy wherein all experimental APIs must be flag-guarded, regardless of any disclaimers in their documentation.
 
@@ -113,3 +117,4 @@ Date         | Change
 2018-10-25   | Initial version
 2018-11-02   | Refine migration path
 2018-12-17   | Refine plan for `select()`
+2018-12-19   | Refine plan for `select()` again
