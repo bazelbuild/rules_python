@@ -2,7 +2,7 @@
 title: Selecting Between Python 2 and 3
 status: Under review
 created: 2018-10-25
-updated: 2019-01-07
+updated: 2019-01-10
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
