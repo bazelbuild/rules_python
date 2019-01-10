@@ -7,4 +7,4 @@ Proposals that impact native code are also indexed by [bazelbuild/proposals](htt
 Last updated | Status        | Title | Author(s)
 ------------ | ------------- | ------| ---------
 2018-11-09   | Draft         | [Customizing the Python Stub Template](https://github.com/bazelbuild/rules_python/blob/master/proposals/2018-11-08-customizing-the-python-stub-template.md) | [brandjon@](https://github.com/brandjon)
-2019-01-07   | Under review  | [Selecting Between Python 2 and 3](https://github.com/bazelbuild/rules_python/blob/master/proposals/2018-10-25-selecting-between-python-2-and-3.md) | [brandjon@](https://github.com/brandjon)
+2019-01-10   | Under review  | [Selecting Between Python 2 and 3](https://github.com/bazelbuild/rules_python/blob/master/proposals/2018-10-25-selecting-between-python-2-and-3.md) | [brandjon@](https://github.com/brandjon)
