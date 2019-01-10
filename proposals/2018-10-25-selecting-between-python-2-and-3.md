@@ -110,9 +110,9 @@ For syntax, the new `--python_version` flag and `python_version` attribute are a
 
 A migration flag `--incompatible_remove_old_python_version_api` makes unavailable the `--force_python` flag and `default_python_version` attribute, and disallows `select()`-ing on `"force_python"` and `"host_force_python"`.
 
-For semantics, a flag `--incompatible_allow_multiple_python_versions` makes Bazel use the new non-sticky version transitions and the deferred `srcs_version` validation. This applies regardless of whether the new or old API is used to specify the Python version. The flag also causes the new `"py"` provider fields to be created.
+For semantics, a flag `--incompatible_allow_python_version_transitions` makes Bazel use the new non-sticky version transitions and the deferred `srcs_version` validation. This applies regardless of whether the new or old API is used to specify the Python version. The flag also causes the new `"py"` provider fields to be created.
 
-Migrating for `--incompatible_remove_old_python_version_api` guarantees that the Python version only ever has two possible values. Migrating for `--incompatible_allow_multiple_python_versions` enables data dependencies across different versions of Python. It is recommended to do the API migration first in order to avoid action conflicts.
+Migrating for `--incompatible_remove_old_python_version_api` guarantees that the Python version only ever has two possible values. Migrating for `--incompatible_allow_python_version_transitions` enables data dependencies across different versions of Python. It is recommended to do the API migration first in order to avoid action conflicts.
 
 Strictly speaking, Python 3 support is currently marked "experimental" in documentation, so in theory we may be able to make these changes without introducing new incompatible and experimental flags. However these changes will likely affect many users of the Python rules, so flags would be more user-friendly. Bazel is also transitioning to a policy wherein all experimental APIs must be flag-guarded, regardless of any disclaimers in their documentation.
 
