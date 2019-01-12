@@ -2,7 +2,7 @@
 title: Selecting Between Python 2 and 3
 status: Accepted
 created: 2018-10-25
-updated: 2019-01-10
+updated: 2019-01-11
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -86,6 +86,14 @@ We want to be able to build a `py_library` at the top level without having to sp
 
 We add two new boolean fields to a provider returned by `py_library`. This bools correspond to whether or not there are any Python 2-only and Python 3-only sources (respectively) in the library's transitive closure. It is easy to compute these bits as boolean ORs as the providers are merged. `py_binary` simply checks these bits against its own Python mode.
 
+It is important that when `py_binary` detects a version conflict, the user is given the label of one or more transitive dependencies that introduced the constraint. There are several ways to implement this, such as:
+
+- additional provider fields to propagate context to the error message
+- an aspect that traverses the dependencies of the `py_binary`
+- emitting warning messages at conflicting `py_library` targets
+
+The choice of which approach to use is outside the scope of this proposal.
+
 It is possible that a library is only ever used by Python 3 binaries, but when the library is built as part of a `bazel build :all` command it gets the Python 2 mode by default. This happens even if the library is annotated with `srcs_version` set to `PY3`. Generally this should cause no harm aside from some repeated build work. In the future we can add the same version attribute that `py_binary` has to `py_library`, so the target definition can be made unambiguous.
 
 Aside from failures due to validation, there is currently a bug whereby building a `PY2` library in `PY3` mode can invoke a stub wrapper that fails ([bazel #1393](https://github.com/bazelbuild/bazel/issues/1393)). We will remove the stub and the behavior that attempted to call it.
@@ -96,7 +104,7 @@ The attribute `default_python_version` of `py_binary` is renamed to `python_vers
 
 The Python mode becomes "non-sticky" and `srcs_version` validation becomes less strict. Building a `py_library` target directly will not trigger validation. Building a `py_binary` that depends on a `py_library` having an incompatible version will only fail if the dependency occurs via transitive `deps`, and not when it occurs via other paths such as a `data` dep or a `genrule` that produces a source file.
 
-The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`. (As an implementation matter, the provider may also gain undocumented internal fields for help in reporting an offending py_library with incompatible sources in error messages.)
+The `"py"` provider of Python rules gains two new boolean fields, `has_py2_only_sources` and `has_py3_only_sources`. Existing Python rules are updated to set these fields. Dependencies of Python rules that do not have the `"py"` provider, or those fields on that provider, are treated as if the value of the fields is `False`.
 
 A new `select()`-able target is created at `@bazel_tools//tools/python:python_version` to return the current Python mode. It can be used in the `flag_values` attribute of `config_setting` and always equals either `"PY2"` or `"PY3"`. (In the future this flag may be moved out of `@bazel_tools` and into `bazelbuild/rules_python`. It may also be made into a `build_setting` so that it can replace the native `--python_version` flag.) It is disallowed to use `"python_version"` in a `config_setting`.
 
@@ -110,7 +118,7 @@ For syntax, the new `--python_version` flag and `python_version` attribute are a
 
 A migration flag `--incompatible_remove_old_python_version_api` makes unavailable the `--force_python` flag and `default_python_version` attribute, and disallows `select()`-ing on `"force_python"` and `"host_force_python"`.
 
-For semantics, a flag `--incompatible_allow_python_version_transitions` makes Bazel use the new non-sticky version transitions and the deferred `srcs_version` validation. This applies regardless of whether the new or old API is used to specify the Python version. The flag also causes the new `"py"` provider fields to be created.
+For semantics, a flag `--incompatible_allow_python_version_transitions` makes Bazel use the new non-sticky version transitions and the deferred `srcs_version` validation. This applies regardless of whether the new or old API is used to specify the Python version. The new `"py"` provider fields are created regardless of which flags are given.
 
 Migrating for `--incompatible_remove_old_python_version_api` guarantees that the Python version only ever has two possible values. Migrating for `--incompatible_allow_python_version_transitions` enables data dependencies across different versions of Python. It is recommended to do the API migration first in order to avoid action conflicts.
 
@@ -125,3 +133,4 @@ Date         | Change
 2018-12-17   | Refine plan for `select()`
 2018-12-19   | Refine plan for `select()` again
 2019-01-10   | Refine migration path
+2019-01-11   | Formal approval and update provider fields
