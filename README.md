@@ -65,8 +65,16 @@ load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
 # This rule translates the specified requirements.txt into
 # @my_deps//:requirements.bzl, which itself exposes a pip_install method.
 pip_import(
-   name = "my_deps",
-   requirements = "//path/to:requirements.txt",
+  name = "my_deps",
+  requirements = "//path/to:requirements.txt",
+)
+
+# Python interpreter can be specify optionally to support customized version,
+# such as "python3" or "python3.7"
+pip_import(
+  name = "my_deps",
+  requirements = "//path/to:requirements.txt",
+  python_interpreter = 'python3.7',
 )
 
 # Load the pip_install symbol for my_deps, and create the dependencies'
