@@ -24,8 +24,10 @@ def _pip_import_impl(repository_ctx):
 
     # To see the output, pass: quiet=False
     result = repository_ctx.execute([
-        "python",
+        repository_ctx.attr.python_interpreter,
         repository_ctx.path(repository_ctx.attr._script),
+        "--python_interpreter",
+        repository_ctx.attr.python_interpreter,
         "--name",
         repository_ctx.attr.name,
         "--input",
@@ -41,6 +43,10 @@ def _pip_import_impl(repository_ctx):
 
 pip_import = repository_rule(
     attrs = {
+        "python_interpreter": attr.string(default="python", doc="""
+The command to run the Python interpreter used to invoke pip and unpack the
+wheels.
+"""),
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,

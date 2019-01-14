@@ -17,7 +17,7 @@ def _whl_impl(repository_ctx):
     """Core implementation of whl_library."""
 
     args = [
-        "python",
+        repository_ctx.attr.python_interpreter,
         repository_ctx.path(repository_ctx.attr._script),
         "--whl",
         repository_ctx.path(repository_ctx.attr.whl),
@@ -44,6 +44,9 @@ A subset of the "extras" available from this <code>.whl</code> for which
         "requirements": attr.string(doc = """
 The name of the <code>pip_import</code> repository rule from which to load this
 <code>.whl</code>'s dependencies.
+"""),
+        "python_interpreter": attr.string(default="python", doc="""
+The command to run the Python interpreter used when unpacking the wheel.
 """),
         "whl": attr.label(
             mandatory = True,
