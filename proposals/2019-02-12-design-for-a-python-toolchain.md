@@ -80,17 +80,9 @@ Since `--python_top` is no longer read, it is deprecated. Since `--python_path` 
 
 The implementations of `py_runtime` and the executable Python rules are changed to read and write the new `PyRuntimeInfo` Starlark provider, rather than the builtin `PyRuntimeProvider`, which is removed.
 
-### Default toolchains
+### Default toolchain
 
-For convenience, we supply two predefined [toolchain](https://docs.bazel.build/versions/master/be/platform.html#toolchain)s.
-
-* `@bazel_tools//tools/python:host_python_toolchain` is a Python toolchain representing the host platform's system interpreters.
-
-* `@bazel_tools//tools/python:autodetecting_python_toolchain` is a Python toolchain of last resort. It runs on any platform, and dispatches to a wrapper script that tries to locate a suitable interpreter from `PATH`.
-
-The precedence order for toolchain resolution purposes is: 1) all user-defined toolchains, 2) `host_python_toolchain`, 3) `autodetecting_python_toolchain`.
-
-Since `host_python_toolchain` is based on information directly gathered about the host platform, it should be constrained to only run on the host platform. However, as of this writing, there is no such constraint value that uniquely identifies the host. The best we can do is restrict it to the constraints list `HOST_CONSTRAINTS` defined in `@local_config_platform//:constraints.bzl`. This means that it is possible for `host_python_toolchain` to be selected for a platform that resembles the host but does not actually have the same Python interpreter paths. The best practice for avoiding this situation is to explicitly provide a better toolchain definition in the `WORKSPACE` file. The final fallback, `autodetecting_python_toolchain` runs on a best-effort basis on any platform and has no constraint requirements.
+For convenience, we supply a predefined [toolchain](https://docs.bazel.build/versions/master/be/platform.html#toolchain) of last resort, `@bazel_tools//tools/python:autodetecting_python_toolchain`. This toolchain is registered with lower priority than any user-registered Python toolchain. It simply dispatches to a wrapper script that tries to locate a suitable interpreter from `PATH` at runtime, on a best-effort basis. It has no platform constraints.
 
 ## Example
 
@@ -191,7 +183,7 @@ If we had not defined a custom toolchain, then we'd be stuck with `autodetecting
 
 ## Backward compatibility
 
-The new `@bazel_tools` definitions are made available immediately. A new flag, `--incompatible_use_python_toolchains`, is created to assist migration. When the flag is enabled, `py_binary` and `py_test` will use the `PyRuntimeInfo` obtained from the toolchain, instead of the one obtained from `--python_top` or the default information in `--python_path`. In addition, when `--incompatible_use_python_toolchains` is enabled the following flags are deleted: `--python_top`, `--python_path`, `--python2_path`, `--python3_path`. (The latter two were already deprecated.)
+The new `@bazel_tools` definitions are made available immediately. A new flag, `--incompatible_use_python_toolchains`, is created to assist migration. When the flag is enabled, `py_binary` and `py_test` will use the `PyRuntimeInfo` obtained from the toolchain, instead of the one obtained from `--python_top` or the default information in `--python_path`. In addition, when `--incompatible_use_python_toolchains` is enabled it is an error to set the following flags: `--python_top`, `--python_path`, `--python2_path`, `--python3_path`. (The latter two were already deprecated.) These flags will be deleted when the incompatible flag is removed.
 
 Because of how the toolchain framework is implemented, it is not possible to gate whether a rule requires a toolchain type based on a flag. Therefore `py_binary` and `py_test` are made to require `@bazel_tools//tools/python:toolchain_type` immediately and unconditionally. This may impact how toolchain resolution determines the toolchains and execution platforms for a given build, but should not otherwise cause problems so long as the build uses constraints correctly.
 
@@ -237,7 +229,7 @@ The new `PyRuntimeInfo` provider and `py_runtime_pair` rule would have forwardin
 
 Forwarding aliases would also be defined for the toolchain type and the two `constraint_setting`s. Note that aliasing `toolchain_type`s is currently broken ([#7404](https://github.com/bazelbuild/bazel/issues/7404)).
 
-In the initial implementation of this proposal, the two predefined Python toolchains will be automatically registered in the user's workspace by Bazel. This follows precedent for other languages with built-in support in Bazel. Once the rules are migrated to `rules_python`, registration will not be automatic; the user will have to explicitly call a configuration helper defined in `rules_python` from their own `WORKSPACE` file.
+In the initial implementation of this proposal, the predefined `autodetecting_python_toolchain` will be automatically registered in the user's workspace by Bazel. This follows precedent for other languages with built-in support in Bazel. Once the rules are migrated to `rules_python`, registration will not be automatic; the user will have to explicitly call a configuration helper defined in `rules_python` from their own `WORKSPACE` file.
 
 ## Changelog
 
