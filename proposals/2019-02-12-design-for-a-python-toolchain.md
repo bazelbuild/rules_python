@@ -14,13 +14,13 @@ discussion thread: [bazel #7375](https://github.com/bazelbuild/bazel/issues/7375
 
 ## Abstract
 
-This doc outlines the design of a Python toolchain rule and its associated machinery. Essentially a new `py_runtime_pair` toolchain rule is created to wrap two `py_runtime` targets (one for Python 2 and one for Python 3), thereby making runtimes discoverable via toolchain resolution. This replaces the previous mechanism of explicitly specifying a global runtime via `--python_top` or `--python_path`; those flags are now deprecated.
+This doc outlines the design of a Python toolchain rule and its associated machinery. Essentially a new `py_runtime_pair` toolchain rule is created to wrap two `py_runtime` targets (one for Python 2 and one for Python 3), thereby making runtimes discoverable via [toolchain resolution](https://docs.bazel.build/versions/master/toolchains.html). This replaces the previous mechanism of explicitly specifying a global runtime via `--python_top` or `--python_path`; those flags are now deprecated.
 
 The new toolchain-related definitions are implemented in Starlark. A byproduct of this is that the provider type for `py_runtime` is exposed to Starlark. We also add to `py_runtime` an attribute for declaring whether it represents a Python 2 or Python 3 runtime.
 
 ## Motivation
 
-The goal is to make the native Python rules use the [toolchain framework](https://docs.bazel.build/versions/master/toolchains.html) to resolve the Python runtime. Advantages include:
+The goal is to make the native Python rules use the toolchain framework to resolve the Python runtime. Advantages include:
 
 * allowing each `py_binary` to use a runtime suitable for its target platform
 
@@ -40,9 +40,9 @@ The goal is to make the native Python rules use the [toolchain framework](https:
 
 ### New definitions
 
-A new toolchain type is created at `@bazel_tools//tools/python:toolchain_type`. This is the type for toolchains that provide a way to run Python code.
+A new [toolchain type](https://docs.bazel.build/versions/master/toolchains.html#writing-rules-that-use-toolchains) is created at `@bazel_tools//tools/python:toolchain_type`. This is the type for toolchains that provide a way to run Python code.
 
-Toolchain rules of this type are expected to return a `ToolchainInfo` with two fields, `py2_runtime` and `py3_runtime`, each of type `PyRuntimeInfo`. They are used for `PY2` and `PY3` binaries respectively.
+Toolchain rules of this type are expected to return a [`ToolchainInfo`](https://docs.bazel.build/versions/master/skylark/lib/ToolchainInfo.html) with two fields, `py2_runtime` and `py3_runtime`, each of type `PyRuntimeInfo`. They are used for `PY2` and `PY3` binaries respectively.
 
 ```python
 def _some_python_toolchain_impl(ctx):
@@ -54,7 +54,7 @@ def _some_python_toolchain_impl(ctx):
 
 If either Python 2 or Python 3 is not provided by the toolchain, the corresponding field may be set to `None`. This is strongly discouraged, as it will prevent any target relying on that toolchain from using that version of Python. Toolchains that do use `None` here should be registered with lower priority than other toolchains, so that they are chosen only as a fallback.
 
-`PyRuntimeInfo` is a newly-exposed provider returned by the native `py_runtime` rule. It can be loaded from `@bazel_tools//tools/python:toolchain.bzl`. It has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
+`PyRuntimeInfo` is a newly-exposed provider returned by the native [`py_runtime`](https://docs.bazel.build/versions/master/be/python.html#py_runtime) rule. It can be loaded from `@bazel_tools//tools/python:toolchain.bzl`. It has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
 
 * `interpreter_path`: An absolute filesystem path to a Python interpreter (or a script that launches a Python interpreter, forwarding any command-line arguments) available on the target platform. Must be `None` if `interpreter` is non-`None`.
 
@@ -66,7 +66,7 @@ If either Python 2 or Python 3 is not provided by the toolchain, the correspondi
 
 Notice that any `PyRuntimeInfo` that uses the `interpreter_path` field imposes a requirement on the target platform. Therefore, any toolchain returning such a `PyRuntimeInfo` should include a corresponding target platform constraint, to ensure it cannot be selected for a platform that does not have the interpreter at that path.
 
-We provide two `constraint_setting`s to act as a standardized namespace for this kind of platform constraint: `@bazel_tools//tools/python:py2_interpreter_path` and `@bazel_tools//tools/python:py3_interpreter_path`. This doc does not mandate any particular structure for the names of `constraint_value`s associated with these settings. If a platform does not provide a Python 2 runtime, it should have no constraint value associated with `py2_interpreter_path`, and similarly for Python 3.
+We provide two [`constraint_setting`](https://docs.bazel.build/versions/master/be/platform.html#constraint_setting)s to act as a standardized namespace for this kind of platform constraint: `@bazel_tools//tools/python:py2_interpreter_path` and `@bazel_tools//tools/python:py3_interpreter_path`. This doc does not mandate any particular structure for the names of [`constraint_value`](https://docs.bazel.build/versions/master/be/platform.html#constraint_value)s associated with these settings. If a platform does not provide a Python 2 runtime, it should have no constraint value associated with `py2_interpreter_path`, and similarly for Python 3.
 
 It is not possible to directly specify a system command (e.g. `"python"`) in `interpreter_path`. However, this can be done indirectly by creating a wrapper script that invokes the system command, and referencing that script from a `PyRuntimeInfo`'s `interpreter` field. Note that in this case, even though the `PyRuntimeInfo` does not use `interpreter_path`, it still imposes a requirement on the target platform and should have a platform constraint.
 
@@ -74,7 +74,7 @@ Finally, we define a standard Python toolchain rule implementing the new toolcha
 
 ### Changes to the native Python rules
 
-The executable Python rules `py_binary` and `py_test` are modified to require the new toolchain type. The Python runtime information is obtained by retrieving a `PyRuntimeInfo` from either the `py2_runtime` or `py3_runtime` field of the toolchain, rather than from `--python_top`. The `python_version` field of the `PyRuntimeInfo` is also checked to ensure that a `py_runtime` didn't accidentally end up in the wrong place.
+The executable Python rules [`py_binary`](https://docs.bazel.build/versions/master/be/python.html#py_binary) and [`py_test`](https://docs.bazel.build/versions/master/be/python.html#py_test) are modified to require the new toolchain type. The Python runtime information is obtained by retrieving a `PyRuntimeInfo` from either the `py2_runtime` or `py3_runtime` field of the toolchain, rather than from `--python_top`. The `python_version` field of the `PyRuntimeInfo` is also checked to ensure that a `py_runtime` didn't accidentally end up in the wrong place.
 
 Since `--python_top` is no longer read, it is deprecated. Since `--python_path` was only read when no runtime information is available, but the toolchain must always be present, it too is deprecated.
 
@@ -82,7 +82,7 @@ The implementations of `py_runtime` and the executable Python rules are changed 
 
 ### Default toolchains
 
-For convenience, we supply two predefined toolchains.
+For convenience, we supply two predefined [toolchain](https://docs.bazel.build/versions/master/be/platform.html#toolchain)s.
 
 * `@bazel_tools//tools/python:host_python_toolchain` is a Python toolchain representing the host platform's system interpreters.
 
