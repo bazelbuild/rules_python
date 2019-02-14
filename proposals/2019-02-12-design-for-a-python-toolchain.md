@@ -2,7 +2,7 @@
 title: Design for a Python Toolchain
 status: In review
 created: 2019-02-12
-updated: 2019-02-12
+updated: 2019-02-14
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -54,7 +54,7 @@ def _some_python_toolchain_impl(ctx):
 
 If either Python 2 or Python 3 is not provided by the toolchain, the corresponding field may be set to `None`. This is strongly discouraged, as it will prevent any target relying on that toolchain from using that version of Python. Toolchains that do use `None` here should be registered with lower priority than other toolchains, so that they are chosen only as a fallback.
 
-`PyRuntimeInfo` is a newly-exposed provider returned by the native [`py_runtime`](https://docs.bazel.build/versions/master/be/python.html#py_runtime) rule. It can be loaded from `@bazel_tools//tools/python:toolchain.bzl`. It has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
+`PyRuntimeInfo` is the newly-exposed Starlark name of the native provider returned by the [`py_runtime`](https://docs.bazel.build/versions/master/be/python.html#py_runtime) rule. Like `PyInfo`, it is a top-level built-in name. Also like `PyInfo` and the native Python rules, it will eventually be migrated to Starlark and moved out of the Bazel repository. It has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
 
 * `interpreter_path`: An absolute filesystem path to a Python interpreter (or a script that launches a Python interpreter, forwarding any command-line arguments) available on the target platform. Must be `None` if `interpreter` is non-`None`.
 
@@ -78,7 +78,9 @@ The executable Python rules [`py_binary`](https://docs.bazel.build/versions/mast
 
 Since `--python_top` is no longer read, it is deprecated. Since `--python_path` was only read when no runtime information is available, but the toolchain must always be present, it too is deprecated.
 
-The implementations of `py_runtime` and the executable Python rules are changed to read and write the new `PyRuntimeInfo` Starlark provider, rather than the builtin `PyRuntimeProvider`, which is removed.
+Implementation wise, the native `PyRuntimeProvider` is turned into the user-visible `PyRuntimeInfo` by adding Starlark API annotations in the usual way (`@SkylarkCallable`, etc.). A previous version of this proposal suggested defining `PyRuntimeInfo` in Starlark underneath `@bazel_tools` and accessing it from the native rules, but this is technically difficult to implement.
+
+As a drive-by cleanup (and non-breaking change), the `files` attribute of `py_runtime` is made optional. For the case where `interpreter_path` is given, specifying `files` is nonsensical and it is even an error to give it a non-empty value. For the case where `interpreter` is given, `files` can be useful but is by no means necessary if the interpreter is self-contained (as in, for instance, a wrapper script that dispatches to the platform's system interpreter).
 
 ### Default toolchain
 
@@ -183,13 +185,11 @@ If we had not defined a custom toolchain, then we'd be stuck with `autodetecting
 
 ## Backward compatibility
 
-The new `@bazel_tools` definitions are made available immediately. A new flag, `--incompatible_use_python_toolchains`, is created to assist migration. When the flag is enabled, `py_binary` and `py_test` will use the `PyRuntimeInfo` obtained from the toolchain, instead of the one obtained from `--python_top` or the default information in `--python_path`. In addition, when `--incompatible_use_python_toolchains` is enabled it is an error to set the following flags: `--python_top`, `--python_path`, `--python2_path`, `--python3_path`. (The latter two were already deprecated.) These flags will be deleted when the incompatible flag is removed.
+The new `@bazel_tools` definitions and the `PyRuntimeInfo` provider are made available immediately. A new flag, `--incompatible_use_python_toolchains`, is created to assist migration. When the flag is enabled, `py_binary` and `py_test` will use the `PyRuntimeInfo` obtained from the toolchain, instead of the one obtained from `--python_top` or the default information in `--python_path`. In addition, when `--incompatible_use_python_toolchains` is enabled it is an error to set the following flags: `--python_top`, `--python_path`, `--python2_path`, `--python3_path`. (The latter two were already deprecated.) These flags will be deleted when the incompatible flag is removed.
 
 Because of how the toolchain framework is implemented, it is not possible to gate whether a rule requires a toolchain type based on a flag. Therefore `py_binary` and `py_test` are made to require `@bazel_tools//tools/python:toolchain_type` immediately and unconditionally. This may impact how toolchain resolution determines the toolchains and execution platforms for a given build, but should not otherwise cause problems so long as the build uses constraints correctly.
 
 The new `python_version` attribute is added to `py_runtime` immediately. Its default value is the same as the `python_version` attribute for `py_binary`, i.e. `PY3` if `--incompatible_py3_is_default` is true and `PY2` otherwise. When `--incompatible_use_python_toolchains` is enabled this attribute becomes mandatory.
-
-As a drive-by cleanup (and non-breaking change), the `files` attribute of `py_runtime` is made optional. For the case where `interpreter_path` is given, specifying `files` is nonsensical and it is even an error to give it a non-empty value. For the case where `interpreter` is given, `files` can be useful but is by no means necessary if the interpreter is self-contained (as in, for instance, a wrapper script that dispatches to the platform's system interpreter).
 
 ## FAQ
 
@@ -236,3 +236,4 @@ In the initial implementation of this proposal, the predefined `autodetecting_py
 Date         | Change
 ------------ | ------
 2019-02-12   | Initial version
+2019-02-12   | Make `PyRuntimeInfo` natively defined
