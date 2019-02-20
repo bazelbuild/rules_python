@@ -2,7 +2,7 @@
 title: Design for a Python Toolchain
 status: In review
 created: 2019-02-12
-updated: 2019-02-14
+updated: 2019-02-15
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -54,21 +54,25 @@ def _some_python_toolchain_impl(ctx):
 
 If either Python 2 or Python 3 is not provided by the toolchain, the corresponding field may be set to `None`. This is strongly discouraged, as it will prevent any target relying on that toolchain from using that version of Python. Toolchains that do use `None` here should be registered with lower priority than other toolchains, so that they are chosen only as a fallback.
 
-`PyRuntimeInfo` is the newly-exposed Starlark name of the native provider returned by the [`py_runtime`](https://docs.bazel.build/versions/master/be/python.html#py_runtime) rule. Like `PyInfo`, it is a top-level built-in name. Also like `PyInfo` and the native Python rules, it will eventually be migrated to Starlark and moved out of the Bazel repository. It has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
+`PyRuntimeInfo` is the newly-exposed Starlark name of the native provider returned by the [`py_runtime`](https://docs.bazel.build/versions/master/be/python.html#py_runtime) rule. Like `PyInfo`, it is a top-level built-in name. Also like `PyInfo` and the native Python rules, it will eventually be migrated to Starlark and moved out of the Bazel repository.
 
-* `interpreter_path`: An absolute filesystem path to a Python interpreter (or a script that launches a Python interpreter, forwarding any command-line arguments) available on the target platform. Must be `None` if `interpreter` is non-`None`.
-
-* `interpreter`: An in-build `File` of a Python interpreter or script as above. Must be `None` if `interpreter_path` is not None.
-
-* `files`: A depset of `File`s that need to be added to the runfiles of an executable target that uses this toolchain. The value of `interpreter` need not be included in this field. Must be non-`None` if and only if `interpreter` is non-`None`.
-
-* `python_version`: Either the string `"PY2"` or `"PY3"`, indicating which version of Python the interpreter referenced by `interpreter_path` or `interpreter` is.
-
-Notice that any `PyRuntimeInfo` that uses the `interpreter_path` field imposes a requirement on the target platform. Therefore, any toolchain returning such a `PyRuntimeInfo` should include a corresponding target platform constraint, to ensure it cannot be selected for a platform that does not have the interpreter at that path.
+A `PyRuntimeInfo` describes either a *platform runtime* or an *in-build runtime*. A platform runtime accesses a system-installed interpreter at a known path, whereas an in-build runtime points to a build target that acts as the interpreter. In both cases, an "interpreter" is really any executable binary or wrapper script that is capable of running a Python script passed on the command line, following the same conventions as the standard CPython interpreter. Note that any platform runtime imposes a requirement on the target platform. Therefore, any toolchain returning such a `PyRuntimeInfo` should include a corresponding target platform constraint, to ensure it cannot be selected for a platform that does not have the interpreter at that path. Even an in-build runtime can require platform constraints, for instance in the case of a wrapper script that invokes the system interpreter.
 
 We provide two [`constraint_setting`](https://docs.bazel.build/versions/master/be/platform.html#constraint_setting)s to act as a standardized namespace for this kind of platform constraint: `@bazel_tools//tools/python:py2_interpreter_path` and `@bazel_tools//tools/python:py3_interpreter_path`. This doc does not mandate any particular structure for the names of [`constraint_value`](https://docs.bazel.build/versions/master/be/platform.html#constraint_value)s associated with these settings. If a platform does not provide a Python 2 runtime, it should have no constraint value associated with `py2_interpreter_path`, and similarly for Python 3.
 
-It is not possible to directly specify a system command (e.g. `"python"`) in `interpreter_path`. However, this can be done indirectly by creating a wrapper script that invokes the system command, and referencing that script from a `PyRuntimeInfo`'s `interpreter` field. Note that in this case, even though the `PyRuntimeInfo` does not use `interpreter_path`, it still imposes a requirement on the target platform and should have a platform constraint.
+`PyRuntimeInfo` has the following fields, each of which corresponds to an attribute on `py_runtime`. (The last one, `python_version`, is newly added in this doc.)
+
+* `interpreter_path`: If this is a platform runtime, this field is the absolute filesystem path to the interpreter on the target platform. Otherwise, this is `None`.
+
+* `interpreter`: If this is an in-build runtime, this field is a `File` representing the interpreter. Otherwise, this is `None`.
+
+* `files`: If this is an in-build runtime, this field is a depset of `File`s that need to be added to the runfiles of an executable target that uses this toolchain. The value of `interpreter` need not be included in this field. If this is a platform runtime then this field is `None`.
+
+* `python_version`: Either the string `"PY2"` or `"PY3"`, indicating which version of Python the interpreter referenced by `interpreter_path` or `interpreter` is.
+
+The constructor of `PyRuntimeInfo` takes each of these fields as keyword arguments. The constructor enforces the invariants about which combinations of fields may be `None`. Fields that are not meaningful may be omitted; e.g. when `interpreter_path` is given, `interpreter` and `files` may be omitted instead of passing `None`.
+
+It is not possible to directly specify a system command (e.g. `"python"`) in `interpreter_path`. However, this can be done indirectly by creating a wrapper script that invokes the system command, and referencing that script from the `interpreter` field.
 
 Finally, we define a standard Python toolchain rule implementing the new toolchain type. The rule's name is `py_runtime_pair` and it can be loaded from `@bazel_tools//tools/python:toolchain.bzl`. It has two label-valued attributes, `py2_runtime` and `py3_runtime`, that refer to `py_runtime` targets.
 
@@ -80,7 +84,9 @@ Since `--python_top` is no longer read, it is deprecated. Since `--python_path` 
 
 Implementation wise, the native `PyRuntimeProvider` is turned into the user-visible `PyRuntimeInfo` by adding Starlark API annotations in the usual way (`@SkylarkCallable`, etc.). A previous version of this proposal suggested defining `PyRuntimeInfo` in Starlark underneath `@bazel_tools` and accessing it from the native rules, but this is technically difficult to implement.
 
-As a drive-by cleanup (and non-breaking change), the `files` attribute of `py_runtime` is made optional. For the case where `interpreter_path` is given, specifying `files` is nonsensical and it is even an error to give it a non-empty value. For the case where `interpreter` is given, `files` can be useful but is by no means necessary if the interpreter is self-contained (as in, for instance, a wrapper script that dispatches to the platform's system interpreter).
+A `python_version` attribute is added to `py_runtime`. It is mandatory and accepts values `"PY2"` and `"PY3"` only.
+
+As a drive-by cleanup (and non-breaking change), the `files` attribute of `py_runtime` is made optional. For the non-hermetic case, specifying `files` is nonsensical and it is even an error to give it a non-empty value. For the hermetic case, `files` can be useful but is by no means necessary if the interpreter requires no additional in-repo inputs (such as when the "interpreter" is just a wrapper script that dispatches to the platform's system interpreter).
 
 ### Default toolchain
 
@@ -236,4 +242,5 @@ In the initial implementation of this proposal, the predefined `autodetecting_py
 Date         | Change
 ------------ | ------
 2019-02-12   | Initial version
-2019-02-12   | Make `PyRuntimeInfo` natively defined
+2019-02-14   | Make `PyRuntimeInfo` natively defined
+2019-02-15   | Clarify platform runtime vs in-build runtime
