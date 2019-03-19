@@ -90,10 +90,10 @@ def _py_wheel_impl(ctx):
         arguments.append(name + " = " + ref)
 
     if ctx.attr.description_file:
-        description_files = ctx.attr.description_file.files.to_list()
+        description_file = ctx.file.description_file
         arguments.append("--description_file")
-        arguments.append(description_files[0].path)
-        inputs = inputs.union(ctx.attr.description_file.files)
+        arguments.append(description_file.path)
+        inputs = inputs.union([description_file])
 
     ctx.actions.run(
         inputs = inputs,
@@ -193,7 +193,7 @@ to refer to the package in other packages' dependencies.
         "homepage": attr.string(default = ""),
         "license": attr.string(default = ""),
         "classifiers": attr.string_list(),
-        "description_file": attr.label(allow_files = True),
+        "description_file": attr.label(allow_single_file = True),
         # Requirements
         "requires": attr.string_list(
             doc = "List of requirements for this package",
