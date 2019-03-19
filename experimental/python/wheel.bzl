@@ -26,15 +26,16 @@ def _py_wheel_impl(ctx):
     # Force creation of the __init__.py files and add them to the distribution.
     empty_files = []
     for dep in ctx.attr.deps:
-        for filename in  dep[DefaultInfo].default_runfiles.empty_filenames:
+        for filename in dep[DefaultInfo].default_runfiles.empty_filenames:
             f = ctx.actions.declare_file(filename)
             ctx.actions.write(f, "")
             empty_files.append(f)
 
     inputs = depset(
         transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
-                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps]
-    ) + depset(empty_files)
+                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps] +
+                     [depset(empty_files)],
+    )
 
     arguments = [
         "--name",
@@ -51,6 +52,7 @@ def _py_wheel_impl(ctx):
         outfile.path,
     ]
     arguments.extend(["--restrict_package=%s" % p for p in ctx.attr.packages])
+
     # TODO: Use args api instead of flattening the depset.
     for input_file in inputs.to_list():
         arguments.append("--input_file")
@@ -107,10 +109,42 @@ def _py_wheel_impl(ctx):
 
 py_wheel = rule(
     implementation = _py_wheel_impl,
+    doc = """
+A rule for building Python Wheels.
+
+Wheels are Python distribution format. This rule packages a set of
+targets into a single wheel.
+
+Currently only pure-python wheels are supported.
+
+Example:
+
+<code>
+py_library(name="main",
+           srcs=["main.py"],
+           deps=["//experimental/examples/wheel/lib:simple_module",
+                 "//experimental/examples/wheel/lib:module_with_data"])
+
+py_wheel(
+    name="minimal",
+    # Pulls in main and all recursive dependencies,
+    deps=[":main"],
+    # Only include these Python packages.
+    packages=["experimental.examples.wheel"],
+    # The resulting wheel will be named "example_minimal-0.0.1-py3-none-any.whl"
+    distribution="example_minimal",
+    version="0.0.1",
+    python_tag="py3",
+)
+</code>
+
+""",
     attrs = {
         "deps": attr.label_list(
             doc = """\
-Dependencies of this package, e.g. `py_library` rules.
+Targets to be included in the distribution.
+
+The targets to package are usually `py_library` rules or filesets (for packaging data files).
 
 Note it's usually better to package `py_library` targets and use
 `console_scripts` attribute to specify entry points than to package
