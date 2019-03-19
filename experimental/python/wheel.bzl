@@ -99,7 +99,14 @@ py_wheel = rule(
     implementation = _py_wheel_impl,
     attrs = {
         "deps": attr.label_list(
-            doc = "Dependencies of this package, e.g. py_library rules",
+            doc = """\
+Dependencies of this package, e.g. `py_library` rules.
+
+Note it's usually better to package `py_library` targets and use
+`console_scripts` attribute to specify entry points than to package
+`py_binary` rules. `py_binary` targets would wrap a executable script that
+tries to locate `.runfiles` directory which is not packaged in the wheel.
+""",
         ),
         "packages": attr.string_list(
             mandatory = True,
@@ -147,7 +154,9 @@ Sub-packages are automatically included.
         ),
         # Entry points
         "console_scripts": attr.string_dict(
-            doc = "console_script entry points",
+            doc = """\
+console_script entry points, e.g. 'experimental.examples.wheel.main:main'.
+""",
         ),
         # Implementation details.
         "_wheelmaker": attr.label(

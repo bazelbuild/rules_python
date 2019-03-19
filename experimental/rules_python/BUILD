@@ -15,7 +15,7 @@
 load("//python:python.bzl", "py_binary")
 
 py_binary(
-    name='wheelmaker',
-    srcs= ['wheelmaker.py'],
-    visibility=['//visibility:public'],
+    name = "wheelmaker",
+    srcs = ["wheelmaker.py"],
+    visibility = ["//visibility:public"],
 )
