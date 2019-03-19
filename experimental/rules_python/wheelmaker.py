@@ -175,26 +175,13 @@ Root-Is-Purelib: true
         self._record.append((filename, hash, size))
 
 
-def file_matches_packages(filename, packages):
-    """Check if the file belongs to any of the listed packages."""
-    if not packages:
-        return True
-    for package in packages:
-        if commonpath(filename, package) == package:
-            return True
-    return False
-
-
-def get_files_to_package(input_files, restrict_packages):
+def get_files_to_package(input_files):
     """Find files to be added to the distribution.
 
     input_files: list of pairs (package_path, real_path)
-    restrict_packages: list of packages to be included in the distribution.
     """
     files = {}
     for package_path, real_path in input_files:
-        if not file_matches_packages(package_path, restrict_packages):
-            continue
         files[package_path] = real_path
     return files
 
@@ -239,11 +226,6 @@ def main():
              "files to be included in the wheel. "
              "Can be supplied multiple times.")
     contents_group.add_argument(
-        '--restrict_package', action='append',
-        help="Restrict files included in the wheel to only those belonging "
-             "to the listed packages. "
-             "Can be supplied multiple times.")
-    contents_group.add_argument(
         '--console_script', action='append',
         help="Defines a 'console_script' entry point. "
              "Can be supplied multiple times.")
@@ -262,9 +244,7 @@ def main():
     assert arguments.platform == 'any', "Only pure-Python wheels are supported"
 
     input_files = [i.split(';') for i in arguments.input_file]
-    restrict_packages = [package.replace('.', os.path.sep) for package in
-                         arguments.restrict_package]
-    all_files = get_files_to_package(input_files, restrict_packages)
+    all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
     all_files = sorted(all_files.items())
 

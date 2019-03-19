@@ -14,6 +14,60 @@
 
 """Rules for building wheels."""
 
+def _path_inside_wheel(input_file):
+    # input_file.short_path is relative ("../${repository_root}/foobar")
+    # so it can't be a valid path within a zip file. Thus strip out the root
+    # manually instead of using short_path here.
+    root = input_file.root.path
+    if root != "":
+        # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
+        # Fix this once ctx.configuration has directory separator information.
+        root += "/"
+    if not input_file.path.startswith(root):
+        fail("input_file.path '%s' does not start with expected root '%s'" % (input_file.path, root))
+    return input_file.path[len(root):]
+
+def _py_package_impl(ctx):
+    inputs = depset(
+        transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
+                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
+    )
+
+    # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
+    # Fix this once ctx.configuration has directory separator information.
+    packages = [p.replace(".", "/") for p in ctx.attr.packages]
+    if not packages:
+        filtered_inputs = inputs
+    else:
+        filtered_files = []
+
+        # TODO: flattening depset to list gives poor performance,
+        for input_file in inputs.to_list():
+            wheel_path = _path_inside_wheel(input_file)
+            for package in packages:
+                if wheel_path.startswith(package):
+                    filtered_files.append(input_file)
+        filtered_inputs = depset(direct = filtered_files)
+
+    return [DefaultInfo(
+        files = filtered_inputs,
+    )]
+
+py_package = rule(
+    implementation = _py_package_impl,
+    attrs = {
+        "deps": attr.label_list(),
+        "packages": attr.string_list(
+            mandatory = False,
+            allow_empty = True,
+            doc = """\
+List of Python packages to include in the distribution.
+Sub-packages are automatically included.
+""",
+        ),
+    },
+)
+
 def _py_wheel_impl(ctx):
     outfile = ctx.actions.declare_file("-".join([
         ctx.attr.distribution,
@@ -23,18 +77,8 @@ def _py_wheel_impl(ctx):
         ctx.attr.platform,
     ]) + ".whl")
 
-    # Force creation of the __init__.py files and add them to the distribution.
-    empty_files = []
-    for dep in ctx.attr.deps:
-        for filename in dep[DefaultInfo].default_runfiles.empty_filenames:
-            f = ctx.actions.declare_file(filename)
-            ctx.actions.write(f, "")
-            empty_files.append(f)
-
     inputs = depset(
-        transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
-                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps] +
-                     [depset(empty_files)],
+        direct = ctx.files.deps,
     )
 
     arguments = [
@@ -51,12 +95,11 @@ def _py_wheel_impl(ctx):
         "--out",
         outfile.path,
     ]
-    arguments.extend(["--restrict_package=%s" % p for p in ctx.attr.packages])
 
     # TODO: Use args api instead of flattening the depset.
     for input_file in inputs.to_list():
         arguments.append("--input_file")
-        arguments.append("%s;%s" % (input_file.short_path, input_file.path))
+        arguments.append("%s;%s" % (_path_inside_wheel(input_file), input_file.path))
 
     extra_headers = []
     if ctx.attr.author:
@@ -150,14 +193,6 @@ Note it's usually better to package `py_library` targets and use
 `console_scripts` attribute to specify entry points than to package
 `py_binary` rules. `py_binary` targets would wrap a executable script that
 tries to locate `.runfiles` directory which is not packaged in the wheel.
-""",
-        ),
-        "packages": attr.string_list(
-            mandatory = False,
-            allow_empty = True,
-            doc = """\
-List of Python packages to include in the distribution.
-Sub-packages are automatically included.
 """,
         ),
         # Attributes defining the distribution

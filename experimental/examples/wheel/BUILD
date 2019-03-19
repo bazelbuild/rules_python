@@ -16,20 +16,28 @@ package(default_visibility=["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 load("//python:python.bzl", "py_library", "py_test")
-load("//experimental/python:wheel.bzl", "py_wheel")
+load("//experimental/python:wheel.bzl", "py_package", "py_wheel")
 
 py_library(name="main",
            srcs=["main.py"],
            deps=["//experimental/examples/wheel/lib:simple_module",
-                 "//experimental/examples/wheel/lib:module_with_data"])
+                 "//experimental/examples/wheel/lib:module_with_data",
+                 # Example dependency which is not packaged in the wheel
+                 # due to "packages" filter on py_package rule.
+                 "//examples/helloworld"])
+
+# Collect files to be packaged.
+py_package(
+    name="example_pkg",
+    deps = [":main"],
+    # Only include these Python packages.
+    packages=["experimental.examples.wheel"],
+)
 
 # A barebones example of a wheel
 py_wheel(
     name="minimal",
-    # Pulls in main and all recursive dependencies,
-    deps=[":main"],
-    # Only include these Python packages.
-    packages=["experimental.examples.wheel"],
+    deps=[":example_pkg"],
     # Package data. We're building "example_minimal-0.0.1-py3-none-any.whl"
     distribution="example_minimal",
     version="0.0.1",
@@ -39,10 +47,7 @@ py_wheel(
 # An example that uses all features provided by py_wheel.
 py_wheel(
     name="customized",
-    # Pulls in main and all recursive dependencies,
-    deps=[":main"],
-    # Only include these Python packages.
-    packages=["experimental.examples.wheel"],
+    deps=[":example_pkg"],
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
     distribution="example_customized",
     version="0.0.1",
