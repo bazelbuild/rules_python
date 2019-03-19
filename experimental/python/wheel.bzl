@@ -153,8 +153,8 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
 """,
         ),
         "packages": attr.string_list(
-            mandatory = True,
-            allow_empty = False,
+            mandatory = False,
+            allow_empty = True,
             doc = """\
 List of Python packages to include in the distribution.
 Sub-packages are automatically included.
@@ -163,7 +163,12 @@ Sub-packages are automatically included.
         # Attributes defining the distribution
         "distribution": attr.string(
             mandatory = True,
-            doc = "Name of the wheel",
+            doc = """
+Name of the distribution.
+
+This should match the project name onm PyPI. It's also the name that is used
+to refer to the package in other packages' dependencies.
+""",
         ),
         "version": attr.string(
             mandatory = True,
