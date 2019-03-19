@@ -16,9 +16,9 @@
 
 def _py_wheel_impl(ctx):
     outfile = ctx.actions.declare_file("-".join([
-        ctx.attr.wheel_name,
+        ctx.attr.distribution,
         ctx.attr.version,
-        ctx.attr.python,
+        ctx.attr.python_tag,
         ctx.attr.abi,
         ctx.attr.platform,
     ]) + ".whl")
@@ -29,11 +29,11 @@ def _py_wheel_impl(ctx):
     )
     arguments = [
         "--name",
-        ctx.attr.wheel_name,
+        ctx.attr.distribution,
         "--version",
         ctx.attr.version,
-        "--python",
-        ctx.attr.python,
+        "--python_tag",
+        ctx.attr.python_tag,
         "--abi",
         ctx.attr.abi,
         "--platform",
@@ -110,7 +110,7 @@ Sub-packages are automatically included.
 """,
         ),
         # Attributes defining the distribution
-        "wheel_name": attr.string(
+        "distribution": attr.string(
             mandatory = True,
             doc = "Name of the wheel",
         ),
@@ -118,7 +118,7 @@ Sub-packages are automatically included.
             mandatory = True,
             doc = "Version number of the package",
         ),
-        "python": attr.string(
+        "python_tag": attr.string(
             default = "py3",
             doc = "Supported Python major version. 'py2' or 'py3'",
         ),

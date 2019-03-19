@@ -34,12 +34,12 @@ def commonpath(path1, path2):
 
 
 class WheelMaker(object):
-    def __init__(self, name, version, build_tag, python, abi, platform,
+    def __init__(self, name, version, build_tag, python_tag, abi, platform,
                  outfile=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
-        self._python = python
+        self._python_tag = python_tag
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
@@ -62,14 +62,14 @@ class WheelMaker(object):
         components = [self._name, self._version]
         if self._build_tag:
             components.append(self._build_tag)
-        components += [self._python, self._abi, self._platform]
+        components += [self._python_tag, self._abi, self._platform]
         return '-'.join(components) + '.whl'
 
     def distname(self):
         return self._name + '-' + self._version
 
     def disttags(self):
-        return ['-'.join([self._python, self._abi, self._platform])]
+        return ['-'.join([self._python_tag, self._abi, self._platform])]
 
     def distinfo_path(self, basename):
         return self.distname() + '.dist-info/' + basename
@@ -211,7 +211,7 @@ def main():
                                 help="Version of the distribution")
     metadata_group.add_argument('--build_tag', type=str, default='',
                                 help="Optional build tag for the distribution")
-    metadata_group.add_argument('--python', type=str, default='py3',
+    metadata_group.add_argument('--python_tag', type=str, default='py3',
                                 help="Python version, e.g. 'py2' or 'py3'")
     metadata_group.add_argument('--abi', type=str, default='none')
     metadata_group.add_argument('--platform', type=str, default='any',
@@ -271,7 +271,7 @@ def main():
     with WheelMaker(name=arguments.name,
                     version=arguments.version,
                     build_tag=arguments.build_tag,
-                    python=arguments.python,
+                    python_tag=arguments.python_tag,
                     abi=arguments.abi,
                     platform=arguments.platform,
                     outfile=arguments.out) as maker:

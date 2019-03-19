@@ -31,9 +31,9 @@ py_wheel(
     # Only include these Python packages.
     packages=["experimental.examples.wheel"],
     # Package data. We're building "example_minimal-0.0.1-py3-none-any.whl"
-    wheel_name="example_minimal",
+    distribution="example_minimal",
     version="0.0.1",
-    python="py3",
+    python_tag="py3",
 )
 
 # An example that uses all features provided by py_wheel.
@@ -44,9 +44,9 @@ py_wheel(
     # Only include these Python packages.
     packages=["experimental.examples.wheel"],
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
-    wheel_name="example_customized",
+    distribution="example_customized",
     version="0.0.1",
-    python="py3",
+    python_tag="py3",
     author="Example Author with non-ascii characters: żółw",
     author_email="example@example.com",
     homepage="www.example.com",
