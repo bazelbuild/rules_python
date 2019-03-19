@@ -23,10 +23,19 @@ def _py_wheel_impl(ctx):
         ctx.attr.platform,
     ]) + ".whl")
 
+    # Force creation of the __init__.py files and add them to the distribution.
+    empty_files = []
+    for dep in ctx.attr.deps:
+        for filename in  dep[DefaultInfo].default_runfiles.empty_filenames:
+            f = ctx.actions.declare_file(filename)
+            ctx.actions.write(f, "")
+            empty_files.append(f)
+
     inputs = depset(
         transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
-                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
-    )
+                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps]
+    ) + depset(empty_files)
+
     arguments = [
         "--name",
         ctx.attr.distribution,
@@ -42,6 +51,7 @@ def _py_wheel_impl(ctx):
         outfile.path,
     ]
     arguments.extend(["--restrict_package=%s" % p for p in ctx.attr.packages])
+    # TODO: Use args api instead of flattening the depset.
     for input_file in inputs.to_list():
         arguments.append("--input_file")
         arguments.append("%s;%s" % (input_file.short_path, input_file.path))
