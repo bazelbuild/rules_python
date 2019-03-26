@@ -55,6 +55,12 @@ def _py_package_impl(ctx):
 
 py_package = rule(
     implementation = _py_package_impl,
+    doc = """
+A rule to select all files in transitive dependencies of deps which
+belong to given set of Python packages.
+
+This rule is intended to be used as data dependency to py_wheel rule
+""",
     attrs = {
         "deps": attr.label_list(),
         "packages": attr.string_list(
@@ -155,32 +161,46 @@ py_wheel = rule(
     doc = """
 A rule for building Python Wheels.
 
-Wheels are Python distribution format. This rule packages a set of
-targets into a single wheel.
+Wheels are Python distribution format defined in https://www.python.org/dev/peps/pep-0427/.
+
+This rule packages a set of targets into a single wheel.
 
 Currently only pure-python wheels are supported.
 
-Example:
+Examples:
 
 <code>
-py_library(name="main",
-           srcs=["main.py"],
-           deps=["//experimental/examples/wheel/lib:simple_module",
-                 "//experimental/examples/wheel/lib:module_with_data"])
+# Package just a specific py_libraries, without their dependencies
+py_wheel(
+    name = "minimal_with_py_library",
+    # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
+    distribution = "example_minimal_library",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        "//experimental/examples/wheel/lib:module_with_data",
+        "//experimental/examples/wheel/lib:simple_module",
+    ],
+)
+
+# Use py_package to collect all transitive dependencies of a target,
+# selecting just the files within a specific python package.
+py_package(
+    name = "example_pkg",
+    # Only include these Python packages.
+    packages = ["experimental.examples.wheel"],
+    deps = [":main"],
+)
 
 py_wheel(
-    name="minimal",
-    # Pulls in main and all recursive dependencies,
-    deps=[":main"],
-    # Only include these Python packages.
-    packages=["experimental.examples.wheel"],
-    # The resulting wheel will be named "example_minimal-0.0.1-py3-none-any.whl"
-    distribution="example_minimal",
-    version="0.0.1",
-    python_tag="py3",
+    name = "minimal_with_py_package",
+    # Package data. We're building "example_minimal_package-0.0.1-py3-none-any.whl"
+    distribution = "example_minimal_package",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [":example_pkg"],
 )
 </code>
-
 """,
     attrs = {
         "deps": attr.label_list(
