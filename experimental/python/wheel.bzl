@@ -232,6 +232,7 @@ to refer to the package in other packages' dependencies.
         "python_tag": attr.string(
             default = "py3",
             doc = "Supported Python major version. 'py2' or 'py3'",
+            values = ["py2", "py3"],
         ),
         "abi": attr.string(
             default = "none",

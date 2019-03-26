@@ -29,7 +29,7 @@ py_library(
 )
 
 genrule(
-    name="make_data",
-    outs=["data.txt"],
-    cmd="echo foo bar baz > $@",
+    name = "make_data",
+    outs = ["data.txt"],
+    cmd = "echo foo bar baz > $@",
 )
