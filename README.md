@@ -43,7 +43,7 @@ Then in your `BUILD` files load the python rules with:
 ``` python
 load(
   "@io_bazel_rules_python//python:python.bzl",
-  "py_binary", "py_library", "py_test",
+  "py_binary", "py_import", "py_library", "py_test",
 )
 
 py_binary(
