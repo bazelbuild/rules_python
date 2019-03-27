@@ -71,6 +71,47 @@ def py_test(**attrs):
     # buildifier: disable=native-python
     native.py_test(**_add_tags(attrs))
 
+def _py_import_impl(ctx):
+    # See https://github.com/bazelbuild/bazel/blob/0.24.0/src/main/java/com/google/devtools/build/lib/bazel/rules/python/BazelPythonSemantics.java#L104 .
+    import_paths = [
+        "/".join([ctx.workspace_name, x.short_path])
+        for x in ctx.files.srcs
+    ]
+
+    return [
+        DefaultInfo(
+            default_runfiles = ctx.runfiles(ctx.files.srcs, collect_default = True),
+        ),
+        PyInfo(
+            transitive_sources = depset(transitive = [
+                dep[PyInfo].transitive_sources
+                for dep in ctx.attr.deps
+            ]),
+            imports = depset(direct = import_paths, transitive = [
+                dep[PyInfo].imports
+                for dep in ctx.attr.deps
+            ]),
+        ),
+    ]
+
+py_import = rule(
+    doc = "This rule allows the use of Python eggs as libraries for " +
+          "`py_library` and `py_binary` rules.",
+    implementation = _py_import_impl,
+    attrs = {
+        "deps": attr.label_list(
+            doc = "The list of other libraries to be linked in to the " +
+                  "binary target.",
+            providers = [PyInfo],
+        ),
+        "srcs": attr.label_list(
+            doc = "The list of Python eggs provided to Python targets " +
+                  "that depend on this target.",
+            allow_files = [".egg"],
+        ),
+    },
+)
+
 def py_runtime(**attrs):
     """See the Bazel core [py_runtime](https://docs.bazel.build/versions/master/be/python.html#py_runtime) documentation.
 
