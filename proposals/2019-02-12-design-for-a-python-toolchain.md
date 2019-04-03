@@ -1,8 +1,8 @@
 ---
 title: Design for a Python Toolchain
-status: In review
+status: Accepted
 created: 2019-02-12
-updated: 2019-02-15
+updated: 2019-02-21
 authors:
   - [brandjon@](https://github.com/brandjon)
 reviewers:
@@ -244,3 +244,4 @@ Date         | Change
 2019-02-12   | Initial version
 2019-02-14   | Make `PyRuntimeInfo` natively defined
 2019-02-15   | Clarify platform runtime vs in-build runtime
+2019-02-21   | Formal approval
