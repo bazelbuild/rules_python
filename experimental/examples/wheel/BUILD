@@ -91,5 +91,6 @@ py_test(
     data = [
         ":customized",
         ":minimal_with_py_library",
+        ":minimal_with_py_package",
     ],
 )

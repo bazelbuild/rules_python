@@ -32,6 +32,22 @@ class WheelTest(unittest.TestCase):
                  'example_minimal_library-0.0.1.dist-info/METADATA',
                  'example_minimal_library-0.0.1.dist-info/RECORD'])
 
+    def test_py_package_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'io_bazel_rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'example_minimal_package-0.0.1-py3-none-any.whl')
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['experimental/examples/wheel/lib/data.txt',
+                 'experimental/examples/wheel/lib/module_with_data.py',
+                 'experimental/examples/wheel/lib/simple_module.py',
+                 'experimental/examples/wheel/main.py',
+                 'example_minimal_package-0.0.1.dist-info/WHEEL',
+                 'example_minimal_package-0.0.1.dist-info/METADATA',
+                 'example_minimal_package-0.0.1.dist-info/RECORD'])
+
     def test_customized_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'io_bazel_rules_python', 'experimental',
