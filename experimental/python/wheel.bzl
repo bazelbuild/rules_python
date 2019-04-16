@@ -83,9 +83,13 @@ def _py_wheel_impl(ctx):
         ctx.attr.platform,
     ]) + ".whl")
 
-    inputs = depset(
+    inputs_to_package = depset(
         direct = ctx.files.deps,
     )
+
+    # Inputs to this rule which are not to be packaged.
+    # Currently this is only the description file (if used).
+    other_inputs = []
 
     arguments = [
         "--name",
@@ -103,7 +107,7 @@ def _py_wheel_impl(ctx):
     ]
 
     # TODO: Use args api instead of flattening the depset.
-    for input_file in inputs.to_list():
+    for input_file in inputs_to_package.to_list():
         arguments.append("--input_file")
         arguments.append("%s;%s" % (_path_inside_wheel(input_file), input_file.path))
 
@@ -142,10 +146,10 @@ def _py_wheel_impl(ctx):
         description_file = ctx.file.description_file
         arguments.append("--description_file")
         arguments.append(description_file.path)
-        inputs = inputs.union([description_file])
+        other_inputs.append(description_file)
 
     ctx.actions.run(
-        inputs = inputs,
+        inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile],
         arguments = arguments,
         executable = ctx.executable._wheelmaker,
