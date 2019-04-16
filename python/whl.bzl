@@ -17,7 +17,7 @@ def _whl_impl(repository_ctx):
     """Core implementation of whl_library."""
 
     args = [
-        "python",
+        repository_ctx.os.environ.get("PYTHON", "python"),
         repository_ctx.path(repository_ctx.attr._script),
         "--whl",
         repository_ctx.path(repository_ctx.attr.whl),
@@ -50,6 +50,7 @@ whl_library = repository_rule(
         ),
     },
     implementation = _whl_impl,
+    environ = ["PYTHON"],
 )
 
 """A rule for importing <code>.whl</code> dependencies into Bazel.
