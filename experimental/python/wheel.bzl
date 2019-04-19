@@ -27,6 +27,10 @@ def _path_inside_wheel(input_file):
         fail("input_file.path '%s' does not start with expected root '%s'" % (input_file.path, root))
     return input_file.path[len(root):]
 
+def _input_file_to_arg(input_file):
+    """Converts a File object to string for --input_file argument to wheelmaker"""
+    return "%s;%s" % (_path_inside_wheel(input_file), input_file.path)
+
 def _py_package_impl(ctx):
     inputs = depset(
         transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
@@ -83,29 +87,23 @@ def _py_wheel_impl(ctx):
         ctx.attr.platform,
     ]) + ".whl")
 
-    inputs = depset(
+    inputs_to_package = depset(
         direct = ctx.files.deps,
     )
 
-    arguments = [
-        "--name",
-        ctx.attr.distribution,
-        "--version",
-        ctx.attr.version,
-        "--python_tag",
-        ctx.attr.python_tag,
-        "--abi",
-        ctx.attr.abi,
-        "--platform",
-        ctx.attr.platform,
-        "--out",
-        outfile.path,
-    ]
+    # Inputs to this rule which are not to be packaged.
+    # Currently this is only the description file (if used).
+    other_inputs = []
 
-    # TODO: Use args api instead of flattening the depset.
-    for input_file in inputs.to_list():
-        arguments.append("--input_file")
-        arguments.append("%s;%s" % (_path_inside_wheel(input_file), input_file.path))
+    args = ctx.actions.args()
+    args.add("--name", ctx.attr.distribution)
+    args.add("--version", ctx.attr.version)
+    args.add("--python_tag", ctx.attr.python_tag)
+    args.add("--abi", ctx.attr.abi)
+    args.add("--platform", ctx.attr.platform)
+    args.add("--out", outfile.path)
+
+    args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
 
     extra_headers = []
     if ctx.attr.author:
@@ -118,36 +116,30 @@ def _py_wheel_impl(ctx):
         extra_headers.append("License: %s" % ctx.attr.license)
 
     for h in extra_headers:
-        arguments.append("--header")
-        arguments.append(h)
+        args.add("--header", h)
 
     for c in ctx.attr.classifiers:
-        arguments.append("--classifier")
-        arguments.append(c)
+        args.add("--classifier", c)
 
     for r in ctx.attr.requires:
-        arguments.append("--requires")
-        arguments.append(r)
+        args.add("--requires", r)
 
     for option, requirements in ctx.attr.extra_requires.items():
         for r in requirements:
-            arguments.append("--extra_requires")
-            arguments.append(r + ";" + option)
+            args.add("--extra_requires", r + ";" + option)
 
     for name, ref in ctx.attr.console_scripts.items():
-        arguments.append("--console_script")
-        arguments.append(name + " = " + ref)
+        args.add("--console_script", name + " = " + ref)
 
     if ctx.attr.description_file:
         description_file = ctx.file.description_file
-        arguments.append("--description_file")
-        arguments.append(description_file.path)
-        inputs = inputs.union([description_file])
+        args.add("--description_file", description_file)
+        other_inputs.append(description_file)
 
     ctx.actions.run(
-        inputs = inputs,
+        inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile],
-        arguments = arguments,
+        arguments = [args],
         executable = ctx.executable._wheelmaker,
         progress_message = "Building wheel",
     )
