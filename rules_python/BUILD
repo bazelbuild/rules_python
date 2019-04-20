@@ -63,4 +63,4 @@ par_binary(
     ],
 )
 
-exports(["piptool.py"])
+exports_files(["piptool.py"])
