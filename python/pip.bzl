@@ -51,7 +51,7 @@ pip_import = repository_rule(
         ),
         "_script": attr.label(
             executable = True,
-            default = Label("//tools:piptool.par"),
+            default = Label("//rules_python:piptool.py"),
             cfg = "host",
         ),
     },
