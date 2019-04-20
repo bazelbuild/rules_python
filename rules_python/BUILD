@@ -62,3 +62,5 @@ par_binary(
         ":whl",
     ],
 )
+
+exports(["piptool.py"])
