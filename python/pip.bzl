@@ -27,9 +27,17 @@ def _pip_import_impl(repository_ctx):
     # .     to work around the hardcoding to Python2 in the original repo.
     
     # To see the output, pass: quiet=False
+    
+    python = repository_ctx.which("python3.5")
+    script = repository_ctx.path(repository_ctx.attr._script)
+    
+    repository_ctx.report_progress(
+        "About to execute %s %s..." % (python, script)
+    )
+    
     result = repository_ctx.execute([
-        repository_ctx.which("python3.5"),
-        repository_ctx.path(repository_ctx.attr._script),
+        python,
+        script,
         "--name",
         repository_ctx.attr.name,
         "--input",
