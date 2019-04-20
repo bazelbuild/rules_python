@@ -22,9 +22,13 @@ def _pip_import_impl(repository_ctx):
     # requirements.bzl without it.
     repository_ctx.file("BUILD", "")
 
+    # TODO: Get rid of the horrible Python3.5 hardcoding hack and use
+    # .     something like py_runtime. This is needed at the present moment
+    # .     to work around the hardcoding to Python2 in the original repo.
+    
     # To see the output, pass: quiet=False
     result = repository_ctx.execute([
-        "python",
+        repository_ctx.which("python3.5"),
         repository_ctx.path(repository_ctx.attr._script),
         "--name",
         repository_ctx.attr.name,
