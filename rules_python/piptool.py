@@ -75,7 +75,12 @@ def pip_main(certfile, argv):
     # Extract the certificates from the PAR following the example of get-pip.py
     # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
     argv = ["--disable-pip-version-check", "--cert", certfile] + argv
-    return pip.main(argv)
+
+    # Hack to accomodate breaking change in earlier and latter versions of pip
+    if hasattr(pip, "main"):
+        return pip.main(argv)
+    else:
+        return pip._internal.main(argv)
 
 
 class Wheel(object):
