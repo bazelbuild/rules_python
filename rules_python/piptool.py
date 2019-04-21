@@ -65,6 +65,10 @@ extract_packages(['pip', 'setuptools', 'wheel'])
 saved_sys_path = sys.path
 sys.path = sys.path[:]
 import pip
+
+if not hasattr(pip, "main"):
+   import pip._internal
+
 sys.path = saved_sys_path
 
 import setuptools
