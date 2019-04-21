@@ -13,8 +13,6 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-import os
-
 CACERT_PEM_DOWNLOAD_URL = "https://curl.haxx.se/ca/cacert.pem"
 
 def _pip_import_impl(repository_ctx):
@@ -32,7 +30,7 @@ def _pip_import_impl(repository_ctx):
     # later versions of pip. Instead, we'll obtain the cacert.pem file from
     # https://curl.haxx.se/ca/cacert.pem.  
     # (See https://curl.haxx.se/docs/caextract.html).
-    cacert_pem_path = os.path.join(repository_ctx.path(""), "cacert.pem")
+    cacert_pem_path = "/".join([repository_ctx.path(""), "cacert.pem"])
     repository_ctx.download(CACERT_PEM_DOWNLOAD_URL, cacert_pem_path)
     repository_ctx.report_progress("certificats downloaded to %s" % cacert_pem_path)
     
