@@ -71,13 +71,10 @@ import setuptools
 import wheel
 
 
-def pip_main(argv):
+def pip_main(certfile, argv):
     # Extract the certificates from the PAR following the example of get-pip.py
     # https://github.com/pypa/get-pip/blob/430ba37776ae2ad89/template.py#L164-L168
-    cert_path = os.path.join(tempfile.mkdtemp(), "cacert.pem")
-    with open(cert_path, "wb") as cert:
-      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
-    argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
+    argv = ["--disable-pip-version-check", "--cert", certfile] + argv
     return pip.main(argv)
 
 
@@ -187,6 +184,9 @@ parser.add_argument('--output', action='store',
 parser.add_argument('--directory', action='store',
                     help=('The directory into which to put .whl files.'))
 
+parser.add_argument('--certfile', action='store',
+                    help=('The path to the certifcate PEM file.'))
+
 def determine_possible_extras(whls):
   """Determines the list of possible "extras" for each .whl
 
@@ -245,7 +245,7 @@ def main():
   args = parser.parse_args()
 
   # https://github.com/pypa/pip/blob/9.0.1/pip/__init__.py#L209
-  if pip_main(["wheel", "-w", args.directory, "-r", args.input]):
+  if pip_main(args.certfile, ["wheel", "-w", args.directory, "-r", args.input]):
     sys.exit(1)
 
   # Enumerate the .whl files we downloaded.
