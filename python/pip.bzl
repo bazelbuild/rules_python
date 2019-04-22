@@ -35,7 +35,6 @@ def _install_pkginfo(repository_ctx, certfile):
         "--disable-pip-version-check", 
         "--cert", certfile,
         "install",
-        "-y",
         "pkginfo"
     ])
 
