@@ -82,7 +82,7 @@ def _pip_import_impl(repository_ctx):
     # later versions of pip. Instead, we'll obtain the cacert.pem file from
     # https://curl.haxx.se/ca/cacert.pem.  
     # (See https://curl.haxx.se/docs/caextract.html).
-    cacert_pem_path = "/".join([repository_ctx.path(""), "cacert.pem"])
+    cacert_pem_path = repository_ctx.path("").get_child("cacert.pem")
     repository_ctx.download(CACERT_PEM_DOWNLOAD_URL, cacert_pem_path)
     repository_ctx.report_progress("certificates downloaded to %s" % cacert_pem_path)
 
@@ -95,10 +95,12 @@ def _pip_import_impl(repository_ctx):
     pkginfo = _install_pkginfo(repository_ctx, cacert_pem_path)
     unzip = repository_ctx.which(repository_ctx.attr.unzip)
 
+    _install_pkginfo(repository_ctx, cacert_pem_path)
+
     pip_cmd = [
         pip,
         "--disable-pip-version-check", 
-        "--cert", certfile,
+        "--cert", cacert_pem_path,
         "wheel",
         "-r", repository_ctx.path(repository_ctx.attr.requirements),
         "-w", repository_ctx.path("")
