@@ -40,7 +40,7 @@ def _install_pkginfo(repository_ctx, certfile):
     ])
 
     if result.return_code != 0:
-        fail("Failed to install pkginfo")
+        fail("Failed to install pkginfo - %s" % result.stderr)
 
     return repository_ctx.which("pkginfo")
 
