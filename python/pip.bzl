@@ -20,11 +20,12 @@ _PY_LIBRARY_DECLARATION = """
 py_library(
     name = "{name}",
     srcs = glob(["**/*.py"]),
-    data = glob(["**/*"], exclude=["/**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],
     deps = [{dependencies}],
+    visibility = ["//visibility:public"],
 )
 """
 
@@ -80,9 +81,13 @@ def _get_whl_dependencies(repository_ctx, whl_path):
 
     # Output from pkginfo command above will look like:
     # protobuf (>=3.5.0.post1),grpcio (>=1.19.0),aiohttp,foo (?),bar
-    deps = [dep.split(" ")[0].strip() for dep in result.stdout.split(",")]
+    # "extra" is not supported, so be sure to exclude it from the deps here.
+    deps = [dep.split(" ")[0].strip() 
+            for dep in result.stdout.split(",") 
+            if not ("extra" in dep and ";" in dep)]
+    dep_labels = ["\"//%s\"" % dep for dep in deps if dep]
 
-    return deps
+    return dep_labels
 
 
 def _pip_import_impl(repository_ctx):
@@ -142,8 +147,7 @@ def _pip_import_impl(repository_ctx):
         package_name = name_parts[0]
         package_version = name_parts[1]
         repository_ctx.report_progress("Processing %s %s" % (package_name, package_version))
-        deps = _get_whl_dependencies(repository_ctx, whl_file)
-        
+
         unzip_path = repository_ctx.path("").get_child(package_name)
         unzip_cmd = [
             unzip,
@@ -157,14 +161,16 @@ def _pip_import_impl(repository_ctx):
         if result.return_code != 0:
             fail("failed to run '%s'\nstdout: %s\nstderr: %s\n" % (" ".join(unzip_cmd), result.stdout, result.stderr))
 
+        deps = _get_whl_dependencies(repository_ctx, whl_file)
+
         library_declaration = _PY_LIBRARY_DECLARATION.format(name=package_name,
                                                              dependencies=",".join(deps))
         build_path = unzip_path.get_child("BUILD")
         repository_ctx.report_progress("Writing %s for %s %s..." % (build_path, package_name, package_version))
         repository_ctx.file(unzip_path.get_child("BUILD"), library_declaration)
 
-        packages[package_name] = "@{repo}//{name}:{name}".format(repo=repo,
-                                                                 name=package_name)
+        packages[package_name] = "@{repo}//{name}".format(repo=repo,
+                                                          name=package_name)
 
 
     package_list = ",\n    ".join(["\"{key}\": \"{value}\"".format(key=key, value=value) for key, value in packages.items()])
