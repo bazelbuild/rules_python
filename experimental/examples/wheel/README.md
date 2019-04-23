@@ -1,1 +1,0 @@
-This is a sample description of a wheel.

@@ -19,13 +19,32 @@ CACERT_PEM_DOWNLOAD_URL = "https://curl.haxx.se/ca/cacert.pem"
 _PY_LIBRARY_DECLARATION = """
 py_library(
     name = "{name}",
-    srcs = glob(["{name}/**/*.py"]),
-    data = glob(["{name}/**/*"], exclude=["{name}/**/*.py", "{name}/**/* *", "{name}/BUILD", "{name}/WORKSPACE"]),
+    srcs = glob(["**/*.py"]),
+    data = glob(["**/*"], exclude=["/**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["./{name}"],
+    imports = ["."],
     deps = [{dependencies}],
 )
+"""
+
+_REQUIREMENTS_BZL = """
+def pip_install():
+    # Does nothing
+    pass
+
+_REQUIREMENTS = {{
+    {packages}
+}}
+
+def requirement(name):
+
+    if name not in _REQUIREMENTS:
+        fail("Could not find requirement %s" % name)
+
+    return _REQUIREMENTS[name]
+
+all_requirements = _REQUIREMENTS.values()
 """
 
 def _install_pkginfo(repository_ctx, certfile):
@@ -95,14 +114,17 @@ def _pip_import_impl(repository_ctx):
     unzip = repository_ctx.which(repository_ctx.attr.unzip)
 
     _install_pkginfo(repository_ctx, cacert_pem_path)
+    requirements = repository_ctx.path(repository_ctx.attr.requirements)
+    directory = repository_ctx.path("")
 
+    repository_ctx.report_progress("Downloading packages specified in %s to %s..." % (requirements, directory))
     pip_cmd = [
         pip,
         "--disable-pip-version-check", 
         "--cert", cacert_pem_path,
         "wheel",
-        "-r", repository_ctx.path(repository_ctx.attr.requirements),
-        "-w", repository_ctx.path("")
+        "-r", requirements,
+        "-w", directory
     ]
 
     result = repository_ctx.execute(pip_cmd)
@@ -112,13 +134,16 @@ def _pip_import_impl(repository_ctx):
 
     wheel_files = [p for p in repository_ctx.path("").readdir() if p.basename.endswith(".whl")]
 
-    wheels = {}
+    packages = {}
+    repo = str(directory).split("/")[-1]
 
     for whl_file in wheel_files:
-        name_parts = whl_file.base_name.split("-")
+        name_parts = whl_file.basename.split("-")
         package_name = name_parts[0]
         package_version = name_parts[1]
+        repository_ctx.report_progress("Processing %s %s" % (package_name, package_version))
         deps = _get_whl_dependencies(repository_ctx, whl_file)
+        
         unzip_path = repository_ctx.path("").get_child(package_name)
         unzip_cmd = [
             unzip,
@@ -126,10 +151,31 @@ def _pip_import_impl(repository_ctx):
             whl_file
         ]
 
+        repository_ctx.report_progress("Unzipping %s %s..." % (package_name, package_version))
+        result = repository_ctx.execute(unzip_cmd)
+
+        if result.return_code != 0:
+            fail("failed to run '%s'\nstdout: %s\nstderr: %s\n" % (" ".join(unzip_cmd), result.stdout, result.stderr))
+
         library_declaration = _PY_LIBRARY_DECLARATION.format(name=package_name,
                                                              dependencies=",".join(deps))
+        build_path = unzip_path.get_child("BUILD")
+        repository_ctx.report_progress("Writing %s for %s %s..." % (build_path, package_name, package_version))
         repository_ctx.file(unzip_path.get_child("BUILD"), library_declaration)
 
+        packages[package_name] = "@{repo}//{name}:{name}".format(repo=repo,
+                                                                 name=package_name)
+
+
+    package_list = ",\n    ".join(["\"{key}\": \"{value}\"".format(key=key, value=value) for key, value in packages.items()])
+
+    requirements_bzl = repository_ctx.path("").get_child("requirements.bzl")
+    requirements_bzl_content = _REQUIREMENTS_BZL.format(packages=package_list)
+
+    repository_ctx.report_progress("Writing requirements.bzl")
+    repository_ctx.file(requirements_bzl, requirements_bzl_content)
+
+    repository_ctx.report_progress("")
 
 pip_import = repository_rule(
     attrs = {
@@ -139,7 +185,7 @@ pip_import = repository_rule(
         ),
         "pip": attr.string(default="pip3.5", doc="Which pip version to use. Defaults to pip3.5."),
         "python": attr.string(default="python3.5", doc="Which python version to use. Defaults to python3.5"),
-        "unzip": attr.string(default="/usr/bin/unzip", doc="Which unzip tool to use. Defaults to /usr/bin/unzip."),
+        "unzip": attr.string(default="unzip", doc="Which unzip tool to use. Defaults to unzip."),
     },
     implementation = _pip_import_impl,
 )
