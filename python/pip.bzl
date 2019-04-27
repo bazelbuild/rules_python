@@ -40,28 +40,37 @@ _REQUIREMENTS = {{
 
 def requirement(name):
 
-    if name not in _REQUIREMENTS:
-        fail("Could not find requirement %s" % name)
+    if name in _REQUIREMENTS:
+        return _REQUIREMENTS[name]
 
-    return _REQUIREMENTS[name]
+    name2 = name.replace("-", "_")
+
+    if name2 in _REQUIREMENTS:
+        return _REQUIREMENTS[name2]
+
+    fail("Could not find %s or %s in requirements" % (name, name2))
+
 
 all_requirements = _REQUIREMENTS.values()
 """
 
-def _install_pkginfo(repository_ctx, certfile):
+def _install(repositor_ctx, certfile, package_name, version=None):
     pip = repository_ctx.which(repository_ctx.attr.pip)
+    package = package_name
+
+    if version:
+        package += "=={version}".format(version==version)
+
     result = repository_ctx.execute([
         pip,
         "--disable-pip-version-check", 
         "--cert", certfile,
         "install",
-        "pkginfo"
+        package,
     ])
 
     if result.return_code != 0:
-        fail("Failed to install pkginfo - %s" % result.stderr)
-
-    return repository_ctx.which("pkginfo")
+        fail("Failed to install %s - %s\n%s\n" % (package, result.stderr, result.stdout))
 
 
 def _get_whl_dependencies(repository_ctx, whl_path):
@@ -85,7 +94,8 @@ def _get_whl_dependencies(repository_ctx, whl_path):
     deps = [dep.split(" ")[0].strip() 
             for dep in result.stdout.split(",") 
             if not ("extra" in dep and ";" in dep)]
-    dep_labels = ["\"//%s\"" % dep for dep in deps if dep]
+    dep_labels = ["\"//%s\"".replace("-", "_") % dep 
+                  for dep in deps if dep]
 
     return dep_labels
 
@@ -111,11 +121,12 @@ def _pip_import_impl(repository_ctx):
 
     # To see the output, pass: quiet=False
 
-    # Everything piptools.py originally did, we're going to do manually here.
+    _install(repository_ctx, cacert_pem_path, "pkginfo")
+    _install(repository_ctx, cacert_pem_path, "pip-api", "0.0.7")
 
     pip = repository_ctx.which(repository_ctx.attr.pip)
     python = repository_ctx.which(repository_ctx.attr.python)
-    pkginfo = _install_pkginfo(repository_ctx, cacert_pem_path)
+    pkginfo = repository_ctx.which("pkginfo")
     unzip = repository_ctx.which(repository_ctx.attr.unzip)
 
     _install_pkginfo(repository_ctx, cacert_pem_path)
