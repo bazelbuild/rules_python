@@ -17,19 +17,34 @@ CACERT_PEM_DOWNLOAD_URL = "https://curl.haxx.se/ca/cacert.pem"
 
 
 _PY_LIBRARY_DECLARATION = """
+
 py_library(
     name = "{name}",
-    srcs = glob(["**/*.py"]),
-    data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    srcs = [
+        {srcs}
+    ],
+    data = [
+        {data}
+    ],
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],
-    deps = [{dependencies}],
+    deps = [
+        {dependencies}
+    ],
     visibility = ["//visibility:public"],
 )
+
+"""
+
+_BUILD = """
+load("@io_bazel_rules_python//python:python.bzl", "py_library")
+
+{library_declarations}
 """
 
 _REQUIREMENTS_BZL = """
+
 def pip_install():
     # Does nothing
     pass
@@ -43,7 +58,7 @@ def requirement(name):
     if name in _REQUIREMENTS:
         return _REQUIREMENTS[name]
 
-    name2 = name.replace("-", "_")
+    name2 = name.replace("_", "-")
 
     if name2 in _REQUIREMENTS:
         return _REQUIREMENTS[name2]
@@ -54,61 +69,122 @@ def requirement(name):
 all_requirements = _REQUIREMENTS.values()
 """
 
-def _install(repositor_ctx, certfile, package_name, version=None):
+
+def _run(repository_ctx, cmd):
+    result = repository_ctx.execute(cmd)
+
+    if result.return_code != 0:
+        fail("Failed to execute '%s'\nstderr: %s\nstdout: %s\n" % (" ".join(cmd), result.stderr, result.stdout))
+
+    return result.stdout.strip()
+
+def _install(repository_ctx, certfile, package_name, version=None):
     pip = repository_ctx.which(repository_ctx.attr.pip)
     package = package_name
 
     if version:
         package += "=={version}".format(version==version)
 
-    result = repository_ctx.execute([
+    cmd = [
         pip,
         "--disable-pip-version-check", 
         "--cert", certfile,
         "install",
         package,
-    ])
+    ]
 
-    if result.return_code != 0:
-        fail("Failed to install %s - %s\n%s\n" % (package, result.stderr, result.stdout))
+    _run(repository_ctx, cmd)
 
 
-def _get_whl_dependencies(repository_ctx, whl_path):
+def _run_pkginfo(repository_ctx, whl_path, field):
     pkginfo = repository_ctx.which("pkginfo")
 
     cmd = [
         pkginfo,
         "--single",
-        "-f", "requires_dist",
+        "-f", field,
         whl_path
     ]
 
-    result = repository_ctx.execute(cmd)
+    return _run(repository_ctx, cmd)
 
-    if result.return_code != 0:
-        fail("Failed to execute '%s'\nstderr: %s\nstdout: %s\n" % (" ".join(cmd), result.stderr, result.stdout))
 
-    # Output from pkginfo command above will look like:
-    # protobuf (>=3.5.0.post1),grpcio (>=1.19.0),aiohttp,foo (?),bar
-    # "extra" is not supported, so be sure to exclude it from the deps here.
-    deps = [dep.split(" ")[0].strip() 
-            for dep in result.stdout.split(",") 
-            if not ("extra" in dep and ";" in dep)]
-    dep_labels = ["\"//%s\"".replace("-", "_") % dep 
-                  for dep in deps if dep]
+def _get_whl_name(repository_ctx, whl_path):
+    result = _run_pkginfo(repository_ctx, whl_path, "name")
+    return result
 
-    return dep_labels
+
+def _get_whl_dependencies(repository_ctx, whl_path):
+    result = _run_pkginfo(repository_ctx, whl_path, "requires_dist")
+    requires = [r.strip() for r in result.split(",")]
+    deps = [(dep.split(";")[0]).split(" ")[0] for dep in requires]
+    return deps
+
+
+def _dist_info_for_whl_file(whl_file):
+    parts = whl_file.basename.split("-")
+    return "%s-%s.dist-info" % (parts[0], parts[1])
+
+
+def _content(repository_ctx, path):
+    result = _run(repository_ctx, ["cat", path])
+    return result.strip()
+
+
+def _unzip(repository_ctx, whl_file, unzip_path):
+    unzip = repository_ctx.which(repository_ctx.attr.unzip)
+    unzip_cmd = [
+        unzip,
+        "-d", unzip_path,
+        whl_file
+    ]
+    return _run(repository_ctx, unzip_cmd)
+
+
+def _run_wheel(repository_ctx, requirements, directory, cacert_pem_path):
+    pip = repository_ctx.which(repository_ctx.attr.pip)
+    cmd = [
+        pip,
+        "--disable-pip-version-check", 
+        "--cert", cacert_pem_path,
+        "wheel",
+        "-r", requirements,
+        "-w", directory
+    ]
+    return _run(repository_ctx, cmd)
+
+
+def _process_whl_record(root, record, top_levels):
+    srcs = []
+    data = []
+
+    for line in record.split("\n"):
+        
+        parts = line.split(",")
+
+        file = parts[0]
+        sha256 = parts[1]
+        size = parts[2]
+
+        # TODO: Use sha256 and size for verification
+
+        if file.endswith(".py"):
+            srcs.append(file)
+        else:
+            data.append(file)
+
+    for top_level in [t for t in top_levels if '/' not in t]:
+        tlf = root.get_child("%s.py" % top_level)
+        if tlf.exists and str(tlf.basename) not in srcs:
+            srcs.append(str(tlf.basename))
+
+
+    return srcs, data
 
 
 def _pip_import_impl(repository_ctx):
     """Core implementation of pip_import."""
 
-    # Add an empty top-level BUILD file.
-    # This is because Bazel requires BUILD files along all paths accessed
-    # via //this/sort/of:path and we wouldn't be able to load our generated
-    # requirements.bzl without it.
-    repository_ctx.file("BUILD", "")
-    
     # One of the things the original piptools.py script did was to extract 
     # cacerts.pem from pip._vendor.requests. This was already bad due to 
     # the access of a private package, but now it is actually broken with
@@ -122,72 +198,69 @@ def _pip_import_impl(repository_ctx):
     # To see the output, pass: quiet=False
 
     _install(repository_ctx, cacert_pem_path, "pkginfo")
-    _install(repository_ctx, cacert_pem_path, "pip-api", "0.0.7")
+    _install(repository_ctx, cacert_pem_path, "packaging")
 
-    pip = repository_ctx.which(repository_ctx.attr.pip)
-    python = repository_ctx.which(repository_ctx.attr.python)
-    pkginfo = repository_ctx.which("pkginfo")
-    unzip = repository_ctx.which(repository_ctx.attr.unzip)
-
-    _install_pkginfo(repository_ctx, cacert_pem_path)
     requirements = repository_ctx.path(repository_ctx.attr.requirements)
     directory = repository_ctx.path("")
 
     repository_ctx.report_progress("Downloading packages specified in %s to %s..." % (requirements, directory))
-    pip_cmd = [
-        pip,
-        "--disable-pip-version-check", 
-        "--cert", cacert_pem_path,
-        "wheel",
-        "-r", requirements,
-        "-w", directory
-    ]
+    _run_wheel(repository_ctx, requirements, directory, cacert_pem_path)
 
-    result = repository_ctx.execute(pip_cmd)
+    whl_file_list = [p for p in repository_ctx.path("").readdir() if p.basename.endswith(".whl")]
 
-    if result.return_code != 0:
-        fail("failed to run '%s'\nstdout: %s\nstderr: %s\n" % (" ".join(pip_cmd), result.stdout, result.stderr))
+    whl_files = {
+        _get_whl_name(repository_ctx, whl_file): whl_file
+        for whl_file in whl_file_list
+    }
 
-    wheel_files = [p for p in repository_ctx.path("").readdir() if p.basename.endswith(".whl")]
+    whl_deps = {
+        whl_name: _get_whl_dependencies(repository_ctx, whl_file)
+        for whl_name, whl_file in whl_files.items()
+    }
 
-    packages = {}
+    libraries = []
+
+    for whl_name, whl_file in whl_files.items():
+        repository_ctx.report_progress("Processing %s" % whl_name)
+        _unzip(repository_ctx, whl_file, repository_ctx.path(""))
+
+        dist_info_path = repository_ctx.path("").get_child(_dist_info_for_whl_file(whl_file))
+
+        top_level_txt = dist_info_path.get_child("top_level.txt")
+        top_level_content = _content(repository_ctx, top_level_txt)
+        top_levels = [tlc.strip() for tlc in top_level_content.split("\n")]
+
+        record_path = dist_info_path.get_child("RECORD")
+        record = _content(repository_ctx, record_path)
+
+        src_list, data_list = _process_whl_record(directory, record, top_levels)
+        dep_list = [dep for dep in whl_deps[whl_name] if dep in whl_files]
+
+        srcs = ",\n        ".join(["\"%s\"" % s for s in src_list])
+        data = ",\n        ".join(["\"%s\"" % d for d in data_list])
+        deps = ", ".join(["\":%s\"" % dep for dep in dep_list])
+
+        library_declaration = _PY_LIBRARY_DECLARATION.format(name=whl_name,
+                                                             srcs=srcs,
+                                                             data=data,
+                                                             dependencies=deps)
+        libraries.append(library_declaration)
+
+
     repo = str(directory).split("/")[-1]
-
-    for whl_file in wheel_files:
-        name_parts = whl_file.basename.split("-")
-        package_name = name_parts[0]
-        package_version = name_parts[1]
-        repository_ctx.report_progress("Processing %s %s" % (package_name, package_version))
-
-        unzip_path = repository_ctx.path("").get_child(package_name)
-        unzip_cmd = [
-            unzip,
-            "-d", unzip_path,
-            whl_file
-        ]
-
-        repository_ctx.report_progress("Unzipping %s %s..." % (package_name, package_version))
-        result = repository_ctx.execute(unzip_cmd)
-
-        if result.return_code != 0:
-            fail("failed to run '%s'\nstdout: %s\nstderr: %s\n" % (" ".join(unzip_cmd), result.stdout, result.stderr))
-
-        deps = _get_whl_dependencies(repository_ctx, whl_file)
-
-        library_declaration = _PY_LIBRARY_DECLARATION.format(name=package_name,
-                                                             dependencies=",".join(deps))
-        build_path = unzip_path.get_child("BUILD")
-        repository_ctx.report_progress("Writing %s for %s %s..." % (build_path, package_name, package_version))
-        repository_ctx.file(unzip_path.get_child("BUILD"), library_declaration)
-
-        packages[package_name] = "@{repo}//{name}".format(repo=repo,
-                                                          name=package_name)
-
-
+    packages = {
+        whl_name: "@{repo}//:{name}".format(repo=repo, name=whl_name)
+        for whl_name in whl_files.keys()
+    }
     package_list = ",\n    ".join(["\"{key}\": \"{value}\"".format(key=key, value=value) for key, value in packages.items()])
+    library_declarations = "".join(libraries)
 
     requirements_bzl = repository_ctx.path("").get_child("requirements.bzl")
     requirements_bzl_content = _REQUIREMENTS_BZL.format(packages=package_list)
+    build_content = _BUILD.format(library_declarations=library_declarations)
+
+    repository_ctx.report_progress("Writing BUILD file")
+    repository_ctx.file("BUILD", build_content)
 
     repository_ctx.report_progress("Writing requirements.bzl")
     repository_ctx.file(requirements_bzl, requirements_bzl_content)
