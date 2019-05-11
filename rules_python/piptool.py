@@ -217,7 +217,9 @@ all_requirements = _requirements.values()
 def requirement(name):
   name_key = name.replace("-", "_").lower()
   if name_key not in _requirements:
-    fail("Could not find pip-provided dependency: '%s'" % name)
+    name_key = name_key[:name_key.find("[")]
+    if name_key not in _requirements:
+      fail("Could not find pip-provided dependency: '%s'" % name)
   return _requirements[name_key]
 """.format(input=args.input,
            whl_libraries='\n'.join(map(whl_library, whls)) if whls else "pass",
