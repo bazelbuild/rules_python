@@ -26,4 +26,5 @@ py_test(
         # Make sure that we can resolve the "extra" dependency
         requirement("googleapis-common-protos[grpc]"),
     ],
+    python_version = "PY2",
 )
