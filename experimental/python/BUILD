@@ -1,4 +1,4 @@
-# Copyright 2017 The Bazel Authors. All rights reserved.
+# Copyright 2018 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,4 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("@examples_extras//:requirements.bzl", "requirement")
-load("//python:python.bzl", "py_test")
-
-py_test(
-    name = "extras_test",
-    srcs = ["extras_test.py"],
-    deps = [
-        requirement("google-cloud-language"),
-        # Make sure that we can resolve the "extra" dependency
-        requirement("googleapis-common-protos[grpc]"),
-    ],
-    python_version = "PY2",
-)
+exports_files(["wheel.bzl"])
