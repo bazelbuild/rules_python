@@ -1,0 +1,2 @@
+google-cloud-core==1.0.1
+google-cloud-storage==1.16.1

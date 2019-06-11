@@ -155,6 +155,18 @@ load(
 _helloworld_install()
 
 pip_import(
+    name = "examples_gcs",
+    requirements = "//examples/gcs:requirements.txt",
+)
+
+load(
+    "@examples_gcs//:requirements.bzl",
+    _gcs_install = "pip_install",
+)
+
+_gcs_install()
+
+pip_import(
     name = "examples_version",
     requirements = "//examples/version:requirements.txt",
 )

@@ -1,0 +1,38 @@
+# Copyright 2017 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])  # Apache 2.0
+
+load("@examples_gcs//:requirements.bzl", "requirement")
+load("//python:python.bzl", "py_library", "py_test")
+
+py_test(
+    name = "gcs_test_missing_dep",
+    srcs = ["gcs_test_missing_dep.py"],
+    python_version = "PY2",
+    deps = [
+        requirement("google-cloud-storage"),
+    ],
+)
+
+py_test(
+    name = "gcs_test_conflicting_dep",
+    srcs = ["gcs_test_conflicting_dep.py"],
+    python_version = "PY2",
+    deps = [
+        requirement("google-cloud-core"),
+        requirement("google-cloud-storage"),
+    ],
+)
