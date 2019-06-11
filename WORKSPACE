@@ -155,6 +155,18 @@ load(
 _helloworld_install()
 
 pip_import(
+    name = "examples_dataflaw",
+    requirements = "//examples/dataflaw:requirements.txt",
+)
+
+load(
+    "@examples_dataflaw//:requirements.bzl",
+    _dataflaw_install = "pip_install",
+)
+
+_dataflaw_install()
+
+pip_import(
     name = "examples_version",
     requirements = "//examples/version:requirements.txt",
 )
