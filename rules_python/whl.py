@@ -15,12 +15,12 @@
 
 import argparse
 import collections
-import rfc822
 import json
 import os
 import pkg_resources
 import re
 import zipfile
+from email.parser import Parser
 
 EXTRA_RE = re.compile("""^(?P<package>.*?)(;\s*(?P<condition>.*?)(extra == '(?P<extra>.*?)')?)$""")
 MayRequiresKey = collections.namedtuple('MayRequiresKey', ('condition', 'extra'))
@@ -71,7 +71,10 @@ class Wheel(object):
           pass
       # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
       with whl.open(self._dist_info() + '/METADATA') as f:
-        return self._parse_metadata(f)
+        # email.parser uses cStringIO and has issues with utf-8,
+        # so we use ascii
+        content = f.read().decode("ascii", "ignore")
+        return self._parse_metadata(content)
 
   def name(self):
     return self.metadata().get('name')
@@ -112,16 +115,14 @@ class Wheel(object):
 
   # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
   def _parse_metadata(self, content):
-    def get_header_value(header):
-      return header.strip().split(':', 2)[1].strip()
     metadata = {}
-    pkg_info = rfc822.Message(content)
+    pkg_info = Parser().parsestr(content)
     metadata['name'] = pkg_info.get('Name')
-    extras = [get_header_value(h) for h in pkg_info.getallmatchingheaders('Provides-Extra')]
+    extras = pkg_info.get_all('Provides-Extra', [])
     if extras:
       metadata['extras'] = list(set(extras))
 
-    reqs_dist = [get_header_value(h) for h in pkg_info.getallmatchingheaders('Requires-Dist')]
+    reqs_dist = pkg_info.get_all('Requires-Dist', [])
     requires = collections.defaultdict(set)
     for value in sorted(reqs_dist):
       extra_match = EXTRA_RE.search(value)
