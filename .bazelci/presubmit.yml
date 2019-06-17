@@ -15,3 +15,17 @@ platforms:
     - "..."
     test_targets:
     - "..."
+  windows:
+    build_flags:
+    - "--enable_runfiles"
+    build_targets:
+    - "--"
+    - "..."
+    - "-//rules_python/..."
+    test_flags:
+    - "--enable_runfiles" # Need runfiles tree for test
+    test_targets:
+    - "--"
+    - "..."
+    - "-//rules_python/..."
+    - "-//experimental/examples/wheel:wheel_test"
