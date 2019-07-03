@@ -102,6 +102,7 @@ def _py_wheel_impl(ctx):
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
+    args.add("--package_root_path", ctx.attr.package_root_path)
 
     args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
 
@@ -242,6 +243,10 @@ to refer to the package in other packages' dependencies.
         "license": attr.string(default = ""),
         "classifiers": attr.string_list(),
         "description_file": attr.label(allow_single_file = True),
+        "package_root_path": attr.string(
+            default = "none",
+            doc = "path to the root of the generated package (default is workspace path)",
+        ),
         # Requirements
         "requires": attr.string_list(
             doc = "List of requirements for this package",

@@ -85,6 +85,19 @@ py_wheel(
     deps = [":example_pkg"],
 )
 
+# An example of how to change the wheel package root directory.
+py_wheel(
+    name = "custom_package_root",
+    # Package data. We're building "custom_package_root-0.0.1-py3-none-any.whl"
+    distribution = "example_custom_package_root",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg"
+    ],
+    package_root_path = "experimental"
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -92,5 +105,6 @@ py_test(
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
+        ":custom_package_root",
     ],
 )

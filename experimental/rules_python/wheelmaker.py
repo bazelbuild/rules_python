@@ -35,7 +35,7 @@ def commonpath(path1, path2):
 
 class WheelMaker(object):
     def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None):
+                 outfile=None, package_root_path=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -43,6 +43,7 @@ class WheelMaker(object):
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
+        self._package_root_path = package_root_path if package_root_path != "none" else None
 
         self._zipfile = None
         self._record = []
@@ -93,8 +94,18 @@ class WheelMaker(object):
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
+        def strip_prefix(path, prefix):
+            if path.startswith(prefix):
+                return path[len(prefix):]
+            else:
+                return path
+
+        resolved_package_filename = package_filename \
+            if self._package_root_path is None \
+            else strip_prefix(package_filename, self._package_root_path)
+
         # Always use unix path separators.
-        arcname = package_filename.replace(os.path.sep, '/')
+        arcname = resolved_package_filename.replace(os.path.sep, '/')
         self._zipfile.write(real_filename, arcname=arcname)
         # Find the hash and length
         hash = hashlib.sha256()
@@ -208,6 +219,9 @@ def main():
     output_group.add_argument('--out', type=str, default=None,
                               help="Override name of ouptut file")
 
+    output_group.add_argument('--package_root_path', type=str, default=None,
+                              help="File path prefix to strip from input package files")
+
     wheel_group = parser.add_argument_group("Wheel metadata")
     wheel_group.add_argument(
         '--header', action='append',
@@ -254,7 +268,9 @@ def main():
                     python_tag=arguments.python_tag,
                     abi=arguments.abi,
                     platform=arguments.platform,
-                    outfile=arguments.out) as maker:
+                    outfile=arguments.out,
+                    package_root_path=arguments.package_root_path,
+                    ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
         maker.add_wheelfile()
