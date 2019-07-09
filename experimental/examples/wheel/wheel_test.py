@@ -102,7 +102,7 @@ Requires-Dist: pytest
 This is a sample description of a wheel.
 """)
 
-    def test_custom_package_root_path_wheel(self):
+    def test_custom_package_root_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'io_bazel_rules_python', 'experimental',
                                 'examples', 'wheel',

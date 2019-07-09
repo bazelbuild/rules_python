@@ -35,7 +35,7 @@ def commonpath(path1, path2):
 
 class WheelMaker(object):
     def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None, package_root_path=None):
+                 outfile=None, strip_path_prefix=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -43,7 +43,7 @@ class WheelMaker(object):
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
-        self._package_root_path = package_root_path if package_root_path != "none" else None
+        self._strip_path_prefix = strip_path_prefix if strip_path_prefix != "none" else None
 
         self._zipfile = None
         self._record = []
@@ -95,14 +95,12 @@ class WheelMaker(object):
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
         def strip_prefix(path, prefix):
-            if path.startswith(prefix):
-                return path[len(prefix):]
-            else:
+            if prefix is None or not path.startswith(prefix):
                 return path
+            else:
+                return path[len(prefix):]
 
-        resolved_package_filename = package_filename \
-            if self._package_root_path is None \
-            else strip_prefix(package_filename, self._package_root_path)
+        resolved_package_filename = strip_prefix(package_filename, self._strip_path_prefix)
 
         # Always use unix path separators.
         arcname = resolved_package_filename.replace(os.path.sep, '/')
@@ -219,7 +217,7 @@ def main():
     output_group.add_argument('--out', type=str, default=None,
                               help="Override name of ouptut file")
 
-    output_group.add_argument('--package_root_path', type=str, default=None,
+    output_group.add_argument('--strip_path_prefix', type=str, default=None,
                               help="File path prefix to strip from input package files")
 
     wheel_group = parser.add_argument_group("Wheel metadata")
@@ -269,7 +267,7 @@ def main():
                     abi=arguments.abi,
                     platform=arguments.platform,
                     outfile=arguments.out,
-                    package_root_path=arguments.package_root_path,
+                    strip_path_prefix=arguments.strip_path_prefix,
                     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
