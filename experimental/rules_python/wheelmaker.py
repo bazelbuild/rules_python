@@ -92,17 +92,17 @@ class WheelMaker(object):
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
-        def strip_prefix(path, prefixes):
-            for prefix in prefixes:
-                if path.startswith(prefix):
-                    return path[len(prefix):]
+        def arcname_from(name):
+            # Always use unix path separators.
+            normalized_arcname = name.replace(os.path.sep, '/')
+            for prefix in self._strip_path_prefixes:
+                if normalized_arcname.startswith(prefix):
+                    return normalized_arcname[len(prefix):]
 
-            return path
+            return normalized_arcname
 
-        resolved_package_filename = strip_prefix(package_filename, self._strip_path_prefixes)
+        arcname = arcname_from(package_filename)
 
-        # Always use unix path separators.
-        arcname = resolved_package_filename.replace(os.path.sep, '/')
         self._zipfile.write(real_filename, arcname=arcname)
         # Find the hash and length
         hash = hashlib.sha256()
