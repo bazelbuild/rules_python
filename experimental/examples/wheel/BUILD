@@ -85,6 +85,51 @@ py_wheel(
     deps = [":example_pkg"],
 )
 
+# An example of how to change the wheel package root directory using 'strip_path_prefixes'.
+py_wheel(
+    name = "custom_package_root",
+    # Package data. We're building "custom_package_root-0.0.1-py3-none-any.whl"
+    distribution = "example_custom_package_root",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg"
+    ],
+    strip_path_prefixes = [
+        "experimental"
+    ]
+)
+
+py_wheel(
+    name = "custom_package_root_multi_prefix",
+    # Package data. We're building "custom_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl"
+    distribution = "example_custom_package_root_multi_prefix",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg"
+    ],
+    strip_path_prefixes = [
+        "experimental/examples/wheel/lib",
+        "experimental/examples/wheel"
+    ]
+)
+
+py_wheel(
+    name = "custom_package_root_multi_prefix_reverse_order",
+    # Package data. We're building "custom_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl"
+    distribution = "example_custom_package_root_multi_prefix_reverse_order",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg"
+    ],
+    strip_path_prefixes = [
+        "experimental/examples/wheel" ,
+        "experimental/examples/wheel/lib" # this is not effective, because the first prefix takes priority
+    ]
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -92,5 +137,8 @@ py_test(
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
-    ],
+        ":custom_package_root",
+        ":custom_package_root_multi_prefix",
+        ":custom_package_root_multi_prefix_reverse_order"
+    ]
 )
