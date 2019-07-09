@@ -35,7 +35,7 @@ def commonpath(path1, path2):
 
 class WheelMaker(object):
     def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None, strip_path_prefix=None):
+                 outfile=None, strip_path_prefixes=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -43,7 +43,7 @@ class WheelMaker(object):
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
-        self._strip_path_prefix = strip_path_prefix if strip_path_prefix != "none" else None
+        self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
 
         self._zipfile = None
         self._record = []
@@ -94,13 +94,14 @@ class WheelMaker(object):
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
-        def strip_prefix(path, prefix):
-            if prefix is None or not path.startswith(prefix):
-                return path
-            else:
-                return path[len(prefix):]
+        def strip_prefix(path, prefixes):
+            for prefix in prefixes:
+                if path.startswith(prefix):
+                    return path[len(prefix):]
 
-        resolved_package_filename = strip_prefix(package_filename, self._strip_path_prefix)
+            return path
+
+        resolved_package_filename = strip_prefix(package_filename, self._strip_path_prefixes)
 
         # Always use unix path separators.
         arcname = resolved_package_filename.replace(os.path.sep, '/')
@@ -217,8 +218,14 @@ def main():
     output_group.add_argument('--out', type=str, default=None,
                               help="Override name of ouptut file")
 
-    output_group.add_argument('--strip_path_prefix', type=str, default=None,
-                              help="File path prefix to strip from input package files")
+    output_group.add_argument('--strip_path_prefix',
+                              type=str,
+                              action="append",
+                              default=[],
+                              help="Path prefix to be stripped from input package files' path. "
+                                   "Can be supplied multiple times. "
+                                   "Evaluated in order."
+                              )
 
     wheel_group = parser.add_argument_group("Wheel metadata")
     wheel_group.add_argument(
@@ -260,6 +267,8 @@ def main():
     # Sort the files for reproducible order in the archive.
     all_files = sorted(all_files.items())
 
+    strip_prefixes = [p for p in arguments.strip_path_prefix]
+
     with WheelMaker(name=arguments.name,
                     version=arguments.version,
                     build_tag=arguments.build_tag,
@@ -267,7 +276,7 @@ def main():
                     abi=arguments.abi,
                     platform=arguments.platform,
                     outfile=arguments.out,
-                    strip_path_prefix=arguments.strip_path_prefix,
+                    strip_path_prefixes=strip_prefixes,
                     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
