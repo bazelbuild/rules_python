@@ -111,7 +111,7 @@ py_wheel(
     ],
     strip_path_prefixes = [
         "experimental/examples/wheel/lib",
-        "experimental/examples/wheel" ,
+        "experimental/examples/wheel"
     ]
 )
 
@@ -126,7 +126,7 @@ py_wheel(
     ],
     strip_path_prefixes = [
         "experimental/examples/wheel" ,
-        "experimental/examples/wheel/lib", # this is not effective, because the first prefix takes priority
+        "experimental/examples/wheel/lib" # this is not effective, because the first prefix takes priority
     ]
 )
 
@@ -139,6 +139,6 @@ py_test(
         ":minimal_with_py_package",
         ":custom_package_root",
         ":custom_package_root_multi_prefix",
-        ":custom_package_root_multi_prefix_reverse_order",
-    ],
+        ":custom_package_root_multi_prefix_reverse_order"
+    ]
 )

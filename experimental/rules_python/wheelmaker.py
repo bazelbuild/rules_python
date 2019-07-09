@@ -15,9 +15,7 @@
 import argparse
 import base64
 import collections
-import csv
 import hashlib
-import io
 import os
 import os.path
 import sys
@@ -276,7 +274,7 @@ def main():
                     abi=arguments.abi,
                     platform=arguments.platform,
                     outfile=arguments.out,
-                    strip_path_prefixes=strip_prefixes,
+                    strip_path_prefixes=strip_prefixes
                     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
