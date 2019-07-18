@@ -20,6 +20,14 @@ import pkg_resources
 import re
 import zipfile
 
+def _bfs_walk(dirname): 
+    dirs = [dirname] 
+    while len(dirs): 
+        parent = dirs.pop(0)
+        children = [os.path.join(parent, fname) for fname in os.listdir(parent)]
+        children = [d for d in children if os.path.isdir(d)]
+        dirs.extend(children)
+        yield parent
 
 class Wheel(object):
 
@@ -111,6 +119,42 @@ class Wheel(object):
     name_pattern = re.compile('Name: (.*)')
     return { 'name': name_pattern.search(content).group(1) }
 
+  def _find_package_path(self, directory): 
+    """Finds the path to the package within the extracted .whl. 
+
+    This is a patch to fix this issue: 
+        https://github.com/bazelbuild/rules_python/issues/189
+        https://github.com/bazelbuild/rules_python/issues/92
+
+    Bazel assumes the package is located in the top-level directory of the 
+    extracted whl. For instance, the structure of the matplotlib .whl is: 
+        extracted_whl 
+            matplotlib
+                __init__.py
+                <src files...>
+            <metadata files...>
+
+    This patch lets Bazel handle packages that do not support this convention, 
+    like tensorflow: 
+        extracted_whl
+            tensorflow-<version_num>.data
+                purelib
+                    tensorflow
+                        __init__.py
+                        <src files...>
+            <metadata files...>
+    
+    (added by anelise)
+    """
+    name = self.name()
+
+    # search the directory structure for the right folder
+    for dirname in _bfs_walk(directory): 
+        if os.path.exists(os.path.join(dirname, name)): 
+            print("WHL.PY: %s, %s" % (name, dirname))
+            return dirname
+
+    raise Exception("Could not find the module directory for dep %d" % name)
 
 parser = argparse.ArgumentParser(
     description='Unpack a WHL file as a py_library.')
@@ -134,6 +178,8 @@ def main():
   # Extract the files into the current directory
   whl.expand(args.directory)
 
+  import_path=whl._find_package_path(args.directory)
+
   with open(os.path.join(args.directory, 'BUILD'), 'w') as f:
     f.write("""
 package(default_visibility = ["//visibility:public"])
@@ -144,13 +190,12 @@ py_library(
     name = "pkg",
     srcs = glob(["**/*.py"]),
     data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
-    # This makes this directory a top-level in the python import
-    # search path for anything that depends on this.
-    imports = ["."],
+    imports = ["{import_path}"],
     deps = [{dependencies}],
 )
 {extras}""".format(
   requirements=args.requirements,
+  import_path=import_path,
   dependencies=','.join([
     'requirement("%s")' % d
     for d in whl.dependencies()

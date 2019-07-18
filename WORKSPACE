@@ -13,11 +13,13 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_python")
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 # Skydoc stuff
 git_repository(
     name = "io_bazel_rules_sass",
     remote = "https://github.com/bazelbuild/rules_sass.git",
-    tag = "0.0.3",
+    commit = "8ccf4f1c351928b55d5dddf3672e3667f6978d60"
 )
 
 load("@io_bazel_rules_sass//sass:sass.bzl", "sass_repositories")
