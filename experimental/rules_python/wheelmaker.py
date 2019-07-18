@@ -15,9 +15,7 @@
 import argparse
 import base64
 import collections
-import csv
 import hashlib
-import io
 import os
 import os.path
 import sys
@@ -35,7 +33,7 @@ def commonpath(path1, path2):
 
 class WheelMaker(object):
     def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None):
+                 outfile=None, strip_path_prefixes=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -43,6 +41,7 @@ class WheelMaker(object):
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
+        self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
 
         self._zipfile = None
         self._record = []
@@ -93,8 +92,17 @@ class WheelMaker(object):
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
-        # Always use unix path separators.
-        arcname = package_filename.replace(os.path.sep, '/')
+        def arcname_from(name):
+            # Always use unix path separators.
+            normalized_arcname = name.replace(os.path.sep, '/')
+            for prefix in self._strip_path_prefixes:
+                if normalized_arcname.startswith(prefix):
+                    return normalized_arcname[len(prefix):]
+
+            return normalized_arcname
+
+        arcname = arcname_from(package_filename)
+
         self._zipfile.write(real_filename, arcname=arcname)
         # Find the hash and length
         hash = hashlib.sha256()
@@ -208,6 +216,15 @@ def main():
     output_group.add_argument('--out', type=str, default=None,
                               help="Override name of ouptut file")
 
+    output_group.add_argument('--strip_path_prefix',
+                              type=str,
+                              action="append",
+                              default=[],
+                              help="Path prefix to be stripped from input package files' path. "
+                                   "Can be supplied multiple times. "
+                                   "Evaluated in order."
+                              )
+
     wheel_group = parser.add_argument_group("Wheel metadata")
     wheel_group.add_argument(
         '--header', action='append',
@@ -248,13 +265,17 @@ def main():
     # Sort the files for reproducible order in the archive.
     all_files = sorted(all_files.items())
 
+    strip_prefixes = [p for p in arguments.strip_path_prefix]
+
     with WheelMaker(name=arguments.name,
                     version=arguments.version,
                     build_tag=arguments.build_tag,
                     python_tag=arguments.python_tag,
                     abi=arguments.abi,
                     platform=arguments.platform,
-                    outfile=arguments.out) as maker:
+                    outfile=arguments.out,
+                    strip_path_prefixes=strip_prefixes
+                    ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
         maker.add_wheelfile()

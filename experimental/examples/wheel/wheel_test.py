@@ -102,6 +102,57 @@ Requires-Dist: pytest
 This is a sample description of a wheel.
 """)
 
+    def test_custom_package_root_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'io_bazel_rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'example_custom_package_root-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['examples/wheel/lib/data.txt',
+                 'examples/wheel/lib/module_with_data.py',
+                 'examples/wheel/lib/simple_module.py',
+                 'examples/wheel/main.py',
+                 'example_custom_package_root-0.0.1.dist-info/WHEEL',
+                 'example_custom_package_root-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root-0.0.1.dist-info/RECORD'])
+
+    def test_custom_package_root_multi_prefix_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'io_bazel_rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'example_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['data.txt',
+                 'module_with_data.py',
+                 'simple_module.py',
+                 'main.py',
+                 'example_custom_package_root_multi_prefix-0.0.1.dist-info/WHEEL',
+                 'example_custom_package_root_multi_prefix-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root_multi_prefix-0.0.1.dist-info/RECORD'])
+
+    def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'io_bazel_rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'example_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['lib/data.txt',
+                 'lib/module_with_data.py',
+                 'lib/simple_module.py',
+                 'main.py',
+                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/WHEEL',
+                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD'])
+
 
 if __name__ == '__main__':
     unittest.main()
