@@ -19,6 +19,16 @@ work under `--incompatible_load_python_rules_from_bzl`. As the native rules get
 migrated to Starlark, their implementations will be moved here.
 """
 
+load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
+load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
+load(":private/reexports.bzl", "internal_PyInfo", "internal_PyRuntimeInfo")
+
+# Exports of native-defined providers.
+
+PyInfo = internal_PyInfo
+
+PyRuntimeInfo = internal_PyRuntimeInfo
+
 # The implementation of the macros and tagging mechanism follows the example
 # set by rules_cc and rules_java.
 
@@ -70,3 +80,9 @@ def py_runtime(**attrs):
       **attrs: Rule attributes
     """
     native.py_runtime(**_add_tags(attrs))
+
+# Re-exports of Starlark-defined symbols in @bazel_tools//tools/python.
+
+py_runtime_pair = _py_runtime_pair
+
+find_requirements = _find_requirements
