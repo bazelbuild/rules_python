@@ -17,5 +17,7 @@
 set -euo pipefail
 
 bazel build //docs/...
-unzip -d docs/ -o bazel-bin/docs/docs-md-skydoc.zip
-unzip -d docs/ -o bazel-bin/docs/docs-html-skydoc.zip
+
+cp bazel-bin/docs/python.md docs/
+cp bazel-bin/docs/pip.md docs/
+cp bazel-bin/docs/whl.md docs/

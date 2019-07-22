@@ -11,51 +11,60 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+###############################################################################
+# To regenerate documentation, run the top-level update_docs.sh script.       #
+###############################################################################
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-# To regenerate html docs, run:
-#   ./update_docs.sh
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
 
-load("@bazel_skylib//:skylark_library.bzl", "skylark_library")
-load("@io_bazel_skydoc//skylark:skylark.bzl", "skylark_doc")
+# We define these bzl_library targets here rather than in the //python package
+# because they're only used for doc generation. This way, we avoid requiring
+# our users to depend on Skylib.
 
-skylark_library(
-    name = "whl",
-    srcs = ["//python:whl.bzl"],
-)
-
-skylark_library(
-    name = "pip",
-    srcs = ["//python:pip.bzl"],
-)
-
-skylark_library(
-    name = "python",
-    srcs = ["//python:python.bzl"],
-)
-
-skylark_doc(
-    name = "docs-md",
-    format = "markdown",
-    overview = True,
-    site_root = ".",
-    deps = [
-        ":pip",
-        ":python",
-        ":whl",
+# Requires Bazel 0.29 onward for public visibility of these .bzl files.
+bzl_library(
+    name = "bazel_python_tools",
+    srcs = [
+        "@bazel_tools//tools/python:srcs_version.bzl",
+        "@bazel_tools//tools/python:toolchain.bzl",
+        "@bazel_tools//tools/python:utils.bzl",
     ],
 )
 
-skylark_doc(
-    name = "docs-html",
-    format = "html",
-    overview = True,
-    site_root = ".",
-    deps = [
-        ":pip",
-        ":python",
-        ":whl",
+bzl_library(
+    name = "defs",
+    srcs = [
+        "//python:defs.bzl",
+        "//python:private/reexports.bzl",
     ],
+    deps = [":bazel_python_tools"],
+)
+
+stardoc(
+    name = "core-docs",
+    input = "//python:defs.bzl",
+    out = "python.md",
+    deps = [":defs"],
+)
+
+# TODO: Consider merging documentation pages for whl and pip. This would
+# require re-exporting their symbols from a common .bzl; see
+# https://github.com/bazelbuild/skydoc/issues/208.
+
+stardoc(
+    name = "pip-docs",
+    input = "//python:pip.bzl",
+    out = "pip.md",
+)
+
+stardoc(
+    name = "whl-docs",
+    input = "//python:whl.bzl",
+    out = "whl.md",
 )
