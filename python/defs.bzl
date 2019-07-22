@@ -42,9 +42,7 @@ def _add_tags(attrs):
     return attrs
 
 def py_library(**attrs):
-    """See the Bazel core [py_library](
-    https://docs.bazel.build/versions/master/be/python.html#py_library)
-    documentation.
+    """See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/python.html#py_library) documentation.
 
     Args:
       **attrs: Rule attributes
@@ -52,9 +50,7 @@ def py_library(**attrs):
     native.py_library(**_add_tags(attrs))
 
 def py_binary(**attrs):
-    """See the Bazel core [py_binary](
-    https://docs.bazel.build/versions/master/be/python.html#py_binary)
-    documentation.
+    """See the Bazel core [py_binary](https://docs.bazel.build/versions/master/be/python.html#py_binary) documentation.
 
     Args:
       **attrs: Rule attributes
@@ -62,9 +58,7 @@ def py_binary(**attrs):
     native.py_binary(**_add_tags(attrs))
 
 def py_test(**attrs):
-    """See the Bazel core [py_test](
-    https://docs.bazel.build/versions/master/be/python.html#py_test)
-    documentation.
+    """See the Bazel core [py_test](https://docs.bazel.build/versions/master/be/python.html#py_test) documentation.
 
     Args:
       **attrs: Rule attributes
@@ -72,9 +66,7 @@ def py_test(**attrs):
     native.py_test(**_add_tags(attrs))
 
 def py_runtime(**attrs):
-    """See the Bazel core [py_runtime](
-    https://docs.bazel.build/versions/master/be/python.html#py_runtime)
-    documentation.
+    """See the Bazel core [py_runtime](https://docs.bazel.build/versions/master/be/python.html#py_runtime) documentation.
 
     Args:
       **attrs: Rule attributes
