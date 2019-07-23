@@ -80,9 +80,8 @@ _piptool_install()
 
 git_repository(
     name = "subpar",
-    # HEAD as of 2018-12-18
-    commit = "81d33bafbad4edcb2c9e98548888fc9815c004c4",
     remote = "https://github.com/google/subpar",
+    tag = "2.0.0",
 )
 
 ###################################
