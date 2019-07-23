@@ -107,10 +107,10 @@ class Wheel(object):
 
   # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
   def _parse_metadata(self, content):
-    # TODO: handle fields other than just name
-    name_pattern = re.compile('Name: (.*)')
-    return { 'name': name_pattern.search(content).group(1) }
-
+    # TODO: handle fields other than just name and extras
+    name = re.compile('Name: (.*)').search(content).group(1)
+    extras = [extra.strip() for extra in re.findall('Provides-Extra: (.*)', content)]
+    return { 'name': name, 'extras': extras }
 
 parser = argparse.ArgumentParser(
     description='Unpack a WHL file as a py_library.')
