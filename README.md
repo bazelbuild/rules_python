@@ -4,6 +4,10 @@ Status: This is **ALPHA** software.
 
 [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg)](https://buildkite.com/bazel/python-rules-python-postsubmit)
 
+## Recent updates
+
+* 2019-07-26: The canonical name of this repo has been changed from `@io_bazel_rules_python` to just `@rules_python`, in accordance with [convention](https://docs.bazel.build/versions/master/skylark/deploying.html#workspace). Please update your WORKSPACE file and labels that reference this repo accordingly.
+
 ## Rules
 
 * [pip_import](docs/python/pip.md#pip_import)
@@ -26,14 +30,14 @@ Add the following to your `WORKSPACE` file to add the external repositories:
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
-    name = "io_bazel_rules_python",
+    name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
     # NOT VALID!  Replace this with a Git commit SHA.
     commit = "{HEAD}",
 )
 
 # Only needed for PIP support:
-load("@io_bazel_rules_python//python:pip.bzl", "pip_repositories")
+load("@rules_python//python:pip.bzl", "pip_repositories")
 
 pip_repositories()
 ```
@@ -42,7 +46,7 @@ Then in your `BUILD` files load the python rules with:
 
 ``` python
 load(
-  "@io_bazel_rules_python//python:python.bzl",
+  "@rules_python//python:python.bzl",
   "py_binary", "py_library", "py_test",
 )
 
@@ -60,7 +64,7 @@ are imported into the Bazel dependency graph via a two-phased process in
 `WORKSPACE`:
 
 ```python
-load("@io_bazel_rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_import")
 
 # This rule translates the specified requirements.txt into
 # @my_deps//:requirements.bzl, which itself exposes a pip_install method.

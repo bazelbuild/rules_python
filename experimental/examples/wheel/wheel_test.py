@@ -20,7 +20,7 @@ import zipfile
 class WheelTest(unittest.TestCase):
     def test_py_library_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_minimal_library-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
@@ -34,7 +34,7 @@ class WheelTest(unittest.TestCase):
 
     def test_py_package_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_minimal_package-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
@@ -50,7 +50,7 @@ class WheelTest(unittest.TestCase):
 
     def test_customized_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_customized-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
@@ -104,7 +104,7 @@ This is a sample description of a wheel.
 
     def test_custom_package_root_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_custom_package_root-0.0.1-py3-none-any.whl')
 
@@ -121,7 +121,7 @@ This is a sample description of a wheel.
 
     def test_custom_package_root_multi_prefix_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl')
 
@@ -138,7 +138,7 @@ This is a sample description of a wheel.
 
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
-                                'io_bazel_rules_python', 'experimental',
+                                'rules_python', 'experimental',
                                 'examples', 'wheel',
                                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl')
 
