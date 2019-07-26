@@ -97,9 +97,35 @@ Args:
 """
 
 def pip_repositories():
-    """Pull in dependencies needed for pulling in pip dependencies.
+    """Pull in dependencies needed to use the pip rules.
 
-    A placeholder method that will eventually pull in any dependencies
-    needed to install pip dependencies.
+    At the moment this is a placeholder, in that it does not actually pull in
+    any dependencies. However, it does do some validation checking.
     """
-    pass
+    # As a side effect of migrating our canonical workspace name from
+    # "@io_bazel_rules_python" to "@rules_python" (#203), users who still
+    # imported us by the old name would get a confusing error about a
+    # repository dependency cycle in their workspace. (The cycle is likely
+    # related to the fact that our repo name is hardcoded into the template
+    # in piptool.py.)
+    #
+    # To produce a more informative error message in this situation, we
+    # fail-fast here if we detect that we're not being imported by the new
+    # name. (I believe we have always had the requirement that we're imported
+    # by the canonical name, because of the aforementioned hardcoding.)
+    #
+    # Users who, against best practice, do not call pip_repositories() in their
+    # workspace will not benefit from this check.
+    if "rules_python" not in native.existing_rules():
+        message = "=" * 79 + """\n\
+It appears that you are trying to import rules_python without using its
+canonical name, "@rules_python". This does not work. Please change your
+WORKSPACE file to import this repo with `name = "rules_python"` instead.
+"""
+        if "io_bazel_rules_python" in native.existing_rules():
+            message += """\n\
+Note that the previous name of "@io_bazel_rules_python" is no longer used.
+See https://github.com/bazelbuild/rules_python/issues/203 for context.
+"""
+        message += "=" * 79
+        fail(message)
