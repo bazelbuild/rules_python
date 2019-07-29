@@ -21,17 +21,21 @@ load("@piptool_deps//:requirements.bzl", "requirement")
 py_library(
     name = "whl",
     srcs = ["whl.py"],
-    deps = [
-        requirement("setuptools"),
-    ],
+    deps = [requirement("setuptools")],
+)
+
+py_library(
+    name = "pip",
+    srcs = ["pip.py"],
+    deps = [requirement("pip")],
 )
 
 py_test(
     name = "whl_test",
     srcs = ["whl_test.py"],
     data = [
-        "@futures_3_1_1_whl//file",
         "@futures_2_2_0_whl//file",
+        "@futures_3_1_1_whl//file",
         "@google_cloud_language_whl//file",
         "@grpc_whl//file",
         "@mock_whl//file",
@@ -49,16 +53,16 @@ par_binary(
     srcs = ["piptool.py"],
     deps = [
         ":whl",
-        requirement("pip"),
         requirement("wheel"),
     ],
 )
 
 par_binary(
     name = "whltool",
-    srcs = ["whl.py"],
-    main = "whl.py",
+    srcs = ["whltool.py"],
+    main = "whltool.py",
     deps = [
+        ":pip",
         ":whl",
     ],
 )
