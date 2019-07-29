@@ -17,7 +17,7 @@ def _whl_impl(repository_ctx):
     """Core implementation of whl_library."""
 
     args = [
-        "python",
+        repository_ctx.attr.python_target,
         repository_ctx.path(repository_ctx.attr._script),
         "--whl",
         repository_ctx.path(repository_ctx.attr.whl),
@@ -48,6 +48,9 @@ whl_library = repository_rule(
             default = Label("//tools:whltool.par"),
             cfg = "host",
         ),
+        "python_target": attr.string(
+            default = "python"
+        )
     },
     implementation = _whl_impl,
 )
@@ -77,4 +80,7 @@ Args:
 
   extras: A subset of the "extras" available from this <code>.whl</code> for which
     <code>requirements</code> has the dependencies.
+
+  python_target: The python interpreter that will be used to run this library
+    (may affect how dependencies are calculated)
 """
