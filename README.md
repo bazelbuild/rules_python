@@ -11,6 +11,7 @@ Status: This is **ALPHA** software.
 ## Rules
 
 * [pip_import](docs/python/pip.md#pip_import)
+* [pip3_import](docs/python/pip.md#pip3_import)
 * [py_library](docs/python/python.md#py_library)
 * [py_binary](docs/python/python.md#py_binary)
 * [py_test](docs/python/python.md#py_test)
@@ -78,6 +79,9 @@ pip_import(
 load("@my_deps//:requirements.bzl", "pip_install")
 pip_install()
 ```
+
+The `pip_import` rule uses the system `python` command, which is usually
+Python 2. `pip3_import` uses the system `python3` command.
 
 ## Consuming `pip` dependencies
 

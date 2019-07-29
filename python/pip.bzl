@@ -13,7 +13,7 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-def _pip_import_impl(repository_ctx):
+def _pip_import_impl(repository_ctx, binary_name):
     """Core implementation of pip_import."""
 
     # Add an empty top-level BUILD file.
@@ -24,7 +24,7 @@ def _pip_import_impl(repository_ctx):
 
     # To see the output, pass: quiet=False
     result = repository_ctx.execute([
-        "python",
+        binary_name,
         repository_ctx.path(repository_ctx.attr._script),
         "--name",
         repository_ctx.attr.name,
@@ -39,6 +39,14 @@ def _pip_import_impl(repository_ctx):
     if result.return_code:
         fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
 
+def _pip_system_import_impl(repository_ctx):
+  """System python implementation."""
+  _pip_import_impl(repository_ctx, "python")
+
+def _pip3_import_impl(repository_ctx):
+  """Python 3 implementation."""
+  _pip_import_impl(repository_ctx, "python3")
+
 pip_import = repository_rule(
     attrs = {
         "requirements": attr.label(
@@ -51,15 +59,73 @@ pip_import = repository_rule(
             cfg = "host",
         ),
     },
-    implementation = _pip_import_impl,
+    implementation = _pip_system_import_impl,
 )
 
 """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
 
-This rule imports a <code>requirements.txt</code> file and generates a new
-<code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
-pattern:
+This rule imports a <code>requirements.txt</code> file using the system
+<code>python</code>, and generates a new <code>requirements.bzl</code> file.
+This is used via the <code>WORKSPACE</code> pattern:
 <pre><code>pip_import(
+    name = "foo",
+    requirements = ":requirements.txt",
+)
+load("@foo//:requirements.bzl", "pip_install")
+pip_install()
+</code></pre>
+
+You can then reference imported dependencies from your <code>BUILD</code>
+file with:
+<pre><code>load("@foo//:requirements.bzl", "requirement")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       requirement("futures"),
+       requirement("mock"),
+    ],
+)
+</code></pre>
+
+Or alternatively:
+<pre><code>load("@foo//:requirements.bzl", "all_requirements")
+py_binary(
+    name = "baz",
+    ...
+    deps = [
+       ":foo",
+    ] + all_requirements,
+)
+</code></pre>
+
+Args:
+  requirements: The label of a requirements.txt file.
+"""
+
+pip3_import = repository_rule(
+    attrs = {
+        "requirements": attr.label(
+            allow_files = True,
+            mandatory = True,
+            single_file = True,
+        ),
+        "_script": attr.label(
+            executable = True,
+            default = Label("//tools:piptool.par"),
+            cfg = "host",
+        ),
+    },
+    implementation = _pip3_import_impl,
+)
+
+"""A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+
+This rule imports a <code>requirements.txt</code> file using the system
+<code>python3</code>, and generates a new <code>requirements.bzl</code> file.
+This is used via the <code>WORKSPACE</code> pattern:
+<pre><code>pip3_import(
     name = "foo",
     requirements = ":requirements.txt",
 )
