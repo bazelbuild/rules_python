@@ -1,17 +1,36 @@
+# We exclude docs/ from build_targets. Since we can't blacklist specific target
+# patterns (bazelbuild/continuous-integration#779), we have to explicitly
+# list every other top-level package in build_targets.
+# TODO(#144): When Bazel 0.29 is released, the docgen workflow will work, and
+# we can go back to using `...` for build_targets.
 ---
 platforms:
   ubuntu1604:
+    # I don't trust my knowledge of YAML enough to factor this list into an
+    # anchor.
     build_targets:
-    - "..."
+    - "//examples/..."
+    - "//experimental/..."
+    - "//python/..."
+    - "//rules_python/..."
+    - "//tools/..."
     test_targets:
     - "..."
   ubuntu1804:
     build_targets:
-    - "..."
+    - "//examples/..."
+    - "//experimental/..."
+    - "//python/..."
+    - "//rules_python/..."
+    - "//tools/..."
     test_targets:
     - "..."
   macos:
     build_targets:
-    - "..."
+    - "//examples/..."
+    - "//experimental/..."
+    - "//python/..."
+    - "//rules_python/..."
+    - "//tools/..."
     test_targets:
     - "..."

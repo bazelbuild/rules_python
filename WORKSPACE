@@ -12,53 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "io_bazel_rules_python")
+workspace(name = "rules_python")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
-################################
-# Skydoc and its dependencies. #
-################################
+#################################
+# Stardoc and its dependencies. #
+#################################
 
-# Skydoc's sass dependency is not covered by skydoc_repositories(), so we have
-# to redeclare it here. Watch that the version matches when updating Skydoc's
-# version.
-
-git_repository(
-    name = "io_bazel_rules_sass",
-    # Same commit as Skydoc uses in its own WORKSPACE.
-    commit = "8ccf4f1c351928b55d5dddf3672e3667f6978d60",  # 2018-11-23
-    remote = "https://github.com/bazelbuild/rules_sass.git",
-)
-
-load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
-
-rules_sass_dependencies()
-
-# Node is used by sass. This weird (anti-?)pattern of initializing a repo we
-# didn't directly import is taken from Skydoc's WORKSPACE.
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
-
-node_repositories()
-
-load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
-
-sass_repositories()
-
-# We implicitly depend on Skydoc importing Skylib under `@bazel_skylib`.
-# We don't redeclare it here in order to avoid repeating a definition that
-# could get out of sync with Skydoc.
+# Initialization taken from:
+# https://skydoc.bazel.build/docs/getting_started_stardoc.html
 
 git_repository(
     name = "io_bazel_skydoc",
-    commit = "1cdb612e31448c2f6eb25b8aa67d406152275482",  # 2018-11-27
     remote = "https://github.com/bazelbuild/skydoc.git",
+    tag = "0.3.0",
 )
 
-load("@io_bazel_skydoc//skylark:skylark.bzl", "skydoc_repositories")
-
+load("@io_bazel_skydoc//:setup.bzl", "skydoc_repositories")
 skydoc_repositories()
+
+load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
+rules_sass_dependencies()
+
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
+node_repositories()
+
+load("@io_bazel_rules_sass//:defs.bzl", "sass_repositories")
+sass_repositories()
 
 ##########################################
 # Requirements for building our piptool. #
