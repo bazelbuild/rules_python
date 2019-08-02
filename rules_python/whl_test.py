@@ -16,6 +16,7 @@ import os
 import unittest
 
 from mock import patch
+from pkg_resources._vendor.packaging import markers
 
 from rules_python import whl
 
@@ -54,7 +55,58 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.distribution(), 'futures')
     self.assertEqual(wheel.version(), '2.2.0')
     self.assertEqual(set(wheel.dependencies()), set())
+    self.assertEqual(set(wheel.extras()), set())
     self.assertEqual('pypi__futures_2_2_0', wheel.repository_name())
+
+  def test_whl_with_METADATA_and_extras_file(self):
+    td = TestData('wheel_0_31_1_whl/file/wheel-0.31.1-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(wheel.name(), 'wheel')
+    self.assertEqual(wheel.distribution(), 'wheel')
+    self.assertEqual(wheel.version(), '0.31.1')
+    self.assertEqual(set(wheel.dependencies()), set())
+    self.assertEqual(set(wheel.extras()), set(['test', 'signatures', 'faster-signatures']))
+    self.assertEqual('pypi__wheel_0_31_1', wheel.repository_name())
+
+    self.assertEqual(set(['keyring', 'keyrings.alt', 'pyxdg']), set(wheel.dependencies(extra='signatures')))
+    self.assertEqual(set(['ed25519ll']), set(wheel.dependencies(extra='faster-signatures')))
+    self.assertEqual(set(['pytest', 'pytest-cov']), set(wheel.dependencies(extra='test')))
+
+  def test_split_environment(self):
+    with self.assertRaises(markers.InvalidMarker):
+      whl.split_extra_from_environment_marker('')
+
+    extra, environment = whl.split_extra_from_environment_marker('extra == "foo"')
+    self.assertEqual('foo', extra)
+    self.assertEqual('', environment)
+
+    # from ipython
+    env = 'sys_platform != "win32"'
+    extra, environment = whl.split_extra_from_environment_marker(env)
+    self.assertEqual('', extra)
+    self.assertEqual(env, environment)
+
+    # from mock
+    env = '(python_version<"3.3" and python_version>="3") and extra == \'docs\''
+    extra, environment = whl.split_extra_from_environment_marker(env)
+    self.assertEqual('docs', extra)
+    self.assertEqual('(python_version < "3.3" and python_version >= "3")', environment)
+
+    # from requests
+    env = 'sys_platform == "win32" and (python_version == "2.7" or python_version == "2.6") and extra == \'socks\''
+    extra, environment = whl.split_extra_from_environment_marker(env)
+    self.assertEqual('socks', extra)
+    self.assertEqual('sys_platform == "win32" and (python_version == "2.7" or python_version == "2.6")', environment)
+
+    # fake to ensure ands are remove correctly
+    env = 'sys_platform == "win32" and extra == \'socks\' and python_version == "2.7"'
+    extra, environment = whl.split_extra_from_environment_marker(env)
+    self.assertEqual('socks', extra)
+    self.assertEqual('sys_platform == "win32" and python_version == "2.7"', environment)
+    env = 'extra == \'socks\' and python_version == "2.7"'
+    extra, environment = whl.split_extra_from_environment_marker(env)
+    self.assertEqual('socks', extra)
+    self.assertEqual('python_version == "2.7"', environment)
 
   @patch('platform.python_version', return_value='2.7.13')
   def test_mock_whl(self, *args):
