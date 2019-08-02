@@ -10,21 +10,37 @@ Status: This is **ALPHA** software.
 
 ## Rules
 
-* [pip_import](docs/python/pip.md#pip_import)
-* [py_library](docs/python/python.md#py_library)
-* [py_binary](docs/python/python.md#py_binary)
-* [py_test](docs/python/python.md#py_test)
+### Core Python rules
+
+* [py_library](docs/python.md#py_library)
+* [py_binary](docs/python.md#py_binary)
+* [py_test](docs/python.md#py_test)
+* [py_runtime](docs/python.md#py_runtime)
+* [py_runtime_pair](docs/python.md#py_runtime_pair)
+
+### Packaging rules
+
+* [pip_import](docs/pip.md#pip_import)
 
 ## Overview
 
-This repository provides Python rules for Bazel.  Currently, support for
-rules that are available from Bazel core are simple aliases to that bundled
-functionality.  On top of that, this repository provides support for installing
-dependencies typically managed via `pip`.
+This repository provides two sets of Python rules for Bazel. The core rules
+provide the essential library, binary, test, and toolchain rules that are
+expected for any language supported in Bazel. The packaging rules provide
+support for integration with dependencies that, in a non-Bazel environment,
+would typically be managed by `pip`.
+
+Historically, the core rules have been bundled with Bazel itself. The Bazel
+team is in the process of transitioning these rules to live in
+bazelbuild/rules_python instead. In the meantime, all users of Python rules in
+Bazel should migrate their builds to load these rules and their related symbols
+(`PyInfo`, etc.) from `@rules_python` instead of using built-ins or
+`@bazel_tools//tools/python`.
 
 ## Setup
 
-Add the following to your `WORKSPACE` file to add the external repositories:
+To use this repository, first modify your `WORKSPACE` file to load it and call
+the initialization functions as needed:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
@@ -36,19 +52,19 @@ git_repository(
     commit = "{HEAD}",
 )
 
-# Only needed for PIP support:
-load("@rules_python//python:pip.bzl", "pip_repositories")
+# This call should always be present.
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
 
+# This one is only needed if you're using the packaging rules.
+load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```
 
-Then in your `BUILD` files load the python rules with:
+Then in your `BUILD` files, load the core rules as needed with:
 
 ``` python
-load(
-  "@rules_python//python:defs.bzl",
-  "py_binary", "py_library", "py_test",
-)
+load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
   name = "main",
@@ -118,18 +134,34 @@ format in the future.
 https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras)
 will have a target of the extra name (in place of `pkg` above).
 
-## Updating `docs/`
+## Development
 
-All of the content (except `BUILD`) under `docs/` is generated.  To update the
-documentation simply run this in the root of the repository:
+### Documentation
+
+All of the content under `docs/` besides the `BUILD` file is generated with
+Stardoc. To regenerate the documentation, simply run
+
 ```shell
 ./update_docs.sh
 ```
 
-## Updating `tools/`
+from the repository root.
 
-All of the content (except `BUILD`) under `tools/` is generated.  To update the
-documentation simply run this in the root of the repository:
+### Precompiled par files
+
+The `piptool.par` and `whltool.par` files underneath `tools/` are compiled
+versions of the Python scripts under the `rules_python/` directory. We need to
+check in built artifacts because they are executed during `WORKSPACE`
+evaluation, before Bazel itself is able to build anything from source.
+
+The .par files need to be regenerated whenever their sources are updated. This
+can be done by running
+
 ```shell
 ./update_tools.sh
 ```
+
+from the repository root. However, since these files contain compiled code,
+we do not accept commits that modify them from untrusted sources. If you submit
+a pull request that modifies the sources and we accept the changes, we will
+regenerate these files for you before merging.
