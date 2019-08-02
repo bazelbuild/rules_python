@@ -97,11 +97,10 @@ Args:
 """
 
 def pip_repositories():
-    """Pull in dependencies needed to use the packaging rules.
-
-    At the moment this is a placeholder, in that it does not actually pull in
-    any dependencies. However, it does do some validation checking.
-    """
+    """Pull in dependencies needed to use the packaging rules."""
+    # At the moment this is a placeholder, in that it does not actually pull in
+    # any dependencies. However, it does do some validation checking.
+    #
     # As a side effect of migrating our canonical workspace name from
     # "@io_bazel_rules_python" to "@rules_python" (#203), users who still
     # imported us by the old name would get a confusing error about a

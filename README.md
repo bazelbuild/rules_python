@@ -30,12 +30,11 @@ expected for any language supported in Bazel. The packaging rules provide
 support for integration with dependencies that, in a non-Bazel environment,
 would typically be managed by `pip`.
 
-Historically, the core rules have been bundled with Bazel itself, and some of
-them are even implemented natively (not in Starlark). The Bazel team is in the
-process of transitioning these rules to live in bazelbuild/rules_python
-instead. In the meantime, all users of Python rules in Bazel should migrate
-their builds to load these rules and their related symbols (`PyInfo`, etc.)
-from `@rules_python` instead of using built-ins or
+Historically, the core rules have been bundled with Bazel itself. The Bazel
+team is in the process of transitioning these rules to live in
+bazelbuild/rules_python instead. In the meantime, all users of Python rules in
+Bazel should migrate their builds to load these rules and their related symbols
+(`PyInfo`, etc.) from `@rules_python` instead of using built-ins or
 `@bazel_tools//tools/python`.
 
 ## Setup
@@ -53,10 +52,11 @@ git_repository(
     commit = "{HEAD}",
 )
 
+# This call should always be present.
 load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 
-# Only needed if you're using the packaging rules.
+# This one is only needed if you're using the packaging rules.
 load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```
