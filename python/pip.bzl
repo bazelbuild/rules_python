@@ -97,7 +97,7 @@ Args:
 """
 
 def pip_repositories():
-    """Pull in dependencies needed to use the pip rules.
+    """Pull in dependencies needed to use the packaging rules.
 
     At the moment this is a placeholder, in that it does not actually pull in
     any dependencies. However, it does do some validation checking.
