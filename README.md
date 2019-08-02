@@ -20,7 +20,7 @@ Status: This is **ALPHA** software.
 
 ### Packaging rules
 
-* [pip_import](docs/python/pip.md#pip_import)
+* [pip_import](docs/pip.md#pip_import)
 
 ## Overview
 
