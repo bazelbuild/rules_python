@@ -34,6 +34,7 @@ bzl_library(
         "@bazel_tools//tools/python:srcs_version.bzl",
         "@bazel_tools//tools/python:toolchain.bzl",
         "@bazel_tools//tools/python:utils.bzl",
+        "@bazel_tools//tools/python:private/defs.bzl",
     ],
 )
 

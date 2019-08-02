@@ -45,10 +45,7 @@ pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-requirement
 pip_repositories()
 </pre>
 
-Pull in dependencies needed for pulling in pip dependencies.
-
-A placeholder method that will eventually pull in any dependencies
-needed to install pip dependencies.
+Pull in dependencies needed to use the packaging rules.
 
 
 
