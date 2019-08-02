@@ -63,7 +63,7 @@ _piptool_install()
 git_repository(
     name = "subpar",
     remote = "https://github.com/google/subpar",
-    tag = "2.0.0",
+    commit = "2917d275ee27d7935f7809413c74eddf71a46e5c",  # 2019-08-02
 )
 
 ###################################

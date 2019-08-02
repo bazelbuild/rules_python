@@ -15,7 +15,8 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("//python:python.bzl", "py_binary", "py_library", "py_test")
+load("//python:defs.bzl", "py_library", "py_test")
+load("@subpar//:subpar.bzl", "par_binary")
 load("@piptool_deps//:requirements.bzl", "requirement")
 
 py_library(
@@ -41,8 +42,6 @@ py_test(
         requirement("mock"),
     ],
 )
-
-load("@subpar//:subpar.bzl", "par_binary")
 
 par_binary(
     name = "piptool",
