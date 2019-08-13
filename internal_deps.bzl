@@ -20,7 +20,7 @@ def rules_python_internal_deps():
     examples()
 
 
-def  piptool():
+def piptool():
     pip_import(
         name = "piptool_deps",
         requirements = "@rules_python//python:requirements.txt",

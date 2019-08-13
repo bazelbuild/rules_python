@@ -27,7 +27,7 @@ load("@bazel_federation//:repositories.bzl", "rules_python_deps")
 rules_python_deps()
 
 load("@bazel_federation//setup:rules_python.bzl",  "rules_python_setup")
-rules_python_setup()
+rules_python_setup(use_pip=True)
 
 load("//:internal_deps.bzl", "rules_python_internal_deps")
 rules_python_internal_deps()
