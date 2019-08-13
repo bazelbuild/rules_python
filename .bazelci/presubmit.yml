@@ -4,33 +4,19 @@
 # TODO(#144): When Bazel 0.29 is released, the docgen workflow will work, and
 # we can go back to using `...` for build_targets.
 ---
+all_targets: &all_targets
+    build_targets:
+    - "//examples/..."
+    - "//experimental/..."
+    - "//python/..."
+    - "//rules_python/..."
+    - "//tools/..."
+    test_targets:
+    - "..."
 platforms:
   ubuntu1604:
-    # I don't trust my knowledge of YAML enough to factor this list into an
-    # anchor.
-    build_targets:
-    - "//examples/..."
-    - "//experimental/..."
-    - "//python/..."
-    - "//rules_python/..."
-    - "//tools/..."
-    test_targets:
-    - "..."
+    <<: *all_targets
   ubuntu1804:
-    build_targets:
-    - "//examples/..."
-    - "//experimental/..."
-    - "//python/..."
-    - "//rules_python/..."
-    - "//tools/..."
-    test_targets:
-    - "..."
+    <<: *all_targets
   macos:
-    build_targets:
-    - "//examples/..."
-    - "//experimental/..."
-    - "//python/..."
-    - "//rules_python/..."
-    - "//tools/..."
-    test_targets:
-    - "..."
+    <<: *all_targets
