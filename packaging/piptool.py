@@ -81,7 +81,7 @@ def pip_main(argv):
     argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
     return pip.main(argv)
 
-from rules_python.whl import Wheel
+from packaging.whl import Wheel
 
 parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')

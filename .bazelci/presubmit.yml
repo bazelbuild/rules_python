@@ -8,8 +8,8 @@ all_targets: &all_targets
     build_targets:
     - "//examples/..."
     - "//experimental/..."
+    - "//packaging/..."
     - "//python/..."
-    - "//rules_python/..."
     - "//tools/..."
     test_targets:
     - "..."

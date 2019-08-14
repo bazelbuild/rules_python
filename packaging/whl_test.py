@@ -17,7 +17,7 @@ import unittest
 
 from mock import patch
 
-from rules_python import whl
+from packaging import whl
 
 
 def TestData(name):
