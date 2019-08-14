@@ -25,11 +25,11 @@ RUN bazel help info >/dev/null 2>&1
 CMD cp -r /opt/rules_python_source /opt/rules_python && \
     cd /opt/rules_python && \
     bazel clean && \
-    bazel build //rules_python:piptool.par //rules_python:whltool.par \
+    bazel build //packaging:piptool.par //packaging:whltool.par \
         # This works around a bug in git_repository to give us better debugging
         # if there's an error.
         # TODO(brandjon): Remove this once we're using Bazel 0.29, which
         # contains the fix.
         --incompatible_string_join_requires_strings=false && \
-    cp bazel-bin/rules_python/piptool.par bazel-bin/rules_python/whltool.par /opt/rules_python_source/tools/ && \
+    cp bazel-bin/packaging/piptool.par bazel-bin/packaging/whltool.par /opt/rules_python_source/tools/ && \
     chown --reference=/opt/rules_python_source/update_tools.sh /opt/rules_python_source/tools/piptool.par /opt/rules_python_source/tools/whltool.par
