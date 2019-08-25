@@ -21,7 +21,6 @@ def _path_inside_wheel(input_file):
     if short_path.startswith('..') and len(short_path) >= 3:
         # Path separator. '/' on linux.
         separator = short_path[2]
-        print(separator)
         # Consume '../' part.
         short_path = short_path[3:]
         # Find position of next '/' and consume everything up to that character.
