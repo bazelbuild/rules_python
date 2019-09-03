@@ -260,7 +260,10 @@ def main():
     # add_wheelfile and add_metadata currently assume pure-Python.
     assert arguments.platform == 'any', "Only pure-Python wheels are supported"
 
-    input_files = [i.split(';') for i in arguments.input_file]
+    if arguments.input_file:
+        input_files = [i.split(';') for i in arguments.input_file]
+    else:
+        input_files = []
     all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
     all_files = sorted(all_files.items())

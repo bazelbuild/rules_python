@@ -15,17 +15,18 @@
 """Rules for building wheels."""
 
 def _path_inside_wheel(input_file):
-    # input_file.short_path is relative ("../${repository_root}/foobar")
-    # so it can't be a valid path within a zip file. Thus strip out the root
-    # manually instead of using short_path here.
-    root = input_file.root.path
-    if root != "":
-        # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
-        # Fix this once ctx.configuration has directory separator information.
-        root += "/"
-    if not input_file.path.startswith(root):
-        fail("input_file.path '%s' does not start with expected root '%s'" % (input_file.path, root))
-    return input_file.path[len(root):]
+    # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
+    # which is not a valid path within a zip file. Fix that.
+    short_path = input_file.short_path
+    if short_path.startswith('..') and len(short_path) >= 3:
+        # Path separator. '/' on linux.
+        separator = short_path[2]
+        # Consume '../' part.
+        short_path = short_path[3:]
+        # Find position of next '/' and consume everything up to that character.
+        pos = short_path.find(separator)
+        short_path = short_path[pos+1:]
+    return short_path
 
 def _input_file_to_arg(input_file):
     """Converts a File object to string for --input_file argument to wheelmaker"""
