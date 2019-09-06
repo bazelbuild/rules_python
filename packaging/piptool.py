@@ -78,7 +78,7 @@ def pip_main(argv):
     atexit.register(lambda: shutil.rmtree(cert_tmpdir, ignore_errors=True))
     with open(cert_path, "wb") as cert:
       cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
-    argv = ["--disable-pip-version-check", "--cert", cert_path] + argv
+    argv = ["--isolated", "--disable-pip-version-check", "--cert", cert_path] + argv
     return pip.main(argv)
 
 from packaging.whl import Wheel
