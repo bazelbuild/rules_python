@@ -117,3 +117,16 @@ exports_files([
     "pip.bzl",
     "whl.bzl",
 ])
+
+filegroup(
+    name = "distribution",
+    srcs = glob([
+        "**/BUILD",
+        "**/*.bzl",
+        "**/requirements.txt",
+    ]) + [
+        "@//python/constraints:distribution",
+        "@//python/runfiles:distribution",
+    ],
+    visibility = ["@//:__pkg__"],
+)

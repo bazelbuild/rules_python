@@ -29,3 +29,11 @@ alias(
     name = "py3_interpreter_path",
     actual = "@bazel_tools//tools/python:py3_interpreter_path",
 )
+
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD",
+    ],
+    visibility = ["@//python:__pkg__"],
+)

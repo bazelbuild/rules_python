@@ -37,3 +37,12 @@ py_library(
     srcs = ["runfiles.py"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD",
+        "runfiles.py"
+    ],
+    visibility = ["@//python:__pkg__"],
+)
