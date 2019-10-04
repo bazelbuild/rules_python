@@ -44,5 +44,5 @@ filegroup(
         "BUILD",
         "runfiles.py"
     ],
-    visibility = ["@//python:__pkg__"],
+    visibility = ["//python:__pkg__"],
 )

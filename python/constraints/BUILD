@@ -35,5 +35,5 @@ filegroup(
     srcs = [
         "BUILD",
     ],
-    visibility = ["@//python:__pkg__"],
+    visibility = ["//python:__pkg__"],
 )

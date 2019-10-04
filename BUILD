@@ -23,7 +23,8 @@ filegroup(
         "BUILD",
         "LICENSE",
     ] + glob(["*.bzl"]) + [
-        "@//python:distribution",
+        "//python:distribution",
+        "//tools:distribution",
     ],
-    visibility = ["@//distro:__pkg__"],
+    visibility = ["//distro:__pkg__"],
 )

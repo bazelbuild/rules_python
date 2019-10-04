@@ -125,8 +125,8 @@ filegroup(
         "**/*.bzl",
         "**/requirements.txt",
     ]) + [
-        "@//python/constraints:distribution",
-        "@//python/runfiles:distribution",
+        "//python/constraints:distribution",
+        "//python/runfiles:distribution",
     ],
-    visibility = ["@//:__pkg__"],
+    visibility = ["//:__pkg__"],
 )
