@@ -1,5 +1,3 @@
-load("@io_bazel_skydoc//:setup.bzl", "skydoc_repositories")
-
 # Requirements for building our piptool.
 load(
     "@piptool_deps//:requirements.bzl",
