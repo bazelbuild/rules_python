@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("//python:python.bzl", "py_library")
+load("//python:defs.bzl", "py_library")
 
 py_library(
     name = "simple_module",

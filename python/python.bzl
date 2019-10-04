@@ -12,26 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def py_library(*args, **kwargs):
-    """See the Bazel core py_library documentation.
+"""Re-exports for some of the core Bazel Python rules.
 
-    [available here](
-    https://docs.bazel.build/versions/master/be/python.html#py_library).
+This file is deprecated; please use the exports in defs.bzl instead. This is to
+follow the new naming convention of putting core rules for a language
+underneath @rules_<LANG>//<LANG>:defs.bzl. The exports in this file will be
+disallowed in a future Bazel release by
+`--incompatible_load_python_rules_from_bzl`.
+"""
+
+def py_library(*args, **kwargs):
+    """See the Bazel core [py_library](
+    https://docs.bazel.build/versions/master/be/python.html#py_library)
+    documentation.
+
+    Deprecated: This symbol will become unusuable when
+    `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
+    symbols in `@rules_python//python:defs.bzl` instead.
     """
     native.py_library(*args, **kwargs)
 
 def py_binary(*args, **kwargs):
-    """See the Bazel core py_binary documentation.
+    """See the Bazel core [py_binary](
+    https://docs.bazel.build/versions/master/be/python.html#py_binary)
+    documentation.
 
-    [available here](
-    https://docs.bazel.build/versions/master/be/python.html#py_binary).
+    Deprecated: This symbol will become unusuable when
+    `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
+    symbols in `@rules_python//python:defs.bzl` instead.
     """
     native.py_binary(*args, **kwargs)
 
 def py_test(*args, **kwargs):
-    """See the Bazel core py_test documentation.
+    """See the Bazel core [py_test](
+    https://docs.bazel.build/versions/master/be/python.html#py_test)
+    documentation.
 
-    [available here](
-    https://docs.bazel.build/versions/master/be/python.html#py_test).
+    Deprecated: This symbol will become unusuable when
+    `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
+    symbols in `@rules_python//python:defs.bzl` instead.
     """
     native.py_test(*args, **kwargs)
