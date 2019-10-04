@@ -32,6 +32,12 @@
 
 load("//python:defs.bzl", "py_library")
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
+)
+
 py_library(
     name = "runfiles",
     srcs = ["runfiles.py"],

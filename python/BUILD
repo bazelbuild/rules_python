@@ -28,6 +28,15 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//python/constraints:distribution",
+        "//python/runfiles:distribution",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
 # ========= Core rules =========
 
 exports_files([

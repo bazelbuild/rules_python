@@ -16,6 +16,12 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
+)
+
 # A constraint_setting to use for constraints related to the location of the
 # system Python 2 interpreter on a platform.
 alias(
