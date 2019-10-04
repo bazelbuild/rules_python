@@ -1,5 +1,3 @@
-load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories")
-
 # Requirements for building our piptool.
 load(
     "@piptool_deps//:requirements.bzl",
