@@ -22,7 +22,8 @@ filegroup(
     srcs = [
         "BUILD",
         "LICENSE",
-    ] + glob(["*.bzl"]) + [
+        "internal_deps.bzl",
+        "internal_setup.bzl",
         "//python:distribution",
         "//tools:distribution",
     ],

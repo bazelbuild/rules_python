@@ -16,6 +16,12 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
+)
+
 # A constraint_setting to use for constraints related to the location of the
 # system Python 2 interpreter on a platform.
 alias(
@@ -28,12 +34,4 @@ alias(
 alias(
     name = "py3_interpreter_path",
     actual = "@bazel_tools//tools/python:py3_interpreter_path",
-)
-
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD",
-    ],
-    visibility = ["//python:__pkg__"],
 )
