@@ -1,11 +1,10 @@
-load("@bazel_federation//:repositories.bzl", "bazel_stardoc", "rules_sass")
+load("@bazel_federation//:repositories.bzl", "bazel_stardoc")
 load("@bazel_federation//:third_party_repositories.bzl", "futures_2_whl", "futures_3_whl", "google_cloud_language_whl", "grpc_whl", "mock_whl", "subpar")
 load("@rules_python//python:pip.bzl", "pip_import")
 
 
 def rules_python_internal_deps():
     bazel_stardoc()
-    rules_sass()
 
     subpar()
 
