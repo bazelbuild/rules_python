@@ -34,7 +34,7 @@ def _pip_import_impl(repository_ctx):
         repository_ctx.path("requirements.bzl"),
         "--directory",
         repository_ctx.path(""),
-    ])
+    ], timeout=repository_ctx.attr.timeout)
 
     if result.return_code:
         fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -44,6 +44,9 @@ pip_import = repository_rule(
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,
+        ),
+        "timeout": attr.int(
+            default = 600,
         ),
         "_script": attr.label(
             executable = True,
