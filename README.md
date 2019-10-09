@@ -1,12 +1,12 @@
 # Python Rules for Bazel
 
+[![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+
 ## Recent updates
 
 * 2019-07-26: The canonical name of this repo has been changed from `@io_bazel_rules_python` to just `@rules_python`, in accordance with [convention](https://docs.bazel.build/versions/master/skylark/deploying.html#workspace). Please update your WORKSPACE file and labels that reference this repo accordingly.
 
 ## Overview
-
-[![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg)](https://buildkite.com/bazel/python-rules-python-postsubmit)
 
 This repository is the home of the core Python rules -- `py_library`,
 `py_binary`, `py_test`, and related symbols that provide the basis for Python
@@ -157,6 +157,7 @@ fix is available to automatically migrate BUILD and .bzl files to add the
 appropriate `load()` statements and rewrite uses of `native.py_*`.
 
 ```sh
+# Also consider using the -r flag to modify an entire workspace.
 buildifier --lint=fix --warnings=native-py <files>
 ```
 
@@ -189,7 +190,7 @@ The .par files need to be regenerated whenever their sources are updated. This
 can be done by running
 
 ```shell
-# Optionally pass --nodocker if Docker is not available on your system.
+# You can pass --nodocker if Docker is not available on your system.
 ./update_tools.sh
 ```
 
