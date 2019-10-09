@@ -47,9 +47,11 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_python/releases/download/<RELEASE>/rules_python-<RELEASE>.tar.gz",
     sha256 = "<SHA>",
 )
-load("@rules_python//python:repositories.bzl", "py_repositories", "rules_python_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
-rules_python_toolchains()
+# Only needed if using the packaging rules.
+load("@rules_python//python:pip.bzl", "pip_repositories")
+pip_repositories()
 ```
 
 Otherwise, you may import rules_python in a standalone way by copying the
@@ -63,10 +65,9 @@ git_repository(
     # NOT VALID: Replace with actual Git commit SHA.
     commit = "{HEAD}",
 )
-# This call should always be present.
 load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
-# This one is only needed if you're using the packaging rules.
+# Only needed if using the packaging rules.
 load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```

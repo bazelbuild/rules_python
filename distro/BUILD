@@ -21,12 +21,14 @@ pkg_tar(
     strip_prefix = ".",
 )
 
+# TODO(brandjon): print_rel_notes doesn't appear to handle our use case of
+# emitting an optional additional deps method from a different file. For now we
+# manually adjust our release notes.
 print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
     deps_method = "py_repositories",
     repo = "rules_python",
     setup_file = "python:repositories.bzl",
-    toolchains_method = "rules_python_toolchains",
     version = version,
 )
