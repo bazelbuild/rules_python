@@ -67,7 +67,6 @@ directly and call its initialization methods as follows:
 ```python
 http_archive(
     name = "rules_python",
-    # NOT VALID: Replace with actual version and SHA.
     url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
     sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
 )
