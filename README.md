@@ -31,21 +31,45 @@ The packaging rules (`pip_import`, etc.) are less stable. We may make breaking
 changes as they evolve. There are no guarantees for rules underneath the
 `experimental/` directory.
 
+See the [How to contribute](CONTRIBUTING.md) page for information on our
+devlopment workflow.
+
 ## Getting started
 
 To import rules_python in your project, you first need to add it to your
 `WORKSPACE` file. If you are using the [Bazel
-Federation](https://github.com/bazelbuild/bazel-federation), you will want to
-copy the boilerplate in the rules_python release's notes, under the "WORKSPACE
-setup" heading. This will look something like the following:
+Federation](https://github.com/bazelbuild/bazel-federation), you just need to
+[import the Federation](https://github.com/bazelbuild/bazel-federation#example-workspace)
+and call the rules_python setup methods:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "bazel_federation",
+    url = "https://github.com/bazelbuild/bazel_federation/releases/download/0.0.1/bazel_federation-0.0.1.tar.gz",
+    sha256 = "506dfbfd74ade486ac077113f48d16835fdf6e343e1d4741552b450cfc2efb53",
+)
+
+load("@bazel_federation//:repositories.bzl", "rules_python_deps")
+
+rules_python_deps()
+load("@bazel_federation//setup:rules_python.bzl",  "rules_python_setup")
+rules_python_setup(use_pip=True)
+```
+
+Note the `use_pip` argument: rules_python may be imported either with or
+without support for the packaging rules.
+
+If you are not using the Federation, you can simply import rules_python
+directly and call its initialization methods as follows:
+
+```python
 http_archive(
     name = "rules_python",
     # NOT VALID: Replace with actual version and SHA.
-    url = "https://github.com/bazelbuild/rules_python/releases/download/<RELEASE>/rules_python-<RELEASE>.tar.gz",
-    sha256 = "<SHA>",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
 )
 load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
@@ -54,32 +78,32 @@ load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```
 
-Otherwise, you may import rules_python in a standalone way by copying the
-following:
+To depend on a particular unreleased version (not recommended), you can
+use `git_repository` instead of `http_archive`:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 git_repository(
     name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
     # NOT VALID: Replace with actual Git commit SHA.
     commit = "{HEAD}",
 )
-load("@rules_python//python:repositories.bzl", "py_repositories")
-py_repositories()
-# Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip_repositories")
-pip_repositories()
+
+# Then load and call py_repositories() and possibly pip_repositories() as
+# above.
 ```
 
-Either way, you can then load the core rules in your `BUILD` files with:
+Once you've imported the rule set into your WORKSPACE using any of these
+methods, you can then load the core rules in your `BUILD` files with:
 
 ``` python
 load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
   name = "main",
-  ...
+  srcs = ["main.py"],
 )
 ```
 
@@ -168,36 +192,3 @@ started](#Getting-started) above.
 Note that Starlark-defined bundled symbols underneath
 `@bazel_tools//tools/python` are also deprecated. These are not yet rewritten
 by buildifier.
-
-## Development
-
-### Documentation
-
-The content underneath `docs/` is generated.  To update the documentation,
-simply run this in the root of the repository:
-
-```shell
-./update_docs.sh
-```
-
-### Precompiled .par files
-
-The `piptool.par` and `whltool.par` files underneath `tools/` are compiled
-versions of the Python scripts under the `packaging/` directory. We need to
-check in built artifacts because they are executed during `WORKSPACE`
-evaluation, before Bazel itself is able to build anything from source.
-
-The .par files need to be regenerated whenever their sources are updated. This
-can be done by running
-
-```shell
-# You can pass --nodocker if Docker is not available on your system.
-./update_tools.sh
-```
-
-from the repository root. However, since these files contain compiled code,
-we do not accept commits that modify them from untrusted sources.<sup>1</sup>
-If you submit a pull request that modifies the sources and we accept the
-changes, we will regenerate these files for you before merging.
-
-<sup>1</sup> See "[Reflections on Trusting Trust](https://en.wikipedia.org/wiki/Backdoor_(computing)#Compiler_backdoors)".
