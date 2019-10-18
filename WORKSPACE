@@ -16,6 +16,10 @@ workspace(name = "rules_python")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# Load our production dependencies using the federation, except that instead of
+# calling rules_python() (which would define the @rules_python repo), we just
+# call rules_python_deps().
+
 http_archive(
     name = "bazel_federation",
     url = "https://github.com/bazelbuild/bazel-federation/releases/download/0.0.1/bazel_federation-0.0.1.tar.gz",
