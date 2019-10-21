@@ -24,6 +24,10 @@ load(
     "@piptool_deps//:requirements.bzl",
     _piptool_install = "pip_install",
 )
+load(
+    "@examples_pytest//:requirements.bzl",
+    _pytest_install = "pip_install",
+)
 
 def rules_python_internal_setup():
     """Setup for rules_python tests, tools, and examples."""
@@ -36,3 +40,4 @@ def rules_python_internal_setup():
     _version_install()
     _boto_install()
     _extras_install()
+    _pytest_install()

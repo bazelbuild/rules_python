@@ -48,3 +48,7 @@ def examples():
         name = "examples_extras",
         requirements = "@rules_python//examples/extras:requirements.txt",
     )
+    pip_import(
+        name = "examples_pytest",
+        requirements = "@rules_python//experimental/examples/pytest:requirements.txt",
+    )

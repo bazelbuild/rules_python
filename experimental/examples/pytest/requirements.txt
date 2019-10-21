@@ -1,0 +1,2 @@
+# Need https://github.com/pytest-dev/pytest/pull/4738 to work with Bazel.
+pytest>=4.2.1
