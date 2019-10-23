@@ -2,9 +2,9 @@ package(
     default_visibility = ["//visibility:private"],
 )
 
-load("@rules_python//:version.bzl", "version")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_pkg//releasing:defs.bzl", "print_rel_notes")
+load("@rules_python//:version.bzl", "version")
 
 # Build the artifact to put on the github release page.
 pkg_tar(

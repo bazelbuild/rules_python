@@ -21,10 +21,10 @@ load("//python:defs.bzl", "py_test")
 py_test(
     name = "extras_test",
     srcs = ["extras_test.py"],
+    python_version = "PY2",
     deps = [
         requirement("google-cloud-language"),
         # Make sure that we can resolve the "extra" dependency
         requirement("googleapis-common-protos[grpc]"),
     ],
-    python_version = "PY2",
 )

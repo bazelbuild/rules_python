@@ -15,7 +15,10 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["LICENSE", "version.bzl"])
+exports_files([
+    "LICENSE",
+    "version.bzl",
+])
 
 filegroup(
     name = "distribution",
