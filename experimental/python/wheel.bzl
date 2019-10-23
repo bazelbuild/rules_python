@@ -152,7 +152,7 @@ def _py_wheel_impl(ctx):
         data_runfiles = ctx.runfiles(files = [outfile]),
     )]
 
-def _concat_dicts(**dicts):
+def _concat_dicts(*dicts):
     result = {}
     for d in dicts:
         result.update(d)
