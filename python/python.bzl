@@ -30,6 +30,8 @@ def py_library(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_library(*args, **kwargs)
 
 def py_binary(*args, **kwargs):
@@ -41,6 +43,8 @@ def py_binary(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_binary(*args, **kwargs)
 
 def py_test(*args, **kwargs):
@@ -52,4 +56,6 @@ def py_test(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_test(*args, **kwargs)

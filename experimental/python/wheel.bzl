@@ -69,7 +69,6 @@ belong to given set of Python packages.
 This rule is intended to be used as data dependency to py_wheel rule
 """,
     attrs = {
-        "deps": attr.label_list(),
         "packages": attr.string_list(
             mandatory = False,
             allow_empty = True,
@@ -78,6 +77,7 @@ List of Python packages to include in the distribution.
 Sub-packages are automatically included.
 """,
         ),
+        "deps": attr.label_list(),
     },
 )
 
@@ -199,18 +199,21 @@ py_wheel(
 </code>
 """,
     attrs = {
-        "deps": attr.label_list(
+        "abi": attr.string(
+            default = "none",
+            doc = "Python ABI tag. 'none' for pure-Python wheels.",
+        ),
+        # Other attributes
+        "author": attr.string(default = ""),
+        "author_email": attr.string(default = ""),
+        "classifiers": attr.string_list(),
+        # Entry points
+        "console_scripts": attr.string_dict(
             doc = """\
-Targets to be included in the distribution.
-
-The targets to package are usually `py_library` rules or filesets (for packaging data files).
-
-Note it's usually better to package `py_library` targets and use
-`console_scripts` attribute to specify entry points than to package
-`py_binary` rules. `py_binary` targets would wrap a executable script that
-tries to locate `.runfiles` directory which is not packaged in the wheel.
+console_script entry points, e.g. 'experimental.examples.wheel.main:main'.
 """,
         ),
+        "description_file": attr.label(allow_single_file = True),
         # Attributes defining the distribution
         "distribution": attr.string(
             mandatory = True,
@@ -221,46 +224,43 @@ This should match the project name onm PyPI. It's also the name that is used
 to refer to the package in other packages' dependencies.
 """,
         ),
-        "version": attr.string(
-            mandatory = True,
-            doc = "Version number of the package",
+        "extra_requires": attr.string_list_dict(
+            doc = "List of optional requirements for this package",
+        ),
+        "homepage": attr.string(default = ""),
+        "license": attr.string(default = ""),
+        # TODO(pstradomski): Support non-pure wheels
+        "platform": attr.string(
+            default = "any",
+            doc = "Supported platforms. 'any' for pure-Python wheel.",
         ),
         "python_tag": attr.string(
             default = "py3",
             doc = "Supported Python major version. 'py2' or 'py3'",
             values = ["py2", "py3"],
         ),
-        "abi": attr.string(
-            default = "none",
-            doc = "Python ABI tag. 'none' for pure-Python wheels.",
-        ),
-        # TODO(pstradomski): Support non-pure wheels
-        "platform": attr.string(
-            default = "any",
-            doc = "Supported platforms. 'any' for pure-Python wheel.",
-        ),
-        # Other attributes
-        "author": attr.string(default = ""),
-        "author_email": attr.string(default = ""),
-        "homepage": attr.string(default = ""),
-        "license": attr.string(default = ""),
-        "classifiers": attr.string_list(),
-        "description_file": attr.label(allow_single_file = True),
-        "strip_path_prefixes": attr.string_list(
-            default = [],
-            doc = "path prefixes to strip from files added to the generated package",
-        ),
         # Requirements
         "requires": attr.string_list(
             doc = "List of requirements for this package",
         ),
-        "extra_requires": attr.string_list_dict(
-            doc = "List of optional requirements for this package",
+        "strip_path_prefixes": attr.string_list(
+            default = [],
+            doc = "path prefixes to strip from files added to the generated package",
         ),
-        # Entry points
-        "console_scripts": attr.string_dict(
+        "version": attr.string(
+            mandatory = True,
+            doc = "Version number of the package",
+        ),
+        "deps": attr.label_list(
             doc = """\
-console_script entry points, e.g. 'experimental.examples.wheel.main:main'.
+Targets to be included in the distribution.
+
+The targets to package are usually `py_library` rules or filesets (for packaging data files).
+
+Note it's usually better to package `py_library` targets and use
+`console_scripts` attribute to specify entry points than to package
+`py_binary` rules. `py_binary` targets would wrap a executable script that
+tries to locate `.runfiles` directory which is not packaged in the wheel.
 """,
         ),
         # Implementation details.
