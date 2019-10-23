@@ -2,7 +2,6 @@ load("@bazel_federation//:repositories.bzl", "bazel_stardoc", "rules_pkg")
 load("@bazel_federation//:third_party_repositories.bzl", "futures_2_whl", "futures_3_whl", "google_cloud_language_whl", "grpc_whl", "mock_whl", "subpar")
 load("@rules_python//python:pip.bzl", "pip_import")
 
-
 def rules_python_internal_deps():
     bazel_stardoc()
 
@@ -21,13 +20,11 @@ def rules_python_internal_deps():
     # For packaging and distribution
     rules_pkg()
 
-
 def piptool():
     pip_import(
         name = "piptool_deps",
         requirements = "@rules_python//python:requirements.txt",
     )
-
 
 def examples():
     pip_import(

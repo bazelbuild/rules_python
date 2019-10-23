@@ -22,7 +22,6 @@ load(
     _extras_install = "pip_install",
 )
 
-
 def rules_python_internal_setup():
     # Requirements for building our piptool.
     _piptool_install()

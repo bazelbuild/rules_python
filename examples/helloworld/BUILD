@@ -27,6 +27,6 @@ py_library(
 py_test(
     name = "helloworld_test",
     srcs = ["helloworld_test.py"],
-    deps = [":helloworld"],
     python_version = "PY2",
+    deps = [":helloworld"],
 )

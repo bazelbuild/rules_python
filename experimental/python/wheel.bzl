@@ -18,14 +18,16 @@ def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
     # which is not a valid path within a zip file. Fix that.
     short_path = input_file.short_path
-    if short_path.startswith('..') and len(short_path) >= 3:
+    if short_path.startswith("..") and len(short_path) >= 3:
         # Path separator. '/' on linux.
         separator = short_path[2]
+
         # Consume '../' part.
         short_path = short_path[3:]
+
         # Find position of next '/' and consume everything up to that character.
         pos = short_path.find(separator)
-        short_path = short_path[pos+1:]
+        short_path = short_path[pos + 1:]
     return short_path
 
 def _input_file_to_arg(input_file):
