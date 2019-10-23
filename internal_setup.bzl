@@ -1,3 +1,5 @@
+"""Setup for rules_python tests, tools, and examples."""
+
 load(
     "@examples_boto//:requirements.bzl",
     _boto_install = "pip_install",
@@ -22,8 +24,6 @@ load(
     "@piptool_deps//:requirements.bzl",
     _piptool_install = "pip_install",
 )
-
-"""Setup for rules_python tests, tools, and examples."""
 
 def rules_python_internal_setup():
     """Setup for rules_python tests, tools, and examples."""

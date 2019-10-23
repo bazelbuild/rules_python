@@ -1,8 +1,8 @@
+"""Dependencies that are needed for rules_python tests and tools."""
+
 load("@bazel_federation//:repositories.bzl", "bazel_stardoc", "rules_pkg")
 load("@bazel_federation//:third_party_repositories.bzl", "futures_2_whl", "futures_3_whl", "google_cloud_language_whl", "grpc_whl", "mock_whl", "subpar")
 load("@rules_python//python:pip.bzl", "pip_import")
-
-"""Dependencies that are needed for rules_python tests and tools."""
 
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
