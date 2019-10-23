@@ -21,13 +21,13 @@ migrated to Starlark, their implementations will be moved here.
 
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
 load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
-load(":private/reexports.bzl", "internal_PyInfo", "internal_PyRuntimeInfo")
+load(":private/reexports.bzl", "InternalPyInfo", "InternalPyRuntimeInfo")
 
 # Exports of native-defined providers.
 
-PyInfo = internal_PyInfo
+PyInfo = InternalPyInfo
 
-PyRuntimeInfo = internal_PyRuntimeInfo
+PyRuntimeInfo = InternalPyRuntimeInfo
 
 # The implementation of the macros and tagging mechanism follows the example
 # set by rules_cc and rules_java.

@@ -36,5 +36,5 @@ the original name.
 # Don't use underscore prefix, since that would make the symbol local to this
 # file only.
 
-internal_PyInfo = PyInfo
-internal_PyRuntimeInfo = PyRuntimeInfo
+InternalPyInfo = PyInfo
+InternalPyRuntimeInfo = PyRuntimeInfo

@@ -23,7 +23,11 @@ load(
     _piptool_install = "pip_install",
 )
 
+"""Setup for rules_python tests, tools, and examples."""
+
 def rules_python_internal_setup():
+    """Setup for rules_python tests, tools, and examples."""
+
     # Requirements for building our piptool.
     _piptool_install()
 
