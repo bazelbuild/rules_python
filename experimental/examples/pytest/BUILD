@@ -32,6 +32,7 @@ pytest_test(
         requirement("pytest"),
         # These should be pulled in by requirement("pytest"), but it's currently broken
         # See #110 and #90
+        requirement("attrs"),
         requirement("atomicwrites"),
         requirement("importlib_metadata"),
         requirement("more_itertools"),
