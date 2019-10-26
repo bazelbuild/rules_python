@@ -73,9 +73,9 @@ def pytest_test(name, test_files, **kwargs):
     """Create bazel native py_test rules for tests using py.test framework.
 
     Args:
-        - name: name of the generated test rule,
-        - test_files: Python test files to run,
-        - other arguments (e.g. "deps") are passed to py_test rule.
+        name: name of the generated test rule,
+        test_files: Python test files to run,
+        kwargs: other arguments (e.g. "deps") are passed to py_test rule.
 
     Make sure that "deps" include:
      - py_library with pytest, e.g. created by pip_import.

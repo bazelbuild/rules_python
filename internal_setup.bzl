@@ -15,6 +15,10 @@ load(
     _helloworld_install = "pip_install",
 )
 load(
+    "@examples_pytest//:requirements.bzl",
+    _pytest_install = "pip_install",
+)
+load(
     "@examples_version//:requirements.bzl",
     _version_install = "pip_install",
 )
@@ -23,10 +27,6 @@ load(
 load(
     "@piptool_deps//:requirements.bzl",
     _piptool_install = "pip_install",
-)
-load(
-    "@examples_pytest//:requirements.bzl",
-    _pytest_install = "pip_install",
 )
 
 def rules_python_internal_setup():

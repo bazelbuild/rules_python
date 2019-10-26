@@ -15,9 +15,9 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-load("//python:defs.bzl", "py_library")
-load("//experimental/python:pytest.bzl", "pytest_test")
 load("@examples_pytest//:requirements.bzl", "requirement")
+load("//experimental/python:pytest.bzl", "pytest_test")
+load("//python:defs.bzl", "py_library")
 
 py_library(
     name = "conftest",
