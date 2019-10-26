@@ -36,8 +36,10 @@ pytest_test(
         requirement("atomicwrites"),
         requirement("importlib_metadata"),
         requirement("more_itertools"),
+        requirement("packaging"),
         requirement("pluggy"),
         requirement("py"),
+        requirement("wcwidth"),
         requirement("zipp"),
     ],
 )
