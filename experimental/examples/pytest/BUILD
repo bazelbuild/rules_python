@@ -37,6 +37,7 @@ pytest_test(
         requirement("importlib_metadata"),
         requirement("more_itertools"),
         requirement("packaging"),
+        requirement("pathlib2"),
         requirement("pluggy"),
         requirement("py"),
         requirement("wcwidth"),
