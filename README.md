@@ -1,6 +1,7 @@
 # Python Rules for Bazel
 
-[![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+* Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=master)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+* Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=master)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
 
 ## Recent updates
 
