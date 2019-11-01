@@ -1,0 +1,2 @@
+cryptography[test, docs]
+boto3
