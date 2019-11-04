@@ -12,7 +12,7 @@ import pkg_resources
 
 # Normalises package names to be used in Bazel labels.
 def sanitise_package(name):
-    return name.replace("-", "_").lower()
+    return "pypi__" + name.replace("-", "_").lower()
 
 
 class Wheel(object):
@@ -67,6 +67,9 @@ py_library(
     name = "pkg",
     srcs = glob(["**/*.py"]),
     data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    # This makes this directory a top-level in the python import
+    # search path for anything that depends on this.
+    imports = ["."],
     deps = [{dependencies}],
 )
 
@@ -135,7 +138,7 @@ def main():
     subprocess.check_output([sys.executable, "-m", "pip", "wheel", "-r", args.requirements])
 
     for whl_file in glob.glob("*.whl"):
-        whl_dir = str(whl_file).lower().split("-")[0]
+        whl_dir = "pypi__" + str(whl_file).lower().split("-")[0]
         os.mkdir(whl_dir)
         wheel = Wheel(whl_file)
 
@@ -156,7 +159,7 @@ all_requirements = [{requirement_labels}]
 
 def requirement(name):
     name_key = name.replace("-", "_").lower()
-    return "{repo}//" + name_key + ":pkg"
+    return "{repo}//pypi__" + name_key + ":pkg"
 """.format(
                 repo=args.repo, requirement_labels=targets
             )
