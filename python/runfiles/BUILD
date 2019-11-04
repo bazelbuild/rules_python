@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # We'd like to alias the runfiles target @bazel_tools//tools/python/runfiles.
 # However, we need its source file to exist in the runfiles tree under this
 # repo's name, so that it can be imported as

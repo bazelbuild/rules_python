@@ -52,9 +52,7 @@ pip_import = repository_rule(
         ),
     },
     implementation = _pip_import_impl,
-)
-
-"""A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+    doc = """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
 
 This rule imports a <code>requirements.txt</code> file and generates a new
 <code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
@@ -94,10 +92,12 @@ py_binary(
 
 Args:
   requirements: The label of a requirements.txt file.
-"""
+""",
+)
 
 def pip_repositories():
     """Pull in dependencies needed to use the packaging rules."""
+
     # At the moment this is a placeholder, in that it does not actually pull in
     # any dependencies. However, it does do some validation checking.
     #

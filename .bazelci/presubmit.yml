@@ -4,6 +4,9 @@
 # TODO(#144): When Bazel 0.29 is released, the docgen workflow will work, and
 # we can go back to using `...` for build_targets.
 ---
+buildifier:
+  version: latest
+  warnings: "all"
 all_targets: &all_targets
     build_targets:
     - "//examples/..."

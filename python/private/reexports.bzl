@@ -34,7 +34,10 @@ the original name.
 """
 
 # Don't use underscore prefix, since that would make the symbol local to this
-# file only.
-
+# file only. Use a non-conventional name to emphasize that this is not a public
+# symbol.
+# buildifier: disable=name-conventions
 internal_PyInfo = PyInfo
+
+# buildifier: disable=name-conventions
 internal_PyRuntimeInfo = PyRuntimeInfo

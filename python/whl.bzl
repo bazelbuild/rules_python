@@ -37,12 +37,12 @@ def _whl_impl(repository_ctx):
 
 whl_library = repository_rule(
     attrs = {
+        "extras": attr.string_list(),
+        "requirements": attr.string(),
         "whl": attr.label(
             mandatory = True,
             allow_single_file = True,
         ),
-        "requirements": attr.string(),
-        "extras": attr.string_list(),
         "_script": attr.label(
             executable = True,
             default = Label("//tools:whltool.par"),
@@ -50,9 +50,7 @@ whl_library = repository_rule(
         ),
     },
     implementation = _whl_impl,
-)
-
-"""A rule for importing <code>.whl</code> dependencies into Bazel.
+    doc = """A rule for importing <code>.whl</code> dependencies into Bazel.
 
 <b>This rule is currently used to implement <code>pip_import</code>,
 it is not intended to work standalone, and the interface may change.</b>
@@ -77,4 +75,5 @@ Args:
 
   extras: A subset of the "extras" available from this <code>.whl</code> for which
     <code>requirements</code> has the dependencies.
-"""
+""",
+)
