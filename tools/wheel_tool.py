@@ -6,7 +6,6 @@ import sys
 import zipfile
 
 import pkginfo
-import pip._internal.main as pip
 
 import pkg_resources
 
@@ -127,17 +126,16 @@ def main():
     # There is no good library to parse this file so we do some rudimentary try-except on the individual lines
     requirements = {}
     req_file = open(args.requirements, "r")
-    for r in req_file:
+    for r in req_file.readlines():
         try:
-            req = Requirement.parse(r)
+            req = pkg_resources.Requirement.parse(r)
             requirements[req.name] = req
         except:
             # At this point we log and continue. It is assumed pip will fail if the file is actually incorrect
             print("Failed to parse requirement %s" % r)
 
-    # Assumes any errors are logged by pip so do nothing
-    if pip.main(["wheel", "-r", args.requirements]):
-        sys.exit(1)
+    # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
+    subprocess.check_output([sys.executable, "-m", "pip", "wheel", "-r", args.requirements])
 
     for whl_file in glob.glob("*.whl"):
         whl_dir = str(whl_file).lower().split("-")[0]
@@ -151,10 +149,7 @@ def main():
         os.remove(whl_file)
 
     targets = ",".join(
-        [
-            '"%s//%s:pkg"' % (args.repo, sanitise_package(package))
-            for package in requirements
-        ]
+        ['"%s//%s:pkg"' % (args.repo, sanitise_package(package)) for package in requirements]
     )
 
     with open("requirements.bzl", "w") as f:
