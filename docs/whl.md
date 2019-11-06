@@ -5,7 +5,7 @@
 ## whl_library
 
 <pre>
-whl_library(<a href="#whl_library-name">name</a>, <a href="#whl_library-extras">extras</a>, <a href="#whl_library-requirements">requirements</a>, <a href="#whl_library-whl">whl</a>)
+whl_library(<a href="#whl_library-name">name</a>, <a href="#whl_library-extras">extras</a>, <a href="#whl_library-python_interpreter">python_interpreter</a>, <a href="#whl_library-requirements">requirements</a>, <a href="#whl_library-whl">whl</a>)
 </pre>
 
 A rule for importing `.whl` dependencies into Bazel.
@@ -50,6 +50,15 @@ This rule defines `@foo//:pkg` as a `py_library` target.
         <p>
           A subset of the "extras" available from this <code>.whl</code> for which
 <code>requirements</code> has the dependencies.
+        </p>
+      </td>
+    </tr>
+    <tr id="whl_library-python_interpreter">
+      <td><code>python_interpreter</code></td>
+      <td>
+        String; optional
+        <p>
+          The command to run the Python interpreter used when unpacking the wheel.
         </p>
       </td>
     </tr>

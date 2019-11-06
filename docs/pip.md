@@ -5,7 +5,7 @@
 ## pip_import
 
 <pre>
-pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-requirements">requirements</a>)
+pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-requirements">requirements</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -64,6 +64,16 @@ py_binary(
         <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
         <p>
           A unique name for this repository.
+        </p>
+      </td>
+    </tr>
+    <tr id="pip_import-python_interpreter">
+      <td><code>python_interpreter</code></td>
+      <td>
+        String; optional
+        <p>
+          The command to run the Python interpreter used to invoke pip and unpack the
+wheels.
         </p>
       </td>
     </tr>

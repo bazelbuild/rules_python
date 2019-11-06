@@ -87,7 +87,8 @@ parser = argparse.ArgumentParser(
     description='Import Python dependencies into Bazel.')
 
 parser.add_argument('--python_interpreter', action='store',
-                    help=('The python python interpreter to use '))
+                    help=('The Python interpreter to use when extracting '
+                          'wheels.'))
 
 parser.add_argument('--name', action='store',
                     help=('The namespace of the import.'))

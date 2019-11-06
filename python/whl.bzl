@@ -45,9 +45,6 @@ A subset of the "extras" available from this <code>.whl</code> for which
 The name of the <code>pip_import</code> repository rule from which to load this
 <code>.whl</code>'s dependencies.
 """),
-        "python_interpreter": attr.string(default="python", doc="""
-The command to run the Python interpreter used when unpacking the wheel.
-"""),
         "whl": attr.label(
             mandatory = True,
             allow_single_file = True,
@@ -56,6 +53,9 @@ The path to the <code>.whl</code> file. The name is expected to follow [this
 convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
 """,
         ),
+        "python_interpreter": attr.string(default = "python", doc = """
+The command to run the Python interpreter used when unpacking the wheel.
+"""),
         "_script": attr.label(
             executable = True,
             default = Label("//tools:whltool.par"),
