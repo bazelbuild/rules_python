@@ -8,6 +8,31 @@
 whl_library(<a href="#whl_library-name">name</a>, <a href="#whl_library-extras">extras</a>, <a href="#whl_library-requirements">requirements</a>, <a href="#whl_library-whl">whl</a>)
 </pre>
 
+A rule for importing <code>.whl</code> dependencies into Bazel.
+
+<b>This rule is currently used to implement <code>pip_import</code>,
+it is not intended to work standalone, and the interface may change.</b>
+See <code>pip_import</code> for proper usage.
+
+This rule imports a <code>.whl</code> file as a <code>py_library</code>:
+<pre><code>whl_library(
+    name = "foo",
+    whl = ":my-whl-file",
+    requirements = "name of pip_import rule",
+)
+</code></pre>
+
+This rule defines a <code>@foo//:pkg</code> <code>py_library</code> target.
+
+Args:
+  whl: The path to the .whl file (the name is expected to follow [this
+    convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention))
+
+  requirements: The name of the pip_import repository rule from which to
+    load this .whl's dependencies.
+
+  extras: A subset of the "extras" available from this <code>.whl</code> for which
+    <code>requirements</code> has the dependencies.
 
 
 ### Attributes

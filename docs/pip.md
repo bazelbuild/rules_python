@@ -8,6 +8,46 @@
 pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-requirements">requirements</a>)
 </pre>
 
+A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+
+This rule imports a <code>requirements.txt</code> file and generates a new
+<code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
+pattern:
+<pre><code>pip_import(
+    name = "foo",
+    requirements = ":requirements.txt",
+)
+load("@foo//:requirements.bzl", "pip_install")
+pip_install()
+</code></pre>
+
+You can then reference imported dependencies from your <code>BUILD</code>
+file with:
+<pre><code>load("@foo//:requirements.bzl", "requirement")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       requirement("futures"),
+       requirement("mock"),
+    ],
+)
+</code></pre>
+
+Or alternatively:
+<pre><code>load("@foo//:requirements.bzl", "all_requirements")
+py_binary(
+    name = "baz",
+    ...
+    deps = [
+       ":foo",
+    ] + all_requirements,
+)
+</code></pre>
+
+Args:
+  requirements: The label of a requirements.txt file.
 
 
 ### Attributes
