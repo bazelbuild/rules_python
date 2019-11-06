@@ -8,31 +8,22 @@
 whl_library(<a href="#whl_library-name">name</a>, <a href="#whl_library-extras">extras</a>, <a href="#whl_library-requirements">requirements</a>, <a href="#whl_library-whl">whl</a>)
 </pre>
 
-A rule for importing <code>.whl</code> dependencies into Bazel.
+A rule for importing `.whl` dependencies into Bazel.
 
-<b>This rule is currently used to implement <code>pip_import</code>,
-it is not intended to work standalone, and the interface may change.</b>
-See <code>pip_import</code> for proper usage.
+<b>This rule is currently used to implement `pip_import`. It is not intended to
+work standalone, and the interface may change.</b> See `pip_import` for proper
+usage.
 
-This rule imports a <code>.whl</code> file as a <code>py_library</code>:
-<pre><code>whl_library(
+This rule imports a `.whl` file as a `py_library`:
+```python
+whl_library(
     name = "foo",
     whl = ":my-whl-file",
     requirements = "name of pip_import rule",
 )
-</code></pre>
+```
 
-This rule defines a <code>@foo//:pkg</code> <code>py_library</code> target.
-
-Args:
-  whl: The path to the .whl file (the name is expected to follow [this
-    convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention))
-
-  requirements: The name of the pip_import repository rule from which to
-    load this .whl's dependencies.
-
-  extras: A subset of the "extras" available from this <code>.whl</code> for which
-    <code>requirements</code> has the dependencies.
+This rule defines `@foo//:pkg` as a `py_library` target.
 
 
 ### Attributes
@@ -56,18 +47,30 @@ Args:
       <td><code>extras</code></td>
       <td>
         List of strings; optional
+        <p>
+          A subset of the "extras" available from this <code>.whl</code> for which
+<code>requirements</code> has the dependencies.
+        </p>
       </td>
     </tr>
     <tr id="whl_library-requirements">
       <td><code>requirements</code></td>
       <td>
         String; optional
+        <p>
+          The name of the <code>pip_import</code> repository rule from which to load this
+<code>.whl</code>'s dependencies.
+        </p>
       </td>
     </tr>
     <tr id="whl_library-whl">
       <td><code>whl</code></td>
       <td>
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
+        <p>
+          The path to the <code>.whl</code> file. The name is expected to follow [this
+convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
+        </p>
       </td>
     </tr>
   </tbody>
