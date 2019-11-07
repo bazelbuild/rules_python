@@ -43,15 +43,15 @@ def _pip_import_impl(repository_ctx):
 
 pip_import = repository_rule(
     attrs = {
+        "python_interpreter": attr.string(default = "python", doc = """
+The command to run the Python interpreter used to invoke pip and unpack the
+wheels.
+"""),
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,
             doc = "The label of the requirements.txt file.",
         ),
-        "python_interpreter": attr.string(default = "python", doc = """
-The command to run the Python interpreter used to invoke pip and unpack the
-wheels.
-"""),
         "_script": attr.label(
             executable = True,
             default = Label("//tools:piptool.par"),

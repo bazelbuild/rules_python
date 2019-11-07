@@ -41,6 +41,9 @@ whl_library = repository_rule(
 A subset of the "extras" available from this <code>.whl</code> for which
 <code>requirements</code> has the dependencies.
 """),
+        "python_interpreter": attr.string(default = "python", doc = """
+The command to run the Python interpreter used when unpacking the wheel.
+"""),
         "requirements": attr.string(doc = """
 The name of the <code>pip_import</code> repository rule from which to load this
 <code>.whl</code>'s dependencies.
@@ -53,9 +56,6 @@ The path to the <code>.whl</code> file. The name is expected to follow [this
 convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
 """,
         ),
-        "python_interpreter": attr.string(default = "python", doc = """
-The command to run the Python interpreter used when unpacking the wheel.
-"""),
         "_script": attr.label(
             executable = True,
             default = Label("//tools:whltool.par"),
