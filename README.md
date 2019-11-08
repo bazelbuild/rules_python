@@ -36,7 +36,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "@py_dep//boto3",
+        "@py_deps//boto3",
     ],
 )
 ```
