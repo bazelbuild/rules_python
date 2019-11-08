@@ -1,12 +1,12 @@
 def _pip_repository_impl(rctx):
-    if not rctx.which("python3"):
-        fail("python not found")
+    if not rctx.which(rctx.attr.python_interpreter):
+        fail("python interpreter not found")
 
     rctx.file("BUILD", "")
 
     result = rctx.execute(
         [
-            rctx.which("python3"),
+            rctx.which(rctx.attr.python_interpreter),
             rctx.path(rctx.attr._script),
             "--requirements",
             rctx.path(rctx.attr.requirements),
@@ -26,12 +26,12 @@ pip_repository = repository_rule(
     attrs={
         "requirements": attr.label(allow_single_file=True, mandatory=True,),
         "wheel_env": attr.string_dict(),
+        "python_interpreter": attr.string(default="python3"),
         "_script": attr.label(
             executable=True,
             default=Label("//tools:wheel_wrapper.py"),
             cfg="host",
         ),
     },
-    local=False,
     implementation=_pip_repository_impl,
 )
