@@ -90,6 +90,64 @@ wheels.
 </table>
 
 
+<a name="#pip2_import"></a>
+
+## pip2_import
+
+<pre>
+pip2_import(<a href="#pip2_import-kwargs">kwargs</a>)
+</pre>
+
+A wrapper around pip_import that uses the `python2` system command.
+
+### Parameters
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="pip2_import-kwargs">
+      <td><code>kwargs</code></td>
+      <td>
+        optional.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<a name="#pip3_import"></a>
+
+## pip3_import
+
+<pre>
+pip3_import(<a href="#pip3_import-kwargs">kwargs</a>)
+</pre>
+
+A wrapper around pip_import that uses the `python3` system command.
+
+Use this for requirements of PY3 programs.
+
+### Parameters
+
+<table class="params-table">
+  <colgroup>
+    <col class="col-param" />
+    <col class="col-description" />
+  </colgroup>
+  <tbody>
+    <tr id="pip3_import-kwargs">
+      <td><code>kwargs</code></td>
+      <td>
+        optional.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
 <a name="#pip_repositories"></a>
 
 ## pip_repositories

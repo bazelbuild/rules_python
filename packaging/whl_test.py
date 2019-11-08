@@ -34,7 +34,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.version(), '1.6.0')
     self.assertEqual(set(wheel.dependencies()),
                      set(['enum34', 'futures', 'protobuf', 'six']))
-    self.assertEqual('pypi__grpcio_1_6_0', wheel.repository_name())
+    self.assertEqual('pypi__grpcio_1_6_0', wheel.repository_suffix())
     self.assertEqual([], wheel.extras())
 
   def test_futures_whl(self):
@@ -44,7 +44,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.distribution(), 'futures')
     self.assertEqual(wheel.version(), '3.1.1')
     self.assertEqual(set(wheel.dependencies()), set())
-    self.assertEqual('pypi__futures_3_1_1', wheel.repository_name())
+    self.assertEqual('pypi__futures_3_1_1', wheel.repository_suffix())
     self.assertEqual([], wheel.extras())
 
   def test_whl_with_METADATA_file(self):
@@ -54,7 +54,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.distribution(), 'futures')
     self.assertEqual(wheel.version(), '2.2.0')
     self.assertEqual(set(wheel.dependencies()), set())
-    self.assertEqual('pypi__futures_2_2_0', wheel.repository_name())
+    self.assertEqual('pypi__futures_2_2_0', wheel.repository_suffix())
 
   @patch('platform.python_version', return_value='2.7.13')
   def test_mock_whl(self, *args):
@@ -65,7 +65,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(wheel.version(), '2.0.0')
     self.assertEqual(set(wheel.dependencies()),
                      set(['funcsigs', 'pbr', 'six']))
-    self.assertEqual('pypi__mock_2_0_0', wheel.repository_name())
+    self.assertEqual('pypi__mock_2_0_0', wheel.repository_suffix())
 
   @patch('platform.python_version', return_value='3.3.0')
   def test_mock_whl_3_3(self, *args):
@@ -103,7 +103,7 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(set(wheel.dependencies()),
                      set(expected_deps))
     self.assertEqual('pypi__google_cloud_language_0_29_0',
-                     wheel.repository_name())
+                     wheel.repository_suffix())
     self.assertEqual([], wheel.extras())
 
   @patch('platform.python_version', return_value='3.4.0')
