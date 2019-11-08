@@ -6,7 +6,7 @@ Contains Bazel rules to fetch and install Python dependencies from a requirement
 
 In `requirements.txt`
 ```
-cryptography[test, docs]==2.8
+cryptography==2.8
 boto3==1.9.253
 ```
 
@@ -32,13 +32,14 @@ pip_repository(
 
 In `BUILD`
 ```
-load("@py_deps//:requirements.bzl", "requirement")
-
 py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        requirement("boto3"),
+        "@py_dep//boto3",
     ],
 )
 ```
+
+N.B package names are sanitized to `{package_name}.replace("-", "_").replace(".", "_").lower()`. You can use the macro
+provided in `load("@py_deps//:requirements.bzl", "requirement")` to automatically transform the name.

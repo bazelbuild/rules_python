@@ -20,7 +20,8 @@ def configure_vendor():
 
     # This prepends the vendor directory to the sys.path so that we preference their use over any system modules.
     sys.path[0:0] = [
-        os.path.join(_root_dir, "third_party"),
+        os.path.join(_root_dir, "third_party/python"),
+        os.path.join(_root_dir, "."),
     ]
 
     # Pip creates python subprocesses, so we need to add the new path to the PYTHONPATH
@@ -57,9 +58,9 @@ def main():
     configure_reproducible_wheels()
 
     # This must be imported after vendoring has been configured. As it tries to resolve its own dependencies
-    import wheel_tool
+    import src.extract_wheels as whl
 
-    wheel_tool.main()
+    whl.main()
 
 
 if __name__ == "__main__":
