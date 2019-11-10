@@ -24,7 +24,17 @@ py_library(
 
 
 def sanitise_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
+    """
+    There are certain requirements around Bazel labels that we need to consider.
+
+    rules-python automatically adds the repository root to the PYTHONPATH, meaning a package that has the same name as
+    a module is picked up. We workaround this by prefixing with `pypi__`. Alternatively we could require
+    `--noexperimental_python_import_all_repositories` be set, however this breaks rules_docker.
+    See: https://github.com/bazelbuild/bazel/issues/2636
+
+    Due to restrictions on Bazel labels we also cannot allow hyphens. See https://github.com/bazelbuild/bazel/issues/6841
+    """
+    return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
 
 
 def extract_wheel(whl, directory, extras):
@@ -90,7 +100,7 @@ all_requirements = [{requirement_labels}]
 
 def requirement(name):
     name_key = name.replace("-", "_").replace(".", "_").lower()
-    return "{repo}//" + name_key
+    return "{repo}//pypi__" + name_key
 """.format(
                 requirement_labels=",".join(targets), repo=args.repo
             )

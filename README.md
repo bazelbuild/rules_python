@@ -12,7 +12,7 @@ boto3==1.9.253
 
 In `WORKSPACE`
 ```
-rules_python_external_version = "37dad8910495ad71bae391db7a843a0f7a3ea902"
+rules_python_external_version = "{COMMIT_SHA}"
 
 git_repository(
     name = "rules_python_external",
@@ -32,14 +32,13 @@ pip_repository(
 
 In `BUILD`
 ```
+load("@py_deps//:requirements.bzl", "requirement")
+
 py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "@py_deps//boto3",
+        requirement("boto3"), # or @py_deps//pypi__boto3
     ],
 )
 ```
-
-N.B package names are sanitized to `{package_name}.replace("-", "_").replace(".", "_").lower()`. You can use the macro
-provided in `load("@py_deps//:requirements.bzl", "requirement")` to automatically transform the name.
