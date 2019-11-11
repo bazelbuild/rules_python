@@ -37,11 +37,21 @@ def _whl_impl(repository_ctx):
 
 whl_library = repository_rule(
     attrs = {
-        "extras": attr.string_list(),
-        "requirements": attr.string(),
+        "extras": attr.string_list(doc = """
+A subset of the "extras" available from this <code>.whl</code> for which
+<code>requirements</code> has the dependencies.
+"""),
+        "requirements": attr.string(doc = """
+The name of the <code>pip_import</code> repository rule from which to load this
+<code>.whl</code>'s dependencies.
+"""),
         "whl": attr.label(
             mandatory = True,
             allow_single_file = True,
+            doc = """
+The path to the <code>.whl</code> file. The name is expected to follow [this
+convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
+""",
         ),
         "_script": attr.label(
             executable = True,
@@ -50,30 +60,21 @@ whl_library = repository_rule(
         ),
     },
     implementation = _whl_impl,
-    doc = """A rule for importing <code>.whl</code> dependencies into Bazel.
+    doc = """A rule for importing `.whl` dependencies into Bazel.
 
-<b>This rule is currently used to implement <code>pip_import</code>,
-it is not intended to work standalone, and the interface may change.</b>
-See <code>pip_import</code> for proper usage.
+<b>This rule is currently used to implement `pip_import`. It is not intended to
+work standalone, and the interface may change.</b> See `pip_import` for proper
+usage.
 
-This rule imports a <code>.whl</code> file as a <code>py_library</code>:
-<pre><code>whl_library(
+This rule imports a `.whl` file as a `py_library`:
+```python
+whl_library(
     name = "foo",
     whl = ":my-whl-file",
     requirements = "name of pip_import rule",
 )
-</code></pre>
+```
 
-This rule defines a <code>@foo//:pkg</code> <code>py_library</code> target.
-
-Args:
-  whl: The path to the .whl file (the name is expected to follow [this
-    convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention))
-
-  requirements: The name of the pip_import repository rule from which to
-    load this .whl's dependencies.
-
-  extras: A subset of the "extras" available from this <code>.whl</code> for which
-    <code>requirements</code> has the dependencies.
+This rule defines `@foo//:pkg` as a `py_library` target.
 """,
 )

@@ -44,6 +44,7 @@ pip_import = repository_rule(
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,
+            doc = "The label of the requirements.txt file.",
         ),
         "_script": attr.label(
             executable = True,
@@ -52,22 +53,24 @@ pip_import = repository_rule(
         ),
     },
     implementation = _pip_import_impl,
-    doc = """A rule for importing <code>requirements.txt</code> dependencies into Bazel.
+    doc = """A rule for importing `requirements.txt` dependencies into Bazel.
 
-This rule imports a <code>requirements.txt</code> file and generates a new
-<code>requirements.bzl</code> file.  This is used via the <code>WORKSPACE</code>
-pattern:
-<pre><code>pip_import(
+This rule imports a `requirements.txt` file and generates a new
+`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
+
+```python
+pip_import(
     name = "foo",
     requirements = ":requirements.txt",
 )
 load("@foo//:requirements.bzl", "pip_install")
 pip_install()
-</code></pre>
+```
 
-You can then reference imported dependencies from your <code>BUILD</code>
-file with:
-<pre><code>load("@foo//:requirements.bzl", "requirement")
+You can then reference imported dependencies from your `BUILD` file with:
+
+```python
+load("@foo//:requirements.bzl", "requirement")
 py_library(
     name = "bar",
     ...
@@ -77,10 +80,11 @@ py_library(
        requirement("mock"),
     ],
 )
-</code></pre>
+```
 
 Or alternatively:
-<pre><code>load("@foo//:requirements.bzl", "all_requirements")
+```python
+load("@foo//:requirements.bzl", "all_requirements")
 py_binary(
     name = "baz",
     ...
@@ -88,10 +92,7 @@ py_binary(
        ":foo",
     ] + all_requirements,
 )
-</code></pre>
-
-Args:
-  requirements: The label of a requirements.txt file.
+```
 """,
 )
 
