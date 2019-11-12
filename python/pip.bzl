@@ -102,12 +102,9 @@ py_binary(
 """,
 )
 
-def pip2_import(**kwargs):
-    """A wrapper around pip_import that uses the `python2` system command."""
-    # We don't advertise "Use this for PY2 programs" because it's not clear
-    # whether this alias is always available, and on most (but not all) systems
-    # `python` is Python 2 anyway.
-    pip_import(python_interpreter = "python2", **kwargs)
+# We don't provide a `pip2_import` that would use the `python2` system command
+# because this command does not exist on all platforms. On most (but not all)
+# systems, `python` means Python 2 anyway. See also #258.
 
 def pip3_import(**kwargs):
     """A wrapper around pip_import that uses the `python3` system command.
