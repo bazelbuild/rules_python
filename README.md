@@ -5,7 +5,17 @@
 
 ## Recent updates
 
-* 2019-07-26: The canonical name of this repo has been changed from `@io_bazel_rules_python` to just `@rules_python`, in accordance with [convention](https://docs.bazel.build/versions/master/skylark/deploying.html#workspace). Please update your WORKSPACE file and labels that reference this repo accordingly.
+* 2019-11-13: Added support for `pip3_import` (and more generally, a
+`python_interpreter` attribute to `pip_import`). The canonical naming for wheel
+repositories has changed to accomodate loading wheels for both `pip_import` and
+`pip3_import` in the same build. To avoid breakage, please use `requirement()`
+instead of depending directly on wheel repo labels.
+
+* 2019-07-26: The canonical name of this repo has been changed from
+`@io_bazel_rules_python` to just `@rules_python`, in accordance with
+[convention](https://docs.bazel.build/versions/master/skylark/deploying.html#workspace).
+Please update your `WORKSPACE` file and labels that reference this repo
+accordingly.
 
 ## Overview
 
@@ -95,7 +105,7 @@ git_repository(
 # above.
 ```
 
-Once you've imported the rule set into your WORKSPACE using any of these
+Once you've imported the rule set into your `WORKSPACE` using any of these
 methods, you can then load the core rules in your `BUILD` files with:
 
 ``` python
@@ -109,35 +119,67 @@ py_binary(
 
 ## Using the packaging rules
 
+The packaging rules create two kinds of repositories: A central repo that holds
+downloaded wheel files, and individual repos for each wheel's extracted
+contents. Users only need to interact with the central repo; the wheel repos
+are essentially an implementation detail. The central repo provides a
+`WORKSPACE` macro to create the wheel repos, as well as a function to call in
+`BUILD` files to translate a pip package name into the label of a `py_library`
+target in the appropriate wheel repo.
+
 ### Importing `pip` dependencies
 
-The packaging rules are designed to have developers continue using
-`requirements.txt` to express their dependencies in a Python idiomatic manner.
-These dependencies are imported into the Bazel dependency graph via a
-two-phased process in `WORKSPACE`:
+Adding pip dependencies to your `WORKSPACE` is a two-step process. First you
+declare the central repository using `pip_import`, which invokes pip to read
+a `requirements.txt` file and download the appropriate wheels. Then you load
+the `pip_install` function from the central repo, and call it to create the
+individual wheel repos.
+
+**Important:** If you are using Python 3, load and call `pip3_import` instead.
 
 ```python
 load("@rules_python//python:pip.bzl", "pip_import")
 
-# This rule translates the specified requirements.txt into
-# @my_deps//:requirements.bzl, which itself exposes a pip_install method.
-pip_import(
+# Create a central repo that knows about the dependencies needed for
+# requirements.txt.
+pip_import(   # or pip3_import
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
 
-# Load the pip_install symbol for my_deps, and create the dependencies'
-# repositories.
+# Load the central repo's install function from its `//:requirements.bzl` file,
+# and call it.
 load("@my_deps//:requirements.bzl", "pip_install")
 pip_install()
 ```
 
+Note that since pip is executed at WORKSPACE-evaluation time, Bazel has no
+information about the Python toolchain and cannot enforce that the interpreter
+used to invoke pip matches the interpreter used to run `py_binary` targets. By
+default, `pip_import` uses the system command `"python"`, which on most
+platforms is a Python 2 interpreter. This can be overridden by passing the
+`python_interpreter` attribute to `pip_import`. `pip3_import` just acts as a
+wrapper that sets `python_interpreter` to `"python3"`.
+
+You can have multiple `pip_import`s in the same workspace, e.g. for Python 2
+and Python 3. This will create multiple central repos that have no relation to
+one another, and may result in downloading the same wheels multiple times.
+
+As with any repository rule, if you would like to ensure that `pip_import` is
+reexecuted in order to pick up a non-hermetic change to your environment (e.g.,
+updating your system `python` interpreter), you can completely flush out your
+repo cache with `bazel clean --expunge`.
+
 ### Consuming `pip` dependencies
 
-Once a set of dependencies has been imported via `pip_import` and `pip_install`
-we can start consuming them in our `py_{binary,library,test}` rules.  In support
-of this, the generated `requirements.bzl` also contains a `requirement` method,
-which can be used directly in `deps=[]` to reference an imported `py_library`.
+Each extracted wheel repo contains a `py_library` target representing the
+wheel's contents. Rather than depend on this target's label directly -- which
+would require hardcoding the wheel repo's mangled name into your BUILD files --
+you should instead use the `requirement()` function defined in the central
+repo's `//:requirements.bzl` file. This function maps a pip package name to a
+label. (["Extras"](
+https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras)
+can be referenced using the `pkg[extra]` syntax.)
 
 ```python
 load("@my_deps//:requirements.bzl", "requirement")
@@ -147,38 +189,28 @@ py_library(
     srcs = ["mylib.py"],
     deps = [
         ":myotherlib",
-	# This takes the name as specified in requirements.txt
-	requirement("importeddep"),
+        requirement("some_pip_dep"),
+        requirement("anohter_pip_dep[some_extra]"),
     ]
 )
 ```
 
-### Canonical `whl_library` naming
-
-It is notable that `whl_library` rules imported via `pip_import` are canonically
-named, following the pattern: `pypi__{distribution}_{version}`.  Characters in
-these components that are illegal in Bazel label names (e.g. `-`, `.`) are
-replaced with `_`.
-
-This canonical naming helps avoid redundant work to import the same library
-multiple times.  It is expected that this naming will remain stable, so folks
-should be able to reliably depend directly on e.g. `@pypi__futures_3_1_1//:pkg`
-for dependencies, however, it is recommended that folks stick with the
-`requirement` pattern in case the need arises for us to make changes to this
-format in the future.
-
-["Extras"](
-https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras)
-will have a target of the extra name (in place of `pkg` above).
+For reference, the wheel repos are canonically named following the pattern:
+`@{central_repo_name}_pypi__{distribution}_{version}`. Characters in the
+distribution and version that are illegal in Bazel label names (e.g. `-`, `.`)
+are replaced with `_`. While this naming pattern doesn't change often, it is
+not guaranted to remain stable, so use of the `requirement()` function is
+recommended.
 
 ## Migrating from the bundled rules
 
 The core rules are currently available in Bazel as built-in symbols, but this
 form is deprecated. Instead, you should depend on rules_python in your
-WORKSPACE file and load the Python rules from `@rules_python//python:defs.bzl`.
+`WORKSPACE` file and load the Python rules from
+`@rules_python//python:defs.bzl`.
 
 A [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
-fix is available to automatically migrate BUILD and .bzl files to add the
+fix is available to automatically migrate `BUILD` and `.bzl` files to add the
 appropriate `load()` statements and rewrite uses of `native.py_*`.
 
 ```sh
@@ -186,7 +218,7 @@ appropriate `load()` statements and rewrite uses of `native.py_*`.
 buildifier --lint=fix --warnings=native-py <files>
 ```
 
-Currently the WORKSPACE file needs to be updated manually as per [Getting
+Currently the `WORKSPACE` file needs to be updated manually as per [Getting
 started](#Getting-started) above.
 
 Note that Starlark-defined bundled symbols underneath
