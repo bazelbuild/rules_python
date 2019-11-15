@@ -5,7 +5,7 @@
 
 ## Recent updates
 
-* 2019-11-13: Added support for `pip3_import` (and more generally, a
+* 2019-11-15: Added support for `pip3_import` (and more generally, a
 `python_interpreter` attribute to `pip_import`). The canonical naming for wheel
 repositories has changed to accomodate loading wheels for both `pip_import` and
 `pip3_import` in the same build. To avoid breakage, please use `requirement()`
