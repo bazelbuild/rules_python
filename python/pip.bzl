@@ -102,6 +102,17 @@ py_binary(
 """,
 )
 
+# We don't provide a `pip2_import` that would use the `python2` system command
+# because this command does not exist on all platforms. On most (but not all)
+# systems, `python` means Python 2 anyway. See also #258.
+
+def pip3_import(**kwargs):
+    """A wrapper around pip_import that uses the `python3` system command.
+
+    Use this for requirements of PY3 programs.
+    """
+    pip_import(python_interpreter = "python3", **kwargs)
+
 def pip_repositories():
     """Pull in dependencies needed to use the packaging rules."""
 

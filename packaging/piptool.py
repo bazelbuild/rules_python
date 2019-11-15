@@ -174,6 +174,9 @@ def main():
   whls = [Wheel(path) for path in list_whls()]
   possible_extras = determine_possible_extras(whls)
 
+  def repository_name(wheel):
+    return args.name + "_" + wheel.repository_suffix()
+
   def whl_library(wheel):
     # Indentation here matters.  whl_library must be within the scope
     # of the function below.  We also avoid reimporting an existing WHL.
@@ -185,7 +188,7 @@ def main():
         whl = "@{name}//:{path}",
         requirements = "@{name}//:requirements.bzl",
         extras = [{extras}]
-    )""".format(name=args.name, repo_name=wheel.repository_name(),
+    )""".format(name=args.name, repo_name=repository_name(wheel),
                 python_interpreter=args.python_interpreter,
                 path=wheel.basename(),
                 extras=','.join([
@@ -195,11 +198,11 @@ def main():
 
   whl_targets = ','.join([
     ','.join([
-      '"%s": "@%s//:pkg"' % (whl.distribution().lower(), whl.repository_name())
+      '"%s": "@%s//:pkg"' % (whl.distribution().lower(), repository_name(whl))
     ] + [
       # For every extra that is possible from this requirements.txt
       '"%s[%s]": "@%s//:%s"' % (whl.distribution().lower(), extra.lower(),
-                                whl.repository_name(), extra)
+                                repository_name(whl), extra)
       for extra in possible_extras.get(whl, [])
     ])
     for whl in whls
