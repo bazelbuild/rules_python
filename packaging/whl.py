@@ -19,13 +19,51 @@ import os
 import pkg_resources
 import re
 import zipfile
+from email.parser import Parser
+
+
+class WheelMetadata(pkg_resources.FileMetadata):
+  """Metadata handler for Wheels
+  
+  This provider acts like FileMetadata, but returns 
+  """
+
+  def __init__(self, path):
+    self.path = path
+
+  def get_metadata(self, name):
+    if name != 'METADATA':
+      raise KeyError("No metadata except METADATA is available")
+
+    basename = os.path.basename(self.path)
+    parts = basename.split('-')
+    distribution, version = parts[0], parts[1]
+    metadata_path = '{}-{}.dist-info/METADATA'.format(distribution, version)
+
+    with zipfile.ZipFile(self.path) as zf:
+      # pkg_resources uses email.parser.Parser to parse METADATA, which doesn't support unicode
+      # In order to solve this we have to either reimplement pkg_resources' parsing to not use email.parser
+      # or strip Unicode characters. Since PEP 566 specifically references email.parser as the way to read
+      # METADATA, stripping Unicode characters seems like the better solution for now, especially since this
+      # shouldn't affect any information we care about for dependency resoltuion.
+      metadata = zf.read(metadata_path).decode('ascii', 'ignore')
+    return metadata
 
 
 class Wheel(object):
 
   def __init__(self, path):
     self._path = path
-
+  
+  @property
+  def _dist(self):
+    try:
+      return self.__dist
+    except AttributeError:
+      metadata = WheelMetadata(self.path())
+      self.__dist = pkg_resources.DistInfoDistribution.from_filename(self.path(), metadata)
+      return self.__dist
+  
   def path(self):
     return self._path
 
@@ -55,22 +93,14 @@ class Wheel(object):
     #      google_cloud-0.27.0.dist-info
     return '{}-{}.dist-info'.format(self.distribution(), self.version())
 
-  def metadata(self):
-    # Extract the structured data from metadata.json in the WHL's dist-info
-    # directory.
+  def _metadata(self):
+    # Extract the structured data from METADATA file
     with zipfile.ZipFile(self.path(), 'r') as whl:
-      # first check for metadata.json
-      try:
-        with whl.open(self._dist_info() + '/metadata.json') as f:
-          return json.loads(f.read().decode("utf-8"))
-      except KeyError:
-          pass
-      # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
       with whl.open(self._dist_info() + '/METADATA') as f:
         return self._parse_metadata(f.read().decode("utf-8"))
 
   def name(self):
-    return self.metadata().get('name')
+    return self._metadata().get('name')
 
   def dependencies(self, extra=None):
     """Access the dependencies of this Wheel.
@@ -82,29 +112,20 @@ class Wheel(object):
     Yields:
       the names of requirements from the metadata.json
     """
-    # TODO(mattmoor): Is there a schema to follow for this?
+    requires = set(self._dist.requires())
+    if extra:
+      requires = set(self._dist.requires(extras=(extra,))) - requires
+
     dependency_set = set()
-
-    run_requires = self.metadata().get('run_requires', [])
-    for requirement in run_requires:
-      if requirement.get('extra') != extra:
-        # Match the requirements for the extra we're looking for.
-        continue
-      marker = requirement.get('environment')
-      if marker and not pkg_resources.evaluate_marker(marker):
-        # The current environment does not match the provided PEP 508 marker,
-        # so ignore this requirement.
-        continue
-      requires = requirement.get('requires', [])
-      for entry in requires:
-        # Strip off any trailing versioning data.
-        parts = re.split('[ ><=()]', entry)
-        dependency_set.add(parts[0])
-
+    for r in requires:
+      name = r.project_name
+      if r.extras:
+        name += "[{0}]".format(",".join(sorted(r.extras)))
+      dependency_set.add(name)
     return dependency_set
 
   def extras(self):
-    return self.metadata().get('extras', [])
+    return self._dist.extras
 
   def expand(self, directory):
     with zipfile.ZipFile(self.path(), 'r') as whl:

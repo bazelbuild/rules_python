@@ -1,6 +1,6 @@
-pip==9.0.3
+pip==19.3.1
 setuptools==44.0.0
-wheel==0.30.0a0
+wheel==0.33.6
 
 # For tests
 mock==2.0.0
