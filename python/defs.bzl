@@ -36,7 +36,7 @@ _MIGRATION_TAG = "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
 
 def _add_tags(attrs):
     if "tags" in attrs and attrs["tags"] != None:
-        attrs["tags"] += [_MIGRATION_TAG]
+        attrs["tags"] = attrs["tags"] + [_MIGRATION_TAG]
     else:
         attrs["tags"] = [_MIGRATION_TAG]
     return attrs
