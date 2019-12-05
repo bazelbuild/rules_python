@@ -13,6 +13,7 @@ all_targets: &all_targets
     - "//experimental/..."
     - "//packaging/..."
     - "//python/..."
+    - "//tests/..."
     - "//tools/..."
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
