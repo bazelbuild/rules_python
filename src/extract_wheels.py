@@ -56,7 +56,7 @@ def extract_wheel(whl, directory, extras):
                     # Python libraries cannot have hyphen https://github.com/bazelbuild/bazel/issues/9171
                     [
                         '"//%s"' % sanitise_name(d)
-                        for d in whl.dependencies(extras_requested=extras)
+                        for d in whl.dependencies(extras_requested=extras).sort()
                     ]
                 ),
             )
@@ -102,7 +102,7 @@ def requirement(name):
     name_key = name.replace("-", "_").replace(".", "_").lower()
     return "{repo}//pypi__" + name_key
 """.format(
-                requirement_labels=",".join(targets), repo=args.repo
+                requirement_labels=",".join(targets.sort()), repo=args.repo
             )
         )
 
