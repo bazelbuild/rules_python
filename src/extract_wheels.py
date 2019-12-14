@@ -37,6 +37,28 @@ def sanitise_name(name):
     return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
 
 
+def _setup_namespace_pkg_compatibility(extracted_whl_directory):
+    # need dist-info directory for pkg_resources to be able to find the packages
+    dist_info = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))[0]
+    # fix namespace packages by adding proper __init__.py files
+    namespace_packages = os.path.join(dist_info, "namespace_packages.txt")
+    if os.path.exists(namespace_packages):
+        with open(namespace_packages) as nspkg:
+            for line in nspkg.readlines():
+                namespace = line.strip().replace(".", os.sep)
+                if namespace:
+                    nspkg_init = os.path.join(extracted_whl_directory, namespace, "__init__.py")
+                    with open(nspkg_init, "w") as nspkg:
+                        nspkg.writelines([
+                            "# __path__ manipulation added by rules_python_external to support namespace pkgs.\n"
+                            "__path__ = __import__('pkgutil').extend_path(__path__, __name__)\n"
+                        ])
+
+    
+
+    # return pkginfo.Wheel(dist_info)
+
+
 def extract_wheel(whl, directory, extras):
     """
     Unzips a wheel into the Bazel repository and creates the BUILD file
@@ -47,6 +69,8 @@ def extract_wheel(whl, directory, extras):
     """
 
     whl.unzip(directory)
+
+    _setup_namespace_pkg_compatibility(directory)
 
     with open(os.path.join(directory, "BUILD"), "w") as f:
         f.write(
