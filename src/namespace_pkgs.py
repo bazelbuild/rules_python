@@ -53,7 +53,7 @@ def implicit_namespace_packages(directory, ignored_dirnames=None) -> Set[str]:
     """
     namespace_pkg_dirs = set()
     for dirpath, dirnames, filenames in os.walk(directory, topdown=True):
-        # We are only interested in dirs with no init file
+        # We are only interested in dirs with no __init__.py file
         if "__init__.py" in filenames:
             dirnames[:] = []  # Remove dirnames from search
             continue
