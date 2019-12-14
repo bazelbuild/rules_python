@@ -47,6 +47,24 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
+    def test_nested_namespace_packages(self):
+        directory = TempDir()
+        directory.add_file("google/auth/__init__.py")
+        directory.add_file("google/auth/foo.py")
+        directory.add_file("google/bar/biz/__init__.py")
+        directory.add_file("google/bar/biz/bee.py")
+        directory.add_file(
+            "google_auth-1.8.2.dist-info/namespace_packages.txt",
+            contents="google\ngoogle.bar\n"
+        )
+
+        expected = {
+            f"{directory.root()}/google",
+            f"{directory.root()}/google/bar",
+        }
+        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
     def test_empty_case(self):
         # Even though this directory contains directories with no __init__.py
         # it has an empty namespace_packages.txt file so no namespace packages
