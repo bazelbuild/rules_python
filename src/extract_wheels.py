@@ -41,7 +41,7 @@ def sanitise_name(name):
 
 def _setup_namespace_pkg_compatibility(extracted_whl_directory):
     """
-    Namespace packages can be created in one of three ways. The are detailed here:
+    Namespace packages can be created in one of three ways. They are detailed here:
     https://packaging.python.org/guides/packaging-namespace-packages/#creating-a-namespace-package
 
     'pkgutil-style namespace packages' (2) works in Bazel, but 'native namespace packages' (1) and
@@ -54,7 +54,7 @@ def _setup_namespace_pkg_compatibility(extracted_whl_directory):
     )
     if (
         not namespace_pkg_dirs and
-        (sys.version_info.major, sys.version_info.minor) >= (3, 3)
+        namespace_pkgs.native_namespace_packages_supported()
     ):
         namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
             extracted_whl_directory,

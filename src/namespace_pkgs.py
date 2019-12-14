@@ -1,5 +1,6 @@
 import os
 import glob
+import sys
 
 from typing import Set
 
@@ -13,6 +14,8 @@ PKGUTIL_STYLE_NS_PKG_INIT_CONTENTS = (
 
 def pkg_resources_style_namespace_packages(extracted_whl_directory) -> Set[str]:
     """
+    Discovers namespace packages implemented using the 'pkg_resources-style namespace packages' method.
+
     "While this approach is no longer recommended, it is widely present in most existing namespace packages." - PyPA
     See https://packaging.python.org/guides/packaging-namespace-packages/#pkg-resources-style-namespace-packages
     """
@@ -37,7 +40,17 @@ def pkg_resources_style_namespace_packages(extracted_whl_directory) -> Set[str]:
     return namespace_pkg_dirs
 
 
+def native_namespace_packages_supported() -> bool:
+    return (sys.version_info.major, sys.version_info.minor) >= (3, 3)
+
+
 def implicit_namespace_packages(directory, ignored_dirnames=None) -> Set[str]:
+    """
+    Discovers namespace packages implemented using the 'native namespace packages' method,
+    AKA 'implicit namespace packages', which has been supported since Python 3.3.
+
+    See: https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages
+    """
     namespace_pkg_dirs = set()
     for dirpath, dirnames, filenames in os.walk(directory, topdown=True):
         # We are only interested in dirs with no init file
@@ -60,7 +73,11 @@ def implicit_namespace_packages(directory, ignored_dirnames=None) -> Set[str]:
 
 
 def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
-    """TODO"""
+    """
+    Used to implement the 'pkgutil-style namespace packages' method of
+    doing namespace packages.
+    See: https://packaging.python.org/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages
+    """
     ns_pkg_init_filepath = os.path.join(dir_path, "__init__.py")
 
     if os.path.isfile(ns_pkg_init_filepath):
