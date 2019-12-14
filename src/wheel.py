@@ -4,7 +4,7 @@ import zipfile
 import pkg_resources
 import glob
 
-from typing import Dict
+from typing import Dict, Optional
 
 
 class Wheel(object):
@@ -43,7 +43,7 @@ class Wheel(object):
             whl.extractall(directory)
 
 
-def get_dist_info(extracted_whl_directory):
+def get_dist_info(extracted_whl_directory) -> str:
     dist_info_dirs = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))
     if not dist_info_dirs:
         raise ValueError(f"No *.dist-info directory found. {extracted_whl_directory} is not a valid Wheel.")
@@ -54,11 +54,11 @@ def get_dist_info(extracted_whl_directory):
     return dist_info
 
 
-def get_dot_data_directory(extracted_whl_directory):
+def get_dot_data_directory(extracted_whl_directory) -> Optional[str]:
     # See: https://www.python.org/dev/peps/pep-0491/#the-data-directory
     dot_data_dirs = glob.glob(os.path.join(extracted_whl_directory, "*.data"))
     if not dot_data_dirs:
-        raise ValueError(f"No *.data directory found. {extracted_whl_directory} is not a valid Wheel.")
+        return None
     elif len(dot_data_dirs) > 1:
         raise ValueError(f"Found more than 1 *.data directory. {extracted_whl_directory} is not a valid Wheel.")
     else:
@@ -71,6 +71,8 @@ def parse_WHEEL_file(whl_file_path: str) -> Dict[str, str]:
     with open(whl_file_path, "r") as f:
         for line in f:
             cleaned = line.strip()
+            if not cleaned:
+                continue
             try:
                 key, value = cleaned.split(":", maxsplit=1)
                 contents[key] = value.strip()
