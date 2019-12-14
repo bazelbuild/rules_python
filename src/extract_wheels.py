@@ -69,7 +69,7 @@ def _setup_namespace_pkg_compatibility(extracted_whl_directory):
 
 def extract_wheel(whl, directory, extras):
     """
-    Unzips a wheel into the Bazel repository and creates the BUILD file
+    Unzips a wheel into the Bazel repository and prepares it for use by Python rules.
 
     :param whl: the Wheel object we are unpacking
     :param directory: the subdirectory of the external repo to unzip to
