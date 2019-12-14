@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 
+
+from . import namespace_pkgs
 from .wheel import Wheel
 
 BUILD_TEMPLATE = """\
@@ -38,25 +40,31 @@ def sanitise_name(name):
 
 
 def _setup_namespace_pkg_compatibility(extracted_whl_directory):
-    # need dist-info directory for pkg_resources to be able to find the packages
-    dist_info = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))[0]
-    # fix namespace packages by adding proper __init__.py files
-    namespace_packages = os.path.join(dist_info, "namespace_packages.txt")
-    if os.path.exists(namespace_packages):
-        with open(namespace_packages) as nspkg:
-            for line in nspkg.readlines():
-                namespace = line.strip().replace(".", os.sep)
-                if namespace:
-                    nspkg_init = os.path.join(extracted_whl_directory, namespace, "__init__.py")
-                    with open(nspkg_init, "w") as nspkg:
-                        nspkg.writelines([
-                            "# __path__ manipulation added by rules_python_external to support namespace pkgs.\n"
-                            "__path__ = __import__('pkgutil').extend_path(__path__, __name__)\n"
-                        ])
+    """
+    Namespace packages can be created in one of three ways. The are detailed here:
+    https://packaging.python.org/guides/packaging-namespace-packages/#creating-a-namespace-package
 
-    
+    'pkgutil-style namespace packages' (2) works in Bazel, but 'native namespace packages' (1) and
+    'pkg_resources-style namespace packages' (3) do not.
 
-    # return pkginfo.Wheel(dist_info)
+    We ensure compatibility with Bazel of methods 1 and 3 by converting them into method 2.
+    """
+    namespace_pkg_dirs = namespace_pkgs.pkg_resources_style_namespace_packages(
+        extracted_whl_directory
+    )
+    if (
+        not namespace_pkg_dirs and
+        (sys.version_info.major, sys.version_info.minor) >= (3, 3)
+    ):
+        namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
+            extracted_whl_directory,
+            ignored_dirnames=[
+                f"{extracted_whl_directory}/bin",
+            ]
+        )
+
+    for ns_pkg_dir in namespace_pkg_dirs:
+        namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
 def extract_wheel(whl, directory, extras):

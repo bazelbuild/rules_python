@@ -59,11 +59,11 @@ def implicit_namespace_packages(directory, ignored_dirnames=None) -> Set[str]:
     return namespace_pkg_dirs
 
 
-def add_pkgutil_style_namespace_pkg_init(dirpath) -> None:
+def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
     """TODO"""
-    ns_pkg_init_filepath = os.path.join(dirpath, "__init__.py")
+    ns_pkg_init_filepath = os.path.join(dir_path, "__init__.py")
 
     if os.path.isfile(ns_pkg_init_filepath):
-        raise ValueError(f"{dirpath} already contains an __init__.py file.")
+        raise ValueError(f"{dir_path} already contains an __init__.py file.")
     with open(ns_pkg_init_filepath, "w") as ns_pkg_init_f:
         ns_pkg_init_f.write(PKGUTIL_STYLE_NS_PKG_INIT_CONTENTS)
