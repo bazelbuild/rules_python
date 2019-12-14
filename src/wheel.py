@@ -1,6 +1,8 @@
+import os
 import pkginfo
 import zipfile
 import pkg_resources
+import glob
 
 
 class Wheel(object):
@@ -37,3 +39,14 @@ class Wheel(object):
     def unzip(self, directory):
         with zipfile.ZipFile(self.path(), "r") as whl:
             whl.extractall(directory)
+
+
+def get_dist_info(extracted_whl_directory):
+    dist_info_dirs = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))
+    if not dist_info_dirs:
+        raise ValueError(f"No *.dist-info directory found. {extracted_whl_directory} is not a valid Wheel.")
+    elif len(dist_info_dirs) > 1:
+        raise ValueError(f"Found more than 1 *.dist-info directory. {extracted_whl_directory} is not a valid Wheel.")
+    else:
+        dist_info = dist_info_dirs[0]
+    return dist_info
