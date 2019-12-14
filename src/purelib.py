@@ -1,3 +1,4 @@
+import os
 import pathlib
 import shutil
 
@@ -18,4 +19,15 @@ def spread_purelib_into_root(extracted_whl_directory: str) -> None:
         return
 
     dot_data_dir = wheel.get_dot_data_directory(extracted_whl_directory)
-    shutil.move(dot_data_dir, extracted_whl_directory)
+
+    # 'Root-Is-Purelib: false' is no gaurante a .date directory exists with
+    # package code in it. eg. the 'markupsafe' package.
+    if dot_data_dir:
+        for child in pathlib.Path(dot_data_dir).iterdir():
+            # TODO(Jonathon): Should all other potential folders get ignored?
+            if str(child).endswith("purelib"):
+                for grandchild in child.iterdir():
+                    shutil.move(
+                        src=str(grandchild),
+                        dst=extracted_whl_directory,
+                    )
