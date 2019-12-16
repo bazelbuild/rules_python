@@ -42,3 +42,9 @@ py_binary(
     ],
 )
 ```
+
+## Development
+
+### Testing
+
+`bazel test //...`

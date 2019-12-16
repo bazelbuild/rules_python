@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 
+
+from . import namespace_pkgs
 from .wheel import Wheel
 
 BUILD_TEMPLATE = """\
@@ -37,9 +39,37 @@ def sanitise_name(name):
     return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
 
 
+def _setup_namespace_pkg_compatibility(extracted_whl_directory):
+    """
+    Namespace packages can be created in one of three ways. They are detailed here:
+    https://packaging.python.org/guides/packaging-namespace-packages/#creating-a-namespace-package
+
+    'pkgutil-style namespace packages' (2) works in Bazel, but 'native namespace packages' (1) and
+    'pkg_resources-style namespace packages' (3) do not.
+
+    We ensure compatibility with Bazel of methods 1 and 3 by converting them into method 2.
+    """
+    namespace_pkg_dirs = namespace_pkgs.pkg_resources_style_namespace_packages(
+        extracted_whl_directory
+    )
+    if (
+        not namespace_pkg_dirs and
+        namespace_pkgs.native_namespace_packages_supported()
+    ):
+        namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
+            extracted_whl_directory,
+            ignored_dirnames=[
+                f"{extracted_whl_directory}/bin",
+            ]
+        )
+
+    for ns_pkg_dir in namespace_pkg_dirs:
+        namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
+
+
 def extract_wheel(whl, directory, extras):
     """
-    Unzips a wheel into the Bazel repository and creates the BUILD file
+    Unzips a wheel into the Bazel repository and prepares it for use by Python rules.
 
     :param whl: the Wheel object we are unpacking
     :param directory: the subdirectory of the external repo to unzip to
@@ -47,6 +77,8 @@ def extract_wheel(whl, directory, extras):
     """
 
     whl.unzip(directory)
+
+    _setup_namespace_pkg_compatibility(directory)
 
     with open(os.path.join(directory, "BUILD"), "w") as f:
         f.write(
