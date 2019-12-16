@@ -79,6 +79,7 @@ def extract_wheel(whl, directory, extras):
 
     whl.unzip(directory)
 
+    # Note: Order of operations matters here
     purelib.spread_purelib_into_root(directory)
     _setup_namespace_pkg_compatibility(directory)
 
