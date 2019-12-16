@@ -6,6 +6,7 @@ import sys
 
 
 from . import namespace_pkgs
+from . import purelib
 from .wheel import Wheel
 
 BUILD_TEMPLATE = """\
@@ -78,6 +79,8 @@ def extract_wheel(whl, directory, extras):
 
     whl.unzip(directory)
 
+    # Note: Order of operations matters here
+    purelib.spread_purelib_into_root(directory)
     _setup_namespace_pkg_compatibility(directory)
 
     with open(os.path.join(directory, "BUILD"), "w") as f:

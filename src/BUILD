@@ -9,5 +9,12 @@ py_test(
     name = "test",
     srcs = glob(["tests/*.py"]),
     main = "tests/__main__.py",
-    deps = [":src"],
+    deps = [
+        ":src",
+        "//third_party/python:pkginfo",
+    ],
+    size="small",
+    imports = [
+        "../third_party/python/",
+    ]
 )

@@ -1,7 +1,7 @@
 import os
-import glob
 import sys
 
+from . import wheel
 from typing import Set
 
 
@@ -21,13 +21,7 @@ def pkg_resources_style_namespace_packages(extracted_whl_directory) -> Set[str]:
     """
     namespace_pkg_dirs = set()
 
-    dist_info_dirs = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))
-    if not dist_info_dirs:
-        raise ValueError(f"No *.dist-info directory found. {extracted_whl_directory} is not a valid Wheel.")
-    elif len(dist_info_dirs) > 1:
-        raise ValueError(f"Found more than 1 *.dist-info directory. {extracted_whl_directory} is not a valid Wheel.")
-    else:
-        dist_info = dist_info_dirs[0]
+    dist_info = wheel.get_dist_info(extracted_whl_directory)
     namespace_packages_record_file = os.path.join(dist_info, "namespace_packages.txt")
     if os.path.exists(namespace_packages_record_file):
         with open(namespace_packages_record_file) as nspkg:
