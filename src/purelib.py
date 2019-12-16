@@ -24,7 +24,7 @@ def spread_purelib_into_root(extracted_whl_directory: str) -> None:
     # package code in it. eg. the 'markupsafe' package.
     if dot_data_dir:
         for child in pathlib.Path(dot_data_dir).iterdir():
-            # TODO(Jonathon): Should all other potential folders get ignored?
+            # TODO(Jonathon): Should all other potential folders get ignored? eg. 'platlib'
             if str(child).endswith("purelib"):
                 for grandchild in child.iterdir():
                     shutil.move(
