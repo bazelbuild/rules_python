@@ -158,8 +158,9 @@ information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_import` uses the system command `"python"`, which on most
 platforms is a Python 2 interpreter. This can be overridden by passing the
-`python_interpreter` attribute to `pip_import`. `pip3_import` just acts as a
-wrapper that sets `python_interpreter` to `"python3"`.
+`python_interpreter` or `python_interpreter_label` attribute to `pip_import`.
+`pip3_import` just acts as a wrapper that sets `python_interpreter` to
+`"python3"`.
 
 You can have multiple `pip_import`s in the same workspace, e.g. for Python 2
 and Python 3. This will create multiple central repos that have no relation to

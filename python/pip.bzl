@@ -22,12 +22,17 @@ def _pip_import_impl(repository_ctx):
     # requirements.bzl without it.
     repository_ctx.file("BUILD", "")
 
+    if repository_ctx.attr.python_interpreter_label:
+        python_interpreter = repository_ctx.path(repository_ctx.attr.python_interpreter_label)
+    else:
+        python_interpreter = repository_ctx.attr.python_interpreter
+
     # To see the output, pass: quiet=False
     result = repository_ctx.execute([
-        repository_ctx.attr.python_interpreter,
+        python_interpreter,
         repository_ctx.path(repository_ctx.attr._script),
         "--python_interpreter",
-        repository_ctx.attr.python_interpreter,
+        python_interpreter,
         "--name",
         repository_ctx.attr.name,
         "--input",
@@ -47,6 +52,13 @@ pip_import = repository_rule(
 The command to run the Python interpreter used to invoke pip and unpack the
 wheels.
 """),
+        "python_interpreter_label": attr.label(
+            allow_single_file = True,
+            doc = """
+The command, as a Bazel label, to run the Python interpreter used to invoke
+pip and unpack the wheels.  Takes precedence over `python_interpreter`.
+""",
+        ),
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,
