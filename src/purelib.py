@@ -19,15 +19,25 @@ def spread_purelib_into_root(extracted_whl_directory: str) -> None:
         return
 
     dot_data_dir = wheel.get_dot_data_directory(extracted_whl_directory)
-
     # 'Root-Is-Purelib: false' is no guarantee a .date directory exists with
     # package code in it. eg. the 'markupsafe' package.
-    if dot_data_dir:
-        for child in pathlib.Path(dot_data_dir).iterdir():
-            # TODO(Jonathon): Should all other potential folders get ignored? eg. 'platlib'
-            if str(child).endswith("purelib"):
-                for grandchild in child.iterdir():
-                    shutil.move(
-                        src=str(grandchild),
-                        dst=extracted_whl_directory,
-                    )
+    if not dot_data_dir:
+        return
+
+    for child in pathlib.Path(dot_data_dir).iterdir():
+        # TODO(Jonathon): Should all other potential folders get ignored? eg. 'platlib'
+        if str(child).endswith("purelib"):
+            _spread_purelib(child, extracted_whl_directory)
+
+
+def _spread_purelib(purelib_dir, root_dir):
+    for grandchild in purelib_dir.iterdir():
+        # Some purelib Wheels, like Tensorflow 2.0.0, have directories
+        # split between the root and the purelib directory. In this case
+        # we should leave the purelib 'sibling' alone.
+        # See: https://github.com/dillon-giacoppo/rules_python_external/issues/8
+        if not pathlib.Path(root_dir, grandchild.name).exists():
+            shutil.move(
+                src=str(grandchild),
+                dst=root_dir,
+            )
