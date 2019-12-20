@@ -26,7 +26,7 @@ load("@rules_python_external//:defs.bzl", "pip_repository")
 
 pip_repository(
     name = "py_deps",
-    requirements = "//third_party:requirements.txt",
+    requirements = "//:requirements.txt",
 )
 ```
 
