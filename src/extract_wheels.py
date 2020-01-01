@@ -4,10 +4,7 @@ import os
 import subprocess
 import sys
 
-
-from . import namespace_pkgs
-from . import purelib
-from .wheel import Wheel
+from src import wheel, namespace_pkgs
 
 BUILD_TEMPLATE = """\
 package(default_visibility = ["//visibility:public"])
@@ -53,15 +50,10 @@ def _setup_namespace_pkg_compatibility(extracted_whl_directory):
     namespace_pkg_dirs = namespace_pkgs.pkg_resources_style_namespace_packages(
         extracted_whl_directory
     )
-    if (
-        not namespace_pkg_dirs and
-        namespace_pkgs.native_namespace_packages_supported()
-    ):
+    if not namespace_pkg_dirs and namespace_pkgs.native_namespace_packages_supported():
         namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
             extracted_whl_directory,
-            ignored_dirnames=[
-                f"{extracted_whl_directory}/bin",
-            ]
+            ignored_dirnames=[f"{extracted_whl_directory}/bin",],
         )
 
     for ns_pkg_dir in namespace_pkg_dirs:
@@ -79,8 +71,6 @@ def extract_wheel(whl, directory, extras):
 
     whl.unzip(directory)
 
-    # Note: Order of operations matters here
-    purelib.spread_purelib_into_root(directory)
     _setup_namespace_pkg_compatibility(directory)
 
     with open(os.path.join(directory, "BUILD"), "w") as f:
@@ -121,12 +111,12 @@ def main():
 
     targets = set()
 
-    for wheel in [Wheel(whl) for whl in glob.glob("*.whl")]:
-        whl_label = sanitise_name(wheel.name())
+    for whl in [wheel.Wheel(whl) for whl in glob.glob("*.whl")]:
+        whl_label = sanitise_name(whl.name())
         os.mkdir(whl_label)
-        extract_wheel(wheel, whl_label, [])
+        extract_wheel(whl, whl_label, [])
         targets.add('"{repo}//{name}"'.format(repo=args.repo, name=whl_label))
-        os.remove(wheel.path())
+        os.remove(whl.path())
 
     with open("requirements.bzl", "w") as f:
         f.write(
@@ -140,7 +130,3 @@ def requirement(name):
                 requirement_labels=",".join(sorted(targets)), repo=args.repo
             )
         )
-
-
-if __name__ == "__main__":
-    main()

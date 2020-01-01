@@ -36,14 +36,15 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("google/auth/__init__.py")
         directory.add_file("google/auth/foo.py")
         directory.add_file(
-            "google_auth-1.8.2.dist-info/namespace_packages.txt",
-            contents="google\n"
+            "google_auth-1.8.2.dist-info/namespace_packages.txt", contents="google\n"
         )
 
         expected = {
             f"{directory.root()}/google",
         }
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
+        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
+            directory.root()
+        )
         self.assertEqual(actual, expected)
 
     def test_nested_namespace_packages(self):
@@ -54,14 +55,16 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("google/bar/biz/bee.py")
         directory.add_file(
             "google_auth-1.8.2.dist-info/namespace_packages.txt",
-            contents="google\ngoogle.bar\n"
+            contents="google\ngoogle.bar\n",
         )
 
         expected = {
             f"{directory.root()}/google",
             f"{directory.root()}/google/bar",
         }
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
+        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
+            directory.root()
+        )
         self.assertEqual(actual, expected)
 
     def test_empty_case(self):
@@ -75,7 +78,9 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("foo/buu/bii.py")
         directory.add_file("foo-1.0.0.dist-info/namespace_packages.txt")
 
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
+        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
+            directory.root()
+        )
         self.assertEqual(actual, set())
 
     def test_missing_namespace_pkgs_record_file(self):
@@ -90,7 +95,9 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("foo-1.0.0.dist-info/METADATA")
         directory.add_file("foo-1.0.0.dist-info/RECORD")
 
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
+        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
+            directory.root()
+        )
         self.assertEqual(actual, set())
 
 
