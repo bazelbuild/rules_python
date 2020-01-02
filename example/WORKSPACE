@@ -20,5 +20,6 @@ rules_python_external_dependencies()
 
 load("@rules_python_external//:defs.bzl", "pip_install")
 pip_install(
+    # Uses the default repository name "pip"
     requirements = "//:requirements.txt",
 )
