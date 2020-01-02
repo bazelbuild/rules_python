@@ -11,16 +11,16 @@ boto3==1.9.253
 ```
 
 In `WORKSPACE`
+
 ```
 rules_python_external_version = "{COMMIT_SHA}"
 
-git_repository(
+http_archive(
     name = "rules_python_external",
-    commit = rules_python_external_version,
-    remote = "git@github.com:dillon-giacoppo/rules_python_external.git",
-    shallow_since = "1572846707 +1100",
+    sha256 = "", # Fill in with correct sha256 of your COMMIT_SHA version
+    strip_prefix = "rules_python_external-{version}".format(version = rules_python_external_version),
+    url = "https://github.com/dillon-giacoppo/rules_python_external/archive/{version}.zip".format(version = rules_python_external_version),
 )
-
 
 load("@rules_python_external//:defs.bzl", "pip_repository")
 
@@ -30,7 +30,8 @@ pip_repository(
 )
 ```
 
-In `BUILD`
+Example `BUILD` file.
+
 ```
 load("@py_deps//:requirements.bzl", "requirement")
 
