@@ -12,7 +12,7 @@ boto3==1.9.253
 
 In `WORKSPACE`
 
-```
+```python
 rules_python_external_version = "{COMMIT_SHA}"
 
 http_archive(
@@ -28,14 +28,14 @@ rules_python_external_dependencies()
 
 load("@rules_python_external//:defs.bzl", "pip_install")
 pip_install(
-    name = "py_deps"
+    name = "py_deps",
     requirements = "//:requirements.txt",
 )
 ```
 
 Example `BUILD` file.
 
-```
+```python
 load("@py_deps//:requirements.bzl", "requirement")
 
 py_binary(

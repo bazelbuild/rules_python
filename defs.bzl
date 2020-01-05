@@ -9,6 +9,15 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD", "")
 
+    # Get the root directory of these rules
+    rules_root = rctx.path(Label("//:BUILD")).dirname
+    thirdparty_roots = [
+        # Includes all the external dependencies from repositories.bzl
+        rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
+        for repo in all_requirements
+    ]
+    pypath = ":".join([str(p) for p in [rules_root] + thirdparty_roots])
+
     result = rctx.execute(
         [
             rctx.which(rctx.attr.python_interpreter),
@@ -20,14 +29,7 @@ def _pip_repository_impl(rctx):
         ],
         environment={
             # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": ":".join(
-                # Includes the root of this repo and all the external dependencies from repositories.bzl
-                [str(rctx.path(rctx.attr._script).dirname.dirname)]
-                + [
-                    str(rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname)
-                    for repo in all_requirements
-                ]
-            )
+            "PYTHONPATH": pypath
         },
     )
     if result.return_code:
