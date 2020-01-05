@@ -1,7 +1,7 @@
 import os
 import sys
 
-from . import wheel
+from src import wheel
 from typing import Set
 
 
@@ -52,13 +52,14 @@ def implicit_namespace_packages(directory, ignored_dirnames=None) -> Set[str]:
             dirnames[:] = []  # Remove dirnames from search
             continue
 
-        for ignored_dir in (ignored_dirnames or []):
+        for ignored_dir in ignored_dirnames or []:
             if ignored_dir in dirnames:
                 dirnames.remove(ignored_dir)
 
-        non_empty_directory = (dirnames or filenames)
+        non_empty_directory = dirnames or filenames
         if (
-            non_empty_directory and
+            non_empty_directory
+            and
             # The root of the directory should never be an implicit namespace
             dirpath != directory
         ):

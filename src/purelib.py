@@ -1,8 +1,7 @@
-import os
 import pathlib
 import shutil
 
-from . import wheel
+from src import wheel
 
 
 def spread_purelib_into_root(extracted_whl_directory: str) -> None:
@@ -11,7 +10,9 @@ def spread_purelib_into_root(extracted_whl_directory: str) -> None:
     wheel_metadata_dict = wheel.parse_WHEEL_file(str(wheel_metadata_file_path))
 
     if "Root-Is-Purelib" not in wheel_metadata_dict:
-        raise ValueError(f"Invalid WHEEL file '{wheel_metadata_file_path}'. Expected key 'Root-Is-Purelib'.")
+        raise ValueError(
+            f"Invalid WHEEL file '{wheel_metadata_file_path}'. Expected key 'Root-Is-Purelib'."
+        )
     root_is_purelib = wheel_metadata_dict["Root-Is-Purelib"]
 
     if root_is_purelib.lower() == "true":
@@ -38,6 +39,5 @@ def _spread_purelib(purelib_dir, root_dir):
         # See: https://github.com/dillon-giacoppo/rules_python_external/issues/8
         if not pathlib.Path(root_dir, grandchild.name).exists():
             shutil.move(
-                src=str(grandchild),
-                dst=root_dir,
+                src=str(grandchild), dst=root_dir,
             )

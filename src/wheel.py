@@ -46,9 +46,13 @@ class Wheel(object):
 def get_dist_info(extracted_whl_directory) -> str:
     dist_info_dirs = glob.glob(os.path.join(extracted_whl_directory, "*.dist-info"))
     if not dist_info_dirs:
-        raise ValueError(f"No *.dist-info directory found. {extracted_whl_directory} is not a valid Wheel.")
+        raise ValueError(
+            f"No *.dist-info directory found. {extracted_whl_directory} is not a valid Wheel."
+        )
     elif len(dist_info_dirs) > 1:
-        raise ValueError(f"Found more than 1 *.dist-info directory. {extracted_whl_directory} is not a valid Wheel.")
+        raise ValueError(
+            f"Found more than 1 *.dist-info directory. {extracted_whl_directory} is not a valid Wheel."
+        )
     else:
         dist_info = dist_info_dirs[0]
     return dist_info
@@ -60,7 +64,9 @@ def get_dot_data_directory(extracted_whl_directory) -> Optional[str]:
     if not dot_data_dirs:
         return None
     elif len(dot_data_dirs) > 1:
-        raise ValueError(f"Found more than 1 *.data directory. {extracted_whl_directory} is not a valid Wheel.")
+        raise ValueError(
+            f"Found more than 1 *.data directory. {extracted_whl_directory} is not a valid Wheel."
+        )
     else:
         dot_data_dir = dot_data_dirs[0]
     return dot_data_dir
@@ -79,4 +85,3 @@ def parse_WHEEL_file(whl_file_path: str) -> Dict[str, str]:
             except ValueError:
                 raise RuntimeError(f"Encounted invalid line in WHEEL file: '{cleaned}'")
     return contents
-

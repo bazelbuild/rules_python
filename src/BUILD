@@ -1,20 +1,19 @@
+load("//:repositories.bzl", "all_requirements")
+
 py_library(
     name = "src",
-    srcs = glob(["*.py"]),
     srcs_version = "PY3",
-    deps = [],
+    srcs = glob(["**/*.py"]),
+    data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    deps = ["@"+ repo + "//:lib" for repo in all_requirements],
 )
 
 py_test(
     name = "test",
-    srcs = glob(["tests/*.py"]),
+    srcs = glob(["tests/**/*.py"]),
     main = "tests/__main__.py",
     deps = [
         ":src",
-        "//third_party/python:pkginfo",
     ],
     size="small",
-    imports = [
-        "../third_party/python/",
-    ]
 )
