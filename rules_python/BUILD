@@ -31,7 +31,6 @@ py_library(
     deps = [
         ":init",
         requirement("packaging"),
-        requirement("setuptools"),
     ],
 )
 
@@ -57,8 +56,6 @@ par_binary(
     deps = [
         ":init",
         ":whl",
-        requirement("pip"),
-        requirement("wheel"),
     ],
 )
 

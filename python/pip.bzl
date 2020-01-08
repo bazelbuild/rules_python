@@ -119,13 +119,13 @@ py_library(
 
 Or alternatively:
 ```python
-load("@foo//:requirements.bzl", "all_requirements")
+load("@foo//:requirements.bzl", "requirements")
 py_binary(
     name = "baz",
     ...
     deps = [
        ":foo",
-    ] + all_requirements,
+    ] + requirements.values(),
 )
 ```
 """,
