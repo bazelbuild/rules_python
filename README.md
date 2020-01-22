@@ -17,7 +17,9 @@ botocore~=1.12.247
 click~=7.0
 ```
 
-Can 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to `pip_install` below:
+These above are the third-party packages you can directly import.
+
+`pip-compile` 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to `pip_install` below:
 
 ```
 boto3==1.9.253
@@ -67,6 +69,8 @@ py_binary(
     ],
 )
 ```
+
+Note that above you do not need to add transitively required packages to `deps = [ ... ]`
 
 ## Development
 
