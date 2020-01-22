@@ -6,8 +6,9 @@ Contains Bazel rules to fetch and install Python dependencies from a requirement
 
 #### Setup `requirements.txt` 
 
-`rules_python_external` requires a _transitively-closed_ `requirements.txt` file, which would
-be very tedious to produce and maintain manually. To automate the process we recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
+While `rules_python_external` **does not** require a _transitively-closed_ `requirements.txt` file, it is recommended. But if you want to just have top-level packages listed, that works. 
+
+Transitively-closed requirements specs are very tedious to produce and maintain manually. To automate the process we recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
 
 For example, `pip-compile` takes a `requirements.in` like this:
 
