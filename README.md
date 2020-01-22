@@ -4,13 +4,36 @@ Contains Bazel rules to fetch and install Python dependencies from a requirement
 
 ## Usage
 
-In `requirements.txt`
+#### Setup `requirements.txt` 
+
+`rules_python_external` requires a _transitively-closed_ `requirements.txt` file, which would
+be very tedious to produce and maintain manually. To automate the process we recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
+
+For example, `pip-compile` takes a `requirements.in` like this:
+
 ```
-cryptography==2.8
-boto3==1.9.253
+boto3~=1.9.227
+botocore~=1.12.247
+click~=7.0
 ```
 
-In `WORKSPACE`
+These above are the third-party packages you can directly import.
+
+`pip-compile` 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to `pip_install` below:
+
+```
+boto3==1.9.253
+botocore==1.12.253
+click==7.0
+docutils==0.15.2          # via botocore
+jmespath==0.9.4           # via boto3, botocore
+python-dateutil==2.8.1    # via botocore
+s3transfer==0.2.1         # via boto3
+six==1.14.0               # via python-dateutil
+urllib3==1.25.8           # via botocore
+```
+
+#### Setup `WORKSPACE`
 
 ```python
 rules_python_external_version = "{COMMIT_SHA}"
@@ -46,6 +69,8 @@ py_binary(
     ],
 )
 ```
+
+Note that above you do not need to add transitively required packages to `deps = [ ... ]`
 
 ## Development
 
