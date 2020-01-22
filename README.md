@@ -78,3 +78,9 @@ Note that above you do not need to add transitively required packages to `deps =
 ### Testing
 
 `bazel test //...`
+
+## Adopters
+
+Here's a (non-exhaustive) list of companies that use `rules_python_external` in production. Don't see yours? [You can add it in a PR](https://github.com/dillon-giacoppo/rules_python_external/edit/master/README.md)!
+
+* [Canva](https://www.canva.com/)
