@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])  # Apache 2.0
 
 load("@examples_version//:requirements.bzl", "requirement")
 load("//python:defs.bzl", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])  # Apache 2.0
 
 py_test(
     name = "version_test",

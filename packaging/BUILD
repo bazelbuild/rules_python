@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
-
 load("@piptool_deps//:requirements.bzl", "requirement")
 load("@subpar//:subpar.bzl", "par_binary")
 load("//python:defs.bzl", "py_library", "py_test")
+
+licenses(["notice"])  # Apache 2.0
 
 py_library(
     name = "whl",
