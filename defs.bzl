@@ -31,6 +31,7 @@ def _pip_repository_impl(rctx):
             # Manually construct the PYTHONPATH since we cannot use the toolchain here
             "PYTHONPATH": pypath
         },
+        timeout=rctx.attr.timeout,
     )
     if result.return_code:
         fail("rules_python_external failed: %s (%s)" % (result.stdout, result.stderr))
@@ -43,6 +44,8 @@ pip_repository = repository_rule(
         "requirements": attr.label(allow_single_file=True, mandatory=True,),
         "wheel_env": attr.string_dict(),
         "python_interpreter": attr.string(default="python3"),
+        # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
+        "timeout": attr.int(default = 600),
         "_script": attr.label(
             executable=True, default=Label("//src:__main__.py"), cfg="host",
         ),
