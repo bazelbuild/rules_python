@@ -135,6 +135,9 @@ def _py_wheel_impl(ctx):
     for name, ref in ctx.attr.console_scripts.items():
         args.add("--console_script", name + " = " + ref)
 
+    for name, ref in ctx.attr.plugins.items():
+        args.add("--plugin", name + " : " + ref)
+
     if ctx.attr.description_file:
         description_file = ctx.file.description_file
         args.add("--description_file", description_file)
@@ -201,6 +204,11 @@ _entrypoint_attrs = {
     "console_scripts": attr.string_dict(
         doc = """\
 console_script entry points, e.g. 'experimental.examples.wheel.main:main'.
+""",
+    ),
+    "plugins": attr.string_dict(
+        doc = """\
+plugin entry points, e.g. {'batfish_session': 'bfe = experimental.examples.wheel.main:main'}.
 """,
     ),
 }
