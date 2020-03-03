@@ -69,6 +69,7 @@ belong to given set of Python packages.
 This rule is intended to be used as data dependency to py_wheel rule
 """,
     attrs = {
+        "deps": attr.label_list(),
         "packages": attr.string_list(
             mandatory = False,
             allow_empty = True,
@@ -77,7 +78,6 @@ List of Python packages to include in the distribution.
 Sub-packages are automatically included.
 """,
         ),
-        "deps": attr.label_list(),
     },
 )
 
