@@ -5,7 +5,7 @@
 ## pip_import
 
 <pre>
-pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-extra_pip_args">extra_pip_args</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-requirements">requirements</a>)
+pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-extra_pip_args">extra_pip_args</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-requirements">requirements</a>, <a href="#pip_import-timeout">timeout</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -92,6 +92,15 @@ wheels.
         <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
         <p>
           The label of the requirements.txt file.
+        </p>
+      </td>
+    </tr>
+    <tr id="pip_import-timeout">
+      <td><code>timeout</code></td>
+      <td>
+        Integer; optional
+        <p>
+          Timeout (in seconds) for repository fetch.
         </p>
       </td>
     </tr>
