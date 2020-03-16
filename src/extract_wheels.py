@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from src import wheel, namespace_pkgs
+from src import wheel, namespace_pkgs, purelib
 
 BUILD_TEMPLATE = """\
 package(default_visibility = ["//visibility:public"])
@@ -71,6 +71,8 @@ def extract_wheel(whl, directory, extras):
 
     whl.unzip(directory)
 
+    # Note: Order of operations matters here
+    purelib.spread_purelib_into_root(directory)
     _setup_namespace_pkg_compatibility(directory)
 
     with open(os.path.join(directory, "BUILD"), "w") as f:
