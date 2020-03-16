@@ -37,7 +37,7 @@ def generate_build_file_contents(name: str, dependencies: List[str]) -> str:
     )
 
 
-def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]):
+def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) -> str:
     """Generate a requirements.bzl file for a given pip repository
 
     The file allows converting the PyPI name to a bazel label. Additionally, it adds a function which can glob all the

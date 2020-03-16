@@ -22,7 +22,7 @@ class Wheel:
 
     @property
     def name(self) -> str:
-        return self.metadata.name
+        return str(self.metadata.name)
 
     @property
     def metadata(self) -> pkginfo.Wheel:
