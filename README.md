@@ -2,6 +2,10 @@
 
 Bazel rules to transitively fetch and install Python dependencies from a requirements.txt file.
 
+## Prerequisites
+
+* The rules support Python >= 3.5 (the oldest [maintained release](https://devguide.python.org/#status-of-python-branches)).
+
 ## Features
 
 * Transitive Dependency Resolution
