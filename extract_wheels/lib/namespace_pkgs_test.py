@@ -1,9 +1,11 @@
+import os
 import pathlib
-import unittest
-import tempfile
 import shutil
+import sys
+import tempfile
+import unittest
 
-import src.namespace_pkgs
+from extract_wheels.lib import namespace_pkgs
 
 
 class TempDir:
@@ -40,11 +42,9 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         )
 
         expected = {
-            f"{directory.root()}/google",
+            directory.root() + "/google",
         }
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
-            directory.root()
-        )
+        actual = namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
     def test_nested_namespace_packages(self):
@@ -59,12 +59,10 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         )
 
         expected = {
-            f"{directory.root()}/google",
-            f"{directory.root()}/google/bar",
+            directory.root() + "/google",
+            directory.root() + "/google/bar",
         }
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
-            directory.root()
-        )
+        actual = namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
     def test_empty_case(self):
@@ -78,9 +76,7 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("foo/buu/bii.py")
         directory.add_file("foo-1.0.0.dist-info/namespace_packages.txt")
 
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
-            directory.root()
-        )
+        actual = namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
         self.assertEqual(actual, set())
 
     def test_missing_namespace_pkgs_record_file(self):
@@ -95,9 +91,7 @@ class TestPkgResourcesStyleNamespacePackages(unittest.TestCase):
         directory.add_file("foo-1.0.0.dist-info/METADATA")
         directory.add_file("foo-1.0.0.dist-info/RECORD")
 
-        actual = src.namespace_pkgs.pkg_resources_style_namespace_packages(
-            directory.root()
-        )
+        actual = namespace_pkgs.pkg_resources_style_namespace_packages(directory.root())
         self.assertEqual(actual, set())
 
 
@@ -110,11 +104,11 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         directory.add_file("foo/buu/bii.py")
 
         expected = {
-            f"{directory.root()}/foo",
-            f"{directory.root()}/foo/bar",
-            f"{directory.root()}/foo/bee",
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
+            directory.root() + "/foo/bee",
         }
-        actual = src.namespace_pkgs.implicit_namespace_packages(directory.root())
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
     def test_ignores_empty_directories(self):
@@ -123,10 +117,10 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         directory.add_dir("foo/cat")
 
         expected = {
-            f"{directory.root()}/foo",
-            f"{directory.root()}/foo/bar",
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
         }
-        actual = src.namespace_pkgs.implicit_namespace_packages(directory.root())
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
     def test_empty_case(self):
@@ -135,5 +129,21 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         directory.add_file("foo/bar/__init__.py")
         directory.add_file("foo/bar/biz.py")
 
-        actual = src.namespace_pkgs.implicit_namespace_packages(directory.root())
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, set())
+
+
+def main():
+    loader = unittest.TestLoader()
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+
+    suite = loader.discover(cur_dir)
+
+    runner = unittest.TextTestRunner()
+    result = runner.run(suite)
+    if result.errors or result.failures:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,38 +1,36 @@
 # rules_python_external
 
-Contains Bazel rules to fetch and install Python dependencies from a requirements.txt file.
+Bazel rules to transitively fetch and install Python dependencies from a requirements.txt file.
+
+## Features
+
+The rules address most of the top packaging issues in rules_python. This means the rules support common packages such
+as tensorflow and google.cloud natively.
+
+* Transitive dependency resolution:
+    [#35](https://github.com/bazelbuild/rules_python/issues/35),
+    [#102](https://github.com/bazelbuild/rules_python/issues/102)
+* Minimal runtime dependencies:
+    [#184](https://github.com/bazelbuild/rules_python/issues/184)
+* Support for [spreading purelibs](https://www.python.org/dev/peps/pep-0491/#installing-a-wheel-distribution-1-0-py32-none-any-whl):
+    [#71](https://github.com/bazelbuild/rules_python/issues/71)
+* Support for [namespace packages](https://packaging.python.org/guides/packaging-namespace-packages/):
+    [#14](https://github.com/bazelbuild/rules_python/issues/14),
+    [#55](https://github.com/bazelbuild/rules_python/issues/55),
+    [#65](https://github.com/bazelbuild/rules_python/issues/65),
+    [#93](https://github.com/bazelbuild/rules_python/issues/93),
+    [#189](https://github.com/bazelbuild/rules_python/issues/189)
+* Fetches pip packages only for building Python targets:
+    [#96](https://github.com/bazelbuild/rules_python/issues/96)
+* Reproducible builds:
+    [#154](https://github.com/bazelbuild/rules_python/issues/154),
+    [#176](https://github.com/bazelbuild/rules_python/issues/176)
 
 ## Usage
 
-#### Setup `requirements.txt` 
+#### Prerequisites
 
-While `rules_python_external` **does not** require a _transitively-closed_ `requirements.txt` file, it is recommended. But if you want to just have top-level packages listed, that works. 
-
-Transitively-closed requirements specs are very tedious to produce and maintain manually. To automate the process we recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
-
-For example, `pip-compile` takes a `requirements.in` like this:
-
-```
-boto3~=1.9.227
-botocore~=1.12.247
-click~=7.0
-```
-
-These above are the third-party packages you can directly import.
-
-`pip-compile` 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to `pip_install` below:
-
-```
-boto3==1.9.253
-botocore==1.12.253
-click==7.0
-docutils==0.15.2          # via botocore
-jmespath==0.9.4           # via boto3, botocore
-python-dateutil==2.8.1    # via botocore
-s3transfer==0.2.1         # via boto3
-six==1.14.0               # via python-dateutil
-urllib3==1.25.8           # via botocore
-```
+The rules support Python >= 3.5 (the oldest [maintained release](https://devguide.python.org/#status-of-python-branches)).
 
 #### Setup `WORKSPACE`
 
@@ -57,7 +55,7 @@ pip_install(
 )
 ```
 
-Example `BUILD` file.
+#### Example `BUILD` file.
 
 ```python
 load("@py_deps//:requirements.bzl", "requirement")
@@ -66,12 +64,47 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        requirement("boto3"), # or @py_deps//pypi__boto3
+        requirement("boto3"),
     ],
 )
 ```
 
 Note that above you do not need to add transitively required packages to `deps = [ ... ]`
+
+#### Setup `requirements.txt`
+
+While `rules_python_external` **does not** require a _transitively-closed_ `requirements.txt` file, it is recommended.
+But if you want to just have top-level packages listed, that also will work.
+
+Transitively-closed requirements specs are very tedious to produce and maintain manually. To automate the process we
+recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
+
+For example, `pip-compile` takes a `requirements.in` like this:
+
+```
+boto3~=1.9.227
+botocore~=1.12.247
+click~=7.0
+```
+
+`pip-compile` 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to
+`pip_install` below:
+
+```
+boto3==1.9.253
+botocore==1.12.253
+click==7.0
+docutils==0.15.2          # via botocore
+jmespath==0.9.4           # via boto3, botocore
+python-dateutil==2.8.1    # via botocore
+s3transfer==0.2.1         # via boto3
+six==1.14.0               # via python-dateutil
+urllib3==1.25.8           # via botocore
+```
+
+### Demo
+
+You can find a demo in the [example/](./example) directory.
 
 ## Development
 

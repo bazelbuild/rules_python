@@ -42,6 +42,8 @@ py_library(
 # Collate all the repository names so they can be easily consumed
 all_requirements = [name for (name, _, _) in _RULE_DEPS]
 
+def requirement(pkg):
+    return "@pypi__"+ pkg + "//:lib"
 
 def rules_python_external_dependencies():
     for (name, url, sha256) in _RULE_DEPS:

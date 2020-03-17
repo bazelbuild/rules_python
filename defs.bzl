@@ -21,7 +21,8 @@ def _pip_repository_impl(rctx):
     result = rctx.execute(
         [
             rctx.which(rctx.attr.python_interpreter),
-            rctx.path(rctx.attr._script).dirname,
+            "-m",
+            "extract_wheels",
             "--requirements",
             rctx.path(rctx.attr.requirements),
             "--repo",
@@ -46,9 +47,6 @@ pip_repository = repository_rule(
         "python_interpreter": attr.string(default="python3"),
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(default = 600),
-        "_script": attr.label(
-            executable=True, default=Label("//src:__main__.py"), cfg="host",
-        ),
     },
     implementation=_pip_repository_impl,
 )
