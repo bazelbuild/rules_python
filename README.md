@@ -4,10 +4,27 @@ Bazel rules to transitively fetch and install Python dependencies from a require
 
 ## Features
 
-* Transitive Dependency Resolution
-* Support for purelibs
+The rules address most of the top packaging issues in rules_python. This means the rules support common packages such
+as tensorflow and google.cloud natively.
+
+* Transitive dependency resolution.
+    * https://github.com/bazelbuild/rules_python/issues/35
+    * https://github.com/bazelbuild/rules_python/issues/102
+* Minimal runtime dependencies.
+    * https://github.com/bazelbuild/rules_python/issues/184
+* Support for purelibs.
+    * https://github.com/bazelbuild/rules_python/issues/71
 * Support for namespace packages
-* Minimal runtime dependencies
+    * https://github.com/bazelbuild/rules_python/issues/14
+    * https://github.com/bazelbuild/rules_python/issues/55
+    * https://github.com/bazelbuild/rules_python/issues/65
+    * https://github.com/bazelbuild/rules_python/issues/93
+    * https://github.com/bazelbuild/rules_python/issues/189
+* Fetches pip packages only for building Python targets
+    * https://github.com/bazelbuild/rules_python/issues/96
+* Reproducible builds
+    * https://github.com/bazelbuild/rules_python/issues/154
+    * https://github.com/bazelbuild/rules_python/issues/176
 
 ## Usage
 
@@ -57,7 +74,7 @@ Note that above you do not need to add transitively required packages to `deps =
 #### Setup `requirements.txt`
 
 While `rules_python_external` **does not** require a _transitively-closed_ `requirements.txt` file, it is recommended.
-But if you want to just have top-level packages listed, that works.
+But if you want to just have top-level packages listed, that also will work.
 
 Transitively-closed requirements specs are very tedious to produce and maintain manually. To automate the process we
 recommend [`pip-compile` from `jazzband/pip-tools`](https://github.com/jazzband/pip-tools#example-usage-for-pip-compile).
@@ -69,8 +86,6 @@ boto3~=1.9.227
 botocore~=1.12.247
 click~=7.0
 ```
-
-These above are the third-party packages you can directly import.
 
 `pip-compile` 'compiles' it so you get a transitively-closed `requirements.txt` like this, which should be passed to
 `pip_install` below:

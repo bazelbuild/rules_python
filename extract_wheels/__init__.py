@@ -43,9 +43,8 @@ def configure_reproducible_wheels() -> None:
 def main() -> None:
     """Main program.
 
-     Returns:
-       Zero on successful program termination, non-zero otherwise.
-     """
+    Exits zero on successful program termination, non-zero otherwise.
+    """
 
     configure_reproducible_wheels()
 
