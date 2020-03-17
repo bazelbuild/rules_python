@@ -7,24 +7,24 @@ Bazel rules to transitively fetch and install Python dependencies from a require
 The rules address most of the top packaging issues in rules_python. This means the rules support common packages such
 as tensorflow and google.cloud natively.
 
-* Transitive dependency resolution.
-    * https://github.com/bazelbuild/rules_python/issues/35
-    * https://github.com/bazelbuild/rules_python/issues/102
-* Minimal runtime dependencies.
-    * https://github.com/bazelbuild/rules_python/issues/184
-* Support for purelibs.
-    * https://github.com/bazelbuild/rules_python/issues/71
-* Support for namespace packages
-    * https://github.com/bazelbuild/rules_python/issues/14
-    * https://github.com/bazelbuild/rules_python/issues/55
-    * https://github.com/bazelbuild/rules_python/issues/65
-    * https://github.com/bazelbuild/rules_python/issues/93
-    * https://github.com/bazelbuild/rules_python/issues/189
-* Fetches pip packages only for building Python targets
-    * https://github.com/bazelbuild/rules_python/issues/96
-* Reproducible builds
-    * https://github.com/bazelbuild/rules_python/issues/154
-    * https://github.com/bazelbuild/rules_python/issues/176
+* Transitive dependency resolution:
+    [#35](https://github.com/bazelbuild/rules_python/issues/35),
+    [#102](https://github.com/bazelbuild/rules_python/issues/102)
+* Minimal runtime dependencies:
+    [#184](https://github.com/bazelbuild/rules_python/issues/184)
+* Support for [spreading purelibs](https://www.python.org/dev/peps/pep-0491/#installing-a-wheel-distribution-1-0-py32-none-any-whl):
+    [#71](https://github.com/bazelbuild/rules_python/issues/71)
+* Support for [namespace packages](https://packaging.python.org/guides/packaging-namespace-packages/):
+    [#14](https://github.com/bazelbuild/rules_python/issues/14),
+    [#55](https://github.com/bazelbuild/rules_python/issues/55),
+    [#65](https://github.com/bazelbuild/rules_python/issues/65),
+    [#93](https://github.com/bazelbuild/rules_python/issues/93),
+    [#189](https://github.com/bazelbuild/rules_python/issues/189)
+* Fetches pip packages only for building Python targets:
+    [#96](https://github.com/bazelbuild/rules_python/issues/96)
+* Reproducible builds:
+    [#154](https://github.com/bazelbuild/rules_python/issues/154),
+    [#176](https://github.com/bazelbuild/rules_python/issues/176)
 
 ## Usage
 
