@@ -4,7 +4,10 @@ DEFAULT_REPOSITORY_NAME = "pip"
 
 
 def _pip_repository_impl(rctx):
-    if not rctx.which(rctx.attr.python_interpreter):
+    python_interpreter = rctx.attr.python_interpreter
+    if '/' not in python_interpreter:
+        python_interpreter = rctx.which(python_interpreter)
+    if not python_interpreter:
         fail("python interpreter not found")
 
     rctx.file("BUILD", "")
@@ -20,7 +23,7 @@ def _pip_repository_impl(rctx):
 
     result = rctx.execute(
         [
-            rctx.which(rctx.attr.python_interpreter),
+            python_interpreter,
             "-m",
             "extract_wheels",
             "--requirements",
