@@ -7,8 +7,6 @@ from typing import Dict, Optional, List, Set
 import pkg_resources
 import pkginfo
 
-from extract_wheels.lib import bazel, purelib
-
 
 class Wheel:
     """Representation of the compressed .whl file"""
@@ -118,40 +116,3 @@ def parse_wheel_meta_file(wheel_dir: str) -> Dict[str, str]:
                     "Encounted invalid line in WHEEL file: '%s'" % cleaned
                 )
     return contents
-
-
-def extract_wheel(wheel_file: str, extras: List[str]) -> str:
-    """Extracts wheel into given directory and creates a py_library target.
-
-    Args:
-        wheel_file: the filepath of the .whl
-        extras: a list of extras to add as dependencies for the installed wheel
-
-    Returns:
-        The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
-    """
-
-    whl = Wheel(wheel_file)
-    directory = bazel.sanitise_name(whl.name)
-
-    os.mkdir(directory)
-    whl.unzip(directory)
-
-    # Note: Order of operations matters here
-    purelib.spread_purelib_into_root(directory)
-    bazel.setup_namespace_pkg_compatibility(directory)
-
-    with open(os.path.join(directory, "BUILD"), "w") as build_file:
-        build_file.write(
-            bazel.generate_build_file_contents(
-                bazel.sanitise_name(whl.name),
-                [
-                    '"//%s"' % bazel.sanitise_name(d)
-                    for d in sorted(whl.dependencies(extras_requested=extras))
-                ],
-            )
-        )
-
-    os.remove(whl.path)
-
-    return "//%s" % directory

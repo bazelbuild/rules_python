@@ -11,7 +11,7 @@ import os
 import subprocess
 import sys
 
-from extract_wheels.lib import wheel, bazel
+from extract_wheels.lib import bazel
 
 
 def configure_reproducible_wheels() -> None:
@@ -71,7 +71,7 @@ def main() -> None:
     )
 
     targets = [
-        '"%s%s"' % (args.repo, wheel.extract_wheel(whl, []))
+        '"%s%s"' % (args.repo, bazel.extract_wheel(whl, []))
         for whl in glob.glob("*.whl")
     ]
 
