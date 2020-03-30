@@ -1,7 +1,7 @@
 """Utility functions to manipulate Bazel files"""
 import os
 import textwrap
-from typing import Iterable, List
+from typing import Iterable, List, Dict, Set
 
 from extract_wheels.lib import namespace_pkgs, wheel, purelib
 
@@ -113,7 +113,7 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
-def extract_wheel(wheel_file: str, extras: List[str]) -> str:
+def extract_wheel(wheel_file: str, extras: Dict[str, Set[str]]) -> str:
     """Extracts wheel into given directory and creates a py_library target.
 
     Args:
@@ -134,16 +134,17 @@ def extract_wheel(wheel_file: str, extras: List[str]) -> str:
     purelib.spread_purelib_into_root(directory)
     setup_namespace_pkg_compatibility(directory)
 
+    extras_requested = extras[whl.name] if whl.name in extras else set()
+
+    sanitised_dependencies = [
+        '"//%s"' % sanitise_name(d) for d in sorted(whl.dependencies(extras_requested))
+    ]
+
     with open(os.path.join(directory, "BUILD"), "w") as build_file:
-        build_file.write(
-            generate_build_file_contents(
-                sanitise_name(whl.name),
-                [
-                    '"//%s"' % sanitise_name(d)
-                    for d in sorted(whl.dependencies(extras_requested=extras))
-                ],
-            )
+        contents = generate_build_file_contents(
+            sanitise_name(whl.name), sanitised_dependencies,
         )
+        build_file.write(contents)
 
     os.remove(whl.path)
 

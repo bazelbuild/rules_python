@@ -2,7 +2,7 @@
 import glob
 import os
 import zipfile
-from typing import Dict, Optional, List, Set
+from typing import Dict, Optional, Set
 
 import pkg_resources
 import pkginfo
@@ -26,7 +26,7 @@ class Wheel:
     def metadata(self) -> pkginfo.Wheel:
         return pkginfo.get_metadata(self.path)
 
-    def dependencies(self, extras_requested: Optional[List[str]] = None) -> Set[str]:
+    def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
         for wheel_req in self.metadata.requires_dist:

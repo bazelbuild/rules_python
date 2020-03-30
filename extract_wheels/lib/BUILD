@@ -7,6 +7,7 @@ py_library(
         "bazel.py",
         "namespace_pkgs.py",
         "purelib.py",
+        "requirements.py",
         "wheel.py",
     ],
     deps = [
@@ -20,6 +21,18 @@ py_test(
     size = "small",
     srcs = [
         "namespace_pkgs_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_test(
+    name = "requirements_test",
+    size = "small",
+    srcs = [
+        "requirements_test.py",
     ],
     tags = ["unit"],
     deps = [
