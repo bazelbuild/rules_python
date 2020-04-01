@@ -1,4 +1,4 @@
-# rules_python_external
+# rules_python_external ![](https://github.com/dillon-giacoppo/rules_python_external/workflows/CI/badge.svg)
 
 Bazel rules to transitively fetch and install Python dependencies from a requirements.txt file.
 

@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
+    - name: Setup Bazel
+      uses: abhinavsingh/setup-bazel@v3
+      with:
+        # Bazel version to install e.g. 1.2.1, 2.0.0, ...
+        version: 2.0.0 # optional, default is 2.0.0
+
+    - name: Run tests
+      run: bazel test //...
