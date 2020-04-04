@@ -55,7 +55,7 @@ pip_repository = repository_rule(
 )
 
 
-def pip_install(requirements, name=DEFAULT_REPOSITORY_NAME):
+def pip_install(requirements, name=DEFAULT_REPOSITORY_NAME, **kwargs):
     pip_repository(
-        name=name, requirements=requirements,
+        name=name, requirements=requirements, **kwargs
     )
