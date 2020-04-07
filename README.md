@@ -42,8 +42,10 @@ The packaging rules (`pip_import`, etc.) are less stable. We may make breaking
 changes as they evolve. There are no guarantees for rules underneath the
 `experimental/` directory.
 
-See the [How to contribute](CONTRIBUTING.md) page for information on our
-devlopment workflow.
+This repository is maintained by the Bazel community. Neither Google, nor the
+Bazel team provides support for the code. However, this repository is part of
+the test suite used to vet new Bazel releases. See the [How to
+contribute](CONTRIBUTING.md) page for information on our development workflow.
 
 ## Getting started
 
