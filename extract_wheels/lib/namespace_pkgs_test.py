@@ -131,5 +131,13 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         self.assertEqual(actual, set())
 
 
+class TestaddPkgutilStyleNamespacePkgInit(unittest.TestCase):
+    def test_missing_directory_is_created(self):
+        directory = TempDir()
+        missing_directory = pathlib.Path(directory.root()) / "missing_directory"
+        namespace_pkgs.add_pkgutil_style_namespace_pkg_init(str(missing_directory))
+        self.assertTrue(missing_directory.is_dir())
+
+
 if __name__ == "__main__":
     unittest.main()
