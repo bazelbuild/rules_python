@@ -13,4 +13,4 @@
 # limitations under the License.
 """The version of rules_python."""
 
-version = "0.0.1"
+version = "0.0.2"
