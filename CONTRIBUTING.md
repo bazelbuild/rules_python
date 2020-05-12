@@ -77,11 +77,12 @@ directory except for `pip.bzl`, `whl.bzl`, and `requirements.txt`.
 Issues should be triaged as follows:
 
 - Anything concerning the way Bazel implements the core Python rules should be
-  filed under bazelbuild/bazel, using the label `team-Rules-python`.
+  filed under [bazelbuild/bazel](https://github.com/bazelbuild/bazel), using
+  the label `team-Rules-python`.
 
 - If the issue specifically concerns the rules_python stubs, it should be filed
-  in this repository and use the label `core-rules`.
+  here in this repository and use the label `core-rules`.
 
 - Anything else, such as feature requests not related to existing core rules
-  functionality, should be filed in this repository without the `core-rules`
-  label.
+  functionality, should also be filed in this repository but without the
+  `core-rules` label.
