@@ -28,7 +28,7 @@ def _pip_import_impl(repository_ctx):
         interpreter_path = repository_ctx.path(target)
 
     args = [
-        repository_ctx.attr.python_interpreter,
+        interpreter_path,
         repository_ctx.path(repository_ctx.attr._script),
         "--python_interpreter",
         interpreter_path,
