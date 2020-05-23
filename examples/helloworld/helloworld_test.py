@@ -14,7 +14,7 @@
 
 import unittest
 
-from examples.helloworld import helloworld
+import helloworld
 
 
 class HelloWorldTest(unittest.TestCase):

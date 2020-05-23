@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@examples_helloworld//:requirements.bzl", "requirement")
-load("//python:defs.bzl", "py_library", "py_test")
+load("@helloworld_pypi_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,6 +22,7 @@ licenses(["notice"])  # Apache 2.0
 py_library(
     name = "helloworld",
     srcs = ["helloworld.py"],
+    srcs_version = "PY2ONLY",
     deps = [requirement("futures")],
 )
 
