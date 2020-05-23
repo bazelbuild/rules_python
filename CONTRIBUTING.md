@@ -62,3 +62,27 @@ pull request.
 
 <sup>1</sup> See "[Reflections on Trusting Trust](https://en.wikipedia.org/wiki/Backdoor_(computing)#Compiler_backdoors)".
 
+## Core rules
+
+The bulk of this repo is owned and maintained by the Bazel Python community.
+However, since the core Python rules (`py_binary` and friends) are still
+bundled with Bazel itself, the Bazel team retains ownership of their stubs in
+this repository. This will be the case at least until the Python rules are
+fully migrated to Starlark code.
+
+Practically, this means that a Bazel team member should approve any PR
+concerning the core Python logic. This includes everything under the `python/`
+directory except for `pip.bzl`, `whl.bzl`, and `requirements.txt`.
+
+Issues should be triaged as follows:
+
+- Anything concerning the way Bazel implements the core Python rules should be
+  filed under [bazelbuild/bazel](https://github.com/bazelbuild/bazel), using
+  the label `team-Rules-python`.
+
+- If the issue specifically concerns the rules_python stubs, it should be filed
+  here in this repository and use the label `core-rules`.
+
+- Anything else, such as feature requests not related to existing core rules
+  functionality, should also be filed in this repository but without the
+  `core-rules` label.
