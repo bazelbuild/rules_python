@@ -70,7 +70,7 @@ py_wheel(
 py_wheel(
     name = "minimal_with_py_package_wrapped",
     # Package data. We're building "example_minimal_package-0.0.1-py3-none-any.whl"
-    distribution = "example_minimal_package",
+    distribution = "example_minimal_package_wrapped_inputs",
     python_tag = "py3",
     version = "0.0.1",
     wrapped_package_lists = [":wrapped_example_package"],

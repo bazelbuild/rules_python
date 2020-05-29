@@ -142,7 +142,6 @@ def _py_wheel_impl(ctx):
         wrapped_inputs = depset(
             direct = ctx.files.wrapped_package_lists
         )
-        print(wrapped_inputs.to_list())
         args.add_all(wrapped_inputs, format_each = "--input_file_list=%s")
     else:
         args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
