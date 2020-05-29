@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//experimental/python:wheel.bzl", "py_package", "py_wheel")
+load("//experimental/python:wheel.bzl", "py_package", "py_wheel", "py_wrapped_input_files")
 load("//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -53,6 +53,11 @@ py_package(
     deps = [":main"],
 )
 
+py_wrapped_input_files(
+    name = "wrapped_example_package",
+    deps = [":example_pkg"],
+)
+
 py_wheel(
     name = "minimal_with_py_package",
     # Package data. We're building "example_minimal_package-0.0.1-py3-none-any.whl"
@@ -61,6 +66,17 @@ py_wheel(
     version = "0.0.1",
     deps = [":example_pkg"],
 )
+
+py_wheel(
+    name = "minimal_with_py_package_wrapped",
+    # Package data. We're building "example_minimal_package-0.0.1-py3-none-any.whl"
+    distribution = "example_minimal_package",
+    python_tag = "py3",
+    version = "0.0.1",
+    wrapped_package_lists = [":wrapped_example_package"],
+    deps = [":example_pkg", ":wrapped_example_package"],
+)
+
 
 # An example that uses all features provided by py_wheel.
 py_wheel(

@@ -243,6 +243,10 @@ def main():
              "files to be included in the wheel. "
              "Can be supplied multiple times.")
     contents_group.add_argument(
+        '--input_file_list', action='append',
+        help='A file that has all the input files defined as a list to avoid the long command'
+    )
+    contents_group.add_argument(
         '--console_script', action='append',
         help="Defines a 'console_script' entry point. "
              "Can be supplied multiple times.")
@@ -264,6 +268,14 @@ def main():
         input_files = [i.split(';') for i in arguments.input_file]
     else:
         input_files = []
+
+    if arguments.input_file_list:
+        for input_file in arguments.input_file_list:
+            with open(input_file) as _file:
+                input_file_list = _file.read().splitlines()
+            for _input_file in input_file_list:
+                input_files.append(_input_file.split(';'))
+
     all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
     all_files = sorted(all_files.items())
