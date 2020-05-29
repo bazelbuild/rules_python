@@ -39,7 +39,6 @@ def _py_package_impl(ctx):
         transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
                      [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
     )
-
     # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
@@ -54,8 +53,9 @@ def _py_package_impl(ctx):
             for package in packages:
                 if wheel_path.startswith(package):
                     filtered_files.append(input_file)
+    
         filtered_inputs = depset(direct = filtered_files)
-
+    
     return [DefaultInfo(
         files = filtered_inputs,
     )]
@@ -80,6 +80,37 @@ Sub-packages are automatically included.
         ),
     },
 )
+
+def _py_wrapped_input_files_impl(ctx):
+    inputs_to_package  = depset(
+        direct = ctx.files.deps
+    )
+    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
+    content = ''
+    for input_file in inputs_to_package.to_list():
+        content += _input_file_to_arg(input_file) + '\n'
+    ctx.actions.write(output = packageinputfile, content=content)
+    
+    return [
+        DefaultInfo(
+            files = depset(direct = [packageinputfile])
+        )
+    ]
+
+
+
+py_wrapped_input_files = rule(
+    implementation = _py_wrapped_input_files_impl,
+    doc = """
+    This was created to wrap the input files from py_package and use as in input to py_wheel, 
+    by setting the attribute wrapped_input_files to avoid long command lines for systems that cannot
+    handle them.
+    """,
+    attrs = {
+        "deps": attr.label_list()
+    },
+)
+
 
 def _py_wheel_impl(ctx):
     outfile = ctx.actions.declare_file("-".join([
@@ -107,7 +138,14 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
-    args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
+    if ctx.attr.wrapped_package_lists:
+        wrapped_inputs = depset(
+            direct = ctx.files.wrapped_package_lists
+        )
+        print(wrapped_inputs.to_list())
+        args.add_all(wrapped_inputs, format_each = "--input_file_list=%s")
+    else:
+        args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
 
     extra_headers = []
     if ctx.attr.author:
@@ -216,6 +254,7 @@ _other_attrs = {
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
     ),
+    "wrapped_package_lists": attr.label_list(),
 }
 
 py_wheel = rule(
