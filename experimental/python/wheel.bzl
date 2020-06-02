@@ -81,37 +81,6 @@ Sub-packages are automatically included.
     },
 )
 
-def _py_wrapped_input_files_impl(ctx):
-    inputs_to_package  = depset(
-        direct = ctx.files.deps
-    )
-    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
-    content = ''
-    for input_file in inputs_to_package.to_list():
-        content += _input_file_to_arg(input_file) + '\n'
-    ctx.actions.write(output = packageinputfile, content=content)
-    
-    return [
-        DefaultInfo(
-            files = depset(direct = [packageinputfile])
-        )
-    ]
-
-
-
-py_wrapped_input_files = rule(
-    implementation = _py_wrapped_input_files_impl,
-    doc = """
-    This was created to wrap the input files from py_package and use as in input to py_wheel, 
-    by setting the attribute wrapped_input_files to avoid long command lines for systems that cannot
-    handle them.
-    """,
-    attrs = {
-        "deps": attr.label_list()
-    },
-)
-
-
 def _py_wheel_impl(ctx):
     outfile = ctx.actions.declare_file("-".join([
         ctx.attr.distribution,
@@ -129,6 +98,14 @@ def _py_wheel_impl(ctx):
     # Currently this is only the description file (if used).
     other_inputs = []
 
+    # Wrap the inputs into a file to reduce command line length.
+    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
+    content = ''
+    for input_file in inputs_to_package.to_list():
+        content += _input_file_to_arg(input_file) + '\n'
+    ctx.actions.write(output = packageinputfile, content=content)
+    other_inputs.append(packageinputfile)
+
     args = ctx.actions.args()
     args.add("--name", ctx.attr.distribution)
     args.add("--version", ctx.attr.version)
@@ -138,13 +115,7 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
-    if ctx.attr.wrapped_package_lists:
-        wrapped_inputs = depset(
-            direct = ctx.files.wrapped_package_lists
-        )
-        args.add_all(wrapped_inputs, format_each = "--input_file_list=%s")
-    else:
-        args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
+    args.add("--input_file_list", packageinputfile)
 
     extra_headers = []
     if ctx.attr.author:
@@ -176,6 +147,7 @@ def _py_wheel_impl(ctx):
         description_file = ctx.file.description_file
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
+
 
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
@@ -253,7 +225,6 @@ _other_attrs = {
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
     ),
-    "wrapped_package_lists": attr.label_list(),
 }
 
 py_wheel = rule(
