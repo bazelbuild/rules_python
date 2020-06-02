@@ -148,7 +148,6 @@ def _py_wheel_impl(ctx):
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
 
-
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile],
