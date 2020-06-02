@@ -39,6 +39,7 @@ def _py_package_impl(ctx):
         transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
                      [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
     )
+
     # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
@@ -53,9 +54,8 @@ def _py_package_impl(ctx):
             for package in packages:
                 if wheel_path.startswith(package):
                     filtered_files.append(input_file)
-    
         filtered_inputs = depset(direct = filtered_files)
-    
+
     return [DefaultInfo(
         files = filtered_inputs,
     )]
