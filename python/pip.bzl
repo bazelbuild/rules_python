@@ -48,7 +48,7 @@ def _pip_import_impl(repository_ctx):
         ]
 
     # To see the output, pass: quiet=False
-    result = repository_ctx.execute(args, timeout=repository_ctx.attr.timeout)
+    result = repository_ctx.execute(args, quiet=repository_ctx.attr.quiet, timeout=repository_ctx.attr.timeout)
 
     if result.return_code:
         fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -68,6 +68,10 @@ use this attribute to specify its BUILD target. This allows pip_import to invoke
 pip using the same interpreter as your toolchain. If set, takes precedence over
 python_interpreter.
 """),
+        "quiet": attr.bool(
+            default = True,
+            doc = "Silence the output of the pip commands."
+        ),
         "requirements": attr.label(
             mandatory = True,
             allow_single_file = True,
