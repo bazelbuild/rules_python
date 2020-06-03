@@ -52,6 +52,12 @@ load("@rules_python_external//:defs.bzl", "pip_install")
 pip_install(
     name = "py_deps",
     requirements = "//:requirements.txt",
+    # (Optional) You can provide a python interpreter (by path):
+    python_interpreter = "/usr/bin/python3.8",
+    # (Optional) Alternatively you can provide an in-build python interpreter, that is available as a Bazel target.
+    # This overrides `python_interpreter`.
+    # Note: You need to set up the interpreter target beforehand (not shown here). Please see the `example` folder for further details.
+    #python_interpreter_target = "@python_interpreter//:python_bin",
 )
 ```
 

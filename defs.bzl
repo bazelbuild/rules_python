@@ -5,10 +5,14 @@ DEFAULT_REPOSITORY_NAME = "pip"
 
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
-    if '/' not in python_interpreter:
-        python_interpreter = rctx.which(python_interpreter)
-    if not python_interpreter:
-        fail("python interpreter not found")
+    if rctx.attr.python_interpreter_target != None:
+        target = rctx.attr.python_interpreter_target
+        python_interpreter = rctx.path(target)
+    else:
+        if '/' not in python_interpreter:
+            python_interpreter = rctx.which(python_interpreter)
+        if not python_interpreter:
+            fail("python interpreter not found")
 
     rctx.file("BUILD", "")
 
@@ -48,6 +52,12 @@ pip_repository = repository_rule(
         "requirements": attr.label(allow_single_file=True, mandatory=True,),
         "wheel_env": attr.string_dict(),
         "python_interpreter": attr.string(default="python3"),
+        "python_interpreter_target": attr.label(allow_single_file = True, doc = """
+If you are using a custom python interpreter built by another repository rule,
+use this attribute to specify its BUILD target. This allows pip_repository to invoke
+pip using the same interpreter as your toolchain. If set, takes precedence over
+python_interpreter.
+"""),
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(default = 600),
     },
