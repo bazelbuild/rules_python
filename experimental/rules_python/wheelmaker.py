@@ -61,14 +61,14 @@ class WheelMaker(object):
         components = [self._name, self._version]
         if self._build_tag:
             components.append(self._build_tag)
-        components += [self._python_tag, self._abi, self._platform]
+        components += [".".join(self._python_tag), self._abi, self._platform]
         return '-'.join(components) + '.whl'
 
     def distname(self):
         return self._name + '-' + self._version
 
     def disttags(self):
-        return ['-'.join([self._python_tag, self._abi, self._platform])]
+        return ['-'.join([tag, self._abi, self._platform]) for tag in self._python_tag]
 
     def distinfo_path(self, basename):
         return self.distname() + '.dist-info/' + basename
@@ -206,7 +206,10 @@ def main():
                                 help="Version of the distribution")
     metadata_group.add_argument('--build_tag', type=str, default='',
                                 help="Optional build tag for the distribution")
-    metadata_group.add_argument('--python_tag', type=str, default='py3',
+    metadata_group.add_argument('--python_tag',
+                                type=str,
+                                default=[],
+                                action="append",
                                 help="Python version, e.g. 'py2' or 'py3'")
     metadata_group.add_argument('--abi', type=str, default='none')
     metadata_group.add_argument('--platform', type=str, default='any',
