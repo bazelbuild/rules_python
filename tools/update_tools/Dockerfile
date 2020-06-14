@@ -6,9 +6,9 @@ RUN apt-get update -y && apt-get install -y \
     # which we're not using here, but let's be safe.
     openjdk-8-jdk \
     # These requirements are from the link above.
-    pkg-config zip g++ zlib1g-dev unzip python3 \
+    pkg-config zip g++ zlib1g-dev unzip python3 python3-dev \
     # And why should python3 have all the fun?
-    python \
+    python python-dev \
     # We also need git for git_repository to work. Maybe these other ones too.
     git unzip build-essential \
     # And wget for the below command.

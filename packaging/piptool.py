@@ -63,7 +63,7 @@ extract_packages(['pip', 'setuptools', 'wheel'])
 # Defeat pip's attempt to mangle sys.path
 saved_sys_path = sys.path
 sys.path = sys.path[:]
-import pip
+from pip._internal import main as _pip_main
 sys.path = saved_sys_path
 
 import setuptools
@@ -77,9 +77,9 @@ def pip_main(argv):
     cert_path = os.path.join(cert_tmpdir, "cacert.pem")
     atexit.register(lambda: shutil.rmtree(cert_tmpdir, ignore_errors=True))
     with open(cert_path, "wb") as cert:
-      cert.write(pkgutil.get_data("pip._vendor.requests", "cacert.pem"))
+      cert.write(pkgutil.get_data("pip._vendor.certifi", "cacert.pem"))
     argv = ["--isolated", "--disable-pip-version-check", "--cert", cert_path] + argv
-    return pip.main(argv)
+    return _pip_main.main(argv)
 
 from packaging.whl import Wheel
 
