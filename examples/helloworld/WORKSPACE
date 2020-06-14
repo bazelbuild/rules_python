@@ -1,7 +1,5 @@
 workspace(name = "examples_helloworld")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 # If copying this WORKSPACE file to start a new Bazel workspace, replace this with a
 # `http_archive` repository rule as specified here: https://github.com/bazelbuild/rules_python/releases
 local_repository(
@@ -14,11 +12,9 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 
 # Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip_repositories")
+load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
 
 pip_repositories()
-
-load("@rules_python//python:pip.bzl", "pip_import")
 
 pip_import(
     name = "helloworld_pypi_deps",
