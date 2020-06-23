@@ -250,6 +250,10 @@ def main():
         '--console_script', action='append',
         help="Defines a 'console_script' entry point. "
              "Can be supplied multiple times.")
+    contents_group.add_argument(
+                '--requirements', action='append',
+                help='A file that has all the transitive dependencies.'
+    )
 
     requirements_group = parser.add_argument_group("Package requirements")
     requirements_group.add_argument(
@@ -313,6 +317,10 @@ def main():
                 extra_requires[option].append(req)
         classifiers = arguments.classifier or []
         requires = arguments.requires or []
+        if arguments.requirements:
+            for req_file in arguments.requirements:
+                with open(req_file) as _file:
+                    requires.extend([r for r in _file.read().splitlines() if r.strip()])
         extra_headers = arguments.header or []
         console_scripts = arguments.console_script or []
 

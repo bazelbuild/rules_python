@@ -47,6 +47,8 @@ class WheelTest(unittest.TestCase):
                  'example_minimal_package-0.0.1.dist-info/WHEEL',
                  'example_minimal_package-0.0.1.dist-info/METADATA',
                  'example_minimal_package-0.0.1.dist-info/RECORD'])
+            meta_data = zf.read('example_minimal_package-0.0.1.dist-info/METADATA')
+            self.assertIn(b"Requires-Dist: futures==3.3.0", meta_data)
 
     def test_customized_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],

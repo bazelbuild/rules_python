@@ -14,6 +14,40 @@
 
 """Rules for building wheels."""
 
+RequirementInfo = provider(fields = ["imports"])
+
+def _extract_requirements(ctx):
+    """Extract the transitive dependencies."""
+    requirements = []
+    for dep in ((ctx.attr.deps)):
+        requirements.extend(dep[PyInfo].imports.to_list())
+    return requirements
+
+def _create_requirements_file(ctx):
+    """Write requirements to a file"""
+    has_requirements = False
+    args = ctx.actions.args()
+    for dep in ctx.attr.deps:
+        if RequirementInfo not in dep:
+            continue
+        for r in dep[RequirementInfo].imports:
+            args.add("--requirement", r)
+            has_requirements = True
+    if not has_requirements:
+        return None
+    requirements_file = ctx.actions.declare_file(ctx.attr.name + "_requirements.txt")
+    args.add("--output", requirements_file)
+
+    ctx.actions.run(
+        inputs = depset(),
+        outputs = [requirements_file],
+        arguments = [args],
+        use_default_shell_env = True,
+        executable = ctx.executable._extract_requirements,
+        progress_message = "Building requirements",
+    )
+    return requirements_file
+
 def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
     # which is not a valid path within a zip file. Fix that.
@@ -56,9 +90,10 @@ def _py_package_impl(ctx):
                     filtered_files.append(input_file)
         filtered_inputs = depset(direct = filtered_files)
 
-    return [DefaultInfo(
-        files = filtered_inputs,
-    )]
+    return [
+        DefaultInfo(files = filtered_inputs),
+        RequirementInfo(imports = _extract_requirements(ctx)),
+    ]
 
 py_package = rule(
     implementation = _py_package_impl,
@@ -99,11 +134,11 @@ def _py_wheel_impl(ctx):
     other_inputs = []
 
     # Wrap the inputs into a file to reduce command line length.
-    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
-    content = ''
+    packageinputfile = ctx.actions.declare_file(ctx.attr.name + "_target_wrapped_inputs.txt")
+    content = ""
     for input_file in inputs_to_package.to_list():
-        content += _input_file_to_arg(input_file) + '\n'
-    ctx.actions.write(output = packageinputfile, content=content)
+        content += _input_file_to_arg(input_file) + "\n"
+    ctx.actions.write(output = packageinputfile, content = content)
     other_inputs.append(packageinputfile)
 
     args = ctx.actions.args()
@@ -147,6 +182,11 @@ def _py_wheel_impl(ctx):
         description_file = ctx.file.description_file
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
+
+    requirements_file = _create_requirements_file(ctx)
+    if requirements_file:
+        args.add("--requirements", requirements_file)
+        other_inputs.append(requirements_file)
 
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
@@ -290,6 +330,11 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
                 executable = True,
                 cfg = "host",
                 default = "//experimental/rules_python:wheelmaker",
+            ),
+            "_extract_requirements": attr.label(
+                executable = True,
+                cfg = "host",
+                default = "//experimental/rules_python:extract_requirements",
             ),
         },
         _distribution_attrs,
