@@ -40,7 +40,7 @@ def _py_package_impl(ctx):
                      [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
     )
 
-    # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
+    # TODO: '/' is wrong on windows, but the path separator is not available in starlark.
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
     if not packages:
