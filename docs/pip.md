@@ -5,7 +5,7 @@
 ## pip_import
 
 <pre>
-pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-extra_pip_args">extra_pip_args</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-requirements">requirements</a>, <a href="#pip_import-timeout">timeout</a>)
+pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-extra_pip_args">extra_pip_args</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_import-requirements">requirements</a>, <a href="#pip_import-timeout">timeout</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -83,6 +83,18 @@ py_binary(
         <p>
           The command to run the Python interpreter used to invoke pip and unpack the
 wheels.
+        </p>
+      </td>
+    </tr>
+    <tr id="pip_import-python_interpreter_target">
+      <td><code>python_interpreter_target</code></td>
+      <td>
+        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
+        <p>
+          If you are using a custom python interpreter built by another repository rule,
+use this attribute to specify its BUILD target. This allows pip_import to invoke
+pip using the same interpreter as your toolchain. If set, takes precedence over
+python_interpreter.
         </p>
       </td>
     </tr>
