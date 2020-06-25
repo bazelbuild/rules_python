@@ -80,7 +80,7 @@ class Wheel(object):
             of the named "extra".
 
     Yields:
-      the names of requirements from the metadata.json
+      the names of requirements from the metadata.json, in lexical order.
     """
     # TODO(mattmoor): Is there a schema to follow for this?
     dependency_set = set()
@@ -101,7 +101,7 @@ class Wheel(object):
         parts = re.split('[ ><=()]', entry)
         dependency_set.add(parts[0])
 
-    return dependency_set
+    return sorted(dependency_set)
 
   def extras(self):
     return self.metadata().get('extras', [])
