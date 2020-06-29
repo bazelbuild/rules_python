@@ -48,7 +48,12 @@ class WheelTest(unittest.TestCase):
                  'example_minimal_package-0.0.1.dist-info/METADATA',
                  'example_minimal_package-0.0.1.dist-info/RECORD'])
             meta_data = zf.read('example_minimal_package-0.0.1.dist-info/METADATA')
-            self.assertIn(b"Requires-Dist: futures==3.3.0", meta_data)
+            # Assert direct deps
+            self.assertIn(b"Requires-Dist: futures==3.1.1", meta_data)
+            self.assertIn(b"Requires-Dist: requests==2.22.0", meta_data)
+            # Assert transitive from requests not in METADATA
+            self.assertNotIn(b"Requires-Dist: chardet==", meta_data)
+            self.assertNotIn(b"Requires-Dist: idna==", meta_data)
 
     def test_customized_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],

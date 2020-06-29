@@ -20,6 +20,10 @@ def _extract_requirements(ctx):
     """Extract the transitive dependencies."""
     requirements = []
     for dep in ((ctx.attr.deps)):
+        for x in ((dep.default_runfiles.files.to_list())):
+            if x.path.startswith("external"):
+                continue
+            requirements.append(ctx.workspace_name + "/" + x.path)
         requirements.extend(dep[PyInfo].imports.to_list())
     return requirements
 

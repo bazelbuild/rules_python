@@ -22,7 +22,10 @@ licenses(["notice"])  # Apache 2.0
 py_library(
     name = "helloworld",
     srcs = ["helloworld.py"],
-    deps = [requirement("futures")],
+    deps = [
+        requirement("futures"),
+        requirement("requests"),
+    ],
 )
 
 py_test(

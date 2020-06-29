@@ -143,3 +143,9 @@ py_test(
         ":minimal_with_py_package",
     ],
 )
+
+py_test(
+    name = "extract_requirements_test",
+    srcs = ["extract_requirements_test.py"],
+    deps = ["//experimental/rules_python:extract_requirements"],
+)
