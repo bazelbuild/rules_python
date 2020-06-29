@@ -133,6 +133,13 @@ parser.add_argument('--extras', action='append',
                     help='The set of extras for which to generate library targets.')
 
 def main():
+  """
+  Generate a BUILD file for an unzipped Wheel
+
+  We allow for empty Python sources as for Wheels containing only compiled C code
+  there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
+  """
+
   args = parser.parse_args()
   whl = Wheel(args.whl)
 
@@ -148,7 +155,7 @@ load("{requirements}", "requirement")
 
 py_library(
     name = "pkg",
-    srcs = glob(["**/*.py"]),
+    srcs = glob(["**/*.py"], allow_empty = True),
     data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
