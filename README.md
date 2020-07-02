@@ -41,7 +41,7 @@ http_archive(
     name = "rules_python_external",
     sha256 = "", # Fill in with correct sha256 of your COMMIT_SHA version
     strip_prefix = "rules_python_external-{version}".format(version = rules_python_external_version),
-    url = "https://github.com/dillon-giacoppo/rules_python_external/archive/{version}.zip".format(version = rules_python_external_version),
+    url = "https://github.com/dillon-giacoppo/rules_python_external/archive/v{version}.zip".format(version = rules_python_external_version),
 )
 
 # Install the rule dependencies
