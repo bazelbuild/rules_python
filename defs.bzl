@@ -8,7 +8,7 @@ def _pip_repository_impl(rctx):
         target = rctx.attr.python_interpreter_target
         python_interpreter = rctx.path(target)
     else:
-        if '/' not in python_interpreter:
+        if "/" not in python_interpreter:
             python_interpreter = rctx.which(python_interpreter)
         if not python_interpreter:
             fail("python interpreter not found")
@@ -41,6 +41,7 @@ def _pip_repository_impl(rctx):
             "PYTHONPATH": pypath,
         },
         timeout = rctx.attr.timeout,
+        quiet = rctx.attr.quiet,
     )
     if result.return_code:
         fail("rules_python_external failed: %s (%s)" % (result.stdout, result.stderr))
@@ -60,6 +61,7 @@ python_interpreter.
 """),
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(default = 600),
+        "quiet": attr.bool(default = True),
     },
     implementation = _pip_repository_impl,
 )

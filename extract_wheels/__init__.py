@@ -67,7 +67,7 @@ def main() -> None:
 
     pip_args = [sys.executable, "-m", "pip", "wheel", "-r", args.requirements]
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.check_output(pip_args)
+    subprocess.run(pip_args, check=True)
 
     extras = requirements.parse_extras(args.requirements)
 
