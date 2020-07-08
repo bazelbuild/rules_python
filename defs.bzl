@@ -34,6 +34,12 @@ def _pip_repository_impl(rctx):
         "@%s" % rctx.attr.name,
     ]
 
+    if rctx.attr.extra_pip_args:
+        args += [
+            "--extra_pip_args",
+            "\"" + " ".join(rctx.attr.extra_pip_args) + "\"",
+        ]
+
     result = rctx.execute(
         args,
         environment = {
@@ -62,6 +68,9 @@ python_interpreter.
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(default = 600),
         "quiet": attr.bool(default = True),
+        "extra_pip_args": attr.string_list(
+            doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+        ),
     },
     implementation = _pip_repository_impl,
 )

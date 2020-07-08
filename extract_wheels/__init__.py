@@ -63,9 +63,13 @@ def main() -> None:
         required=True,
         help="The external repo name to install dependencies. In the format '@{REPO_NAME}'",
     )
+    parser.add_argument('--extra_pip_args', action='store',
+                        help=('Extra arguments to pass down to pip.'))
     args = parser.parse_args()
 
     pip_args = [sys.executable, "-m", "pip", "wheel", "-r", args.requirements]
+    if args.extra_pip_args:
+        pip_args += args.extra_pip_args.strip("\"").split()
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
     subprocess.run(pip_args, check=True)
 
