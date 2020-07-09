@@ -1,12 +1,13 @@
 """Utility functions to manipulate Bazel files"""
 import os
 import textwrap
+import json
 from typing import Iterable, List, Dict, Set
 
 from extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
-def generate_build_file_contents(name: str, dependencies: List[str]) -> str:
+def generate_build_file_contents(name: str, dependencies: List[str], pip_data_exclude: List[str]) -> str:
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
@@ -20,6 +21,8 @@ def generate_build_file_contents(name: str, dependencies: List[str]) -> str:
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
+    data_exclude = ["**/*.py", "**/* *", "BUILD", "WORKSPACE"] + pip_data_exclude
+
     return textwrap.dedent(
         """\
         package(default_visibility = ["//visibility:public"])
@@ -29,14 +32,14 @@ def generate_build_file_contents(name: str, dependencies: List[str]) -> str:
         py_library(
             name = "{name}",
             srcs = glob(["**/*.py"], allow_empty = True),
-            data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+            data = glob(["**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
             imports = ["."],
             deps = [{dependencies}],
         )
         """.format(
-            name=name, dependencies=",".join(dependencies)
+            name=name, dependencies=",".join(dependencies), data_exclude=json.dumps(data_exclude)
         )
     )
 
@@ -116,7 +119,7 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
-def extract_wheel(wheel_file: str, extras: Dict[str, Set[str]]) -> str:
+def extract_wheel(wheel_file: str, extras: Dict[str, Set[str]], pip_data_exclude: List[str]) -> str:
     """Extracts wheel into given directory and creates a py_library target.
 
     Args:
@@ -145,7 +148,7 @@ def extract_wheel(wheel_file: str, extras: Dict[str, Set[str]]) -> str:
 
     with open(os.path.join(directory, "BUILD"), "w") as build_file:
         contents = generate_build_file_contents(
-            sanitise_name(whl.name), sanitised_dependencies,
+            sanitise_name(whl.name), sanitised_dependencies, pip_data_exclude,
         )
         build_file.write(contents)
 

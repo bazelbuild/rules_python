@@ -10,6 +10,7 @@ import glob
 import os
 import subprocess
 import sys
+import json
 
 from extract_wheels.lib import bazel, requirements
 
@@ -65,6 +66,11 @@ def main() -> None:
     )
     parser.add_argument('--extra_pip_args', action='store',
                         help=('Extra arguments to pass down to pip.'))
+    parser.add_argument(
+        "--pip_data_exclude",
+        action='store',
+        help='Additional data exclusion parameters to add to the pip packages BUILD file.'
+    )
     args = parser.parse_args()
 
     pip_args = [sys.executable, "-m", "pip", "wheel", "-r", args.requirements]
@@ -75,8 +81,13 @@ def main() -> None:
 
     extras = requirements.parse_extras(args.requirements)
 
+    if args.pip_data_exclude:
+        pip_data_exclude = json.loads(args.pip_data_exclude)["exclude"]
+    else:
+        pip_data_exclude = []
+
     targets = [
-        '"%s%s"' % (args.repo, bazel.extract_wheel(whl, extras))
+        '"%s%s"' % (args.repo, bazel.extract_wheel(whl, extras, pip_data_exclude))
         for whl in glob.glob("*.whl")
     ]
 
