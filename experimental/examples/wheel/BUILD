@@ -31,6 +31,14 @@ py_library(
     ],
 )
 
+py_library(
+    name = "main_with_gen_data",
+    srcs = ["main.py"],
+    data = [
+        ":gen_dir",
+    ],
+)
+
 # Package just a specific py_libraries, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
@@ -51,6 +59,12 @@ py_package(
     # Only include these Python packages.
     packages = ["experimental.examples.wheel"],
     deps = [":main"],
+)
+
+py_package(
+    name = "example_pkg_with_data",
+    packages = ["experimental.examples.wheel"],
+    deps = [":main_with_gen_data"]
 )
 
 py_wheel(
@@ -144,6 +158,19 @@ py_wheel(
     deps = [
         ":example_pkg",
     ],
+    name = "use_genrule_with_dir_in_outs",
+    distribution = "use_genrule_with_dir_in_outs",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg_with_data"
+    ]
+)
+
+genrule(
+    name = "gen_dir",
+    outs = ["someDir"],
+    cmd = "mkdir -p $@",
 )
 
 py_wheel(

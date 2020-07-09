@@ -108,14 +108,15 @@ class WheelMaker(object):
         # Find the hash and length
         hash = hashlib.sha256()
         size = 0
-        with open(real_filename, 'rb') as f:
-            while True:
-                block = f.read(2 ** 20)
-                if not block:
-                    break
-                hash.update(block)
-                size += len(block)
-        self._add_to_record(arcname, self._serialize_digest(hash), size)
+        if not os.path.isdir(real_filename):
+            with open(real_filename, 'rb') as f:
+                while True:
+                    block = f.read(2 ** 20)
+                    if not block:
+                        break
+                    hash.update(block)
+                    size += len(block)
+            self._add_to_record(arcname, self._serialize_digest(hash), size)
 
     def add_wheelfile(self):
         """Write WHEEL file to the distribution"""
