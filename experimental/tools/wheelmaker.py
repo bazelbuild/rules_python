@@ -102,21 +102,25 @@ class WheelMaker(object):
 
             return normalized_arcname
 
+        # If anywhere in the dependency tree a directory is set
+        # it will be passed in as an input file and we need to
+        # ignore.
+        if os.path.isdir(real_filename):
+            return
         arcname = arcname_from(package_filename)
 
         self._zipfile.write(real_filename, arcname=arcname)
         # Find the hash and length
         hash = hashlib.sha256()
         size = 0
-        if not os.path.isdir(real_filename):
-            with open(real_filename, 'rb') as f:
-                while True:
-                    block = f.read(2 ** 20)
-                    if not block:
-                        break
-                    hash.update(block)
-                    size += len(block)
-            self._add_to_record(arcname, self._serialize_digest(hash), size)
+        with open(real_filename, 'rb') as f:
+            while True:
+                block = f.read(2 ** 20)
+                if not block:
+                    break
+                hash.update(block)
+                size += len(block)
+        self._add_to_record(arcname, self._serialize_digest(hash), size)
 
     def add_wheelfile(self):
         """Write WHEEL file to the distribution"""

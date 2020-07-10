@@ -158,6 +158,9 @@ py_wheel(
     deps = [
         ":example_pkg",
     ],
+)
+
+py_wheel(
     name = "use_genrule_with_dir_in_outs",
     distribution = "use_genrule_with_dir_in_outs",
     python_tag = "py3",
