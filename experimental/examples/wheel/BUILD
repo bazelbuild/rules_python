@@ -27,7 +27,7 @@ py_library(
         "//experimental/examples/wheel/lib:module_with_data",
         # Example dependency which is not packaged in the wheel
         # due to "packages" filter on py_package rule.
-        "//examples/helloworld",
+        "//tests/load_from_macro:foo",
     ],
 )
 

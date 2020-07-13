@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import boto3
-import unittest
+load("@helloworld_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
+package(default_visibility = ["//visibility:public"])
 
-class BotoTest(unittest.TestCase):
+licenses(["notice"])  # Apache 2.0
 
-  def test_version(self):
-    self.assertEqual(boto3.__version__, '1.4.7')
+py_library(
+    name = "helloworld",
+    srcs = ["helloworld.py"],
+    deps = [requirement("futures")],
+)
 
-
-if __name__ == '__main__':
-  unittest.main()
+py_test(
+    name = "helloworld_test",
+    srcs = ["helloworld_test.py"],
+    python_version = "PY2",
+    deps = [":helloworld"],
+)

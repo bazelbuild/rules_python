@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@examples_extras//:requirements.bzl", "requirement")
-load("//python:defs.bzl", "py_test")
+load("@boto_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
 py_test(
-    name = "extras_test",
-    srcs = ["extras_test.py"],
-    python_version = "PY2",
+    name = "boto_test",
+    srcs = ["boto_test.py"],
     deps = [
-        requirement("google-cloud-language"),
-        # Make sure that we can resolve the "extra" dependency
-        requirement("googleapis-common-protos[grpc]"),
+        requirement("boto3"),
+        # six is a transitive dependency via python-dateutil. Explicitly depend
+        # on it to work around issue #70; see issue #98.
+        requirement("six"),
     ],
 )
