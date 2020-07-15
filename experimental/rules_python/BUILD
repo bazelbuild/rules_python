@@ -19,3 +19,9 @@ py_binary(
     srcs = ["wheelmaker.py"],
     visibility = ["//visibility:public"],
 )
+
+py_binary(
+    name = "extract_requirements",
+    srcs = ["extract_requirements.py"],
+    visibility = ["//visibility:public"],
+)
