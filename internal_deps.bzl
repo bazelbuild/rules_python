@@ -110,24 +110,3 @@ def rules_python_internal_deps():
         name = "piptool_deps",
         requirements = "@rules_python//python:requirements.txt",
     )
-
-    examples()
-
-def examples():
-    """Fetches all required dependencies for rules_python examples."""
-    pip_import(
-        name = "examples_helloworld",
-        requirements = "@rules_python//examples/helloworld:requirements.txt",
-    )
-    pip_import(
-        name = "examples_version",
-        requirements = "@rules_python//examples/version:requirements.txt",
-    )
-    pip_import(
-        name = "examples_boto",
-        requirements = "@rules_python//examples/boto:requirements.txt",
-    )
-    pip_import(
-        name = "examples_extras",
-        requirements = "@rules_python//examples/extras:requirements.txt",
-    )

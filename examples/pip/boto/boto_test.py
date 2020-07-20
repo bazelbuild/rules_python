@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import boto3
 import pip
 import unittest
 
 
-class VersionTest(unittest.TestCase):
+class BotoTest(unittest.TestCase):
 
   def test_version(self):
+    # Just the minimal assertion that the boto3 import worked
+    self.assertEqual(boto3.__version__, '1.4.7')
+    # Regression test that the pip version is the one requested
+    # see https://github.com/bazelbuild/rules_python/pull/1#discussion_r138349892
     self.assertEqual(pip.__version__, '9.0.3')
 
 
