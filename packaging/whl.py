@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import pkg_resources
+import pkginfo
 import re
 import stat
 import zipfile
@@ -81,9 +82,8 @@ class Wheel(object):
           return json.loads(f.read().decode("utf-8"))
       except KeyError:
           pass
-      # fall back to METADATA file (https://www.python.org/dev/peps/pep-0427/)
-      with whl.open(self._dist_info() + '/METADATA') as f:
-        return self._parse_metadata(f.read().decode("utf-8"))
+      # fall back to parsing using pkginfo
+      return self._parse_with_pkginfo(pkginfo.Wheel(self.path()))
 
   def name(self):
     return self.metadata().get('name')
@@ -107,10 +107,12 @@ class Wheel(object):
         # Match the requirements for the extra we're looking for.
         continue
       marker = requirement.get('environment')
-      if marker and not pkg_resources.evaluate_marker(marker):
-        # The current environment does not match the provided PEP 508 marker,
-        # so ignore this requirement.
-        continue
+      if marker:
+        parsed_marker = pkg_resources.extern.packaging.markers.Marker(marker)
+        if not parsed_marker.evaluate({'extra': extra}):
+          # The current environment does not match the provided PEP 508 marker,
+          # so ignore this requirement.
+          continue
       requires = requirement.get('requires', [])
       for entry in requires:
         # Strip off any trailing versioning data.
@@ -139,11 +141,31 @@ class Wheel(object):
                 name = os.path.join(directory, name)
                 set_extracted_file_to_default_mode_plus_executable(name)
 
-  # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
-  def _parse_metadata(self, content):
-    # TODO: handle fields other than just name
-    name_pattern = re.compile('Name: (.*)')
-    return { 'name': name_pattern.search(content).group(1) }
+  # _parse_with_pkginfo parses metadata from pkginfo.Wheel object.
+  def _parse_with_pkginfo(self, pkg):
+    metadata = { 'name' : pkg.name }
+    if len(pkg.provides_extras) > 0:
+      metadata['extras'] = sorted(set(pkg.provides_extras))
+    metadata['run_requires'] = []
+    for requirement_str in pkg.requires_dist:
+      requirement = pkg_resources.Requirement.parse(requirement_str)
+
+      r = {}
+      r['requires'] = [requirement.name]
+      r['requires'].extend([requirement.name + "[{0}]".format(extra)
+                            for extra in requirement.extras])
+
+      if requirement.marker:
+        r['environment'] = str(requirement.marker)
+
+        EXTRA_RE = re.compile("extra == ['\"](.*)['\"]")
+        extra_match = EXTRA_RE.search(str(requirement.marker))
+        if extra_match:
+          r['extra'] = extra_match.group(1)
+
+      metadata['run_requires'].append(r)
+
+    return metadata
 
 
 parser = argparse.ArgumentParser(

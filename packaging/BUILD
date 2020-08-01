@@ -23,6 +23,7 @@ py_library(
     srcs = ["whl.py"],
     deps = [
         requirement("setuptools"),
+        requirement("pkginfo"),
     ],
 )
 
@@ -30,11 +31,15 @@ py_test(
     name = "whl_test",
     srcs = ["whl_test.py"],
     data = [
+        "@apispec_2_0_1_whl//file",
         "@futures_2_2_0_whl//file",
         "@futures_3_1_1_whl//file",
         "@google_cloud_language_whl//file",
+        "@google_cloud_spanner_1_9_0_whl//file",
         "@grpc_whl//file",
+        "@gunicorn_19_9_0_whl//file",
         "@mock_whl//file",
+        "@pyOpenSSL_19_0_0_whl//file",
     ],
     deps = [
         ":whl",

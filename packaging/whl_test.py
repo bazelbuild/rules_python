@@ -56,6 +56,41 @@ class WheelTest(unittest.TestCase):
     self.assertEqual(set(wheel.dependencies()), set())
     self.assertEqual('pypi__futures_2_2_0', wheel.repository_suffix())
 
+  def test_whl_with_METADATA_file_extras(self):
+    # Wheel which provides specific dependencies for extras.
+    td = TestData('apispec_2_0_1_whl/file/apispec-2.0.1-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(wheel.extras(),
+        ['dev', 'lint', 'tests', 'validation', 'webframeworks-tests', 'yaml'])
+    self.assertEqual(set(wheel.dependencies()), set())
+    self.assertEqual(set(wheel.dependencies(extra='yaml')), set(['PyYAML']))
+
+  def test_whl_with_METADATA_file_depencendy_with_multiple_extras(self):
+    # Wheel with a dependency on a package with multiple extras specified.
+    td = TestData('google_cloud_spanner_1_9_0_whl/file/' +
+                  'google_cloud_spanner-1.9.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(set(wheel.dependencies()),
+        set(['google-api-core', 'google-api-core[grpcgcp]',
+             'google-api-core[grpc]',
+             'grpc-google-iam-v1', 'google-cloud-core']))
+
+  def test_whl_with_METADATA_file_duplicate_extras(self):
+    # Wheel with the same extra mentioned several times in METADATA.
+    td = TestData('gunicorn_19_9_0_whl/file/' +
+                  'gunicorn-19.9.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    # Ensure that extras() does not return any duplicates.
+    self.assertEqual(sorted(wheel.extras()),
+                     ['eventlet', 'gevent', 'gthread', 'tornado'])
+
+  def test_whl_with_METADATA_no_marker_in_dependencies(self):
+    # Wheel with simple dependencies without a marker.
+    td = TestData('pyOpenSSL_19_0_0_whl/file/' +
+                  'pyOpenSSL-19.0.0-py2.py3-none-any.whl')
+    wheel = whl.Wheel(td)
+    self.assertEqual(set(wheel.dependencies()), set(['cryptography','six']))
+
   @patch('platform.python_version', return_value='2.7.13')
   def test_mock_whl(self, *args):
     td = TestData('mock_whl/file/mock-2.0.0-py2.py3-none-any.whl')
