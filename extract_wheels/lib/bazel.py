@@ -120,13 +120,18 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
 
 
 def extract_wheel(
-    wheel_file: str, extras: Dict[str, Set[str]], pip_data_exclude: List[str]
+    wheel_file: str,
+    extras: Dict[str, Set[str]],
+    pip_data_exclude: List[str],
+    enable_implicit_namespace_pkgs: bool,
 ) -> str:
     """Extracts wheel into given directory and creates a py_library target.
 
     Args:
         wheel_file: the filepath of the .whl
         extras: a list of extras to add as dependencies for the installed wheel
+        pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
+        enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
@@ -140,7 +145,9 @@ def extract_wheel(
 
     # Note: Order of operations matters here
     purelib.spread_purelib_into_root(directory)
-    setup_namespace_pkg_compatibility(directory)
+
+    if not enable_implicit_namespace_pkgs:
+        setup_namespace_pkg_compatibility(directory)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
 

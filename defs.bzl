@@ -46,6 +46,11 @@ def _pip_repository_impl(rctx):
             struct(exclude = rctx.attr.pip_data_exclude).to_json(),
         ]
 
+    if rctx.attr.enable_implicit_namespace_pkgs:
+        args += [
+            "--enable_implicit_namespace_pkgs"
+        ]
+
     result = rctx.execute(
         args,
         environment = {
@@ -79,6 +84,16 @@ python_interpreter.
         ),
         "pip_data_exclude": attr.string_list(
             doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
+        ),
+        "enable_implicit_namespace_pkgs": attr.bool(
+            default = False,
+            doc = """
+If true, disables conversion of native namespace packages into pkg-util style namespace packages. When set all py_binary
+and py_test targets must specify either `legacy_create_init=False` or the global Bazel option
+`--incompatible_default_to_explicit_init_py` to prevent `__init__.py` being automatically generated in every directory.
+
+This option is required to support some packages which cannot handle the conversion to pkg-util style.
+            """,
         ),
     },
     implementation = _pip_repository_impl,
