@@ -7,7 +7,9 @@ from typing import Iterable, List, Dict, Set
 from extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
-def generate_build_file_contents(name: str, dependencies: List[str], pip_data_exclude: List[str]) -> str:
+def generate_build_file_contents(
+    name: str, dependencies: List[str], pip_data_exclude: List[str]
+) -> str:
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
@@ -39,7 +41,9 @@ def generate_build_file_contents(name: str, dependencies: List[str], pip_data_ex
             deps = [{dependencies}],
         )
         """.format(
-            name=name, dependencies=",".join(dependencies), data_exclude=json.dumps(data_exclude)
+            name=name,
+            dependencies=",".join(dependencies),
+            data_exclude=json.dumps(data_exclude),
         )
     )
 
@@ -93,33 +97,31 @@ def sanitise_name(name: str) -> str:
 
 
 def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
-    """Converts native namespace packages and pkg_resource-style packages to pkgutil-style packages
+    """Converts native namespace packages to pkgutil-style packages
 
     Namespace packages can be created in one of three ways. They are detailed here:
     https://packaging.python.org/guides/packaging-namespace-packages/#creating-a-namespace-package
 
-    'pkgutil-style namespace packages' (2) works in Bazel, but 'native namespace packages' (1) and
-    'pkg_resources-style namespace packages' (3) do not.
+    'pkgutil-style namespace packages' (2) and 'pkg_resources-style namespace packages' (3) works in Bazel, but
+    'native namespace packages' (1) do not.
 
-    We ensure compatibility with Bazel of methods 1 and 3 by converting them into method 2.
+    We ensure compatibility with Bazel of method 1 by converting them into method 2.
 
     Args:
         wheel_dir: the directory of the wheel to convert
     """
 
-    namespace_pkg_dirs = namespace_pkgs.pkg_resources_style_namespace_packages(
-        wheel_dir
+    namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
+        wheel_dir, ignored_dirnames=["%s/bin" % wheel_dir,],
     )
-    if not namespace_pkg_dirs and namespace_pkgs.native_namespace_packages_supported():
-        namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
-            wheel_dir, ignored_dirnames=["%s/bin" % wheel_dir,],
-        )
 
     for ns_pkg_dir in namespace_pkg_dirs:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
-def extract_wheel(wheel_file: str, extras: Dict[str, Set[str]], pip_data_exclude: List[str]) -> str:
+def extract_wheel(
+    wheel_file: str, extras: Dict[str, Set[str]], pip_data_exclude: List[str]
+) -> str:
     """Extracts wheel into given directory and creates a py_library target.
 
     Args:

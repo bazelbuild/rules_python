@@ -1,34 +1,9 @@
 """Utility functions to discover python package types"""
 import os
-import sys
 import textwrap
 from typing import Set, List, Optional
 
 from extract_wheels.lib import wheel
-
-
-def pkg_resources_style_namespace_packages(wheel_dir: str) -> Set[str]:
-    """Discovers namespace packages implemented using the 'pkg_resources-style namespace packages' method.
-
-    "While this approach is no longer recommended, it is widely present in most existing namespace packages." - PyPA
-    See https://packaging.python.org/guides/packaging-namespace-packages/#pkg-resources-style-namespace-packages
-    """
-    namespace_pkg_dirs = set()
-
-    dist_info = wheel.get_dist_info(wheel_dir)
-    namespace_packages_record_file = os.path.join(dist_info, "namespace_packages.txt")
-    if os.path.exists(namespace_packages_record_file):
-        with open(namespace_packages_record_file) as nspkg:
-            for line in nspkg.readlines():
-                namespace = line.strip().replace(".", os.sep)
-                if namespace:
-                    namespace_pkg_dirs.add(os.path.join(wheel_dir, namespace))
-    return namespace_pkg_dirs
-
-
-def native_namespace_packages_supported() -> bool:
-    """Returns true if this version of Python supports native namespace packages."""
-    return (sys.version_info.major, sys.version_info.minor) >= (3, 3)
 
 
 def implicit_namespace_packages(
@@ -84,8 +59,7 @@ def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
 
     if os.path.isfile(ns_pkg_init_filepath):
         raise ValueError("%s already contains an __init__.py file." % dir_path)
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
+
     with open(ns_pkg_init_filepath, "w") as ns_pkg_init_f:
         # See https://packaging.python.org/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages
         ns_pkg_init_f.write(
