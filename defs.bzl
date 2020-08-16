@@ -37,7 +37,7 @@ def _pip_repository_impl(rctx):
     if rctx.attr.extra_pip_args:
         args += [
             "--extra_pip_args",
-            "\"" + " ".join(rctx.attr.extra_pip_args) + "\"",
+            struct(args = rctx.attr.extra_pip_args).to_json(),
         ]
 
     if rctx.attr.pip_data_exclude:
