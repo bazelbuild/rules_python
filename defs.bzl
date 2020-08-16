@@ -22,7 +22,8 @@ def _pip_repository_impl(rctx):
         rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
         for repo in all_requirements
     ]
-    pypath = ":".join([str(p) for p in [rules_root] + thirdparty_roots])
+    separator = ":" if not "windows" in rctx.os.name.lower() else ";"
+    pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
 
     args = [
         python_interpreter,
