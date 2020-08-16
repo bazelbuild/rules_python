@@ -18,6 +18,8 @@ all_targets: &all_targets
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//experimental/examples/..."
+    # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
+    skip_use_bazel_version_for_test: true
     test_targets:
     - "..."
 platforms:
