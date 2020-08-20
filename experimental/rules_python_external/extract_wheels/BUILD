@@ -1,4 +1,4 @@
-load("//:repositories.bzl", "all_requirements")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
     name = "extract_wheels",

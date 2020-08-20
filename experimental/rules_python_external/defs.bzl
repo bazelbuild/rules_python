@@ -1,3 +1,5 @@
+""
+
 load("//:repositories.bzl", "all_requirements")
 
 DEFAULT_REPOSITORY_NAME = "pip"
@@ -48,9 +50,7 @@ def _pip_repository_impl(rctx):
         ]
 
     if rctx.attr.enable_implicit_namespace_pkgs:
-        args += [
-            "--enable_implicit_namespace_pkgs"
-        ]
+        args.append("--enable_implicit_namespace_pkgs")
 
     result = rctx.execute(
         args,
@@ -68,24 +68,6 @@ def _pip_repository_impl(rctx):
 
 pip_repository = repository_rule(
     attrs = {
-        "requirements": attr.label(allow_single_file = True, mandatory = True),
-        "wheel_env": attr.string_dict(),
-        "python_interpreter": attr.string(default = "python3"),
-        "python_interpreter_target": attr.label(allow_single_file = True, doc = """
-If you are using a custom python interpreter built by another repository rule,
-use this attribute to specify its BUILD target. This allows pip_repository to invoke
-pip using the same interpreter as your toolchain. If set, takes precedence over
-python_interpreter.
-"""),
-        # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
-        "timeout": attr.int(default = 600),
-        "quiet": attr.bool(default = True),
-        "extra_pip_args": attr.string_list(
-            doc = "Extra arguments to pass on to pip. Must not contain spaces.",
-        ),
-        "pip_data_exclude": attr.string_list(
-            doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
-        ),
         "enable_implicit_namespace_pkgs": attr.bool(
             default = False,
             doc = """
@@ -96,6 +78,24 @@ and py_test targets must specify either `legacy_create_init=False` or the global
 This option is required to support some packages which cannot handle the conversion to pkg-util style.
             """,
         ),
+        "extra_pip_args": attr.string_list(
+            doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+        ),
+        "pip_data_exclude": attr.string_list(
+            doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
+        ),
+        "python_interpreter": attr.string(default = "python3"),
+        "python_interpreter_target": attr.label(allow_single_file = True, doc = """
+If you are using a custom python interpreter built by another repository rule,
+use this attribute to specify its BUILD target. This allows pip_repository to invoke
+pip using the same interpreter as your toolchain. If set, takes precedence over
+python_interpreter.
+"""),
+        "quiet": attr.bool(default = True),
+        "requirements": attr.label(allow_single_file = True, mandatory = True),
+        # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
+        "timeout": attr.int(default = 600),
+        "wheel_env": attr.string_dict(),
     },
     implementation = _pip_repository_impl,
 )
