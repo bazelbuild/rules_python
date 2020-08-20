@@ -40,7 +40,7 @@ def _py_package_impl(ctx):
                      [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
     )
 
-    # TODO: '/' is wrong on windows, but the path separator is not available in skylark.
+    # TODO: '/' is wrong on windows, but the path separator is not available in starlark.
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
     if not packages:
@@ -98,6 +98,14 @@ def _py_wheel_impl(ctx):
     # Currently this is only the description file (if used).
     other_inputs = []
 
+    # Wrap the inputs into a file to reduce command line length.
+    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
+    content = ''
+    for input_file in inputs_to_package.to_list():
+        content += _input_file_to_arg(input_file) + '\n'
+    ctx.actions.write(output = packageinputfile, content=content)
+    other_inputs.append(packageinputfile)
+
     args = ctx.actions.args()
     args.add("--name", ctx.attr.distribution)
     args.add("--version", ctx.attr.version)
@@ -107,7 +115,7 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
-    args.add_all(inputs_to_package, format_each = "--input_file=%s", map_each = _input_file_to_arg)
+    args.add("--input_file_list", packageinputfile)
 
     extra_headers = []
     if ctx.attr.author:

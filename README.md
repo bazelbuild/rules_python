@@ -42,49 +42,29 @@ The packaging rules (`pip_import`, etc.) are less stable. We may make breaking
 changes as they evolve. There are no guarantees for rules underneath the
 `experimental/` directory.
 
-See the [How to contribute](CONTRIBUTING.md) page for information on our
-devlopment workflow.
+This repository is maintained by the Bazel community. Neither Google, nor the
+Bazel team, provides support for the code. However, this repository is part of
+the test suite used to vet new Bazel releases. See the [How to
+contribute](CONTRIBUTING.md) page for information on our development workflow.
 
 ## Getting started
 
 To import rules_python in your project, you first need to add it to your
-`WORKSPACE` file. If you are using the [Bazel
-Federation](https://github.com/bazelbuild/bazel-federation), you just need to
-[import the Federation](https://github.com/bazelbuild/bazel-federation#example-workspace)
-and call the rules_python setup methods:
-
-```python
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "bazel_federation",
-    url = "https://github.com/bazelbuild/bazel-federation/releases/download/0.0.1/bazel_federation-0.0.1.tar.gz",
-    sha256 = "506dfbfd74ade486ac077113f48d16835fdf6e343e1d4741552b450cfc2efb53",
-)
-
-load("@bazel_federation//:repositories.bzl", "rules_python_deps")
-
-rules_python_deps()
-load("@bazel_federation//setup:rules_python.bzl",  "rules_python_setup")
-rules_python_setup(use_pip=True)
-```
-
-Note the `use_pip` argument: rules_python may be imported either with or
-without support for the packaging rules.
-
-If you are not using the Federation, you can simply import rules_python
-directly and call its initialization methods as follows:
+`WORKSPACE` file:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
-    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.2/rules_python-0.0.2.tar.gz",
+    strip_prefix = "rules_python-0.0.2",
+    sha256 = "b5668cde8bb6e3515057ef465a35ad712214962f0b3a314e551204266c7be90c",
 )
-load("@rules_python//python:repositories.bzl", "py_repositories")
-py_repositories()
-# Only needed if using the packaging rules.
+```
+
+If you want to use the pip packaging rules, also add:
+
+```python
 load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```

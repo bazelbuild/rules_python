@@ -13,4 +13,21 @@
 # limitations under the License.
 """The version of rules_python."""
 
-version = "0.0.1"
+version = "0.0.2"
+
+# Currently used Bazel version. This version is what the rules here are tested
+# against.
+# This version should be updated together with the version of the Bazel
+# in .bazelversion.
+# TODO(alexeagle): assert this is the case in a test
+BAZEL_VERSION = "3.3.1"
+
+# Versions of Bazel which users should be able to use.
+# Ensures we don't break backwards-compatibility,
+# accidentally forcing users to update their LTS-supported bazel.
+# These are the versions used when testing nested workspaces with
+# bazel_integration_test.
+SUPPORTED_BAZEL_VERSIONS = [
+    # TODO: add LTS versions of bazel like 1.0.0, 2.0.0
+    BAZEL_VERSION,
+]

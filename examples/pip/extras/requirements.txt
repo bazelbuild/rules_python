@@ -1,0 +1,2 @@
+google-cloud-language==0.27.0
+googleapis-common-protos==1.51.0
