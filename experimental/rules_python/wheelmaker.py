@@ -166,7 +166,7 @@ Root-Is-Purelib: true
         if not entry_points:
             return
 
-        # Reassemble the entry_points array into
+        # Reassemble the entry_points array into {group: {name: ref}} dictionaries.
         groups = {}
         for line in entry_points:
             match = pattern.fullmatch(line)
