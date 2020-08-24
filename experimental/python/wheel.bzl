@@ -212,16 +212,16 @@ _requirement_attrs = {
 }
 
 _entrypoint_attrs = {
-    "entry_points": attr.string_list_dict(
-        doc = """\
-entry_points, e.g. {'console_scripts': ['main = experimental.examples.wheel.main:main']}.
-""",
-    ),
     "console_scripts": attr.string_dict(
         doc = """\
 Deprecated console_script entry points, e.g. {'main': 'experimental.examples.wheel.main:main'}.
 
 Deprecated: prefer the `entry_points` attribute, which supports `console_scripts` as well as other entry points.
+""",
+    ),
+    "entry_points": attr.string_list_dict(
+        doc = """\
+entry_points, e.g. {'console_scripts': ['main = experimental.examples.wheel.main:main']}.
 """,
     ),
 }
