@@ -158,27 +158,38 @@ Root-Is-Purelib: true
         metadata += "\n"
         self.add_string(self.distinfo_path('METADATA'), metadata)
 
-    def add_entry_points(self, console_scripts, plugins):
+    def add_entry_points(self, entry_points):
         """Write entry_points.txt file to the distribution."""
         # https://packaging.python.org/specifications/entry-points/
         import re
-        pattern = re.compile(r'([^=:]+):([^:=]+)=([^=]+)')
-        lines = []
-        if console_scripts:
-            lines += ["[console_scripts]"] + console_scripts
-        if plugins:
-            for line in plugins:
-                match = pattern.fullmatch(line)
-                if not match:
-                    raise ValueError('{line} is not a valid entry point'.format(line=line))
-                plugin_type = match.group(1).strip()
-                plugin_name = match.group(2).strip()
-                plugin_value = match.group(3).strip()
-                lines += ['[{plugin_type}]'.format(plugin_type=plugin_type),
-                          '{plugin_name} = {plugin_value}'.format(plugin_name=plugin_name, plugin_value=plugin_value)]
-        if not lines:
+        pattern = re.compile(r'([^;]+);([^=]+)=(.*)') # group;name=ref
+        if not entry_points:
             return
-        contents = '\n'.join(lines)
+
+        # Reassemble the entry_points array into
+        groups = {}
+        for line in entry_points:
+            match = pattern.fullmatch(line)
+            if not match:
+                raise ValueError('{line} is not a valid entry point'.format(line=line))
+            group = match.group(1).strip()
+            group_dict = groups.setdefault(group, {})
+            name = match.group(2).strip()
+            object_reference = match.group(3).strip()
+            if name in group_dict:
+                raise ValueError("Duplicate entry for name {name} in group {group}".format(name=name, group=group))
+            group_dict[name] = object_reference
+
+        text = []
+        for group, names in sorted(groups.items()):
+            if text:
+                # Blank line between groups
+                text.append("")
+            text.append("[{group}]".format(group=group))
+            for (name, ref) in sorted(names.items()):
+                text.append("{name} = {ref}".format(name=name, ref=ref))
+
+        contents = "\n".join(text)
         self.add_string(self.distinfo_path('entry_points.txt'), contents)
 
     def add_recordfile(self):
@@ -262,13 +273,9 @@ def main():
         help='A file that has all the input files defined as a list to avoid the long command'
     )
     contents_group.add_argument(
-        '--console_script', action='append',
-        help="Defines a 'console_script' entry point. "
-             "Can be supplied multiple times.")
-    contents_group.add_argument(
-        '--plugin', action='append',
-        help="Defines a 'plugin' entry_point in the format 'a:b=c'. "
-             "Can be supplied multiple times.")
+        '--entry_point', action='append',
+        help="Defines an entry_point in the format 'group;name=object_reference'. "
+             "Can be supplied multiple times to define multiple names in the same group and/or multiple different groups.")
 
     requirements_group = parser.add_argument_group("Package requirements")
     requirements_group.add_argument(
@@ -333,15 +340,14 @@ def main():
         classifiers = arguments.classifier or []
         requires = arguments.requires or []
         extra_headers = arguments.header or []
-        console_scripts = arguments.console_script or []
-        plugins = arguments.plugin or []
+        entry_points = arguments.entry_point or []
 
         maker.add_metadata(extra_headers=extra_headers,
                            description=description,
                            classifiers=classifiers,
                            requires=requires,
                            extra_requires=extra_requires)
-        maker.add_entry_points(console_scripts=console_scripts, plugins=plugins)
+        maker.add_entry_points(entry_points=entry_points)
         maker.add_recordfile()
 
 
