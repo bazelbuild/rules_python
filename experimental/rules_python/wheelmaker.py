@@ -158,40 +158,6 @@ Root-Is-Purelib: true
         metadata += "\n"
         self.add_string(self.distinfo_path('METADATA'), metadata)
 
-    def add_entry_points(self, entry_points):
-        """Write entry_points.txt file to the distribution."""
-        # https://packaging.python.org/specifications/entry-points/
-        import re
-        pattern = re.compile(r'([^;]+);([^=]+)=(.*)') # group;name=ref
-        if not entry_points:
-            return
-
-        # Reassemble the entry_points array into {group: {name: ref}} dictionaries.
-        groups = {}
-        for line in entry_points:
-            match = pattern.fullmatch(line)
-            if not match:
-                raise ValueError('{line} is not a valid entry point'.format(line=line))
-            group = match.group(1).strip()
-            group_dict = groups.setdefault(group, {})
-            name = match.group(2).strip()
-            object_reference = match.group(3).strip()
-            if name in group_dict:
-                raise ValueError("Duplicate entry for name {name} in group {group}".format(name=name, group=group))
-            group_dict[name] = object_reference
-
-        text = []
-        for group, names in sorted(groups.items()):
-            if text:
-                # Blank line between groups
-                text.append("")
-            text.append("[{group}]".format(group=group))
-            for (name, ref) in sorted(names.items()):
-                text.append("{name} = {ref}".format(name=name, ref=ref))
-
-        contents = "\n".join(text)
-        self.add_string(self.distinfo_path('entry_points.txt'), contents)
-
     def add_recordfile(self):
         """Write RECORD file to the distribution."""
         record_path = self.distinfo_path('RECORD')
@@ -261,6 +227,8 @@ def main():
                                   "Can be supplied multiple times")
     wheel_group.add_argument('--description_file',
                              help="Path to the file with package description")
+    wheel_group.add_argument('--entry_points_file',
+                             help="Path to a correctly-formatted entry_points.txt file")
 
     contents_group = parser.add_argument_group("Wheel contents")
     contents_group.add_argument(
@@ -272,10 +240,6 @@ def main():
         '--input_file_list', action='append',
         help='A file that has all the input files defined as a list to avoid the long command'
     )
-    contents_group.add_argument(
-        '--entry_point', action='append',
-        help="Defines an entry_point in the format 'group;name=object_reference'. "
-             "Can be supplied multiple times to define multiple names in the same group and/or multiple different groups.")
 
     requirements_group = parser.add_argument_group("Package requirements")
     requirements_group.add_argument(
@@ -340,14 +304,16 @@ def main():
         classifiers = arguments.classifier or []
         requires = arguments.requires or []
         extra_headers = arguments.header or []
-        entry_points = arguments.entry_point or []
 
         maker.add_metadata(extra_headers=extra_headers,
                            description=description,
                            classifiers=classifiers,
                            requires=requires,
                            extra_requires=extra_requires)
-        maker.add_entry_points(entry_points=entry_points)
+
+        if arguments.entry_points_file:
+            maker.add_file(maker.distinfo_path("entry_points.txt"), arguments.entry_points_file)
+
         maker.add_recordfile()
 
 

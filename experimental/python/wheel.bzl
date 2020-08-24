@@ -140,14 +140,32 @@ def _py_wheel_impl(ctx):
         for r in requirements:
             args.add("--extra_requires", r + ";" + option)
 
-    for group, entries in ctx.attr.entry_points.items():
-        for e in entries:
-            # Assemble a string that can be passed as a CLI argument and parsed unambiguously.
-            args.add("--entry_point", group + ";" + e)
+    # Merge console_scripts into entry_points.
+    entrypoints = dict(ctx.attr.entry_points)  # Copy so we can mutate it
+    if ctx.attr.console_scripts:
+        print("console_scripts is deprecated, please use entry_points instead")
 
-    # Merge console_scripts into entry_points
-    for name, ref in ctx.attr.console_scripts.items():
-        args.add("--entry_point", "console_scripts;{name} = {ref}".format(name = name, ref = ref))
+        # Copy a console_scripts group that may already exist, so we can mutate it.
+        console_scripts = list(entrypoints.get("console_scripts", []))
+        entrypoints["console_scripts"] = console_scripts
+        for name, ref in ctx.attr.console_scripts.items():
+            console_scripts.append("{name} = {ref}".format(name = name, ref = ref))
+
+    # If any entry_points are provided, construct the file here and add it to the files to be packaged.
+    # see: https://packaging.python.org/specifications/entry-points/
+    if entrypoints:
+        lines = []
+        for group, entries in sorted(entrypoints.items()):
+            if lines:
+                # Blank line between groups
+                lines.append("")
+            lines.append("[{group}]".format(group = group))
+            lines += sorted(entries)
+        entry_points_file = ctx.actions.declare_file(ctx.attr.name + "_entry_points.txt")
+        content = "\n".join(lines)
+        ctx.actions.write(output = entry_points_file, content = content)
+        other_inputs.append(entry_points_file)
+        args.add("--entry_points_file", entry_points_file)
 
     if ctx.attr.description_file:
         description_file = ctx.file.description_file
