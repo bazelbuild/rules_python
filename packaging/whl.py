@@ -162,7 +162,7 @@ class Wheel(object):
     # Overwrite __init__.py in these directories.
     # (required as googleapis-common-protos has an empty __init__.py, which
     # blocks google.api.core from google-cloud-core)
-    NAMESPACES = ["google/api"]
+    NAMESPACES = ["snowflake/connector", "snowflake/sqlalchemy"]
 
     # Find package directories without __init__.py, or where the __init__.py
     # must be overwritten to create a working namespace. This is based on
