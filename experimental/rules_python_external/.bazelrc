@@ -1,2 +1,0 @@
-build --aspects @mypy_integration//:mypy.bzl%mypy_aspect
-build --output_groups=+mypy
