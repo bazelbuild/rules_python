@@ -19,6 +19,10 @@ It is assumed by the test runner that the bazel binary is found at label_workspa
 Note that if a command contains a bare `--` argument, the --test_arg passed to Bazel will appear before it.
 """,
     ),
+    "distro": attr.label(
+        allow_single_file = True,
+        doc = "the .tar.gz distribution file of rules_python to test",
+    ),
     "workspace_files": attr.label(
         doc = """A filegroup of all files in the workspace-under-test necessary to run the test.""",
     ),
@@ -51,12 +55,14 @@ You probably need to run
 {{
     "workspaceRoot": "{TMPL_workspace_root}",
     "bazelBinaryWorkspace": "{TMPL_bazel_binary_workspace}",
-    "bazelCommands": [ {TMPL_bazel_commands} ]
+    "bazelCommands": [ {TMPL_bazel_commands} ],
+    "distro": "rules_python/{TMPL_distro_path}"
 }}
 """.format(
             TMPL_workspace_root = ctx.files.workspace_files[0].dirname,
             TMPL_bazel_binary_workspace = ctx.attr.bazel_binary.label.workspace_name,
             TMPL_bazel_commands = ", ".join(["\"%s\"" % s for s in ctx.attr.bazel_commands]),
+            TMPL_distro_path = ctx.file.distro.short_path,
         ),
     )
 
@@ -78,6 +84,7 @@ def bazel_integration_test(name, **kwargs):
         name: name of the resulting py_test
         **kwargs: additional attributes like timeout and visibility
     """
+
     # By default, we assume sources for "pip_example" are in examples/pip/**/*
     dirname = name[:-len("_example")]
     native.filegroup(
@@ -92,6 +99,7 @@ def bazel_integration_test(name, **kwargs):
     _config(
         name = "_%s_config" % name,
         workspace_files = workspace_files,
+        distro = "//distro:rules_python-%s" % version,
     )
 
     py_test(
@@ -102,11 +110,9 @@ def bazel_integration_test(name, **kwargs):
         deps = [Label("//python/runfiles")],
         data = [
             BAZEL_BINARY,
-            "//distro:rules_python-%s" % version,
+            "//distro:rules_python-%s.tar.gz" % version,
             "_%s_config" % name,
             workspace_files,
         ],
-        **kwargs,
+        **kwargs
     )
-
-    
