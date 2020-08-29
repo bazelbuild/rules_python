@@ -1,6 +1,6 @@
 "Define a rule for running bazel test under Bazel"
 
-load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
+load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS", "version")
 load("//python:defs.bzl", "py_test")
 
 BAZEL_BINARY = "@build_bazel_bazel_%s//:bazel_binary" % SUPPORTED_BAZEL_VERSIONS[0].replace(".", "_")
@@ -102,6 +102,7 @@ def bazel_integration_test(name, **kwargs):
         deps = [Label("//python/runfiles")],
         data = [
             BAZEL_BINARY,
+            "//distro:rules_python-%s" % version,
             "_%s_config" % name,
             workspace_files,
         ],

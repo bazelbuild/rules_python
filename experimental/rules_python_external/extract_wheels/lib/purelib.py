@@ -2,7 +2,7 @@
 import pathlib
 import shutil
 
-from extract_wheels.lib import wheel
+from experimental.rules_python_external.extract_wheels.lib import wheel
 
 
 def spread_purelib_into_root(wheel_dir: str) -> None:

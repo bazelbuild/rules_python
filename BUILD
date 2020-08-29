@@ -27,6 +27,7 @@ filegroup(
         "LICENSE",
         "internal_deps.bzl",
         "internal_setup.bzl",
+        "//experimental/rules_python_external:distribution",
         "//python:distribution",
         "//tools:distribution",
     ],

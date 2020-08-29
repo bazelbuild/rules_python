@@ -28,3 +28,8 @@ rules_python_internal_deps()
 load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
+
+# TODO(alexeagle): vendor these dependencies so we don't expose new ones to users
+load("//experimental/rules_python_external:repositories.bzl", "rules_python_external_dependencies")
+
+rules_python_external_dependencies()
