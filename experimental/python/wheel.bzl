@@ -143,8 +143,6 @@ def _py_wheel_impl(ctx):
     # Merge console_scripts into entry_points.
     entrypoints = dict(ctx.attr.entry_points)  # Copy so we can mutate it
     if ctx.attr.console_scripts:
-        print("console_scripts is deprecated, please use entry_points instead")
-
         # Copy a console_scripts group that may already exist, so we can mutate it.
         console_scripts = list(entrypoints.get("console_scripts", []))
         entrypoints["console_scripts"] = console_scripts
