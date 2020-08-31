@@ -77,6 +77,10 @@ py_wheel(
     description_file = "README.md",
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
     distribution = "example_customized",
+    entry_points = {
+        "console_scripts": ["another = foo.bar:baz"],
+        "group2": ["second = second.main:s", "first = first.main:f"]
+    },
     homepage = "www.example.com",
     license = "Apache 2.0",
     python_tag = "py3",

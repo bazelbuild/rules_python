@@ -99,11 +99,11 @@ def _py_wheel_impl(ctx):
     other_inputs = []
 
     # Wrap the inputs into a file to reduce command line length.
-    packageinputfile = ctx.actions.declare_file(ctx.attr.name + '_target_wrapped_inputs.txt')
-    content = ''
+    packageinputfile = ctx.actions.declare_file(ctx.attr.name + "_target_wrapped_inputs.txt")
+    content = ""
     for input_file in inputs_to_package.to_list():
-        content += _input_file_to_arg(input_file) + '\n'
-    ctx.actions.write(output = packageinputfile, content=content)
+        content += _input_file_to_arg(input_file) + "\n"
+    ctx.actions.write(output = packageinputfile, content = content)
     other_inputs.append(packageinputfile)
 
     args = ctx.actions.args()
@@ -140,8 +140,30 @@ def _py_wheel_impl(ctx):
         for r in requirements:
             args.add("--extra_requires", r + ";" + option)
 
-    for name, ref in ctx.attr.console_scripts.items():
-        args.add("--console_script", name + " = " + ref)
+    # Merge console_scripts into entry_points.
+    entrypoints = dict(ctx.attr.entry_points)  # Copy so we can mutate it
+    if ctx.attr.console_scripts:
+        # Copy a console_scripts group that may already exist, so we can mutate it.
+        console_scripts = list(entrypoints.get("console_scripts", []))
+        entrypoints["console_scripts"] = console_scripts
+        for name, ref in ctx.attr.console_scripts.items():
+            console_scripts.append("{name} = {ref}".format(name = name, ref = ref))
+
+    # If any entry_points are provided, construct the file here and add it to the files to be packaged.
+    # see: https://packaging.python.org/specifications/entry-points/
+    if entrypoints:
+        lines = []
+        for group, entries in sorted(entrypoints.items()):
+            if lines:
+                # Blank line between groups
+                lines.append("")
+            lines.append("[{group}]".format(group = group))
+            lines += sorted(entries)
+        entry_points_file = ctx.actions.declare_file(ctx.attr.name + "_entry_points.txt")
+        content = "\n".join(lines)
+        ctx.actions.write(output = entry_points_file, content = content)
+        other_inputs.append(entry_points_file)
+        args.add("--entry_points_file", entry_points_file)
 
     if ctx.attr.description_file:
         description_file = ctx.file.description_file
@@ -208,7 +230,14 @@ _requirement_attrs = {
 _entrypoint_attrs = {
     "console_scripts": attr.string_dict(
         doc = """\
-console_script entry points, e.g. 'experimental.examples.wheel.main:main'.
+Deprecated console_script entry points, e.g. {'main': 'experimental.examples.wheel.main:main'}.
+
+Deprecated: prefer the `entry_points` attribute, which supports `console_scripts` as well as other entry points.
+""",
+    ),
+    "entry_points": attr.string_list_dict(
+        doc = """\
+entry_points, e.g. {'console_scripts': ['main = experimental.examples.wheel.main:main']}.
 """,
     ),
 }
@@ -281,7 +310,7 @@ Targets to be included in the distribution.
 The targets to package are usually `py_library` rules or filesets (for packaging data files).
 
 Note it's usually better to package `py_library` targets and use
-`console_scripts` attribute to specify entry points than to package
+`entry_points` attribute to specify `console_scripts` than to package
 `py_binary` rules. `py_binary` targets would wrap a executable script that
 tries to locate `.runfiles` directory which is not packaged in the wheel.
 """,

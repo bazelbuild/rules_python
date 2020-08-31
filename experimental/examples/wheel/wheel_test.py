@@ -70,12 +70,13 @@ class WheelTest(unittest.TestCase):
                 'example_customized-0.0.1.dist-info/WHEEL')
             metadata_contents = zf.read(
                 'example_customized-0.0.1.dist-info/METADATA')
+            entry_point_contents = zf.read('example_customized-0.0.1.dist-info/entry_points.txt')
             # The entries are guaranteed to be sorted.
             self.assertEquals(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/RECORD,,
 example_customized-0.0.1.dist-info/WHEEL,sha256=F01lGfVCzcXUzzQHzUkBmXAcu_TXd5zqMLrvrspncJo,85
-example_customized-0.0.1.dist-info/entry_points.txt,sha256=olLJ8FK88aft2pcdj4BD05F8Xyz83Mo51I93tRGT2Yk,74
+example_customized-0.0.1.dist-info/entry_points.txt,sha256=mEWsq4sMoyqR807QV8Z3KPocGfKvtgTo1lBFTRb6b78,150
 experimental/examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
 experimental/examples/wheel/lib/module_with_data.py,sha256=K_IGAq_CHcZX0HUyINpD1hqSKIEdCn58d9E9nhWF2EA,636
 experimental/examples/wheel/lib/simple_module.py,sha256=72-91Dm6NB_jw-7wYQt7shzdwvk5RB0LujIah8g7kr8,636
@@ -101,6 +102,14 @@ Requires-Dist: pytest
 
 This is a sample description of a wheel.
 """)
+            self.assertEquals(entry_point_contents, b"""\
+[console_scripts]
+another = foo.bar:baz
+customized_wheel = experimental.examples.wheel.main:main
+
+[group2]
+first = first.main:f
+second = second.main:s""")
 
     def test_custom_package_root_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
