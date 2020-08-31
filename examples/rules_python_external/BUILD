@@ -1,5 +1,5 @@
 load("@pip//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # Toolchain setup, this is optional.
 # Demonstrate that we can use the same python interpreter for the toolchain and executing pip in pip install (see WORKSPACE).
@@ -33,4 +33,10 @@ py_binary(
     deps = [
         requirement("boto3"),
     ],
+)
+
+py_test(
+    name = "test",
+    srcs = ["test.py"],
+    deps = [":main"],
 )

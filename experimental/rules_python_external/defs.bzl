@@ -1,6 +1,6 @@
 ""
 
-load("//:repositories.bzl", "all_requirements")
+load("//experimental/rules_python_external:repositories.bzl", "all_requirements")
 
 DEFAULT_REPOSITORY_NAME = "pip"
 
@@ -30,7 +30,7 @@ def _pip_repository_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "extract_wheels",
+        "experimental.rules_python_external.extract_wheels",
         "--requirements",
         rctx.path(rctx.attr.requirements),
         "--repo",

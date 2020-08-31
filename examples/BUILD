@@ -21,3 +21,8 @@ bazel_integration_test(
     name = "pip_example",
     timeout = "long",
 )
+
+bazel_integration_test(
+    name = "rules_python_external_example",
+    timeout = "long",
+)

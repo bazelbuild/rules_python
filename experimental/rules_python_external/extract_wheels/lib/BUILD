@@ -1,9 +1,8 @@
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
-load("//:repositories.bzl", "requirement")
+load("//experimental/rules_python_external:repositories.bzl", "requirement")
 
 py_library(
     name = "lib",
-    visibility = ["//extract_wheels:__subpackages__"],
     srcs = [
         "bazel.py",
         "namespace_pkgs.py",
@@ -11,6 +10,7 @@ py_library(
         "requirements.py",
         "wheel.py",
     ],
+    visibility = ["//experimental/rules_python_external/extract_wheels:__subpackages__"],
     deps = [
         requirement("pkginfo"),
         requirement("setuptools"),
@@ -39,4 +39,13 @@ py_test(
     deps = [
         ":lib",
     ],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(
+        ["*"],
+        exclude = ["*_test.py"],
+    ),
+    visibility = ["//experimental/rules_python_external:__subpackages__"],
 )

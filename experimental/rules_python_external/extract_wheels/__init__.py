@@ -12,7 +12,7 @@ import subprocess
 import sys
 import json
 
-from extract_wheels.lib import bazel, requirements
+from experimental.rules_python_external.extract_wheels.lib import bazel, requirements
 
 
 def configure_reproducible_wheels() -> None:

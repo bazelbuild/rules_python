@@ -19,6 +19,7 @@ pkg_tar(
     owner = "0.0",
     package_dir = ".",
     strip_prefix = ".",
+    visibility = ["//examples:__pkg__"],
 )
 
 # TODO(brandjon): print_rel_notes doesn't appear to handle our use case of
