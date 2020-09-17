@@ -95,7 +95,6 @@ python_interpreter.
         "requirements": attr.label(allow_single_file = True, mandatory = True),
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(default = 600),
-        "wheel_env": attr.string_dict(),
     },
     implementation = _pip_repository_impl,
     doc = """A rule for importing `requirements.txt` dependencies into Bazel.
