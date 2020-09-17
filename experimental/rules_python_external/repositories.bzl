@@ -45,7 +45,7 @@ py_library(
 all_requirements = [name for (name, _, _) in _RULE_DEPS]
 
 def requirement(pkg):
-    return "@pypi__"+ pkg + "//:lib"
+    return "@pypi__" + pkg + "//:lib"
 
 def rules_python_external_dependencies():
     """
@@ -55,8 +55,8 @@ def rules_python_external_dependencies():
         maybe(
             http_archive,
             name,
-            url=url,
-            sha256=sha256,
-            type="zip",
-            build_file_content=_GENERIC_WHEEL,
+            url = url,
+            sha256 = sha256,
+            type = "zip",
+            build_file_content = _GENERIC_WHEEL,
         )

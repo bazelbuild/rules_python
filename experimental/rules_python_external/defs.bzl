@@ -98,7 +98,7 @@ python_interpreter.
         "requirements": attr.label(
             allow_single_file = True,
             mandatory = True,
-            doc = "A 'requirements.txt' pip requirements file."
+            doc = "A 'requirements.txt' pip requirements file.",
         ),
         # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
         "timeout": attr.int(
