@@ -48,6 +48,9 @@ def requirement(pkg):
     return "@pypi__"+ pkg + "//:lib"
 
 def rules_python_external_dependencies():
+    """
+    Fetch dependencies these rules depend on. Workspaces that use the rules_python_external should call this.
+    """
     for (name, url, sha256) in _RULE_DEPS:
         maybe(
             http_archive,

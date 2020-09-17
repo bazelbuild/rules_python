@@ -98,9 +98,78 @@ python_interpreter.
         "wheel_env": attr.string_dict(),
     },
     implementation = _pip_repository_impl,
+    doc = """A rule for importing `requirements.txt` dependencies into Bazel.
+
+This rule imports a `requirements.txt` file and generates a new
+`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
+
+```python
+pip_repository(
+    name = "foo",
+    requirements = ":requirements.txt",
+)
+```
+
+You can then reference imported dependencies from your `BUILD` file with:
+
+```python
+load("@foo//:requirements.bzl", "requirement")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       requirement("requests"),
+       requirement("numpy"),
+    ],
+)
+```
+
+Or alternatively:
+```python
+load("@foo//:requirements.bzl", "all_requirements")
+py_binary(
+    name = "baz",
+    ...
+    deps = [
+       ":foo",
+    ] + all_requirements,
+)
+```
+""",
 )
 
 def pip_install(requirements, name = DEFAULT_REPOSITORY_NAME, **kwargs):
+    """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
+
+    This is used via the `WORKSPACE` pattern:
+
+    ```python
+    pip_install(
+        requirements = ":requirements.txt",
+    )
+    ```
+
+    You can then reference imported dependencies from your `BUILD` file with:
+
+    ```python
+    load("@pip//:requirements.bzl", "requirement")
+    py_library(
+        name = "bar",
+        ...
+        deps = [
+           "//my/other:dep",
+           requirement("requests"),
+           requirement("numpy"),
+        ],
+    )
+    ```
+
+    Args:
+      requirements: A 'requirements.txt' pip requirements file.
+      name: A unique name for the created external repository (default 'pip').
+      **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
+    """
     pip_repository(
         name = name,
         requirements = requirements,
