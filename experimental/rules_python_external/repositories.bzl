@@ -45,15 +45,18 @@ py_library(
 all_requirements = [name for (name, _, _) in _RULE_DEPS]
 
 def requirement(pkg):
-    return "@pypi__"+ pkg + "//:lib"
+    return "@pypi__" + pkg + "//:lib"
 
 def rules_python_external_dependencies():
+    """
+    Fetch dependencies these rules depend on. Workspaces that use the rules_python_external should call this.
+    """
     for (name, url, sha256) in _RULE_DEPS:
         maybe(
             http_archive,
             name,
-            url=url,
-            sha256=sha256,
-            type="zip",
-            build_file_content=_GENERIC_WHEEL,
+            url = url,
+            sha256 = sha256,
+            type = "zip",
+            build_file_content = _GENERIC_WHEEL,
         )
