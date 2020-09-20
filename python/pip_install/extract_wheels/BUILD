@@ -7,13 +7,13 @@ py_binary(
         "__main__.py",
     ],
     main = "__main__.py",
-    deps = ["//experimental/rules_python_external/extract_wheels/lib"],
+    deps = ["//python/pip_install/extract_wheels/lib"],
 )
 
 filegroup(
     name = "distribution",
     srcs = glob(["*"]) + [
-        "//experimental/rules_python_external/extract_wheels/lib:distribution",
+        "//python/pip_install/extract_wheels/lib:distribution",
     ],
-    visibility = ["//experimental/rules_python_external:__subpackages__"],
+    visibility = ["//python/pip_install:__subpackages__"],
 )

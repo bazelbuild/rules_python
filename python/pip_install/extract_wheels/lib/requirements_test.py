@@ -1,6 +1,6 @@
 import unittest
 
-from experimental.rules_python_external.extract_wheels.lib import requirements
+from python.pip_install.extract_wheels.lib import requirements
 
 
 class TestRequirementExtrasParsing(unittest.TestCase):
