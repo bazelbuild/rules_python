@@ -1,8 +1,6 @@
 ""
 
-load("//experimental/rules_python_external:repositories.bzl", "all_requirements", "rules_python_external_dependencies")
-
-DEFAULT_REPOSITORY_NAME = "pip"
+load("//python/pip_install:repositories.bzl", "all_requirements")
 
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
@@ -30,7 +28,7 @@ def _pip_repository_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "experimental.rules_python_external.extract_wheels",
+        "python.pip_install.extract_wheels",
         "--requirements",
         rctx.path(rctx.attr.requirements),
         "--repo",
@@ -147,43 +145,3 @@ py_binary(
 ```
 """,
 )
-
-def pip_install(requirements, name = DEFAULT_REPOSITORY_NAME, **kwargs):
-    """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
-
-    This is used via the `WORKSPACE` pattern:
-
-    ```python
-    pip_install(
-        requirements = ":requirements.txt",
-    )
-    ```
-
-    You can then reference imported dependencies from your `BUILD` file with:
-
-    ```python
-    load("@pip//:requirements.bzl", "requirement")
-    py_library(
-        name = "bar",
-        ...
-        deps = [
-           "//my/other:dep",
-           requirement("requests"),
-           requirement("numpy"),
-        ],
-    )
-    ```
-
-    Args:
-      requirements: A 'requirements.txt' pip requirements file.
-      name: A unique name for the created external repository (default 'pip').
-      **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
-    """
-    # Just in case our dependencies weren't already fetched
-    rules_python_external_dependencies()
-
-    pip_repository(
-        name = name,
-        requirements = requirements,
-        **kwargs
-    )

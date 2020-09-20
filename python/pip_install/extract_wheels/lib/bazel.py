@@ -4,7 +4,7 @@ import textwrap
 import json
 from typing import Iterable, List, Dict, Set
 
-from experimental.rules_python_external.extract_wheels.lib import namespace_pkgs, wheel, purelib
+from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
 def generate_build_file_contents(

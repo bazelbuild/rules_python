@@ -13,6 +13,9 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
+load("//python/pip_install:pip_repository.bzl", "pip_repository")
+load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
 def _pip_import_impl(repository_ctx):
     """Core implementation of pip_import."""
 
@@ -171,3 +174,43 @@ See https://github.com/bazelbuild/rules_python/issues/203 for context.
 """
         message += "=" * 79
         fail(message)
+
+def pip_install(requirements, name = "pip", **kwargs):
+    """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
+
+    This is used via the `WORKSPACE` pattern:
+
+    ```python
+    pip_install(
+        requirements = ":requirements.txt",
+    )
+    ```
+
+    You can then reference imported dependencies from your `BUILD` file with:
+
+    ```python
+    load("@pip//:requirements.bzl", "requirement")
+    py_library(
+        name = "bar",
+        ...
+        deps = [
+           "//my/other:dep",
+           requirement("requests"),
+           requirement("numpy"),
+        ],
+    )
+    ```
+
+    Args:
+      requirements: A 'requirements.txt' pip requirements file.
+      name: A unique name for the created external repository (default 'pip').
+      **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
+    """
+    # Just in case our dependencies weren't already fetched
+    pip_install_dependencies()
+
+    pip_repository(
+        name = name,
+        requirements = requirements,
+        **kwargs
+    )
