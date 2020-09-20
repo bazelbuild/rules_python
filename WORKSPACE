@@ -14,10 +14,6 @@
 
 workspace(name = "rules_python")
 
-load("//python:pip.bzl", "pip_repositories")
-
-pip_repositories()
-
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 
@@ -28,8 +24,3 @@ rules_python_internal_deps()
 load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
-
-# TODO(alexeagle): vendor these dependencies so we don't expose new ones to users
-load("//experimental/rules_python_external:repositories.bzl", "rules_python_external_dependencies")
-
-rules_python_external_dependencies()

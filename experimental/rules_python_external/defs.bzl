@@ -1,6 +1,6 @@
 ""
 
-load("//experimental/rules_python_external:repositories.bzl", "all_requirements")
+load("//experimental/rules_python_external:repositories.bzl", "all_requirements", "rules_python_external_dependencies")
 
 DEFAULT_REPOSITORY_NAME = "pip"
 
@@ -179,6 +179,9 @@ def pip_install(requirements, name = DEFAULT_REPOSITORY_NAME, **kwargs):
       name: A unique name for the created external repository (default 'pip').
       **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
     """
+    # Just in case our dependencies weren't already fetched
+    rules_python_external_dependencies()
+
     pip_repository(
         name = name,
         requirements = requirements,
