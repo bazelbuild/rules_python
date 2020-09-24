@@ -140,4 +140,4 @@ def pip3_import(**kwargs):
 
 def pip_repositories():
     # buildifier: disable=print
-    print("DEPRECATED: the pip_import rule has been replaced with pip_install, please see release notes")
+    print("DEPRECATED: the pip_import rule has been replaced with pip_install, please see rules_python 0.1 release notes")
