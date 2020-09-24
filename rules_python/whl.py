@@ -22,6 +22,19 @@ import re
 import stat
 import zipfile
 
+def current_umask():
+    """Get the current umask which involves having to set it temporarily."""
+    mask = os.umask(0)
+    os.umask(mask)
+    return mask
+
+def set_extracted_file_to_default_mode_plus_executable(path):
+    """
+    Make file present at path have execute for user/group/world
+    (chmod +x) is no-op on windows per python docs
+    """
+    os.chmod(path, (0o777 & ~current_umask() | 0o111))
+
 class Wheel(object):
 
   def __init__(self, path):
