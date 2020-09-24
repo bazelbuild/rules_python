@@ -56,8 +56,12 @@ def pip_install(requirements, name = "pip", **kwargs):
         **kwargs
     )
 
+def pip_repositories():
+    # buildifier: disable=print
+    print("DEPRECATED: the pip_repositories rule has been replaced with pip_install, please see rules_python 0.1 release notes")
+
 def pip_import(**kwargs):
     fail("=" * 79 + """\n
-    pip_import has been replaced with pip_install, please see the release notes.
+    pip_import has been replaced with pip_install, please see the rules_python 0.1 release notes.
     To continue using it, you can load from "@rules_python//python/legacy_pip_import:pip.bzl"
     """)
