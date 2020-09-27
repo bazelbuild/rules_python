@@ -49,6 +49,11 @@ def requirement(pkg):
 def rules_python_external_dependencies(hostname=None):
     """
     Fetch dependencies these rules depend on. Workspaces that use the rules_python_external should call this.
+
+    :param hostname: A hostname mirror to download rule dep wheels from.
+                     Files must be identical to those specified in
+                     _RULE_DEPS. Defaults to `files.pythonhosted.org`.
+    :type hostname: str
     """
     if hostname == None:
         hostname = "files.pythonhosted.org"
