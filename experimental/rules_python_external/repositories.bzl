@@ -49,6 +49,7 @@ def requirement(pkg):
 def rules_python_external_dependencies(hostname=None):
     """
     Fetch dependencies these rules depend on. Workspaces that use the rules_python_external should call this.
+
     Args:
       hostname: Type str. A hostname mirror to download rule dep wheels from.
                 Files must be identical to those specified in
