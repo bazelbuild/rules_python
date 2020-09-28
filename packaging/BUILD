@@ -24,6 +24,7 @@ py_library(
     deps = [
         requirement("setuptools"),
     ],
+    visibility = ["//visibility:public"],
 )
 
 py_test(

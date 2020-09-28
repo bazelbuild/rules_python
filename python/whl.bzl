@@ -58,7 +58,7 @@ convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
         ),
         "_script": attr.label(
             executable = True,
-            default = Label("//tools:whltool.par"),
+            default = Label("//tools/prebuilt:whltool.par"),
             cfg = "host",
         ),
     },

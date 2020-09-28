@@ -13,6 +13,10 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
+load("@rules_python//python/private:py_external_package.bzl", _py_external_package = "py_external_package")
+
+py_external_package = _py_external_package
+
 def _pip_import_impl(repository_ctx):
     """Core implementation of pip_import."""
 
@@ -30,16 +34,12 @@ def _pip_import_impl(repository_ctx):
     args = [
         interpreter_path,
         repository_ctx.path(repository_ctx.attr._script),
-        "--python_interpreter",
-        interpreter_path,
         "--name",
         repository_ctx.attr.name,
-        "--input",
-        repository_ctx.path(repository_ctx.attr.requirements),
         "--output",
-        repository_ctx.path("requirements.bzl"),
-        "--directory",
         repository_ctx.path(""),
+        "--persist",
+        repository_ctx.path(repository_ctx.attr.requirements),
     ]
     if repository_ctx.attr.extra_pip_args:
         args += [
@@ -79,7 +79,7 @@ python_interpreter.
         ),
         "_script": attr.label(
             executable = True,
-            default = Label("//tools:piptool.par"),
+            default = Label("//tools/prebuilt:pip_import.par"),
             cfg = "host",
         ),
     },

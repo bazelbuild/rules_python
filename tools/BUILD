@@ -15,18 +15,33 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
-# These files are generated and updated by ./update_tools.sh
-exports_files([
-    "piptool.par",
-    "whltool.par",
-])
+load("@piptool_deps//:requirements.bzl", "requirement")
+load("//python:defs.bzl", "py_library")
+load("//tools:subpar.bzl", "par_binary")
+
+par_binary(
+    name = "build_wheel",
+    srcs = ["build_wheel.py"],
+    deps = [
+        "//tools/utils",
+        requirement("pip"),
+        requirement("setuptools"),
+        requirement("wheel"),
+    ],
+)
+
+par_binary(
+    name = "extract_wheel",
+    srcs = ["extract_wheel.py"],
+    deps = [
+       "//packaging:whl",
+    ],
+)
 
 filegroup(
     name = "distribution",
     srcs = [
         "BUILD",
-    ] + glob([
-        "*.par",
-    ]),
+    ],
     visibility = ["//:__pkg__"],
 )

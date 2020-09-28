@@ -44,14 +44,6 @@ exports_files([
     "python.bzl",  # Deprecated, please use defs.bzl
 ])
 
-# Needed to define bzl_library targets for docgen. (We don't define the
-# bzl_library target here because it'd give our users a transitive dependency
-# on Skylib.)
-exports_files(
-    ["private/reexports.bzl"],
-    visibility = ["//docs:__pkg__"],
-)
-
 # This target can be used to inspect the current Python major version. To use,
 # put it in the `flag_values` attribute of a `config_setting` and test it
 # against the values "PY2" or "PY3". It will always match one or the other.
