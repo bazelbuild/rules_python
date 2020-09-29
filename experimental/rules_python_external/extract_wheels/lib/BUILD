@@ -41,6 +41,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "bazel_test",
+    size = "small",
+    srcs = [
+        "bazel_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
+    data = ["//experimental/examples/wheel:minimal_with_py_package"]
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(
