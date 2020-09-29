@@ -64,7 +64,7 @@ pip_install(
 #### Example `BUILD` file.
 
 ```python
-load("@py_deps//:requirements.bzl", "requirement")
+load("@py_deps//:requirements.bzl", "requirement", "whl_requirement")
 
 py_binary(
     name = "main",
@@ -72,10 +72,13 @@ py_binary(
     deps = [
         requirement("boto3"),
     ],
+    data = [
+        whl_requirement("boto3"),
+    ],
 )
 ```
 
-Note that above you do not need to add transitively required packages to `deps = [ ... ]`
+Note that above you do not need to add transitively required packages to `deps = [ ... ]` or `data = [ ... ]`
 
 #### Setup `requirements.txt`
 

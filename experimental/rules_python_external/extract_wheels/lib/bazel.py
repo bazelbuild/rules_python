@@ -18,6 +18,7 @@ def generate_build_file_contents(
     Args:
         name: the target name of the py_library
         dependencies: a list of Bazel labels pointing to dependencies of the library
+        whl_file_deps: a list of Bazel labels pointing to wheel file dependencies of this wheel.
 
     Returns:
         A complete BUILD file as a string
