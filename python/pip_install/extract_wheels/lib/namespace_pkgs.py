@@ -3,7 +3,7 @@ import os
 import textwrap
 from typing import Set, List, Optional
 
-from experimental.rules_python_external.extract_wheels.lib import wheel
+from python.pip_install.extract_wheels.lib import wheel
 
 
 def implicit_namespace_packages(

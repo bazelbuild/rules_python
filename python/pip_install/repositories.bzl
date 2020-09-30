@@ -46,9 +46,10 @@ all_requirements = [name for (name, _, _) in _RULE_DEPS]
 def requirement(pkg):
     return "@pypi__" + pkg + "//:lib"
 
-def rules_python_external_dependencies(hostname=None):
+def pip_install_dependencies(hostname=None):
     """
-    Fetch dependencies these rules depend on. Workspaces that use the rules_python_external should call this.
+    Fetch dependencies these rules depend on. Workspaces that use the pip_install rule can call this.
+    (However we call it from pip_install, making it optional for users to do so.)
 
     Args:
       hostname: Type str. A hostname mirror to download rule dep wheels from.

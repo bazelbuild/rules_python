@@ -4,7 +4,7 @@ import tempfile
 from typing import Optional
 import unittest
 
-from experimental.rules_python_external.extract_wheels.lib import namespace_pkgs
+from python.pip_install.extract_wheels.lib import namespace_pkgs
 
 
 class TempDir:

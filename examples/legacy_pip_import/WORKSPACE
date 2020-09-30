@@ -8,7 +8,7 @@ http_archive(
     sha256 = "e46612e9bb0dae8745de6a0643be69e8665a03f63163ac6610c210e80d14c3e4",
 )
 
-load("@rules_python//python:pip.bzl", "pip_import", "pip_repositories")
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
 
 pip_repositories()
 
