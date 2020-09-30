@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from experimental.rules_python_external.extract_wheels.lib import bazel
+from python.pip_install.extract_wheels.lib import bazel
 
 
 class TestBazelExtractWheel(unittest.TestCase):

@@ -3,7 +3,7 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import")
 
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""

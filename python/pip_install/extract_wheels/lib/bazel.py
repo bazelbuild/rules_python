@@ -5,7 +5,7 @@ import json
 from typing import Iterable, List, Dict, Set
 import shutil
 
-from experimental.rules_python_external.extract_wheels.lib import namespace_pkgs, wheel, purelib
+from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
 WHEEL_FILE_LABEL = "whl"

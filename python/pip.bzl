@@ -13,161 +13,55 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-def _pip_import_impl(repository_ctx):
-    """Core implementation of pip_import."""
+load("//python/pip_install:pip_repository.bzl", "pip_repository")
+load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 
-    # Add an empty top-level BUILD file.
-    # This is because Bazel requires BUILD files along all paths accessed
-    # via //this/sort/of:path and we wouldn't be able to load our generated
-    # requirements.bzl without it.
-    repository_ctx.file("BUILD", "")
+def pip_install(requirements, name = "pip", **kwargs):
+    """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
 
-    interpreter_path = repository_ctx.attr.python_interpreter
-    if repository_ctx.attr.python_interpreter_target != None:
-        target = repository_ctx.attr.python_interpreter_target
-        interpreter_path = repository_ctx.path(target)
+    This is used via the `WORKSPACE` pattern:
 
-    args = [
-        interpreter_path,
-        repository_ctx.path(repository_ctx.attr._script),
-        "--python_interpreter",
-        interpreter_path,
-        "--name",
-        repository_ctx.attr.name,
-        "--input",
-        repository_ctx.path(repository_ctx.attr.requirements),
-        "--output",
-        repository_ctx.path("requirements.bzl"),
-        "--directory",
-        repository_ctx.path(""),
-    ]
-    if repository_ctx.attr.extra_pip_args:
-        args += [
-            "--extra_pip_args",
-            "\"" + " ".join(repository_ctx.attr.extra_pip_args) + "\"",
-        ]
+    ```python
+    pip_install(
+        requirements = ":requirements.txt",
+    )
+    ```
 
-    # To see the output, pass: quiet=False
-    result = repository_ctx.execute(args, timeout=repository_ctx.attr.timeout)
+    You can then reference imported dependencies from your `BUILD` file with:
 
-    if result.return_code:
-        fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
+    ```python
+    load("@pip//:requirements.bzl", "requirement")
+    py_library(
+        name = "bar",
+        ...
+        deps = [
+           "//my/other:dep",
+           requirement("requests"),
+           requirement("numpy"),
+        ],
+    )
+    ```
 
-pip_import = repository_rule(
-    attrs = {
-        "extra_pip_args": attr.string_list(
-            doc = "Extra arguments to pass on to pip. Must not contain spaces.",
-        ),
-        "python_interpreter": attr.string(default = "python", doc = """
-The command to run the Python interpreter used to invoke pip and unpack the
-wheels.
-"""),
-        "python_interpreter_target": attr.label(allow_single_file = True, doc = """
-If you are using a custom python interpreter built by another repository rule,
-use this attribute to specify its BUILD target. This allows pip_import to invoke
-pip using the same interpreter as your toolchain. If set, takes precedence over
-python_interpreter.
-"""),
-        "requirements": attr.label(
-            mandatory = True,
-            allow_single_file = True,
-            doc = "The label of the requirements.txt file.",
-        ),
-        "timeout": attr.int(
-            default = 600,
-            doc = "Timeout (in seconds) for repository fetch."
-        ),
-        "_script": attr.label(
-            executable = True,
-            default = Label("//tools:piptool.par"),
-            cfg = "host",
-        ),
-    },
-    implementation = _pip_import_impl,
-    doc = """A rule for importing `requirements.txt` dependencies into Bazel.
-
-This rule imports a `requirements.txt` file and generates a new
-`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
-
-```python
-pip_import(
-    name = "foo",
-    requirements = ":requirements.txt",
-)
-load("@foo//:requirements.bzl", "pip_install")
-pip_install()
-```
-
-You can then reference imported dependencies from your `BUILD` file with:
-
-```python
-load("@foo//:requirements.bzl", "requirement")
-py_library(
-    name = "bar",
-    ...
-    deps = [
-       "//my/other:dep",
-       requirement("futures"),
-       requirement("mock"),
-    ],
-)
-```
-
-Or alternatively:
-```python
-load("@foo//:requirements.bzl", "all_requirements")
-py_binary(
-    name = "baz",
-    ...
-    deps = [
-       ":foo",
-    ] + all_requirements,
-)
-```
-""",
-)
-
-# We don't provide a `pip2_import` that would use the `python2` system command
-# because this command does not exist on all platforms. On most (but not all)
-# systems, `python` means Python 2 anyway. See also #258.
-
-def pip3_import(**kwargs):
-    """A wrapper around pip_import that uses the `python3` system command.
-
-    Use this for requirements of PY3 programs.
+    Args:
+      requirements: A 'requirements.txt' pip requirements file.
+      name: A unique name for the created external repository (default 'pip').
+      **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
     """
-    pip_import(python_interpreter = "python3", **kwargs)
+    # Just in case our dependencies weren't already fetched
+    pip_install_dependencies()
+
+    pip_repository(
+        name = name,
+        requirements = requirements,
+        **kwargs
+    )
 
 def pip_repositories():
-    """Pull in dependencies needed to use the packaging rules."""
+    # buildifier: disable=print
+    print("DEPRECATED: the pip_repositories rule has been replaced with pip_install, please see rules_python 0.1 release notes")
 
-    # At the moment this is a placeholder, in that it does not actually pull in
-    # any dependencies. However, it does do some validation checking.
-    #
-    # As a side effect of migrating our canonical workspace name from
-    # "@io_bazel_rules_python" to "@rules_python" (#203), users who still
-    # imported us by the old name would get a confusing error about a
-    # repository dependency cycle in their workspace. (The cycle is likely
-    # related to the fact that our repo name is hardcoded into the template
-    # in piptool.py.)
-    #
-    # To produce a more informative error message in this situation, we
-    # fail-fast here if we detect that we're not being imported by the new
-    # name. (I believe we have always had the requirement that we're imported
-    # by the canonical name, because of the aforementioned hardcoding.)
-    #
-    # Users who, against best practice, do not call pip_repositories() in their
-    # workspace will not benefit from this check.
-    if "rules_python" not in native.existing_rules():
-        message = "=" * 79 + """\n\
-It appears that you are trying to import rules_python without using its
-canonical name, "@rules_python". This does not work. Please change your
-WORKSPACE file to import this repo with `name = "rules_python"` instead.
-"""
-        if "io_bazel_rules_python" in native.existing_rules():
-            message += """\n\
-Note that the previous name of "@io_bazel_rules_python" is no longer used.
-See https://github.com/bazelbuild/rules_python/issues/203 for context.
-"""
-        message += "=" * 79
-        fail(message)
+def pip_import(**kwargs):
+    fail("=" * 79 + """\n
+    pip_import has been replaced with pip_install, please see the rules_python 0.1 release notes.
+    To continue using it, you can load from "@rules_python//python/legacy_pip_import:pip.bzl"
+    """)

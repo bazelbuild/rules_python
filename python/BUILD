@@ -32,6 +32,7 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
         "//python/constraints:distribution",
+        "//python/legacy_pip_import:distribution",
         "//python/runfiles:distribution",
     ],
     visibility = ["//:__pkg__"],
