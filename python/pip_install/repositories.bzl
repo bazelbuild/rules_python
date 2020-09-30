@@ -49,6 +49,7 @@ def requirement(pkg):
 def pip_install_dependencies(hostname=None):
     """
     Fetch dependencies these rules depend on. Workspaces that use the pip_install rule can call this.
+
     (However we call it from pip_install, making it optional for users to do so.)
 
     Args:
