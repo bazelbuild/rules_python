@@ -105,6 +105,7 @@ python_interpreter.
         ),
     },
     implementation = _pip_repository_impl,
+    local=True,
     doc = """A rule for importing `requirements.txt` dependencies into Bazel.
 
 This rule imports a `requirements.txt` file and generates a new
