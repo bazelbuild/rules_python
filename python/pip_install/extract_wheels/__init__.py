@@ -8,6 +8,7 @@ Under the hood, it depends on the `pip wheel` command to do resolution, download
 import argparse
 import glob
 import os
+import pathlib
 import subprocess
 import sys
 import json
@@ -79,7 +80,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    pip_args = [sys.executable, "-m", "pip", "wheel", "-r", args.requirements]
+    # Patch requirements.txt and copy to local repository root
+    local_requirements_file = pathlib.Path('requirements.txt').resolve()
+    requirements.patch_requirements_file(
+        pathlib.Path(args.requirements), local_requirements_file
+    )
+
+    pip_args = [sys.executable, "-m", "pip", "wheel", "-r", str(local_requirements_file)]
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 

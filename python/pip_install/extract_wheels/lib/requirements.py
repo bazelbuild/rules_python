@@ -1,3 +1,4 @@
+import pathlib
 import re
 from typing import Dict, Set, Tuple, Optional
 
@@ -43,3 +44,24 @@ def _parse_requirement_for_extra(
         )
 
     return None, None
+
+
+def patch_requirements_file(
+    source_requirements_path: pathlib.Path, patched_requirements_path: pathlib.Path
+) -> None:
+    """Patch and copy a requirements.txt file to work in an alternate directory.
+
+    Args:
+        source_requirements_path: The filepath for the requirements.txt file to patch.
+        patched_requirements_path: The filepath to write the new requirements.txt file to.
+    """
+    # Find parent directory of source requirements.txt file
+    source_requirements_dir = source_requirements_path.resolve().parent
+
+    # Replace relative 'file:' with absolute 'file:///' using source requirements.txt as root
+    source_requirements = source_requirements_path.read_text()
+    patched_requirements = re.sub(
+        r"(^\s*|@\s*)file:(?!/)", r"\1file://" + str(source_requirements_dir) + "/",
+        source_requirements, flags=re.MULTILINE
+    )
+    patched_requirements_path.write_text(patched_requirements)
