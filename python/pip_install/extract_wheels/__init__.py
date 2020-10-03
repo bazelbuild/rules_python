@@ -81,7 +81,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Patch requirements.txt and copy to local repository root
-    local_requirements_file = pathlib.Path('requirements.txt').resolve()
+    local_requirements_file = pathlib.Path('.').resolve() / 'requirements.txt'
     requirements.patch_requirements_file(
         pathlib.Path(args.requirements), local_requirements_file
     )
