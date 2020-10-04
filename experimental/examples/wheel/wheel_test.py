@@ -75,7 +75,7 @@ class WheelTest(unittest.TestCase):
             self.assertEquals(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/RECORD,,
-example_customized-0.0.1.dist-info/WHEEL,sha256=F01lGfVCzcXUzzQHzUkBmXAcu_TXd5zqMLrvrspncJo,85
+example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
 example_customized-0.0.1.dist-info/entry_points.txt,sha256=mEWsq4sMoyqR807QV8Z3KPocGfKvtgTo1lBFTRb6b78,150
 experimental/examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
 experimental/examples/wheel/lib/module_with_data.py,sha256=K_IGAq_CHcZX0HUyINpD1hqSKIEdCn58d9E9nhWF2EA,636
@@ -84,7 +84,7 @@ experimental/examples/wheel/main.py,sha256=E0xCyiPg6fCo4IrFmqo_tqpNGtk1iCewobqD0
 """)
             self.assertEquals(wheel_contents, b"""\
 Wheel-Version: 1.0
-Generator: wheelmaker 1.0
+Generator: bazel-wheelmaker 1.0
 Root-Is-Purelib: true
 Tag: py3-none-any
 """)
