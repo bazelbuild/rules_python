@@ -318,7 +318,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
             "_wheelmaker": attr.label(
                 executable = True,
                 cfg = "host",
-                default = "//experimental/rules_python:wheelmaker",
+                default = "//experimental/tools:wheelmaker",
             ),
         },
         _distribution_attrs,
