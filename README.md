@@ -147,6 +147,26 @@ re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
 
+### Importing `pip` dependencies with `pip_import` (legacy)
+
+The deprecated `pip_import` can still be used if needed.
+
+```
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
+
+# Create a central repo that knows about the dependencies needed for requirements.txt.
+pip_import(   # or pip3_import
+   name = "my_deps",
+   requirements = "//path/to:requirements.txt",
+)
+
+# Load the central repo's install function from its `//:requirements.bzl` file, and call it.
+load("@my_deps//:requirements.bzl", "pip_install")
+pip_install()
+```
+
+An example can be found in [`examples/legacy_pip_import](examples/legacy_pip_import).
+
 ### Consuming `pip` dependencies
 
 Each extracted wheel repo contains a `py_library` target representing the
