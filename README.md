@@ -86,9 +86,6 @@ http_archive(
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
-
-# Then load and call py_repositories() as
-# above.
 ```
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
