@@ -4,7 +4,10 @@ load("//python/pip_install:repositories.bzl", "all_requirements")
 
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
-    if rctx.attr.python_interpreter_target != None:
+    pip_python = rctx.os.environ.get("PIP_PYTHON")
+    if pip_python:
+        python_interpreter = pip_python
+    elif rctx.attr.python_interpreter_target != None:
         target = rctx.attr.python_interpreter_target
         python_interpreter = rctx.path(target)
     else:
@@ -142,6 +145,13 @@ py_binary(
        ":foo",
     ] + all_requirements,
 )
+```
+
+The path to the Python interpreter can be specified using the
+`python_interpreter` or `python_interpreter_target` arguments, or
+can be set on the Bazel command line with:
+```
+--action_env=PIP_PYTHON=/path/to/python
 ```
 """,
 )
