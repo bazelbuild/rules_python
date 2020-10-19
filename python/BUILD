@@ -24,6 +24,8 @@ In an ideal renaming, we'd move the packaging rules to a different package so
 that @rules_python//python is only concerned with the core rules.
 """
 
+load("//python/pip_install:requirements.bzl", "compile_pip_requirements")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -145,3 +147,8 @@ exports_files([
     "pip.bzl",
     "whl.bzl",
 ])
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+)
