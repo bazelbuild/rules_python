@@ -64,18 +64,27 @@ pip_install(
 #### Example `BUILD` file.
 
 ```python
-load("@py_deps//:requirements.bzl", "requirement")
+load("@py_deps//:requirements.bzl", "requirement", "whl_requirement")
 
 py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
         requirement("boto3"),
-    ],
+    ]
+)
+
+# If you need to depend on the wheel dists themselves, for instance to pass them
+# to some other packaging tool, you can get a handle to them with the whl_requirement macro.
+filegroup(
+    name = "whl_files",
+    data = [
+        whl_requirement("boto3"),
+    ]
 )
 ```
 
-Note that above you do not need to add transitively required packages to `deps = [ ... ]`
+Note that above you do not need to add transitively required packages to `deps = [ ... ]` or `data = [ ... ]`
 
 #### Setup `requirements.txt`
 

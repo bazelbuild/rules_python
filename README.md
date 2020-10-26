@@ -5,6 +5,11 @@
 
 ## Recent updates
 
+* 2020-10-15: Release [`0.1.0` was published](https://github.com/bazelbuild/rules_python/releases/tag/0.1.0), upstreaming
+the `pip_install` rule functionality from [github.com/dillon-giacoppo/rules_python_external](https://github.com/dillon-giacoppo/rules_python_external)
+to address a number of long-standing issues with `pip_import` (eg. [#96](https://github.com/bazelbuild/rules_python/issues/96), [#71](https://github.com/bazelbuild/rules_python/issues/71), [#102](https://github.com/bazelbuild/rules_python/issues/102)).
+Note that this is a backwards-incompatible release on account of the removal of `pip_import` from `@rules_python//python:pip.bzl`.  
+
 * 2019-11-15: Added support for `pip3_import` (and more generally, a
 `python_interpreter` attribute to `pip_import`). The canonical naming for wheel
 repositories has changed to accomodate loading wheels for both `pip_import` and
@@ -38,7 +43,7 @@ Once they are fully migrated to rules_python, they may evolve at a different
 rate, but this repository will still follow
 [semantic versioning](https://semver.org).
 
-The packaging rules (`pip_import`, etc.) are less stable. We may make breaking
+The packaging rules (`pip_install`, etc.) are less stable. We may make breaking
 changes as they evolve. There are no guarantees for rules underneath the
 `experimental/` directory.
 
@@ -56,9 +61,8 @@ To import rules_python in your project, you first need to add it to your
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.2/rules_python-0.0.2.tar.gz",
-    strip_prefix = "rules_python-0.0.2",
-    sha256 = "b5668cde8bb6e3515057ef465a35ad712214962f0b3a314e551204266c7be90c",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
 )
 ```
 
@@ -69,21 +73,19 @@ load("@rules_python//python:pip.bzl", "pip_repositories")
 pip_repositories()
 ```
 
-To depend on a particular unreleased version (not recommended), you can
-use `git_repository` instead of `http_archive`:
+To depend on a particular unreleased version (not recommended), you can do:
 
 ```python
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-git_repository(
+rules_python_version = "c8c79aae9aa1b61d199ad03d5fe06338febd0774" # Latest @ 2020-10-15
+
+http_archive(
     name = "rules_python",
-    remote = "https://github.com/bazelbuild/rules_python.git",
-    # NOT VALID: Replace with actual Git commit SHA.
-    commit = "{HEAD}",
+    sha256 = "5be9610a959772697f57ec66bb58c8132970686ed7fb0f1cf81b22ddf12f5368",
+    strip_prefix = "rules_python-{}".format(rules_python_version),
+    url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
-
-# Then load and call py_repositories() and possibly pip_repositories() as
-# above.
 ```
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
@@ -110,46 +112,57 @@ target in the appropriate wheel repo.
 
 ### Importing `pip` dependencies
 
-Adding pip dependencies to your `WORKSPACE` is a two-step process. First you
-declare the central repository using `pip_import`, which invokes pip to read
-a `requirements.txt` file and download the appropriate wheels. Then you load
-the `pip_install` function from the central repo, and call it to create the
+To add pip dependencies to your `WORKSPACE` is you load
+the `pip_install` function, and call it to create the
 individual wheel repos.
 
-**Important:** If you are using Python 3, load and call `pip3_import` instead.
 
 ```python
-load("@rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_install")
 
 # Create a central repo that knows about the dependencies needed for
 # requirements.txt.
-pip_import(   # or pip3_import
+pip_install(   # or pip3_import
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
-
-# Load the central repo's install function from its `//:requirements.bzl` file,
-# and call it.
-load("@my_deps//:requirements.bzl", "pip_install")
-pip_install()
 ```
 
 Note that since pip is executed at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
-default, `pip_import` uses the system command `"python"`, which on most
+default, `pip_install` uses the system command `"python"`, which on most
 platforms is a Python 2 interpreter. This can be overridden by passing the
-`python_interpreter` attribute to `pip_import`. `pip3_import` just acts as a
-wrapper that sets `python_interpreter` to `"python3"`.
+`python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
-You can have multiple `pip_import`s in the same workspace, e.g. for Python 2
+You can have multiple `pip_install`s in the same workspace, e.g. for Python 2
 and Python 3. This will create multiple central repos that have no relation to
 one another, and may result in downloading the same wheels multiple times.
 
-As with any repository rule, if you would like to ensure that `pip_import` is
-reexecuted in order to pick up a non-hermetic change to your environment (e.g.,
+As with any repository rule, if you would like to ensure that `pip_install` is
+re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
+
+### Importing `pip` dependencies with `pip_import` (legacy)
+
+The deprecated `pip_import` can still be used if needed.
+
+```
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
+
+# Create a central repo that knows about the dependencies needed for requirements.txt.
+pip_import(   # or pip3_import
+   name = "my_deps",
+   requirements = "//path/to:requirements.txt",
+)
+
+# Load the central repo's install function from its `//:requirements.bzl` file, and call it.
+load("@my_deps//:requirements.bzl", "pip_install")
+pip_install()
+```
+
+An example can be found in [`examples/legacy_pip_import](examples/legacy_pip_import).
 
 ### Consuming `pip` dependencies
 
