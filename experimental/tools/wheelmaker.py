@@ -122,7 +122,7 @@ class WheelMaker(object):
         # TODO(pstradomski): Support non-purelib wheels.
         wheel_contents = """\
 Wheel-Version: 1.0
-Generator: wheelmaker 1.0
+Generator: bazel-wheelmaker 1.0
 Root-Is-Purelib: true
 """
         for tag in self.disttags():
