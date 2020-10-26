@@ -42,10 +42,10 @@ py_test(
 )
 
 py_test(
-    name = "bazel_test",
+    name = "whl_filegroup_test",
     size = "small",
     srcs = [
-        "bazel_test.py",
+        "whl_filegroup_test.py",
     ],
     tags = ["unit"],
     deps = [

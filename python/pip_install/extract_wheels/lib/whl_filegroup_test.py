@@ -4,8 +4,8 @@ import unittest
 from python.pip_install.extract_wheels.lib import bazel
 
 
-class TestBazelExtractWheel(unittest.TestCase):
-    def test_extract_wheel(self) -> None:
+class TestExtractWheel(unittest.TestCase):
+    def test_generated_build_file_has_filegroup_target(self) -> None:
         wheel_name = "example_minimal_package-0.0.1-py3-none-any.whl"
         wheel_dir = "experimental/examples/wheel/"
         wheel_path = wheel_dir + wheel_name
@@ -20,7 +20,6 @@ class TestBazelExtractWheel(unittest.TestCase):
         with open("{}/BUILD".format(generated_bazel_dir)) as build_file:
             build_file_content = build_file.read()
             self.assertIn('filegroup', build_file_content)
-
 
 
 if __name__ == "__main__":
