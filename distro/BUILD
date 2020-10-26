@@ -28,7 +28,6 @@ pkg_tar(
 print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
-    deps_method = "py_repositories",
     repo = "rules_python",
     setup_file = "python:repositories.bzl",
     version = version,
