@@ -41,6 +41,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "whl_filegroup_test",
+    size = "small",
+    srcs = [
+        "whl_filegroup_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
+    data = ["//experimental/examples/wheel:minimal_with_py_package"]
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(
