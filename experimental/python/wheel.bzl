@@ -203,15 +203,13 @@ This should match the project name onm PyPI. It's also the name that is used to
 refer to the package in other packages' dependencies.
 """,
     ),
-    # TODO(pstradomski): Support non-pure wheels
     "platform": attr.string(
         default = "any",
         doc = "Supported platforms. 'any' for pure-Python wheel.",
     ),
     "python_tag": attr.string(
         default = "py3",
-        doc = "Supported Python major version. 'py2' or 'py3'",
-        values = ["py2", "py3"],
+        doc = "Supported Python version(s), eg 'py3', 'cp35.cp36', etc",
     ),
     "version": attr.string(
         mandatory = True,

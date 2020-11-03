@@ -123,8 +123,8 @@ class WheelMaker(object):
         wheel_contents = """\
 Wheel-Version: 1.0
 Generator: bazel-wheelmaker 1.0
-Root-Is-Purelib: true
-"""
+Root-Is-Purelib: {}
+""".format("true" if self._platform == "any" else "false")
         for tag in self.disttags():
             wheel_contents += "Tag: %s\n" % tag
         self.add_string(self.distinfo_path('WHEEL'), wheel_contents)
@@ -254,9 +254,6 @@ def main():
         help="List of optional requirements in a 'requirement;option name'. "
              "Can be supplied multiple times.")
     arguments = parser.parse_args(sys.argv[1:])
-
-    # add_wheelfile and add_metadata currently assume pure-Python.
-    assert arguments.platform == 'any', "Only pure-Python wheels are supported"
 
     if arguments.input_file:
         input_files = [i.split(';') for i in arguments.input_file]
