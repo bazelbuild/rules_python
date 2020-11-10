@@ -64,7 +64,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
     """Generate a requirements.bzl file for a given pip repository
 
     The file allows converting the PyPI name to a bazel label. Additionally, it adds a function which can glob all the
-    installed dependencies. This is provided for legacy reasons and can be considered deprecated.
+    installed dependencies.
 
     Args:
         repo_name: the name of the pip repository
@@ -76,7 +76,6 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
 
     return textwrap.dedent(
         """\
-        # Deprecated. This will be removed in a future release
         all_requirements = [{requirement_labels}]
 
         def requirement(name):
