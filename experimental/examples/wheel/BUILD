@@ -135,6 +135,17 @@ py_wheel(
     ],
 )
 
+py_wheel(
+    name = "python_requires_in_a_package",
+    distribution = "example_python_requires_in_a_package",
+    python_tag = "py3",
+    python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg",
+    ],
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],

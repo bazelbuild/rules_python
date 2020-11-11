@@ -129,8 +129,8 @@ Root-Is-Purelib: true
             wheel_contents += "Tag: %s\n" % tag
         self.add_string(self.distinfo_path('WHEEL'), wheel_contents)
 
-    def add_metadata(self, extra_headers, description, classifiers, requires,
-                     extra_requires):
+    def add_metadata(self, extra_headers, description, classifiers, python_requires,
+                     requires, extra_requires):
         """Write METADATA file to the distribution."""
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
@@ -141,6 +141,7 @@ Root-Is-Purelib: true
         metadata.extend(extra_headers)
         for classifier in classifiers:
             metadata.append("Classifier: %s" % classifier)
+        metadata.append("Requires-Python: %s" % python_requires)
         for requirement in requires:
             metadata.append("Requires-Dist: %s" % requirement)
 
@@ -225,6 +226,8 @@ def main():
     wheel_group.add_argument('--classifier', action='append',
                              help="Classifiers to embed in package metadata. "
                                   "Can be supplied multiple times")
+    wheel_group.add_argument('--python_requires',
+                             help="Version of python that the wheel will work with")
     wheel_group.add_argument('--description_file',
                              help="Path to the file with package description")
     wheel_group.add_argument('--entry_points_file',
@@ -302,17 +305,20 @@ def main():
                 req, option = extra.rsplit(';', 1)
                 extra_requires[option].append(req)
         classifiers = arguments.classifier or []
+        python_requires = arguments.python_requires or ""
         requires = arguments.requires or []
         extra_headers = arguments.header or []
 
         maker.add_metadata(extra_headers=extra_headers,
                            description=description,
                            classifiers=classifiers,
+                           python_requires=python_requires,
                            requires=requires,
                            extra_requires=extra_requires)
 
         if arguments.entry_points_file:
-            maker.add_file(maker.distinfo_path("entry_points.txt"), arguments.entry_points_file)
+            maker.add_file(maker.distinfo_path(
+                "entry_points.txt"), arguments.entry_points_file)
 
         maker.add_recordfile()
 

@@ -110,6 +110,7 @@ def _py_wheel_impl(ctx):
     args.add("--name", ctx.attr.distribution)
     args.add("--version", ctx.attr.version)
     args.add("--python_tag", ctx.attr.python_tag)
+    args.add("--python_requires", ctx.attr.python_requires)
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
@@ -249,6 +250,7 @@ _other_attrs = {
     "description_file": attr.label(allow_single_file = True),
     "homepage": attr.string(default = ""),
     "license": attr.string(default = ""),
+    "python_requires": attr.string(default = ""),
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
