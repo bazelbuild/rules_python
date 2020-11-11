@@ -74,6 +74,11 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
         A complete requirements.bzl file as a string
     """
 
+    sorted_targets = sorted(targets)
+    requirement_labels = ",".join(sorted_targets)
+    whl_requirement_labels = ",".join(
+        '"{}:whl"'.format(target.strip('"')) for target in sorted_targets
+    )
     return textwrap.dedent(
         """\
         all_requirements = [{requirement_labels}]
@@ -82,10 +87,14 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
            name_key = name.replace("-", "_").replace(".", "_").lower()
            return "{repo}//pypi__" + name_key
 
+        all_whl_requirements = [{whl_requirement_labels}]
+
         def whl_requirement(name):
             return requirement(name) + ":whl"
         """.format(
-            repo=repo_name, requirement_labels=",".join(sorted(targets))
+            repo=repo_name,
+            requirement_labels=requirement_labels,
+            whl_requirement_labels=whl_requirement_labels,
         )
     )
 
