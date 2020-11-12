@@ -141,7 +141,8 @@ Root-Is-Purelib: true
         metadata.extend(extra_headers)
         for classifier in classifiers:
             metadata.append("Classifier: %s" % classifier)
-        metadata.append("Requires-Python: %s" % python_requires)
+        if python_requires:
+            metadata.append("Requires-Python: %s" % python_requires)
         for requirement in requires:
             metadata.append("Requires-Dist: %s" % requirement)
 
