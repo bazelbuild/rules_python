@@ -156,5 +156,6 @@ py_test(
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
+        ":python_requires_in_a_package"
     ],
 )
