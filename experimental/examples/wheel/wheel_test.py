@@ -70,7 +70,8 @@ class WheelTest(unittest.TestCase):
                 'example_customized-0.0.1.dist-info/WHEEL')
             metadata_contents = zf.read(
                 'example_customized-0.0.1.dist-info/METADATA')
-            entry_point_contents = zf.read('example_customized-0.0.1.dist-info/entry_points.txt')
+            entry_point_contents = zf.read(
+                'example_customized-0.0.1.dist-info/entry_points.txt')
             # The entries are guaranteed to be sorted.
             self.assertEquals(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
@@ -161,6 +162,24 @@ second = second.main:s""")
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/WHEEL',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/METADATA',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD'])
+
+    def test_python_requires_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'example_python_requires_in_a_package-0.0.1-py3-none-any.whl')
+        with zipfile.ZipFile(filename) as zf:
+            metadata_contents = zf.read(
+                'example_python_requires_in_a_package-0.0.1.dist-info/METADATA')
+            # The entries are guaranteed to be sorted.
+            self.assertEquals(metadata_contents, b"""\
+Metadata-Version: 2.1
+Name: example_python_requires_in_a_package
+Version: 0.0.1
+Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
+
+UNKNOWN
+""")
 
 
 if __name__ == '__main__':
