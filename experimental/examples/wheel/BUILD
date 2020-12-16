@@ -39,6 +39,12 @@ py_library(
     ],
 )
 
+genrule(
+    name="gen_dir",
+    outs=["someDir"],
+    cmd="mkdir -p $@ && touch $@/foo.py",
+)
+
 # Package just a specific py_libraries, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
@@ -170,12 +176,6 @@ py_wheel(
     ]
 )
 
-genrule(
-    name = "gen_dir",
-    outs = ["someDir"],
-    cmd = "mkdir -p $@",
-)
-
 py_wheel(
     name = "python_abi3_binary_wheel",
     abi = "abi3",
@@ -198,5 +198,6 @@ py_test(
         ":minimal_with_py_package",
         ":python_abi3_binary_wheel",
         ":python_requires_in_a_package",
+        ":use_genrule_with_dir_in_outs",
     ],
 )
