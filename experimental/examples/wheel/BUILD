@@ -40,9 +40,9 @@ py_library(
 )
 
 genrule(
-    name="gen_dir",
-    outs=["someDir"],
-    cmd="mkdir -p $@ && touch $@/foo.py",
+    name = "gen_dir",
+    outs = ["someDir"],
+    cmd = "mkdir -p $@ && touch $@/foo.py",
 )
 
 # Package just a specific py_libraries, without their dependencies
