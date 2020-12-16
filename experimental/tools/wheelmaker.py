@@ -105,8 +105,8 @@ class WheelMaker(object):
         if os.path.isdir(real_filename):
             directory_contents = os.listdir(real_filename)
             for file_ in directory_contents:
-                self.add_file(f"{package_filename}/{file_}",
-                              f"{real_filename}/{file_}")
+                self.add_file("{}/{}".format(package_filename, file_),
+                              "{}/{}".format(real_filename, file_))
             return
 
         arcname = arcname_from(package_filename)
