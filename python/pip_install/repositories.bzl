@@ -6,8 +6,8 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 _RULE_DEPS = [
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/ab/11/2dc62c5263d9eb322f2f028f7b56cd9d096bb8988fcf82d65fa2e4057afe/pip-20.3.1-py2.py3-none-any.whl",
-        "425e79b20939abbffa7633a91151a882aedc77564d9313e3584eb0416c28c558",
+        "https://files.pythonhosted.org/packages/54/eb/4a3642e971f404d69d4f6fa3885559d67562801b99d7592487f1ecc4e017/pip-20.3.3-py2.py3-none-any.whl",
+        "fab098c8a1758295dd9f57413c199f23571e8fde6cc39c22c78c961b4ac6286d	",
     ),
     (
         "pypi__pkginfo",
