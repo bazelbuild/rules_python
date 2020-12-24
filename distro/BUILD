@@ -29,6 +29,5 @@ print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],
     repo = "rules_python",
-    setup_file = "python:repositories.bzl",
     version = version,
 )

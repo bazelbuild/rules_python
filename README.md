@@ -184,7 +184,7 @@ py_library(
     deps = [
         ":myotherlib",
         requirement("some_pip_dep"),
-        requirement("anohter_pip_dep[some_extra]"),
+        requirement("another_pip_dep[some_extra]"),
     ]
 )
 ```
