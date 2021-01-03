@@ -196,6 +196,20 @@ are replaced with `_`. While this naming pattern doesn't change often, it is
 not guaranted to remain stable, so use of the `requirement()` function is
 recommended.
 
+### Consuming Wheel Dists Directly
+
+If you need to depend on the wheel dists themselves, for instance to pass them	
+to some other packaging tool, you can get a handle to them with the `whl_requirement` macro. For example:
+	
+```python
+filegroup(	
+    name = "whl_files",	
+    data = [	
+        whl_requirement("boto3"),	
+    ]	
+)
+```
+
 ## Migrating from the bundled rules
 
 The core rules are currently available in Bazel as built-in symbols, but this
