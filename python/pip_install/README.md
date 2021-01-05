@@ -64,7 +64,12 @@ pip_install(
 #### Example `BUILD` file.
 
 ```python
-load("@py_deps//:requirements.bzl", "requirement", "whl_requirement")
+load(
+    "@py_deps//:requirements.bzl",
+    "requirement",
+    "whl_requirement",
+    "all_whl_requirements",
+)
 
 py_binary(
     name = "main",
@@ -81,6 +86,13 @@ filegroup(
     data = [
         whl_requirement("boto3"),
     ]
+)
+
+# If you need all of the wheels, say to upload them to your own
+# private wheelhouse, you can use all_whl_requirements.
+filegroup(
+    name = "all_whls",
+    data = all_whl_requirements,
 )
 ```
 

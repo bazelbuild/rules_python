@@ -54,6 +54,17 @@ py_test(
     data = ["//experimental/examples/wheel:minimal_with_py_package"]
 )
 
+py_test(
+    name = "requirements_bzl_test",
+    size = "small",
+    srcs = [
+        "requirements_bzl_test.py",
+    ],
+    deps = [
+        ":lib",
+    ],
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(
