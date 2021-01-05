@@ -122,7 +122,7 @@ load("@rules_python//python:pip.bzl", "pip_install")
 
 # Create a central repo that knows about the dependencies needed for
 # requirements.txt.
-pip_install(   # or pip3_import
+pip_install(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
