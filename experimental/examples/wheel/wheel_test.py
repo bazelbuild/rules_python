@@ -181,6 +181,44 @@ Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
 UNKNOWN
 """)
 
+    def test_python_abi3_binary_wheel(self):
+        filename = os.path.join(
+            os.environ["TEST_SRCDIR"],
+            "rules_python",
+            "experimental",
+            "examples",
+            "wheel",
+            "example_python_abi3_binary_wheel-0.0.1-cp38-abi3-manylinux2014_x86_64.whl",
+        )
+        with zipfile.ZipFile(filename) as zf:
+            metadata_contents = zf.read(
+                "example_python_abi3_binary_wheel-0.0.1.dist-info/METADATA"
+            )
+            # The entries are guaranteed to be sorted.
+            self.assertEqual(
+                metadata_contents,
+                b"""\
+Metadata-Version: 2.1
+Name: example_python_abi3_binary_wheel
+Version: 0.0.1
+Requires-Python: >=3.8
+
+UNKNOWN
+""",
+            )
+            wheel_contents = zf.read(
+                "example_python_abi3_binary_wheel-0.0.1.dist-info/WHEEL"
+            )
+            self.assertEqual(
+                wheel_contents,
+                b"""\
+Wheel-Version: 1.0
+Generator: bazel-wheelmaker 1.0
+Root-Is-Purelib: false
+Tag: cp38-abi3-manylinux2014_x86_64
+""",
+            )
+
 
 if __name__ == '__main__':
     unittest.main()
