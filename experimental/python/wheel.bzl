@@ -203,15 +203,27 @@ This should match the project name onm PyPI. It's also the name that is used to
 refer to the package in other packages' dependencies.
 """,
     ),
-    # TODO(pstradomski): Support non-pure wheels
     "platform": attr.string(
         default = "any",
-        doc = "Supported platforms. 'any' for pure-Python wheel.",
+        doc = """\
+Supported platform. Use 'any' for pure-Python wheel.
+
+If you have included platform-specific data, such as a .pyd or .so
+extension module, you will need to specify the platform in standard
+pip format. If you support multiple platforms, you can define
+platform constraints, then use a select() to specify the appropriate
+specifier, eg:
+
+    platform = select({
+        "//platforms:windows_x86_64": "win_amd64",
+        "//platforms:macos_x86_64": "macosx_10_7_x86_64",
+        "//platforms:linux_x86_64": "manylinux2014_x86_64",
+    })
+""",
     ),
     "python_tag": attr.string(
         default = "py3",
-        doc = "Supported Python major version. 'py2' or 'py3'",
-        values = ["py2", "py3"],
+        doc = "Supported Python version(s), eg 'py3', 'cp35.cp36', etc",
     ),
     "version": attr.string(
         mandatory = True,
