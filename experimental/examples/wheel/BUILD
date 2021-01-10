@@ -146,6 +146,16 @@ py_wheel(
     ],
 )
 
+py_wheel(
+    name = "python_abi3_binary_wheel",
+    abi = "abi3",
+    distribution = "example_python_abi3_binary_wheel",
+    platform = "manylinux2014_x86_64",
+    python_requires = ">=3.8",
+    python_tag = "cp38",
+    version = "0.0.1",
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -156,6 +166,7 @@ py_test(
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
-        ":python_requires_in_a_package"
+        ":python_abi3_binary_wheel",
+        ":python_requires_in_a_package",
     ],
 )

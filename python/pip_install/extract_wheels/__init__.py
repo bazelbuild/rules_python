@@ -79,7 +79,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    pip_args = [sys.executable, "-m", "pip", "wheel", "-r", args.requirements]
+    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements]
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 
