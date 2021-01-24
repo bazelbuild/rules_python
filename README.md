@@ -131,8 +131,7 @@ pip_install(
 Note that since pip is executed at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
-default, `pip_install` uses the system command `"python"`, which on most
-platforms is a Python 2 interpreter. This can be overridden by passing the
+default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
 You can have multiple `pip_install`s in the same workspace, e.g. for Python 2
