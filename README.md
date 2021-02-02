@@ -66,13 +66,6 @@ http_archive(
 )
 ```
 
-If you want to use the pip packaging rules, also add:
-
-```python
-load("@rules_python//python:pip.bzl", "pip_repositories")
-pip_repositories()
-```
-
 To depend on a particular unreleased version (not recommended), you can do:
 
 ```python

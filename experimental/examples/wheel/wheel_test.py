@@ -219,6 +219,21 @@ Tag: cp38-abi3-manylinux2014_x86_64
 """,
             )
 
+    def test_genrule_creates_directory_and_is_included_in_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'rules_python', 'experimental',
+                                'examples', 'wheel',
+                                'use_genrule_with_dir_in_outs-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['experimental/examples/wheel/main.py',
+                 'experimental/examples/wheel/someDir/foo.py',
+                 'use_genrule_with_dir_in_outs-0.0.1.dist-info/WHEEL',
+                 'use_genrule_with_dir_in_outs-0.0.1.dist-info/METADATA',
+                 'use_genrule_with_dir_in_outs-0.0.1.dist-info/RECORD'])
+
 
 if __name__ == '__main__':
     unittest.main()
