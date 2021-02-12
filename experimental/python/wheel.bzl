@@ -134,6 +134,9 @@ def _py_wheel_impl(ctx):
     for c in ctx.attr.classifiers:
         args.add("--classifier", c)
 
+    for p in ctx.attr.packages:
+        args.add("--package", p)
+
     for r in ctx.attr.requires:
         args.add("--requires", r)
 
@@ -327,6 +330,11 @@ Note it's usually better to package `py_library` targets and use
 `entry_points` attribute to specify `console_scripts` than to package
 `py_binary` rules. `py_binary` targets would wrap a executable script that
 tries to locate `.runfiles` directory which is not packaged in the wheel.
+""",
+            ),
+            "packages": attr.string_list(
+                doc = """\
+A list of packages the distribution provides to be included in the top_level.txt file.
 """,
             ),
             "_wheelmaker": attr.label(

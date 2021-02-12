@@ -124,6 +124,15 @@ class WheelMaker(object):
                 size += len(block)
         self._add_to_record(arcname, self._serialize_digest(hash), size)
 
+    def add_top_level_txt(self, packages):
+        """Write top_level.txt file for the distribution"""
+        top_level_packages = set()
+        for pkg in packages:
+            top_level_packages.add(pkg)
+        top_level_packages = sorted(top_level_packages)
+        self.add_string(self.distinfo_path('top_level.txt'),
+                        "\n".join(top_level_packages))
+
     def add_wheelfile(self):
         """Write WHEEL file to the distribution"""
         # TODO(pstradomski): Support non-purelib wheels.
@@ -252,6 +261,11 @@ def main():
         help='A file that has all the input files defined as a list to avoid the long command'
     )
 
+    packages_group = parser.add_argument_group("Packages")
+    packages_group.add_argument(
+        '--package', type=str, action='append',
+        help="List of packages the distribution provides. Can be supplied multiple times.")
+
     requirements_group = parser.add_argument_group("Package requirements")
     requirements_group.add_argument(
         '--requires', type=str, action='append',
@@ -260,6 +274,7 @@ def main():
         '--extra_requires', type=str, action='append',
         help="List of optional requirements in a 'requirement;option name'. "
              "Can be supplied multiple times.")
+
     arguments = parser.parse_args(sys.argv[1:])
 
     if arguments.input_file:
@@ -320,6 +335,10 @@ def main():
                            python_requires=python_requires,
                            requires=requires,
                            extra_requires=extra_requires)
+
+        packages = arguments.package or []
+        if len(packages) > 0:
+            maker.add_top_level_txt(packages)
 
         if arguments.entry_points_file:
             maker.add_file(maker.distinfo_path(
