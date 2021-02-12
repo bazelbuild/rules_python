@@ -11,8 +11,9 @@ import os
 import subprocess
 import sys
 import json
+import textwrap
 
-from python.pip_install.extract_wheels.lib import bazel, requirements
+from python.pip_install.extract_wheels.lib import bazel, requirements, wheel
 
 
 def configure_reproducible_wheels() -> None:
@@ -93,6 +94,8 @@ def main() -> None:
     else:
         pip_data_exclude = []
 
+    whls = [wheel.Wheel(wheel_file) for wheel_file in glob.glob("*.whl")]
+
     targets = [
         '"%s%s"'
         % (
@@ -101,10 +104,21 @@ def main() -> None:
                 whl, extras, pip_data_exclude, args.enable_implicit_namespace_pkgs
             ),
         )
-        for whl in glob.glob("*.whl")
+        for whl in whls
     ]
+    requirements_file_contents = bazel.generate_requirements_file_contents(args.repo, targets)
 
     with open("requirements.bzl", "w") as requirement_file:
-        requirement_file.write(
-            bazel.generate_requirements_file_contents(args.repo, targets)
-        )
+        requirement_file.write(requirements_file_contents)
+    
+    packages_mapping_contents = bazel.generate_packages_mappping_contents(whls)
+
+    with open("BUILD", "a") as build_file:
+        contents = textwrap.dedent("""\
+
+        exports_files(["packages_mapping.json"])
+        """)
+        build_file.write(contents)
+
+    with open("packages_mapping.json", "w") as packages_mapping_file:
+        packages_mapping_file.write(packages_mapping_contents)

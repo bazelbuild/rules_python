@@ -30,6 +30,18 @@ py_test(
 )
 
 py_test(
+    name = "packages_mapping_test",
+    size = "small",
+    srcs = ["packages_mapping_test.py"],
+    tags = ["unit"],
+    deps = [":lib"],
+    data = [
+        "//experimental/examples/multi_package:multi_package_example",
+        "//experimental/examples/wheel:minimal_with_py_package",
+    ],
+)
+
+py_test(
     name = "requirements_test",
     size = "small",
     srcs = [

@@ -29,6 +29,8 @@ class Wheel:
 
     def __init__(self, path: str):
         self._path = path
+        self._extracted_dir = None
+        self._metadata = pkginfo.Wheel(path)
 
     @property
     def path(self) -> str:
@@ -40,7 +42,38 @@ class Wheel:
 
     @property
     def metadata(self) -> pkginfo.Wheel:
-        return pkginfo.get_metadata(self.path)
+        return self._metadata
+
+    @property
+    def top_level_txt_path(self) -> any:
+        if not self._extracted_dir:
+            raise RuntimeError(
+                "Wheel not extracted: %s." % self.name
+            )
+        for d in os.listdir(self._extracted_dir):
+            if (
+                d.endswith(".dist-info") or d.endswith(".egg-info")
+            ) and d.lower().startswith(self.name.lower().replace("-", "_") + "-"):
+                return os.path.join(self._extracted_dir, d, "top_level.txt")
+        return None
+
+    @property
+    def packages(self) -> set:
+        """	
+        Returns what packages the distribution provides.
+        """
+        result = set()
+        top_level_file = self.top_level_txt_path
+        if os.path.exists(top_level_file):
+            with open(top_level_file) as top_level:
+                # Filter out deep imports like googleapiclient/discovery_cache
+                # and names prefixed with an underscore.
+                for l in top_level.readlines():
+                    if "/" not in l and not l.startswith("_"):
+                        result.add(l.strip())
+        if not result:
+            result.add(self.name)
+        return result
 
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
@@ -57,8 +90,11 @@ class Wheel:
         return dependency_set
 
     def unzip(self, directory: str) -> None:
+        if self._extracted_dir:
+            return
         with zipfile.ZipFile(self.path, "r") as whl:
             whl.extractall(directory)
+            self._extracted_dir = directory
             # The following logic is borrowed from Pip:
             # https://github.com/pypa/pip/blob/cc48c07b64f338ac5e347d90f6cb4efc22ed0d0b/src/pip/_internal/utils/unpacking.py#L240
             for info in whl.infolist():

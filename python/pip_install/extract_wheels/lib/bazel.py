@@ -99,6 +99,20 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
     )
 
 
+def generate_packages_mappping_contents(whls: Iterable[wheel.Wheel]) -> str:
+    """Generate a packages_mapping.json for a given list of Wheels.
+    Each Wheel can have multiple top-level packages that are imported from
+    Python programs. Having a mapping of import -> distribution is useful for
+    determining how to correctly construct the list of requirement expressions
+    used as dependencies on py_library or py_binary targets.
+    """
+    mapping = {}
+    for whl in whls:
+        for pkg in whl.packages:
+            mapping[pkg] = whl.name
+    return json.dumps(mapping)
+
+
 def sanitise_name(name: str) -> str:
     """Sanitises the name to be compatible with Bazel labels.
 
@@ -143,7 +157,7 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
 
 
 def extract_wheel(
-    wheel_file: str,
+    whl: wheel.Wheel,
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
@@ -151,7 +165,7 @@ def extract_wheel(
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
-        wheel_file: the filepath of the .whl
+        whl: a Wheel instance
         extras: a list of extras to add as dependencies for the installed wheel
         pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
@@ -160,7 +174,6 @@ def extract_wheel(
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
     """
 
-    whl = wheel.Wheel(wheel_file)
     directory = sanitise_name(whl.name)
 
     os.mkdir(directory)
