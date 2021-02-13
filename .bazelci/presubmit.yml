@@ -23,8 +23,6 @@ all_targets: &all_targets
     test_targets:
     - "..."
 platforms:
-  ubuntu1604:
-    <<: *all_targets
   ubuntu1804:
     <<: *all_targets
   macos:
