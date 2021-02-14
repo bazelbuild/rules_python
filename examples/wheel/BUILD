@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:packaging.bzl", "py_package", "py_wheel")
 load("//python:defs.bzl", "py_library", "py_test")
+load("//python:packaging.bzl", "py_package", "py_wheel")
 
 package(default_visibility = ["//visibility:public"])
 

@@ -243,14 +243,14 @@ _requirement_attrs = {
 _entrypoint_attrs = {
     "console_scripts": attr.string_dict(
         doc = """\
-Deprecated console_script entry points, e.g. {'main': 'experimental.examples.wheel.main:main'}.
+Deprecated console_script entry points, e.g. {'main': 'examples.wheel.main:main'}.
 
 Deprecated: prefer the `entry_points` attribute, which supports `console_scripts` as well as other entry points.
 """,
     ),
     "entry_points": attr.string_list_dict(
         doc = """\
-entry_points, e.g. {'console_scripts': ['main = experimental.examples.wheel.main:main']}.
+entry_points, e.g. {'console_scripts': ['main = examples.wheel.main:main']}.
 """,
     ),
 }
@@ -291,8 +291,8 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.1",
     deps = [
-        "//experimental/examples/wheel/lib:module_with_data",
-        "//experimental/examples/wheel/lib:simple_module",
+        "//examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
     ],
 )
 
@@ -301,7 +301,7 @@ py_wheel(
 py_package(
     name = "example_pkg",
     # Only include these Python packages.
-    packages = ["experimental.examples.wheel"],
+    packages = ["examples.wheel"],
     deps = [":main"],
 )
 
