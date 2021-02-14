@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import experimental.examples.wheel.lib.module_with_data as module_with_data
-import experimental.examples.wheel.lib.simple_module as simple_module
+import examples.wheel.lib.module_with_data as module_with_data
+import examples.wheel.lib.simple_module as simple_module
 
 
 def function():
