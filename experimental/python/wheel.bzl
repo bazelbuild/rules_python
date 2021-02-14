@@ -332,7 +332,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
             "_wheelmaker": attr.label(
                 executable = True,
                 cfg = "host",
-                default = "//experimental/tools:wheelmaker",
+                default = "//tools:wheelmaker",
             ),
         },
         _distribution_attrs,
