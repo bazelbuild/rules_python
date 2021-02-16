@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_binary")
+import examples.wheel.lib.module_with_data as module_with_data
+import examples.wheel.lib.simple_module as simple_module
 
-py_binary(
-    name = "wheelmaker",
-    srcs = ["wheelmaker.py"],
-    visibility = ["//visibility:public"],
-)
+
+def function():
+    return "baz"
+
+
+def main():
+    print(function())
+    print(module_with_data.function())
+    print(simple_module.function())
+
+
+if __name__ == '__main__':
+    main()
