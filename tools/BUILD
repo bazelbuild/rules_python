@@ -21,7 +21,6 @@ licenses(["notice"])  # Apache 2.0
 py_binary(
     name = "wheelmaker",
     srcs = ["wheelmaker.py"],
-    visibility = ["//visibility:public"],
 )
 
 # These files are generated and updated by ./update_tools.sh
