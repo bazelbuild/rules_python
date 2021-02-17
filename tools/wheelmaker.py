@@ -336,9 +336,8 @@ def main():
                            requires=requires,
                            extra_requires=extra_requires)
 
-        packages = arguments.package or []
-        if len(packages) > 0:
-            maker.add_top_level_txt(packages)
+        packages = arguments.package or [arguments.name]
+        maker.add_top_level_txt(packages)
 
         if arguments.entry_points_file:
             maker.add_file(maker.distinfo_path(
