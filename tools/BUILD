@@ -11,9 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("//python:defs.bzl", "py_binary")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+# Implementation detail of py_wheel rule.
+py_binary(
+    name = "wheelmaker",
+    srcs = ["wheelmaker.py"],
+)
 
 # These files are generated and updated by ./update_tools.sh
 exports_files([
@@ -25,6 +33,7 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD",
+        "wheelmaker.py",
     ] + glob([
         "*.par",
     ]),
