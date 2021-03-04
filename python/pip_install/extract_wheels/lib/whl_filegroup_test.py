@@ -17,7 +17,7 @@ class TestExtractWheel(unittest.TestCase):
         )[2:]  # Take off the leading // from the returned label.
         # Assert that the raw wheel ends up in the package.
         self.assertIn(wheel_name, os.listdir(generated_bazel_dir))
-        with open("{}/BUILD".format(generated_bazel_dir)) as build_file:
+        with open("{}/BUILD.bazel".format(generated_bazel_dir)) as build_file:
             build_file_content = build_file.read()
             self.assertIn('filegroup', build_file_content)
 
