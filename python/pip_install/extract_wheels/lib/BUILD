@@ -51,7 +51,7 @@ py_test(
     deps = [
         ":lib",
     ],
-    data = ["//experimental/examples/wheel:minimal_with_py_package"]
+    data = ["//examples/wheel:minimal_with_py_package"]
 )
 
 py_test(

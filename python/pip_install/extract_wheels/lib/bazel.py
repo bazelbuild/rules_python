@@ -27,7 +27,7 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    data_exclude = ["*.whl", "**/*.py", "**/* *", "BUILD", "WORKSPACE"] + pip_data_exclude
+    data_exclude = ["*.whl", "**/*.py", "**/* *", "BUILD.bazel", "WORKSPACE"] + pip_data_exclude
 
     return textwrap.dedent(
         """\
@@ -184,7 +184,7 @@ def extract_wheel(
         '"//%s:%s"' % (sanitise_name(d), WHEEL_FILE_LABEL) for d in whl_deps
     ]
 
-    with open(os.path.join(directory, "BUILD"), "w") as build_file:
+    with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         contents = generate_build_file_contents(
             sanitise_name(whl.name), sanitised_dependencies, sanitised_wheel_file_dependencies, pip_data_exclude
         )

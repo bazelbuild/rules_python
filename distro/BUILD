@@ -22,9 +22,6 @@ pkg_tar(
     visibility = ["//examples:__pkg__"],
 )
 
-# TODO(brandjon): print_rel_notes doesn't appear to handle our use case of
-# emitting an optional additional deps method from a different file. For now we
-# manually adjust our release notes.
 print_rel_notes(
     name = "relnotes",
     outs = ["relnotes.txt"],

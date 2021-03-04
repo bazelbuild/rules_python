@@ -127,6 +127,7 @@ alias(
 # ========= Packaging rules =========
 
 exports_files([
+    "packaging.bzl",
     "pip.bzl",
     "whl.bzl",
 ])

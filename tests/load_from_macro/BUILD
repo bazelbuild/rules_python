@@ -22,5 +22,5 @@ py_library(
     srcs = ["foo.py"],
     tags = TAGS,
     # Allow a test to verify an "outside package" doesn't get included
-    visibility = ["//experimental/examples/wheel:__pkg__"],
+    visibility = ["//examples/wheel:__pkg__"],
 )
