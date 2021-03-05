@@ -56,6 +56,17 @@ def pip_install(requirements, name = "pip", **kwargs):
         **kwargs
     )
 
+def pip_install_incremental(requirements_lock, name = "pip_incremental", **kwargs):
+    # Just in case our dependencies weren't already fetched
+    pip_install_dependencies()
+
+    pip_repository(
+        name = name,
+        requirements_lock = requirements_lock,
+        incremental = True,
+        **kwargs
+    )
+
 def pip_repositories():
     # buildifier: disable=print
     print("DEPRECATED: the pip_repositories rule has been replaced with pip_install, please see rules_python 0.1 release notes")

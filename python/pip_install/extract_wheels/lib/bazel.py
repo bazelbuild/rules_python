@@ -2,13 +2,15 @@
 import os
 import textwrap
 import json
-from typing import Iterable, List, Dict, Set
+from typing import Iterable, List, Dict, Set, Optional
 import shutil
 
 from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
 WHEEL_FILE_LABEL = "whl"
+PY_LIBRARY_LABEL = "pkg"
+
 
 def generate_build_file_contents(
     name: str, dependencies: List[str], whl_file_deps: List[str], pip_data_exclude: List[str],
@@ -91,6 +93,9 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
 
         def whl_requirement(name):
             return requirement(name) + ":whl"
+
+        def install_deps():
+            fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_install_incremental()?")
         """.format(
             repo=repo_name,
             requirement_labels=requirement_labels,
@@ -99,7 +104,17 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
     )
 
 
-def sanitise_name(name: str) -> str:
+DEFAULT_PACKAGE_PREFIX = "pypi__"
+
+
+def create_incremental_repo_prefix(parent_repo):
+    return "{parent}_{default_package_prefix}".format(
+        parent=parent_repo,
+        default_package_prefix=DEFAULT_PACKAGE_PREFIX
+    )
+
+
+def sanitise_name(name: str, prefix: str = DEFAULT_PACKAGE_PREFIX) -> str:
     """Sanitises the name to be compatible with Bazel labels.
 
     There are certain requirements around Bazel labels that we need to consider. From the Bazel docs:
@@ -116,7 +131,7 @@ def sanitise_name(name: str) -> str:
     See: https://github.com/bazelbuild/bazel/issues/2636
     """
 
-    return "pypi__" + name.replace("-", "_").replace(".", "_").lower()
+    return prefix + name.replace("-", "_").replace(".", "_").lower()
 
 
 def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
@@ -142,11 +157,33 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
+def sanitised_library_label(whl_name):
+    return '"//%s"' % sanitise_name(whl_name)
+
+
+def sanitised_file_label(whl_name):
+    return '"//%s:%s"' % (sanitise_name(whl_name), WHEEL_FILE_LABEL)
+
+
+def _whl_name_to_repo_root(whl_name, repo_prefix):
+    return f"@{sanitise_name(whl_name, prefix=repo_prefix)}//"
+
+
+def sanitised_repo_library_label(whl_name, repo_prefix):
+    return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{PY_LIBRARY_LABEL}"'
+
+
+def sanitised_repo_file_label(whl_name, repo_prefix):
+    return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{WHEEL_FILE_LABEL}"'
+
+
 def extract_wheel(
     wheel_file: str,
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
+    incremental: bool = False,
+    incremental_repo_prefix: Optional[str] = None,
 ) -> str:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
@@ -155,17 +192,24 @@ def extract_wheel(
         extras: a list of extras to add as dependencies for the installed wheel
         pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
+        incremental: If true the extract the wheel in a format suitable for an external repository. This
+            effects the names of libraries and their dependencies, which point to other external repositories.
+        incremental_repo_prefix: If incremental is true, use this prefix when creating labels from wheel
+            names instead of the default.
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
     """
 
     whl = wheel.Wheel(wheel_file)
-    directory = sanitise_name(whl.name)
+    if incremental:
+        directory = "."
+    else:
+        directory = sanitise_name(whl.name)
 
-    os.mkdir(directory)
-    # copy the original wheel
-    shutil.copy(whl.path, directory)
+        os.mkdir(directory)
+        # copy the original wheel
+        shutil.copy(whl.path, directory)
     whl.unzip(directory)
 
     # Note: Order of operations matters here
@@ -177,16 +221,27 @@ def extract_wheel(
     extras_requested = extras[whl.name] if whl.name in extras else set()
     whl_deps = sorted(whl.dependencies(extras_requested))
 
-    sanitised_dependencies = [
-        '"//%s"' % sanitise_name(d) for d in whl_deps
-    ]
-    sanitised_wheel_file_dependencies = [
-        '"//%s:%s"' % (sanitise_name(d), WHEEL_FILE_LABEL) for d in whl_deps
-    ]
+    if incremental:
+        sanitised_dependencies = [
+            sanitised_repo_library_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
+        ]
+        sanitised_wheel_file_dependencies = [
+            sanitised_repo_file_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
+        ]
+    else:
+        sanitised_dependencies = [
+            sanitised_library_label(d) for d in whl_deps
+        ]
+        sanitised_wheel_file_dependencies = [
+            sanitised_file_label(d) for d in whl_deps
+        ]
 
     with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         contents = generate_build_file_contents(
-            sanitise_name(whl.name), sanitised_dependencies, sanitised_wheel_file_dependencies, pip_data_exclude
+            PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name),
+            sanitised_dependencies,
+            sanitised_wheel_file_dependencies,
+            pip_data_exclude
         )
         build_file.write(contents)
 
