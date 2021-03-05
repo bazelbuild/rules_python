@@ -150,7 +150,7 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
     """
 
     namespace_pkg_dirs = namespace_pkgs.implicit_namespace_packages(
-        wheel_dir, ignored_dirnames=["%s/bin" % wheel_dir,],
+        wheel_dir, ignored_dirnames=["%s/bin" % wheel_dir],
     )
 
     for ns_pkg_dir in namespace_pkg_dirs:

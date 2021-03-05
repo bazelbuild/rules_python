@@ -88,7 +88,7 @@ def _pip_repository_impl(rctx):
     )
 
     if result.return_code:
-        fail("rules_python_external failed: %s (%s)" % (result.stdout, result.stderr))
+        fail("rules_python failed: %s (%s)" % (result.stdout, result.stderr))
 
     return
 
