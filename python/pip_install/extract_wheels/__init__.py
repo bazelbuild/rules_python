@@ -86,7 +86,7 @@ def main() -> None:
         pathlib.Path(args.requirements), local_requirements_file
     )
 
-    pip_args = [sys.executable, "-m", "pip", "wheel", "-r", str(local_requirements_file)]
+    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", str(local_requirements_file)]
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 

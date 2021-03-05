@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//experimental/python:wheel.bzl", "py_package", "py_wheel")
 load("//python:defs.bzl", "py_library", "py_test")
+load("//python:packaging.bzl", "py_package", "py_wheel")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,12 +23,26 @@ py_library(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "//experimental/examples/wheel/lib:simple_module",
-        "//experimental/examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
+        "//examples/wheel/lib:module_with_data",
         # Example dependency which is not packaged in the wheel
         # due to "packages" filter on py_package rule.
         "//tests/load_from_macro:foo",
     ],
+)
+
+py_library(
+    name = "main_with_gen_data",
+    srcs = ["main.py"],
+    data = [
+        ":gen_dir",
+    ],
+)
+
+genrule(
+    name = "gen_dir",
+    outs = ["someDir"],
+    cmd = "mkdir -p $@ && touch $@/foo.py",
 )
 
 # Package just a specific py_libraries, without their dependencies
@@ -39,8 +53,8 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.1",
     deps = [
-        "//experimental/examples/wheel/lib:module_with_data",
-        "//experimental/examples/wheel/lib:simple_module",
+        "//examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
     ],
 )
 
@@ -49,8 +63,14 @@ py_wheel(
 py_package(
     name = "example_pkg",
     # Only include these Python packages.
-    packages = ["experimental.examples.wheel"],
+    packages = ["examples.wheel"],
     deps = [":main"],
+)
+
+py_package(
+    name = "example_pkg_with_data",
+    packages = ["examples.wheel"],
+    deps = [":main_with_gen_data"]
 )
 
 py_wheel(
@@ -72,7 +92,7 @@ py_wheel(
         "Intended Audience :: Developers",
     ],
     console_scripts = {
-        "customized_wheel": "experimental.examples.wheel.main:main",
+        "customized_wheel": "examples.wheel.main:main",
     },
     description_file = "README.md",
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
@@ -97,7 +117,7 @@ py_wheel(
     distribution = "example_custom_package_root",
     python_tag = "py3",
     strip_path_prefixes = [
-        "experimental",
+        "examples",
     ],
     version = "0.0.1",
     deps = [
@@ -111,8 +131,8 @@ py_wheel(
     distribution = "example_custom_package_root_multi_prefix",
     python_tag = "py3",
     strip_path_prefixes = [
-        "experimental/examples/wheel/lib",
-        "experimental/examples/wheel",
+        "examples/wheel/lib",
+        "examples/wheel",
     ],
     version = "0.0.1",
     deps = [
@@ -126,13 +146,44 @@ py_wheel(
     distribution = "example_custom_package_root_multi_prefix_reverse_order",
     python_tag = "py3",
     strip_path_prefixes = [
-        "experimental/examples/wheel",
-        "experimental/examples/wheel/lib",  # this is not effective, because the first prefix takes priority
+        "examples/wheel",
+        "examples/wheel/lib",  # this is not effective, because the first prefix takes priority
     ],
     version = "0.0.1",
     deps = [
         ":example_pkg",
     ],
+)
+
+py_wheel(
+    name = "python_requires_in_a_package",
+    distribution = "example_python_requires_in_a_package",
+    python_tag = "py3",
+    python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg",
+    ],
+)
+
+py_wheel(
+    name = "use_genrule_with_dir_in_outs",
+    distribution = "use_genrule_with_dir_in_outs",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg_with_data"
+    ]
+)
+
+py_wheel(
+    name = "python_abi3_binary_wheel",
+    abi = "abi3",
+    distribution = "example_python_abi3_binary_wheel",
+    platform = "manylinux2014_x86_64",
+    python_requires = ">=3.8",
+    python_tag = "cp38",
+    version = "0.0.1",
 )
 
 py_test(
@@ -145,5 +196,8 @@ py_test(
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
+        ":python_abi3_binary_wheel",
+        ":python_requires_in_a_package",
+        ":use_genrule_with_dir_in_outs",
     ],
 )

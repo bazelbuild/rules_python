@@ -3,18 +3,22 @@ import os
 import textwrap
 import json
 from typing import Iterable, List, Dict, Set
+import shutil
 
 from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
+WHEEL_FILE_LABEL = "whl"
+
 def generate_build_file_contents(
-    name: str, dependencies: List[str], pip_data_exclude: List[str]
+    name: str, dependencies: List[str], whl_file_deps: List[str], pip_data_exclude: List[str],
 ) -> str:
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
         name: the target name of the py_library
         dependencies: a list of Bazel labels pointing to dependencies of the library
+        whl_file_deps: a list of Bazel labels pointing to wheel file dependencies of this wheel.
 
     Returns:
         A complete BUILD file as a string
@@ -23,13 +27,19 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    data_exclude = ["**/*.py", "**/* *", "BUILD", "WORKSPACE"] + pip_data_exclude
+    data_exclude = ["*.whl", "**/*.py", "**/* *", "BUILD.bazel", "WORKSPACE"] + pip_data_exclude
 
     return textwrap.dedent(
         """\
         package(default_visibility = ["//visibility:public"])
 
         load("@rules_python//python:defs.bzl", "py_library")
+
+        filegroup(
+            name="{whl_file_label}",
+            srcs=glob(["*.whl"]),
+            data=[{whl_file_deps}]
+        )
 
         py_library(
             name = "{name}",
@@ -44,6 +54,8 @@ def generate_build_file_contents(
             name=name,
             dependencies=",".join(dependencies),
             data_exclude=json.dumps(data_exclude),
+            whl_file_label=WHEEL_FILE_LABEL,
+            whl_file_deps=",".join(whl_file_deps),
         )
     )
 
@@ -52,7 +64,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
     """Generate a requirements.bzl file for a given pip repository
 
     The file allows converting the PyPI name to a bazel label. Additionally, it adds a function which can glob all the
-    installed dependencies. This is provided for legacy reasons and can be considered deprecated.
+    installed dependencies.
 
     Args:
         repo_name: the name of the pip repository
@@ -62,16 +74,27 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
         A complete requirements.bzl file as a string
     """
 
+    sorted_targets = sorted(targets)
+    requirement_labels = ",".join(sorted_targets)
+    whl_requirement_labels = ",".join(
+        '"{}:whl"'.format(target.strip('"')) for target in sorted_targets
+    )
     return textwrap.dedent(
         """\
-        # Deprecated. This will be removed in a future release
         all_requirements = [{requirement_labels}]
+
+        all_whl_requirements = [{whl_requirement_labels}]
 
         def requirement(name):
            name_key = name.replace("-", "_").replace(".", "_").lower()
            return "{repo}//pypi__" + name_key
+
+        def whl_requirement(name):
+            return requirement(name) + ":whl"
         """.format(
-            repo=repo_name, requirement_labels=",".join(sorted(targets))
+            repo=repo_name,
+            requirement_labels=requirement_labels,
+            whl_requirement_labels=whl_requirement_labels,
         )
     )
 
@@ -125,7 +148,7 @@ def extract_wheel(
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
 ) -> str:
-    """Extracts wheel into given directory and creates a py_library target.
+    """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
         wheel_file: the filepath of the .whl
@@ -141,6 +164,8 @@ def extract_wheel(
     directory = sanitise_name(whl.name)
 
     os.mkdir(directory)
+    # copy the original wheel
+    shutil.copy(whl.path, directory)
     whl.unzip(directory)
 
     # Note: Order of operations matters here
@@ -150,14 +175,18 @@ def extract_wheel(
         setup_namespace_pkg_compatibility(directory)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
+    whl_deps = sorted(whl.dependencies(extras_requested))
 
     sanitised_dependencies = [
-        '"//%s"' % sanitise_name(d) for d in sorted(whl.dependencies(extras_requested))
+        '"//%s"' % sanitise_name(d) for d in whl_deps
+    ]
+    sanitised_wheel_file_dependencies = [
+        '"//%s:%s"' % (sanitise_name(d), WHEEL_FILE_LABEL) for d in whl_deps
     ]
 
-    with open(os.path.join(directory, "BUILD"), "w") as build_file:
+    with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         contents = generate_build_file_contents(
-            sanitise_name(whl.name), sanitised_dependencies, pip_data_exclude,
+            sanitise_name(whl.name), sanitised_dependencies, sanitised_wheel_file_dependencies, pip_data_exclude
         )
         build_file.write(contents)
 
