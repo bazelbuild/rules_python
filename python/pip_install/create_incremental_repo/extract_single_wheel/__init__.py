@@ -34,7 +34,7 @@ from a fully resolved requirements lock file."
     subprocess.run(pip_args, check=True)
 
     name, extras_for_pkg = requirements._parse_requirement_for_extra(args.requirement)
-    extras = {name: extras_for_pkg} if extras_for_pkg else dict()
+    extras = {name: extras_for_pkg} if extras_for_pkg and name else dict()
 
     if args.pip_data_exclude:
         pip_data_exclude = json.loads(args.pip_data_exclude)["exclude"]

@@ -1,20 +1,22 @@
 import argparse
 import textwrap
 import sys
+from typing import List, Tuple
 
 from python.pip_install.extract_wheels.lib import bazel, utilities
 from pip._internal.req import parse_requirements, constructors
+from pip._internal.req.req_install import InstallRequirement
 from pip._internal.network.session import PipSession
 
 
-def parse_install_requirements(requirements_lock):
+def parse_install_requirements(requirements_lock: str) -> List[InstallRequirement]:
     return [
         constructors.install_req_from_parsed_requirement(pr)
         for pr in parse_requirements(requirements_lock, session=PipSession())
     ]
 
 
-def repo_names_and_requirements(install_reqs, repo_prefix):
+def repo_names_and_requirements(install_reqs: List[InstallRequirement], repo_prefix: str) -> List[Tuple[str, str]]:
     return [
         (
             bazel.sanitise_name(ir.name, prefix=repo_prefix),
@@ -24,7 +26,7 @@ def repo_names_and_requirements(install_reqs, repo_prefix):
     ]
 
 
-def generate_incremental_requirements_contents(all_args) -> str:
+def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> str:
     """
     Parse each requirement from the requirements_lock file, and prepare arguments for each
     repository rule, which will represent the individual requirements.
@@ -33,7 +35,7 @@ def generate_incremental_requirements_contents(all_args) -> str:
     a repository rule for each requirment in the lock file.
     """
 
-    args = dict(all_args.__dict__)
+    args = dict(vars(all_args))
     args.setdefault("python_interpreter", sys.executable)
     # Pop this off because it wont be used as a config argurment to thw whl_library rule.
     requirements_lock = args.pop("requirements_lock")

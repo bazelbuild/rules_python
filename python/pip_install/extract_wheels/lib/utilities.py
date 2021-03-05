@@ -1,4 +1,7 @@
-def parse_common_args(parser):
+from argparse import ArgumentParser
+
+
+def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument(
         "--repo",
         action="store",

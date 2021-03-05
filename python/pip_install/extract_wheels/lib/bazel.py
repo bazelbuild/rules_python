@@ -107,7 +107,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
 DEFAULT_PACKAGE_PREFIX = "pypi__"
 
 
-def create_incremental_repo_prefix(parent_repo):
+def create_incremental_repo_prefix(parent_repo: str) -> str:
     return "{parent}_{default_package_prefix}".format(
         parent=parent_repo,
         default_package_prefix=DEFAULT_PACKAGE_PREFIX
@@ -157,23 +157,23 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
-def sanitised_library_label(whl_name):
+def sanitised_library_label(whl_name: str) -> str:
     return '"//%s"' % sanitise_name(whl_name)
 
 
-def sanitised_file_label(whl_name):
+def sanitised_file_label(whl_name: str) -> str:
     return '"//%s:%s"' % (sanitise_name(whl_name), WHEEL_FILE_LABEL)
 
 
-def _whl_name_to_repo_root(whl_name, repo_prefix):
+def _whl_name_to_repo_root(whl_name: str, repo_prefix: str) -> str:
     return f"@{sanitise_name(whl_name, prefix=repo_prefix)}//"
 
 
-def sanitised_repo_library_label(whl_name, repo_prefix):
+def sanitised_repo_library_label(whl_name: str, repo_prefix: str) -> str:
     return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{PY_LIBRARY_LABEL}"'
 
 
-def sanitised_repo_file_label(whl_name, repo_prefix):
+def sanitised_repo_file_label(whl_name: str, repo_prefix: str) -> str:
     return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{WHEEL_FILE_LABEL}"'
 
 
@@ -222,6 +222,9 @@ def extract_wheel(
     whl_deps = sorted(whl.dependencies(extras_requested))
 
     if incremental:
+        # check for mypy Optional validity
+        if incremental_repo_prefix is None:
+            raise TypeError("incremental_repo_prefix arguement cannot be None if incremental == True")
         sanitised_dependencies = [
             sanitised_repo_library_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
         ]
