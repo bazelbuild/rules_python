@@ -1,5 +1,3 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
 filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
@@ -9,11 +7,7 @@ filegroup(
     visibility = ["//:__pkg__"],
 )
 
-bzl_library(
-    name = "bzl",
-    srcs = [
-        "pip_repository.bzl",
-        "repositories.bzl",
-    ],
+exports_files(
+    ["pip_repository.bzl", "repositories.bzl"],
     visibility = ["//docs:__pkg__"],
 )

@@ -54,6 +54,14 @@ bzl_library(
     deps = [":bazel_python_tools"],
 )
 
+bzl_library(
+    name = "pip_install_bzl",
+    srcs = [
+        "//python/pip_install:pip_repository.bzl",
+        "//python/pip_install:repositories.bzl",
+    ],
+)
+
 stardoc(
     name = "core-docs",
     out = "python.md",
@@ -71,7 +79,7 @@ stardoc(
     input = "//python:pip.bzl",
     deps = [
         ":bazel_repo_tools",
-        "//python/pip_install:bzl",
+        "pip_install_bzl",
     ],
 )
 
