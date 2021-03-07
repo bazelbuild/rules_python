@@ -79,7 +79,7 @@ stardoc(
     input = "//python:pip.bzl",
     deps = [
         ":bazel_repo_tools",
-        "pip_install_bzl",
+        ":pip_install_bzl",
     ],
 )
 
