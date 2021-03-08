@@ -1,0 +1,40 @@
+workspace(name = "example_repo")
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+# TODO(hrfuller) change this to a released http_archive when a release exists.
+git_repository(
+    name = "rules_python",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+    commit = "57f13c054948679ced273d4ea9078ddb4e633f60"
+)
+
+load("@rules_python//python:pip.bzl", "pip_install_incremental")
+
+pip_install_incremental(
+    # (Optional) You can provide extra parameters to pip.
+    # Here, make pip output verbose (this is usable with `quiet = False`).
+    #extra_pip_args = ["-v"],
+
+    # (Optional) You can exclude custom elements in the data section of the generated BUILD files for pip packages.
+    # Exclude directories with spaces in their names in this example (avoids build errors if there are such directories).
+    #pip_data_exclude = ["**/* */**"],
+
+    # (Optional) You can provide a python_interpreter (path) or a python_interpreter_target (a Bazel target, that
+    # acts as an executable). The latter can be anything that could be used as Python interpreter. E.g.:
+    # 1. Python interpreter that you compile in the build file (as above in @python_interpreter).
+    # 2. Pre-compiled python interpreter included with http_archive
+    # 3. Wrapper script, like in the autodetecting python toolchain.
+    #python_interpreter_target = "@python_interpreter//:python_bin",
+
+    # (Optional) You can set quiet to False if you want to see pip output.
+    #quiet = False,
+
+    # Uses the default repository name "pip_incremental"
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+load("@pip_incremental//:requirements.bzl", "install_deps")
+
+# Initialize repositories for all packages in requirements_lock.txt.
+install_deps()
