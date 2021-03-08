@@ -4,6 +4,10 @@ load("//python/pip_install:repositories.bzl", "all_requirements")
 
 
 def construct_pypath(rctx):
+    """Helper function to construct a PYTHONPATH containing entries for
+    code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
+    This allows us to run python code inside repository rule implementations.
+    """
     rctx.file("BUILD", "")
 
     # Get the root directory of these rules
@@ -18,6 +22,9 @@ def construct_pypath(rctx):
     return pypath
 
 def parse_optional_attrs(rctx, args):
+    """Helper function to parse common attributes of pip_repository
+    and whl_library repository rules.
+    """
     if rctx.attr.extra_pip_args:
         args += [
             "--extra_pip_args",
@@ -129,6 +136,10 @@ python_interpreter.
 }
 
 pip_repository_attrs = {
+    "incremental": attr.bool(
+        default = False,
+        doc = "Create the repository in incremental mode."
+    )
     "requirements": attr.label(
         allow_single_file = True,
         doc = "A 'requirements.txt' pip requirements file.",
@@ -140,10 +151,6 @@ A fully resolved 'requirements.txt' pip requirement file containing the transiti
 of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
 wheels are fetched/built only for the targets specified by 'build/run/test'.
 """),
-    "incremental": attr.bool(
-        default = False,
-        doc = "Create the repository in incremental form."
-    )
 }
 
 pip_repository_attrs.update(**common_attrs)

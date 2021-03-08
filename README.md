@@ -105,7 +105,7 @@ target in the appropriate wheel repo.
 
 ### Importing `pip` dependencies
 
-To add pip dependencies to your `WORKSPACE` is you load
+To add pip dependencies to your `WORKSPACE` load
 the `pip_install` function, and call it to create the
 individual wheel repos.
 
@@ -135,6 +135,41 @@ As with any repository rule, if you would like to ensure that `pip_install` is
 re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
+
+### Importing `pip` dependencies incrementally (experimental)
+
+One pain point with `pip_install` is the need to download all dependencies resolved by
+your requirements.txt before the bazel analysis phase can start. For large python monorepos
+this can take a long time, especially on slow connections.
+
+To download only the pip packages needed to build targets in the
+subgraph of top level targets in your bazel invocation, you can experiment with using `pip_install_incremental`.
+The interface of `pip_install_incremental` mirrors `pip_install` as closely as possible.
+
+The only user facing difference between `pip_install` and `pip_install_incremental` is that for the latter you need
+to supply a fully resolved and pinned requirements_lock.txt file (named to distinguish it from requirments.txt
+used in `pip_install`). The `requirements` attribute is replaced with a `requirements_lock` attribute to make it
+clear that a fully pinned transitive resolve is needed.
+
+To add incremental pip dependencies to your `WORKSPACE` load
+the `pip_install_incremental` function, and call it to create a main
+repo which contains a macro called `install_deps()` which is used
+to create child repos for each package in your requirements_lock.txt.
+
+
+```python
+load("@rules_python//python:pip.bzl", "pip_install_incremental")
+
+# Create a central repo that knows about the dependencies needed for
+# requirements.txt.
+pip_install(
+   name = "my_deps",
+   requirements_lock = "//path/to:requirements_lock.txt",
+)
+
+load("@my_deps//:requirements.bzl", "install_deps")
+install_deps()
+```
 
 ### Importing `pip` dependencies with `pip_import` (legacy)
 
