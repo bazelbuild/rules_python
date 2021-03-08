@@ -9,8 +9,12 @@ py_library(
         "purelib.py",
         "requirements.py",
         "wheel.py",
+        "utilities.py",
     ],
-    visibility = ["//python/pip_install/extract_wheels:__subpackages__"],
+    visibility = [
+        "//python/pip_install/extract_wheels:__subpackages__",
+        "//python/pip_install/create_incremental_repo:__pkg__"
+    ],
     deps = [
         requirement("pkginfo"),
         requirement("setuptools"),
@@ -34,6 +38,18 @@ py_test(
     size = "small",
     srcs = [
         "requirements_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_test(
+    name = "utilities_test",
+    size = "small",
+    srcs = [
+        "utilities_test.py",
     ],
     tags = ["unit"],
     deps = [

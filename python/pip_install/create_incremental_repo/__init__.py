@@ -37,7 +37,7 @@ def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> 
 
     args = dict(vars(all_args))
     args.setdefault("python_interpreter", sys.executable)
-    # Pop this off because it wont be used as a config argurment to thw whl_library rule.
+    # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
     repo_prefix = bazel.create_incremental_repo_prefix(args["repo"])
 
