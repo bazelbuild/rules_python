@@ -26,3 +26,8 @@ bazel_integration_test(
     name = "pip_install_example",
     timeout = "long",
 )
+
+bazel_integration_test(
+    name = "relative_requirements_example",
+    timeout = "long",
+)
