@@ -8,6 +8,7 @@ Under the hood, it depends on the `pip wheel` command to do resolution, download
 import argparse
 import glob
 import os
+import pathlib
 import subprocess
 import sys
 import json
@@ -79,12 +80,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements]
+    # Pip is run with the working directory changed to the folder containing the requirements.txt file, to allow for
+    # relative requirements to be correctly resolved. The --wheel-dir is therefore required to be repointed back to the
+    # current calling working directory (the repo root in .../external/name), where the wheel files should be written to
+    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements, "--wheel-dir", os.getcwd()]
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.run(pip_args, check=True)
+    subprocess.run(pip_args, check=True, cwd=pathlib.Path(args.requirements).parent.resolve())
 
     extras = requirements.parse_extras(args.requirements)
 
