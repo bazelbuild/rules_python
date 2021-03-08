@@ -88,7 +88,7 @@ def main() -> None:
         pip_args += json.loads(args.extra_pip_args)["args"]
 
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.run(pip_args, check=True, cwd=pathlib.Path(args.requirements).parent.resolve())
+    subprocess.run(pip_args, check=True, cwd=str(pathlib.Path(args.requirements).parent.resolve()))
 
     extras = requirements.parse_extras(args.requirements)
 
