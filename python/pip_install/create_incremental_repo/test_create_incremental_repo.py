@@ -23,8 +23,8 @@ class TestGenerateRequirementsFileContents(unittest.TestCase):
             contents = generate_incremental_requirements_contents(args)
             library_target = sanitised_repo_library_label("foo", create_incremental_repo_prefix(args.repo))
             whl_target = sanitised_repo_file_label("foo", create_incremental_repo_prefix(args.repo))
-            all_requirements = f'all_requirements = [{library_target}]'
-            all_whl_requirements = f'all_whl_requirements = [{whl_target}]'
+            all_requirements = 'all_requirements = [{library_target}]'.format(library_target=library_target)
+            all_whl_requirements = 'all_whl_requirements = [{whl_target}]'.format(whl_target=whl_target)
             self.assertIn(all_requirements, contents, contents)
             self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)

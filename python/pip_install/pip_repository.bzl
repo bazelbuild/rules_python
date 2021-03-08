@@ -138,8 +138,8 @@ python_interpreter.
 pip_repository_attrs = {
     "incremental": attr.bool(
         default = False,
-        doc = "Create the repository in incremental mode."
-    )
+        doc = "Create the repository in incremental mode.",
+    ),
     "requirements": attr.label(
         allow_single_file = True,
         doc = "A 'requirements.txt' pip requirements file.",

@@ -166,15 +166,15 @@ def sanitised_file_label(whl_name: str) -> str:
 
 
 def _whl_name_to_repo_root(whl_name: str, repo_prefix: str) -> str:
-    return f"@{sanitise_name(whl_name, prefix=repo_prefix)}//"
+    return "@{}//".format(sanitise_name(whl_name, prefix=repo_prefix))
 
 
 def sanitised_repo_library_label(whl_name: str, repo_prefix: str) -> str:
-    return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{PY_LIBRARY_LABEL}"'
+    return '"{}:{}"'.format(_whl_name_to_repo_root(whl_name, repo_prefix), PY_LIBRARY_LABEL)
 
 
 def sanitised_repo_file_label(whl_name: str, repo_prefix: str) -> str:
-    return f'"{_whl_name_to_repo_root(whl_name, repo_prefix)}:{WHEEL_FILE_LABEL}"'
+    return '"{}:{}"'.format(_whl_name_to_repo_root(whl_name, repo_prefix), WHEEL_FILE_LABEL)
 
 
 def extract_wheel(

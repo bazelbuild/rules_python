@@ -49,7 +49,7 @@ def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> 
     all_whl_requirements = ", ".join(
         [bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix) for ir in install_reqs]
     )
-    return textwrap.dedent(f"""\
+    return textwrap.dedent("""\
         load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
         all_requirements = [{all_requirements}]
@@ -75,7 +75,14 @@ def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> 
                     requirement = requirement,
                     **_config,
                 )
-""")
+        """.format(
+            all_requirements=all_requirements,
+            all_whl_requirements=all_whl_requirements,
+            repo_names_and_reqs=repo_names_and_reqs,
+            args=args,
+            repo_prefix=repo_prefix,
+            )
+        )
 
 
 def main() -> None:

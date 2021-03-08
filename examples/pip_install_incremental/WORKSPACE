@@ -6,7 +6,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
-    commit = "57f13c054948679ced273d4ea9078ddb4e633f60"
+    branch = "master"
 )
 
 load("@rules_python//python:pip.bzl", "pip_install_incremental")
