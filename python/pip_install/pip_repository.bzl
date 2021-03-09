@@ -3,10 +3,13 @@
 load("//python/pip_install:repositories.bzl", "all_requirements")
 
 
-def construct_pypath(rctx):
-    """Helper function to construct a PYTHONPATH containing entries for
-    code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
+def _construct_pypath(rctx):
+    """Helper function to construct a PYTHONPATH.
+    Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
     This allows us to run python code inside repository rule implementations.
+    Args:
+        rctx: Handle to the repository_context.
+    Returns: String of the PYTHONPATH.
     """
     rctx.file("BUILD", "")
 
@@ -21,9 +24,13 @@ def construct_pypath(rctx):
     pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
     return pypath
 
-def parse_optional_attrs(rctx, args):
+def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository
     and whl_library repository rules.
+    Args:
+        rctx: Handle to the rule repository context.
+        args: A list of parsed args for the rule.
+    Returns: Augmented args list.
     """
     if rctx.attr.extra_pip_args:
         args += [
@@ -57,7 +64,7 @@ def _pip_repository_impl(rctx):
     if rctx.attr.incremental and not rctx.attr.requirements_lock:
         fail("Incremental mode requires a requirements_lock attribute be specified.")
 
-    pypath = construct_pypath(rctx)
+    pypath = _construct_pypath(rctx)
 
     if rctx.attr.incremental:
         args = [
@@ -82,7 +89,7 @@ def _pip_repository_impl(rctx):
         ]
 
     args += ["--repo", rctx.attr.name]
-    args = parse_optional_attrs(rctx, args)
+    args = _parse_optional_attrs(rctx, args)
 
     result = rctx.execute(
         args,
@@ -202,7 +209,7 @@ py_binary(
 def _impl_whl_library(rctx):
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
     _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent=rctx.attr.repo))
-    pypath = construct_pypath(rctx)
+    pypath = _construct_pypath(rctx)
     args = [
         rctx.attr.python_interpreter,
         "-m",
@@ -212,7 +219,7 @@ def _impl_whl_library(rctx):
         "--repo",
         rctx.attr.repo,
     ]
-    args = parse_optional_attrs(rctx, args)
+    args = _parse_optional_attrs(rctx, args)
     result = rctx.execute(
         args,
         environment = {
