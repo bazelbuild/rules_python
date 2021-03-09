@@ -2,11 +2,12 @@
 
 load("//python/pip_install:repositories.bzl", "all_requirements")
 
-
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
+
     Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
     This allows us to run python code inside repository rule implementations.
+
     Args:
         rctx: Handle to the repository_context.
     Returns: String of the PYTHONPATH.
@@ -25,8 +26,8 @@ def _construct_pypath(rctx):
     return pypath
 
 def _parse_optional_attrs(rctx, args):
-    """Helper function to parse common attributes of pip_repository
-    and whl_library repository rules.
+    """Helper function to parse common attributes of pip_repository and whl_library repository rules.
+
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
@@ -48,7 +49,6 @@ def _parse_optional_attrs(rctx, args):
         args.append("--enable_implicit_namespace_pkgs")
 
     return args
-
 
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
@@ -106,7 +106,6 @@ def _pip_repository_impl(rctx):
 
     return
 
-
 common_attrs = {
     "enable_implicit_namespace_pkgs": attr.bool(
         default = False,
@@ -125,12 +124,15 @@ This option is required to support some packages which cannot handle the convers
         doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
     ),
     "python_interpreter": attr.string(default = "python3"),
-    "python_interpreter_target": attr.label(allow_single_file = True, doc = """
+    "python_interpreter_target": attr.label(
+        allow_single_file = True,
+        doc = """
 If you are using a custom python interpreter built by another repository rule,
 use this attribute to specify its BUILD target. This allows pip_repository to invoke
 pip using the same interpreter as your toolchain. If set, takes precedence over
 python_interpreter.
-"""),
+""",
+    ),
     "quiet": attr.bool(
         default = True,
         doc = "If True, suppress printing stdout and stderr output to the terminal.",
@@ -157,14 +159,14 @@ pip_repository_attrs = {
 A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
 of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
 wheels are fetched/built only for the targets specified by 'build/run/test'.
-"""),
+""",
+    ),
 }
 
 pip_repository_attrs.update(**common_attrs)
 
 pip_repository = repository_rule(
     attrs = pip_repository_attrs,
-    implementation = _pip_repository_impl,
     doc = """A rule for importing `requirements.txt` dependencies into Bazel.
 
 This rule imports a `requirements.txt` file and generates a new
@@ -204,6 +206,7 @@ py_binary(
 )
 ```
 """,
+    implementation = _pip_repository_impl,
 )
 
 def _impl_whl_library(rctx):
@@ -235,19 +238,23 @@ def _impl_whl_library(rctx):
 
     return
 
-
 whl_library_attrs = {
-    "requirement": attr.string(mandatory=True, doc = "Python requirement string describing the package to make available"),
-    "repo": attr.string(mandatory=True, doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.")
+    "repo": attr.string(
+        mandatory = True,
+        doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
+    ),
+    "requirement": attr.string(
+        mandatory = True,
+        doc = "Python requirement string describing the package to make available",
+    ),
 }
 
 whl_library_attrs.update(**common_attrs)
 
-
 whl_library = repository_rule(
     attrs = whl_library_attrs,
-    implementation = _impl_whl_library,
     doc = """
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
-Instantiated from pip_repository and inherits config options from there."""
+Instantiated from pip_repository and inherits config options from there.""",
+    implementation = _impl_whl_library,
 )

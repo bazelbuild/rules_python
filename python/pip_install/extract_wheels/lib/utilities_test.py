@@ -11,7 +11,7 @@ class TestUtilities(unittest.TestCase):
         repo_name = "foo"
         index_url = "--index_url=pypi.org/simple"
         args_dict = vars(parser.parse_args(
-            args=["--repo", repo_name, "--extra_pip_args={index_url}".formt(index_url=index_url)]))
+            args=["--repo", repo_name, "--extra_pip_args={index_url}".format(index_url=index_url)]))
         self.assertIn("repo", args_dict)
         self.assertIn("extra_pip_args", args_dict)
         self.assertEqual(args_dict["pip_data_exclude"], None)
