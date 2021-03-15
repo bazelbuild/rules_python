@@ -162,7 +162,7 @@ load("@rules_python//python:pip.bzl", "pip_install_incremental")
 
 # Create a central repo that knows about the dependencies needed for
 # requirements.txt.
-pip_install(
+pip_install_incremental(
    name = "my_deps",
    requirements_lock = "//path/to:requirements_lock.txt",
 )
