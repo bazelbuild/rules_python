@@ -1,13 +1,13 @@
 import unittest
 import argparse
 
-from python.pip_install.extract_wheels.lib import utilities
+from python.pip_install.extract_wheels.lib import arguments
 
 
-class TestUtilities(unittest.TestCase):
-    def test_utilities(self) -> None:
+class ArguementsTestCase(unittest.TestCase):
+    def test_arguments(self) -> None:
         parser = argparse.ArgumentParser()
-        parser = utilities.parse_common_args(parser)
+        parser = arguments.parse_common_args(parser)
         repo_name = "foo"
         index_url = "--index_url=pypi.org/simple"
         args_dict = vars(parser.parse_args(

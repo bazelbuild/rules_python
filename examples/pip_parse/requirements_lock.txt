@@ -1,4 +1,5 @@
 # Transitive dependency set from :requirements.txt
+# Generated using `pip-compile requirements.txt -o requirements_lock.txt`
 certifi==2020.12.5        # via requests
 cffi==1.14.5              # via cryptography
 chardet==3.0.4            # via requests

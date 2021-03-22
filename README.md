@@ -136,38 +136,37 @@ re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
 
-### Importing `pip` dependencies incrementally (experimental)
+### Fetch `pip` dependencies lazily (experimental)
 
 One pain point with `pip_install` is the need to download all dependencies resolved by
 your requirements.txt before the bazel analysis phase can start. For large python monorepos
 this can take a long time, especially on slow connections.
 
-To download only the pip packages needed to build targets in the
-subgraph of top level targets in your bazel invocation, you can experiment with using `pip_install_incremental`.
-The interface of `pip_install_incremental` mirrors `pip_install` as closely as possible.
+`pip_parse` provides a solution to this problem. If you can provide a lock
+file of all your python dependencies `pip_parse` will translate each requirement into its own external repository.
+Bazel will only fetch/build wheels for the requirements in the subgraph of your build target.
 
-The only user facing difference between `pip_install` and `pip_install_incremental` is that for the latter you need
-to supply a fully resolved and pinned requirements_lock.txt file (named to distinguish it from requirments.txt
-used in `pip_install`). The `requirements` attribute is replaced with a `requirements_lock` attribute to make it
-clear that a fully pinned transitive resolve is needed.
-
-To add incremental pip dependencies to your `WORKSPACE` load
-the `pip_install_incremental` function, and call it to create a main
-repo which contains a macro called `install_deps()` which is used
-to create child repos for each package in your requirements_lock.txt.
+There are API differences between `pip_parse` and `pip_install`:
+1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this using
+   `pip-compile`, or a virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of `requirements`
+   to make this distinction clear.
+2. `pip_parse` translates your requirements into a starlark macro called `install_deps`. You must call this macro in your WORKSPACE to
+   declare your dependencies.
 
 
 ```python
-load("@rules_python//python:pip.bzl", "pip_install_incremental")
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-# Create a central repo that knows about the dependencies needed for
-# requirements.txt.
-pip_install_incremental(
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_parse(
    name = "my_deps",
    requirements_lock = "//path/to:requirements_lock.txt",
 )
 
+# Load the starlark macro which will define your dependencies.
 load("@my_deps//:requirements.bzl", "install_deps")
+# Call it to define repos for your requirements.
 install_deps()
 ```
 

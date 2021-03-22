@@ -56,7 +56,7 @@ def pip_install(requirements, name = "pip", **kwargs):
         **kwargs
     )
 
-def pip_install_incremental(requirements_lock, name = "pip_incremental", **kwargs):
+def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     # Just in case our dependencies weren't already fetched
     pip_install_dependencies()
 

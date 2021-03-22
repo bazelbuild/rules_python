@@ -70,7 +70,7 @@ def _pip_repository_impl(rctx):
         args = [
             python_interpreter,
             "-m",
-            "python.pip_install.create_incremental_repo",
+            "python.pip_install.parse_requirements_to_bzl",
             "--requirements_lock",
             rctx.path(rctx.attr.requirements_lock),
             # pass quiet and timeout args through to child repos.
@@ -216,7 +216,7 @@ def _impl_whl_library(rctx):
     args = [
         rctx.attr.python_interpreter,
         "-m",
-        "python.pip_install.create_incremental_repo.extract_single_wheel",
+        "python.pip_install.parse_requirements_to_bzl.extract_single_wheel",
         "--requirement",
         rctx.attr.requirement,
         "--repo",

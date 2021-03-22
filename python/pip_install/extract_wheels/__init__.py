@@ -12,7 +12,7 @@ import subprocess
 import sys
 import json
 
-from python.pip_install.extract_wheels.lib import bazel, requirements, utilities
+from python.pip_install.extract_wheels.lib import bazel, requirements, arguments
 
 
 def configure_reproducible_wheels() -> None:
@@ -58,7 +58,7 @@ def main() -> None:
         required=True,
         help="Path to requirements.txt from where to install dependencies",
     )
-    utilities.parse_common_args(parser)
+    arguments.parse_common_args(parser)
     args = parser.parse_args()
 
     pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements]

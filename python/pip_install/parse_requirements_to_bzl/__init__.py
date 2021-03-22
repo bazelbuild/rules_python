@@ -3,7 +3,7 @@ import textwrap
 import sys
 from typing import List, Tuple
 
-from python.pip_install.extract_wheels.lib import bazel, utilities
+from python.pip_install.extract_wheels.lib import bazel, arguments
 from pip._internal.req import parse_requirements, constructors
 from pip._internal.req.req_install import InstallRequirement
 from pip._internal.network.session import PipSession
@@ -26,7 +26,7 @@ def repo_names_and_requirements(install_reqs: List[InstallRequirement], repo_pre
     ]
 
 
-def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> str:
+def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
     Parse each requirement from the requirements_lock file, and prepare arguments for each
     repository rule, which will represent the individual requirements.
@@ -39,7 +39,7 @@ def generate_incremental_requirements_contents(all_args: argparse.Namespace) -> 
     args.setdefault("python_interpreter", sys.executable)
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
-    repo_prefix = bazel.create_incremental_repo_prefix(args["repo"])
+    repo_prefix = bazel.whl_library_repo_prefix(args["repo"])
 
     install_reqs = parse_install_requirements(requirements_lock)
     repo_names_and_reqs = repo_names_and_requirements(install_reqs, repo_prefix)
@@ -110,10 +110,10 @@ dependencies from a fully resolved requirements lock file."
         required=True,
         help="timeout to use for pip operation.",
     )
-    utilities.parse_common_args(parser)
+    arguments.parse_common_args(parser)
     args = parser.parse_args()
 
     with open("requirements.bzl", "w") as requirement_file:
         requirement_file.write(
-            generate_incremental_requirements_contents(args)
+            generate_parsed_requirements_contents(args)
         )

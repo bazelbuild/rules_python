@@ -9,11 +9,11 @@ py_library(
         "purelib.py",
         "requirements.py",
         "wheel.py",
-        "utilities.py",
+        "arguments.py",
     ],
     visibility = [
         "//python/pip_install/extract_wheels:__subpackages__",
-        "//python/pip_install/create_incremental_repo:__pkg__"
+        "//python/pip_install/parse_requirements_to_bzl:__subpackages__",
     ],
     deps = [
         requirement("pkginfo"),
@@ -46,10 +46,10 @@ py_test(
 )
 
 py_test(
-    name = "utilities_test",
+    name = "arguments_test",
     size = "small",
     srcs = [
-        "utilities_test.py",
+        "arguments_test.py",
     ],
     tags = ["unit"],
     deps = [

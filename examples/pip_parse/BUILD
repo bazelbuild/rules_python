@@ -1,4 +1,4 @@
-load("@pip_incremental//:requirements.bzl", "requirement")
+load("@pip_parsed_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # Toolchain setup, this is optional.

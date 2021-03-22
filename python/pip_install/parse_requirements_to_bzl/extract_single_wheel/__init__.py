@@ -4,22 +4,21 @@ import glob
 import subprocess
 import json
 
-from python.pip_install.extract_wheels.lib import bazel, requirements, utilities
+from python.pip_install.extract_wheels.lib import bazel, requirements, arguments
 from python.pip_install.extract_wheels import configure_reproducible_wheels
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Create rules to incrementally fetch needed dependencies \
-from a fully resolved requirements lock file."
+        description="Build and/or fetch a single wheel based on the requirement passed in"
     )
     parser.add_argument(
         "--requirement",
         action="store",
         required=True,
-        help="Path to fully resolved requirements.txt to use as the source of repos.",
+        help="A single PEP508 requirement specifier string.",
     )
-    utilities.parse_common_args(parser)
+    arguments.parse_common_args(parser)
     args = parser.parse_args()
 
     configure_reproducible_wheels()
@@ -48,5 +47,5 @@ from a fully resolved requirements lock file."
         pip_data_exclude,
         args.enable_implicit_namespace_pkgs,
         incremental=True,
-        incremental_repo_prefix=bazel.create_incremental_repo_prefix(args.repo)
+        incremental_repo_prefix=bazel.whl_library_repo_prefix(args.repo)
     )

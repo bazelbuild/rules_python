@@ -2,10 +2,10 @@ import unittest
 import argparse
 from tempfile import NamedTemporaryFile
 
-from python.pip_install.create_incremental_repo import generate_incremental_requirements_contents
+from python.pip_install.parse_requirements_to_bzl import generate_parsed_requirements_contents
 from python.pip_install.extract_wheels.lib.bazel import (
     sanitised_repo_library_label,
-    create_incremental_repo_prefix,
+    whl_library_repo_prefix,
     sanitised_repo_file_label
 )
 
@@ -19,12 +19,12 @@ class TestGenerateRequirementsFileContents(unittest.TestCase):
             requirements_lock.flush()
             args = argparse.Namespace()
             args.requirements_lock = requirements_lock.name
-            args.repo = "pip_incremental"
-            contents = generate_incremental_requirements_contents(args)
-            library_target = sanitised_repo_library_label("foo", create_incremental_repo_prefix(args.repo))
-            whl_target = sanitised_repo_file_label("foo", create_incremental_repo_prefix(args.repo))
-            all_requirements = 'all_requirements = [{library_target}]'.format(library_target=library_target)
-            all_whl_requirements = 'all_whl_requirements = [{whl_target}]'.format(whl_target=whl_target)
+            args.repo = "pip_parsed_deps"
+            contents = generate_parsed_requirements_contents(args)
+            library_target = "@pip_parsed_deps_pypi__foo//:pkg"
+            whl_target = "@pip_parsed_deps_pypi__foo//:whl"
+            all_requirements = 'all_requirements = ["{library_target}"]'.format(library_target=library_target)
+            all_whl_requirements = 'all_whl_requirements = ["{whl_target}"]'.format(whl_target=whl_target)
             self.assertIn(all_requirements, contents, contents)
             self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)

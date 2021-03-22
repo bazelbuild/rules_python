@@ -1,5 +1,5 @@
 """Main entry point."""
-from python.pip_install.create_incremental_repo import main
+from python.pip_install.parse_requirements_to_bzl import main
 
 if __name__ == "__main__":
     main()

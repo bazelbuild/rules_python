@@ -107,7 +107,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
 DEFAULT_PACKAGE_PREFIX = "pypi__"
 
 
-def create_incremental_repo_prefix(parent_repo: str) -> str:
+def whl_library_repo_prefix(parent_repo: str) -> str:
     return "{parent}_{default_package_prefix}".format(
         parent=parent_repo,
         default_package_prefix=DEFAULT_PACKAGE_PREFIX
