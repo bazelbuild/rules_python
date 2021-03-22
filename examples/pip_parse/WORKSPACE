@@ -13,7 +13,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 pip_parse(
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
-    #extra_pip_args = ["-v"],
+    # extra_pip_args = ["-v"],
 
     # (Optional) You can exclude custom elements in the data section of the generated BUILD files for pip packages.
     # Exclude directories with spaces in their names in this example (avoids build errors if there are such directories).

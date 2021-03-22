@@ -14,7 +14,8 @@ py_binary(
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
-    deps = [requirement("pip")]
+    deps = [requirement("pip")],
+    visibility = ["//python/pip_install/extract_wheels:__subpackages__"],
 )
 
 py_test(

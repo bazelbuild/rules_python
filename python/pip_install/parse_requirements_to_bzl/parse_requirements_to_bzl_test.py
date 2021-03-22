@@ -1,5 +1,6 @@
 import unittest
 import argparse
+import json
 from tempfile import NamedTemporaryFile
 
 from python.pip_install.parse_requirements_to_bzl import generate_parsed_requirements_contents
@@ -10,9 +11,9 @@ from python.pip_install.extract_wheels.lib.bazel import (
 )
 
 
-class TestGenerateRequirementsFileContents(unittest.TestCase):
+class TestParseRequirementsToBzl(unittest.TestCase):
 
-    def test_incremental_requirements_bzl(self) -> None:
+    def test_generated_requirements_bzl(self) -> None:
         with NamedTemporaryFile() as requirements_lock:
             requirement_string = "foo==0.0.0"
             requirements_lock.write(bytes(requirement_string, encoding="utf-8"))
@@ -20,6 +21,8 @@ class TestGenerateRequirementsFileContents(unittest.TestCase):
             args = argparse.Namespace()
             args.requirements_lock = requirements_lock.name
             args.repo = "pip_parsed_deps"
+            extra_pip_args = ["--index-url=pypi.org/simple"]
+            args.extra_pip_args = json.dumps({"args": extra_pip_args})
             contents = generate_parsed_requirements_contents(args)
             library_target = "@pip_parsed_deps_pypi__foo//:pkg"
             whl_target = "@pip_parsed_deps_pypi__foo//:whl"
@@ -28,6 +31,8 @@ class TestGenerateRequirementsFileContents(unittest.TestCase):
             self.assertIn(all_requirements, contents, contents)
             self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)
+            self.assertIn(requirement_string, contents, contents)
+            self.assertIn("'extra_pip_args': {}".format(repr(extra_pip_args)), contents, contents)
 
 
 if __name__ == "__main__":

@@ -54,6 +54,7 @@ py_test(
     tags = ["unit"],
     deps = [
         ":lib",
+        "//python/pip_install/parse_requirements_to_bzl:lib",
     ],
 )
 
