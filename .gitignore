@@ -37,3 +37,7 @@ bazel-bin
 bazel-genfiles
 bazel-out
 bazel-testlogs
+
+# vim swap files
+*.swp
+*.swo
