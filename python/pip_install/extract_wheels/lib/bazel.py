@@ -29,7 +29,10 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    data_exclude = ["*.whl", "**/*.py", "**/* *", "BUILD.bazel", "WORKSPACE"] + pip_data_exclude
+    data_exclude = (
+        ["*.whl", "**/*.py", "**/* *", "BUILD", "BUILD.bazel", "WORKSPACE"]
+        + pip_data_exclude
+    )
 
     return textwrap.dedent(
         """\
