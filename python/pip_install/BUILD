@@ -8,6 +8,15 @@ filegroup(
     visibility = ["//:__pkg__"],
 )
 
+filegroup(
+    name = "bzl",
+    srcs = [
+        "pip_repository.bzl",
+        "repositories.bzl",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
 exports_files(
     ["pip_repository.bzl", "repositories.bzl"],
     visibility = ["//docs:__pkg__"],
