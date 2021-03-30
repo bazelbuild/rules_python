@@ -38,6 +38,20 @@ filegroup(
     visibility = ["//:__pkg__"],
 )
 
+# Filegroup of bzl files that can be used by downstream rules for documentation generation
+# Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
+filegroup(
+    name = "bzl",
+    srcs = [
+        "defs.bzl",
+        "packaging.bzl",
+        "pip.bzl",
+        "whl.bzl",
+        "private/reexports.bzl",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
 # ========= Core rules =========
 
 exports_files([

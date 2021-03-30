@@ -33,3 +33,20 @@ filegroup(
     ],
     visibility = ["//distro:__pkg__"],
 )
+
+# Reexport of all bzl files used to allow downstream rules to generate docs
+# without shipping with a dependency on Skylib
+filegroup(
+    name = "bzl",
+    srcs = [
+        "//python/pip_install:bzl",
+        "//python:bzl",
+        # Requires Bazel 0.29 onward for public visibility of these .bzl files.
+        "@bazel_tools//tools/python:private/defs.bzl",
+        "@bazel_tools//tools/python:python_version.bzl",
+        "@bazel_tools//tools/python:srcs_version.bzl",
+        "@bazel_tools//tools/python:toolchain.bzl",
+        "@bazel_tools//tools/python:utils.bzl",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -27,7 +27,7 @@ def spread_purelib_into_root(wheel_dir: str) -> None:
         return
 
     dot_data_dir = wheel.get_dot_data_directory(wheel_dir)
-    # 'Root-Is-Purelib: false' is no guarantee a .date directory exists with
+    # 'Root-Is-Purelib: false' is no guarantee a .data directory exists with
     # package code in it. eg. the 'markupsafe' package.
     if not dot_data_dir:
         return

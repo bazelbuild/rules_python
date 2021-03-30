@@ -105,7 +105,7 @@ target in the appropriate wheel repo.
 
 ### Importing `pip` dependencies
 
-To add pip dependencies to your `WORKSPACE` is you load
+To add pip dependencies to your `WORKSPACE` load
 the `pip_install` function, and call it to create the
 individual wheel repos.
 
@@ -135,6 +135,40 @@ As with any repository rule, if you would like to ensure that `pip_install` is
 re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
+
+### Fetch `pip` dependencies lazily (experimental)
+
+One pain point with `pip_install` is the need to download all dependencies resolved by
+your requirements.txt before the bazel analysis phase can start. For large python monorepos
+this can take a long time, especially on slow connections.
+
+`pip_parse` provides a solution to this problem. If you can provide a lock
+file of all your python dependencies `pip_parse` will translate each requirement into its own external repository.
+Bazel will only fetch/build wheels for the requirements in the subgraph of your build target.
+
+There are API differences between `pip_parse` and `pip_install`:
+1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this using
+   `pip-compile`, or a virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of `requirements`
+   to make this distinction clear.
+2. `pip_parse` translates your requirements into a starlark macro called `install_deps`. You must call this macro in your WORKSPACE to
+   declare your dependencies.
+
+
+```python
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_parse(
+   name = "my_deps",
+   requirements_lock = "//path/to:requirements_lock.txt",
+)
+
+# Load the starlark macro which will define your dependencies.
+load("@my_deps//:requirements.bzl", "install_deps")
+# Call it to define repos for your requirements.
+install_deps()
+```
 
 ### Importing `pip` dependencies with `pip_import` (legacy)
 
