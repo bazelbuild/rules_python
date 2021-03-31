@@ -1,0 +1,19 @@
+# NB: Last matching rule takes precedence in CODEOWNERS.
+
+# Fall-through to community maintainers.
+* @thundergolfer @andyscott
+
+# Core Python rules belong to the Bazel team.
+/python/ @brandjon @lberki
+# But not everything under python/ is the core Python rules.
+/python/pip.bzl @thundergolfer @andyscott
+/python/whl.bzl @thundergolfer @andyscott
+/python/requirements.txt @thundergolfer @andyscott
+
+# The proposals dir corresponds to the Bazel proposals process, documented
+# here: https://bazel.build/designs/index.html
+/proposals/ @brandjon @lberki
+
+# Certain repo metadata files should stay as-is, particularly these.
+/LICENSE @brandjon @lberki
+/CONTRIBUTING.md @brandjon @lberki

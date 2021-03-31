@@ -1,5 +1,5 @@
 pip==9.0.3
-setuptools==38.2.4
+setuptools==44.0.0
 wheel==0.30.0a0
 
 # For tests

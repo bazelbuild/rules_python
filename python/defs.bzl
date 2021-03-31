@@ -19,8 +19,8 @@ work under `--incompatible_load_python_rules_from_bzl`. As the native rules get
 migrated to Starlark, their implementations will be moved here.
 """
 
-load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
+load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
 load(":private/reexports.bzl", "internal_PyInfo", "internal_PyRuntimeInfo")
 
 # Exports of native-defined providers.
@@ -36,7 +36,7 @@ _MIGRATION_TAG = "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
 
 def _add_tags(attrs):
     if "tags" in attrs and attrs["tags"] != None:
-        attrs["tags"] += [_MIGRATION_TAG]
+        attrs["tags"] = attrs["tags"] + [_MIGRATION_TAG]
     else:
         attrs["tags"] = [_MIGRATION_TAG]
     return attrs
@@ -47,6 +47,8 @@ def py_library(**attrs):
     Args:
       **attrs: Rule attributes
     """
+
+    # buildifier: disable=native-python
     native.py_library(**_add_tags(attrs))
 
 def py_binary(**attrs):
@@ -55,6 +57,8 @@ def py_binary(**attrs):
     Args:
       **attrs: Rule attributes
     """
+
+    # buildifier: disable=native-python
     native.py_binary(**_add_tags(attrs))
 
 def py_test(**attrs):
@@ -63,6 +67,8 @@ def py_test(**attrs):
     Args:
       **attrs: Rule attributes
     """
+
+    # buildifier: disable=native-python
     native.py_test(**_add_tags(attrs))
 
 def py_runtime(**attrs):
@@ -71,6 +77,8 @@ def py_runtime(**attrs):
     Args:
       **attrs: Rule attributes
     """
+
+    # buildifier: disable=native-python
     native.py_runtime(**_add_tags(attrs))
 
 # Re-exports of Starlark-defined symbols in @bazel_tools//tools/python.

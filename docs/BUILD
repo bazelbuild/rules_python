@@ -16,12 +16,12 @@
 # To regenerate documentation, run the top-level update_docs.sh script.       #
 ###############################################################################
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
 
 # We define these bzl_library targets here rather than in the //python package
 # because they're only used for doc generation. This way, we avoid requiring
@@ -31,11 +31,18 @@ load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
 bzl_library(
     name = "bazel_python_tools",
     srcs = [
+        "@bazel_tools//tools/python:private/defs.bzl",
         "@bazel_tools//tools/python:srcs_version.bzl",
         "@bazel_tools//tools/python:toolchain.bzl",
         "@bazel_tools//tools/python:utils.bzl",
-        "@bazel_tools//tools/python:private/defs.bzl",
     ],
+)
+
+bzl_library(
+    name = "bazel_repo_tools",
+    srcs = [
+        "@bazel_tools//tools:bzl_srcs",
+    ]
 )
 
 bzl_library(
@@ -47,10 +54,18 @@ bzl_library(
     deps = [":bazel_python_tools"],
 )
 
+bzl_library(
+    name = "pip_install_bzl",
+    srcs = [
+        "//python/pip_install:pip_repository.bzl",
+        "//python/pip_install:repositories.bzl",
+    ],
+)
+
 stardoc(
     name = "core-docs",
-    input = "//python:defs.bzl",
     out = "python.md",
+    input = "//python:defs.bzl",
     deps = [":defs"],
 )
 
@@ -60,12 +75,16 @@ stardoc(
 
 stardoc(
     name = "pip-docs",
-    input = "//python:pip.bzl",
     out = "pip.md",
+    input = "//python:pip.bzl",
+    deps = [
+        ":bazel_repo_tools",
+        ":pip_install_bzl",
+    ],
 )
 
 stardoc(
     name = "whl-docs",
-    input = "//python:whl.bzl",
     out = "whl.md",
+    input = "//python:whl.bzl",
 )

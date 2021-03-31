@@ -22,7 +22,9 @@ disallowed in a future Bazel release by
 """
 
 def py_library(*args, **kwargs):
-    """See the Bazel core [py_library](
+    """Deprecated py_library rule.
+
+    See the Bazel core [py_library](
     https://docs.bazel.build/versions/master/be/python.html#py_library)
     documentation.
 
@@ -30,10 +32,14 @@ def py_library(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_library(*args, **kwargs)
 
 def py_binary(*args, **kwargs):
-    """See the Bazel core [py_binary](
+    """Deprecated py_binary rule.
+
+    See the Bazel core [py_binary](
     https://docs.bazel.build/versions/master/be/python.html#py_binary)
     documentation.
 
@@ -41,10 +47,14 @@ def py_binary(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_binary(*args, **kwargs)
 
 def py_test(*args, **kwargs):
-    """See the Bazel core [py_test](
+    """Deprecated py_test rule.
+
+    See the Bazel core [py_test](
     https://docs.bazel.build/versions/master/be/python.html#py_test)
     documentation.
 
@@ -52,4 +62,6 @@ def py_test(*args, **kwargs):
     `--incompatible_load_python_rules_from_bzl` is enabled. Please use the
     symbols in `@rules_python//python:defs.bzl` instead.
     """
+
+    # buildifier: disable=native-python
     native.py_test(*args, **kwargs)

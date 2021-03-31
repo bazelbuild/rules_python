@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache 2.0
-
-load("//python:defs.bzl", "py_library", "py_test")
-load("@subpar//:subpar.bzl", "par_binary")
 load("@piptool_deps//:requirements.bzl", "requirement")
+load("@subpar//:subpar.bzl", "par_binary")
+load("//python:defs.bzl", "py_library", "py_test")
+
+licenses(["notice"])  # Apache 2.0
 
 py_library(
     name = "whl",
@@ -30,8 +30,8 @@ py_test(
     name = "whl_test",
     srcs = ["whl_test.py"],
     data = [
-        "@futures_3_1_1_whl//file",
         "@futures_2_2_0_whl//file",
+        "@futures_3_1_1_whl//file",
         "@google_cloud_language_whl//file",
         "@grpc_whl//file",
         "@mock_whl//file",

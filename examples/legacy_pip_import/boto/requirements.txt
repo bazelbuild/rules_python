@@ -1,0 +1,5 @@
+boto3==1.4.7
+# Release 0.15 appears to have a broken wheel.
+# See https://github.com/bazelbuild/rules_python/issues/205.
+docutils!=0.15.post1
+pip==9.0.3

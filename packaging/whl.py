@@ -18,7 +18,23 @@ import json
 import os
 import pkg_resources
 import re
+import stat
 import zipfile
+
+
+def current_umask():
+    """Get the current umask which involves having to set it temporarily."""
+    mask = os.umask(0)
+    os.umask(mask)
+    return mask
+
+
+def set_extracted_file_to_default_mode_plus_executable(path):
+    """
+    Make file present at path have execute for user/group/world
+    (chmod +x) is no-op on windows per python docs
+    """
+    os.chmod(path, (0o777 & ~current_umask() | 0o111))
 
 
 class Wheel(object):
@@ -42,8 +58,9 @@ class Wheel(object):
     parts = self.basename().split('-')
     return parts[1]
 
-  def repository_name(self):
-    # Returns the canonical name of the Bazel repository for this package.
+  def repository_suffix(self):
+    # Returns a canonical suffix that will form part of the name of the Bazel
+    # repository for this package.
     canonical = 'pypi__{}_{}'.format(self.distribution(), self.version())
     # Escape any illegal characters with underscore.
     return re.sub('[-.+]', '_', canonical)
@@ -79,7 +96,7 @@ class Wheel(object):
             of the named "extra".
 
     Yields:
-      the names of requirements from the metadata.json
+      the names of requirements from the metadata.json, in lexical order.
     """
     # TODO(mattmoor): Is there a schema to follow for this?
     dependency_set = set()
@@ -100,14 +117,27 @@ class Wheel(object):
         parts = re.split('[ ><=()]', entry)
         dependency_set.add(parts[0])
 
-    return dependency_set
+    return sorted(dependency_set)
 
   def extras(self):
     return self.metadata().get('extras', [])
 
   def expand(self, directory):
-    with zipfile.ZipFile(self.path(), 'r') as whl:
-      whl.extractall(directory)
+    with zipfile.ZipFile(self.path(), "r", allowZip64=True) as whl:
+        whl.extractall(directory)
+        # The following logic is borrowed from Pip:
+        # https://github.com/pypa/pip/blob/cc48c07b64f338ac5e347d90f6cb4efc22ed0d0b/src/pip/_internal/utils/unpacking.py#L240
+        for info in whl.infolist():
+            name = info.filename
+            # Do not attempt to modify directories.
+            if name.endswith("/") or name.endswith("\\"):
+                continue
+            mode = info.external_attr >> 16
+            # if mode and regular file and any execute permissions for
+            # user/group/world?
+            if mode and stat.S_ISREG(mode) and mode & 0o111:
+                name = os.path.join(directory, name)
+                set_extracted_file_to_default_mode_plus_executable(name)
 
   # _parse_metadata parses METADATA files according to https://www.python.org/dev/peps/pep-0314/
   def _parse_metadata(self, content):
@@ -132,6 +162,13 @@ parser.add_argument('--extras', action='append',
                     help='The set of extras for which to generate library targets.')
 
 def main():
+  """
+  Generate a BUILD file for an unzipped Wheel
+
+  We allow for empty Python sources as for Wheels containing only compiled C code
+  there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
+  """
+
   args = parser.parse_args()
   whl = Wheel(args.whl)
 
@@ -147,7 +184,7 @@ load("{requirements}", "requirement")
 
 py_library(
     name = "pkg",
-    srcs = glob(["**/*.py"]),
+    srcs = glob(["**/*.py"], allow_empty = True),
     data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
