@@ -2,6 +2,7 @@ import unittest
 import argparse
 import json
 from tempfile import NamedTemporaryFile
+from textwrap import dedent
 
 from python.pip_install.parse_requirements_to_bzl import generate_parsed_requirements_contents
 from python.pip_install.extract_wheels.lib.bazel import (
@@ -15,7 +16,12 @@ class TestParseRequirementsToBzl(unittest.TestCase):
 
     def test_generated_requirements_bzl(self) -> None:
         with NamedTemporaryFile() as requirements_lock:
-            requirement_string = "foo==0.0.0"
+            requirement_string = dedent("""\
+            --trusted-host baz  # comment is ignored
+
+            foo==0.0.0
+                # line comments are ignored
+            """)
             requirements_lock.write(bytes(requirement_string, encoding="utf-8"))
             requirements_lock.flush()
             args = argparse.Namespace()
@@ -28,11 +34,15 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             whl_target = "@pip_parsed_deps_pypi__foo//:whl"
             all_requirements = 'all_requirements = ["{library_target}"]'.format(library_target=library_target)
             all_whl_requirements = 'all_whl_requirements = ["{whl_target}"]'.format(whl_target=whl_target)
+            all_extra_pip_args = [
+                '--trusted-host', 'baz',
+                *extra_pip_args,
+            ]
+            reduced_requirement_string = "foo==0.0.0"
             self.assertIn(all_requirements, contents, contents)
             self.assertIn(all_whl_requirements, contents, contents)
-            self.assertIn(requirement_string, contents, contents)
-            self.assertIn(requirement_string, contents, contents)
-            self.assertIn("'extra_pip_args': {}".format(repr(extra_pip_args)), contents, contents)
+            self.assertIn(reduced_requirement_string, contents, contents)
+            self.assertIn("'extra_pip_args': {}".format(repr(all_extra_pip_args)), contents, contents)
 
 
 if __name__ == "__main__":

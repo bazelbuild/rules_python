@@ -1,6 +1,8 @@
 import argparse
 import json
+import re
 import textwrap
+import shlex
 import sys
 from typing import List, Tuple
 
@@ -38,6 +40,27 @@ def deserialize_structured_args(args):
     return args
 
 
+def read_embedded_pip_args(args):
+    """Augment extra_pip_args from directives in requirements_lock file
+        Args:
+            args: deserialized args to read and modify
+    """
+    extra_pip_args = args.get("extra_pip_args")
+    requirements_lock = args["requirements_lock"]
+    with open(requirements_lock) as f:
+        embedded = [
+            line for line in f.readlines()
+            if line.strip().startswith('-')
+        ]
+
+    embedded = [
+        arg for args in embedded
+        for arg in shlex.split(args, comments=True)
+    ]
+    if embedded:
+        args["extra_pip_args"] = embedded + (extra_pip_args or [])
+
+
 def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
     Parse each requirement from the requirements_lock file, and prepare arguments for each
@@ -50,6 +73,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     args = dict(vars(all_args))
     args = deserialize_structured_args(args)
     args.setdefault("python_interpreter", sys.executable)
+    read_embedded_pip_args(args)
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
     repo_prefix = bazel.whl_library_repo_prefix(args["repo"])
