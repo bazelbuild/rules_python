@@ -190,7 +190,7 @@ load("@my_deps//:requirements.bzl", "pip_install")
 pip_install()
 ```
 
-An example can be found in [`examples/legacy_pip_import](examples/legacy_pip_import).
+An example can be found in [`examples/legacy_pip_import`](examples/legacy_pip_import).
 
 ### Consuming `pip` dependencies
 
@@ -199,9 +199,7 @@ wheel's contents. Rather than depend on this target's label directly -- which
 would require hardcoding the wheel repo's mangled name into your BUILD files --
 you should instead use the `requirement()` function defined in the central
 repo's `//:requirements.bzl` file. This function maps a pip package name to a
-label. (["Extras"](
-https://packaging.python.org/tutorials/installing-packages/#installing-setuptools-extras)
-can be referenced using the `pkg[extra]` syntax.)
+label.
 
 ```python
 load("@my_deps//:requirements.bzl", "requirement")
@@ -212,17 +210,35 @@ py_library(
     deps = [
         ":myotherlib",
         requirement("some_pip_dep"),
-        requirement("another_pip_dep[some_extra]"),
+        requirement("another_pip_dep"),
     ]
 )
 ```
+
 
 For reference, the wheel repos are canonically named following the pattern:
 `@{central_repo_name}_pypi__{distribution}_{version}`. Characters in the
 distribution and version that are illegal in Bazel label names (e.g. `-`, `.`)
 are replaced with `_`. While this naming pattern doesn't change often, it is
-not guaranted to remain stable, so use of the `requirement()` function is
-recommended.
+not guaranted to remain stable, so use of the `requirement()` function is recommended. 
+
+#### 'Extras' requirement consumption
+
+When using the legacy `pip_import`, you must specify the extra in the argument to the `requirement` macro. For example:
+
+```python
+py_library(
+    name = "mylib",
+    srcs = ["mylib.py"],
+    deps = [
+        requirement("useful_dep[some_extra]"),
+    ]
+)
+```
+
+If using `pip_install` or `pip_parse`, any extras specified in the requirements file will be automatically
+linked as a dependency of the package so that you don't need to specify the extra. In the example above,
+you'd just put `requirement("useful_dep")`.
 
 ### Consuming Wheel Dists Directly
 
