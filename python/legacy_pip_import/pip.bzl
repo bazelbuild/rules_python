@@ -48,7 +48,7 @@ def _pip_import_impl(repository_ctx):
         ]
 
     # To see the output, pass: quiet=False
-    result = repository_ctx.execute(args, timeout=repository_ctx.attr.timeout)
+    result = repository_ctx.execute(args, timeout = repository_ctx.attr.timeout)
 
     if result.return_code:
         fail("pip_import failed: %s (%s)" % (result.stdout, result.stderr))
@@ -75,7 +75,7 @@ python_interpreter.
         ),
         "timeout": attr.int(
             default = 600,
-            doc = "Timeout (in seconds) for repository fetch."
+            doc = "Timeout (in seconds) for repository fetch.",
         ),
         "_script": attr.label(
             executable = True,

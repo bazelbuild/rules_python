@@ -46,8 +46,8 @@ filegroup(
         "defs.bzl",
         "packaging.bzl",
         "pip.bzl",
-        "whl.bzl",
         "private/reexports.bzl",
+        "whl.bzl",
     ],
     visibility = ["//:__pkg__"],
 )

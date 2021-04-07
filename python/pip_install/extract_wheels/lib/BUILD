@@ -4,12 +4,12 @@ load("//python/pip_install:repositories.bzl", "requirement")
 py_library(
     name = "lib",
     srcs = [
+        "arguments.py",
         "bazel.py",
         "namespace_pkgs.py",
         "purelib.py",
         "requirements.py",
         "wheel.py",
-        "arguments.py",
     ],
     visibility = [
         "//python/pip_install/extract_wheels:__subpackages__",
@@ -64,11 +64,11 @@ py_test(
     srcs = [
         "whl_filegroup_test.py",
     ],
+    data = ["//examples/wheel:minimal_with_py_package"],
     tags = ["unit"],
     deps = [
         ":lib",
     ],
-    data = ["//examples/wheel:minimal_with_py_package"]
 )
 
 py_test(

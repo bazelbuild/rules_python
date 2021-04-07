@@ -211,7 +211,7 @@ py_binary(
 
 def _impl_whl_library(rctx):
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
-    _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent=rctx.attr.repo))
+    _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
     pypath = _construct_pypath(rctx)
     args = [
         rctx.attr.python_interpreter,
