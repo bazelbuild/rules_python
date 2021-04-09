@@ -14,14 +14,13 @@
 
 """Rules for building wheels."""
 
-# Provides info about python wheels.
-WheelInfo = provider(fields = [
-    "distribution",
-    "python_tag",
+WheelInfo = provider("Provides info about python wheels.", fields = [
     "abi",
+    "distribution",
     "platform",
-    "wheel_file",
+    "python_tag",
     "version_file",
+    "wheel_file",
 ])
 
 def _path_inside_wheel(input_file):
