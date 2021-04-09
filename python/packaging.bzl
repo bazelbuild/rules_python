@@ -14,6 +14,16 @@
 
 """Rules for building wheels."""
 
+# Provides info about python wheels.
+WheelInfo = provider(fields = [
+    "distribution",
+    "python_tag",
+    "abi",
+    "platform",
+    "wheel_file",
+    "version_file",
+])
+
 def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
     # which is not a valid path within a zip file. Fix that.
@@ -82,13 +92,22 @@ Sub-packages are automatically included.
 )
 
 def _py_wheel_impl(ctx):
-    outfile = ctx.actions.declare_file("-".join([
-        ctx.attr.distribution,
-        ctx.attr.version,
-        ctx.attr.python_tag,
-        ctx.attr.abi,
-        ctx.attr.platform,
-    ]) + ".whl")
+    version_file = ctx.actions.declare_file(ctx.label.name + "_version.txt")
+    version_args = ctx.actions.args()
+    version_args.add("--version", ctx.attr.version)
+    version_args.add("--bazel_info_file", ctx.info_file)
+    version_args.add("--bazel_version_file", ctx.version_file)
+    version_args.add("--out", version_file.path)
+
+    ctx.actions.run(
+        inputs = depset([ctx.info_file, ctx.version_file]),
+        outputs = [version_file],
+        arguments = [version_args],
+        executable = ctx.executable._wheelversioner,
+        progress_message = "Versioning wheel",
+    )
+
+    wheel_file = ctx.actions.declare_file(ctx.label.name + ".whl")
 
     inputs_to_package = depset(
         direct = ctx.files.deps,
@@ -108,12 +127,12 @@ def _py_wheel_impl(ctx):
 
     args = ctx.actions.args()
     args.add("--name", ctx.attr.distribution)
-    args.add("--version", ctx.attr.version)
+    args.add("--version_file", version_file.path)
     args.add("--python_tag", ctx.attr.python_tag)
     args.add("--python_requires", ctx.attr.python_requires)
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
-    args.add("--out", outfile.path)
+    args.add("--out", wheel_file.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
     args.add("--input_file_list", packageinputfile)
@@ -172,16 +191,29 @@ def _py_wheel_impl(ctx):
         other_inputs.append(description_file)
 
     ctx.actions.run(
-        inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
-        outputs = [outfile],
+        inputs = depset(
+            direct = other_inputs + [version_file],
+            transitive = [inputs_to_package]
+        ),
+        outputs = [wheel_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
         progress_message = "Building wheel",
     )
-    return [DefaultInfo(
-        files = depset([outfile]),
-        data_runfiles = ctx.runfiles(files = [outfile]),
-    )]
+    return [
+        WheelInfo(
+            distribution = ctx.attr.distribution,
+            python_tag = ctx.attr.python_tag,
+            abi = ctx.attr.abi,
+            platform = ctx.attr.platform,
+            wheel_file = wheel_file,
+            version_file = version_file,
+        ),
+        DefaultInfo(
+            files = depset([wheel_file, version_file]),
+            data_runfiles = ctx.runfiles(files = [wheel_file, version_file]),
+        )
+    ]
 
 def _concat_dicts(*dicts):
     result = {}
@@ -334,10 +366,91 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
                 cfg = "host",
                 default = "//tools:wheelmaker",
             ),
+            "_wheelversioner": attr.label(
+                executable = True,
+                cfg = "host",
+                default = "//tools:wheelversioner",
+            ),
         },
         _distribution_attrs,
         _requirement_attrs,
         _entrypoint_attrs,
         _other_attrs,
     ),
+)
+
+def _py_wheel_push_impl(ctx):
+    wheel_info = ctx.attr.wheel[WheelInfo]
+
+    wheel_file = wheel_info.wheel_file
+    version_file = wheel_info.version_file
+
+    pusher_args = [
+        "--distribution", wheel_info.distribution,
+        "--python_tag", wheel_info.python_tag,
+        "--abi", wheel_info.abi,
+        "--platform", wheel_info.platform,
+        "--wheel_file", wheel_file.short_path,
+        "--version_file", version_file.short_path,
+    ]
+    if ctx.attr.repository:
+        pusher_args.extend(["--repository", ctx.attr.repository])
+    if ctx.attr.repository_url:
+        pusher_args.extend(["--repository_url", ctx.attr.repository_url])
+    if ctx.attr.non_interactive:
+        pusher_args.append("--non_interactive")
+    if ctx.attr.skip_existing:
+        pusher_args.append("--skip_existing")
+    if ctx.attr.verbose:
+        pusher_args.append("--verbose")
+
+    pusher_runfiles = [ctx.executable._wheelpusher, wheel_file, version_file]
+    runfiles = ctx.runfiles(files = pusher_runfiles)
+    runfiles = runfiles.merge(ctx.attr._wheelpusher[DefaultInfo].default_runfiles)
+
+    exe = ctx.actions.declare_file(ctx.label.name + ".sh")
+    ctx.actions.expand_template(
+        template = ctx.file._push_wheel_sh_tpl,
+        output = exe,
+        substitutions = {
+            "%{args}": " ".join(pusher_args),
+            "%{cmd}": ctx.executable._wheelpusher.short_path,
+        },
+        is_executable = True,
+    )
+
+    return [
+        DefaultInfo(
+            executable = exe,
+            runfiles = runfiles,
+        ),
+    ]
+
+
+py_wheel_push = rule(
+    implementation = _py_wheel_push_impl,
+    doc  = "Pushes a Python wheel.",
+    attrs = {
+        "wheel": attr.label(
+            mandatory = True,
+            doc = "The wheel to be pushed.",
+            providers = [WheelInfo],
+        ),
+        "repository": attr.string(),
+        "repository_url": attr.string(),
+        "non_interactive": attr.bool(default=True),
+        "skip_existing": attr.bool(default=True),
+        "verbose": attr.bool(default=False),
+        "_wheelpusher": attr.label(
+            executable = True,
+            cfg = "host",
+            default = "//tools:wheelpusher",
+        ),
+        "_push_wheel_sh_tpl": attr.label(
+            doc = "The script template to use.",
+            allow_single_file = True,
+            default = "//tools:push_wheel.sh.tpl",
+        ),
+    },
+    executable = True,
 )

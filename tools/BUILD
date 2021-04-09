@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 load("//python:defs.bzl", "py_binary")
+load("@rules_python_packaging_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,6 +23,21 @@ py_binary(
     name = "wheelmaker",
     srcs = ["wheelmaker.py"],
 )
+
+# Implementation detail of py_wheel rule.
+py_binary(
+    name = "wheelversioner",
+    srcs = ["wheelversioner.py"],
+)
+
+# Implementation detail of py_wheel_push rule.
+py_binary(
+    name = "wheelpusher",
+    srcs = ["wheelpusher.py"],
+    deps = [requirement("twine")],
+)
+
+exports_files(["push_wheel.sh.tpl"])
 
 # These files are generated and updated by ./update_tools.sh
 exports_files([

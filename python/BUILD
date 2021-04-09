@@ -142,6 +142,7 @@ alias(
 
 exports_files([
     "packaging.bzl",
+    "packaging_requirements.txt",
     "pip.bzl",
     "whl.bzl",
 ])
