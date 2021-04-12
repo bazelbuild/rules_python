@@ -18,6 +18,9 @@ filegroup(
 )
 
 exports_files(
-    ["pip_repository.bzl", "repositories.bzl"],
+    [
+        "pip_repository.bzl",
+        "repositories.bzl",
+    ],
     visibility = ["//docs:__pkg__"],
 )

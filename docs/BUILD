@@ -42,7 +42,7 @@ bzl_library(
     name = "bazel_repo_tools",
     srcs = [
         "@bazel_tools//tools:bzl_srcs",
-    ]
+    ],
 )
 
 bzl_library(

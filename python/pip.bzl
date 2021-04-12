@@ -47,6 +47,7 @@ def pip_install(requirements, name = "pip", **kwargs):
       name: A unique name for the created external repository (default 'pip').
       **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
     """
+
     # Just in case our dependencies weren't already fetched
     pip_install_dependencies()
 
