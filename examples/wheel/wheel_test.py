@@ -163,6 +163,40 @@ second = second.main:s""")
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/METADATA',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD'])
 
+    def test_custom_package_root_map_prefixes_wheel(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'rules_python',
+                                'examples', 'wheel',
+                                'custom_package_root_map_prefixes-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['custom_path_prefix/data.txt',
+                 'custom_path_prefix/module_with_data.py',
+                 'custom_path_prefix/simple_module.py',
+                 'custom_path_prefix/main.py',
+                 'custom_package_root_map_prefixes-0.0.1.dist-info/WHEEL',
+                 'custom_package_root_map_prefixes-0.0.1.dist-info/METADATA',
+                 'custom_package_root_map_prefixes-0.0.1.dist-info/RECORD'])
+
+    def test_custom_package_root_strip_and_map_prefixes(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'rules_python',
+                                'examples', 'wheel',
+                                'custom_package_root_strip_and_map_prefixes-0.0.1-py3-none-any.whl')
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['custom_prefix_after_stripping/custom_lib/data.txt',
+                 'custom_prefix_after_stripping/custom_lib/module_with_data.py',
+                 'custom_prefix_after_stripping/custom_lib/simple_module.py',
+                 'custom_prefix_after_stripping/main.py',
+                 'custom_package_root_strip_and_map_prefixes-0.0.1.dist-info/WHEEL',
+                 'custom_package_root_strip_and_map_prefixes-0.0.1.dist-info/METADATA',
+                 'custom_package_root_strip_and_map_prefixes-0.0.1.dist-info/RECORD'])
+
     def test_python_requires_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'rules_python',
