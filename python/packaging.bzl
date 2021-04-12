@@ -263,14 +263,14 @@ _other_attrs = {
     "description_file": attr.label(allow_single_file = True),
     "homepage": attr.string(default = ""),
     "license": attr.string(default = ""),
+    "map_path_prefixes": attr.string_list(
+        default = [],
+        doc = "key=value formatted list of prefixes to map to new prefixes for files added to the generated package",
+    ),
     "python_requires": attr.string(default = ""),
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
-    ),
-    "map_path_prefixes": attr.string_list(
-        default = [],
-        doc = "key=value formatted list of prefixes to map to new prefixes for files added to the generated package",
     ),
 }
 
