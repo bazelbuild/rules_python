@@ -3,27 +3,6 @@
 * Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=master)](https://buildkite.com/bazel/python-rules-python-postsubmit)
 * Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=master)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
 
-## Recent updates
-
-* 2021-03-31: Release [`0.2.0` was published](https://github.com/bazelbuild/rules_python/releases/tag/0.2.0).
-
-* 2020-10-15: Release [`0.1.0` was published](https://github.com/bazelbuild/rules_python/releases/tag/0.1.0), upstreaming
-the `pip_install` rule functionality from [github.com/dillon-giacoppo/rules_python_external](https://github.com/dillon-giacoppo/rules_python_external)
-to address a number of long-standing issues with `pip_import` (eg. [#96](https://github.com/bazelbuild/rules_python/issues/96), [#71](https://github.com/bazelbuild/rules_python/issues/71), [#102](https://github.com/bazelbuild/rules_python/issues/102)).
-Note that this is a backwards-incompatible release on account of the removal of `pip_import` from `@rules_python//python:pip.bzl`.  
-
-* 2019-11-15: Added support for `pip3_import` (and more generally, a
-`python_interpreter` attribute to `pip_import`). The canonical naming for wheel
-repositories has changed to accomodate loading wheels for both `pip_import` and
-`pip3_import` in the same build. To avoid breakage, please use `requirement()`
-instead of depending directly on wheel repo labels.
-
-* 2019-07-26: The canonical name of this repo has been changed from
-`@io_bazel_rules_python` to just `@rules_python`, in accordance with
-[convention](https://docs.bazel.build/versions/master/skylark/deploying.html#workspace).
-Please update your `WORKSPACE` file and labels that reference this repo
-accordingly.
-
 ## Overview
 
 This repository is the home of the core Python rules -- `py_library`,
