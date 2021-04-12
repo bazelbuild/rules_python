@@ -161,33 +161,33 @@ py_wheel(
 py_wheel(
     name = "custom_package_root_map_prefixes",
     distribution = "custom_package_root_map_prefixes",
-    python_tag = "py3",
     map_path_prefixes = [
-        "examples/wheel/lib=custom_path_prefix", # like strip_path_prefixes, order matters here
+        "examples/wheel/lib=custom_path_prefix",  # like strip_path_prefixes, order matters here
         "examples/wheel=custom_path_prefix",
     ],
+    python_tag = "py3",
     version = "0.0.1",
     deps = [
-        ":example_pkg"
-    ]
+        ":example_pkg",
+    ],
 )
 
 py_wheel(
     name = "custom_package_root_strip_and_map_prefixes",
     distribution = "custom_package_root_strip_and_map_prefixes",
+    map_path_prefixes = [
+        "examples/wheel/lib=custom_path_prefix",  # has no effect because "examples/wheel" is stripped beforehand
+        "/lib=/custom_lib",  # maps stripped prefix to a custom prefix
+        "=custom_prefix_after_stripping",  # prepends custom prefix
+    ],
     python_tag = "py3",
     strip_path_prefixes = [
-        "examples/wheel"
-    ],
-    map_path_prefixes = [
-        "examples/wheel/lib=custom_path_prefix", # has no effect because "examples/wheel" is stripped beforehand
-        "/lib=/custom_lib", # maps stripped prefix to a custom prefix
-        "=custom_prefix_after_stripping"  # prepends custom prefix
+        "examples/wheel",
     ],
     version = "0.0.1",
     deps = [
-        ":example_pkg"
-    ]
+        ":example_pkg",
+    ],
 )
 
 py_wheel(
@@ -226,9 +226,9 @@ py_test(
     srcs = ["wheel_test.py"],
     data = [
         ":custom_package_root",
+        ":custom_package_root_map_prefixes",
         ":custom_package_root_multi_prefix",
         ":custom_package_root_multi_prefix_reverse_order",
-        ":custom_package_root_map_prefixes",
         ":custom_package_root_strip_and_map_prefixes",
         ":customized",
         ":minimal_with_py_library",

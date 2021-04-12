@@ -270,8 +270,8 @@ _other_attrs = {
     ),
     "map_path_prefixes": attr.string_list(
         default = [],
-        doc = "key=value formatted list of prefixes to map to new prefixes for files added to the generated package"
-    )
+        doc = "key=value formatted list of prefixes to map to new prefixes for files added to the generated package",
+    ),
 }
 
 py_wheel = rule(
