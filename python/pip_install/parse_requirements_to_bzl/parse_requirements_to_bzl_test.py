@@ -15,8 +15,10 @@ class TestParseRequirementsToBzl(unittest.TestCase):
 
     def test_generated_requirements_bzl(self) -> None:
         with NamedTemporaryFile() as requirements_lock:
-            requirement_string = "foo==0.0.0"
-            requirements_lock.write(bytes(requirement_string, encoding="utf-8"))
+            require_hashes = "--require-hashes"
+            comments_and_flags = "#comment\n{}\n".format(require_hashes)
+            requirement_string = "foo==0.0.0 --hash=sha256:hashofFoowhl"
+            requirements_lock.write(bytes(comments_and_flags + requirement_string, encoding="utf-8"))
             requirements_lock.flush()
             args = argparse.Namespace()
             args.requirements_lock = requirements_lock.name
@@ -32,7 +34,8 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)
             self.assertIn(requirement_string, contents, contents)
-            self.assertIn("'extra_pip_args': {}".format(repr(extra_pip_args)), contents, contents)
+            all_flags = extra_pip_args + [require_hashes]
+            self.assertIn("'extra_pip_args': {}".format(repr(all_flags)), contents, contents)
 
 
 if __name__ == "__main__":
