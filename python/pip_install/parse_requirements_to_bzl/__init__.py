@@ -13,7 +13,7 @@ from pip._internal.network.session import PipSession
 
 def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]) -> List[Tuple[InstallRequirement, str]]:
     ps = PipSession()
-    # This is roughly taken from pip._internal.req.req_file.parser_requirements in order to keep
+    # This is roughly taken from pip._internal.req.req_file.parse_requirements in order to keep
     # the original line (sort-of, its preprocessed) from the requirements_lock file around, to pass to sub repos
     # as the requirement.
     line_parser = get_line_parser(finder=None)
