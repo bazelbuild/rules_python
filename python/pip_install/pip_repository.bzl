@@ -12,7 +12,7 @@ def _construct_pypath(rctx):
         rctx: Handle to the repository_context.
     Returns: String of the PYTHONPATH.
     """
-    rctx.file("BUILD", "")
+    rctx.file("BUILD.bazel", "")
 
     # Get the root directory of these rules
     rules_root = rctx.path(Label("//:BUILD")).dirname
