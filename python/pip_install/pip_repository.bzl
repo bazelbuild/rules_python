@@ -12,7 +12,6 @@ def _construct_pypath(rctx):
         rctx: Handle to the repository_context.
     Returns: String of the PYTHONPATH.
     """
-    rctx.file("BUILD", "")
 
     # Get the root directory of these rules
     rules_root = rctx.path(Label("//:BUILD")).dirname
@@ -63,6 +62,9 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.incremental and not rctx.attr.requirements_lock:
         fail("Incremental mode requires a requirements_lock attribute be specified.")
+
+    # We need a BUILD file to load the generated requirements.bzl
+    rctx.file("BUILD.bazel", "")
 
     pypath = _construct_pypath(rctx)
 
