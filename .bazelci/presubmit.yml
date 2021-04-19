@@ -17,3 +17,5 @@ platforms:
     <<: *all_targets
   macos:
     <<: *all_targets
+  windows:
+    <<: *all_targets
