@@ -39,12 +39,27 @@ bzl_library(
 )
 
 bzl_library(
+    name = "bazel_repo_tools",
+    srcs = [
+        "@bazel_tools//tools:bzl_srcs",
+    ],
+)
+
+bzl_library(
     name = "defs",
     srcs = [
         "//python:defs.bzl",
         "//python:private/reexports.bzl",
     ],
     deps = [":bazel_python_tools"],
+)
+
+bzl_library(
+    name = "pip_install_bzl",
+    srcs = [
+        "//python/pip_install:pip_repository.bzl",
+        "//python/pip_install:repositories.bzl",
+    ],
 )
 
 stardoc(
@@ -62,6 +77,10 @@ stardoc(
     name = "pip-docs",
     out = "pip.md",
     input = "//python:pip.bzl",
+    deps = [
+        ":bazel_repo_tools",
+        ":pip_install_bzl",
+    ],
 )
 
 stardoc(

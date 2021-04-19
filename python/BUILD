@@ -32,7 +32,22 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
         "//python/constraints:distribution",
+        "//python/legacy_pip_import:distribution",
         "//python/runfiles:distribution",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
+# Filegroup of bzl files that can be used by downstream rules for documentation generation
+# Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
+filegroup(
+    name = "bzl",
+    srcs = [
+        "defs.bzl",
+        "packaging.bzl",
+        "pip.bzl",
+        "private/reexports.bzl",
+        "whl.bzl",
     ],
     visibility = ["//:__pkg__"],
 )
@@ -126,6 +141,7 @@ alias(
 # ========= Packaging rules =========
 
 exports_files([
+    "packaging.bzl",
     "pip.bzl",
     "whl.bzl",
 ])

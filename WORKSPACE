@@ -14,10 +14,6 @@
 
 workspace(name = "rules_python")
 
-load("//python:pip.bzl", "pip_repositories")
-
-pip_repositories()
-
 # Everything below this line is used only for developing rules_python. Users
 # should not copy it to their WORKSPACE.
 

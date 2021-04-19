@@ -3,7 +3,7 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@rules_python//python:pip.bzl", "pip_import")
+load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import")
 
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
@@ -109,4 +109,14 @@ def rules_python_internal_deps():
         pip_import,
         name = "piptool_deps",
         requirements = "@rules_python//python:requirements.txt",
+    )
+
+    maybe(
+        http_archive,
+        name = "build_bazel_integration_testing",
+        urls = [
+            "https://github.com/bazelbuild/bazel-integration-testing/archive/165440b2dbda885f8d1ccb8d0f417e6cf8c54f17.zip",
+        ],
+        strip_prefix = "bazel-integration-testing-165440b2dbda885f8d1ccb8d0f417e6cf8c54f17",
+        sha256 = "2401b1369ef44cc42f91dc94443ef491208dbd06da1e1e10b702d8c189f098e3",
     )
