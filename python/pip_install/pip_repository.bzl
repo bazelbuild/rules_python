@@ -138,7 +138,7 @@ def _pip_repository_impl(rctx):
             rctx.path(rctx.attr.requirements),
         ]
 
-    args += ["--repo", rctx.attr.name]
+    args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
     args = _parse_optional_attrs(rctx, args)
 
     result = rctx.execute(
@@ -206,6 +206,18 @@ python_interpreter.
     "quiet": attr.bool(
         default = True,
         doc = "If True, suppress printing stdout and stderr output to the terminal.",
+    ),
+    "repo_prefix": attr.string(
+        doc = """
+Prefix for the generated packages. For non-incremental mode the
+packages will be of the form
+
+@<name>//<prefix><sanitized-package-name>/...
+
+For incremental mode the packages will be of the form
+
+@<prefix><sanitized-package-name>//...
+""",
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
     "timeout": attr.int(
@@ -293,6 +305,8 @@ def _impl_whl_library(rctx):
         rctx.attr.requirement,
         "--repo",
         rctx.attr.repo,
+        "--repo-prefix",
+        rctx.attr.repo_prefix,
     ]
     args = _parse_optional_attrs(rctx, args)
 

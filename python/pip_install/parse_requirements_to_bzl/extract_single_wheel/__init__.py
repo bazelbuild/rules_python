@@ -30,7 +30,7 @@ def main() -> None:
 
     pip_args = (
         [sys.executable, "-m", "pip"] +
-        (["--isolated"] if args.isolated else []) + 
+        (["--isolated"] if args.isolated else []) +
         ["wheel", "--no-deps"] +
         deserialized_args["extra_pip_args"]
     )
@@ -67,5 +67,5 @@ def main() -> None:
         deserialized_args["pip_data_exclude"],
         args.enable_implicit_namespace_pkgs,
         incremental=True,
-        incremental_repo_prefix=bazel.whl_library_repo_prefix(args.repo)
+        repo_prefix=args.repo_prefix,
     )

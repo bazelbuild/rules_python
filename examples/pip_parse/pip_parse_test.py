@@ -46,12 +46,12 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/INSTALL.md",
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/LICENSE",
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/NEWS",
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/README.md",
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/data/share/man/man1/s3cmd.1",
-                "external/pip_parsed_deps_pypi__s3cmd/s3cmd-2.1.0.data/scripts/s3cmd",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/INSTALL.md",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/LICENSE",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/NEWS",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/README.md",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/man/man1/s3cmd.1",
+                "external/pypi_s3cmd/s3cmd-2.1.0.data/scripts/s3cmd",
             ],
         )
 
@@ -61,11 +61,11 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pip_parsed_deps_pypi__requests/requests-2.25.1.dist-info/LICENSE",
-                "external/pip_parsed_deps_pypi__requests/requests-2.25.1.dist-info/METADATA",
-                "external/pip_parsed_deps_pypi__requests/requests-2.25.1.dist-info/RECORD",
-                "external/pip_parsed_deps_pypi__requests/requests-2.25.1.dist-info/WHEEL",
-                "external/pip_parsed_deps_pypi__requests/requests-2.25.1.dist-info/top_level.txt",
+                "external/pypi_requests/requests-2.25.1.dist-info/LICENSE",
+                "external/pypi_requests/requests-2.25.1.dist-info/METADATA",
+                "external/pypi_requests/requests-2.25.1.dist-info/RECORD",
+                "external/pypi_requests/requests-2.25.1.dist-info/WHEEL",
+                "external/pypi_requests/requests-2.25.1.dist-info/top_level.txt",
             ],
         )
 

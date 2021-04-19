@@ -96,6 +96,7 @@ def pip_install(requirements, name = "pip", **kwargs):
     pip_repository(
         name = name,
         requirements = requirements,
+        repo_prefix = "pypi__",
         **kwargs
     )
 
@@ -171,7 +172,8 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
             of 'requirements' no resolve will take place and pip_repository will create
             individual repositories for each of your dependencies so that wheels are
             fetched/built only for the targets specified by 'build/run/test'.
-        name (str, optional): The name of the generated repository.
+        name (str, optional): The name of the generated repository. The generated repositories
+            containing each requirement will be of the form <name>_<requirement-name>.
         **kwargs (dict): Additional keyword arguments for the underlying
             `pip_repository` rule.
     """
@@ -182,6 +184,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     pip_repository(
         name = name,
         requirements_lock = requirements_lock,
+        repo_prefix = "{}_".format(name),
         incremental = True,
         **kwargs
     )
