@@ -30,11 +30,11 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 py_binary(
     name = "main",
     srcs = ["main.py"],
+    data = [
+        whl_requirement("requests"),
+    ],
     deps = [
         requirement("requests"),
-    ],
-    data = [
-        whl_requirement("requests")
     ],
 )
 
