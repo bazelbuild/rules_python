@@ -1,4 +1,4 @@
-load("@pip_parsed_deps//:requirements.bzl", "requirement")
+load("@pip_parsed_deps//:requirements.bzl", "requirement", "whl_requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 # Toolchain setup, this is optional.
@@ -32,6 +32,9 @@ py_binary(
     srcs = ["main.py"],
     deps = [
         requirement("requests"),
+    ],
+    data = [
+        whl_requirement("requests")
     ],
 )
 
