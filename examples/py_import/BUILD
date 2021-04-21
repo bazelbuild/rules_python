@@ -12,22 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@examples_py_import//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_import", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# Adapt helloworld.egg so it can be depended on as if it were a
+# py_library target
 py_import(
     name = "py_import",
-    srcs = ["py_import.egg"],
+    # Note: this .egg file can be regenerated using zipper:
+    # $ third_party/ijar/zipper Cc \
+    #   examples/py_import/helloworld.egg \
+    #   examples/py_import/helloworld.py=examples/legacy_pip_import/helloworld/helloworld.py \
+    #   examples/__init__.py= \
+    #   examples/py_import/__init__.py=
+    srcs = ["helloworld.egg"],
     deps = [requirement("futures")],
 )
 
 py_test(
     name = "py_import_test",
     srcs = ["py_import_test.py"],
-    python_version = "PY2",
     deps = [":py_import"],
 )

@@ -95,8 +95,15 @@ def _py_import_impl(ctx):
     ]
 
 py_import = rule(
-    doc = "This rule allows the use of Python eggs as libraries for " +
-          "`py_library` and `py_binary` rules.",
+    doc = """This rule allows the use of Python packages as dependencies.
+
+    It imports the given `.egg` file(s), which might be checked in source files,
+    fetched externally as with `http_file`, or produced as outputs of other rules.
+
+    It may be used like a `py_library`, in the `deps` of other Python rules.
+
+    This is similar to [java_import](https://docs.bazel.build/versions/master/be/java.html#java_import).
+    """,
     implementation = _py_import_impl,
     attrs = {
         "deps": attr.label_list(
@@ -105,8 +112,10 @@ py_import = rule(
             providers = [PyInfo],
         ),
         "srcs": attr.label_list(
-            doc = "The list of Python eggs provided to Python targets " +
-                  "that depend on this target.",
+            doc = "The list of Python package files provided to Python targets " +
+                  "that depend on this target. Note that currently only the .egg " +
+                  "format is accepted. For .whl files, try the whl_library rule. " +
+                  "We accept contributions to extend py_import to handle .whl.",
             allow_files = [".egg"],
         ),
     },

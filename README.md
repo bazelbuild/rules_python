@@ -6,9 +6,9 @@
 ## Overview
 
 This repository is the home of the core Python rules -- `py_library`,
-`py_binary`, `py_test`, `py_import`, and related symbols that provide the
-basis for Python support in Bazel. It also contains packaging rules for
-integrating with PyPI (`pip`). Documentation lives in the
+`py_binary`, `py_test`, and related symbols that provide the basis for Python
+support in Bazel. It also contains packaging rules for integrating with PyPI
+(`pip`). Documentation lives in the
 [`docs/`](https://github.com/bazelbuild/rules_python/tree/master/docs)
 directory and in the
 [Bazel Build Encyclopedia](https://docs.bazel.build/versions/master/be/python.html).
