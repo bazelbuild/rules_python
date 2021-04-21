@@ -248,6 +248,7 @@ def extract_wheel(
         )
         build_file.write(contents)
 
-    os.remove(whl.path)
+    if not incremental:
+        os.remove(whl.path)
 
     return "//%s" % directory
