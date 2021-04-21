@@ -52,7 +52,7 @@ def _parse_optional_attrs(rctx, args):
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
 
-# Ensure the `requirements.bzl` source can be accessed outside the workspace.
+# Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
 exports_files(["requirements.bzl"])
 """
 
