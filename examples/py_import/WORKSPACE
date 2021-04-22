@@ -1,0 +1,15 @@
+workspace(name = "py_import")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Note, this relies on a pre-release of 0.3.0, and doesn't actually work with 0.2.0
+# Use --override_repository=rules_python=$HOME/Projects/rules_python to test for now
+http_archive(
+    name = "rules_python",
+    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+)
+
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(requirements = "//:requirements.txt")
