@@ -36,3 +36,8 @@ bazel_integration_test(
     name = "py_import_example",
     timeout = "long",
 )
+
+bazel_integration_test(
+    name="pytest_example",
+    timeout = "long"
+)
