@@ -47,6 +47,8 @@ filegroup(
         "packaging.bzl",
         "pip.bzl",
         "private/reexports.bzl",
+        "pytest.bzl",
+        "suite.bzl",
         "whl.bzl",
     ],
     visibility = ["//:__pkg__"],
@@ -144,4 +146,6 @@ exports_files([
     "packaging.bzl",
     "pip.bzl",
     "whl.bzl",
+    "pytest.bzl",
+    "suite.bzl"
 ])
