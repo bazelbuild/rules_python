@@ -115,6 +115,7 @@ def _py_wheel_impl(ctx):
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
+    args.add_all(ctx.attr.map_path_prefixes, format_each = "--map_path_prefix=%s")
 
     args.add("--input_file_list", packageinputfile)
 
@@ -262,6 +263,10 @@ _other_attrs = {
     "description_file": attr.label(allow_single_file = True),
     "homepage": attr.string(default = ""),
     "license": attr.string(default = ""),
+    "map_path_prefixes": attr.string_list(
+        default = [],
+        doc = "key=value formatted list of prefixes to map to new prefixes for files added to the generated package",
+    ),
     "python_requires": attr.string(default = ""),
     "strip_path_prefixes": attr.string_list(
         default = [],

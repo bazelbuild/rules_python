@@ -159,6 +159,38 @@ py_wheel(
 )
 
 py_wheel(
+    name = "custom_package_root_map_prefixes",
+    distribution = "custom_package_root_map_prefixes",
+    map_path_prefixes = [
+        "examples/wheel/lib=custom_path_prefix",  # like strip_path_prefixes, order matters here
+        "examples/wheel=custom_path_prefix",
+    ],
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [
+        ":example_pkg",
+    ],
+)
+
+py_wheel(
+    name = "custom_package_root_strip_and_map_prefixes",
+    distribution = "custom_package_root_strip_and_map_prefixes",
+    map_path_prefixes = [
+        "examples/wheel/lib=custom_path_prefix",  # has no effect because "examples/wheel" is stripped beforehand
+        "/lib=/custom_lib",  # maps stripped prefix to a custom prefix
+        "=custom_prefix_after_stripping",  # prepends custom prefix
+    ],
+    python_tag = "py3",
+    strip_path_prefixes = [
+        "examples/wheel",
+    ],
+    version = "0.0.1",
+    deps = [
+        ":example_pkg",
+    ],
+)
+
+py_wheel(
     name = "python_requires_in_a_package",
     distribution = "example_python_requires_in_a_package",
     python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
@@ -194,8 +226,10 @@ py_test(
     srcs = ["wheel_test.py"],
     data = [
         ":custom_package_root",
+        ":custom_package_root_map_prefixes",
         ":custom_package_root_multi_prefix",
         ":custom_package_root_multi_prefix_reverse_order",
+        ":custom_package_root_strip_and_map_prefixes",
         ":customized",
         ":minimal_with_py_library",
         ":minimal_with_py_package",

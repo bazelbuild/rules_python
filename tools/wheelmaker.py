@@ -33,7 +33,7 @@ def commonpath(path1, path2):
 
 class WheelMaker(object):
     def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None, strip_path_prefixes=None):
+                 outfile=None, strip_path_prefixes=None, map_path_prefixes=None):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -42,6 +42,7 @@ class WheelMaker(object):
         self._platform = platform
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
+        self._map_path_prefixes = map_path_prefixes if map_path_prefixes is not None else []
 
         self._zipfile = None
         self._record = []
@@ -98,8 +99,12 @@ class WheelMaker(object):
             normalized_arcname = name.replace(os.path.sep, '/')
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
-                    return normalized_arcname[len(prefix):]
-
+                    normalized_arcname = normalized_arcname[len(prefix):]
+            for prefix_mapping in self._map_path_prefixes:
+                split_prefix_mapping = prefix_mapping.split("=")
+                if len(split_prefix_mapping) == 2:
+                    if normalized_arcname.startswith(split_prefix_mapping[0]):
+                        normalized_arcname = split_prefix_mapping[1] + normalized_arcname[len(split_prefix_mapping[0]):]
             return normalized_arcname
 
         if os.path.isdir(real_filename):
@@ -226,6 +231,15 @@ def main():
                                    "Evaluated in order."
                               )
 
+    output_group.add_argument('--map_path_prefix',
+                              type=str,
+                              action="append",
+                              default=[],
+                              help="Key=value prefix substitutions in package files' path. "
+                                   "Can be supplied multiple times. "
+                                   "Evaluated in order after strip_path_prefixes."
+                              )
+
     wheel_group = parser.add_argument_group("Wheel metadata")
     wheel_group.add_argument(
         '--header', action='append',
@@ -279,6 +293,7 @@ def main():
     all_files = sorted(all_files.items())
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
+    map_prefixes = [p for p in arguments.map_path_prefix]
 
     with WheelMaker(name=arguments.name,
                     version=arguments.version,
@@ -287,7 +302,8 @@ def main():
                     abi=arguments.abi,
                     platform=arguments.platform,
                     outfile=arguments.out,
-                    strip_path_prefixes=strip_prefixes
+                    strip_path_prefixes=strip_prefixes,
+                    map_path_prefixes=map_prefixes,
                     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
