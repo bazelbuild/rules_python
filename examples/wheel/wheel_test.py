@@ -73,7 +73,6 @@ class WheelTest(unittest.TestCase):
             entry_point_contents = zf.read(
                 'example_customized-0.0.1.dist-info/entry_points.txt')
             # The entries are guaranteed to be sorted.
-            print(record_contents)
             self.assertEquals(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/RECORD,,
