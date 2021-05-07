@@ -100,12 +100,14 @@ def _pip_repository_impl(rctx):
     args += ["--repo", rctx.attr.name]
     args = _parse_optional_attrs(rctx, args)
 
+    environment = dict(rctx.attr.environment, **{
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        "PYTHONPATH": pypath,
+    })
+
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        environment = environment,
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -125,6 +127,13 @@ and py_test targets must specify either `legacy_create_init=False` or the global
 
 This option is required to support some packages which cannot handle the conversion to pkg-util style.
             """,
+    ),
+    "environment": attr.string_dict(
+        doc = """
+Environment variables to set before calling the package manager. 
+Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
+        """,
+        default = {},
     ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
@@ -232,12 +241,14 @@ def _impl_whl_library(rctx):
         rctx.attr.repo,
     ]
     args = _parse_optional_attrs(rctx, args)
+    environment = dict(rctx.attr.environment, **{
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        "PYTHONPATH": pypath,
+    })
+
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
