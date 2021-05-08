@@ -30,6 +30,7 @@ class WheelTest(unittest.TestCase):
                  'examples/wheel/lib/simple_module.py',
                  'example_minimal_library-0.0.1.dist-info/WHEEL',
                  'example_minimal_library-0.0.1.dist-info/METADATA',
+                 'example_minimal_library-0.0.1.dist-info/top_level.txt',
                  'example_minimal_library-0.0.1.dist-info/RECORD'])
 
     def test_py_package_wheel(self):
@@ -46,6 +47,7 @@ class WheelTest(unittest.TestCase):
                  'examples/wheel/main.py',
                  'example_minimal_package-0.0.1.dist-info/WHEEL',
                  'example_minimal_package-0.0.1.dist-info/METADATA',
+                 'example_minimal_package-0.0.1.dist-info/top_level.txt',
                  'example_minimal_package-0.0.1.dist-info/RECORD'])
 
     def test_customized_wheel(self):
@@ -62,6 +64,7 @@ class WheelTest(unittest.TestCase):
                  'examples/wheel/main.py',
                  'example_customized-0.0.1.dist-info/WHEEL',
                  'example_customized-0.0.1.dist-info/METADATA',
+                 'example_customized-0.0.1.dist-info/top_level.txt',
                  'example_customized-0.0.1.dist-info/entry_points.txt',
                  'example_customized-0.0.1.dist-info/RECORD'])
             record_contents = zf.read(
@@ -72,12 +75,15 @@ class WheelTest(unittest.TestCase):
                 'example_customized-0.0.1.dist-info/METADATA')
             entry_point_contents = zf.read(
                 'example_customized-0.0.1.dist-info/entry_points.txt')
+            top_level_contents = zf.read(
+                'example_customized-0.0.1.dist-info/top_level.txt')
             # The entries are guaranteed to be sorted.
             self.assertEquals(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/RECORD,,
 example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
 example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
+example_customized-0.0.1.dist-info/top_level.txt,sha256=bSdkmtzI11orugV-QWgeMd4T6_4z-QdKZ6LEY-FdDkY,18
 examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
 examples/wheel/lib/module_with_data.py,sha256=K_IGAq_CHcZX0HUyINpD1hqSKIEdCn58d9E9nhWF2EA,636
 examples/wheel/lib/simple_module.py,sha256=72-91Dm6NB_jw-7wYQt7shzdwvk5RB0LujIah8g7kr8,636
@@ -111,6 +117,8 @@ customized_wheel = examples.wheel.main:main
 [group2]
 first = first.main:f
 second = second.main:s""")
+            self.assertEquals(top_level_contents, b"""\
+example_customized""")
 
     def test_custom_package_root_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
@@ -127,6 +135,7 @@ second = second.main:s""")
                  'wheel/main.py',
                  'example_custom_package_root-0.0.1.dist-info/WHEEL',
                  'example_custom_package_root-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root-0.0.1.dist-info/top_level.txt',
                  'example_custom_package_root-0.0.1.dist-info/RECORD'])
 
     def test_custom_package_root_multi_prefix_wheel(self):
@@ -144,6 +153,7 @@ second = second.main:s""")
                  'main.py',
                  'example_custom_package_root_multi_prefix-0.0.1.dist-info/WHEEL',
                  'example_custom_package_root_multi_prefix-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root_multi_prefix-0.0.1.dist-info/top_level.txt',
                  'example_custom_package_root_multi_prefix-0.0.1.dist-info/RECORD'])
 
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
@@ -161,6 +171,7 @@ second = second.main:s""")
                  'main.py',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/WHEEL',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/METADATA',
+                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/top_level.txt',
                  'example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD'])
 
     def test_python_requires_wheel(self):
@@ -231,6 +242,7 @@ Tag: cp38-abi3-manylinux2014_x86_64
                  'examples/wheel/someDir/foo.py',
                  'use_genrule_with_dir_in_outs-0.0.1.dist-info/WHEEL',
                  'use_genrule_with_dir_in_outs-0.0.1.dist-info/METADATA',
+                 'use_genrule_with_dir_in_outs-0.0.1.dist-info/top_level.txt',
                  'use_genrule_with_dir_in_outs-0.0.1.dist-info/RECORD'])
 
 
