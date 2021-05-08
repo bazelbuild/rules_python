@@ -78,11 +78,14 @@ def main() -> None:
     repo_label = "@%s" % args.repo
 
     targets = [
-        '"%s%s"'
-        % (
+        '"{}{}"'.format(
             repo_label,
             bazel.extract_wheel(
-                whl, extras, pip_data_exclude, args.enable_implicit_namespace_pkgs
+                whl,
+                extras,
+                pip_data_exclude,
+                args.enable_implicit_namespace_pkgs,
+                args.repo_prefix,
             ),
         )
         for whl in glob.glob("*.whl")

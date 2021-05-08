@@ -54,5 +54,5 @@ def main() -> None:
         pip_data_exclude,
         args.enable_implicit_namespace_pkgs,
         incremental=True,
-        incremental_repo_prefix=bazel.whl_library_repo_prefix(args.repo)
+        repo_prefix=args.repo_prefix,
     )

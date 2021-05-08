@@ -21,4 +21,9 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         action="store_true",
         help="Disables conversion of implicit namespace packages into pkg-util style packages.",
     )
+    parser.add_argument(
+        "--repo-prefix",
+        required=True,
+        help="Prefix to prepend to packages",
+    )
     return parser

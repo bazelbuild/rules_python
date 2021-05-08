@@ -33,6 +33,11 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pip_parse_custom_prefix_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "py_import_example",
     timeout = "long",
 )
