@@ -202,7 +202,7 @@ def main():
     metadata_group.add_argument('--name', required=True,
                                 type=str,
                                 help="Name of the distribution")
-    metadata_group.add_argument('--version', required=True,
+    metadata_group.add_argument('--version_file', required=True,
                                 type=str,
                                 help="Version of the distribution")
     metadata_group.add_argument('--build_tag', type=str, default='',
@@ -280,8 +280,11 @@ def main():
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
+    with open(arguments.version_file, 'r') as stream:
+        version = stream.read()
+
     with WheelMaker(name=arguments.name,
-                    version=arguments.version,
+                    version=version,
                     build_tag=arguments.build_tag,
                     python_tag=arguments.python_tag,
                     abi=arguments.abi,
