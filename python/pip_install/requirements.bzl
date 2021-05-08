@@ -7,8 +7,8 @@ def compile_pip_requirements(
         name,
         extra_args = [],
         visibility = ["//visibility:private"],
-        requirements_in = "requirements.in",
-        requirements_txt = "requirements.txt",
+        requirements_in = None,
+        requirements_txt = None,
         **kwargs):
     """
     Macro creating targets for running pip-compile
@@ -30,8 +30,8 @@ def compile_pip_requirements(
         requirements_txt: result of "compiling" the requirements.in file
         **kwargs: other bazel attributes passed to the "_test" rule
     """
-    requirements_in = kwargs.pop("requirements_in", name + ".in")
-    requirements_txt = kwargs.pop("requirements_locked", name + ".txt")
+    requirements_in = name + ".in" if requirements_in == None else requirements_in
+    requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
     # "Default" target produced by this macro
     # Allow a compile_pip_requirements rule to include another one in the data
