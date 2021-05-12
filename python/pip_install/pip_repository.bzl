@@ -12,7 +12,6 @@ def _construct_pypath(rctx):
         rctx: Handle to the repository_context.
     Returns: String of the PYTHONPATH.
     """
-    rctx.file("BUILD", "")
 
     # Get the root directory of these rules
     rules_root = rctx.path(Label("//:BUILD")).dirname
@@ -50,6 +49,13 @@ def _parse_optional_attrs(rctx, args):
 
     return args
 
+_BUILD_FILE_CONTENTS = """\
+package(default_visibility = ["//visibility:public"])
+
+# Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
+exports_files(["requirements.bzl"])
+"""
+
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
     if rctx.attr.python_interpreter_target != None:
@@ -63,6 +69,9 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.incremental and not rctx.attr.requirements_lock:
         fail("Incremental mode requires a requirements_lock attribute be specified.")
+
+    # We need a BUILD file to load the generated requirements.bzl
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
 
     pypath = _construct_pypath(rctx)
 

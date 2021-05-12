@@ -2,28 +2,47 @@ import argparse
 import json
 import textwrap
 import sys
+import shlex
 from typing import List, Tuple
 
 from python.pip_install.extract_wheels.lib import bazel, arguments
 from pip._internal.req import parse_requirements, constructors
 from pip._internal.req.req_install import InstallRequirement
+from pip._internal.req.req_file import get_file_content, preprocess, handle_line, get_line_parser, RequirementsFileParser
 from pip._internal.network.session import PipSession
 
 
-def parse_install_requirements(requirements_lock: str) -> List[InstallRequirement]:
-    return [
-        constructors.install_req_from_parsed_requirement(pr)
-        for pr in parse_requirements(requirements_lock, session=PipSession())
-    ]
+def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]) -> List[Tuple[InstallRequirement, str]]:
+    ps = PipSession()
+    # This is roughly taken from pip._internal.req.req_file.parse_requirements
+    # (https://github.com/pypa/pip/blob/21.0.1/src/pip/_internal/req/req_file.py#L127) in order to keep
+    # the original line (sort-of, its preprocessed) from the requirements_lock file around, to pass to sub repos
+    # as the requirement.
+    line_parser = get_line_parser(finder=None)
+    parser = RequirementsFileParser(ps, line_parser)
+    install_req_and_lines: List[Tuple[InstallRequirement, str]] = []
+    _, content = get_file_content(requirements_lock, ps)
+    for parsed_line, (_, line) in zip(parser.parse(requirements_lock, constraint=False), preprocess(content)):
+        if parsed_line.is_requirement:
+            install_req_and_lines.append(
+                (
+                    constructors.install_req_from_line(parsed_line.requirement),
+                    line
+                )
+            )
+
+        else:
+            extra_pip_args.extend(shlex.split(line))
+    return install_req_and_lines
 
 
-def repo_names_and_requirements(install_reqs: List[InstallRequirement], repo_prefix: str) -> List[Tuple[str, str]]:
+def repo_names_and_requirements(install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str) -> List[Tuple[str, str]]:
     return [
         (
             bazel.sanitise_name(ir.name, prefix=repo_prefix),
-            str(ir.req)
+            line,
         )
-        for ir in install_reqs
+        for ir, line in install_reqs
     ]
 
 def deserialize_structured_args(args):
@@ -35,6 +54,8 @@ def deserialize_structured_args(args):
     for arg_name in structured_args:
         if args.get(arg_name) is not None:
             args[arg_name] = json.loads(args[arg_name])["args"]
+        else:
+            args[arg_name] = []
     return args
 
 
@@ -54,13 +75,13 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     requirements_lock = args.pop("requirements_lock")
     repo_prefix = bazel.whl_library_repo_prefix(args["repo"])
 
-    install_reqs = parse_install_requirements(requirements_lock)
-    repo_names_and_reqs = repo_names_and_requirements(install_reqs, repo_prefix)
+    install_req_and_lines = parse_install_requirements(requirements_lock, args["extra_pip_args"])
+    repo_names_and_reqs = repo_names_and_requirements(install_req_and_lines, repo_prefix)
     all_requirements = ", ".join(
-        [bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix) for ir in install_reqs]
+        [bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
     )
     all_whl_requirements = ", ".join(
-        [bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix) for ir in install_reqs]
+        [bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
     )
     return textwrap.dedent("""\
         load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")

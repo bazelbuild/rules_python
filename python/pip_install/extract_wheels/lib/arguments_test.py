@@ -17,7 +17,7 @@ class ArgumentsTestCase(unittest.TestCase):
         args_dict = deserialize_structured_args(args_dict)
         self.assertIn("repo", args_dict)
         self.assertIn("extra_pip_args", args_dict)
-        self.assertEqual(args_dict["pip_data_exclude"], None)
+        self.assertEqual(args_dict["pip_data_exclude"], [])
         self.assertEqual(args_dict["enable_implicit_namespace_pkgs"], False)
         self.assertEqual(args_dict["repo"], repo_name)
         self.assertEqual(args_dict["extra_pip_args"], index_url)
