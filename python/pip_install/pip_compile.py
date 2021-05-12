@@ -13,7 +13,7 @@ if len(sys.argv) < 4:
     )
     sys.exit(1)
 
-requirements_in = sys.argv.pop(1)
+requirements_in = os.path.relpath(sys.argv.pop(1))
 requirements_txt = sys.argv.pop(1)
 update_target_name = sys.argv.pop(1)
 
