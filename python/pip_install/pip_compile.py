@@ -54,7 +54,7 @@ update_target_pkg = "/".join(requirements_in.split('/')[:-1])
 # $(rootpath) in the workspace root gives ./requirements.in
 if update_target_pkg == ".":
     update_target_pkg = ""
-update_command = "bazel run //%s:%s" % (update_target_pkg, update_target_name)
+update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (update_target_pkg, update_target_name)
 
 os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
 
