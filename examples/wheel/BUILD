@@ -70,7 +70,7 @@ py_package(
 py_package(
     name = "example_pkg_with_data",
     packages = ["examples.wheel"],
-    deps = [":main_with_gen_data"]
+    deps = [":main_with_gen_data"],
 )
 
 py_wheel(
@@ -99,7 +99,10 @@ py_wheel(
     distribution = "example_customized",
     entry_points = {
         "console_scripts": ["another = foo.bar:baz"],
-        "group2": ["second = second.main:s", "first = first.main:f"]
+        "group2": [
+            "second = second.main:s",
+            "first = first.main:f",
+        ],
     },
     homepage = "www.example.com",
     license = "Apache 2.0",
@@ -158,8 +161,8 @@ py_wheel(
 py_wheel(
     name = "python_requires_in_a_package",
     distribution = "example_python_requires_in_a_package",
-    python_tag = "py3",
     python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+    python_tag = "py3",
     version = "0.0.1",
     deps = [
         ":example_pkg",
@@ -172,8 +175,8 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.1",
     deps = [
-        ":example_pkg_with_data"
-    ]
+        ":example_pkg_with_data",
+    ],
 )
 
 py_wheel(

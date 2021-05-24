@@ -28,6 +28,16 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pip_parse_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
+    name = "py_import_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "relative_requirements_example",
     timeout = "long",
 )

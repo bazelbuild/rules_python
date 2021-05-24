@@ -15,7 +15,7 @@
 """Obsolete. Use //python:packaging.bzl instead."""
 
 # Load and re-export py_wheel and py_package for backwards compatibility.
-load("//python:packaging.bzl", _py_wheel = "py_wheel", _py_package = "py_package")
+load("//python:packaging.bzl", _py_package = "py_package", _py_wheel = "py_wheel")
 
 py_wheel = _py_wheel
 py_package = _py_package
