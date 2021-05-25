@@ -3,8 +3,6 @@ import os
 import textwrap
 from typing import Set, List, Optional
 
-from python.pip_install.extract_wheels.lib import wheel
-
 
 def implicit_namespace_packages(
     directory: str, ignored_dirnames: Optional[List[str]] = None
