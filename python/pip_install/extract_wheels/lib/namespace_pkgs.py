@@ -1,5 +1,6 @@
 """Utility functions to discover python package types"""
 import os
+import pathlib  # supported in >= 3.4
 import textwrap
 from typing import Set, List, Optional
 
@@ -68,3 +69,29 @@ def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
                 """
             )
         )
+
+
+def _includes_python_modules(files: List[str]) -> bool:
+    """
+    In order to only transform directories that Python actually considers namespace pkgs
+    we need to detect if a directory includes Python modules.
+
+    Which files are loadable as modules is extension based, and the particular set of extensions
+    varies by platform.
+
+    See:
+    1. https://github.com/python/cpython/blob/7d9d25dbedfffce61fc76bc7ccbfa9ae901bf56f/Lib/importlib/machinery.py#L19
+    2. PEP 420 -- Implicit Namespace Packages, Specification - https://www.python.org/dev/peps/pep-0420/#specification
+    3. dynload_shlib.c and dynload_win.c in python/cpython.
+    """
+    module_suffixes = {
+        ".py",  # Source modules
+        ".pyc",  # Compiled bytecode modules
+        ".so",  # Unix extension modules
+        ".pyd"  # https://docs.python.org/3/faq/windows.html#is-a-pyd-file-the-same-as-a-dll
+    }
+    return any(
+        pathlib.Path(f).suffix in module_suffixes
+        for f
+        in files
+    )
