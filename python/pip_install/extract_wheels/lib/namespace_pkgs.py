@@ -33,12 +33,12 @@ def implicit_namespace_packages(
             if is_ignored_dir or child_of_ignored_dir:
                 continue
 
-        non_empty_package = _includes_python_modules(filenames)
+        dir_includes_py_modules = _includes_python_modules(filenames)
         parent_of_namespace_pkg = any(str(pathlib.Path(dirpath, d)) in namespace_pkg_dirs for d in dirnames)
         parent_of_standard_pkg = any(str(pathlib.Path(dirpath, d)) in standard_pkg_dirs for d in dirnames)
         parent_of_pkg = parent_of_namespace_pkg or parent_of_standard_pkg
         if (
-            (non_empty_package or parent_of_pkg)
+            (dir_includes_py_modules or parent_of_pkg)
             and
             # The root of the directory should never be an implicit namespace
             dirpath != directory
