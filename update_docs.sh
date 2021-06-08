@@ -21,3 +21,4 @@ bazel build //docs/...
 cp bazel-bin/docs/python.md docs/
 cp bazel-bin/docs/pip.md docs/
 cp bazel-bin/docs/whl.md docs/
+cp bazel-bin/docs/packaging.md docs/
