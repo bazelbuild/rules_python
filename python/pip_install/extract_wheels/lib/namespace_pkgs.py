@@ -21,10 +21,11 @@ def implicit_namespace_packages(
         The set of directories found under root to be packages using the native namespace method.
     """
     namespace_pkg_dirs: Set[str] = set()
+    standard_pkg_dirs: Set[str] = set()
     # Traverse bottom-up because a directory can be a namespace pkg because its child contains module files.
     for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
-        # We are only interested in dirs with no __init__.py file
         if "__init__.py" in filenames:
+            standard_pkg_dirs.add(dirpath)
             continue
         elif ignored_dirnames:
             is_ignored_dir = dirpath in ignored_dirnames
@@ -34,8 +35,10 @@ def implicit_namespace_packages(
 
         non_empty_package = _includes_python_modules(filenames)
         parent_of_namespace_pkg = any(str(pathlib.Path(dirpath, d)) in namespace_pkg_dirs for d in dirnames)
+        parent_of_standard_pkg = any(str(pathlib.Path(dirpath, d)) in standard_pkg_dirs for d in dirnames)
+        parent_of_pkg = parent_of_namespace_pkg or parent_of_standard_pkg
         if (
-            (non_empty_package or parent_of_namespace_pkg)
+            (non_empty_package or parent_of_pkg)
             and
             # The root of the directory should never be an implicit namespace
             dirpath != directory
