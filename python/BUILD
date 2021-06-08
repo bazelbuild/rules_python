@@ -24,6 +24,8 @@ In an ideal renaming, we'd move the packaging rules to a different package so
 that @rules_python//python is only concerned with the core rules.
 """
 
+load("//python/pip_install:requirements.bzl", "compile_pip_requirements")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -34,6 +36,20 @@ filegroup(
         "//python/constraints:distribution",
         "//python/legacy_pip_import:distribution",
         "//python/runfiles:distribution",
+    ],
+    visibility = ["//:__pkg__"],
+)
+
+# Filegroup of bzl files that can be used by downstream rules for documentation generation
+# Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
+filegroup(
+    name = "bzl",
+    srcs = [
+        "defs.bzl",
+        "packaging.bzl",
+        "pip.bzl",
+        "private/reexports.bzl",
+        "whl.bzl",
     ],
     visibility = ["//:__pkg__"],
 )
@@ -131,3 +147,8 @@ exports_files([
     "pip.bzl",
     "whl.bzl",
 ])
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+)

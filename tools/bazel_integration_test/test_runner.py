@@ -28,8 +28,6 @@ def modify_WORKSPACE(wksp, distro_path):
         'url = "file://%s"' % r.Rlocation(distro_path),
         content)
     content = re.sub(r'sha256 = "', '#\1', content)
-    # TODO(alexeagle): can remove this after 0.0.3 since the strip_prefix was an accident during 0.0.2 release
-    content = re.sub(r'strip_prefix = "', '#\1', content)
     with open(wksp, 'w') as wksp_file:
         wksp_file.write(content)
 
