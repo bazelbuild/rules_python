@@ -89,6 +89,32 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
 
+    def test_parent_child_relationship_of_namespace_and_standard_pkgs(self):
+        directory = TempDir()
+        directory.add_file("foo/bar/biff/__init__.py")
+        directory.add_file("foo/bar/biff/another_module.py")
+
+        expected = {
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
+    def test_parent_child_relationship_of_namespace_and_nested_standard_pkgs(self):
+        directory = TempDir()
+        directory.add_file("foo/bar/__init__.py")
+        directory.add_file("foo/bar/biff/another_module.py")
+        directory.add_file("foo/bar/biff/__init__.py")
+        directory.add_file("foo/bar/boof/big_module.py")
+        directory.add_file("foo/bar/boof/__init__.py")
+
+        expected = {
+            directory.root() + "/foo",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
     def test_recognized_all_nonstandard_module_types(self):
         directory = TempDir()
         directory.add_file("ayy/my_module.pyc")
