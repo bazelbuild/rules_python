@@ -1,5 +1,33 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+<a name="#py_import"></a>
+
+## py_import
+
+<pre>
+py_import(<a href="#py_import-name">name</a>, <a href="#py_import-deps">deps</a>, <a href="#py_import-srcs">srcs</a>)
+</pre>
+
+This rule allows the use of Python packages as dependencies.
+
+    It imports the given `.egg` file(s), which might be checked in source files,
+    fetched externally as with `http_file`, or produced as outputs of other rules.
+
+    It may be used like a `py_library`, in the `deps` of other Python rules.
+
+    This is similar to [java_import](https://docs.bazel.build/versions/master/be/java.html#java_import).
+    
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| deps |  The list of other libraries to be linked in to the binary target.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| srcs |  The list of Python package files provided to Python targets that depend on this target. Note that currently only the .egg format is accepted. For .whl files, try the whl_library rule. We accept contributions to extend py_import to handle .whl.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+
+
 <a name="#py_runtime_pair"></a>
 
 ## py_runtime_pair
@@ -68,45 +96,14 @@ register_toolchains("//my_pkg:my_toolchain")
 ```
 
 
-### Attributes
+**ATTRIBUTES**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_runtime_pair-name">
-      <td><code>name</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-        <p>
-          A unique name for this target.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_runtime_pair-py2_runtime">
-      <td><code>py2_runtime</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
-        <p>
-          The runtime to use for Python 2 targets. Must have `python_version` set to
-`PY2`.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_runtime_pair-py3_runtime">
-      <td><code>py3_runtime</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
-        <p>
-          The runtime to use for Python 3 targets. Must have `python_version` set to
-`PY3`.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| py2_runtime |  The runtime to use for Python 2 targets. Must have <code>python_version</code> set to <code>PY2</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| py3_runtime |  The runtime to use for Python 3 targets. Must have <code>python_version</code> set to <code>PY3</code>.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 
 
 <a name="#py_binary"></a>
@@ -119,25 +116,12 @@ py_binary(<a href="#py_binary-attrs">attrs</a>)
 
 See the Bazel core [py_binary](https://docs.bazel.build/versions/master/be/python.html#py_binary) documentation.
 
-### Parameters
+**PARAMETERS**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_binary-attrs">
-      <td><code>attrs</code></td>
-      <td>
-        optional.
-        <p>
-          Rule attributes
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| attrs |  Rule attributes   |  none |
 
 
 <a name="#py_library"></a>
@@ -150,25 +134,12 @@ py_library(<a href="#py_library-attrs">attrs</a>)
 
 See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/python.html#py_library) documentation.
 
-### Parameters
+**PARAMETERS**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_library-attrs">
-      <td><code>attrs</code></td>
-      <td>
-        optional.
-        <p>
-          Rule attributes
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| attrs |  Rule attributes   |  none |
 
 
 <a name="#py_runtime"></a>
@@ -181,25 +152,12 @@ py_runtime(<a href="#py_runtime-attrs">attrs</a>)
 
 See the Bazel core [py_runtime](https://docs.bazel.build/versions/master/be/python.html#py_runtime) documentation.
 
-### Parameters
+**PARAMETERS**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_runtime-attrs">
-      <td><code>attrs</code></td>
-      <td>
-        optional.
-        <p>
-          Rule attributes
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| attrs |  Rule attributes   |  none |
 
 
 <a name="#py_test"></a>
@@ -212,24 +170,40 @@ py_test(<a href="#py_test-attrs">attrs</a>)
 
 See the Bazel core [py_test](https://docs.bazel.build/versions/master/be/python.html#py_test) documentation.
 
-### Parameters
+**PARAMETERS**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_test-attrs">
-      <td><code>attrs</code></td>
-      <td>
-        optional.
-        <p>
-          Rule attributes
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| attrs |  Rule attributes   |  none |
+
+
+<a name="#find_requirements"></a>
+
+## find_requirements
+
+<pre>
+find_requirements(<a href="#find_requirements-name">name</a>)
+</pre>
+
+The aspect definition. Can be invoked on the command line as
+
+    bazel build //pkg:my_py_binary_target         --aspects=@rules_python//python:defs.bzl%find_requirements         --output_groups=pyversioninfo
+
+
+**ASPECT ATTRIBUTES**
+
+
+| Name | Type |
+| :-------------: | :-------------: |
+| deps| String |
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |   |
 
 
