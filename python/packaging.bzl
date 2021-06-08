@@ -62,14 +62,16 @@ def _py_package_impl(ctx):
 
 py_package = rule(
     implementation = _py_package_impl,
-    doc = """
+    doc = """\
 A rule to select all files in transitive dependencies of deps which
 belong to given set of Python packages.
 
 This rule is intended to be used as data dependency to py_wheel rule
 """,
     attrs = {
-        "deps": attr.label_list(),
+        "deps": attr.label_list(
+            doc = "",
+        ),
         "packages": attr.string_list(
             mandatory = False,
             allow_empty = True,
@@ -196,7 +198,7 @@ _distribution_attrs = {
     ),
     "distribution": attr.string(
         mandatory = True,
-        doc = """
+        doc = """\
 Name of the distribution.
 
 This should match the project name onm PyPI. It's also the name that is used to
@@ -214,16 +216,18 @@ pip format. If you support multiple platforms, you can define
 platform constraints, then use a select() to specify the appropriate
 specifier, eg:
 
-    platform = select({
-        "//platforms:windows_x86_64": "win_amd64",
-        "//platforms:macos_x86_64": "macosx_10_7_x86_64",
-        "//platforms:linux_x86_64": "manylinux2014_x86_64",
-    })
+<code>
+platform = select({
+    "//platforms:windows_x86_64": "win_amd64",
+    "//platforms:macos_x86_64": "macosx_10_7_x86_64",
+    "//platforms:linux_x86_64": "manylinux2014_x86_64",
+})
+</code>
 """,
     ),
     "python_tag": attr.string(
         default = "py3",
-        doc = "Supported Python version(s), eg 'py3', 'cp35.cp36', etc",
+        doc = "Supported Python version(s), eg `py3`, `cp35.cp36`, etc",
     ),
     "version": attr.string(
         mandatory = True,
@@ -243,26 +247,51 @@ _requirement_attrs = {
 _entrypoint_attrs = {
     "console_scripts": attr.string_dict(
         doc = """\
-Deprecated console_script entry points, e.g. {'main': 'examples.wheel.main:main'}.
+Deprecated console_script entry points, e.g. `{'main': 'examples.wheel.main:main'}`.
 
 Deprecated: prefer the `entry_points` attribute, which supports `console_scripts` as well as other entry points.
 """,
     ),
     "entry_points": attr.string_list_dict(
         doc = """\
-entry_points, e.g. {'console_scripts': ['main = examples.wheel.main:main']}.
+entry_points, e.g. `{'console_scripts': ['main = examples.wheel.main:main']}`.
 """,
     ),
 }
 
 _other_attrs = {
-    "author": attr.string(default = ""),
-    "author_email": attr.string(default = ""),
-    "classifiers": attr.string_list(),
-    "description_file": attr.label(allow_single_file = True),
-    "homepage": attr.string(default = ""),
-    "license": attr.string(default = ""),
-    "python_requires": attr.string(default = ""),
+    "author": attr.string(
+        doc = "A string specifying the author of the package.",
+        default = "",
+    ),
+    "author_email": attr.string(
+        doc = "A string specifying the email address of the package author.",
+        default = "",
+    ),
+    "classifiers": attr.string_list(
+        doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
+    ),
+    "description_file": attr.label(
+        doc = "A file containing text describing the package in a single line.",
+        allow_single_file = True,
+    ),
+    "homepage": attr.string(
+        doc = "A string specifying the URL for the package homepage.",
+        default = "",
+    ),
+    "license": attr.string(
+        doc = "A string specifying the license of the package.",
+        default = "",
+    ),
+    "python_requires": attr.string(
+        doc = (
+            "A string specifying what other distributions need to be installed " +
+            "when this one is. See the section on " +
+            "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
+            "for details and examples of the format of this argument."
+        ),
+        default = "",
+    ),
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
@@ -282,8 +311,8 @@ Currently only pure-python wheels are supported.
 
 Examples:
 
-<code>
-# Package just a specific py_libraries, without their dependencies
+```python
+# Package some specific py_library targets, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
@@ -313,7 +342,7 @@ py_wheel(
     version = "0.0.1",
     deps = [":example_pkg"],
 )
-</code>
+```
 """,
     attrs = _concat_dicts(
         {

@@ -57,6 +57,7 @@ if update_target_pkg == ".":
 update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (update_target_pkg, update_target_name)
 
 os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
+os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
 sys.argv.append("--generate-hashes")
 sys.argv.append("--output-file")
