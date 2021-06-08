@@ -14,41 +14,14 @@ belong to given set of Python packages.
 This rule is intended to be used as data dependency to py_wheel rule
 
 
-### Attributes
+**ATTRIBUTES**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_package-name">
-      <td><code>name</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-        <p>
-          A unique name for this target.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_package-deps">
-      <td><code>deps</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a>; optional
-      </td>
-    </tr>
-    <tr id="py_package-packages">
-      <td><code>packages</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          List of Python packages to include in the distribution.
-Sub-packages are automatically included.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| deps |  -   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| packages |  List of Python packages to include in the distribution. Sub-packages are automatically included.   | List of strings | optional | [] |
 
 
 <a name="#py_wheel"></a>
@@ -56,7 +29,9 @@ Sub-packages are automatically included.
 ## py_wheel
 
 <pre>
-py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a href="#py_wheel-author">author</a>, <a href="#py_wheel-author_email">author_email</a>, <a href="#py_wheel-classifiers">classifiers</a>, <a href="#py_wheel-console_scripts">console_scripts</a>, <a href="#py_wheel-deps">deps</a>, <a href="#py_wheel-description_file">description_file</a>, <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>, <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
+py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a href="#py_wheel-author">author</a>, <a href="#py_wheel-author_email">author_email</a>, <a href="#py_wheel-classifiers">classifiers</a>, <a href="#py_wheel-console_scripts">console_scripts</a>, <a href="#py_wheel-deps">deps</a>, <a href="#py_wheel-description_file">description_file</a>,
+         <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>,
+         <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
 </pre>
 
 
@@ -71,7 +46,7 @@ Currently only pure-python wheels are supported.
 Examples:
 
 ```python
-# Package just a specific py_libraries, without their dependencies
+# Package some specific py_library targets, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
@@ -104,212 +79,29 @@ py_wheel(
 ```
 
 
-### Attributes
+**ATTRIBUTES**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="py_wheel-name">
-      <td><code>name</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-        <p>
-          A unique name for this target.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-abi">
-      <td><code>abi</code></td>
-      <td>
-        String; optional
-        <p>
-          Python ABI tag. 'none' for pure-Python wheels.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-author">
-      <td><code>author</code></td>
-      <td>
-        String; optional
-        <p>
-          A string specifying the author of the package.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-author_email">
-      <td><code>author_email</code></td>
-      <td>
-        String; optional
-        <p>
-          A string specifying the email address of the package author.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-classifiers">
-      <td><code>classifiers</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          A list of strings describing the categories for the package.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-console_scripts">
-      <td><code>console_scripts</code></td>
-      <td>
-        <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a>; optional
-        <p>
-          Deprecated console_script entry points, e.g. `{'main': 'examples.wheel.main:main'}`.
 
-Deprecated: prefer the `entry_points` attribute, which supports `console_scripts` as well as other entry points.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-deps">
-      <td><code>deps</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a>; optional
-        <p>
-          Targets to be included in the distribution.
-
-The targets to package are usually `py_library` rules or filesets (for packaging data files).
-
-Note it's usually better to package `py_library` targets and use
-`entry_points` attribute to specify `console_scripts` than to package
-`py_binary` rules. `py_binary` targets would wrap a executable script that
-tries to locate `.runfiles` directory which is not packaged in the wheel.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-description_file">
-      <td><code>description_file</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
-        <p>
-          A file containing text describing the package in a single line.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-distribution">
-      <td><code>distribution</code></td>
-      <td>
-        String; required
-        <p>
-          Name of the distribution.
-
-This should match the project name onm PyPI. It's also the name that is used to
-refer to the package in other packages' dependencies.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-entry_points">
-      <td><code>entry_points</code></td>
-      <td>
-        <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a>; optional
-        <p>
-          entry_points, e.g. `{'console_scripts': ['main = examples.wheel.main:main']}`.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-extra_requires">
-      <td><code>extra_requires</code></td>
-      <td>
-        <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a>; optional
-        <p>
-          List of optional requirements for this package
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-homepage">
-      <td><code>homepage</code></td>
-      <td>
-        String; optional
-        <p>
-          A string specifying the URL for the package homepage.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-license">
-      <td><code>license</code></td>
-      <td>
-        String; optional
-        <p>
-          A string specifying the license of the package.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-platform">
-      <td><code>platform</code></td>
-      <td>
-        String; optional
-        <p>
-          Supported platform. Use 'any' for pure-Python wheel.
-
-If you have included platform-specific data, such as a .pyd or .so
-extension module, you will need to specify the platform in standard
-pip format. If you support multiple platforms, you can define
-platform constraints, then use a select() to specify the appropriate
-specifier, eg:
-
-<code>
-platform = select({
-    "//platforms:windows_x86_64": "win_amd64",
-    "//platforms:macos_x86_64": "macosx_10_7_x86_64",
-    "//platforms:linux_x86_64": "manylinux2014_x86_64",
-})
-</code>
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-python_requires">
-      <td><code>python_requires</code></td>
-      <td>
-        String; optional
-        <p>
-          A string specifying what other distributions need to be installed when this one is. See the section on [Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) for details and examples of the format of this argument.
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-python_tag">
-      <td><code>python_tag</code></td>
-      <td>
-        String; optional
-        <p>
-          Supported Python version(s), eg `py3`, `cp35.cp36`, etc
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-requires">
-      <td><code>requires</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          List of requirements for this package
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-strip_path_prefixes">
-      <td><code>strip_path_prefixes</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          path prefixes to strip from files added to the generated package
-        </p>
-      </td>
-    </tr>
-    <tr id="py_wheel-version">
-      <td><code>version</code></td>
-      <td>
-        String; required
-        <p>
-          Version number of the package
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| abi |  Python ABI tag. 'none' for pure-Python wheels.   | String | optional | "none" |
+| author |  A string specifying the author of the package.   | String | optional | "" |
+| author_email |  A string specifying the email address of the package author.   | String | optional | "" |
+| classifiers |  A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers   | List of strings | optional | [] |
+| console_scripts |  Deprecated console_script entry points, e.g. <code>{'main': 'examples.wheel.main:main'}</code>.<br><br>Deprecated: prefer the <code>entry_points</code> attribute, which supports <code>console_scripts</code> as well as other entry points.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| deps |  Targets to be included in the distribution.<br><br>The targets to package are usually <code>py_library</code> rules or filesets (for packaging data files).<br><br>Note it's usually better to package <code>py_library</code> targets and use <code>entry_points</code> attribute to specify <code>console_scripts</code> than to package <code>py_binary</code> rules. <code>py_binary</code> targets would wrap a executable script that tries to locate <code>.runfiles</code> directory which is not packaged in the wheel.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| description_file |  A file containing text describing the package in a single line.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
+| distribution |  Name of the distribution.<br><br>This should match the project name onm PyPI. It's also the name that is used to refer to the package in other packages' dependencies.   | String | required |  |
+| entry_points |  entry_points, e.g. <code>{'console_scripts': ['main = examples.wheel.main:main']}</code>.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
+| extra_requires |  List of optional requirements for this package   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
+| homepage |  A string specifying the URL for the package homepage.   | String | optional | "" |
+| license |  A string specifying the license of the package.   | String | optional | "" |
+| platform |  Supported platform. Use 'any' for pure-Python wheel.<br><br>If you have included platform-specific data, such as a .pyd or .so extension module, you will need to specify the platform in standard pip format. If you support multiple platforms, you can define platform constraints, then use a select() to specify the appropriate specifier, eg:<br><br>&lt;code&gt; platform = select({     "//platforms:windows_x86_64": "win_amd64",     "//platforms:macos_x86_64": "macosx_10_7_x86_64",     "//platforms:linux_x86_64": "manylinux2014_x86_64", }) &lt;/code&gt;   | String | optional | "any" |
+| python_requires |  A string specifying what other distributions need to be installed when this one is. See the section on [Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) for details and examples of the format of this argument.   | String | optional | "" |
+| python_tag |  Supported Python version(s), eg <code>py3</code>, <code>cp35.cp36</code>, etc   | String | optional | "py3" |
+| requires |  List of requirements for this package   | List of strings | optional | [] |
+| strip_path_prefixes |  path prefixes to strip from files added to the generated package   | List of strings | optional | [] |
+| version |  Version number of the package   | String | required |  |
 
 
