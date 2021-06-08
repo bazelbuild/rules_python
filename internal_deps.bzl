@@ -29,10 +29,10 @@ def rules_python_internal_deps():
 
     maybe(
         http_archive,
-        name = "io_bazel_skydoc",
-        url = "https://github.com/bazelbuild/skydoc/archive/0.3.0.tar.gz",
-        sha256 = "c2d66a0cc7e25d857e480409a8004fdf09072a1bd564d6824441ab2f96448eea",
-        strip_prefix = "skydoc-0.3.0",
+        name = "io_bazel_stardoc",
+        url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
+        sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
+        strip_prefix = "stardoc-0.4.0",
     )
 
     # Test data for WHL tool testing.

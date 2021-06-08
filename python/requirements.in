@@ -1,0 +1,10 @@
+pip==9.0.3
+setuptools==44.0.0
+wheel==0.30.0a0
+
+# For tests
+mock==2.0.0
+# This is a transitive dependency of mock, which only appears on some python versions
+# Right now our repo doesn't pin our Python interpreter, so our locked requirements
+# may differ between local dev and CI, for example.
+funcsigs==1.0.2

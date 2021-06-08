@@ -49,6 +49,13 @@ def _parse_optional_attrs(rctx, args):
 
     return args
 
+_BUILD_FILE_CONTENTS = """\
+package(default_visibility = ["//visibility:public"])
+
+# Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
+exports_files(["requirements.bzl"])
+"""
+
 def _pip_repository_impl(rctx):
     python_interpreter = rctx.attr.python_interpreter
     if rctx.attr.python_interpreter_target != None:
@@ -64,7 +71,7 @@ def _pip_repository_impl(rctx):
         fail("Incremental mode requires a requirements_lock attribute be specified.")
 
     # We need a BUILD file to load the generated requirements.bzl
-    rctx.file("BUILD.bazel", "")
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
 
     pypath = _construct_pypath(rctx)
 

@@ -95,7 +95,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
             return requirement(name) + ":whl"
 
         def install_deps():
-            fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_install_incremental()?")
+            fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_parse()?")
         """.format(
             repo=repo_name,
             requirement_labels=requirement_labels,
@@ -248,6 +248,7 @@ def extract_wheel(
         )
         build_file.write(contents)
 
-    os.remove(whl.path)
+    if not incremental:
+        os.remove(whl.path)
 
     return "//%s" % directory
