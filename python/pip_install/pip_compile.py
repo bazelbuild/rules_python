@@ -73,7 +73,15 @@ else:
         cli()
         print("cli() should exit", file=sys.stderr)
         sys.exit(1)
-    except SystemExit:
+    except SystemExit as e:
+        if e.code == 2:
+            print(
+                "pip-compile exit with code 2. This means that pip-compile found "
+                "incompatible requirements or could not find a version that matches "
+                f"the install requirement in {requirements_txt}.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         golden = open(requirements_txt).readlines()
         out = open(requirements_out).readlines()
         if golden != out:
