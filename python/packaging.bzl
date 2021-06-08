@@ -269,7 +269,7 @@ _other_attrs = {
         default = "",
     ),
     "classifiers": attr.string_list(
-        doc = "A list of strings describing the categories for the package.",
+        doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
     ),
     "description_file": attr.label(
         doc = "A file containing text describing the package in a single line.",
@@ -312,7 +312,7 @@ Currently only pure-python wheels are supported.
 Examples:
 
 ```python
-# Package just a specific py_libraries, without their dependencies
+# Package some specific py_library targets, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
