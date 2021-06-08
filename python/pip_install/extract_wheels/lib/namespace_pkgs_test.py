@@ -108,9 +108,11 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         directory.add_file("foo/bar/biff/__init__.py")
         directory.add_file("foo/bar/boof/big_module.py")
         directory.add_file("foo/bar/boof/__init__.py")
+        directory.add_file("fim/in_a_ns_pkg.py")
 
         expected = {
             directory.root() + "/foo",
+            directory.root() + "/fim",
         }
         actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, expected)
