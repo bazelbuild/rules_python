@@ -88,3 +88,9 @@ stardoc(
     out = "whl.md",
     input = "//python:whl.bzl",
 )
+
+stardoc(
+    name = "packaging-docs",
+    out = "packaging.md",
+    input = "//python:packaging.bzl",
+)
