@@ -15,13 +15,9 @@ def spread_purelib_into_root(wheel_dir: str) -> None:
     wheel_metadata_file_path = pathlib.Path(dist_info, "WHEEL")
     wheel_metadata_dict = wheel.parse_wheel_meta_file(str(wheel_metadata_file_path))
 
-    if "Root-Is-Purelib" not in wheel_metadata_dict:
-        raise ValueError(
-            "Invalid WHEEL file '%s'. Expected key 'Root-Is-Purelib'."
-            % wheel_metadata_file_path
-        )
-    root_is_purelib = wheel_metadata_dict["Root-Is-Purelib"]
-
+    # It is not guaranteed that a WHEEL file author populates 'Root-Is-Purelib'.
+    # See: https://github.com/bazelbuild/rules_python/issues/435
+    root_is_purelib: str = wheel_metadata_dict.get("Root-Is-Purelib", "")
     if root_is_purelib.lower() == "true":
         # The Python package code is in the root of the Wheel, so no need to 'spread' anything.
         return
