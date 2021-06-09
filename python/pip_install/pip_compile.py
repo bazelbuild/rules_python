@@ -76,9 +76,9 @@ else:
     except SystemExit as e:
         if e.code == 2:
             print(
-                "pip-compile exit with code 2. This means that pip-compile found "
+                "pip-compile exited with code 2. This means that pip-compile found "
                 "incompatible requirements or could not find a version that matches "
-                f"the install requirement in {requirements_txt}.",
+                f"the install requirement in {requirements_in}.",
                 file=sys.stderr,
             )
             sys.exit(1)
