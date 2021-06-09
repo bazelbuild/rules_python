@@ -39,7 +39,7 @@ def generate_build_file_contents(
 
         filegroup(
             name="{whl_file_label}",
-            srcs=glob(["*.whl"]),
+            srcs=glob(["*.whl"], allow_empty = True),
             data=[{whl_file_deps}]
         )
 
