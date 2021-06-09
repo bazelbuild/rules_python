@@ -82,16 +82,24 @@ else:
                 file=sys.stderr,
             )
             sys.exit(1)
-        golden = open(requirements_txt).readlines()
-        out = open(requirements_out).readlines()
-        if golden != out:
-            import difflib
+        elif e.code == 0:
+            golden = open(requirements_txt).readlines()
+            out = open(requirements_out).readlines()
+            if golden != out:
+                import difflib
 
-            print(''.join(difflib.unified_diff(golden, out)), file=sys.stderr)
+                print(''.join(difflib.unified_diff(golden, out)), file=sys.stderr)
+                print(
+                    "Lock file out of date. Run '"
+                    + update_command
+                    + "' to update.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            sys.exit(0)
+        else:
             print(
-                "Lock file out of date. Run '"
-                + update_command
-                + "' to update.",
-                file=sys.stderr,
+                f"pip-compile unexpectedly exited with code {e.code}.",
+                file=sys.stderr
             )
             sys.exit(1)
