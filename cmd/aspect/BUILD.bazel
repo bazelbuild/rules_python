@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "aspect_lib",
+    srcs = ["main.go"],
+    importpath = "aspect.build/cli/cmd/aspect",
+    visibility = ["//visibility:private"],
+    deps = ["//cmd"],
+)
+
+go_binary(
+    name = "aspect",
+    embed = [":aspect_lib"],
+    visibility = ["//visibility:public"],
+)
