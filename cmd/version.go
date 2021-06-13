@@ -19,7 +19,7 @@ var versionCmd = &cobra.Command{
 	Long:  `Prints version info on colon-separated lines, just like bazel does`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if !buildinfo.IsStamped() {
-			fmt.Println("Aspect was not built with --stamp")
+			fmt.Println("Aspect version: not built with --stamp")
 		} else {
 			version := buildinfo.Release
 			if buildinfo.GitStatus != "clean" {
