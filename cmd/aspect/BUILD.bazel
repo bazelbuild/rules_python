@@ -14,7 +14,6 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-
 go_binary(
     name = "aspect-darwin-amd64",
     out = "aspect-darwin_amd64",

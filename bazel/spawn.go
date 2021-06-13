@@ -2,8 +2,8 @@ package bazel
 
 import (
 	"fmt"
-	"log"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 )

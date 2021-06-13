@@ -1,4 +1,5 @@
 "This file managed by `bazel run //:update_go_deps`"
+
 load("@bazel_gazelle//:deps.bzl", "go_repository")
 
 def deps():

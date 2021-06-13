@@ -29,5 +29,5 @@ echo
 echo "== Aspect version output =="
 echo "Did you update the tag? git tag -a"
 echo "Before releasing, make sure that this is the correct version string:"
-"bin/aspect-$(uname -s | tr [:upper:] [:lower:])-amd64" version
+"bin/aspect-$(uname -s | tr "[:upper:]" "[:lower:]")-amd64" version
 echo

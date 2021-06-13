@@ -7,8 +7,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"github.com/spf13/cobra"
+	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
@@ -20,7 +20,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "aspect",
 	Short: "Aspect.build bazel wrapper",
-	Long: `Aspect CLI is a better frontend for running bazel`,
+	Long:  `Aspect CLI is a better frontend for running bazel`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

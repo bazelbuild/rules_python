@@ -1,5 +1,5 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 # TODO: follow https://sagikazarmark.hu/blog/vanity-import-paths-in-go/
 # so we have savvy go imports for users
