@@ -1,0 +1,7 @@
+# Bazel settings to apply on CI only
+# Included with a --bazelrc option in the call to bazel in main.yml
+build --announce_rc
+test --test_output=errors
+build --disk_cache=$HOME/.cache/bazel
+build --repository_cache=$HOME/.cache/bazel-repo
+test --test_env=XDG_CACHE_HOME

@@ -5,7 +5,7 @@ set -o pipefail -o errexit -o nounset
 ASPECT="$TEST_SRCDIR/build_aspect_cli/cmd/aspect/aspect_/aspect"
 
 # Only capture stdout, just like `bazel version` prints to stdout
-ver=$($ASPECT version 2>/dev/null)
+ver=$($ASPECT version 2>/dev/null) || "$ASPECT" version
 
 # Should print our own version
 [[ "$ver" =~ "Aspect version:" ]] || {
