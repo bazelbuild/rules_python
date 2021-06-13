@@ -13,3 +13,84 @@ go_binary(
     embed = [":aspect_lib"],
     visibility = ["//visibility:public"],
 )
+
+
+go_binary(
+    name = "aspect-darwin-amd64",
+    out = "aspect-darwin_amd64",
+    embed = [":aspect_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+    ],
+    goarch = "amd64",
+    goos = "darwin",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "aspect-darwin-arm64",
+    out = "aspect-darwin_arm64",
+    embed = [":aspect_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+    ],
+    goarch = "arm64",
+    goos = "darwin",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+# genrule(
+#     name = "aspect-darwin-universal",
+#     srcs = [
+#         ":aspect-darwin_amd64",
+#         ":aspect-darwin_arm64",
+#     ],
+#     outs = ["aspect-darwin_universal"],
+#     cmd = "lipo -create -output \"$@\" $(SRCS)",
+#     output_to_bindir = 1,
+#     target_compatible_with = [
+#         "@platforms//os:macos",
+#     ],
+# )
+
+go_binary(
+    name = "aspect-linux-amd64",
+    out = "aspect-linux_amd64",
+    embed = [":aspect_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+    ],
+    goarch = "amd64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "aspect-linux-arm64",
+    out = "aspect-linux_arm64",
+    embed = [":aspect_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+    ],
+    goarch = "arm64",
+    goos = "linux",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "aspect-windows-amd64",
+    out = "aspect-windows_amd64.exe",
+    embed = [":aspect_lib"],
+    goarch = "amd64",
+    goos = "windows",
+    pure = "on",
+    visibility = ["//visibility:public"],
+)

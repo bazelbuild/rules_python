@@ -1,1 +1,7 @@
+/bin
 /bazel-*
+
+# Our version pinning and checksumming happens in go.bzl
+# If editors want to create/edit a go.sum that's great, but we don't care about
+# resolving merge conflicts in it.
+/go.sum
