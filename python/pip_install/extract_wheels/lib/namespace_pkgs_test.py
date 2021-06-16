@@ -68,6 +68,87 @@ class TestImplicitNamespacePackages(unittest.TestCase):
         actual = namespace_pkgs.implicit_namespace_packages(directory.root())
         self.assertEqual(actual, set())
 
+    def test_ignores_non_module_files_in_directories(self) -> None:
+        directory = TempDir()
+        directory.add_file("foo/__init__.pyi")
+        directory.add_file("foo/py.typed")
+
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, set())
+
+    def test_parent_child_relationship_of_namespace_pkgs(self):
+        directory = TempDir()
+        directory.add_file("foo/bar/biff/my_module.py")
+        directory.add_file("foo/bar/biff/another_module.py")
+
+        expected = {
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
+            directory.root() + "/foo/bar/biff",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
+    def test_parent_child_relationship_of_namespace_and_standard_pkgs(self):
+        directory = TempDir()
+        directory.add_file("foo/bar/biff/__init__.py")
+        directory.add_file("foo/bar/biff/another_module.py")
+
+        expected = {
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
+    def test_parent_child_relationship_of_namespace_and_nested_standard_pkgs(self):
+        directory = TempDir()
+        directory.add_file("foo/bar/__init__.py")
+        directory.add_file("foo/bar/biff/another_module.py")
+        directory.add_file("foo/bar/biff/__init__.py")
+        directory.add_file("foo/bar/boof/big_module.py")
+        directory.add_file("foo/bar/boof/__init__.py")
+        directory.add_file("fim/in_a_ns_pkg.py")
+
+        expected = {
+            directory.root() + "/foo",
+            directory.root() + "/fim",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
+    def test_recognized_all_nonstandard_module_types(self):
+        directory = TempDir()
+        directory.add_file("ayy/my_module.pyc")
+        directory.add_file("bee/ccc/dee/eee.so")
+        directory.add_file("eff/jee/aych.pyd")
+
+        expected = {
+            directory.root() + "/ayy",
+            directory.root() + "/bee",
+            directory.root() + "/bee/ccc",
+            directory.root() + "/bee/ccc/dee",
+            directory.root() + "/eff",
+            directory.root() + "/eff/jee",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(directory.root())
+        self.assertEqual(actual, expected)
+
+    def test_skips_ignored_directories(self):
+        directory = TempDir()
+        directory.add_file("foo/boo/my_module.py")
+        directory.add_file("foo/bar/another_module.py")
+
+        expected = {
+            directory.root() + "/foo",
+            directory.root() + "/foo/bar",
+        }
+        actual = namespace_pkgs.implicit_namespace_packages(
+            directory.root(),
+            ignored_dirnames=[directory.root() + "/foo/boo"],
+        )
+        self.assertEqual(actual, expected)
+
 
 if __name__ == "__main__":
     unittest.main()
