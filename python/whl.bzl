@@ -38,21 +38,21 @@ def _whl_impl(repository_ctx):
 whl_library = repository_rule(
     attrs = {
         "extras": attr.string_list(doc = """
-A subset of the "extras" available from this <code>.whl</code> for which
-<code>requirements</code> has the dependencies.
+A subset of the "extras" available from this `.whl` for which
+`requirements` has the dependencies.
 """),
         "python_interpreter": attr.string(default = "python", doc = """
 The command to run the Python interpreter used when unpacking the wheel.
 """),
         "requirements": attr.string(doc = """
-The name of the <code>pip_import</code> repository rule from which to load this
-<code>.whl</code>'s dependencies.
+The name of the `pip_import` repository rule from which to load this
+`.whl`'s dependencies.
 """),
         "whl": attr.label(
             mandatory = True,
             allow_single_file = True,
             doc = """
-The path to the <code>.whl</code> file. The name is expected to follow [this
+The path to the `.whl` file. The name is expected to follow [this
 convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
 """,
         ),
