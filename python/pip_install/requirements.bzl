@@ -9,6 +9,7 @@ def compile_pip_requirements(
         visibility = ["//visibility:private"],
         requirements_in = None,
         requirements_txt = None,
+        tags = None,
         **kwargs):
     """
     Macro creating targets for running pip-compile
@@ -28,6 +29,7 @@ def compile_pip_requirements(
         visibility: passed to both the _test and .update rules
         requirements_in: file expressing desired dependencies
         requirements_txt: result of "compiling" the requirements.in file
+        tags: tagging attribute common to all build rules, passed to both the _test and .update rules
         **kwargs: other bazel attributes passed to the "_test" rule
     """
     requirements_in = name + ".in" if requirements_in == None else requirements_in
@@ -69,6 +71,7 @@ def compile_pip_requirements(
         "deps": deps,
         "main": pip_compile,
         "srcs": [pip_compile],
+        "tags": tags,
         "visibility": visibility,
     }
 
