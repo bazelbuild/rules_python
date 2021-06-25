@@ -108,8 +108,7 @@ used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
-You can have multiple `pip_install`s in the same workspace, e.g. for Python 2
-and Python 3. This will create multiple central repos that have no relation to
+You can have multiple `pip_install`s in the same workspace. This will create multiple central repos that have no relation to
 one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_install` is
@@ -153,13 +152,14 @@ install_deps()
 
 ### Importing `pip` dependencies with `pip_import` (legacy)
 
-The deprecated `pip_import` can still be used if needed.
+The deprecated `pip_import` can still be used if needed. It is the only packaging rule that supports Python 2,
+which has been [sunsetted since January 1st, 2020](https://www.python.org/doc/sunset-python-2/). 
 
 ```
 load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
 
 # Create a central repo that knows about the dependencies needed for requirements.txt.
-pip_import(   # or pip3_import
+pip_import(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
