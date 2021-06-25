@@ -42,8 +42,8 @@ To import rules_python in your project, you first need to add it to your
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.3.0/rules_python-0.3.0.tar.gz",
+    sha256 = "934c9ceb552e84577b0faf1e5a2f0450314985b4d8712b2b70717dc679fdc01b",
 )
 ```
 
@@ -52,11 +52,11 @@ To depend on a particular unreleased version (not recommended), you can do:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-rules_python_version = "c8c79aae9aa1b61d199ad03d5fe06338febd0774" # Latest @ 2020-10-15
+rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53" # Latest @ 2021-06-23
 
 http_archive(
     name = "rules_python",
-    sha256 = "5be9610a959772697f57ec66bb58c8132970686ed7fb0f1cf81b22ddf12f5368",
+    sha256 = "3474c5815da4cb003ff22811a36a11894927eda1c2e64bf2dac63e914bfdf30f",
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
