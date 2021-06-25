@@ -17,7 +17,7 @@
 ###############################################################################
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@io_bazel_skydoc//stardoc:stardoc.bzl", "stardoc")
+load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -87,4 +87,10 @@ stardoc(
     name = "whl-docs",
     out = "whl.md",
     input = "//python:whl.bzl",
+)
+
+stardoc(
+    name = "packaging-docs",
+    out = "packaging.md",
+    input = "//python:packaging.bzl",
 )

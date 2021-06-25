@@ -1,6 +1,7 @@
 ---
 buildifier:
   version: latest
+  # keep this argument in sync with .pre-commit-config.yaml
   warnings: "all"
 all_targets: &all_targets
     build_targets:
