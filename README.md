@@ -94,8 +94,8 @@ individual wheel repos.
 ```python
 load("@rules_python//python:pip.bzl", "pip_install")
 
-# Create a central repo that knows about the dependencies needed for
-# requirements.txt.
+# Create an external repo, @my_deps, that contains Bazel targets for all the
+# third-party packages specified in the requirements.txt file.
 pip_install(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
@@ -108,7 +108,7 @@ used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
-You can have multiple `pip_install`s in the same workspace. This will create multiple central repos that have no relation to
+You can have multiple `pip_install`s in the same workspace. This will create multiple external repos that have no relation to
 one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_install` is
