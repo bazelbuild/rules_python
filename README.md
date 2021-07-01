@@ -106,7 +106,7 @@ pip_install(
 )
 ```
 
-Note that since `pip_install` is a repository rule and executes pip at WORKSPACE-evaluation time, Bazel has no
+Note that since `pip_install` is a repository rule and therefore executes pip at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
