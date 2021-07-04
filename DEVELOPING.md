@@ -2,7 +2,7 @@
 
 ## Releasing
 
-Start from a clean checkout at `master`.
+Start from a clean checkout at `main`.
 
 Before running through the release it's good to run the build and the tests locally, and make sure CI is passing. You can
 also test-drive the commit in an existing Bazel workspace to sanity check functionality.
@@ -23,7 +23,7 @@ those with only bug fixes and other minor changes bump the patch digit.
 5. Create commit called "Release X.Y.Z"
     1. ["release 0.1.0"](https://github.com/bazelbuild/rules_python/commit/c8c79aae9aa1b61d199ad03d5fe06338febd0774) is an example commit.
 6. Tag that commit as `X.Y.Z`. Eg. `git tag X.Y.Z`
-7. Push the commit and the new tag to `master`.
+7. Push the commit and the new tag to `main`.
 8. Run `bazel build //distro:relnotes` from within workspace and then from repo root run `cat bazel-bin/distro/relnotes.txt` to get the 'install instructions' that are added as release notes.
     1. Check the `sha256` value matches the one you calculated earlier.
 9. ["Draft a new release"](https://github.com/bazelbuild/rules_python/releases/new) in Github (manual for now), selecting the recently pushed `X.Y.Z` tag.
