@@ -76,39 +76,43 @@ py_binary(
 
 ## Using the packaging rules
 
-The packaging rules create two kinds of repositories: A central repo that holds
-downloaded wheel files, and individual repos for each wheel's extracted
-contents. Users only need to interact with the central repo; the wheel repos
-are essentially an implementation detail. The central repo provides a
-`WORKSPACE` macro to create the wheel repos, as well as a function to call in
-`BUILD` files to translate a pip package name into the label of a `py_library`
+Usage of the packaging rules involves two main steps.
+
+1. [Installing `pip` dependencies](#installing-pip-dependencies)
+2. [Consuming `pip` dependencies](#consuming-pip-dependencies)
+
+The packaging rules create two kinds of repositories: A central external repo that holds
+downloaded wheel files, and individual external repos for each wheel's extracted
+contents. Users only need to interact with the central external repo; the wheel repos
+are essentially an implementation detail. The central external repo provides a
+`WORKSPACE` macro to create the wheel repos, as well as a function, `requirement()`, for use in
+`BUILD` files that translates a pip package name into the label of a `py_library`
 target in the appropriate wheel repo.
 
-### Importing `pip` dependencies
+### Installing `pip` dependencies
 
-To add pip dependencies to your `WORKSPACE` load
-the `pip_install` function, and call it to create the
-individual wheel repos.
+To add pip dependencies to your `WORKSPACE`, load the `pip_install` function, and call it to create the
+central external repo and individual wheel external repos.
 
 
 ```python
 load("@rules_python//python:pip.bzl", "pip_install")
 
-# Create a central repo that knows about the dependencies needed for
-# requirements.txt.
+# Create a central external repo, @my_deps, that contains Bazel targets for all the
+# third-party packages specified in the requirements.txt file.
 pip_install(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
 ```
 
-Note that since pip is executed at WORKSPACE-evaluation time, Bazel has no
+Note that since `pip_install` is a repository rule and therefore executes pip at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
-You can have multiple `pip_install`s in the same workspace. This will create multiple central repos that have no relation to
+You can have multiple `pip_install`s in the same workspace. This will create multiple external repos that have no relation to
 one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_install` is
