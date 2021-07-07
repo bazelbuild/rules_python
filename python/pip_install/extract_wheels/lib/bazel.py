@@ -250,5 +250,4 @@ def extract_wheel(
 
     if not incremental:
         os.remove(whl.path)
-
-    return "//%s" % directory
+        return f"//{directory}"

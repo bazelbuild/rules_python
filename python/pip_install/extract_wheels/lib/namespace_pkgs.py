@@ -25,7 +25,7 @@ def implicit_namespace_packages(
     # Traverse bottom-up because a directory can be a namespace pkg because its child contains module files.
     for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
         if "__init__.py" in filenames:
-            standard_pkg_dirs.add(dirpath)
+            standard_pkg_dirs.add(str(pathlib.Path(dirpath)))
             continue
         elif ignored_dirnames:
             is_ignored_dir = dirpath in ignored_dirnames

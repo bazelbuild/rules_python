@@ -118,6 +118,8 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             )
         )
 
+def coerce_to_bool(option):
+    return str(option).lower() == 'true'
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -132,8 +134,8 @@ dependencies from a fully resolved requirements lock file."
     )
     parser.add_argument(
         "--quiet",
-        type=bool,
-        action="store",
+        type=coerce_to_bool,
+        default=True,
         required=True,
         help="Whether to print stdout / stderr from child repos.",
     )
