@@ -23,19 +23,22 @@ def implicit_namespace_packages(
     namespace_pkg_dirs: Set[str] = set()
     standard_pkg_dirs: Set[str] = set()
     # Traverse bottom-up because a directory can be a namespace pkg because its child contains module files.
+    directory = pathlib.Path(directory)
+    ignored_dirnames = [pathlib.Path(p) for p in ignored_dirnames or ()]
     for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
+        dirpath = pathlib.Path(dirpath)
         if "__init__.py" in filenames:
-            standard_pkg_dirs.add(str(pathlib.Path(dirpath)))
+            standard_pkg_dirs.add(dirpath)
             continue
         elif ignored_dirnames:
             is_ignored_dir = dirpath in ignored_dirnames
-            child_of_ignored_dir = any(d in pathlib.Path(dirpath).parents for d in ignored_dirnames)
+            child_of_ignored_dir = any(d in dirpath.parents for d in ignored_dirnames)
             if is_ignored_dir or child_of_ignored_dir:
                 continue
 
         dir_includes_py_modules = _includes_python_modules(filenames)
-        parent_of_namespace_pkg = any(str(pathlib.Path(dirpath, d)) in namespace_pkg_dirs for d in dirnames)
-        parent_of_standard_pkg = any(str(pathlib.Path(dirpath, d)) in standard_pkg_dirs for d in dirnames)
+        parent_of_namespace_pkg = any(pathlib.Path(dirpath, d) in namespace_pkg_dirs for d in dirnames)
+        parent_of_standard_pkg = any(pathlib.Path(dirpath, d) in standard_pkg_dirs for d in dirnames)
         parent_of_pkg = parent_of_namespace_pkg or parent_of_standard_pkg
         if (
             (dir_includes_py_modules or parent_of_pkg)
@@ -47,7 +50,7 @@ def implicit_namespace_packages(
     return namespace_pkg_dirs
 
 
-def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
+def add_pkgutil_style_namespace_pkg_init(dir_path: pathlib.Path) -> None:
     """Adds 'pkgutil-style namespace packages' init file to the given directory
 
     See: https://packaging.python.org/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages
