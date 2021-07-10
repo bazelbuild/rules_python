@@ -184,7 +184,7 @@ def extract_wheel(
     enable_implicit_namespace_pkgs: bool,
     incremental: bool = False,
     incremental_repo_prefix: Optional[str] = None,
-) -> str:
+) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
@@ -250,5 +250,5 @@ def extract_wheel(
 
     if not incremental:
         os.remove(whl.path)
-
-    return "//%s" % directory
+        return f"//{directory}"
+    return None

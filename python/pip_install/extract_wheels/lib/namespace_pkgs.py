@@ -1,13 +1,13 @@
 """Utility functions to discover python package types"""
 import os
-import pathlib  # supported in >= 3.4
+from pathlib import Path  # supported in >= 3.4
 import textwrap
 from typing import Set, List, Optional
 
 
 def implicit_namespace_packages(
     directory: str, ignored_dirnames: Optional[List[str]] = None
-) -> Set[str]:
+) -> Set[Path]:
     """Discovers namespace packages implemented using the 'native namespace packages' method.
 
     AKA 'implicit namespace packages', which has been supported since Python 3.3.
@@ -20,34 +20,36 @@ def implicit_namespace_packages(
     Returns:
         The set of directories found under root to be packages using the native namespace method.
     """
-    namespace_pkg_dirs: Set[str] = set()
-    standard_pkg_dirs: Set[str] = set()
+    namespace_pkg_dirs: Set[Path] = set()
+    standard_pkg_dirs: Set[Path] = set()
+    directory_path = Path(directory)
+    ignored_dirname_paths: List[Path] = [Path(p) for p in ignored_dirnames or ()]
     # Traverse bottom-up because a directory can be a namespace pkg because its child contains module files.
-    for dirpath, dirnames, filenames in os.walk(directory, topdown=False):
+    for dirpath, dirnames, filenames in map(lambda t: (Path(t[0]), *t[1:]), os.walk(directory_path, topdown=False)):
         if "__init__.py" in filenames:
             standard_pkg_dirs.add(dirpath)
             continue
-        elif ignored_dirnames:
-            is_ignored_dir = dirpath in ignored_dirnames
-            child_of_ignored_dir = any(d in pathlib.Path(dirpath).parents for d in ignored_dirnames)
+        elif ignored_dirname_paths:
+            is_ignored_dir = dirpath in ignored_dirname_paths
+            child_of_ignored_dir = any(d in dirpath.parents for d in ignored_dirname_paths)
             if is_ignored_dir or child_of_ignored_dir:
                 continue
 
         dir_includes_py_modules = _includes_python_modules(filenames)
-        parent_of_namespace_pkg = any(str(pathlib.Path(dirpath, d)) in namespace_pkg_dirs for d in dirnames)
-        parent_of_standard_pkg = any(str(pathlib.Path(dirpath, d)) in standard_pkg_dirs for d in dirnames)
+        parent_of_namespace_pkg = any(Path(dirpath, d) in namespace_pkg_dirs for d in dirnames)
+        parent_of_standard_pkg = any(Path(dirpath, d) in standard_pkg_dirs for d in dirnames)
         parent_of_pkg = parent_of_namespace_pkg or parent_of_standard_pkg
         if (
             (dir_includes_py_modules or parent_of_pkg)
             and
             # The root of the directory should never be an implicit namespace
-            dirpath != directory
+            dirpath != directory_path
         ):
             namespace_pkg_dirs.add(dirpath)
     return namespace_pkg_dirs
 
 
-def add_pkgutil_style_namespace_pkg_init(dir_path: str) -> None:
+def add_pkgutil_style_namespace_pkg_init(dir_path: Path) -> None:
     """Adds 'pkgutil-style namespace packages' init file to the given directory
 
     See: https://packaging.python.org/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages
@@ -95,7 +97,7 @@ def _includes_python_modules(files: List[str]) -> bool:
         ".pyd"  # https://docs.python.org/3/faq/windows.html#is-a-pyd-file-the-same-as-a-dll
     }
     return any(
-        pathlib.Path(f).suffix in module_suffixes
+        Path(f).suffix in module_suffixes
         for f
         in files
     )
