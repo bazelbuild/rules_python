@@ -1,3 +1,4 @@
+import os
 import argparse
 import sys
 import glob
@@ -29,15 +30,25 @@ def main() -> None:
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 
-    with NamedTemporaryFile(mode='wb') as requirement_file:
+    requirement_file = NamedTemporaryFile(mode='wb', delete=False)
+    try:
         requirement_file.write(args.requirement.encode("utf-8"))
         requirement_file.flush()
+        # Close the file so pip is allowed to read it when running on Windows.
+        # For more information, see: https://bugs.python.org/issue14243
+        requirement_file.close()
         # Requirement specific args like --hash can only be passed in a requirements file,
         # so write our single requirement into a temp file in case it has any of those flags.
         pip_args.extend(["-r", requirement_file.name])
 
         # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
         subprocess.run(pip_args, check=True)
+    finally:
+        try:
+            os.unlink(requirement_file.name)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
     name, extras_for_pkg = requirements._parse_requirement_for_extra(args.requirement)
     extras = {name: extras_for_pkg} if extras_for_pkg and name else dict()
