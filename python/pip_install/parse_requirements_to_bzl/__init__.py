@@ -45,19 +45,6 @@ def repo_names_and_requirements(install_reqs: List[Tuple[InstallRequirement, str
         for ir, line in install_reqs
     ]
 
-def deserialize_structured_args(args):
-    """Deserialize structured arguments passed from the starlark rules.
-        Args:
-            args: dict of parsed command line arguments
-    """
-    structured_args = ("extra_pip_args", "pip_data_exclude")
-    for arg_name in structured_args:
-        if args.get(arg_name) is not None:
-            args[arg_name] = json.loads(args[arg_name])["args"]
-        else:
-            args[arg_name] = []
-    return args
-
 
 def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
@@ -69,7 +56,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
 
     args = dict(vars(all_args))
-    args = deserialize_structured_args(args)
+    args = arguments.deserialize_structured_args(args)
     args.setdefault("python_interpreter", sys.executable)
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")

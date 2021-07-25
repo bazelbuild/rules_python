@@ -1,3 +1,4 @@
+import json
 from argparse import ArgumentParser
 
 
@@ -21,4 +22,24 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         action="store_true",
         help="Disables conversion of implicit namespace packages into pkg-util style packages.",
     )
+    parser.add_argument(
+        "--environment",
+        action="store",
+        help="Extra environment variables to set on the pip environment.",
+    )
     return parser
+
+
+def deserialize_structured_args(args):
+    """Deserialize structured arguments passed from the starlark rules.
+    Args:
+        args: dict of parsed command line arguments
+    """
+    structured_args = ("extra_pip_args", "pip_data_exclude", "environment")
+    for arg_name in structured_args:
+        if args.get(arg_name) is not None:
+            args[arg_name] = json.loads(args[arg_name])["arg"]
+        else:
+            args[arg_name] = []
+    return args
+

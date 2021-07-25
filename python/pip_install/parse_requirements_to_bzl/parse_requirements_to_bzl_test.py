@@ -23,7 +23,10 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             args.requirements_lock = requirements_lock.name
             args.repo = "pip_parsed_deps"
             extra_pip_args = ["--index-url=pypi.org/simple"]
-            args.extra_pip_args = json.dumps({"args": extra_pip_args})
+            pip_data_exclude = ["**.foo"]
+            args.extra_pip_args = json.dumps({"arg": extra_pip_args})
+            args.pip_data_exclude= json.dumps({"arg": pip_data_exclude})
+            args.environment= json.dumps({"arg": {}})
             contents = generate_parsed_requirements_contents(args)
             library_target = "@pip_parsed_deps_pypi__foo//:pkg"
             whl_target = "@pip_parsed_deps_pypi__foo//:whl"
@@ -32,9 +35,11 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             self.assertIn(all_requirements, contents, contents)
             self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)
-            self.assertIn(requirement_string, contents, contents)
             all_flags = extra_pip_args + ["--require-hashes", "True"]
             self.assertIn("'extra_pip_args': {}".format(repr(all_flags)), contents, contents)
+            self.assertIn("'pip_data_exclude': {}".format(repr(pip_data_exclude)), contents, contents)
+            # Assert it gets set to an empty dict by default.
+            self.assertIn("'environment': {}", contents, contents)
 
 
 if __name__ == "__main__":

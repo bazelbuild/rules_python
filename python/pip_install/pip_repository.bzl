@@ -25,27 +25,38 @@ def _construct_pypath(rctx):
     return pypath
 
 def _parse_optional_attrs(rctx, args):
-    """Helper function to parse common attributes of pip_repository and whl_library repository rules.
+    """Helper function to parse common attributes of pip_repository
+    and whl_library repository rules. This function also serializes
+    the structured arguments as JSON so they can be passed on the command line
+    to subprocesses.
 
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
     Returns: Augmented args list.
     """
-    if rctx.attr.extra_pip_args:
+    # Check for None so we use empty default types from our attrs.
+    # Some args want to be list, and some want to be dict.
+    if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            struct(args = rctx.attr.extra_pip_args).to_json(),
+            struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
-    if rctx.attr.pip_data_exclude:
+    if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
-            struct(exclude = rctx.attr.pip_data_exclude).to_json(),
+            struct(arg = rctx.attr.pip_data_exclude).to_json(),
         ]
 
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
+
+    if rctx.attr.environment != None:
+        args += [
+            "--environment",
+            struct(arg = rctx.attr.environment).to_json(),
+        ]
 
     return args
 
@@ -100,14 +111,10 @@ def _pip_repository_impl(rctx):
     args += ["--repo", rctx.attr.name]
     args = _parse_optional_attrs(rctx, args)
 
-    environment = dict(rctx.attr.environment, **{
-        # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        "PYTHONPATH": pypath,
-    })
-
     result = rctx.execute(
         args,
-        environment = environment,
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -230,7 +237,6 @@ py_binary(
 def _impl_whl_library(rctx):
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
     _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
-    pypath = _construct_pypath(rctx)
     args = [
         rctx.attr.python_interpreter,
         "-m",
@@ -241,14 +247,11 @@ def _impl_whl_library(rctx):
         rctx.attr.repo,
     ]
     args = _parse_optional_attrs(rctx, args)
-    environment = dict(rctx.attr.environment, **{
-        # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        "PYTHONPATH": pypath,
-    })
 
     result = rctx.execute(
         args,
-        environment = environment,
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
