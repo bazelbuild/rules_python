@@ -138,8 +138,11 @@ This option is required to support some packages which cannot handle the convers
     ),
     "environment": attr.string_dict(
         doc = """
-Environment variables to set before calling the package manager. 
+Environment variables to set in the pip subprocess.
 Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
+Note that pip is run with "--isolated" on the CLI so PIP_<VAR>_<NAME>
+style env vars are ignored, but env vars that control requests and urllib3
+can be passed.
         """,
         default = {},
     ),
