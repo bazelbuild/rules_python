@@ -29,6 +29,12 @@ pip_parse(
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,
 
+    # (Optional) You can set an environment in the pip process to control its
+    # behavior. Note that pip is run in "isolated" mode so no PIP_<VAR>_<NAME>
+    # style env vars are read, but env vars that control requests and urllib3
+    # can be passed
+    # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
+
     # Uses the default repository name "pip_parsed_deps"
     requirements_lock = "//:requirements_lock.txt",
 )
