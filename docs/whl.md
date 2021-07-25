@@ -32,9 +32,9 @@ This rule defines `@foo//:pkg` as a `py_library` target.
 | Name  | Description | Type | Mandatory | Default |
 | :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
 | name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| extras |  A subset of the "extras" available from this &lt;code&gt;.whl&lt;/code&gt; for which &lt;code&gt;requirements&lt;/code&gt; has the dependencies.   | List of strings | optional | [] |
+| extras |  A subset of the "extras" available from this <code>.whl</code> for which <code>requirements</code> has the dependencies.   | List of strings | optional | [] |
 | python_interpreter |  The command to run the Python interpreter used when unpacking the wheel.   | String | optional | "python" |
-| requirements |  The name of the &lt;code&gt;pip_import&lt;/code&gt; repository rule from which to load this &lt;code&gt;.whl&lt;/code&gt;'s dependencies.   | String | optional | "" |
-| whl |  The path to the &lt;code&gt;.whl&lt;/code&gt; file. The name is expected to follow [this convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
+| requirements |  The name of the <code>pip_import</code> repository rule from which to load this <code>.whl</code>'s dependencies.   | String | optional | "" |
+| whl |  The path to the <code>.whl</code> file. The name is expected to follow [this convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 

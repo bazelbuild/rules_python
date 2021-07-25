@@ -216,13 +216,13 @@ pip format. If you support multiple platforms, you can define
 platform constraints, then use a select() to specify the appropriate
 specifier, eg:
 
-<code>
+`
 platform = select({
     "//platforms:windows_x86_64": "win_amd64",
     "//platforms:macos_x86_64": "macosx_10_7_x86_64",
     "//platforms:linux_x86_64": "manylinux2014_x86_64",
 })
-</code>
+`
 """,
     ),
     "python_tag": attr.string(
