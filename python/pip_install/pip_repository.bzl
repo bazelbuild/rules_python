@@ -35,6 +35,7 @@ def _parse_optional_attrs(rctx, args):
         args: A list of parsed args for the rule.
     Returns: Augmented args list.
     """
+
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
     if rctx.attr.extra_pip_args != None:
