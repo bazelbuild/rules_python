@@ -25,10 +25,10 @@ def _construct_pypath(rctx):
     return pypath
 
 def _parse_optional_attrs(rctx, args):
-    """Helper function to parse common attributes of pip_repository
-    and whl_library repository rules. This function also serializes
-    the structured arguments as JSON so they can be passed on the command line
-    to subprocesses.
+    """Helper function to parse common attributes of pip_repository and whl_library repository rules.
+
+    This function also serializes the structured arguments as JSON
+    so they can be passed on the command line to subprocesses.
 
     Args:
         rctx: Handle to the rule repository context.
