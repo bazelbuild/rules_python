@@ -3,7 +3,7 @@ import json
 import textwrap
 import sys
 import shlex
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from python.pip_install.extract_wheels.lib import bazel, arguments
 from pip._internal.req import parse_requirements, constructors
@@ -36,14 +36,31 @@ def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]
     return install_req_and_lines
 
 
-def repo_names_and_requirements(install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str) -> List[Tuple[str, str]]:
-    return [
-        (
-            bazel.sanitise_name(ir.name, prefix=repo_prefix),
-            line,
-        )
-        for ir, line in install_reqs
-    ]
+class NamesAndRequirements:
+    def __init__(self, whls: List[Tuple[str, str, Optional[str]]], aliases: List[Tuple[str, Dict[str, str]]]):
+        self.whls = whls
+        self.aliases = aliases
+
+
+def repo_names_and_requirements(
+        install_reqs: List[Tuple[InstallRequirement, str]],
+        repo_prefix: str,
+        platforms: Dict[str, str]) -> NamesAndRequirements:
+    whls = []
+    aliases = []
+    for ir, line in install_reqs:
+        generic_name = bazel.sanitise_name(ir.name, prefix=repo_prefix)
+        if not platforms:
+            whls.append((generic_name, line, None))
+        else:
+            select_items = {}
+            for key, platform in platforms.items():
+                prefix = bazel.sanitise_name(platform, prefix=repo_prefix) + "__"
+                name = bazel.sanitise_name(ir.name, prefix=prefix)
+                whls.append((name, line, platform))
+                select_items[key] = "@{name}//:pkg".format(name=name)
+            aliases.append((generic_name, select_items))
+    return NamesAndRequirements(whls, aliases)
 
 
 def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
@@ -58,12 +75,13 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     args = dict(vars(all_args))
     args = arguments.deserialize_structured_args(args)
     args.setdefault("python_interpreter", sys.executable)
-    # Pop this off because it wont be used as a config argument to the whl_library rule.
+    # Pop these off because they won't be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
+    pip_platform_definitions = args.pop("pip_platform_definitions")
     repo_prefix = bazel.whl_library_repo_prefix(args["repo"])
 
     install_req_and_lines = parse_install_requirements(requirements_lock, args["extra_pip_args"])
-    repo_names_and_reqs = repo_names_and_requirements(install_req_and_lines, repo_prefix)
+    repo_names_and_reqs = repo_names_and_requirements(install_req_and_lines, repo_prefix, pip_platform_definitions)
     all_requirements = ", ".join(
         [bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
     )
@@ -71,13 +89,14 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
         [bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
     )
     return textwrap.dedent("""\
-        load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
+        load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library", "platform_alias")
 
         all_requirements = [{all_requirements}]
 
         all_whl_requirements = [{all_whl_requirements}]
 
-        _packages = {repo_names_and_reqs}
+        _packages = {whl_definitions}
+        _aliases = {alias_definitions}
         _config = {args}
 
         def _clean_name(name):
@@ -90,18 +109,26 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
            return "@{repo_prefix}" + _clean_name(name) + "//:whl"
 
         def install_deps():
-            for name, requirement in _packages:
+            for name, requirement, platform in _packages:
                 whl_library(
                     name = name,
                     requirement = requirement,
+                    pip_platform_definition = platform,
                     **_config,
+                )
+            for name, select_items in _aliases:
+                platform_alias(
+                    name = name,
+                    select_items = select_items,
                 )
         """.format(
             all_requirements=all_requirements,
             all_whl_requirements=all_whl_requirements,
-            repo_names_and_reqs=repo_names_and_reqs,
+            whl_definitions=repo_names_and_reqs.whls,
+            alias_definitions=repo_names_and_reqs.aliases,
             args=args,
             repo_prefix=repo_prefix,
+            pip_platform_definitions=pip_platform_definitions,
             )
         )
 
@@ -132,6 +159,11 @@ dependencies from a fully resolved requirements lock file."
         action="store",
         required=True,
         help="timeout to use for pip operation.",
+    )
+    parser.add_argument(
+        "--pip_platform_definitions",
+        help="A map of select keys to platform definitions in the form "
+             + "<platform>-<python_version>-<implementation>-<abi>",
     )
     arguments.parse_common_args(parser)
     args = parser.parse_args()

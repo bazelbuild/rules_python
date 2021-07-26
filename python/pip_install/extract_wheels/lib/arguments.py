@@ -35,11 +35,10 @@ def deserialize_structured_args(args):
     Args:
         args: dict of parsed command line arguments
     """
-    structured_args = ("extra_pip_args", "pip_data_exclude", "environment")
+    structured_args = ("extra_pip_args", "pip_data_exclude", "environment", "pip_platform_definitions")
     for arg_name in structured_args:
         if args.get(arg_name) is not None:
             args[arg_name] = json.loads(args[arg_name])["arg"]
         else:
             args[arg_name] = []
     return args
-

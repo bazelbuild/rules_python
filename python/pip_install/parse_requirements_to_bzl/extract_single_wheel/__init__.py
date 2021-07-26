@@ -21,6 +21,10 @@ def main() -> None:
         required=True,
         help="A single PEP508 requirement specifier string.",
     )
+    parser.add_argument(
+        "--pip_platform_definition",
+        help="A pip platform definition in the form <platform>-<python_version>-<implementation>-<abi>",
+    )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
     deserialized_args = dict(vars(args))
@@ -28,10 +32,20 @@ def main() -> None:
 
     configure_reproducible_wheels()
 
-    pip_args = (
-        [sys.executable, "-m", "pip", "--isolated", "wheel", "--no-deps"] +
-        deserialized_args["extra_pip_args"]
-    )
+    pip_args = [sys.executable, "-m", "pip", "--isolated"]
+    if args.pip_platform_definition:
+        platform, python_version, implementation, abi = args.pip_platform_definition.split("-")
+        pip_args.extend([
+            "download",
+            "--only-binary", ":all:",
+            "--platform", platform,
+            "--python-version", python_version,
+            "--implementation", implementation,
+            "--abi", abi
+        ])
+    else:
+        pip_args.append("wheel")
+    pip_args.extend(["--no-deps"] + deserialized_args["extra_pip_args"])
 
     requirement_file = NamedTemporaryFile(mode='wb', delete=False)
     try:

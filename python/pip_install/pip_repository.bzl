@@ -100,6 +100,11 @@ def _pip_repository_impl(rctx):
             "--timeout",
             str(rctx.attr.timeout),
         ]
+        if rctx.attr.pip_platform_definitions:
+            args.extend([
+                "--pip_platform_definitions",
+                struct(arg = {str(k): v for k, v in rctx.attr.pip_platform_definitions.items()}).to_json(),
+            ])
     else:
         args = [
             python_interpreter,
@@ -190,6 +195,11 @@ of 'requirements' no resolve will take place and pip_repository will create indi
 wheels are fetched/built only for the targets specified by 'build/run/test'.
 """,
     ),
+    "pip_platform_definitions": attr.label_keyed_string_dict(
+        doc = """
+A map of select keys to platform definitions in the form <platform>-<python_version>-<implementation>-<abi>"
+        """
+    )
 }
 
 pip_repository_attrs.update(**common_attrs)
@@ -252,6 +262,12 @@ def _impl_whl_library(rctx):
     ]
     args = _parse_optional_attrs(rctx, args)
 
+    if rctx.attr.pip_platform_definition:
+        args.extend([
+            "--pip_platform_definition",
+            rctx.attr.pip_platform_definition,
+        ])
+
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
@@ -274,6 +290,9 @@ whl_library_attrs = {
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
     ),
+    "pip_platform_definition": attr.string(
+        doc = "A pip platform definition in the form <platform>-<python_version>-<implementation>-<abi>",
+    )
 }
 
 whl_library_attrs.update(**common_attrs)
@@ -284,4 +303,30 @@ whl_library = repository_rule(
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
     implementation = _impl_whl_library,
+)
+
+_PLATFORM_ALIAS_TMPL = """
+alias(
+    name = "pkg",
+    actual = select({select_items}),
+    visibility = ["//visibility:public"],
+)
+"""
+
+def _impl_platform_alias(rctx):
+    rctx.file(
+        "BUILD",
+        content = _PLATFORM_ALIAS_TMPL.format(
+            select_items = rctx.attr.select_items
+        ),
+        executable = False,
+    )
+
+platform_alias = repository_rule(
+    attrs = {
+        "select_items": attr.string_dict()
+    },
+    implementation = _impl_platform_alias,
+    doc = """
+An internal rule used to create an alias for a pip package for the appropriate platform."""
 )
