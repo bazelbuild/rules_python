@@ -26,6 +26,8 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             pip_data_exclude = ["**.foo"]
             args.extra_pip_args = json.dumps({"arg": extra_pip_args})
             args.pip_data_exclude= json.dumps({"arg": pip_data_exclude})
+            args.python_interpreter = "/custom/python3"
+            args.python_interpreter_target = "@custom_python//:exec"
             args.environment= json.dumps({"arg": {}})
             contents = generate_parsed_requirements_contents(args)
             library_target = "@pip_parsed_deps_pypi__foo//:pkg"
@@ -38,6 +40,8 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             all_flags = extra_pip_args + ["--require-hashes", "True"]
             self.assertIn("'extra_pip_args': {}".format(repr(all_flags)), contents, contents)
             self.assertIn("'pip_data_exclude': {}".format(repr(pip_data_exclude)), contents, contents)
+            self.assertIn("'python_interpreter': '/custom/python3'", contents, contents)
+            self.assertIn("'python_interpreter_target': '@custom_python//:exec'", contents, contents)
             # Assert it gets set to an empty dict by default.
             self.assertIn("'environment': {}", contents, contents)
 

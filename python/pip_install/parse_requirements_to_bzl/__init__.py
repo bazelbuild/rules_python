@@ -136,6 +136,14 @@ dependencies from a fully resolved requirements lock file."
         help="Path to fully resolved requirements.txt to use as the source of repos.",
     )
     parser.add_argument(
+        "--python_interpreter",
+        help="The python interpreter that will be used to download and unpack the wheels.",
+    )
+    parser.add_argument(
+        "--python_interpreter_target",
+        help="Bazel target of the python interpreter. It will take precedence over python_interpreter.",
+    )
+    parser.add_argument(
         "--quiet",
         type=coerce_to_bool,
         default=True,

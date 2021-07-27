@@ -24,6 +24,24 @@ def _construct_pypath(rctx):
     pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
     return pypath
 
+def _resolve_python_interpreter(rctx):
+    """Helper function to find the python interpreter from the common attributes
+
+    Args:
+        rctx: Handle to the rule repository context.
+    Returns: Python interpreter path.
+    """
+    python_interpreter = rctx.attr.python_interpreter
+    if rctx.attr.python_interpreter_target != None:
+        target = rctx.attr.python_interpreter_target
+        python_interpreter = rctx.path(target)
+    else:
+        if "/" not in python_interpreter:
+            python_interpreter = rctx.which(python_interpreter)
+        if not python_interpreter:
+            fail("python interpreter not found")
+    return python_interpreter
+
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
@@ -83,15 +101,7 @@ exports_files(["requirements.bzl"])
 """
 
 def _pip_repository_impl(rctx):
-    python_interpreter = rctx.attr.python_interpreter
-    if rctx.attr.python_interpreter_target != None:
-        target = rctx.attr.python_interpreter_target
-        python_interpreter = rctx.path(target)
-    else:
-        if "/" not in python_interpreter:
-            python_interpreter = rctx.which(python_interpreter)
-        if not python_interpreter:
-            fail("python interpreter not found")
+    python_interpreter = _resolve_python_interpreter(rctx)
 
     if rctx.attr.incremental and not rctx.attr.requirements_lock:
         fail("Incremental mode requires a requirements_lock attribute be specified.")
@@ -114,6 +124,11 @@ def _pip_repository_impl(rctx):
             "--timeout",
             str(rctx.attr.timeout),
         ]
+
+        if rctx.attr.python_interpreter:
+            args += ["--python_interpreter", rctx.attr.python_interpreter]
+        if rctx.attr.python_interpreter_target:
+            args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
     else:
         args = [
             python_interpreter,
@@ -266,10 +281,12 @@ py_binary(
 )
 
 def _impl_whl_library(rctx):
+    python_interpreter = _resolve_python_interpreter(rctx)
+
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
     _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
     args = [
-        rctx.attr.python_interpreter,
+        python_interpreter,
         "-m",
         "python.pip_install.parse_requirements_to_bzl.extract_single_wheel",
         "--requirement",
