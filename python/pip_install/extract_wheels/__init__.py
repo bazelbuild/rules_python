@@ -60,20 +60,20 @@ def main() -> None:
     )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
+    deserialized_args = dict(vars(args))
+    arguments.deserialize_structured_args(deserialized_args)
 
-    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements]
-    if args.extra_pip_args:
-        pip_args += json.loads(args.extra_pip_args)["args"]
+    pip_args = (
+        [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements] +
+        deserialized_args["extra_pip_args"]
+    )
 
+    env = os.environ.copy()
+    env.update(deserialized_args["environment"])
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.run(pip_args, check=True)
+    subprocess.run(pip_args, check=True, env=env)
 
     extras = requirements.parse_extras(args.requirements)
-
-    if args.pip_data_exclude:
-        pip_data_exclude = json.loads(args.pip_data_exclude)["exclude"]
-    else:
-        pip_data_exclude = []
 
     repo_label = "@%s" % args.repo
 
@@ -82,7 +82,7 @@ def main() -> None:
         % (
             repo_label,
             bazel.extract_wheel(
-                whl, extras, pip_data_exclude, args.enable_implicit_namespace_pkgs
+                whl, extras, deserialized_args["pip_data_exclude"], args.enable_implicit_namespace_pkgs
             ),
         )
         for whl in glob.glob("*.whl")

@@ -23,12 +23,15 @@ def main() -> None:
     )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
+    deserialized_args = dict(vars(args))
+    arguments.deserialize_structured_args(deserialized_args)
 
     configure_reproducible_wheels()
 
-    pip_args = [sys.executable, "-m", "pip", "--isolated", "wheel", "--no-deps"]
-    if args.extra_pip_args:
-        pip_args += json.loads(args.extra_pip_args)["args"]
+    pip_args = (
+        [sys.executable, "-m", "pip", "--isolated", "wheel", "--no-deps"] +
+        deserialized_args["extra_pip_args"]
+    )
 
     requirement_file = NamedTemporaryFile(mode='wb', delete=False)
     try:
@@ -41,8 +44,10 @@ def main() -> None:
         # so write our single requirement into a temp file in case it has any of those flags.
         pip_args.extend(["-r", requirement_file.name])
 
+        env = os.environ.copy()
+        env.update(deserialized_args["environment"])
         # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-        subprocess.run(pip_args, check=True)
+        subprocess.run(pip_args, check=True, env=env)
     finally:
         try:
             os.unlink(requirement_file.name)
@@ -53,16 +58,11 @@ def main() -> None:
     name, extras_for_pkg = requirements._parse_requirement_for_extra(args.requirement)
     extras = {name: extras_for_pkg} if extras_for_pkg and name else dict()
 
-    if args.pip_data_exclude:
-        pip_data_exclude = json.loads(args.pip_data_exclude)["exclude"]
-    else:
-        pip_data_exclude = []
-
     whl = next(iter(glob.glob("*.whl")))
     bazel.extract_wheel(
         whl,
         extras,
-        pip_data_exclude,
+        deserialized_args["pip_data_exclude"],
         args.enable_implicit_namespace_pkgs,
         incremental=True,
         incremental_repo_prefix=bazel.whl_library_repo_prefix(args.repo)

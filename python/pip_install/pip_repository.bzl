@@ -27,25 +27,37 @@ def _construct_pypath(rctx):
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
+    This function also serializes the structured arguments as JSON
+    so they can be passed on the command line to subprocesses.
+
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
     Returns: Augmented args list.
     """
-    if rctx.attr.extra_pip_args:
+
+    # Check for None so we use empty default types from our attrs.
+    # Some args want to be list, and some want to be dict.
+    if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            struct(args = rctx.attr.extra_pip_args).to_json(),
+            struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
-    if rctx.attr.pip_data_exclude:
+    if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
-            struct(exclude = rctx.attr.pip_data_exclude).to_json(),
+            struct(arg = rctx.attr.pip_data_exclude).to_json(),
         ]
 
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
+
+    if rctx.attr.environment != None:
+        args += [
+            "--environment",
+            struct(arg = rctx.attr.environment).to_json(),
+        ]
 
     return args
 
@@ -102,10 +114,8 @@ def _pip_repository_impl(rctx):
 
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -125,6 +135,16 @@ and py_test targets must specify either `legacy_create_init=False` or the global
 
 This option is required to support some packages which cannot handle the conversion to pkg-util style.
             """,
+    ),
+    "environment": attr.string_dict(
+        doc = """
+Environment variables to set in the pip subprocess.
+Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
+Note that pip is run with "--isolated" on the CLI so PIP_<VAR>_<NAME>
+style env vars are ignored, but env vars that control requests and urllib3
+can be passed.
+        """,
+        default = {},
     ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
@@ -221,7 +241,6 @@ py_binary(
 def _impl_whl_library(rctx):
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
     _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
-    pypath = _construct_pypath(rctx)
     args = [
         rctx.attr.python_interpreter,
         "-m",
@@ -232,12 +251,11 @@ def _impl_whl_library(rctx):
         rctx.attr.repo,
     ]
     args = _parse_optional_attrs(rctx, args)
+
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
