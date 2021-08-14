@@ -183,6 +183,11 @@ pip_repository_attrs = {
         default = False,
         doc = "Create the repository in incremental mode.",
     ),
+    "pip_platform_definitions": attr.label_keyed_string_dict(
+        doc = """
+A map of select keys to platform definitions in the form <platform>-<python_version>-<implementation>-<abi>"
+        """,
+    ),
     "requirements": attr.label(
         allow_single_file = True,
         doc = "A 'requirements.txt' pip requirements file.",
@@ -195,11 +200,6 @@ of 'requirements' no resolve will take place and pip_repository will create indi
 wheels are fetched/built only for the targets specified by 'build/run/test'.
 """,
     ),
-    "pip_platform_definitions": attr.label_keyed_string_dict(
-        doc = """
-A map of select keys to platform definitions in the form <platform>-<python_version>-<implementation>-<abi>"
-        """
-    )
 }
 
 pip_repository_attrs.update(**common_attrs)
@@ -282,6 +282,9 @@ def _impl_whl_library(rctx):
     return
 
 whl_library_attrs = {
+    "pip_platform_definition": attr.string(
+        doc = "A pip platform definition in the form <platform>-<python_version>-<implementation>-<abi>",
+    ),
     "repo": attr.string(
         mandatory = True,
         doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
@@ -290,9 +293,6 @@ whl_library_attrs = {
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
     ),
-    "pip_platform_definition": attr.string(
-        doc = "A pip platform definition in the form <platform>-<python_version>-<implementation>-<abi>",
-    )
 }
 
 whl_library_attrs.update(**common_attrs)
@@ -317,16 +317,16 @@ def _impl_platform_alias(rctx):
     rctx.file(
         "BUILD",
         content = _PLATFORM_ALIAS_TMPL.format(
-            select_items = rctx.attr.select_items
+            select_items = rctx.attr.select_items,
         ),
         executable = False,
     )
 
 platform_alias = repository_rule(
     attrs = {
-        "select_items": attr.string_dict()
+        "select_items": attr.string_dict(),
     },
     implementation = _impl_platform_alias,
     doc = """
-An internal rule used to create an alias for a pip package for the appropriate platform."""
+An internal rule used to create an alias for a pip package for the appropriate platform.""",
 )
