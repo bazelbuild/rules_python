@@ -36,6 +36,20 @@ def _parse_optional_attrs(rctx, args):
     Returns: Augmented args list.
     """
 
+    # Determine whether or not to pass the pip `--isloated` flag to the pip invocation
+    use_isolated = rctx.attr.isolated
+
+    # The environment variable will take precedence over the attribute
+    isolated_env = rctx.os.environ.get("RULES_PYTHON_PIP_ISOLATED", None)
+    if isolated_env != None:
+        if isolated_env.lower() in ["", "0", "false"]:
+            use_isolated = False
+        else:
+            use_isolated = True
+
+    if use_isolated:
+        args.append("--isolated")
+
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
     if rctx.attr.extra_pip_args != None:
@@ -125,6 +139,10 @@ def _pip_repository_impl(rctx):
 
     return
 
+common_env = [
+    "RULES_PYTHON_PIP_ISOLATED",
+]
+
 common_attrs = {
     "enable_implicit_namespace_pkgs": attr.bool(
         default = False,
@@ -148,6 +166,14 @@ can be passed.
     ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+    ),
+    "isolated": attr.bool(
+        doc = """\
+Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
+the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` enviornment varaible can be used
+to control this flag.
+""",
+        default = True,
     ),
     "pip_data_exclude": attr.string_list(
         doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
@@ -236,6 +262,7 @@ py_binary(
 ```
 """,
     implementation = _pip_repository_impl,
+    environ = common_env,
 )
 
 def _impl_whl_library(rctx):
@@ -284,4 +311,5 @@ whl_library = repository_rule(
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
     implementation = _impl_whl_library,
+    environ = common_env,
 )
