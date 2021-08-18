@@ -1,0 +1,8 @@
+---
+expect:
+  exit_code: 1
+  stderr: |
+    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module": "grpc" at line 2 from "__init__.py" is an invalid dependency: possible solutions:
+    	1. Add it as a dependency in the requirements.txt file.
+    	2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.
+    	3. Ignore it with a comment '# gazelle:ignore grpc' in the Python file.

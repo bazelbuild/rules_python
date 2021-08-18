@@ -1,0 +1,11 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "one",
+    srcs = [
+        "__init__.py",
+        "two.py",
+    ],
+    imports = [".."],
+    visibility = ["//:__subpackages__"],
+)

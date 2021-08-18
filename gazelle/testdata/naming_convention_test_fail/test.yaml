@@ -1,0 +1,7 @@
+---
+expect:
+  exit_code: 1
+  stderr: >
+    gazelle: ERROR: failed to generate target "//:naming_convention_test_fail_test" of kind "py_test":
+    a target of kind "go_test" with the same name already exists.
+    Use the '# gazelle:python_test_naming_convention' directive to change the naming convention.

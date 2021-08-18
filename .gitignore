@@ -41,3 +41,8 @@
 # vim swap files
 *.swp
 *.swo
+
+# Go/Gazelle files
+# These otherwise match patterns above
+!go.mod
+!BUILD.out

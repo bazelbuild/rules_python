@@ -1,0 +1,14 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+# gazelle:resolve py bar //somewhere/bar
+
+py_library(
+    name = "dependency_resolution_order",
+    srcs = ["__init__.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//baz",
+        "//somewhere/bar",
+        "@gazelle_python_test//pypi__some_foo",
+    ],
+)

@@ -36,6 +36,29 @@ def rules_python_internal_deps():
         strip_prefix = "stardoc-0.4.0",
     )
 
+    maybe(
+        http_archive,
+        name = "io_bazel_rules_go",
+        sha256 = "69de5c704a05ff37862f7e0f5534d4f479418afc21806c887db544a316f3cb6b",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+            "https://github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+        ],
+    )
+
+    maybe(
+        http_archive,
+        name = "bazel_gazelle",
+        patch_args = ["-p1"],
+        patches = ["@rules_python//gazelle:bazel_gazelle.pr1095.patch"],
+        sha256 = "0bb8056ab9ed4cbcab5b74348d8530c0e0b939987b0cfe36c1ab53d35a99e4de",
+        strip_prefix = "bazel-gazelle-2834ea44b3ec6371c924baaf28704730ec9d4559",
+        urls = [
+            # No release since March, and we need subsequent fixes
+            "https://github.com/bazelbuild/bazel-gazelle/archive/2834ea44b3ec6371c924baaf28704730ec9d4559.zip",
+        ],
+    )
+
     # Test data for WHL tool testing.
     maybe(
         http_file,
