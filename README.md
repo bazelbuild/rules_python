@@ -1,7 +1,7 @@
 # Python Rules for Bazel
 
-* Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=master)](https://buildkite.com/bazel/python-rules-python-postsubmit)
-* Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=master)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
+* Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=main)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+* Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=main)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
 
 ## Overview
 
@@ -9,7 +9,7 @@ This repository is the home of the core Python rules -- `py_library`,
 `py_binary`, `py_test`, and related symbols that provide the basis for Python
 support in Bazel. It also contains packaging rules for integrating with PyPI
 (`pip`). Documentation lives in the
-[`docs/`](https://github.com/bazelbuild/rules_python/tree/master/docs)
+[`docs/`](https://github.com/bazelbuild/rules_python/tree/main/docs)
 directory and in the
 [Bazel Build Encyclopedia](https://docs.bazel.build/versions/master/be/python.html).
 
