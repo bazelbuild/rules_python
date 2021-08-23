@@ -141,7 +141,9 @@ dependencies from a fully resolved requirements lock file."
     )
     parser.add_argument(
         "--python_interpreter_target",
-        help="Bazel target of the python interpreter. It will take precedence over python_interpreter.",
+        help="Bazel target of a python interpreter.\
+It will be used in repository rules so it must be an already built interpreter.\
+If set, it will take precedence over python_interpreter.",
     )
     parser.add_argument(
         "--quiet",
