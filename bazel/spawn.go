@@ -1,53 +1,19 @@
 package bazel
 
 import (
-	"fmt"
-	"io"
-	"log"
-	"os"
-	"os/exec"
+	"github.com/bazelbuild/bazelisk/core"
+	"github.com/bazelbuild/bazelisk/repositories"
 )
 
-// LocateBazel determines which executable we call through to
-func LocateBazel() string {
-	// When installed in tools/bazel, bazelisk sets this variable
-	bazelReal, ok := os.LookupEnv("BAZEL_REAL")
-	if ok {
-		return bazelReal
-	}
-	pathBazelisk, err := exec.LookPath("bazelisk")
-	if err == nil {
-		return pathBazelisk
-	}
-	pathBazel, err := exec.LookPath("bazel")
-	if err == nil {
-		return pathBazel
-	}
-	panic("Unable to locate bazel tool to wrap. Looked in $BAZEL_REAL, $PATH")
-}
+// Spawn is similar to the main() function of bazelisk
+// see https://github.com/bazelbuild/bazelisk/blob/7c3d9d5/bazelisk.go
+func Spawn(command []string) (int, error) {
+	gcs := &repositories.GCSRepo{}
+	gitHub := repositories.CreateGitHubRepo(core.GetEnvOrConfig("BAZELISK_GITHUB_TOKEN"))
+	// Fetch LTS releases, release candidates and Bazel-at-commits from GCS, forks and rolling releases from GitHub.
+	// TODO(https://github.com/bazelbuild/bazelisk/issues/228): get rolling releases from GCS, too.
+	repos := core.CreateRepositories(gcs, gcs, gitHub, gcs, gitHub, true)
 
-func Spawn(command string) {
-	bazel := LocateBazel()
-	cmd := exec.Command(bazel, command)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	slurpOut, _ := io.ReadAll(stdout)
-	fmt.Printf("%s\n", slurpOut)
-
-	slurpErr, _ := io.ReadAll(stderr)
-	fmt.Fprintf(os.Stderr, "%s\n", slurpErr)
-
-	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
-	}
+	exitCode, err := core.RunBazelisk(command, repos)
+	return exitCode, err
 }

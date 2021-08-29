@@ -27,7 +27,7 @@ var versionCmd = &cobra.Command{
 			}
 			fmt.Printf("Aspect version: %s\n", version)
 		}
-		bazel.Spawn("version")
+		bazel.Spawn([]string{"version"})
 	},
 }
 
