@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 set -o pipefail -o errexit -o nounset
-
+HOME="$TEST_TMPDIR"
 ASPECT="$TEST_SRCDIR/build_aspect_cli/cmd/aspect/aspect_/aspect"
+export HOME
 
 # Only capture stdout, just like `bazel version` prints to stdout
 ver=$($ASPECT version 2>/dev/null) || "$ASPECT" version
