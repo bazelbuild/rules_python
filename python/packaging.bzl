@@ -88,16 +88,17 @@ def _escape_filename_segment(segment):
 
     See https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
     """
+
     # TODO: this is wrong, isalnum replaces non-ascii letters, while we should
     # not replace them.
     # TODO: replace this with a regexp once starlark supports them.
     escaped = ""
     for character in segment.elems():
         # isalnum doesn't handle unicode characters properly.
-        if character.isalnum() or character == '.':
+        if character.isalnum() or character == ".":
             escaped += character
-        elif not escaped.endswith('_'):
-            escaped += '_'
+        elif not escaped.endswith("_"):
+            escaped += "_"
     return escaped
 
 def _py_wheel_impl(ctx):
