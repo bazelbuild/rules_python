@@ -13,6 +13,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 	"github.com/mattn/go-isatty"
+	"github.com/fatih/color"
 )
 
 var cfgFile string
@@ -22,7 +23,7 @@ var interactive bool
 var rootCmd = &cobra.Command{
 	Use:   "aspect",
 	Short: "Aspect.build bazel wrapper",
-	Long:  `Aspect CLI is a better frontend for running bazel`,
+	Long:  color.New(color.FgBlue).SprintFunc()(`Aspect CLI`) + ` is a better frontend for running bazel`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/bazelbuild/bazelisk v1.10.1
+	github.com/fatih/color v1.12.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-isatty v0.0.13
