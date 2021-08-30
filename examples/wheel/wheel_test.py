@@ -75,16 +75,17 @@ class WheelTest(unittest.TestCase):
             entry_point_contents = zf.read(
                 'example_customized-0.0.1.dist-info/entry_points.txt')
             # The entries are guaranteed to be sorted.
-            self.assertEqual(record_contents, b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
-example_customized-0.0.1.dist-info/RECORD,,
-example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
-example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
-examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
-examples/wheel/lib/module_with_data.py,sha256=K_IGAq_CHcZX0HUyINpD1hqSKIEdCn58d9E9nhWF2EA,636
-examples/wheel/lib/simple_module.py,sha256=72-91Dm6NB_jw-7wYQt7shzdwvk5RB0LujIah8g7kr8,636
-examples/wheel/main.py,sha256=xnha0jPnVBJt3LUQRbLf7rFA5njczSdd3gm3kSyQJZw,909
-""")
+            # The sha256 checksum is ignoerd for the purposes of this test
+            self.assertRegex(record_contents.decode("utf-8").rstrip(), r"".join([
+                r"example_customized-0\.0\.1\.dist-info\/METADATA,sha256=.*,\d+\n",
+                r"example_customized-0\.0\.1\.dist-info\/RECORD,,\n",
+                r"example_customized-0\.0\.1\.dist-info\/WHEEL,sha256=.*,\d+\n",
+                r"example_customized-0\.0\.1\.dist-info\/entry_points\.txt,sha256=.*,\d+\n",
+                r"examples\/wheel\/lib\/data\.txt,sha256=.*,\d+\n",
+                r"examples\/wheel\/lib\/module_with_data\.py,sha256=.*,\d+\n",
+                r"examples\/wheel\/lib\/simple_module\.py,sha256=.*,\d+\n",
+                r"examples\/wheel\/main\.py,sha256=.*,\d+",
+            ]))
             self.assertEqual(wheel_contents, b"""\
 Wheel-Version: 1.0
 Generator: bazel-wheelmaker 1.0
