@@ -24,7 +24,7 @@ class WheelTest(unittest.TestCase):
                                 'examples', 'wheel',
                                 'example_minimal_library-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['examples/wheel/lib/module_with_data.py',
                  'examples/wheel/lib/simple_module.py',
@@ -38,7 +38,7 @@ class WheelTest(unittest.TestCase):
                                 'examples', 'wheel',
                                 'example_minimal_package-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['examples/wheel/lib/data.txt',
                  'examples/wheel/lib/module_with_data.py',
@@ -54,7 +54,7 @@ class WheelTest(unittest.TestCase):
                                 'examples', 'wheel',
                                 'example_customized-0.0.1-py3-none-any.whl')
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['examples/wheel/lib/data.txt',
                  'examples/wheel/lib/module_with_data.py',
@@ -73,7 +73,7 @@ class WheelTest(unittest.TestCase):
             entry_point_contents = zf.read(
                 'example_customized-0.0.1.dist-info/entry_points.txt')
             # The entries are guaranteed to be sorted.
-            self.assertEquals(record_contents, b"""\
+            self.assertEqual(record_contents, b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/RECORD,,
 example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
@@ -83,13 +83,13 @@ examples/wheel/lib/module_with_data.py,sha256=K_IGAq_CHcZX0HUyINpD1hqSKIEdCn58d9
 examples/wheel/lib/simple_module.py,sha256=72-91Dm6NB_jw-7wYQt7shzdwvk5RB0LujIah8g7kr8,636
 examples/wheel/main.py,sha256=xnha0jPnVBJt3LUQRbLf7rFA5njczSdd3gm3kSyQJZw,909
 """)
-            self.assertEquals(wheel_contents, b"""\
+            self.assertEqual(wheel_contents, b"""\
 Wheel-Version: 1.0
 Generator: bazel-wheelmaker 1.0
 Root-Is-Purelib: true
 Tag: py3-none-any
 """)
-            self.assertEquals(metadata_contents, b"""\
+            self.assertEqual(metadata_contents, b"""\
 Metadata-Version: 2.1
 Name: example_customized
 Version: 0.0.1
@@ -103,7 +103,7 @@ Requires-Dist: pytest
 
 This is a sample description of a wheel.
 """)
-            self.assertEquals(entry_point_contents, b"""\
+            self.assertEqual(entry_point_contents, b"""\
 [console_scripts]
 another = foo.bar:baz
 customized_wheel = examples.wheel.main:main
@@ -119,7 +119,7 @@ second = second.main:s""")
                                 'example_custom_package_root-0.0.1-py3-none-any.whl')
 
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['wheel/lib/data.txt',
                  'wheel/lib/module_with_data.py',
@@ -136,7 +136,7 @@ second = second.main:s""")
                                 'example_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl')
 
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['data.txt',
                  'module_with_data.py',
@@ -153,7 +153,7 @@ second = second.main:s""")
                                 'example_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl')
 
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['lib/data.txt',
                  'lib/module_with_data.py',
@@ -172,7 +172,7 @@ second = second.main:s""")
             metadata_contents = zf.read(
                 'example_python_requires_in_a_package-0.0.1.dist-info/METADATA')
             # The entries are guaranteed to be sorted.
-            self.assertEquals(metadata_contents, b"""\
+            self.assertEqual(metadata_contents, b"""\
 Metadata-Version: 2.1
 Name: example_python_requires_in_a_package
 Version: 0.0.1
@@ -225,7 +225,7 @@ Tag: cp38-abi3-manylinux2014_x86_64
                                 'use_genrule_with_dir_in_outs-0.0.1-py3-none-any.whl')
 
         with zipfile.ZipFile(filename) as zf:
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 ['examples/wheel/main.py',
                  'examples/wheel/someDir/foo.py',
