@@ -18,6 +18,8 @@ import zipfile
 
 
 class WheelTest(unittest.TestCase):
+    maxDiff = None
+
     def test_py_library_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'rules_python',
