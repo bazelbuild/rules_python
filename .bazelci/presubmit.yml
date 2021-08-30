@@ -16,5 +16,7 @@ all_targets: &all_targets
 platforms:
   ubuntu1804:
     <<: *all_targets
+  rbe_ubuntu1604:
+    <<: *all_targets
   macos:
     <<: *all_targets
