@@ -10,6 +10,8 @@ from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"
+DATA_LABEL = "data"
+DIST_INFO_LABEL = "dist_info"
 
 
 def generate_build_file_contents(
@@ -33,14 +35,24 @@ def generate_build_file_contents(
 
     return textwrap.dedent(
         """\
+        load("@rules_python//python:defs.bzl", "py_library")
+        
         package(default_visibility = ["//visibility:public"])
 
-        load("@rules_python//python:defs.bzl", "py_library")
+        filegroup(
+            name = "{dist_info_label}",
+            srcs = glob(["*.dist-info/**"], allow_empty = True),
+        )
 
         filegroup(
-            name="{whl_file_label}",
-            srcs=glob(["*.whl"], allow_empty = True),
-            data=[{whl_file_deps}]
+            name = "{data_label}",
+            srcs = glob(["*.data/**"], allow_empty = True),
+        )
+
+        filegroup(
+            name = "{whl_file_label}",
+            srcs = glob(["*.whl"], allow_empty = True),
+            data = [{whl_file_deps}],
         )
 
         py_library(
@@ -58,6 +70,8 @@ def generate_build_file_contents(
             data_exclude=json.dumps(data_exclude),
             whl_file_label=WHEEL_FILE_LABEL,
             whl_file_deps=",".join(whl_file_deps),
+            data_label=DATA_LABEL,
+            dist_info_label=DIST_INFO_LABEL,
         )
     )
 
@@ -92,7 +106,13 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
            return "{repo}//pypi__" + name_key
 
         def whl_requirement(name):
-            return requirement(name) + ":whl"
+            return requirement(name) + ":{whl_file_label}"
+
+        def data_requirement(name):
+            return requirement(name) + ":{data_label}"
+
+        def dist_info_requirement(name):
+            return requirement(name) + ":{dist_info_label}"
 
         def install_deps():
             fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_parse()?")
@@ -100,6 +120,9 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
             repo=repo_name,
             requirement_labels=requirement_labels,
             whl_requirement_labels=whl_requirement_labels,
+            whl_file_label=WHEEL_FILE_LABEL,
+            data_label=DATA_LABEL,
+            dist_info_label=DIST_INFO_LABEL,
         )
     )
 
