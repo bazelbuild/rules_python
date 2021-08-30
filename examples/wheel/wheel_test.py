@@ -218,7 +218,7 @@ Tag: cp38-abi3-manylinux2014_x86_64
 """,
             )
 
-    def test_genrule_creates_directory_and_is_included_in_wheel(self):
+    def test_generated_file_is_included_in_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'rules_python',
                                 'examples', 'wheel',

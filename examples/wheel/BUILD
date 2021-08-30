@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
 
@@ -35,14 +36,14 @@ py_library(
     name = "main_with_gen_data",
     srcs = ["main.py"],
     data = [
-        ":gen_dir",
+        ":foo",
     ],
 )
 
-genrule(
-    name = "gen_dir",
-    outs = ["someDir"],
-    cmd = "mkdir -p $@ && touch $@/foo.py",
+write_file(
+    name = "foo",
+    out = "someDir/foo.py",
+    content = [""],
 )
 
 # Package just a specific py_libraries, without their dependencies
