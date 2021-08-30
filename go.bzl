@@ -42,6 +42,7 @@ def deps():
     )
     go_repository(
         name = "com_github_bazelbuild_bazelisk",
+        build_naming_convention = "go_default_library",
         importpath = "github.com/bazelbuild/bazelisk",
         sum = "h1:2EWA2lRrt/k8B5ASt0mlTDQ+7mnzvKdF6ShNWLbk0o0=",
         version = "v1.10.1",
@@ -501,8 +502,8 @@ def deps():
     go_repository(
         name = "com_github_mattn_go_isatty",
         importpath = "github.com/mattn/go-isatty",
-        sum = "h1:ns/ykhmWi7G9O+8a448SecJU3nSMBXJfqQkl0upE1jI=",
-        version = "v0.0.3",
+        sum = "h1:qdl+GuBjcsKKDco5BsxPJlId98mSWNKqYA+Co0SC1yA=",
+        version = "v0.0.13",
     )
     go_repository(
         name = "com_github_matttproud_golang_protobuf_extensions",

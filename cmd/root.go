@@ -12,9 +12,11 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
+	"github.com/mattn/go-isatty"
 )
 
 var cfgFile string
+var interactive bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -41,9 +43,11 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.aspect.yaml)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	interactive_default := false
+	if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		interactive_default = true
+	}
+	rootCmd.PersistentFlags().BoolVar(&interactive, "interactive", interactive_default, "Interactive mode (e.g. prompts for user input)")
 }
 
 // initConfig reads in config file and ENV variables if set.

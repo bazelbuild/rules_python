@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//bazel",
         "//buildinfo",
+        "@com_github_mattn_go_isatty//:go-isatty",
         "@com_github_mitchellh_go_homedir//:go-homedir",
         "@com_github_spf13_cobra//:cobra",
         "@com_github_spf13_viper//:viper",

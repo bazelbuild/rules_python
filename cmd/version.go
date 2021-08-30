@@ -23,7 +23,7 @@ var versionCmd = &cobra.Command{
 		} else {
 			version := buildinfo.Release
 			if buildinfo.GitStatus != "clean" {
-				version += " (in a dirty clone)"
+				version += " (with local changes)"
 			}
 			fmt.Printf("Aspect version: %s\n", version)
 		}
