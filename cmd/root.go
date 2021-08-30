@@ -10,10 +10,10 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 
+	"github.com/fatih/color"
+	"github.com/mattn/go-isatty"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
-	"github.com/mattn/go-isatty"
-	"github.com/fatih/color"
 )
 
 var cfgFile string

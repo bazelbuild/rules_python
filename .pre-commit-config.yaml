@@ -1,15 +1,33 @@
+# See instructions in CONTRIBUTING.md
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
 repos:
-  - repo: https://github.com/syntaqx/git-hooks 
+  # Locally-authored hooks for better hermeticity
+  - repo: local 
+    hooks:
+    - id: go-fmt
+      name: go fmt
+      description: Runs `go fmt` and asserts no changes are needed.
+      entry: ./hooks/go-fmt.sh
+      language: script
+      files: \.go$
+  - repo: https://github.com/syntaqx/git-hooks
     rev: v0.0.17
     hooks:
+    # Requires that shellcheck is already installed
     - id: shellcheck
-    - id: go-fmt
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.18.0
+    hooks:
+      # Requires that commitizen is already installed
+      - id: commitizen
+        stages: [commit-msg]
   - repo: https://github.com/keith/pre-commit-buildifier
     rev: 4.0.1.1
     hooks:
+      # Requires that buildifier is already installed
       - id: buildifier
         args: &args
-          # Keep this argument in sync with .bazelci/presubmit.yaml
           - --warnings=all
       - id: buildifier-lint
         args: *args
