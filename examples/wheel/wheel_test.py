@@ -112,6 +112,34 @@ customized_wheel = examples.wheel.main:main
 first = first.main:f
 second = second.main:s""")
 
+    def test_filename_escaping(self):
+        filename = os.path.join(os.environ['TEST_SRCDIR'],
+                                'rules_python',
+                                'examples', 'wheel',
+                                'file_name_escaping-0.0.1_r7-py3-none-any.whl')
+        with zipfile.ZipFile(filename) as zf:
+            self.assertEquals(
+                zf.namelist(),
+                ['examples/wheel/lib/data.txt',
+                 'examples/wheel/lib/module_with_data.py',
+                 'examples/wheel/lib/simple_module.py',
+                 'examples/wheel/main.py',
+                 # PEP calls for replacing only in the archive filename.
+                 # Alas setuptools also escapes in the dist-info directory
+                 # name, so let's be compatible.
+                 'file_name_escaping-0.0.1_r7.dist-info/WHEEL',
+                 'file_name_escaping-0.0.1_r7.dist-info/METADATA',
+                 'file_name_escaping-0.0.1_r7.dist-info/RECORD'])
+            metadata_contents = zf.read(
+                'file_name_escaping-0.0.1_r7.dist-info/METADATA')
+            self.assertEquals(metadata_contents, b"""\
+Metadata-Version: 2.1
+Name: file~~name-escaping
+Version: 0.0.1-r7
+
+UNKNOWN
+""")
+
     def test_custom_package_root_wheel(self):
         filename = os.path.join(os.environ['TEST_SRCDIR'],
                                 'rules_python',

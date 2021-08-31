@@ -189,6 +189,17 @@ py_wheel(
     version = "0.0.1",
 )
 
+py_wheel(
+    name = "filename_escaping",
+    # Per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
+    # runs of non-alphanumeric, non-digit symbols should be replaced with a single underscore.
+    # Unicode non-ascii letters should *not* be replaced with underscore.
+    distribution = "file~~name-escaping",
+    python_tag = "py3",
+    version = "0.0.1-r7",
+    deps = [":example_pkg"],
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -197,6 +208,7 @@ py_test(
         ":custom_package_root_multi_prefix",
         ":custom_package_root_multi_prefix_reverse_order",
         ":customized",
+        ":filename_escaping",
         ":minimal_with_py_library",
         ":minimal_with_py_package",
         ":python_abi3_binary_wheel",
