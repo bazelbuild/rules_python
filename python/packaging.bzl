@@ -83,13 +83,31 @@ Sub-packages are automatically included.
     },
 )
 
+def _escape_filename_segment(segment):
+    """Escape a segment of the wheel filename.
+
+    See https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
+    """
+
+    # TODO: this is wrong, isalnum replaces non-ascii letters, while we should
+    # not replace them.
+    # TODO: replace this with a regexp once starlark supports them.
+    escaped = ""
+    for character in segment.elems():
+        # isalnum doesn't handle unicode characters properly.
+        if character.isalnum() or character == ".":
+            escaped += character
+        elif not escaped.endswith("_"):
+            escaped += "_"
+    return escaped
+
 def _py_wheel_impl(ctx):
     outfile = ctx.actions.declare_file("-".join([
-        ctx.attr.distribution,
-        ctx.attr.version,
-        ctx.attr.python_tag,
-        ctx.attr.abi,
-        ctx.attr.platform,
+        _escape_filename_segment(ctx.attr.distribution),
+        _escape_filename_segment(ctx.attr.version),
+        _escape_filename_segment(ctx.attr.python_tag),
+        _escape_filename_segment(ctx.attr.abi),
+        _escape_filename_segment(ctx.attr.platform),
     ]) + ".whl")
 
     inputs_to_package = depset(

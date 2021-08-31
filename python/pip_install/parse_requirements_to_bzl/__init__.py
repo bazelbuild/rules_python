@@ -84,10 +84,16 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             return name.replace("-", "_").replace(".", "_").lower()
 
         def requirement(name):
-           return "@{repo_prefix}" + _clean_name(name) + "//:pkg"
+           return "@{repo_prefix}" + _clean_name(name) + "//:{py_library_label}"
 
         def whl_requirement(name):
-           return "@{repo_prefix}" + _clean_name(name) + "//:whl"
+           return "@{repo_prefix}" + _clean_name(name) + "//:{wheel_file_label}"
+
+        def data_requirement(name):
+            return requirement(name) + ":{data_label}"
+
+        def dist_info_requirement(name):
+            return requirement(name) + ":{dist_info_label}"
 
         def install_deps():
             for name, requirement in _packages:
@@ -102,6 +108,10 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             repo_names_and_reqs=repo_names_and_reqs,
             args=args,
             repo_prefix=repo_prefix,
+            py_library_label=bazel.PY_LIBRARY_LABEL,
+            wheel_file_label=bazel.WHEEL_FILE_LABEL,
+            data_label=bazel.DATA_LABEL,
+            dist_info_label=bazel.DIST_INFO_LABEL,
             )
         )
 

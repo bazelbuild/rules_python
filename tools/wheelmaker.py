@@ -18,6 +18,7 @@ import collections
 import hashlib
 import os
 import os.path
+import re
 import sys
 import zipfile
 
@@ -29,6 +30,11 @@ def commonpath(path1, path2):
             break
         ret.append(a)
     return os.path.sep.join(ret)
+
+
+def escape_filename_segment(segment):
+    """Escapes a filename segment per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode"""
+    return re.sub(r"[^\w\d.]+", "_", segment, re.UNICODE)
 
 
 class WheelMaker(object):
@@ -43,6 +49,9 @@ class WheelMaker(object):
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
 
+        self._distinfo_dir = (escape_filename_segment(self._name) + '-' +
+                              escape_filename_segment(self._version) +
+                              '.dist-info/')
         self._zipfile = None
         self._record = []
 
@@ -64,14 +73,11 @@ class WheelMaker(object):
         components += [self._python_tag, self._abi, self._platform]
         return '-'.join(components) + '.whl'
 
-    def distname(self):
-        return self._name + '-' + self._version
-
     def disttags(self):
         return ['-'.join([self._python_tag, self._abi, self._platform])]
 
     def distinfo_path(self, basename):
-        return self.distname() + '.dist-info/' + basename
+        return self._distinfo_dir + basename
 
     def _serialize_digest(self, hash):
         # https://www.python.org/dev/peps/pep-0376/#record
