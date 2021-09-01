@@ -42,7 +42,7 @@ def _parse_optional_attrs(rctx, args):
     # The environment variable will take precedence over the attribute
     isolated_env = rctx.os.environ.get("RULES_PYTHON_PIP_ISOLATED", None)
     if isolated_env != None:
-        if isolated_env.lower() in ["", "0", "false"]:
+        if isolated_env.lower() in ("0", "false"):
             use_isolated = False
         else:
             use_isolated = True
