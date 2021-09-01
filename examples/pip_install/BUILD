@@ -1,4 +1,8 @@
-load("@pip//:requirements.bzl", "requirement")
+load(
+    "@pip//:requirements.bzl",
+    "entry_point",
+    "requirement",
+)
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
@@ -42,7 +46,20 @@ py_test(
     deps = [":main"],
 )
 
+# For pip dependencies which have entry points, the `entry_point` macro can be
+# used from the generated `pip_install` repository to access a runnable binary.
+alias(
+    name = "wheel",
+    # If `pkg` and `script` are the same, passing a single string to
+    # `entry_point` would work as well: `entry_point("wheel")`
+    actual = entry_point(
+        pkg = "wheel",
+        script = "wheel",
+    ),
+)
+
 # Check that our compiled requirements are up-to-date
 compile_pip_requirements(
     name = "requirements",
+    extra_args = ["--allow-unsafe"],
 )
