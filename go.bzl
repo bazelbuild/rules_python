@@ -1036,6 +1036,7 @@ def deps():
         importpath = "golang.org/x/tools",
         sum = "h1:4nW4NLDYnU28ojHaHO8OVxFHk/aQ33U01a9cjED+pzE=",
         version = "v0.0.0-20201224043029-2b0845dc783e",
+        build_directives = ["gazelle:exclude **/testdata/**/*"],
     )
     go_repository(
         name = "org_golang_x_xerrors",
