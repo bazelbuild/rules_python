@@ -1,6 +1,12 @@
+/*
+Copyright © 2021 Aspect Build Systems Inc
+
+Not licensed for re-use.
+*/
+
 package main
 
-import "aspect.build/cli/cmd"
+import "github.com/spf13/cobra"
 
 func main() {
 	// Detect whether we are being run as a tools/bazel wrapper (look for BAZEL_REAL in the environment)
@@ -14,5 +20,6 @@ func main() {
 	//     ask the user if they want to install for all users of the workspace, if so
 	//         - tools/bazel file and put our bootstrap code in there
 	//
-	cmd.Execute()
+	cmd := NewDefaultRootCmd()
+	cobra.CheckErr(cmd.Execute())
 }

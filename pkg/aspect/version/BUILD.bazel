@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "version",
+    srcs = ["version.go"],
+    importpath = "aspect.build/cli/pkg/aspect/version",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/bazel",
+        "//pkg/ioutils",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+go_test(
+    name = "version_test",
+    srcs = ["version_test.go"],
+    deps = [
+        ":version",
+        "//pkg/ioutils",
+        "@com_github_onsi_gomega//:gomega",
+    ],
+)

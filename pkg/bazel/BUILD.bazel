@@ -1,15 +1,24 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "bazel",
     srcs = [
+        "bazel.go",
         "flags.go",
-        "spawn.go",
     ],
-    importpath = "aspect.build/cli/bazel",
+    importpath = "aspect.build/cli/pkg/bazel",
     visibility = ["//visibility:public"],
     deps = [
         "@com_github_bazelbuild_bazelisk//core:go_default_library",
         "@com_github_bazelbuild_bazelisk//repositories:go_default_library",
+    ],
+)
+
+go_test(
+    name = "bazel_test",
+    srcs = ["bazel_test.go"],
+    deps = [
+        ":bazel",
+        "@com_github_onsi_gomega//:gomega",
     ],
 )

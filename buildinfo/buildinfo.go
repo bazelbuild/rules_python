@@ -1,8 +1,13 @@
+/*
+Copyright © 2021 Aspect Build Systems Inc
+
+Not licensed for re-use.
+*/
+
 // Variables in this file will be replaced by the linker when Bazel is run with --stamp
 // The time should be in format '2018-12-12 12:30:00 UTC'
 // The GitStatus should be either "clean" or "dirty"
 // Release will be a comma-separated string representation of any tags.
-
 package buildinfo
 
 // BuildTime is a string representation of when this binary was built.
