@@ -12,25 +12,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// versionCmd represents the version command
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version of aspect CLI as well as tools it invokes",
-	Long:  `Prints version info on colon-separated lines, just like bazel does`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if !buildinfo.IsStamped() {
-			fmt.Println("Aspect version: not built with --stamp")
-		} else {
-			version := buildinfo.Release
-			if buildinfo.GitStatus != "clean" {
-				version += " (with local changes)"
-			}
-			fmt.Printf("Aspect version: %s\n", version)
-		}
-		bazel.Spawn([]string{"version"})
-	},
-}
+var gnuFormat bool
+var versionCmd *cobra.Command
 
-func init() {
+var _ = RegisterCommandVar(func() {
+	// versionCmd represents the version command
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version of aspect CLI as well as tools it invokes",
+		Long:  `Prints version info on colon-separated lines, just like bazel does`,
+		Run: versionExec,
+	}
+})
+
+var _ = RegisterCommandInit(func() {
+	versionCmd.PersistentFlags().BoolVarP(&gnuFormat, "gnu_format", "", false, "format help following GNU convention")
 	rootCmd.AddCommand(versionCmd)
+})
+
+func versionExec(cmd *cobra.Command, args []string) {
+	var version string
+	if !buildinfo.IsStamped() {
+		version = "unknown [not built with --stamp]"
+	} else {
+		version := buildinfo.Release
+		if buildinfo.GitStatus != "clean" {
+			version += " (with local changes)"
+		}
+	}
+	// Check if the --gnu_format flag is set, if that is the case,
+	// the version is printed differently
+	bazelCmd := []string{"version"}
+	if gnuFormat {
+		fmt.Printf("Aspect %s\n", version)
+		// Propagate the flag
+		bazelCmd = append(bazelCmd, "--gnu_format")
+	} else {
+		fmt.Printf("Aspect version: %s\n", version)
+	}
+	bazel.Spawn(bazelCmd)
 }

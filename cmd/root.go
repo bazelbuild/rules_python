@@ -16,8 +16,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var interactive bool
+var (
+	cfgFile string
+	interactive bool
+
+	varInitFncs []func()
+	cmdInitFncs []func()	
+) 
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -29,10 +34,36 @@ var rootCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
+func RegisterCommandVar(c func()) bool {
+	varInitFncs = append(varInitFncs, c)
+
+	return true
+}
+
+func RegisterCommandInit(c func()) bool {
+	cmdInitFncs = append(cmdInitFncs, c)
+	return true
+}
+
+func Main() error {
+	// Setup all variables.
+	// Setting up all the variables first will allow px
+	// to initialize the init functions in any order
+	for _, v := range varInitFncs {
+		v()
+	}
+
+	// Call all plugin inits
+	for _, f := range cmdInitFncs {
+		f()
+	}
+	return rootCmd.Execute()
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+	cobra.CheckErr(Main())
 }
 
 func init() {
