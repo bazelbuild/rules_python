@@ -13,3 +13,8 @@ gazelle(
     ],
     command = "update-repos",
 )
+
+alias(
+    name = "aspect",
+    actual = "//cmd/aspect",
+)
