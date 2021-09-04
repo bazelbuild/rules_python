@@ -7,7 +7,6 @@ Not licensed for re-use.
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -21,6 +20,11 @@ import (
 	"aspect.build/cli/pkg/ioutils"
 )
 
+var (
+	boldCyan = color.New(color.FgCyan, color.Bold)
+	faint = color.New(color.Faint)
+)
+
 func NewDefaultRootCmd() *cobra.Command {
 	defaultInteractive := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
 	return NewRootCmd(ioutils.DefaultStreams, defaultInteractive)
@@ -30,7 +34,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	cmd := &cobra.Command{
 		Use:   "aspect",
 		Short: "Aspect.build bazel wrapper",
-		Long:  color.New(color.FgBlue).SprintFunc()(`Aspect CLI`) + ` is a better frontend for running bazel`,
+		Long:  boldCyan.Sprintf(`Aspect CLI`) + ` is a better frontend for running bazel`,
 	}
 
 	// ### Flags
@@ -54,7 +58,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	}
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(streams.Stderr, "Using config file:", viper.ConfigFileUsed())
+		faint.Fprintln(streams.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
 	// ### Child commands
