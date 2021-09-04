@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 
 	"aspect.build/cli/cmd/aspect/version"
+	"aspect.build/cli/docs/help/topics"
 	"aspect.build/cli/pkg/ioutils"
 )
 
@@ -58,6 +59,14 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 
 	// ### Child commands
 	cmd.AddCommand(version.NewDefaultVersionCmd())
+
+	// ### "Additional help topic commands" which are not runnable
+	// https://pkg.go.dev/github.com/spf13/cobra#Command.IsAdditionalHelpTopicCommand
+	cmd.AddCommand(&cobra.Command{
+		Use:   "target-syntax",
+		Short: "Documentation on Bazel's syntax for targets",
+		Long:  topics.Read("target-syntax"),
+	})
 
 	return cmd
 }

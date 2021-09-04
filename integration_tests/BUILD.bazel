@@ -1,4 +1,10 @@
 sh_test(
+    name = "help_test",
+    srcs = ["help_test.sh"],
+    data = ["//cmd/aspect"],
+)
+
+sh_test(
     name = "version_test",
     srcs = ["version_test.sh"],
     data = ["//cmd/aspect"],
