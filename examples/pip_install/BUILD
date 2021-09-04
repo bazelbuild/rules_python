@@ -56,5 +56,4 @@ py_test(
     name = "entry_point_test",
     srcs = ["entry_point_test.py"],
     data = [":yamllint"],
-    env = {"PIP_REPOSITORY_ENTRY_POINT": "$(rootpath :yamllint)"},
 )

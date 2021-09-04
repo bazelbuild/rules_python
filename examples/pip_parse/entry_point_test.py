@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from pathlib import Path
 import subprocess
 import textwrap
 import unittest
@@ -10,8 +10,8 @@ class PipParseEntryPointTest(unittest.TestCase):
     def test_output(self):
         self.maxDiff = None
 
-        entry_point = os.environ.get("PIP_REPOSITORY_ENTRY_POINT")
-        self.assertIsNotNone(entry_point)
+        entry_point = Path("external/pip_parsed_deps_pypi__wheel/rules_python_wheel_entry_point_wheel")
+        self.assertTrue(entry_point.exists())
 
         proc = subprocess.run([entry_point, "--help"], check=True, capture_output=True)
         self.assertEqual(proc.stdout.decode("utf-8").rstrip(), textwrap.dedent("""\

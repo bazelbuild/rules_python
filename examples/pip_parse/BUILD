@@ -58,7 +58,6 @@ py_test(
     name = "entry_point_test",
     srcs = ["entry_point_test.py"],
     data = [":wheel"],
-    env = {"PIP_REPOSITORY_ENTRY_POINT": "$(rootpath :wheel)"},
 )
 
 # This rule adds a convenient way to update the requiremenst file.
