@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import subprocess
-import textwrap
 import unittest
 
 
@@ -13,24 +12,8 @@ class PipParseEntryPointTest(unittest.TestCase):
         entry_point = Path("external/pip_parsed_deps_pypi__wheel/rules_python_wheel_entry_point_wheel")
         self.assertTrue(entry_point.exists())
 
-        proc = subprocess.run([entry_point, "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.assertEqual(proc.stdout.decode("utf-8").rstrip(), textwrap.dedent("""\
-            usage: rules_python_wheel_entry_point_wheel.py [-h]
-                                                           {unpack,pack,convert,version,help}
-                                                           ...
-
-            positional arguments:
-              {unpack,pack,convert,version,help}
-                                    commands
-                unpack              Unpack wheel
-                pack                Repack wheel
-                convert             Convert egg or wininst to wheel
-                version             Print version and exit
-                help                Show this help
-
-            optional arguments:
-              -h, --help            show this help message and exit
-            """).rstrip())
+        proc = subprocess.run([entry_point, "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(proc.stdout.decode("utf-8").strip(), "wheel 0.37.0")
 
 
 if __name__ == "__main__":
