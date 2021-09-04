@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 # This list must be updated when we add a new command
 _DOCS = [
     "aspect.md",
+    "aspect_docs.md",
     "aspect_version.md",
 ]
 

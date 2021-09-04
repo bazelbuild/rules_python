@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "docs",
+    srcs = ["docs.go"],
+    importpath = "aspect.build/cli/pkg/aspect/docs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/ioutils",
+        "@com_github_pkg_browser//:browser",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)

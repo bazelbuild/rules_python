@@ -624,6 +624,13 @@ def deps():
         version = "v1.9.2",
     )
     go_repository(
+        name = "com_github_pkg_browser",
+        importpath = "github.com/pkg/browser",
+        sum = "h1:TdFv+3Gr3GaghJ/o80aulO4ian7GHGWMdLBXoLZH1Is=",
+        version = "v0.0.0-20210904010418-6d279e18f982",
+    )
+
+    go_repository(
         name = "com_github_pkg_errors",
         importpath = "github.com/pkg/errors",
         sum = "h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=",
@@ -1010,8 +1017,8 @@ def deps():
     go_repository(
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
-        sum = "h1:faDu4veV+8pcThn4fewv6TVlNCezafGoC1gM/mxQLbQ=",
-        version = "v0.0.0-20210611083646-a4fc73990273",
+        sum = "h1:X/2sJAybVknnUnV7AD2HdT6rm2p5BP6eH2j+igduWgk=",
+        version = "v0.0.0-20210616045830-e2b7044e8c71",
     )
     go_repository(
         name = "org_golang_x_term",
@@ -1033,10 +1040,10 @@ def deps():
     )
     go_repository(
         name = "org_golang_x_tools",
+        build_directives = ["gazelle:exclude **/testdata/**/*"],
         importpath = "golang.org/x/tools",
         sum = "h1:4nW4NLDYnU28ojHaHO8OVxFHk/aQ33U01a9cjED+pzE=",
         version = "v0.0.0-20201224043029-2b0845dc783e",
-        build_directives = ["gazelle:exclude **/testdata/**/*"],
     )
     go_repository(
         name = "org_golang_x_xerrors",
