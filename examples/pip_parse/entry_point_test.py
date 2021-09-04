@@ -13,7 +13,7 @@ class PipParseEntryPointTest(unittest.TestCase):
         entry_point = Path("external/pip_parsed_deps_pypi__wheel/rules_python_wheel_entry_point_wheel")
         self.assertTrue(entry_point.exists())
 
-        proc = subprocess.run([entry_point, "--help"], check=True, capture_output=True)
+        proc = subprocess.run([entry_point, "--help"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.assertEqual(proc.stdout.decode("utf-8").rstrip(), textwrap.dedent("""\
             usage: rules_python_wheel_entry_point_wheel.py [-h]
                                                            {unpack,pack,convert,version,help}
