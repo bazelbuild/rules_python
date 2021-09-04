@@ -152,11 +152,12 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     ```
 
     Args:
-        requirements_lock (Label): The 
+        requirements_lock (Label): The
         name (str, optional): The name of the generated repository.
         **kwargs (dict): Additional keyword arguments for the underlying
             `pip_repository` rule.
     """
+
     # Just in case our dependencies weren't already fetched
     pip_install_dependencies()
 
