@@ -1,0 +1,46 @@
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
+# This list must be updated when we add a new command
+_DOCS = [
+    "aspect.md",
+    "aspect_version.md",
+]
+
+genrule(
+    name = "docgen",
+    outs = ["gen/" + d for d in _DOCS],
+    cmd = "$(execpath //cmd/docgen) $(@D)/gen",
+    tools = ["//cmd/docgen"],
+)
+
+# Help developers who get a red CI result by telling them how to fix it
+_failure_message = "\nPlease update the docs by running\n    bazel run //docs:update"
+
+[
+    diff_test(
+        name = "check_" + file,
+        failure_message = _failure_message,
+        file1 = "gen/" + file,
+        file2 = file,
+    )
+    for file in _DOCS
+]
+
+write_file(
+    name = "gen_update",
+    out = "update.sh",
+    content = [
+        "#!/usr/bin/env bash",
+        "cd $BUILD_WORKSPACE_DIRECTORY",
+    ] + [
+        "cp -fv bazel-bin/docs/gen/{0} docs/{0}".format(file)
+        for file in _DOCS
+    ],
+)
+
+sh_binary(
+    name = "update",
+    srcs = ["update.sh"],
+    data = ["gen/" + d for d in _DOCS],
+)

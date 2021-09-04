@@ -22,7 +22,7 @@ import (
 
 var (
 	boldCyan = color.New(color.FgCyan, color.Bold)
-	faint = color.New(color.Faint)
+	faint    = color.New(color.Faint)
 )
 
 func NewDefaultRootCmd() *cobra.Command {
@@ -62,6 +62,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	}
 
 	// ### Child commands
+	// IMPORTANT: when adding a new command, also update the _DOCS list in /docs/BUILD.bazel
 	cmd.AddCommand(version.NewDefaultVersionCmd())
 
 	// ### "Additional help topic commands" which are not runnable
