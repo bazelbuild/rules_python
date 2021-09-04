@@ -31,7 +31,7 @@ func NewVersionCmd(streams ioutils.Streams) *cobra.Command {
 		RunE:  v.Run,
 	}
 
-	cmd.PersistentFlags().BoolVarP(&v.GNUFormat, "gnu_format", "", false, "format help following GNU convention")
+	cmd.PersistentFlags().BoolVarP(&v.GNUFormat, "gnu_format", "", false, "format space-separated following GNU convention")
 
 	return cmd
 }

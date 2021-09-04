@@ -2,21 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "aspect_lib",
-    srcs = [
-        "main.go",
-        "root.go",
-    ],
+    srcs = ["main.go"],
     importpath = "aspect.build/cli/cmd/aspect",
-    visibility = ["//visibility:private"],
+    visibility = ["//cmd:__subpackages__"],
     deps = [
-        "//cmd/aspect/version",
-        "//docs/help/topics",
-        "//pkg/ioutils",
-        "@com_github_fatih_color//:color",
-        "@com_github_mattn_go_isatty//:go-isatty",
-        "@com_github_mitchellh_go_homedir//:go-homedir",
+        "//cmd/aspect/root",
         "@com_github_spf13_cobra//:cobra",
-        "@com_github_spf13_viper//:viper",
     ],
 )
 

@@ -4,7 +4,7 @@ Copyright © 2021 Aspect Build Systems Inc
 Not licensed for re-use.
 */
 
-package main
+package root
 
 import (
 	"os"

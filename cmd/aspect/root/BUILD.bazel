@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "root",
+    srcs = ["root.go"],
+    importpath = "aspect.build/cli/cmd/aspect/root",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cmd/aspect/version",
+        "//docs/help/topics",
+        "//pkg/ioutils",
+        "@com_github_fatih_color//:color",
+        "@com_github_mattn_go_isatty//:go-isatty",
+        "@com_github_mitchellh_go_homedir//:go-homedir",
+        "@com_github_spf13_cobra//:cobra",
+        "@com_github_spf13_viper//:viper",
+    ],
+)
