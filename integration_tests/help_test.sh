@@ -22,3 +22,9 @@ help=$($ASPECT help target-syntax 2>/dev/null) || true
     echo "$help"
     exit 1
 }
+help=$($ASPECT help info-keys 2>/dev/null) || true
+[[ "$help" =~ "bazel-bin" ]] || {
+    echo >&2 "Expected 'aspect help info-keys' stdout to contain 'bazel-bin' , but was"
+    echo "$help"
+    exit 1
+}

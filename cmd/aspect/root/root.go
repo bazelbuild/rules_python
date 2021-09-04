@@ -71,8 +71,13 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	// https://pkg.go.dev/github.com/spf13/cobra#Command.IsAdditionalHelpTopicCommand
 	cmd.AddCommand(&cobra.Command{
 		Use:   "target-syntax",
-		Short: "Documentation on Bazel's syntax for targets",
+		Short: "Explains the syntax for specifying targets.",
 		Long:  topics.Read("target-syntax.md"),
+	})
+	cmd.AddCommand(&cobra.Command{
+		Use:   "info-keys",
+		Short: "Displays a list of keys used by the info command.",
+		Long:  topics.Read("info-keys.md"),
 	})
 
 	return cmd

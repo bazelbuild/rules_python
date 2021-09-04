@@ -3,7 +3,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "topics",
     srcs = ["main.go"],
-    data = ["target-syntax.md"],
+    data = [
+        "info-keys.md",
+        "target-syntax.md",
+    ],
     importpath = "aspect.build/cli/docs/help/topics",
     visibility = ["//visibility:public"],
     deps = ["@io_bazel_rules_go//go/tools/bazel:go_default_library"],
