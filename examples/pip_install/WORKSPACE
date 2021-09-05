@@ -36,7 +36,7 @@ pip_install(
     #environment = {"HTTP_PROXY": "http://my.proxy.fun/"},
 
     # Uses the default repository name "pip"
-    requirements = "//:requirements.in",
+    requirements = "//:requirements.txt",
 )
 
 # You could optionally use an in-build, compiled python interpreter as a toolchain,
