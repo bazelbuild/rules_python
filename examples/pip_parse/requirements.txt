@@ -1,2 +1,2 @@
 requests==2.25.1
-wheel==0.37.0
+yamllint==1.26.3

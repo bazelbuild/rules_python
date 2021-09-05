@@ -43,21 +43,21 @@ py_test(
 )
 
 # For pip dependencies which have entry points, the `entry_point` macro can be
-# used from the generated `pip_install` repository to access a runnable binary.
+# used from the generated `pip_parse` repository to access a runnable binary.
 alias(
-    name = "wheel",
+    name = "yamllint",
     # If `pkg` and `script` are the same, passing a single string to
-    # `entry_point` would work as well: `entry_point("wheel")`
+    # `entry_point` would work as well: `entry_point("yamllint")`
     actual = entry_point(
-        pkg = "wheel",
-        script = "wheel",
+        pkg = "yamllint",
+        script = "yamllint",
     ),
 )
 
 py_test(
     name = "entry_point_test",
     srcs = ["entry_point_test.py"],
-    data = [":wheel"],
+    data = [":yamllint"],
 )
 
 # This rule adds a convenient way to update the requiremenst file.
