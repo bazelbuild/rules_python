@@ -169,7 +169,7 @@ alias(
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| requirements_lock |  The   |  none |
+| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.   |  none |
 | name |  The name of the generated repository.   |  <code>"pip_parsed_deps"</code> |
 | kwargs |  Additional keyword arguments for the underlying     <code>pip_repository</code> rule.   |  none |
 

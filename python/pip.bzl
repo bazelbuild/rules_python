@@ -152,7 +152,11 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     ```
 
     Args:
-        requirements_lock (Label): The
+        requirements_lock (Label): A fully resolved 'requirements.txt' pip requirement file
+            containing the transitive set of your dependencies. If this file is passed instead
+            of 'requirements' no resolve will take place and pip_repository will create
+            individual repositories for each of your dependencies so that wheels are
+            fetched/built only for the targets specified by 'build/run/test'.
         name (str, optional): The name of the generated repository.
         **kwargs (dict): Additional keyword arguments for the underlying
             `pip_repository` rule.
