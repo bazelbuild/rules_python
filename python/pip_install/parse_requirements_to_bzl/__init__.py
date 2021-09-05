@@ -90,10 +90,15 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
            return "@{repo_prefix}" + _clean_name(name) + "//:{wheel_file_label}"
 
         def data_requirement(name):
-            return requirement(name) + ":{data_label}"
+            return "@{repo_prefix}" + _clean_name(name) + "//:{data_label}"
 
         def dist_info_requirement(name):
-            return requirement(name) + ":{dist_info_label}"
+            return "@{repo_prefix}" + _clean_name(name) + "//:{dist_info_label}"
+
+        def entry_point(pkg, script = None):
+            if not script:
+                script = pkg
+            return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
 
         def install_deps():
             for name, requirement in _packages:
@@ -112,6 +117,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             wheel_file_label=bazel.WHEEL_FILE_LABEL,
             data_label=bazel.DATA_LABEL,
             dist_info_label=bazel.DIST_INFO_LABEL,
+            entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
             )
         )
 

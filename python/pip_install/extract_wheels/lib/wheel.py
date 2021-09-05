@@ -1,4 +1,5 @@
 """Utility class to inspect an extracted wheel directory"""
+import configparser
 import glob
 import os
 import stat
@@ -41,6 +42,32 @@ class Wheel:
     @property
     def metadata(self) -> pkginfo.Wheel:
         return pkginfo.get_metadata(self.path)
+
+    def entry_points(self) -> Dict[str, str]:
+        """Returns the entrypoints defined in the current wheel
+
+        See https://packaging.python.org/specifications/entry-points/ for more info
+
+        Returns:
+            Dict[str, str]: A mappying of the entry point's name to it's method
+        """
+        with zipfile.ZipFile(self.path, "r") as whl:
+            # Calculate the location of the entry_points.txt file
+            metadata = self.metadata
+            name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
+            entry_points_path = os.path.join("{}.dist-info".format(name), "entry_points.txt")
+
+            # If this file does not exist in the wheel, there are no entry points
+            if entry_points_path not in whl.namelist():
+                return dict()
+
+            # Parse the avaialble entry points
+            config = configparser.ConfigParser()
+            config.read_string(whl.read(entry_points_path).decode("utf-8"))
+            if "console_scripts" in config.sections():
+                return dict(config["console_scripts"])
+
+        return dict()
 
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
