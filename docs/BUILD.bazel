@@ -9,10 +9,21 @@ _DOCS = [
 
 genrule(
     name = "docgen",
-    outs = ["gen/" + d for d in _DOCS],
-    cmd = "$(execpath //cmd/docgen) $(@D)/gen",
+    outs = ["raw/" + d for d in _DOCS],
+    cmd = "$(execpath //cmd/docgen) $(@D)/raw",
     tools = ["//cmd/docgen"],
 )
+
+# Make a deterministic output by stripping date info
+[
+    genrule(
+        name = "strip_date_%s" % src,
+        srcs = ["raw/" + src],
+        outs = ["gen/" + src],
+        cmd = "sed 's#by spf13/cobra on .*#by spf13/cobra#' <$< >$@",
+    )
+    for src in _DOCS
+]
 
 # Help developers who get a red CI result by telling them how to fix it
 _failure_message = "\nPlease update the docs by running\n    bazel run //docs:update"
