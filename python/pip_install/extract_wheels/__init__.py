@@ -64,7 +64,9 @@ def main() -> None:
     arguments.deserialize_structured_args(deserialized_args)
 
     pip_args = (
-        [sys.executable, "-m", "pip", "--isolated", "wheel", "-r", args.requirements] +
+        [sys.executable, "-m", "pip"] + 
+        (["--isolated"] if args.isolated else []) + 
+        ["wheel", "-r", args.requirements] +
         deserialized_args["extra_pip_args"]
     )
 

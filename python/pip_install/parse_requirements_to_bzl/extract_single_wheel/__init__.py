@@ -29,7 +29,9 @@ def main() -> None:
     configure_reproducible_wheels()
 
     pip_args = (
-        [sys.executable, "-m", "pip", "--isolated", "wheel", "--no-deps"] +
+        [sys.executable, "-m", "pip"] +
+        (["--isolated"] if args.isolated else []) + 
+        ["wheel", "--no-deps"] +
         deserialized_args["extra_pip_args"]
     )
 
