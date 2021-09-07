@@ -1,5 +1,6 @@
-load("@pip_parsed_deps//:requirements.bzl", "requirement")
+load("@pip_parsed_deps//:requirements.bzl", "entry_point", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
 # Toolchain setup, this is optional.
 # Demonstrate that we can use the same python interpreter for the toolchain and executing pip in pip install (see WORKSPACE).
@@ -39,4 +40,30 @@ py_test(
     name = "test",
     srcs = ["test.py"],
     deps = [":main"],
+)
+
+# For pip dependencies which have entry points, the `entry_point` macro can be
+# used from the generated `pip_parse` repository to access a runnable binary.
+alias(
+    name = "yamllint",
+    # If `pkg` and `script` are the same, passing a single string to
+    # `entry_point` would work as well: `entry_point("yamllint")`
+    actual = entry_point(
+        pkg = "yamllint",
+        script = "yamllint",
+    ),
+)
+
+py_test(
+    name = "entry_point_test",
+    srcs = ["entry_point_test.py"],
+    data = [":yamllint"],
+)
+
+# This rule adds a convenient way to update the requiremenst file.
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+    requirements_in = "requirements.txt",
+    requirements_txt = "requirements_lock.txt",
 )
