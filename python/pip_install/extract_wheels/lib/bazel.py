@@ -129,7 +129,15 @@ def generate_build_file_contents(
 
         py_library(
             name = "{name}",
-            srcs = glob(["**/*.py"], exclude=["{entry_point_prefix}*.py"], allow_empty = True),
+            srcs = glob(
+                ["**/*.py"],
+                allow_empty = True,
+                exclude = [
+                    "{entry_point_prefix}*.py",
+                    "tests/**",
+                    "*/tests/**",
+                ],
+            ),
             data = glob(["**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
