@@ -12,7 +12,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 #   the manifest doesn't need to be updated
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
-    modules_mapping = "@modules_mapping//:modules_mapping.json",
+    modules_mapping = "@modules_map//:modules_mapping.json",
     pip_deps_repository_name = "pip",
     requirements = "//:requirements_lock.txt",
 )
