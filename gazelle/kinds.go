@@ -10,7 +10,7 @@ const (
 	pyTestKind    = "py_test"
 )
 
-// Kinds returns a map of maps rule names (kinds) and information on how to
+// Kinds returns a map that maps rule names (kinds) and information on how to
 // match and merge attributes that may be found in rules of those kinds.
 func (*Python) Kinds() map[string]rule.KindInfo {
 	return pyKinds
