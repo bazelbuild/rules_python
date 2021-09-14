@@ -34,7 +34,8 @@ def _modules_mapping_impl(rctx):
             "--no-cache-dir",
             "--disable-pip-version-check",
             "--index-url={}".format(rctx.attr.pip_index_url),
-            "build",
+            "build=={}".format(rctx.attr.build_wheel_version),
+            "setuptools=={}".format(rctx.attr.setuptools_wheel_version),
         ],
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.install_build_timeout,
@@ -280,6 +281,10 @@ def _search_url(releases, extension):
 modules_mapping = repository_rule(
     _modules_mapping_impl,
     attrs = {
+        "build_wheel_version": attr.string(
+            default = "0.5.1",
+            doc = "The build wheel version.",
+        ),
         "generate_timeout": attr.int(
             default = 30,
             doc = "The timeout for the generator.py command.",
@@ -308,6 +313,10 @@ modules_mapping = repository_rule(
             allow_single_file = True,
             doc = "The requirements.txt file with hashes locked using pip-tools.",
             mandatory = True,
+        ),
+        "setuptools_wheel_version": attr.string(
+            default = "v57.5.0",
+            doc = "The setuptools wheel version.",
         ),
         "_builder": attr.label(
             allow_single_file = True,
