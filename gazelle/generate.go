@@ -11,6 +11,7 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
+	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
@@ -141,8 +142,22 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 				if filepath.Ext(path) == ".py" {
 					if cfg.CoarseGrainedGeneration() || !isEntrypointFile(path) {
-						baseName := filepath.Base(path)
 						f, _ := filepath.Rel(args.Dir, path)
+						excludedPatterns := cfg.ExcludedPatterns()
+						if excludedPatterns != nil {
+							it := excludedPatterns.Iterator()
+							for it.Next() {
+								excludedPattern := it.Value().(string)
+								isExcluded, err := doublestar.Match(excludedPattern, f)
+								if err != nil {
+									return err
+								}
+								if isExcluded {
+									return nil
+								}
+							}
+						}
+						baseName := filepath.Base(path)
 						if strings.HasSuffix(baseName, "_test.py") || strings.HasPrefix(baseName, "test_") {
 							pyTestFilenames.Add(f)
 						} else {

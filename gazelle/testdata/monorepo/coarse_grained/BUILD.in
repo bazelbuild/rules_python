@@ -4,6 +4,8 @@ load("@rules_python//python:defs.bzl", "py_library")
 # gazelle:python_root
 # gazelle:python_coarse_grained_generation true
 
+# gazelle:exclude bar/baz/*_excluded.py
+
 py_library(
     name = "coarse_grained",
     visibility = ["//:__subpackages__"],

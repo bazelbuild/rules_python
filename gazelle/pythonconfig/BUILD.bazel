@@ -8,5 +8,8 @@ go_library(
     ],
     importpath = "github.com/bazelbuild/rules_python/gazelle/pythonconfig",
     visibility = ["//visibility:public"],
-    deps = ["//gazelle/manifest"],
+    deps = [
+        "//gazelle/manifest",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+    ],
 )

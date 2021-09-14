@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/emirpasic/gods/lists/singlylinkedlist"
+
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
@@ -82,6 +84,7 @@ type Config struct {
 	pythonProjectRoot string
 	gazelleManifest   *manifest.Manifest
 
+	excludedPatterns         *singlylinkedlist.List
 	ignoreFiles              map[string]struct{}
 	ignoreDependencies       map[string]struct{}
 	validateImportStatements bool
@@ -100,6 +103,7 @@ func New(
 		extensionEnabled:         true,
 		repoRoot:                 repoRoot,
 		pythonProjectRoot:        pythonProjectRoot,
+		excludedPatterns:         singlylinkedlist.New(),
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
@@ -124,6 +128,7 @@ func (c *Config) NewChild() *Config {
 		repoRoot:                 c.repoRoot,
 		pythonProjectRoot:        c.pythonProjectRoot,
 		gazelleManifest:          c.gazelleManifest,
+		excludedPatterns:         c.excludedPatterns,
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
@@ -132,6 +137,17 @@ func (c *Config) NewChild() *Config {
 		binaryNamingConvention:   c.binaryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
 	}
+}
+
+// AddExcludedPattern adds a glob pattern parsed from the standard
+// gazelle:exclude directive.
+func (c *Config) AddExcludedPattern(pattern string) {
+	c.excludedPatterns.Add(pattern)
+}
+
+// ExcludedPatterns returns the excluded patterns list.
+func (c *Config) ExcludedPatterns() *singlylinkedlist.List {
+	return c.excludedPatterns
 }
 
 // SetExtensionEnabled sets whether the extension is enabled or not.
