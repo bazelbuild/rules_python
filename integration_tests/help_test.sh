@@ -28,3 +28,10 @@ help=$($ASPECT help info-keys 2>/dev/null) || true
     echo "$help"
     exit 1
 }
+
+help=$($ASPECT help tags 2>/dev/null) || true
+[[ "$help" =~ "exclusive" ]] || {
+    echo >&2 "Expected 'aspect help tags' stdout to contain 'exclusive' , but was"
+    echo "$help"
+    exit 1
+}

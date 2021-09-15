@@ -79,6 +79,11 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 		Short: "Displays a list of keys used by the info command.",
 		Long:  topics.Read("info-keys.md"),
 	})
+	cmd.AddCommand(&cobra.Command{
+		Use:   "tags",
+		Short: "Conventions for tags which are special",
+		Long:  topics.Read("tags.md"),
+	})
 
 	return cmd
 }

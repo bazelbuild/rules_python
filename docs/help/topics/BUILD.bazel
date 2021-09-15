@@ -5,6 +5,7 @@ go_library(
     srcs = ["main.go"],
     data = [
         "info-keys.md",
+        "tags.md",
         "target-syntax.md",
     ],
     importpath = "aspect.build/cli/docs/help/topics",
