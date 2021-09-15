@@ -72,7 +72,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	cmd.AddCommand(&cobra.Command{
 		Use:   "target-syntax",
 		Short: "Documentation on Bazel's syntax for targets",
-		Long:  topics.Read("target-syntax"),
+		Long:  topics.Read("target-syntax.md"),
 	})
 
 	return cmd

@@ -18,7 +18,9 @@ jobs:
         env:
           # Bazelisk will download bazel to here
           XDG_CACHE_HOME: ~/.cache/bazel-repo
-        run: bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test --config=release //...
+        run:
+          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test
+          --config=release //...
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
