@@ -80,6 +80,7 @@ stardoc(
     deps = [
         ":bazel_repo_tools",
         ":pip_install_bzl",
+        "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
     ],
 )
 
