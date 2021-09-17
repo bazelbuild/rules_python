@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "build",
+    srcs = ["build.go"],
+    importpath = "aspect.build/cli/cmd/aspect/build",
+    visibility = ["//cmd/aspect/root:__pkg__"],
+    deps = [
+        "//pkg/aspect/build",
+        "//pkg/bazel",
+        "//pkg/ioutils",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)

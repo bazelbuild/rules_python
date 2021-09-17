@@ -6,8 +6,14 @@ Not licensed for re-use.
 
 package main
 
-import "aspect.build/cli/cmd/aspect/root"
-import "github.com/spf13/cobra"
+import (
+	"errors"
+	"fmt"
+	"os"
+
+	"aspect.build/cli/cmd/aspect/root"
+	"aspect.build/cli/pkg/aspecterrors"
+)
 
 func main() {
 	// Detect whether we are being run as a tools/bazel wrapper (look for BAZEL_REAL in the environment)
@@ -22,5 +28,16 @@ func main() {
 	//         - tools/bazel file and put our bootstrap code in there
 	//
 	cmd := root.NewDefaultRootCmd()
-	cobra.CheckErr(cmd.Execute())
+	if err := cmd.Execute(); err != nil {
+		var exitErr *aspecterrors.ExitError
+		if errors.As(err, &exitErr) {
+			if exitErr.Err != nil {
+				fmt.Fprintln(os.Stderr, "Error:", err)
+			}
+			os.Exit(exitErr.ExitCode)
+		}
+
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
 }

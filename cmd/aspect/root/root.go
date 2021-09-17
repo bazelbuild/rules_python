@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"aspect.build/cli/cmd/aspect/build"
 	"aspect.build/cli/cmd/aspect/docs"
 	"aspect.build/cli/cmd/aspect/version"
 	"aspect.build/cli/docs/help/topics"
@@ -33,9 +34,11 @@ func NewDefaultRootCmd() *cobra.Command {
 
 func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "aspect",
-		Short: "Aspect.build bazel wrapper",
-		Long:  boldCyan.Sprintf(`Aspect CLI`) + ` is a better frontend for running bazel`,
+		Use:           "aspect",
+		Short:         "Aspect.build bazel wrapper",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Long:          boldCyan.Sprintf(`Aspect CLI`) + ` is a better frontend for running bazel`,
 	}
 
 	// ### Flags
@@ -64,6 +67,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 
 	// ### Child commands
 	// IMPORTANT: when adding a new command, also update the _DOCS list in /docs/BUILD.bazel
+	cmd.AddCommand(build.NewDefaultBuildCmd())
 	cmd.AddCommand(version.NewDefaultVersionCmd())
 	cmd.AddCommand(docs.NewDefaultDocsCmd())
 

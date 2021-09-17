@@ -7,7 +7,7 @@ go_library(
     visibility = ["//cmd:__subpackages__"],
     deps = [
         "//cmd/aspect/root",
-        "@com_github_spf13_cobra//:cobra",
+        "//pkg/aspecterrors",
     ],
 )
 

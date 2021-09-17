@@ -7,7 +7,7 @@ go_library(
         "flags.go",
     ],
     importpath = "aspect.build/cli/pkg/bazel",
-    visibility = ["//visibility:public"],
+    visibility = ["//:__subpackages__"],
     deps = [
         "@com_github_bazelbuild_bazelisk//core:go_default_library",
         "@com_github_bazelbuild_bazelisk//repositories:go_default_library",

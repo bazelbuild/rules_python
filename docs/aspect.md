@@ -16,6 +16,7 @@ Aspect CLI is a better frontend for running bazel
 
 ### SEE ALSO
 
+* [aspect build](aspect_build.md)	 - Builds the specified targets, using the options.
 * [aspect docs](aspect_docs.md)	 - Open documentation in the browser
 * [aspect version](aspect_version.md)	 - Print the version of aspect CLI as well as tools it invokes
 

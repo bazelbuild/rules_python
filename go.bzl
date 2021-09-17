@@ -956,6 +956,7 @@ def deps():
     )
     go_repository(
         name = "org_golang_google_protobuf",
+        build_directives = ["gazelle:exclude **/testdata/**/*"],
         importpath = "google.golang.org/protobuf",
         sum = "h1:bxAC2xTBsZGibn2RTntX0oH50xLsqy1OxA9tTL3p/lk=",
         version = "v1.26.0",
@@ -999,8 +1000,8 @@ def deps():
     go_repository(
         name = "org_golang_x_net",
         importpath = "golang.org/x/net",
-        sum = "h1:DzZ89McO9/gWPsQXS/FVKAlG02ZjaQ6AlZRBimEYOd0=",
-        version = "v0.0.0-20210428140749-89ef3d95e781",
+        sum = "h1:w6wWR0H+nyVpbSAQbzVEIACVyr/h8l/BEkY6Sokc7Eg=",
+        version = "v0.0.0-20210903162142-ad29c8ab022f",
     )
     go_repository(
         name = "org_golang_x_oauth2",
@@ -1017,8 +1018,8 @@ def deps():
     go_repository(
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
-        sum = "h1:X/2sJAybVknnUnV7AD2HdT6rm2p5BP6eH2j+igduWgk=",
-        version = "v0.0.0-20210616045830-e2b7044e8c71",
+        sum = "h1:3Dq0eVHn0uaQJmPO+/aYPI/fRMqdrVDbu7MQcku54gg=",
+        version = "v0.0.0-20210903071746-97244b99971b",
     )
     go_repository(
         name = "org_golang_x_term",
@@ -1029,8 +1030,8 @@ def deps():
     go_repository(
         name = "org_golang_x_text",
         importpath = "golang.org/x/text",
-        sum = "h1:aRYxNxv6iGQlyVaZmk6ZgYEDa+Jg18DxebPSrd6bg1M=",
-        version = "v0.3.6",
+        sum = "h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=",
+        version = "v0.3.7",
     )
     go_repository(
         name = "org_golang_x_time",

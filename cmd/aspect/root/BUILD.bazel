@@ -4,8 +4,12 @@ go_library(
     name = "root",
     srcs = ["root.go"],
     importpath = "aspect.build/cli/cmd/aspect/root",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//cmd/aspect:__pkg__",
+        "//cmd/docgen:__pkg__",
+    ],
     deps = [
+        "//cmd/aspect/build",
         "//cmd/aspect/docs",
         "//cmd/aspect/version",
         "//docs/help/topics",
