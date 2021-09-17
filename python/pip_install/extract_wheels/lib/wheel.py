@@ -63,9 +63,18 @@ class Wheel:
 
             # Parse the avaialble entry points
             config = configparser.ConfigParser()
-            config.read_string(whl.read(entry_points_path).decode("utf-8"))
-            if "console_scripts" in config.sections():
-                return dict(config["console_scripts"])
+            try:
+                config.read_string(whl.read(entry_points_path).decode("utf-8"))
+                if "console_scripts" in config.sections():
+                    return dict(config["console_scripts"])
+
+            # TODO: It's unclear what to do in a situation with duplicate sections or options.
+            # For now, we treat the config file as though it contains no scripts. For more
+            # details on the config parser, see:
+            # https://docs.python.org/3.7/library/configparser.html#configparser.ConfigParser
+            # https://docs.python.org/3.7/library/configparser.html#configparser.Error
+            except configparser.Error:
+                pass
 
         return dict()
 
