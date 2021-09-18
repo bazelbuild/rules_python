@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//cmd/aspect/build",
         "//cmd/aspect/docs",
+        "//cmd/aspect/info",
         "//cmd/aspect/version",
         "//docs/help/topics",
         "//pkg/ioutils",
