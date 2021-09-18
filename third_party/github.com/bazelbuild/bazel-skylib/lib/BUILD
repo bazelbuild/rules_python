@@ -1,3 +1,5 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 licenses(["notice"])
 
 package(default_visibility = ["//visibility:public"])
@@ -12,4 +14,9 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]),
     visibility = ["//:__pkg__"],
+)
+
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
 )
