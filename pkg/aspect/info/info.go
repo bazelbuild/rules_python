@@ -10,6 +10,8 @@ import (
 	"aspect.build/cli/pkg/bazel"
 	"aspect.build/cli/pkg/ioutils"
 	"github.com/spf13/cobra"
+
+	"aspect.build/cli/pkg/aspecterrors"
 )
 
 type Info struct {
@@ -32,7 +34,14 @@ func (v *Info) Run(_ *cobra.Command, args []string) error {
 	}
 	bazelCmd = append(bazelCmd, args...)
 	bzl := bazel.New()
-	bzl.Spawn(bazelCmd)
+
+	if exitCode, err := bzl.Spawn(bazelCmd); exitCode != 0 {
+		err = &aspecterrors.ExitError{
+			Err:      err,
+			ExitCode: exitCode,
+		}
+		return err
+	}
 
 	return nil
 }
