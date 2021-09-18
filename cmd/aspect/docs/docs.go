@@ -24,8 +24,8 @@ func NewDocsCmd(streams ioutils.Streams) *cobra.Command {
 		Use:   "docs",
 		Short: "Open documentation in the browser",
 		Long: `Given a selected topic, open the relevant API docs in a browser window.
-		The mechanism of choosing the browser to open is documented at https://github.com/pkg/browser
-		By default, opens docs.bazel.build`,
+The mechanism of choosing the browser to open is documented at https://github.com/pkg/browser
+By default, opens docs.bazel.build`,
 		RunE: v.Run,
 	}
 

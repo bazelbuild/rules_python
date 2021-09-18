@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "clean",
+    srcs = ["clean.go"],
+    importpath = "aspect.build/cli/pkg/aspect/clean",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/aspecterrors",
+        "//pkg/bazel",
+        "//pkg/ioutils",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+go_test(
+    name = "clean_test",
+    srcs = ["clean_test.go"],
+    deps = [
+        ":clean",
+        "//pkg/aspecterrors",
+        "//pkg/bazel/mock",
+        "//pkg/ioutils",
+        "@com_github_golang_mock//gomock",
+        "@com_github_onsi_gomega//:gomega",
+    ],
+)

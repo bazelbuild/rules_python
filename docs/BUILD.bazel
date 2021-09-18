@@ -5,6 +5,7 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 _DOCS = [
     "aspect.md",
     "aspect_build.md",
+    "aspect_clean.md",
     "aspect_docs.md",
     "aspect_info.md",
     "aspect_version.md",

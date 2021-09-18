@@ -1,6 +1,6 @@
 ## aspect build
 
-Builds the specified targets, using the options.
+Builds the specified targets, using the options
 
 ### Synopsis
 

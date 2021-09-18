@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 
 	"aspect.build/cli/cmd/aspect/build"
+	"aspect.build/cli/cmd/aspect/clean"
 	"aspect.build/cli/cmd/aspect/docs"
 	"aspect.build/cli/cmd/aspect/info"
 	"aspect.build/cli/cmd/aspect/version"
@@ -69,6 +70,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	// ### Child commands
 	// IMPORTANT: when adding a new command, also update the _DOCS list in /docs/BUILD.bazel
 	cmd.AddCommand(build.NewDefaultBuildCmd())
+	cmd.AddCommand(clean.NewDefaultCleanCmd())
 	cmd.AddCommand(version.NewDefaultVersionCmd())
 	cmd.AddCommand(docs.NewDefaultDocsCmd())
 	cmd.AddCommand(info.NewDefaultInfoCmd())

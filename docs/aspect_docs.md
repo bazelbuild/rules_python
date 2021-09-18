@@ -5,8 +5,8 @@ Open documentation in the browser
 ### Synopsis
 
 Given a selected topic, open the relevant API docs in a browser window.
-		The mechanism of choosing the browser to open is documented at https://github.com/pkg/browser
-		By default, opens docs.bazel.build
+The mechanism of choosing the browser to open is documented at https://github.com/pkg/browser
+By default, opens docs.bazel.build
 
 ```
 aspect docs [flags]
