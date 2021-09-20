@@ -1,6 +1,11 @@
 # See instructions in CONTRIBUTING.md
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+
+# Commitizen runs in commit-msg stage
+# but we don't want to run the other hooks on commit messages
+default_stages: [commit]
+
 repos:
   # Locally-authored hooks for better hermeticity
   - repo: local
