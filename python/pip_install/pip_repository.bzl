@@ -24,28 +24,72 @@ def _construct_pypath(rctx):
     pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
     return pypath
 
+def _resolve_python_interpreter(rctx):
+    """Helper function to find the python interpreter from the common attributes
+
+    Args:
+        rctx: Handle to the rule repository context.
+    Returns: Python interpreter path.
+    """
+    python_interpreter = rctx.attr.python_interpreter
+    if rctx.attr.python_interpreter_target != None:
+        target = rctx.attr.python_interpreter_target
+        python_interpreter = rctx.path(target)
+    else:
+        if "/" not in python_interpreter:
+            python_interpreter = rctx.which(python_interpreter)
+        if not python_interpreter:
+            fail("python interpreter not found")
+    return python_interpreter
+
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
+
+    This function also serializes the structured arguments as JSON
+    so they can be passed on the command line to subprocesses.
 
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
     Returns: Augmented args list.
     """
-    if rctx.attr.extra_pip_args:
+
+    # Determine whether or not to pass the pip `--isloated` flag to the pip invocation
+    use_isolated = rctx.attr.isolated
+
+    # The environment variable will take precedence over the attribute
+    isolated_env = rctx.os.environ.get("RULES_PYTHON_PIP_ISOLATED", None)
+    if isolated_env != None:
+        if isolated_env.lower() in ("0", "false"):
+            use_isolated = False
+        else:
+            use_isolated = True
+
+    if use_isolated:
+        args.append("--isolated")
+
+    # Check for None so we use empty default types from our attrs.
+    # Some args want to be list, and some want to be dict.
+    if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            struct(args = rctx.attr.extra_pip_args).to_json(),
+            struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
-    if rctx.attr.pip_data_exclude:
+    if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
-            struct(exclude = rctx.attr.pip_data_exclude).to_json(),
+            struct(arg = rctx.attr.pip_data_exclude).to_json(),
         ]
 
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
+
+    if rctx.attr.environment != None:
+        args += [
+            "--environment",
+            struct(arg = rctx.attr.environment).to_json(),
+        ]
 
     return args
 
@@ -57,15 +101,7 @@ exports_files(["requirements.bzl"])
 """
 
 def _pip_repository_impl(rctx):
-    python_interpreter = rctx.attr.python_interpreter
-    if rctx.attr.python_interpreter_target != None:
-        target = rctx.attr.python_interpreter_target
-        python_interpreter = rctx.path(target)
-    else:
-        if "/" not in python_interpreter:
-            python_interpreter = rctx.which(python_interpreter)
-        if not python_interpreter:
-            fail("python interpreter not found")
+    python_interpreter = _resolve_python_interpreter(rctx)
 
     if rctx.attr.incremental and not rctx.attr.requirements_lock:
         fail("Incremental mode requires a requirements_lock attribute be specified.")
@@ -88,6 +124,11 @@ def _pip_repository_impl(rctx):
             "--timeout",
             str(rctx.attr.timeout),
         ]
+
+        if rctx.attr.python_interpreter:
+            args += ["--python_interpreter", rctx.attr.python_interpreter]
+        if rctx.attr.python_interpreter_target:
+            args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
     else:
         args = [
             python_interpreter,
@@ -102,10 +143,8 @@ def _pip_repository_impl(rctx):
 
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -114,6 +153,10 @@ def _pip_repository_impl(rctx):
         fail("rules_python failed: %s (%s)" % (result.stdout, result.stderr))
 
     return
+
+common_env = [
+    "RULES_PYTHON_PIP_ISOLATED",
+]
 
 common_attrs = {
     "enable_implicit_namespace_pkgs": attr.bool(
@@ -126,8 +169,26 @@ and py_test targets must specify either `legacy_create_init=False` or the global
 This option is required to support some packages which cannot handle the conversion to pkg-util style.
             """,
     ),
+    "environment": attr.string_dict(
+        doc = """
+Environment variables to set in the pip subprocess.
+Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
+Note that pip is run with "--isolated" on the CLI so PIP_<VAR>_<NAME>
+style env vars are ignored, but env vars that control requests and urllib3
+can be passed.
+        """,
+        default = {},
+    ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+    ),
+    "isolated": attr.bool(
+        doc = """\
+Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
+the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` enviornment varaible can be used
+to control this flag.
+""",
+        default = True,
     ),
     "pip_data_exclude": attr.string_list(
         doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
@@ -216,14 +277,16 @@ py_binary(
 ```
 """,
     implementation = _pip_repository_impl,
+    environ = common_env,
 )
 
 def _impl_whl_library(rctx):
+    python_interpreter = _resolve_python_interpreter(rctx)
+
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
     _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
-    pypath = _construct_pypath(rctx)
     args = [
-        rctx.attr.python_interpreter,
+        python_interpreter,
         "-m",
         "python.pip_install.parse_requirements_to_bzl.extract_single_wheel",
         "--requirement",
@@ -232,12 +295,11 @@ def _impl_whl_library(rctx):
         rctx.attr.repo,
     ]
     args = _parse_optional_attrs(rctx, args)
+
     result = rctx.execute(
         args,
-        environment = {
-            # Manually construct the PYTHONPATH since we cannot use the toolchain here
-            "PYTHONPATH": pypath,
-        },
+        # Manually construct the PYTHONPATH since we cannot use the toolchain here
+        environment = {"PYTHONPATH": _construct_pypath(rctx)},
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
@@ -266,4 +328,5 @@ whl_library = repository_rule(
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
     implementation = _impl_whl_library,
+    environ = common_env,
 )

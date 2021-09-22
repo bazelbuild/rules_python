@@ -26,63 +26,15 @@ whl_library(
 This rule defines `@foo//:pkg` as a `py_library` target.
 
 
-### Attributes
+**ATTRIBUTES**
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="whl_library-name">
-      <td><code>name</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-        <p>
-          A unique name for this repository.
-        </p>
-      </td>
-    </tr>
-    <tr id="whl_library-extras">
-      <td><code>extras</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          A subset of the "extras" available from this <code>.whl</code> for which
-<code>requirements</code> has the dependencies.
-        </p>
-      </td>
-    </tr>
-    <tr id="whl_library-python_interpreter">
-      <td><code>python_interpreter</code></td>
-      <td>
-        String; optional
-        <p>
-          The command to run the Python interpreter used when unpacking the wheel.
-        </p>
-      </td>
-    </tr>
-    <tr id="whl_library-requirements">
-      <td><code>requirements</code></td>
-      <td>
-        String; optional
-        <p>
-          The name of the <code>pip_import</code> repository rule from which to load this
-<code>.whl</code>'s dependencies.
-        </p>
-      </td>
-    </tr>
-    <tr id="whl_library-whl">
-      <td><code>whl</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
-        <p>
-          The path to the <code>.whl</code> file. The name is expected to follow [this
-convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| extras |  A subset of the "extras" available from this <code>.whl</code> for which <code>requirements</code> has the dependencies.   | List of strings | optional | [] |
+| python_interpreter |  The command to run the Python interpreter used when unpacking the wheel.   | String | optional | "python" |
+| requirements |  The name of the <code>pip_import</code> repository rule from which to load this <code>.whl</code>'s dependencies.   | String | optional | "" |
+| whl |  The path to the <code>.whl</code> file. The name is expected to follow [this convention](https://www.python.org/dev/peps/pep-0427/#file-name-convention)).   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | required |  |
 
 

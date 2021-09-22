@@ -57,6 +57,7 @@ if update_target_pkg == ".":
 update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (update_target_pkg, update_target_name)
 
 os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
+os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
 sys.argv.append("--generate-hashes")
 sys.argv.append("--output-file")
@@ -73,17 +74,33 @@ else:
         cli()
         print("cli() should exit", file=sys.stderr)
         sys.exit(1)
-    except SystemExit:
-        golden = open(requirements_txt).readlines()
-        out = open(requirements_out).readlines()
-        if golden != out:
-            import difflib
-
-            print(''.join(difflib.unified_diff(golden, out)), file=sys.stderr)
+    except SystemExit as e:
+        if e.code == 2:
             print(
-                "Lock file out of date. Run '"
-                + update_command
-                + "' to update.",
+                "pip-compile exited with code 2. This means that pip-compile found "
+                "incompatible requirements or could not find a version that matches "
+                f"the install requirement in {requirements_in}.",
                 file=sys.stderr,
+            )
+            sys.exit(1)
+        elif e.code == 0:
+            golden = open(requirements_txt).readlines()
+            out = open(requirements_out).readlines()
+            if golden != out:
+                import difflib
+
+                print(''.join(difflib.unified_diff(golden, out)), file=sys.stderr)
+                print(
+                    "Lock file out of date. Run '"
+                    + update_command
+                    + "' to update.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            sys.exit(0)
+        else:
+            print(
+                f"pip-compile unexpectedly exited with code {e.code}.",
+                file=sys.stderr
             )
             sys.exit(1)

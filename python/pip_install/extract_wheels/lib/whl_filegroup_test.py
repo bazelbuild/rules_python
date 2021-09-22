@@ -34,8 +34,10 @@ class TestWhlFilegroup(unittest.TestCase):
             enable_implicit_namespace_pkgs=False,
             incremental=incremental,
             incremental_repo_prefix=incremental_repo_prefix
-        )[2:]  # Take off the leading // from the returned label.
+        )
+        # Take off the leading // from the returned label.
         # Assert that the raw wheel ends up in the package.
+        generated_bazel_dir = generated_bazel_dir[2:] if not incremental else self.wheel_dir
         self.assertIn(self.wheel_name, os.listdir(generated_bazel_dir))
         with open("{}/BUILD.bazel".format(generated_bazel_dir)) as build_file:
             build_file_content = build_file.read()

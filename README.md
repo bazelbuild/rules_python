@@ -1,7 +1,7 @@
 # Python Rules for Bazel
 
-* Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=master)](https://buildkite.com/bazel/python-rules-python-postsubmit)
-* Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=master)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
+* Postsubmit [![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=main)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+* Postsubmit + Current Bazel Incompatible Flags [![Build status](https://badge.buildkite.com/219007166ab6a7798b22758e7ae3f3223001398ffb56a5ad2a.svg?branch=main)](https://buildkite.com/bazel/rules-python-plus-bazelisk-migrate)
 
 ## Overview
 
@@ -9,7 +9,7 @@ This repository is the home of the core Python rules -- `py_library`,
 `py_binary`, `py_test`, and related symbols that provide the basis for Python
 support in Bazel. It also contains packaging rules for integrating with PyPI
 (`pip`). Documentation lives in the
-[`docs/`](https://github.com/bazelbuild/rules_python/tree/master/docs)
+[`docs/`](https://github.com/bazelbuild/rules_python/tree/main/docs)
 directory and in the
 [Bazel Build Encyclopedia](https://docs.bazel.build/versions/master/be/python.html).
 
@@ -42,8 +42,8 @@ To import rules_python in your project, you first need to add it to your
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.4.0/rules_python-0.4.0.tar.gz",
+    sha256 = "954aa89b491be4a083304a2cb838019c8b8c3720a7abb9c4cb81ac7a24230cea",
 )
 ```
 
@@ -52,11 +52,11 @@ To depend on a particular unreleased version (not recommended), you can do:
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-rules_python_version = "c8c79aae9aa1b61d199ad03d5fe06338febd0774" # Latest @ 2020-10-15
+rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53" # Latest @ 2021-06-23
 
 http_archive(
     name = "rules_python",
-    sha256 = "5be9610a959772697f57ec66bb58c8132970686ed7fb0f1cf81b22ddf12f5368",
+    sha256 = "3474c5815da4cb003ff22811a36a11894927eda1c2e64bf2dac63e914bfdf30f",
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
@@ -76,40 +76,43 @@ py_binary(
 
 ## Using the packaging rules
 
-The packaging rules create two kinds of repositories: A central repo that holds
-downloaded wheel files, and individual repos for each wheel's extracted
-contents. Users only need to interact with the central repo; the wheel repos
-are essentially an implementation detail. The central repo provides a
-`WORKSPACE` macro to create the wheel repos, as well as a function to call in
-`BUILD` files to translate a pip package name into the label of a `py_library`
+Usage of the packaging rules involves two main steps.
+
+1. [Installing `pip` dependencies](#installing-pip-dependencies)
+2. [Consuming `pip` dependencies](#consuming-pip-dependencies)
+
+The packaging rules create two kinds of repositories: A central external repo that holds
+downloaded wheel files, and individual external repos for each wheel's extracted
+contents. Users only need to interact with the central external repo; the wheel repos
+are essentially an implementation detail. The central external repo provides a
+`WORKSPACE` macro to create the wheel repos, as well as a function, `requirement()`, for use in
+`BUILD` files that translates a pip package name into the label of a `py_library`
 target in the appropriate wheel repo.
 
-### Importing `pip` dependencies
+### Installing `pip` dependencies
 
-To add pip dependencies to your `WORKSPACE` load
-the `pip_install` function, and call it to create the
-individual wheel repos.
+To add pip dependencies to your `WORKSPACE`, load the `pip_install` function, and call it to create the
+central external repo and individual wheel external repos.
 
 
 ```python
 load("@rules_python//python:pip.bzl", "pip_install")
 
-# Create a central repo that knows about the dependencies needed for
-# requirements.txt.
+# Create a central external repo, @my_deps, that contains Bazel targets for all the
+# third-party packages specified in the requirements.txt file.
 pip_install(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )
 ```
 
-Note that since pip is executed at WORKSPACE-evaluation time, Bazel has no
+Note that since `pip_install` is a repository rule and therefore executes pip at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_install` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_install`.
 
-You can have multiple `pip_install`s in the same workspace, e.g. for Python 2
-and Python 3. This will create multiple central repos that have no relation to
+You can have multiple `pip_install`s in the same workspace. This will create multiple external repos that have no relation to
 one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_install` is
@@ -153,13 +156,14 @@ install_deps()
 
 ### Importing `pip` dependencies with `pip_import` (legacy)
 
-The deprecated `pip_import` can still be used if needed.
+The deprecated `pip_import` can still be used if needed. It is the only packaging rule that supports Python 2,
+which has been [sunsetted since January 1st, 2020](https://www.python.org/doc/sunset-python-2/). 
 
 ```
 load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
 
 # Create a central repo that knows about the dependencies needed for requirements.txt.
-pip_import(   # or pip3_import
+pip_import(
    name = "my_deps",
    requirements = "//path/to:requirements.txt",
 )

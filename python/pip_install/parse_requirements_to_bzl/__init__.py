@@ -45,19 +45,6 @@ def repo_names_and_requirements(install_reqs: List[Tuple[InstallRequirement, str
         for ir, line in install_reqs
     ]
 
-def deserialize_structured_args(args):
-    """Deserialize structured arguments passed from the starlark rules.
-        Args:
-            args: dict of parsed command line arguments
-    """
-    structured_args = ("extra_pip_args", "pip_data_exclude")
-    for arg_name in structured_args:
-        if args.get(arg_name) is not None:
-            args[arg_name] = json.loads(args[arg_name])["args"]
-        else:
-            args[arg_name] = []
-    return args
-
 
 def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
@@ -69,7 +56,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     """
 
     args = dict(vars(all_args))
-    args = deserialize_structured_args(args)
+    args = arguments.deserialize_structured_args(args)
     args.setdefault("python_interpreter", sys.executable)
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
@@ -97,10 +84,21 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             return name.replace("-", "_").replace(".", "_").lower()
 
         def requirement(name):
-           return "@{repo_prefix}" + _clean_name(name) + "//:pkg"
+           return "@{repo_prefix}" + _clean_name(name) + "//:{py_library_label}"
 
         def whl_requirement(name):
-           return "@{repo_prefix}" + _clean_name(name) + "//:whl"
+           return "@{repo_prefix}" + _clean_name(name) + "//:{wheel_file_label}"
+
+        def data_requirement(name):
+            return "@{repo_prefix}" + _clean_name(name) + "//:{data_label}"
+
+        def dist_info_requirement(name):
+            return "@{repo_prefix}" + _clean_name(name) + "//:{dist_info_label}"
+
+        def entry_point(pkg, script = None):
+            if not script:
+                script = pkg
+            return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
 
         def install_deps():
             for name, requirement in _packages:
@@ -115,9 +113,16 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             repo_names_and_reqs=repo_names_and_reqs,
             args=args,
             repo_prefix=repo_prefix,
+            py_library_label=bazel.PY_LIBRARY_LABEL,
+            wheel_file_label=bazel.WHEEL_FILE_LABEL,
+            data_label=bazel.DATA_LABEL,
+            dist_info_label=bazel.DIST_INFO_LABEL,
+            entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
             )
         )
 
+def coerce_to_bool(option):
+    return str(option).lower() == 'true'
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -131,9 +136,19 @@ dependencies from a fully resolved requirements lock file."
         help="Path to fully resolved requirements.txt to use as the source of repos.",
     )
     parser.add_argument(
+        "--python_interpreter",
+        help="The python interpreter that will be used to download and unpack the wheels.",
+    )
+    parser.add_argument(
+        "--python_interpreter_target",
+        help="Bazel target of a python interpreter.\
+It will be used in repository rules so it must be an already built interpreter.\
+If set, it will take precedence over python_interpreter.",
+    )
+    parser.add_argument(
         "--quiet",
-        type=bool,
-        action="store",
+        type=coerce_to_bool,
+        default=True,
         required=True,
         help="Whether to print stdout / stderr from child repos.",
     )

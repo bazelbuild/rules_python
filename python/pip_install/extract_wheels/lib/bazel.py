@@ -4,16 +4,83 @@ import textwrap
 import json
 from typing import Iterable, List, Dict, Set, Optional
 import shutil
+from pathlib import Path
 
 from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
 
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"
+DATA_LABEL = "data"
+DIST_INFO_LABEL = "dist_info"
+WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
+
+
+def generate_entry_point_contents(entry_point: str, shebang: str = "#!/usr/bin/env python3") -> str:
+    """Generate the contents of an entry point script.
+
+    Args:
+        entry_point (str): The name of the entry point as show in the
+            `console_scripts` section of `entry_point.txt`.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    module, method = entry_point.split(":", 1)
+    return textwrap.dedent("""\
+        {shebang}
+        if __name__ == "__main__":
+            from {module} import {method}
+            {method}()
+        """.format(
+        shebang=shebang,
+        module=module,
+        method=method
+    ))
+
+
+def generate_entry_point_rule(script: str, pkg: str) -> str:
+    """Generate a Bazel `py_binary` rule for an entry point script.
+
+    Note that the script is used to determine the name of the target. The name of
+    entry point targets should be uniuqe to avoid conflicts with existing sources or
+    directories within a wheel.
+
+    Args:
+        script (str): The path to the entry point's python file.
+        pkg (str): The package owning the entry point. This is expected to
+            match up with the `py_library` defined for each repository.
+
+
+    Returns:
+        str: A `py_binary` instantiation.
+    """
+    name = os.path.splitext(script)[0]
+    return textwrap.dedent("""\
+        py_binary(
+            name = "{name}",
+            srcs = ["{src}"],
+            # This makes this directory a top-level in the python import
+            # search path for anything that depends on this.
+            imports = ["."],
+            deps = ["{pkg}"],
+        )
+        """.format(
+        name=name,
+        src=str(script).replace("\\", "/"),
+        pkg=pkg
+    ))
 
 
 def generate_build_file_contents(
-    name: str, dependencies: List[str], whl_file_deps: List[str], pip_data_exclude: List[str],
+    name: str,
+    dependencies: List[str],
+    whl_file_deps: List[str],
+    pip_data_exclude: List[str],
+    tags: List[str],
+    additional_targets: List[str] = [],
 ) -> str:
     """Generate a BUILD file for an unzipped Wheel
 
@@ -21,6 +88,9 @@ def generate_build_file_contents(
         name: the target name of the py_library
         dependencies: a list of Bazel labels pointing to dependencies of the library
         whl_file_deps: a list of Bazel labels pointing to wheel file dependencies of this wheel.
+        pip_data_exclude: more patterns to exclude from the data attribute of generated py_library rules.
+        tags: list of tags to apply to generated py_library rules.
+        additional_targets: A list of additional targets to append to the BUILD file contents.
 
     Returns:
         A complete BUILD file as a string
@@ -29,28 +99,54 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    data_exclude = ["*.whl", "**/*.py", "**/* *", "BUILD.bazel", "WORKSPACE"] + pip_data_exclude
+    data_exclude = [
+        "*.whl",
+        "**/*.py",
+        f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
+        "**/* *",
+        "BUILD.bazel",
+        "WORKSPACE",
+    ] + pip_data_exclude
 
-    return textwrap.dedent(
+    return "\n".join([textwrap.dedent(
         """\
+        load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+
         package(default_visibility = ["//visibility:public"])
 
-        load("@rules_python//python:defs.bzl", "py_library")
+        filegroup(
+            name = "{dist_info_label}",
+            srcs = glob(["*.dist-info/**"], allow_empty = True),
+        )
 
         filegroup(
-            name="{whl_file_label}",
-            srcs=glob(["*.whl"]),
-            data=[{whl_file_deps}]
+            name = "{data_label}",
+            srcs = glob(["*.data/**"], allow_empty = True),
+        )
+
+        filegroup(
+            name = "{whl_file_label}",
+            srcs = glob(["*.whl"], allow_empty = True),
+            data = [{whl_file_deps}],
         )
 
         py_library(
             name = "{name}",
-            srcs = glob(["**/*.py"], allow_empty = True),
+            srcs = glob(
+                ["**/*.py"],
+                allow_empty = True,
+                exclude = [
+                    "{entry_point_prefix}*.py",
+                    "tests/**",
+                    "*/tests/**",
+                ],
+            ),
             data = glob(["**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
             imports = ["."],
             deps = [{dependencies}],
+            tags = [{tags}],
         )
         """.format(
             name=name,
@@ -58,7 +154,11 @@ def generate_build_file_contents(
             data_exclude=json.dumps(data_exclude),
             whl_file_label=WHEEL_FILE_LABEL,
             whl_file_deps=",".join(whl_file_deps),
-        )
+            tags = ",".join(["\"%s\"" % t for t in tags]),
+            data_label=DATA_LABEL,
+            dist_info_label=DIST_INFO_LABEL,
+            entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
+        ))] + additional_targets
     )
 
 
@@ -92,7 +192,18 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
            return "{repo}//pypi__" + name_key
 
         def whl_requirement(name):
-            return requirement(name) + ":whl"
+            return requirement(name) + ":{whl_file_label}"
+
+        def data_requirement(name):
+            return requirement(name) + ":{data_label}"
+
+        def dist_info_requirement(name):
+            return requirement(name) + ":{dist_info_label}"
+
+        def entry_point(pkg, script = None):
+            if not script:
+                script = pkg
+            return requirement(pkg) + ":{entry_point_prefix}_" + script
 
         def install_deps():
             fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_parse()?")
@@ -100,6 +211,10 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
             repo=repo_name,
             requirement_labels=requirement_labels,
             whl_requirement_labels=whl_requirement_labels,
+            whl_file_label=WHEEL_FILE_LABEL,
+            data_label=DATA_LABEL,
+            dist_info_label=DIST_INFO_LABEL,
+            entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
         )
     )
 
@@ -184,7 +299,7 @@ def extract_wheel(
     enable_implicit_namespace_pkgs: bool,
     incremental: bool = False,
     incremental_repo_prefix: Optional[str] = None,
-) -> str:
+) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
@@ -239,16 +354,30 @@ def extract_wheel(
             sanitised_file_label(d) for d in whl_deps
         ]
 
+    library_name = PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name)
+
+    directory_path = Path(directory)
+    entry_points = []
+    for name, entry_point in sorted(whl.entry_points().items()):
+        entry_point_script = f"{WHEEL_ENTRY_POINT_PREFIX}_{name}.py"
+        (directory_path / entry_point_script).write_text(generate_entry_point_contents(entry_point))
+        entry_points.append(generate_entry_point_rule(
+            entry_point_script,
+            library_name,
+        ))
+
     with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         contents = generate_build_file_contents(
-            PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name),
+            library_name,
             sanitised_dependencies,
             sanitised_wheel_file_dependencies,
-            pip_data_exclude
+            pip_data_exclude,
+            ["pypi_name=" + whl.name, "pypi_version=" + whl.metadata.version],
+            entry_points,
         )
         build_file.write(contents)
 
     if not incremental:
         os.remove(whl.path)
-
-    return "//%s" % directory
+        return f"//{directory}"
+    return None

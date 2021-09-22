@@ -61,6 +61,15 @@ def main() -> None:
     )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
+    deserialized_args = dict(vars(args))
+    arguments.deserialize_structured_args(deserialized_args)
+
+    pip_args = (
+        [sys.executable, "-m", "pip"] + 
+        (["--isolated"] if args.isolated else []) + 
+        ["wheel", "-r", args.requirements] +
+        deserialized_args["extra_pip_args"]
+    )
 
     # Pip is run with the working directory changed to the folder containing the requirements.txt file, to allow for
     # relative requirements to be correctly resolved. The --wheel-dir is therefore required to be repointed back to the
@@ -69,15 +78,13 @@ def main() -> None:
     if args.extra_pip_args:
         pip_args += json.loads(args.extra_pip_args)["args"]
 
+    env = os.environ.copy()
+    env.update(deserialized_args["environment"])
+
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.run(pip_args, check=True, cwd=str(pathlib.Path(args.requirements).parent.resolve()))
+    subprocess.run(pip_args, check=True, env=env, cwd=str(pathlib.Path(args.requirements).parent.resolve()))
 
     extras = requirements.parse_extras(args.requirements)
-
-    if args.pip_data_exclude:
-        pip_data_exclude = json.loads(args.pip_data_exclude)["exclude"]
-    else:
-        pip_data_exclude = []
 
     repo_label = "@%s" % args.repo
 
@@ -86,7 +93,7 @@ def main() -> None:
         % (
             repo_label,
             bazel.extract_wheel(
-                whl, extras, pip_data_exclude, args.enable_implicit_namespace_pkgs
+                whl, extras, deserialized_args["pip_data_exclude"], args.enable_implicit_namespace_pkgs
             ),
         )
         for whl in glob.glob("*.whl")

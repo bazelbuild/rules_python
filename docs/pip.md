@@ -5,149 +5,173 @@
 ## pip_import
 
 <pre>
-pip_import(<a href="#pip_import-name">name</a>, <a href="#pip_import-extra_pip_args">extra_pip_args</a>, <a href="#pip_import-python_interpreter">python_interpreter</a>, <a href="#pip_import-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_import-requirements">requirements</a>, <a href="#pip_import-timeout">timeout</a>)
+pip_import(<a href="#pip_import-kwargs">kwargs</a>)
 </pre>
 
-A rule for importing `requirements.txt` dependencies into Bazel.
 
-This rule imports a `requirements.txt` file and generates a new
-`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| kwargs |  <p align="center"> - </p>   |  none |
+
+
+<a name="#pip_install"></a>
+
+## pip_install
+
+<pre>
+pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-kwargs">kwargs</a>)
+</pre>
+
+Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
+
+This is used via the `WORKSPACE` pattern:
 
 ```python
-pip_import(
-    name = "foo",
+pip_install(
     requirements = ":requirements.txt",
 )
-load("@foo//:requirements.bzl", "pip_install")
-pip_install()
 ```
 
 You can then reference imported dependencies from your `BUILD` file with:
 
 ```python
-load("@foo//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement")
 py_library(
     name = "bar",
     ...
     deps = [
        "//my/other:dep",
-       requirement("futures"),
-       requirement("mock"),
+       requirement("requests"),
+       requirement("numpy"),
     ],
 )
 ```
 
-Or alternatively:
+In addition to the `requirement` macro, which is used to access the generated `py_library`
+target generated from a package's wheel, The generated `requirements.bzl` file contains
+functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+
+[whl_ep]: https://packaging.python.org/specifications/entry-points/
+
 ```python
-load("@foo//:requirements.bzl", "all_requirements")
-py_binary(
-    name = "baz",
-    ...
-    deps = [
-       ":foo",
-    ] + all_requirements,
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "pip-compile",
+    actual = entry_point(
+        pkg = "pip-tools",
+        script = "pip-compile",
+    ),
+)
+```
+
+Note that for packages who's name and script are the same, only the name of the package
+is needed when calling the `entry_point` macro.
+
+```python
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "flake8",
+    actual = entry_point("flake8"),
 )
 ```
 
 
-### Attributes
-
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="pip_import-name">
-      <td><code>name</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#name">Name</a>; required
-        <p>
-          A unique name for this repository.
-        </p>
-      </td>
-    </tr>
-    <tr id="pip_import-extra_pip_args">
-      <td><code>extra_pip_args</code></td>
-      <td>
-        List of strings; optional
-        <p>
-          Extra arguments to pass on to pip. Must not contain spaces.
-        </p>
-      </td>
-    </tr>
-    <tr id="pip_import-python_interpreter">
-      <td><code>python_interpreter</code></td>
-      <td>
-        String; optional
-        <p>
-          The command to run the Python interpreter used to invoke pip and unpack the
-wheels.
-        </p>
-      </td>
-    </tr>
-    <tr id="pip_import-python_interpreter_target">
-      <td><code>python_interpreter_target</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; optional
-        <p>
-          If you are using a custom python interpreter built by another repository rule,
-use this attribute to specify its BUILD target. This allows pip_import to invoke
-pip using the same interpreter as your toolchain. If set, takes precedence over
-python_interpreter.
-        </p>
-      </td>
-    </tr>
-    <tr id="pip_import-requirements">
-      <td><code>requirements</code></td>
-      <td>
-        <a href="https://bazel.build/docs/build-ref.html#labels">Label</a>; required
-        <p>
-          The label of the requirements.txt file.
-        </p>
-      </td>
-    </tr>
-    <tr id="pip_import-timeout">
-      <td><code>timeout</code></td>
-      <td>
-        Integer; optional
-        <p>
-          Timeout (in seconds) for repository fetch.
-        </p>
-      </td>
-    </tr>
-  </tbody>
-</table>
+**PARAMETERS**
 
 
-<a name="#pip3_import"></a>
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| requirements |  A 'requirements.txt' pip requirements file.   |  none |
+| name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
+| kwargs |  Keyword arguments passed directly to the <code>pip_repository</code> repository rule.   |  none |
 
-## pip3_import
+
+<a name="#pip_parse"></a>
+
+## pip_parse
 
 <pre>
-pip3_import(<a href="#pip3_import-kwargs">kwargs</a>)
+pip_parse(<a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-kwargs">kwargs</a>)
 </pre>
 
-A wrapper around pip_import that uses the `python3` system command.
+Imports a locked/compiled requirements file and generates a new `requirements.bzl` file.
 
-Use this for requirements of PY3 programs.
+This is used via the `WORKSPACE` pattern:
 
-### Parameters
+```python
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-<table class="params-table">
-  <colgroup>
-    <col class="col-param" />
-    <col class="col-description" />
-  </colgroup>
-  <tbody>
-    <tr id="pip3_import-kwargs">
-      <td><code>kwargs</code></td>
-      <td>
-        optional.
-      </td>
-    </tr>
-  </tbody>
-</table>
+pip_parse(
+    name = "pip_deps",
+    requirements_lock = ":requirements.txt",
+)
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+
+install_deps()
+```
+
+You can then reference imported dependencies from your `BUILD` file with:
+
+```python
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       requirement("requests"),
+       requirement("numpy"),
+    ],
+)
+```
+
+In addition to the `requirement` macro, which is used to access the generated `py_library`
+target generated from a package's wheel, The generated `requirements.bzl` file contains
+functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+
+[whl_ep]: https://packaging.python.org/specifications/entry-points/
+
+```python
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "pip-compile",
+    actual = entry_point(
+        pkg = "pip-tools",
+        script = "pip-compile",
+    ),
+)
+```
+
+Note that for packages who's name and script are the same, only the name of the package
+is needed when calling the `entry_point` macro.
+
+```python
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "flake8",
+    actual = entry_point("flake8"),
+)
+```
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.   |  none |
+| name |  The name of the generated repository.   |  <code>"pip_parsed_deps"</code> |
+| kwargs |  Additional keyword arguments for the underlying     <code>pip_repository</code> rule.   |  none |
 
 
 <a name="#pip_repositories"></a>
@@ -158,7 +182,9 @@ Use this for requirements of PY3 programs.
 pip_repositories()
 </pre>
 
-Pull in dependencies needed to use the packaging rules.
+
+
+**PARAMETERS**
 
 
 
