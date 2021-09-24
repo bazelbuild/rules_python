@@ -1,16 +1,25 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
 
 go_library(
     name = "bazel",
     srcs = [
         "bazel.go",
+        "bazelisk.go",
         "flags.go",
     ],
+    embed = [":bazel_go_proto"],
     importpath = "aspect.build/cli/pkg/bazel",
     visibility = ["//:__subpackages__"],
     deps = [
         "@com_github_bazelbuild_bazelisk//core:go_default_library",
+        "@com_github_bazelbuild_bazelisk//httputil:go_default_library",
+        "@com_github_bazelbuild_bazelisk//platforms:go_default_library",
         "@com_github_bazelbuild_bazelisk//repositories:go_default_library",
+        "@com_github_bazelbuild_bazelisk//versions:go_default_library",
+        "@com_github_mitchellh_go_homedir//:go-homedir",
+        "@org_golang_google_protobuf//proto",
     ],
 )
 
@@ -21,4 +30,17 @@ go_test(
         ":bazel",
         "@com_github_onsi_gomega//:gomega",
     ],
+)
+
+proto_library(
+    name = "bazel_proto",
+    srcs = ["flags.proto"],
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "bazel_go_proto",
+    importpath = "aspect.build/cli/pkg/bazel",
+    proto = ":bazel_proto",
+    visibility = ["//visibility:public"],
 )
