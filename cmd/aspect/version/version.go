@@ -26,7 +26,7 @@ func NewVersionCmd(streams ioutils.Streams) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "Print the version of aspect CLI as well as tools it invokes",
+		Short: "Print the version of aspect CLI as well as tools it invokes.",
 		Long:  `Prints version info on colon-separated lines, just like bazel does`,
 		RunE:  v.Run,
 	}

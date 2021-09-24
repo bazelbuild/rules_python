@@ -29,7 +29,7 @@ func NewCleanCmd(
 
 	cmd := &cobra.Command{
 		Use:   "clean",
-		Short: "Removes the output tree",
+		Short: "Removes the output tree.",
 		Long: `Removes bazel-created output, including all object files, and bazel metadata.
 
 clean deletes the output directories for all build configurations performed by

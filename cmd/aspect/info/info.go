@@ -22,7 +22,7 @@ func NewInfoCmd(streams ioutils.Streams) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "info",
-		Short: "Displays runtime info about the bazel server",
+		Short: "Displays runtime info about the bazel server.",
 		Long: `Displays information about the state of the bazel process in the
 form of several "key: value" pairs.  This includes the locations of
 several output directories.  Because some of the

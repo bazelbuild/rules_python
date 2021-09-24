@@ -1,6 +1,6 @@
 ## aspect info
 
-Displays runtime info about the bazel server
+Displays runtime info about the bazel server.
 
 ### Synopsis
 

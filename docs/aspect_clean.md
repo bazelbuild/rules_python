@@ -1,6 +1,6 @@
 ## aspect clean
 
-Removes the output tree
+Removes the output tree.
 
 ### Synopsis
 

@@ -1,6 +1,6 @@
 ## aspect docs
 
-Open documentation in the browser
+Open documentation in the browser.
 
 ### Synopsis
 
