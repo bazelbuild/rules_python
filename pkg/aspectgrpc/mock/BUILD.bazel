@@ -1,0 +1,47 @@
+load("@bazel_gomock//:gomock.bzl", "gomock")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+# gazelle:exclude mock_grpc_test.go
+# gazelle:exclude mock_buildv1_test.go
+
+gomock(
+    name = "mock_grpc_source",
+    out = "mock_grpc_test.go",
+    interfaces = [
+        "Server",
+        "Dialer",
+        "ClientConn",
+    ],
+    library = "//pkg/aspectgrpc",
+    package = "mock",
+    visibility = ["//visibility:private"],
+)
+
+gomock(
+    name = "mock_buildv1_source",
+    out = "mock_buildv1_test.go",
+    interfaces = [
+        "PublishBuildEvent_PublishBuildToolEventStreamServer",
+    ],
+    library = "@go_googleapis//google/devtools/build/v1:build_go_proto",
+    package = "mock",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "mock",
+    srcs = [
+        "doc.go",
+        ":mock_buildv1_source",  # keep
+        ":mock_grpc_source",  # keep
+    ],
+    importpath = "aspect.build/cli/pkg/aspectgrpc/mock",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//pkg/aspectgrpc",  # keep
+        "@com_github_golang_mock//gomock",  # keep
+        "@go_googleapis//google/devtools/build/v1:build_go_proto",  # keep
+        "@org_golang_google_grpc//:grpc",  # keep
+        "@org_golang_google_grpc//metadata",  # keep
+    ],
+)

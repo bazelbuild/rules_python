@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "bep",
+    srcs = ["bes_backend.go"],
+    importpath = "aspect.build/cli/pkg/aspect/build/bep",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/aspecterrors",
+        "//pkg/aspectgrpc",
+        "@go_googleapis//google/devtools/build/v1:build_go_proto",
+        "@io_bazel_rules_go//proto/wkt:empty_go_proto",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "bep_test",
+    srcs = ["bes_backend_test.go"],
+    embed = [":bep"],
+    deps = [
+        "//pkg/aspecterrors",
+        "//pkg/aspectgrpc/mock",
+        "//pkg/stdlib/mock",
+        "@com_github_golang_mock//gomock",
+        "@com_github_onsi_gomega//:gomega",
+        "@go_googleapis//google/devtools/build/v1:build_go_proto",
+    ],
+)

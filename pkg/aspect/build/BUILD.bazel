@@ -6,6 +6,7 @@ go_library(
     importpath = "aspect.build/cli/pkg/aspect/build",
     visibility = ["//cmd/aspect/build:__pkg__"],
     deps = [
+        "//pkg/aspect/build/bep",
         "//pkg/aspecterrors",
         "//pkg/bazel",
         "//pkg/ioutils",
@@ -18,6 +19,7 @@ go_test(
     srcs = ["build_test.go"],
     deps = [
         ":build",
+        "//pkg/aspect/build/bep/mock",
         "//pkg/aspecterrors",
         "//pkg/bazel/mock",
         "//pkg/ioutils",

@@ -7,6 +7,7 @@ require (
 	github.com/bazelbuild/rules_go v0.28.0
 	github.com/fatih/color v1.12.0
 	github.com/golang/mock v1.3.1
+	github.com/golang/protobuf v1.5.2
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-isatty v0.0.13
 	github.com/mitchellh/go-homedir v1.1.0
@@ -22,5 +23,7 @@ require (
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f // indirect
 	golang.org/x/sys v0.0.0-20210903071746-97244b99971b // indirect
 	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/grpc v1.27.0
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

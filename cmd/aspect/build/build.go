@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"aspect.build/cli/pkg/aspect/build"
+	"aspect.build/cli/pkg/aspect/build/bep"
 	"aspect.build/cli/pkg/bazel"
 	"aspect.build/cli/pkg/ioutils"
 )
@@ -17,15 +18,16 @@ import (
 // NewDefaultBuildCmd creates a new build cobra command with the default
 // dependencies.
 func NewDefaultBuildCmd() *cobra.Command {
-	return NewBuildCmd(ioutils.DefaultStreams, bazel.New())
+	return NewBuildCmd(ioutils.DefaultStreams, bazel.New(), bep.NewBESBackend())
 }
 
 // NewBuildCmd creates a new build cobra command.
 func NewBuildCmd(
 	streams ioutils.Streams,
 	bzl bazel.Spawner,
+	besBackend bep.BESBackend,
 ) *cobra.Command {
-	b := build.New(streams, bzl)
+	b := build.New(streams, bzl, besBackend)
 
 	cmd := &cobra.Command{
 		Use:   "build",

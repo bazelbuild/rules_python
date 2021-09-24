@@ -1,0 +1,29 @@
+load("@bazel_gomock//:gomock.bzl", "gomock")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+# gazelle:exclude mock_stdlib_test.go
+
+gomock(
+    name = "mock_stdlib_source",
+    out = "mock_stdlib_test.go",
+    interfaces = [
+        "NetAddr",
+        "NetListener",
+    ],
+    library = "//pkg/stdlib",
+    package = "mock",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "mock",
+    srcs = [
+        "doc.go",
+        ":mock_stdlib_source",  # keep
+    ],
+    importpath = "aspect.build/cli/pkg/stdlib/mock",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@com_github_golang_mock//gomock",  # keep
+    ],
+)

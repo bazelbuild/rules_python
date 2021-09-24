@@ -7,6 +7,7 @@ go_library(
     visibility = ["//cmd/aspect/root:__pkg__"],
     deps = [
         "//pkg/aspect/build",
+        "//pkg/aspect/build/bep",
         "//pkg/bazel",
         "//pkg/ioutils",
         "@com_github_spf13_cobra//:cobra",
