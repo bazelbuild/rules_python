@@ -11,10 +11,11 @@ def rules_python_internal_deps():
     maybe(
         http_archive,
         name = "bazel_skylib",
-        strip_prefix = "bazel-skylib-1.0.2",
-        url = "https://github.com/bazelbuild/bazel-skylib/archive/1.0.2.zip",
-        type = "zip",
-        sha256 = "64ad2728ccdd2044216e4cec7815918b7bb3bb28c95b7e9d951f9d4eccb07625",
+        sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+        urls = [
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        ],
     )
 
     maybe(

@@ -43,15 +43,14 @@ merged.
 
 ### Documentation
 
-To regenerate the content under the `docs/` directory, run this script in the
-repository root:
+To regenerate the content under the `docs/` directory, run this command:
 
 ```shell
-./update_docs.sh
+bazel run //docs:update
 ```
 
 This needs to be done whenever the docstrings in the corresponding .bzl files
-are changed; see `docs/BUILD`.
+are changed; a test failure will remind you to run this command when needed.
 
 ### Precompiled tools
 
