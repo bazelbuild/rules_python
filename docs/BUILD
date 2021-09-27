@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-###############################################################################
-# To regenerate documentation, run the top-level update_docs.sh script.       #
-###############################################################################
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+_DOCS = {
+    "packaging": "//docs:packaging-docs",
+    "pip": "//docs:pip-docs",
+    "python": "//docs:core-docs",
+    "whl": "//docs:whl-docs",
+}
 
 # We define these bzl_library targets here rather than in the //python package
 # because they're only used for doc generation. This way, we avoid requiring
@@ -68,7 +73,7 @@ bzl_library(
 
 stardoc(
     name = "core-docs",
-    out = "python.md",
+    out = "python.md_",
     input = "//python:defs.bzl",
     deps = [":defs"],
 )
@@ -79,7 +84,7 @@ stardoc(
 
 stardoc(
     name = "pip-docs",
-    out = "pip.md",
+    out = "pip.md_",
     input = "//python:pip.bzl",
     deps = [
         ":bazel_repo_tools",
@@ -90,12 +95,40 @@ stardoc(
 
 stardoc(
     name = "whl-docs",
-    out = "whl.md",
+    out = "whl.md_",
     input = "//python:whl.bzl",
 )
 
 stardoc(
     name = "packaging-docs",
-    out = "packaging.md",
+    out = "packaging.md_",
     input = "//python:packaging.bzl",
+)
+
+[
+    diff_test(
+        name = "check_" + k,
+        failure_message = "Please run:   bazel run //docs:update",
+        file1 = k + ".md",
+        file2 = k + ".md_",
+    )
+    for k in _DOCS.keys()
+]
+
+write_file(
+    name = "gen_update",
+    out = "update.sh",
+    content = [
+        "#!/usr/bin/env bash",
+        "cd $BUILD_WORKSPACE_DIRECTORY",
+    ] + [
+        "cp -fv bazel-bin/docs/{0}.md_ docs/{0}.md".format(k)
+        for k in _DOCS.keys()
+    ],
+)
+
+sh_binary(
+    name = "update",
+    srcs = ["update.sh"],
+    data = _DOCS.values(),
 )
