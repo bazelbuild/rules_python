@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load(
     "@pip//:requirements.bzl",
     "entry_point",
@@ -63,4 +65,32 @@ py_test(
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
+)
+
+# Assert that tags are present on resulting py_library,
+# which is useful for tooling that needs to reflect on the dep graph
+# to determine the packages it was built from.
+genquery(
+    name = "yamllint_lib_by_version",
+    expression = """
+    attr("tags", "\\bpypi_version=1.26.3\\b", "@pip//pypi__yamllint")
+    intersect
+    attr("tags", "\\bpypi_name=yamllint\\b", "@pip//pypi__yamllint")
+    """,
+    scope = [requirement("yamllint")],
+)
+
+write_file(
+    name = "write_expected",
+    out = "expected",
+    content = [
+        "@pip//pypi__yamllint:pypi__yamllint",
+        "",
+    ],
+)
+
+diff_test(
+    name = "test_query_result",
+    file1 = "expected",
+    file2 = "yamllint_lib_by_version",
 )
