@@ -1,4 +1,4 @@
-"Rules to verify and update pip-compile locked requirements.txt"
+"""Rules to verify and update pip-compile locked requirements.txt"""
 
 load("//python:defs.bzl", "py_binary", "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
