@@ -15,6 +15,9 @@
 
 load("//python/pip_install:pip_repository.bzl", "pip_repository")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
+load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
+
+compile_pip_requirements = _compile_pip_requirements
 
 def pip_install(requirements, name = "pip", **kwargs):
     """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.

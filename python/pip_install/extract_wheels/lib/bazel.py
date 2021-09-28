@@ -79,6 +79,7 @@ def generate_build_file_contents(
     dependencies: List[str],
     whl_file_deps: List[str],
     pip_data_exclude: List[str],
+    tags: List[str],
     additional_targets: List[str] = [],
 ) -> str:
     """Generate a BUILD file for an unzipped Wheel
@@ -87,6 +88,8 @@ def generate_build_file_contents(
         name: the target name of the py_library
         dependencies: a list of Bazel labels pointing to dependencies of the library
         whl_file_deps: a list of Bazel labels pointing to wheel file dependencies of this wheel.
+        pip_data_exclude: more patterns to exclude from the data attribute of generated py_library rules.
+        tags: list of tags to apply to generated py_library rules.
         additional_targets: A list of additional targets to append to the BUILD file contents.
 
     Returns:
@@ -129,20 +132,13 @@ def generate_build_file_contents(
 
         py_library(
             name = "{name}",
-            srcs = glob(
-                ["**/*.py"],
-                allow_empty = True,
-                exclude = [
-                    "{entry_point_prefix}*.py",
-                    "tests/**",
-                    "*/tests/**",
-                ],
-            ),
+            srcs = glob(["**/*.py"], exclude=["{entry_point_prefix}*.py"], allow_empty = True),
             data = glob(["**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
             imports = ["."],
             deps = [{dependencies}],
+            tags = [{tags}],
         )
         """.format(
             name=name,
@@ -150,6 +146,7 @@ def generate_build_file_contents(
             data_exclude=json.dumps(data_exclude),
             whl_file_label=WHEEL_FILE_LABEL,
             whl_file_deps=",".join(whl_file_deps),
+            tags = ",".join(["\"%s\"" % t for t in tags]),
             data_label=DATA_LABEL,
             dist_info_label=DIST_INFO_LABEL,
             entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
@@ -367,6 +364,7 @@ def extract_wheel(
             sanitised_dependencies,
             sanitised_wheel_file_dependencies,
             pip_data_exclude,
+            ["pypi_name=" + whl.name, "pypi_version=" + whl.metadata.version],
             entry_points,
         )
         build_file.write(contents)

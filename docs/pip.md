@@ -1,5 +1,40 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+<a name="#compile_pip_requirements"></a>
+
+## compile_pip_requirements
+
+<pre>
+compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>, <a href="#compile_pip_requirements-tags">tags</a>,
+                         <a href="#compile_pip_requirements-kwargs">kwargs</a>)
+</pre>
+
+    Macro creating targets for running pip-compile
+
+Produce a filegroup by default, named "[name]" which can be included in the data
+of some other compile_pip_requirements rule that references these requirements
+(e.g. with `-r ../other/requirements.txt`)
+
+Produce two targets for checking pip-compile:
+
+- validate with `bazel test <name>_test`
+- update with   `bazel run <name>.update`
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| name |  base name for generated targets, typically "requirements"   |  none |
+| extra_args |  passed to pip-compile   |  <code>[]</code> |
+| visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
+| requirements_in |  file expressing desired dependencies   |  <code>None</code> |
+| requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
+| tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
+| kwargs |  other bazel attributes passed to the "_test" rule   |  none |
+
+
 <a name="#pip_import"></a>
 
 ## pip_import
