@@ -6,7 +6,7 @@ load(
     "requirement",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 # Toolchain setup, this is optional.
 # Demonstrate that we can use the same python interpreter for the toolchain and executing pip in pip install (see WORKSPACE).

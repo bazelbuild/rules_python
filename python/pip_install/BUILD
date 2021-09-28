@@ -13,17 +13,11 @@ filegroup(
 
 filegroup(
     name = "bzl",
-    srcs = [
-        "pip_repository.bzl",
-        "repositories.bzl",
-    ],
+    srcs = glob(["*.bzl"]),
     visibility = ["//:__pkg__"],
 )
 
 exports_files(
-    [
-        "pip_repository.bzl",
-        "repositories.bzl",
-    ],
+    glob(["*.bzl"]),
     visibility = ["//docs:__pkg__"],
 )
