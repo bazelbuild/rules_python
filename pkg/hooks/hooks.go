@@ -7,8 +7,6 @@ Not licensed for re-use.
 package hooks
 
 import (
-	"context"
-
 	"aspect.build/cli/pkg/aspecterrors"
 )
 
@@ -26,11 +24,11 @@ func (hooks *Hooks) RegisterPostBuild(fn PostBuildFn) {
 	hooks.postBuild.insert(fn)
 }
 
-func (hooks *Hooks) ExecutePostBuild(ctx context.Context) *aspecterrors.ErrorList {
+func (hooks *Hooks) ExecutePostBuild() *aspecterrors.ErrorList {
 	errors := &aspecterrors.ErrorList{}
 	node := hooks.postBuild.head
 	for node != nil {
-		if err := node.fn.(PostBuildFn)(ctx); err != nil {
+		if err := node.fn.(PostBuildFn)(); err != nil {
 			errors.Insert(err)
 		}
 		node = node.next
@@ -38,7 +36,7 @@ func (hooks *Hooks) ExecutePostBuild(ctx context.Context) *aspecterrors.ErrorLis
 	return errors
 }
 
-type PostBuildFn func(ctx context.Context) error
+type PostBuildFn func() error
 
 type hookList struct {
 	head *hookNode

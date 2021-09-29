@@ -8,15 +8,14 @@ package fix_visibility
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"regexp"
-	"time"
+	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
+	"github.com/bazelbuild/buildtools/edit"
 	"github.com/manifoldco/promptui"
 	isatty "github.com/mattn/go-isatty"
 	buildv1 "google.golang.org/genproto/googleapis/devtools/build/v1"
@@ -74,17 +73,11 @@ func (plugin *FixVisibilityPlugin) BEPEventCallback(event *buildv1.BuildEvent) e
 
 const removePrivateVisibilityBuildozerCommand = "remove visibility //visibility:private"
 
-func (plugin *FixVisibilityPlugin) PostBuildHook(ctx context.Context) error {
+func (plugin *FixVisibilityPlugin) PostBuildHook() error {
 	if plugin.targetsToFix.size == 0 {
 		return nil
 	}
 
-	// TODO(f0rmiga): make the timeout configurable via the plugin configuration
-	// file.
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	// TODO(f0rmiga): check if buildozer is installed, otherwise return an error.
 	for node := plugin.targetsToFix.head; node != nil; node = node.next {
 		fromLabel, err := label.Parse(node.from)
 		if err != nil {
@@ -92,7 +85,7 @@ func (plugin *FixVisibilityPlugin) PostBuildHook(ctx context.Context) error {
 		}
 		fromLabel.Name = "__pkg__"
 
-		hasPrivateVisibility, err := plugin.hasPrivateVisibility(ctx, node.toFix)
+		hasPrivateVisibility, err := plugin.hasPrivateVisibility(node.toFix)
 		if err != nil {
 			return fmt.Errorf("failed to fix visibility: %w", err)
 		}
@@ -105,11 +98,11 @@ func (plugin *FixVisibilityPlugin) PostBuildHook(ctx context.Context) error {
 
 		addVisibilityBuildozerCommand := fmt.Sprintf("add visibility %s", fromLabel)
 		if applyFix {
-			if _, err := plugin.buildozer.Run(ctx, addVisibilityBuildozerCommand, node.toFix); err != nil {
+			if _, err := plugin.buildozer.Run(addVisibilityBuildozerCommand, node.toFix); err != nil {
 				return fmt.Errorf("failed to fix visibility: %w", err)
 			}
 			if hasPrivateVisibility {
-				if _, err := plugin.buildozer.Run(ctx, removePrivateVisibilityBuildozerCommand, node.toFix); err != nil {
+				if _, err := plugin.buildozer.Run(removePrivateVisibilityBuildozerCommand, node.toFix); err != nil {
 					return fmt.Errorf("failed to fix visibility: %w", err)
 				}
 			}
@@ -125,8 +118,8 @@ func (plugin *FixVisibilityPlugin) PostBuildHook(ctx context.Context) error {
 	return nil
 }
 
-func (plugin *FixVisibilityPlugin) hasPrivateVisibility(ctx context.Context, toFix string) (bool, error) {
-	visibility, err := plugin.buildozer.Run(ctx, "print visibility", toFix)
+func (plugin *FixVisibilityPlugin) hasPrivateVisibility(toFix string) (bool, error) {
+	visibility, err := plugin.buildozer.Run("print visibility", toFix)
 	if err != nil {
 		return false, fmt.Errorf("failed to check if target has private visibility: %w", err)
 	}
@@ -164,17 +157,23 @@ type fixNode struct {
 }
 
 type Runner interface {
-	Run(ctx context.Context, args ...string) ([]byte, error)
+	Run(args ...string) ([]byte, error)
 }
 
 type buildozer struct{}
 
-func (b *buildozer) Run(ctx context.Context, args ...string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, "buildozer", args...)
+func (b *buildozer) Run(args ...string) ([]byte, error) {
 	var stdout bytes.Buffer
-	cmd.Stdout = &stdout
-	if err := cmd.Run(); err != nil {
-		return stdout.Bytes(), fmt.Errorf("failed to run buildozer: %w", err)
+	var stderr strings.Builder
+	edit.ShortenLabelsFlag = true
+	edit.DeleteWithComments = true
+	opts := &edit.Options{
+		OutWriter: &stdout,
+		ErrWriter: &stderr,
+		NumIO:     200,
+	}
+	if ret := edit.Buildozer(opts, args); ret != 0 {
+		return stdout.Bytes(), fmt.Errorf("failed to run buildozer: exit code %d: %s", ret, stderr.String())
 	}
 	return stdout.Bytes(), nil
 }

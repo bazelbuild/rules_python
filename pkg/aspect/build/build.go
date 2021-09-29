@@ -50,8 +50,8 @@ func New(
 func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exitErr error) {
 	// TODO(f0rmiga): this is a hook for the build command and should be discussed
 	// as part of the plugin design.
-	defer func(ctx context.Context) {
-		errs := b.hooks.ExecutePostBuild(ctx).Errors()
+	defer func() {
+		errs := b.hooks.ExecutePostBuild().Errors()
 		if len(errs) > 0 {
 			for _, err := range errs {
 				fmt.Fprintf(b.Streams.Stderr, "Error: failed to run build command: %v\n", err)
@@ -61,12 +61,12 @@ func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exi
 				err.ExitCode = 1
 			}
 		}
-	}(ctx)
+	}()
 
 	if err := b.besBackend.Setup(); err != nil {
 		return fmt.Errorf("failed to run build command: %w", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	if err := b.besBackend.ServeWait(ctx); err != nil {
 		return fmt.Errorf("failed to run build command: %w", err)
@@ -102,5 +102,5 @@ type Plugin interface {
 	// itself to receive the Build Event Protocol events.
 	BEPEventCallback(event *buildv1.BuildEvent) error
 	// TODO(f0rmiga): test the build hooks after implementing the plugin system.
-	PostBuildHook(ctx context.Context) error
+	PostBuildHook() error
 }

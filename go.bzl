@@ -56,9 +56,10 @@ def deps():
     )
     go_repository(
         name = "com_github_bazelbuild_buildtools",
+        build_naming_convention = "go_default_library",
         importpath = "github.com/bazelbuild/buildtools",
-        sum = "h1:Et1IIXrXwhpDvR5wH9REPEZ0sUtzUoJSq19nfmBqzBY=",
-        version = "v0.0.0-20200718160251-b1667ff58f71",
+        sum = "h1:hWvEw/36XcpZzKZB2LBYhKSGt72ETiIhudjxd637+4w=",
+        version = "v0.0.0-20210920153738-d6daef01a1a2",
     )
 
     go_repository(
@@ -1009,6 +1010,13 @@ def deps():
         sum = "h1:HfqmD5MEmC0zvwBuF187nq9mdnXjXsSivRiXN7SmRkE=",
         version = "v0.2.0",
     )
+    go_repository(
+        name = "net_starlark_go",
+        importpath = "go.starlark.net",
+        sum = "h1:xwwDQW5We85NaTk2APgoN9202w/l0DVGp+GZMfsrh7s=",
+        version = "v0.0.0-20210223155950-e043a3d3c984",
+    )
+
     go_repository(
         name = "org_golang_google_api",
         importpath = "google.golang.org/api",

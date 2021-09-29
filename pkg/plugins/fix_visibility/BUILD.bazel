@@ -7,6 +7,7 @@ go_library(
     visibility = ["//cmd/aspect/build:__pkg__"],
     deps = [
         "@bazel_gazelle//label:go_default_library",
+        "@com_github_bazelbuild_buildtools//edit:go_default_library",
         "@com_github_manifoldco_promptui//:promptui",
         "@com_github_mattn_go_isatty//:go-isatty",
         "@go_googleapis//google/devtools/build/v1:build_go_proto",
