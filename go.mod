@@ -3,12 +3,14 @@ module aspect.build/cli
 go 1.16
 
 require (
+	github.com/bazelbuild/bazel-gazelle v0.23.0
 	github.com/bazelbuild/bazelisk v1.10.1
 	github.com/bazelbuild/rules_go v0.28.0
 	github.com/fatih/color v1.12.0
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.5.2
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-isatty v0.0.13
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.4.1 // indirect

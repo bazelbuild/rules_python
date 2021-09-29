@@ -190,10 +190,3 @@ type subscriberNode struct {
 	next     *subscriberNode
 	callback CallbackFn
 }
-
-// Plugin is the interface that wraps the BEPEventsSubscriber used to verify
-// whether an Aspect plugin registers itself to receive the Build Event Protocol
-// events.
-type Plugin interface {
-	BEPEventsSubscriber() CallbackFn
-}

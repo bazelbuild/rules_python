@@ -8,14 +8,17 @@ package build
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
+	buildv1 "google.golang.org/genproto/googleapis/devtools/build/v1"
 
 	"aspect.build/cli/pkg/aspect/build/bep"
 	"aspect.build/cli/pkg/aspecterrors"
 	"aspect.build/cli/pkg/bazel"
+	"aspect.build/cli/pkg/hooks"
 	"aspect.build/cli/pkg/ioutils"
 )
 
@@ -24,6 +27,7 @@ type Build struct {
 	ioutils.Streams
 	bzl        bazel.Spawner
 	besBackend bep.BESBackend
+	hooks      *hooks.Hooks
 }
 
 // New creates a Build command.
@@ -31,19 +35,34 @@ func New(
 	streams ioutils.Streams,
 	bzl bazel.Spawner,
 	besBackend bep.BESBackend,
+	hooks *hooks.Hooks,
 ) *Build {
 	return &Build{
 		Streams:    streams,
 		bzl:        bzl,
 		besBackend: besBackend,
+		hooks:      hooks,
 	}
 }
 
 // Run runs the aspect build command, calling `bazel build` with a local Build
 // Event Protocol backend used by Aspect plugins to subscribe to build events.
-func (b *Build) Run(_ *cobra.Command, args []string) error {
-	// TODO: register the BEP subscribers here with:
-	// besBackend.RegisterSubscriber(plugin.BEPEventsSubscriber())
+func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exitErr error) {
+	// TODO(f0rmiga): this is a hook for the build command and should be discussed
+	// as part of the plugin design.
+	defer func(ctx context.Context) {
+		errs := b.hooks.ExecutePostBuild(ctx).Errors()
+		if len(errs) > 0 {
+			for _, err := range errs {
+				fmt.Fprintf(b.Streams.Stderr, "Error: failed to run build command: %v\n", err)
+			}
+			var err *aspecterrors.ExitError
+			if errors.As(exitErr, &err) {
+				err.ExitCode = 1
+			}
+		}
+	}(ctx)
+
 	if err := b.besBackend.Setup(); err != nil {
 		return fmt.Errorf("failed to run build command: %w", err)
 	}
@@ -55,22 +74,33 @@ func (b *Build) Run(_ *cobra.Command, args []string) error {
 	defer b.besBackend.GracefulStop()
 
 	besBackendFlag := fmt.Sprintf("--bes_backend=grpc://%s", b.besBackend.Addr())
-	cmd := append([]string{"build", besBackendFlag}, args...)
-	if exitCode, err := b.bzl.Spawn(cmd); exitCode != 0 {
-		err = &aspecterrors.ExitError{
-			Err:      err, // err can be nil, so don't wrap it with the full context.
-			ExitCode: exitCode,
-		}
-		return err
-	}
+	exitCode, bazelErr := b.bzl.Spawn(append([]string{"build", besBackendFlag}, args...))
 
+	// Process the subscribers errors before the Bazel one.
 	subscriberErrors := b.besBackend.Errors()
 	if len(subscriberErrors) > 0 {
 		for _, err := range subscriberErrors {
 			fmt.Fprintf(b.Streams.Stderr, "Error: failed to run build command: %v\n", err)
 		}
-		return &aspecterrors.ExitError{ExitCode: 1}
+		exitCode = 1
+	}
+
+	if exitCode != 0 {
+		err := &aspecterrors.ExitError{ExitCode: exitCode}
+		if bazelErr != nil {
+			err.Err = bazelErr
+		}
+		return err
 	}
 
 	return nil
+}
+
+// Plugin defines only the methods for the build command.
+type Plugin interface {
+	// BEPEventsSubscriber is used to verify whether an Aspect plugin registers
+	// itself to receive the Build Event Protocol events.
+	BEPEventCallback(event *buildv1.BuildEvent) error
+	// TODO(f0rmiga): test the build hooks after implementing the plugin system.
+	PostBuildHook(ctx context.Context) error
 }

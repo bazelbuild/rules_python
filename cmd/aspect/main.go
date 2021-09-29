@@ -7,6 +7,7 @@ Not licensed for re-use.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -28,7 +29,7 @@ func main() {
 	//         - tools/bazel file and put our bootstrap code in there
 	//
 	cmd := root.NewDefaultRootCmd()
-	if err := cmd.Execute(); err != nil {
+	if err := cmd.ExecuteContext(context.Background()); err != nil {
 		var exitErr *aspecterrors.ExitError
 		if errors.As(err, &exitErr) {
 			if exitErr.Err != nil {

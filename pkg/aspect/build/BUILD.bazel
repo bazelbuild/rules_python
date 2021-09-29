@@ -9,8 +9,10 @@ go_library(
         "//pkg/aspect/build/bep",
         "//pkg/aspecterrors",
         "//pkg/bazel",
+        "//pkg/hooks",
         "//pkg/ioutils",
         "@com_github_spf13_cobra//:cobra",
+        "@go_googleapis//google/devtools/build/v1:build_go_proto",
     ],
 )
 
@@ -22,6 +24,7 @@ go_test(
         "//pkg/aspect/build/bep/mock",
         "//pkg/aspecterrors",
         "//pkg/bazel/mock",
+        "//pkg/hooks",
         "//pkg/ioutils",
         "@com_github_golang_mock//gomock",
         "@com_github_onsi_gomega//:gomega",

@@ -9,7 +9,9 @@ go_library(
         "//pkg/aspect/build",
         "//pkg/aspect/build/bep",
         "//pkg/bazel",
+        "//pkg/hooks",
         "//pkg/ioutils",
+        "//pkg/plugins/fix_visibility",
         "@com_github_spf13_cobra//:cobra",
     ],
 )
