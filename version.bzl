@@ -20,7 +20,7 @@ version = "0.4.0"
 # This version should be updated together with the version of the Bazel
 # in .bazelversion.
 # TODO(alexeagle): assert this is the case in a test
-BAZEL_VERSION = "3.3.1"
+BAZEL_VERSION = "4.0.0"
 
 # Versions of Bazel which users should be able to use.
 # Ensures we don't break backwards-compatibility,
