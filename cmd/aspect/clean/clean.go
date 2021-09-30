@@ -7,25 +7,18 @@ Not licensed for re-use.
 package clean
 
 import (
+	"os"
+
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 
 	"aspect.build/cli/pkg/aspect/clean"
-	"aspect.build/cli/pkg/bazel"
-	"aspect.build/cli/pkg/ioutils"
 )
 
-// NewDefaultCleanCmd creates a new clean cobra command with the default
-// dependencies.
+// NewDefaultCleanCmd creates a new clean cobra command.
 func NewDefaultCleanCmd() *cobra.Command {
-	return NewCleanCmd(ioutils.DefaultStreams, bazel.New())
-}
-
-// NewCleanCmd creates a new clean cobra command.
-func NewCleanCmd(
-	streams ioutils.Streams,
-	bzl bazel.Spawner,
-) *cobra.Command {
-	b := clean.New(streams, bzl)
+	isInteractive := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+	b := clean.NewDefault(isInteractive)
 
 	cmd := &cobra.Command{
 		Use:   "clean",

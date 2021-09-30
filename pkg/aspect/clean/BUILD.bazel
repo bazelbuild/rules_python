@@ -9,7 +9,9 @@ go_library(
         "//pkg/aspecterrors",
         "//pkg/bazel",
         "//pkg/ioutils",
+        "@com_github_manifoldco_promptui//:promptui",
         "@com_github_spf13_cobra//:cobra",
+        "@com_github_spf13_viper//:viper",
     ],
 )
 
@@ -22,5 +24,6 @@ go_test(
         "//pkg/ioutils",
         "@com_github_golang_mock//gomock",
         "@com_github_onsi_gomega//:gomega",
+        "@com_github_spf13_viper//:viper",
     ],
 )
