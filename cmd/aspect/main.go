@@ -28,6 +28,12 @@ func main() {
 	//     ask the user if they want to install for all users of the workspace, if so
 	//         - tools/bazel file and put our bootstrap code in there
 	//
+
+	// Convenience for local development: under `bazel run //:aspect` respect the
+	// users working directory, don't run in the execroot
+	if wd, exists := os.LookupEnv("BUILD_WORKING_DIRECTORY"); exists {
+		_ = os.Chdir(wd)
+	}
 	cmd := root.NewDefaultRootCmd()
 	if err := cmd.ExecuteContext(context.Background()); err != nil {
 		var exitErr *aspecterrors.ExitError

@@ -19,6 +19,7 @@ import (
 	"aspect.build/cli/cmd/aspect/clean"
 	"aspect.build/cli/cmd/aspect/docs"
 	"aspect.build/cli/cmd/aspect/info"
+	"aspect.build/cli/cmd/aspect/test"
 	"aspect.build/cli/cmd/aspect/version"
 	"aspect.build/cli/docs/help/topics"
 	"aspect.build/cli/pkg/ioutils"
@@ -74,6 +75,7 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	cmd.AddCommand(version.NewDefaultVersionCmd())
 	cmd.AddCommand(docs.NewDefaultDocsCmd())
 	cmd.AddCommand(info.NewDefaultInfoCmd())
+	cmd.AddCommand(test.NewDefaultTestCmd())
 
 	// ### "Additional help topic commands" which are not runnable
 	// https://pkg.go.dev/github.com/spf13/cobra#Command.IsAdditionalHelpTopicCommand

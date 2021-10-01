@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "test",
+    srcs = ["test.go"],
+    importpath = "aspect.build/cli/pkg/aspect/test",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/aspecterrors",
+        "//pkg/bazel",
+        "//pkg/ioutils",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+go_test(
+    name = "test_test",
+    srcs = ["test_test.go"],
+    deps = [
+        ":test",
+        "//pkg/bazel/mock",
+        "//pkg/ioutils",
+        "@com_github_golang_mock//gomock",
+        "@com_github_onsi_gomega//:gomega",
+    ],
+)

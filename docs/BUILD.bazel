@@ -2,12 +2,14 @@ load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 
 # This list must be updated when we add a new command
+# buildifier: keep sorted
 _DOCS = [
     "aspect.md",
     "aspect_build.md",
     "aspect_clean.md",
     "aspect_docs.md",
     "aspect_info.md",
+    "aspect_test.md",
     "aspect_version.md",
 ]
 

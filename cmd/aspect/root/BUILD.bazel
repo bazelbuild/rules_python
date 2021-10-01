@@ -13,6 +13,7 @@ go_library(
         "//cmd/aspect/clean",
         "//cmd/aspect/docs",
         "//cmd/aspect/info",
+        "//cmd/aspect/test",
         "//cmd/aspect/version",
         "//docs/help/topics",
         "//pkg/ioutils",
