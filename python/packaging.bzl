@@ -319,12 +319,12 @@ _other_attrs = {
         ),
         default = "",
     ),
+    "stamp": attr.bool(
+        doc = "Enable stamping of the version attribute",
+    ),
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
-    ),
-    "stamp": attr.bool(
-        doc = "Enable stamping of the version attribute",
     ),
 }
 
