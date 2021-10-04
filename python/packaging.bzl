@@ -83,7 +83,7 @@ Sub-packages are automatically included.
     },
 )
 
-def _escape_filename_segment(segment):
+def _escape_filename_segment(segment, stamp = False):
     """Escape a segment of the wheel filename.
 
     See https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
@@ -95,20 +95,26 @@ def _escape_filename_segment(segment):
     escaped = ""
     for character in segment.elems():
         # isalnum doesn't handle unicode characters properly.
-        if character.isalnum() or character == ".":
+        if character.isalnum() or character == "." or (stamp and (character in ["{", "}"])):
             escaped += character
         elif not escaped.endswith("_"):
             escaped += "_"
     return escaped
 
 def _py_wheel_impl(ctx):
-    outfile = ctx.actions.declare_file("-".join([
+    out_filename = "-".join([
         _escape_filename_segment(ctx.attr.distribution),
-        _escape_filename_segment(ctx.attr.version),
+        _escape_filename_segment(ctx.attr.version, ctx.attr.stamp),
         _escape_filename_segment(ctx.attr.python_tag),
         _escape_filename_segment(ctx.attr.abi),
         _escape_filename_segment(ctx.attr.platform),
-    ]) + ".whl")
+    ]) + ".whl"
+
+    if ctx.attr.stamp:
+        # this is to trick bazels output as we don't know the full file name
+        outfile = ctx.actions.declare_directory(out_filename)
+    else:
+        outfile = ctx.actions.declare_file(out_filename)
 
     inputs_to_package = depset(
         direct = ctx.files.deps,
@@ -134,6 +140,8 @@ def _py_wheel_impl(ctx):
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
+    if ctx.attr.stamp:
+        args.add("--stamp_info", ctx.info_file.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
     args.add("--input_file_list", packageinputfile)
@@ -191,6 +199,7 @@ def _py_wheel_impl(ctx):
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
 
+    other_inputs.append(ctx.info_file)
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile],
@@ -313,6 +322,9 @@ _other_attrs = {
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
+    ),
+    "stamp": attr.bool(
+        doc = "Enable stamping of the version attribute",
     ),
 }
 

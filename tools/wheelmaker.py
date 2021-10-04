@@ -48,7 +48,6 @@ class WheelMaker(object):
         self._platform = platform
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
-
         self._distinfo_dir = (escape_filename_segment(self._name) + '-' +
                               escape_filename_segment(self._version) +
                               '.dist-info/')
@@ -200,6 +199,23 @@ def get_files_to_package(input_files):
         files[package_path] = real_path
     return files
 
+def resolve_version_stamp(version, outfile, stamp_info):
+    """Process the stamp info and resolve the version and outfile
+    version: version string that is stamped
+    stamp_info: path to workspace status file
+    """
+    info = {}
+    with open(stamp_info, 'r') as stamp:
+      for line in stamp:
+        try:
+          key, value = line.split(' ')
+          info[key] = value.strip()
+        except:
+          pass
+    resolved_version = version.format(**info)
+    # If stamped we need to keep the unresolved file name as a directory
+    resolved_outfile = outfile + "/" + os.path.basename(outfile.format(**info))
+    return resolved_version, resolved_outfile
 
 def main():
     parser = argparse.ArgumentParser(description='Builds a python wheel')
@@ -266,6 +282,12 @@ def main():
         '--extra_requires', type=str, action='append',
         help="List of optional requirements in a 'requirement;option name'. "
              "Can be supplied multiple times.")
+
+    build_group = parser.add_argument_group("Building requirements")
+    build_group.add_argument(
+        '--stamp_info',
+        help="Pass in the stamp info file for stamping"
+    )
     arguments = parser.parse_args(sys.argv[1:])
 
     if arguments.input_file:
@@ -286,13 +308,15 @@ def main():
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
+    version, outfile = resolve_version_stamp(arguments.version, arguments.out, arguments.stamp_info) if arguments.stamp_info else (arguments.version, arguments.out)
+
     with WheelMaker(name=arguments.name,
-                    version=arguments.version,
+                    version=version,
                     build_tag=arguments.build_tag,
                     python_tag=arguments.python_tag,
                     abi=arguments.abi,
                     platform=arguments.platform,
-                    outfile=arguments.out,
+                    outfile=outfile,
                     strip_path_prefixes=strip_prefixes
                     ) as maker:
         for package_filename, real_filename in all_files:
