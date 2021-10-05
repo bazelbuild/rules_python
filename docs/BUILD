@@ -66,6 +66,14 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "python_provider_context",
+    srcs = [
+        "//python:context.bzl",
+        "//python:providers.bzl",
+    ],
+)
+
 stardoc(
     name = "core-docs",
     out = "python.md",
@@ -98,4 +106,7 @@ stardoc(
     name = "packaging-docs",
     out = "packaging.md",
     input = "//python:packaging.bzl",
+    deps = [
+        ":python_provider_context",
+    ],
 )

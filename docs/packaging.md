@@ -30,8 +30,8 @@ This rule is intended to be used as data dependency to py_wheel rule
 
 <pre>
 py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a href="#py_wheel-author">author</a>, <a href="#py_wheel-author_email">author_email</a>, <a href="#py_wheel-classifiers">classifiers</a>, <a href="#py_wheel-console_scripts">console_scripts</a>, <a href="#py_wheel-deps">deps</a>, <a href="#py_wheel-description_file">description_file</a>,
-         <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>,
-         <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
+         <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_context_data">python_context_data</a>,
+         <a href="#py_wheel-python_requires">python_requires</a>, <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
 </pre>
 
 
@@ -98,6 +98,7 @@ py_wheel(
 | homepage |  A string specifying the URL for the package homepage.   | String | optional | "" |
 | license |  A string specifying the license of the package.   | String | optional | "" |
 | platform |  Supported platform. Use 'any' for pure-Python wheel.<br><br>If you have included platform-specific data, such as a .pyd or .so extension module, you will need to specify the platform in standard pip format. If you support multiple platforms, you can define platform constraints, then use a select() to specify the appropriate specifier, eg:<br><br><code> platform = select({     "//platforms:windows_x86_64": "win_amd64",     "//platforms:macos_x86_64": "macosx_10_7_x86_64",     "//platforms:linux_x86_64": "manylinux2014_x86_64", }) </code>   | String | optional | "any" |
+| python_context_data |  Provides info about the build context, such as stamping.<br><br>By default it reads from the bazel command line, such as the <code>--stamp</code> argument. Use this to override values for this target, such as enabling or disabling stamping. You can use the <code>python_context_data</code> rule in <code>@rules_python//python:context.bzl</code> to create a PythonContextInfo.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | @rules_python//python:python_context_data |
 | python_requires |  A string specifying what other distributions need to be installed when this one is. See the section on [Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) for details and examples of the format of this argument.   | String | optional | "" |
 | python_tag |  Supported Python version(s), eg <code>py3</code>, <code>cp35.cp36</code>, etc   | String | optional | "py3" |
 | requires |  List of requirements for this package   | List of strings | optional | [] |
