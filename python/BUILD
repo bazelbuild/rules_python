@@ -24,6 +24,7 @@ In an ideal renaming, we'd move the packaging rules to a different package so
 that @rules_python//python is only concerned with the core rules.
 """
 
+load("//python:context.bzl", "python_context_data")
 load("//python/pip_install:requirements.bzl", "compile_pip_requirements")
 
 package(default_visibility = ["//visibility:public"])
@@ -138,6 +139,22 @@ alias(
 alias(
     name = "autodetecting_toolchain_nonstrict",
     actual = "@bazel_tools//tools/python:autodetecting_toolchain_nonstrict",
+)
+
+# Detect if the build is running under --stamp
+config_setting(
+    name = "stamp",
+    values = {"stamp": "true"},
+)
+
+# Modelled after go_context_data from rules_go
+# passes config values to starlark via a provider
+python_context_data(
+    name = "python_context_data",
+    stamp = select({
+        "@rules_python//python:stamp": True,
+        "//conditions:default": False,
+    }),
 )
 
 # ========= Packaging rules =========

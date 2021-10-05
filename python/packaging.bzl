@@ -14,6 +14,8 @@
 
 """Rules for building wheels."""
 
+load(":providers.bzl", "PYTHON_CONTEXT_ATTRS", "PythonContextInfo")
+
 def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
     # which is not a valid path within a zip file. Fix that.
@@ -102,15 +104,17 @@ def _escape_filename_segment(segment, stamp = False):
     return escaped
 
 def _py_wheel_impl(ctx):
+    # determine if the build is currently running with --stamp
+    stamp = ctx.attr.python_context_data[PythonContextInfo].stamp
     out_filename = "-".join([
         _escape_filename_segment(ctx.attr.distribution),
-        _escape_filename_segment(ctx.attr.version, ctx.attr.stamp),
+        _escape_filename_segment(ctx.attr.version, stamp),
         _escape_filename_segment(ctx.attr.python_tag),
         _escape_filename_segment(ctx.attr.abi),
         _escape_filename_segment(ctx.attr.platform),
     ]) + ".whl"
 
-    if ctx.attr.stamp:
+    if stamp:
         # this is to trick bazels output as we don't know the full file name
         outfile = ctx.actions.declare_directory(out_filename)
     else:
@@ -140,7 +144,7 @@ def _py_wheel_impl(ctx):
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
-    if ctx.attr.stamp:
+    if stamp:
         args.add("--stamp_info", ctx.version_file.path)
         other_inputs.append(ctx.version_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
@@ -319,10 +323,6 @@ _other_attrs = {
         ),
         default = "",
     ),
-    "stamp": attr.bool(
-        doc = "Enable stamping of the version attribute. " +
-              "Only volatile variables are supported and they should be wrapped in brackets. Eg: `1.2.3-{BUILD_HOST}`",
-    ),
     "strip_path_prefixes": attr.string_list(
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
@@ -399,5 +399,6 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
         _requirement_attrs,
         _entrypoint_attrs,
         _other_attrs,
+        PYTHON_CONTEXT_ATTRS,
     ),
 )
