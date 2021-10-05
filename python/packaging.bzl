@@ -141,7 +141,8 @@ def _py_wheel_impl(ctx):
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile.path)
     if ctx.attr.stamp:
-        args.add("--stamp_info", ctx.info_file.path)
+        args.add("--stamp_info", ctx.version_file.path)
+        other_inputs.append(ctx.version_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
     args.add("--input_file_list", packageinputfile)
@@ -199,7 +200,6 @@ def _py_wheel_impl(ctx):
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
 
-    other_inputs.append(ctx.info_file)
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile],
@@ -320,7 +320,8 @@ _other_attrs = {
         default = "",
     ),
     "stamp": attr.bool(
-        doc = "Enable stamping of the version attribute. Stamp variables should be wrapped in brackets. Eg: `1.2.3-{BUILD_HOST}`",
+        doc = "Enable stamping of the version attribute. " +
+              "Only volatile variables are supported and they should be wrapped in brackets. Eg: `1.2.3-{BUILD_HOST}`",
     ),
     "strip_path_prefixes": attr.string_list(
         default = [],
