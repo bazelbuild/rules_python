@@ -320,7 +320,7 @@ _other_attrs = {
         default = "",
     ),
     "stamp": attr.bool(
-        doc = "Enable stamping of the version attribute",
+        doc = "Enable stamping of the version attribute. Stamp variables should be wrapped in brackets. Eg: `1.2.3-{BUILD_HOST}`",
     ),
     "strip_path_prefixes": attr.string_list(
         default = [],
