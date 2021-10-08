@@ -42,6 +42,8 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Long:          boldCyan.Sprintf(`Aspect CLI`) + ` is a better frontend for running bazel`,
+		// Suppress timestamps in generated Markdown, for determinism
+		DisableAutoGenTag: true,
 	}
 
 	// ### Flags
