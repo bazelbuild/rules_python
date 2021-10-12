@@ -13,8 +13,9 @@ http_archive(
 
 http_archive(
     name = "rules_python",
-    sha256 = "954aa89b491be4a083304a2cb838019c8b8c3720a7abb9c4cb81ac7a24230cea",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.4.0/rules_python-0.4.0.tar.gz",
+    sha256 = "4ab93d2af38ecd5b3d9e1d70aaa20448de57ac8bd78d4c5e40b9be4139eebb50",
+    strip_prefix = "rules_python-8e2b6de3e7f434dd98a8d25403bd7fb45866eacc",
+    url = "https://github.com/bazelbuild/rules_python/archive/8e2b6de3e7f434dd98a8d25403bd7fb45866eacc.tar.gz",
 )
 
 load("@rules_python//python:pip.bzl", "pip_install")
