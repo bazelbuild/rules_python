@@ -5,7 +5,7 @@
 set -o pipefail -o errexit -o nounset
 
 function has_local_changes {
-    if [[ $(git status --porcelain) ]]; then
+    if [ "$(git status --porcelain)" != "" ]; then
         echo dirty
     else
         echo clean
