@@ -1,14 +1,19 @@
+load("@io_bazel_rules_go//extras:bindata.bzl", "bindata")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
-go_library(
-    name = "topics",
-    srcs = ["main.go"],
-    data = [
+bindata(
+    name = "bindata",
+    srcs = [
         "info-keys.md",
         "tags.md",
         "target-syntax.md",
     ],
+    package = "topics",
+)
+
+go_library(
+    name = "topics",
+    srcs = [":bindata"],
     importpath = "aspect.build/cli/docs/help/topics",
     visibility = ["//visibility:public"],
-    deps = ["@io_bazel_rules_go//go/tools/bazel:go_default_library"],
 )

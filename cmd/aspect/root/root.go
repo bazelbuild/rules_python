@@ -84,17 +84,17 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	cmd.AddCommand(&cobra.Command{
 		Use:   "target-syntax",
 		Short: "Explains the syntax for specifying targets.",
-		Long:  topics.Read("target-syntax.md"),
+		Long:  topics.MustAssetString("target-syntax.md"),
 	})
 	cmd.AddCommand(&cobra.Command{
 		Use:   "info-keys",
 		Short: "Displays a list of keys used by the info command.",
-		Long:  topics.Read("info-keys.md"),
+		Long:  topics.MustAssetString("info-keys.md"),
 	})
 	cmd.AddCommand(&cobra.Command{
 		Use:   "tags",
 		Short: "Conventions for tags which are special",
-		Long:  topics.Read("tags.md"),
+		Long:  topics.MustAssetString("tags.md"),
 	})
 
 	return cmd
