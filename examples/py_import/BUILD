@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_import", "py_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -29,8 +28,11 @@ py_import(
     #   examples/py_import/helloworld.py=examples/legacy_pip_import/helloworld/helloworld.py \
     #   examples/__init__.py= \
     #   examples/py_import/__init__.py=
+    # TODO: we should construct an egg from local sources, or to make
+    # the example more meaningful for users, find an egg on the internet.
+    # Also it would help illustrate the rules if the egg has some other
+    # dependency, requiring deps here.
     srcs = ["helloworld.egg"],
-    deps = [requirement("futures")],
 )
 
 py_test(
