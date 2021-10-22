@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load(":stamp.bzl", "stamp_build_setting")
+
 licenses(["notice"])  # Apache 2.0
 
 filegroup(
@@ -36,6 +38,10 @@ filegroup(
 exports_files(
     [
         "reexports.bzl",
+        "stamp.bzl",
     ],
     visibility = ["//docs:__pkg__"],
 )
+
+# Used to determine the use of `--stamp` in Starlark rules
+stamp_build_setting(name = "stamp")
