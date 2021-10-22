@@ -1,13 +1,7 @@
----
-title: Aspect CLI
----
-
-Aspect is the enterprise-ready command-line interface for powering your developer experience.
-
 `aspect` is a replacement for the `bazel` CLI that comes with Bazel.
 
 <p align="center">
-  <img src="/logo.png" />
+  <img src="/logo.png" style="max-width: 250px;height: auto;"/>
 </p>
 
 ## Customize for your organization with plugins
@@ -24,7 +18,7 @@ A plugin allows you to fit aspect into your teams development process
 
 Plugins are any program that speaks our plugin gRPC protocol. We use the [plugin system from HashiCorp](https://github.com/hashicorp/go-plugin).
 
-Read more: TODO
+Read more: [Plugins documentation](/help/topics/plugins)
 
 ## Interactive
 
@@ -53,9 +47,7 @@ come find us at [aspect.dev](https://aspect.dev)
 
 ## Using a package manager
 
-MacOS with Homebrew: coming soon
-
-Apt: coming soon
+Coming soon
 
 ## Manual installation
 
@@ -63,6 +55,10 @@ Download a binary from our [GitHub Releases] page and put it in your PATH.
 
 On MacOS you can bypass the "Unknown Developer" dialog by running
 `xattr -c $(which aspect)` before launching aspect.
+
+# User Manuals
+
+The commands are documented under [aspect](/aspect).
 
 [Bazel]: http://bazel.build
 [GitHub Releases]: https://github.com/aspect-dev/aspect-cli/releases
