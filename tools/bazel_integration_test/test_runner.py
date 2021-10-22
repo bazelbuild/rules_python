@@ -24,10 +24,12 @@ def modify_WORKSPACE(wksp, distro_path):
         content = wksp_file.read()
     # Replace the url for rules_python with our locally built one
     content = re.sub(
-        r'url = "https://github.com/bazelbuild/rules_python/releases/download/[^"]+"',
+        r'url = "https://github.com/bazelbuild/rules_python/[^"]+"',
         'url = "file://%s"' % r.Rlocation(distro_path),
         content)
+    # comment out sha256 and strip_prefix if present
     content = re.sub(r'sha256 = "', '#\1', content)
+    content = re.sub(r'strip_prefix = "', '#\1', content)
     with open(wksp, 'w') as wksp_file:
         wksp_file.write(content)
 
