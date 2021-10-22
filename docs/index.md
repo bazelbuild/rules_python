@@ -1,9 +1,13 @@
+---
+title: Aspect CLI
+---
+
 Aspect is the enterprise-ready command-line interface for powering your developer experience.
 
 `aspect` is a replacement for the `bazel` CLI that comes with Bazel.
 
 <p align="center">
-  <img src="/logo.svg" />
+  <img src="/logo.png" />
 </p>
 
 ## Customize for your organization with plugins
@@ -50,6 +54,7 @@ come find us at [aspect.dev](https://aspect.dev)
 ## Using a package manager
 
 MacOS with Homebrew: coming soon
+
 Apt: coming soon
 
 ## Manual installation
