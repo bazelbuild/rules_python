@@ -16,7 +16,9 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/gomega"
 	buildv1 "google.golang.org/genproto/googleapis/devtools/build/v1"
+	"google.golang.org/protobuf/types/known/anypb"
 
+	buildeventstream "aspect.build/cli/bazel/buildeventstream/proto"
 	"aspect.build/cli/pkg/aspecterrors"
 	grpc_mock "aspect.build/cli/pkg/aspectgrpc/mock"
 	stdlib_mock "aspect.build/cli/pkg/stdlib/mock"
@@ -310,7 +312,10 @@ func TestPublishBuildToolEventStream(t *testing.T) {
 		defer ctrl.Finish()
 
 		eventStream := grpc_mock.NewMockPublishBuildEvent_PublishBuildToolEventStreamServer(ctrl)
-		event := &buildv1.BuildEvent{}
+		buildEvent := &buildeventstream.BuildEvent{}
+		var anyBuildEvent anypb.Any
+		anyBuildEvent.MarshalFrom(buildEvent)
+		event := &buildv1.BuildEvent{Event: &buildv1.BuildEvent_BazelEvent{BazelEvent: &anyBuildEvent}}
 		streamId := &buildv1.StreamId{BuildId: "1"}
 		orderedBuildEvent := &buildv1.OrderedBuildEvent{
 			StreamId:       streamId,
@@ -345,20 +350,20 @@ func TestPublishBuildToolEventStream(t *testing.T) {
 			errors:      &aspecterrors.ErrorList{},
 		}
 		var calledSubscriber1, calledSubscriber2, calledSubscriber3 bool
-		besBackend.RegisterSubscriber(func(evt *buildv1.BuildEvent) error {
-			g.Expect(evt).To(Equal(event))
+		besBackend.RegisterSubscriber(func(evt *buildeventstream.BuildEvent) error {
+			g.Expect(evt).To(Equal(buildEvent))
 			calledSubscriber1 = true
 			return nil
 		})
 		expectedSubscriber2Err := fmt.Errorf("error from subscriber 2")
-		besBackend.RegisterSubscriber(func(evt *buildv1.BuildEvent) error {
-			g.Expect(evt).To(Equal(event))
+		besBackend.RegisterSubscriber(func(evt *buildeventstream.BuildEvent) error {
+			g.Expect(evt).To(Equal(buildEvent))
 			calledSubscriber2 = true
 			return expectedSubscriber2Err
 		})
 		expectedSubscriber3Err := fmt.Errorf("error from subscriber 3")
-		besBackend.RegisterSubscriber(func(evt *buildv1.BuildEvent) error {
-			g.Expect(evt).To(Equal(event))
+		besBackend.RegisterSubscriber(func(evt *buildeventstream.BuildEvent) error {
+			g.Expect(evt).To(Equal(buildEvent))
 			calledSubscriber3 = true
 			return expectedSubscriber3Err
 		})

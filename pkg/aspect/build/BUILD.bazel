@@ -11,8 +11,8 @@ go_library(
         "//pkg/bazel",
         "//pkg/hooks",
         "//pkg/ioutils",
+        "//third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto",
         "@com_github_spf13_cobra//:cobra",
-        "@go_googleapis//google/devtools/build/v1:build_go_proto",
     ],
 )
 

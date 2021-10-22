@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	buildv1 "google.golang.org/genproto/googleapis/devtools/build/v1"
 
+	buildeventstream "aspect.build/cli/bazel/buildeventstream/proto"
 	"aspect.build/cli/pkg/aspect/build/bep"
 	"aspect.build/cli/pkg/aspecterrors"
 	"aspect.build/cli/pkg/bazel"
@@ -100,7 +100,7 @@ func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exi
 type Plugin interface {
 	// BEPEventsSubscriber is used to verify whether an Aspect plugin registers
 	// itself to receive the Build Event Protocol events.
-	BEPEventCallback(event *buildv1.BuildEvent) error
+	BEPEventCallback(event *buildeventstream.BuildEvent) error
 	// TODO(f0rmiga): test the build hooks after implementing the plugin system.
 	PostBuildHook() error
 }

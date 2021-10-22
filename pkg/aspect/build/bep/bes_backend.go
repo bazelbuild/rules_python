@@ -17,6 +17,7 @@ import (
 	buildv1 "google.golang.org/genproto/googleapis/devtools/build/v1"
 	"google.golang.org/grpc"
 
+	buildeventstream "aspect.build/cli/bazel/buildeventstream/proto"
 	"aspect.build/cli/pkg/aspecterrors"
 	"aspect.build/cli/pkg/aspectgrpc"
 )
@@ -118,7 +119,7 @@ func (bb *besBackend) Errors() []error {
 
 // CallbackFn is the signature for the callback function used by the subscribers
 // of the Build Event Protocol events.
-type CallbackFn func(*buildv1.BuildEvent) error
+type CallbackFn func(*buildeventstream.BuildEvent) error
 
 // RegisterSubscriber registers a new subscriber callback function to the
 // Build Event Protocol events.
@@ -149,12 +150,20 @@ func (bb *besBackend) PublishBuildToolEventStream(
 		}
 		event := req.OrderedBuildEvent.Event
 		if event != nil {
-			s := bb.subscribers.head
-			for s != nil {
-				if err := s.callback(event); err != nil {
-					bb.errors.Insert(err)
+			bazelEvent := event.GetBazelEvent()
+			if bazelEvent != nil {
+				var buildEvent buildeventstream.BuildEvent
+				if err := bazelEvent.UnmarshalTo(&buildEvent); err != nil {
+					return err
 				}
-				s = s.next
+
+				s := bb.subscribers.head
+				for s != nil {
+					if err := s.callback(&buildEvent); err != nil {
+						bb.errors.Insert(err)
+					}
+					s = s.next
+				}
 			}
 		}
 		res := &buildv1.PublishBuildToolEventStreamResponse{

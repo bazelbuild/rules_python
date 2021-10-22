@@ -6,10 +6,10 @@ go_library(
     importpath = "aspect.build/cli/pkg/plugins/fix_visibility",
     visibility = ["//cmd/aspect/build:__pkg__"],
     deps = [
+        "//third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto",
         "@bazel_gazelle//label:go_default_library",
         "@com_github_bazelbuild_buildtools//edit:go_default_library",
         "@com_github_manifoldco_promptui//:promptui",
         "@com_github_mattn_go_isatty//:go-isatty",
-        "@go_googleapis//google/devtools/build/v1:build_go_proto",
     ],
 )

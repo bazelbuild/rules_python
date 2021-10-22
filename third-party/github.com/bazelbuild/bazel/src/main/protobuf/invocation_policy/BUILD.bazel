@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+proto_library(
+    name = "invocation_policy_proto",
+    srcs = ["invocation_policy.proto"],
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "invocation_policy_go_proto",
+    importpath = "github.com/bazelbuild/bazel/src/main/protobuf/invocation_policy",
+    proto = ":invocation_policy_proto",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "invocation_policy",
+    embed = [":invocation_policy_go_proto"],
+    importpath = "github.com/bazelbuild/bazel/src/main/protobuf/invocation_policy",
+    visibility = ["//visibility:public"],
+)

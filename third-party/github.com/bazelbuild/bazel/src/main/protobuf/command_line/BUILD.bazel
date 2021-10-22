@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+proto_library(
+    name = "command_line_proto",
+    srcs = ["command_line.proto"],
+    visibility = ["//visibility:public"],
+    deps = ["//third-party/github.com/bazelbuild/bazel/src/main/protobuf/options:options_proto"],
+)
+
+go_proto_library(
+    name = "command_line_go_proto",
+    importpath = "github.com/bazelbuild/bazel/src/main/protobuf/command_line",
+    proto = ":command_line_proto",
+    visibility = ["//visibility:public"],
+    deps = ["//third-party/github.com/bazelbuild/bazel/src/main/protobuf/options"],
+)
+
+go_library(
+    name = "command_line",
+    embed = [":command_line_go_proto"],
+    importpath = "github.com/bazelbuild/bazel/src/main/protobuf/command_line",
+    visibility = ["//visibility:public"],
+)
