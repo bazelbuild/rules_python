@@ -13,7 +13,7 @@ bindata(
 
 go_library(
     name = "topics",
-    srcs = [":bindata"],
+    srcs = [":bindata"],  # keep
     importpath = "aspect.build/cli/docs/help/topics",
     visibility = ["//visibility:public"],
 )
