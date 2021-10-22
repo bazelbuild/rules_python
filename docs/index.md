@@ -10,7 +10,7 @@ Aspect is the enterprise-ready command-line interface for powering your develope
 
 Every organization has a different engineering culture and developer stack.
 
-[!People working together on software](/people.png)
+![People working together on software](/people.png)
 
 A plugin allows you to fit aspect into your teams development process
 - stamp out new Bazel projects following your local conventions
@@ -26,7 +26,7 @@ Read more: TODO
 
 When running in an interactive terminal, aspect-cli helps you out.
 
-[!Interactive mode offering to fix an error](/fix_visibility.png)
+![Interactive mode offering to fix an error](/fix_visibility.png)
 
 It can
 - offer to fix problems that block your developers
@@ -39,12 +39,25 @@ You can rely on aspect-cli to power your developer experience workflows.
 It is free and open-source. It is a superset of what Bazel provides,
 so you can always go back to running `bazel` commands.
 
+## Expert help is a click away
+
+aspect-cli is sponsored by Aspect Development, a Bazel consulting company.
+If your organization needs more help to make your Bazel migration a success,
+come find us at [aspect.dev](https://aspect.dev)
+
 # Installation:
 
-MacOS: use `curl`
+## Using a package manager
 
-Manual installation:
+MacOS with Homebrew: coming soon
+Apt: coming soon
+
+## Manual installation
 
 Download a binary from our [GitHub Releases] page and put it in your PATH.
 
+On MacOS you can bypass the "Unknown Developer" dialog by running
+`xattr -c $(which aspect)` before launching aspect.
+
 [Bazel]: http://bazel.build
+[GitHub Releases]: https://github.com/aspect-dev/aspect-cli/releases
