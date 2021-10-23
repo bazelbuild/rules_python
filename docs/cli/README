@@ -1,0 +1,4 @@
+This directory is just here to support our vanity URLs.
+
+When a user (or their editor) runs `go get aspect.build/cli` it will request the
+index.html in this folder, telling it to get the actual sources from github.
