@@ -20,9 +20,11 @@ load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compi
 compile_pip_requirements = _compile_pip_requirements
 
 def pip_install(requirements, name = "pip", **kwargs):
-    """Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
+    """Accepts a `requirements.txt` file and installs the dependencies listed within.
 
-    This is used via the `WORKSPACE` pattern:
+    Those dependencies become available in a generated `requirements.bzl` file.
+
+    This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
 
     ```python
     pip_install(
@@ -30,7 +32,7 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
     ```
 
-    You can then reference imported dependencies from your `BUILD` file with:
+    You can then reference installed dependencies from a `BUILD` file with:
 
     ```python
     load("@pip//:requirements.bzl", "requirement")
@@ -45,9 +47,16 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
     ```
 
-    In addition to the `requirement` macro, which is used to access the generated `py_library`
-    target generated from a package's wheel, The generated `requirements.bzl` file contains
-    functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+    > Note that this convenience comes with a cost.
+    > Analysis of any BUILD file which loads the requirements helper in this way will
+    > cause an eager-fetch of all the pip dependencies,
+    > even if no python targets are requested to be built.
+    > In a multi-language repo, this may cause developers to fetch dependencies they don't need,
+    > so consider using the long form for dependencies if this happens.
+
+    In addition to the `requirement` macro, which is used to access the `py_library`
+    target generated from a package's wheel, the generated `requirements.bzl` file contains
+    functionality for exposing [entry points][whl_ep] as `py_binary` targets.
 
     [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
@@ -63,7 +72,7 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
     ```
 
-    Note that for packages who's name and script are the same, only the name of the package
+    Note that for packages whose name and script are the same, only the name of the package
     is needed when calling the `entry_point` macro.
 
     ```python
@@ -76,9 +85,9 @@ def pip_install(requirements, name = "pip", **kwargs):
     ```
 
     Args:
-        requirements: A 'requirements.txt' pip requirements file.
-        name: A unique name for the created external repository (default 'pip').
-        **kwargs: Keyword arguments passed directly to the `pip_repository` repository rule.
+        requirements (Label): A 'requirements.txt' pip requirements file.
+        name (str, optional): A unique name for the created external repository (default 'pip').
+        **kwargs (dict): Keyword arguments passed directly to the `pip_repository` repository rule.
     """
 
     # Just in case our dependencies weren't already fetched
@@ -91,9 +100,11 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
 
 def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
-    """Imports a locked/compiled requirements file and generates a new `requirements.bzl` file.
+    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-    This is used via the `WORKSPACE` pattern:
+    Those dependencies become available in a generated `requirements.bzl` file.
+
+    This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
 
     ```python
     load("@rules_python//python:pip.bzl", "pip_parse")
@@ -108,7 +119,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     install_deps()
     ```
 
-    You can then reference imported dependencies from your `BUILD` file with:
+    You can then reference installed dependencies from a `BUILD` file with:
 
     ```python
     load("@pip_deps//:requirements.bzl", "requirement")
@@ -142,7 +153,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     )
     ```
 
-    Note that for packages who's name and script are the same, only the name of the package
+    Note that for packages whose name and script are the same, only the name of the package
     is needed when calling the `entry_point` macro.
 
     ```python
@@ -176,10 +187,23 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     )
 
 def pip_repositories():
+    """
+    Obsolete macro to pull in dependencies needed to use the pip_import rule.
+
+    Deprecated:
+        the pip_repositories rule is obsolete. It is not used by pip_install.
+    """
+
     # buildifier: disable=print
     print("DEPRECATED: the pip_repositories rule has been replaced with pip_install, please see rules_python 0.1 release notes")
 
 def pip_import(**kwargs):
+    """
+    Rule for installing packages listed in a requirements file.
+
+    Deprecated:
+        the pip_import rule has been replaced with pip_install.
+    """
     fail("=" * 79 + """\n
     pip_import has been replaced with pip_install, please see the rules_python 0.1 release notes.
     To continue using it, you can load from "@rules_python//python/legacy_pip_import:pip.bzl"
