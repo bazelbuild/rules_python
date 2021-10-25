@@ -155,7 +155,8 @@ def _py_wheel_impl(ctx):
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):
         args.add("--volatile_status_file", ctx.version_file)
-        other_inputs.append(ctx.version_file)
+        args.add("--stable_status_file", ctx.version_file)
+        other_inputs.extend([ctx.version_file, ctx.info_file])
 
     args.add("--input_file_list", packageinputfile)
 
@@ -297,7 +298,7 @@ Stamped targets are not rebuilt unless their dependencies change.
         mandatory = True,
         doc = (
             "Version number of the package. Note that this attribute " +
-            "suppots stamp format strings. Eg `1.2.3-{BUILD_TIMESTAMP}`"
+            "supports stamp format strings. Eg `1.2.3-{BUILD_TIMESTAMP}`"
         ),
     ),
     "_stamp_flag": attr.label(

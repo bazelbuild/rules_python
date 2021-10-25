@@ -204,17 +204,19 @@ def get_files_to_package(input_files):
     return files
 
 
-def resolve_version_stamp(version: str, resolve_version_stamp: Path) -> str:
+def resolve_version_stamp(version: str, volatile_status_stamp: Path, stable_status_stamp: Path) -> str:
     """Resolve workspace status stamps format strings found in the version string
 
     Args:
         version (str): The raw version represenation for the wheel (may include stamp variables)
-        resolve_version_stamp (Path): The path to a volatile workspace status file
+        volatile_status_stamp (Path): The path to a volatile workspace status file
+        stable_status_stamp (Path): The path to a stable workspace status file
 
     Returns:
         str: A resolved version string
-    """    
-    for line in resolve_version_stamp.read_text().splitlines():
+    """
+    lines = volatile_status_stamp.read_text().splitlines() + stable_status_stamp.read_text().splitlines()
+    for line in lines:
         if not line:
             continue
         key, value = line.split(' ', maxsplit=1)
@@ -298,6 +300,10 @@ def parse_args() -> argparse.Namespace:
         '--volatile_status_file', type=Path,
         help="Pass in the stamp info file for stamping"
     )
+    build_group.add_argument(
+        '--stable_status_file', type=Path,
+        help="Pass in the stamp info file for stamping"
+    )
 
     return parser.parse_args(sys.argv[1:])
 
@@ -323,9 +329,10 @@ def main() -> None:
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
-    if arguments.volatile_status_file:
+    if arguments.volatile_status_file and arguments.stable_status_file:
         version = resolve_version_stamp(arguments.version,
-                                        arguments.volatile_status_file)
+                                        arguments.volatile_status_file,
+                                        arguments.stable_status_file)
     else:
         version = arguments.version
 
