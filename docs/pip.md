@@ -9,13 +9,13 @@ compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a h
                          <a href="#compile_pip_requirements-kwargs">kwargs</a>)
 </pre>
 
-    Macro creating targets for running pip-compile
+Generates targets for managing pip dependencies with pip-compile.
 
-Produce a filegroup by default, named "[name]" which can be included in the data
+By default this rules generates a filegroup named "[name]" which can be included in the data
 of some other compile_pip_requirements rule that references these requirements
-(e.g. with `-r ../other/requirements.txt`)
+(e.g. with `-r ../other/requirements.txt`).
 
-Produce two targets for checking pip-compile:
+It also generates two targets for running pip-compile:
 
 - validate with `bazel test <name>_test`
 - update with   `bazel run <name>.update`
@@ -43,7 +43,7 @@ Produce two targets for checking pip-compile:
 pip_import(<a href="#pip_import-kwargs">kwargs</a>)
 </pre>
 
-
+    Rule for installing packages listed in a requirements file.
 
 **PARAMETERS**
 
@@ -61,9 +61,11 @@ pip_import(<a href="#pip_import-kwargs">kwargs</a>)
 pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-kwargs">kwargs</a>)
 </pre>
 
-Imports a `requirements.txt` file and generates a new `requirements.bzl` file.
+Accepts a `requirements.txt` file and installs the dependencies listed within.
 
-This is used via the `WORKSPACE` pattern:
+Those dependencies become available in a generated `requirements.bzl` file.
+
+This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
 
 ```python
 pip_install(
@@ -71,7 +73,7 @@ pip_install(
 )
 ```
 
-You can then reference imported dependencies from your `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with:
 
 ```python
 load("@pip//:requirements.bzl", "requirement")
@@ -86,9 +88,16 @@ py_library(
 )
 ```
 
-In addition to the `requirement` macro, which is used to access the generated `py_library`
-target generated from a package's wheel, The generated `requirements.bzl` file contains
-functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+> Note that this convenience comes with a cost.
+> Analysis of any BUILD file which loads the requirements helper in this way will
+> cause an eager-fetch of all the pip dependencies,
+> even if no python targets are requested to be built.
+> In a multi-language repo, this may cause developers to fetch dependencies they don't need,
+> so consider using the long form for dependencies if this happens.
+
+In addition to the `requirement` macro, which is used to access the `py_library`
+target generated from a package's wheel, the generated `requirements.bzl` file contains
+functionality for exposing [entry points][whl_ep] as `py_binary` targets.
 
 [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
@@ -104,7 +113,7 @@ alias(
 )
 ```
 
-Note that for packages who's name and script are the same, only the name of the package
+Note that for packages whose name and script are the same, only the name of the package
 is needed when calling the `entry_point` macro.
 
 ```python
@@ -135,9 +144,11 @@ alias(
 pip_parse(<a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-kwargs">kwargs</a>)
 </pre>
 
-Imports a locked/compiled requirements file and generates a new `requirements.bzl` file.
+Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-This is used via the `WORKSPACE` pattern:
+Those dependencies become available in a generated `requirements.bzl` file.
+
+This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
 
 ```python
 load("@rules_python//python:pip.bzl", "pip_parse")
@@ -152,7 +163,7 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
-You can then reference imported dependencies from your `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with:
 
 ```python
 load("@pip_deps//:requirements.bzl", "requirement")
@@ -186,7 +197,7 @@ alias(
 )
 ```
 
-Note that for packages who's name and script are the same, only the name of the package
+Note that for packages whose name and script are the same, only the name of the package
 is needed when calling the `entry_point` macro.
 
 ```python
@@ -217,7 +228,7 @@ alias(
 pip_repositories()
 </pre>
 
-
+    Obsolete macro to pull in dependencies needed to use the pip_import rule.
 
 **PARAMETERS**
 

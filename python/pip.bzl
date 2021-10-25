@@ -47,6 +47,13 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
     ```
 
+    > Note that this convenience comes with a cost.
+    > Analysis of any BUILD file which loads the requirements helper in this way will
+    > cause an eager-fetch of all the pip dependencies,
+    > even if no python targets are requested to be built.
+    > In a multi-language repo, this may cause developers to fetch dependencies they don't need,
+    > so consider using the long form for dependencies if this happens.
+
     In addition to the `requirement` macro, which is used to access the `py_library`
     target generated from a package's wheel, the generated `requirements.bzl` file contains
     functionality for exposing [entry points][whl_ep] as `py_binary` targets.
