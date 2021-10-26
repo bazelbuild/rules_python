@@ -26,9 +26,7 @@ filegroup(
 # Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
 filegroup(
     name = "bzl",
-    srcs = [
-        "reexports.bzl",
-    ],
+    srcs = glob(["**/*.bzl"]),
     visibility = ["//python:__pkg__"],
 )
 
