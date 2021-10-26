@@ -13,7 +13,7 @@
 # limitations under the License.
 """The version of rules_python."""
 
-version = "0.4.0"
+version = "0.5.0"
 
 # Currently used Bazel version. This version is what the rules here are tested
 # against.
