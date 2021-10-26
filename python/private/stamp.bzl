@@ -53,7 +53,7 @@ def stamp_build_setting(name, visibility = ["//visibility:public"]):
     )
 
 def is_stamping_enabled(attr):
-    """Determine whether or not build staming is enabled
+    """Determine whether or not build stamping is enabled
 
     Args:
         attr (struct): A rule's struct of attributes (`ctx.attr`)
