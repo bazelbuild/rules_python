@@ -31,7 +31,7 @@ This rule is intended to be used as data dependency to py_wheel rule
 <pre>
 py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a href="#py_wheel-author">author</a>, <a href="#py_wheel-author_email">author_email</a>, <a href="#py_wheel-classifiers">classifiers</a>, <a href="#py_wheel-console_scripts">console_scripts</a>, <a href="#py_wheel-deps">deps</a>, <a href="#py_wheel-description_file">description_file</a>,
          <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>,
-         <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
+         <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-stamp">stamp</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
 </pre>
 
 
@@ -101,7 +101,27 @@ py_wheel(
 | python_requires |  A string specifying what other distributions need to be installed when this one is. See the section on [Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) for details and examples of the format of this argument.   | String | optional | "" |
 | python_tag |  Supported Python version(s), eg <code>py3</code>, <code>cp35.cp36</code>, etc   | String | optional | "py3" |
 | requires |  List of requirements for this package   | List of strings | optional | [] |
+| stamp |  Whether to encode build information into the wheel. Possible values:<br><br>- <code>stamp = 1</code>: Always stamp the build information into the wheel, even in [--nostamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) builds. This setting should be avoided, since it potentially kills remote caching for the target and any downstream actions that depend on it.<br><br>- <code>stamp = 0</code>: Always replace build information by constant values. This gives good build result caching.<br><br>- <code>stamp = -1</code>: Embedding of build information is controlled by the [--[no]stamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) flag.<br><br>Stamped targets are not rebuilt unless their dependencies change.   | Integer | optional | -1 |
 | strip_path_prefixes |  path prefixes to strip from files added to the generated package   | List of strings | optional | [] |
-| version |  Version number of the package   | String | required |  |
+| version |  Version number of the package. Note that this attribute supports stamp format strings. Eg <code>1.2.3-{BUILD_TIMESTAMP}</code>   | String | required |  |
+
+
+<a name="#PyWheelInfo"></a>
+
+## PyWheelInfo
+
+<pre>
+PyWheelInfo(<a href="#PyWheelInfo-name_file">name_file</a>, <a href="#PyWheelInfo-wheel">wheel</a>)
+</pre>
+
+Information about a wheel produced by `py_wheel`
+
+**FIELDS**
+
+
+| Name  | Description |
+| :-------------: | :-------------: |
+| name_file |  File: A file containing the canonical name of the wheel (after stamping, if enabled).    |
+| wheel |  File: The wheel file itself.    |
 
 

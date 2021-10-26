@@ -71,6 +71,14 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "packaging_bzl",
+    srcs = [
+        "//python:packaging.bzl",
+        "//python/private:stamp.bzl",
+    ],
+)
+
 stardoc(
     name = "core-docs",
     out = "python.md_",
@@ -103,6 +111,7 @@ stardoc(
     name = "packaging-docs",
     out = "packaging.md_",
     input = "//python:packaging.bzl",
+    deps = [":packaging_bzl"],
 )
 
 [

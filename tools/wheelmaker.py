@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
 import argparse
 import base64
 import collections
 import hashlib
 import os
-import os.path
 import re
 import sys
 import zipfile
@@ -64,14 +64,17 @@ class WheelMaker(object):
         self._zipfile.close()
         self._zipfile = None
 
-    def filename(self):
-        if self._outfile:
-            return self._outfile
+    def wheelname(self) -> str:
         components = [self._name, self._version]
         if self._build_tag:
             components.append(self._build_tag)
         components += [self._python_tag, self._abi, self._platform]
         return '-'.join(components) + '.whl'
+
+    def filename(self) -> str:
+        if self._outfile:
+            return self._outfile
+        return self.wheelname()
 
     def disttags(self):
         return ['-'.join([self._python_tag, self._abi, self._platform])]
@@ -201,7 +204,29 @@ def get_files_to_package(input_files):
     return files
 
 
-def main():
+def resolve_version_stamp(version: str, volatile_status_stamp: Path, stable_status_stamp: Path) -> str:
+    """Resolve workspace status stamps format strings found in the version string
+
+    Args:
+        version (str): The raw version represenation for the wheel (may include stamp variables)
+        volatile_status_stamp (Path): The path to a volatile workspace status file
+        stable_status_stamp (Path): The path to a stable workspace status file
+
+    Returns:
+        str: A resolved version string
+    """
+    lines = volatile_status_stamp.read_text().splitlines() + stable_status_stamp.read_text().splitlines()
+    for line in lines:
+        if not line:
+            continue
+        key, value = line.split(' ', maxsplit=1)
+        stamp = "{" + key + "}"
+        version = version.replace(stamp, value)
+
+    return version
+
+
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Builds a python wheel')
     metadata_group = parser.add_argument_group(
         "Wheel name, version and platform")
@@ -222,6 +247,9 @@ def main():
     output_group = parser.add_argument_group("Output file location")
     output_group.add_argument('--out', type=str, default=None,
                               help="Override name of ouptut file")
+    output_group.add_argument('--name_file', type=Path,
+                              help="A file where the canonical name of the "
+                                   "wheel will be written")
 
     output_group.add_argument('--strip_path_prefix',
                               type=str,
@@ -266,7 +294,22 @@ def main():
         '--extra_requires', type=str, action='append',
         help="List of optional requirements in a 'requirement;option name'. "
              "Can be supplied multiple times.")
-    arguments = parser.parse_args(sys.argv[1:])
+
+    build_group = parser.add_argument_group("Building requirements")
+    build_group.add_argument(
+        '--volatile_status_file', type=Path,
+        help="Pass in the stamp info file for stamping"
+    )
+    build_group.add_argument(
+        '--stable_status_file', type=Path,
+        help="Pass in the stamp info file for stamping"
+    )
+
+    return parser.parse_args(sys.argv[1:])
+
+
+def main() -> None:
+    arguments = parse_args()
 
     if arguments.input_file:
         input_files = [i.split(';') for i in arguments.input_file]
@@ -286,8 +329,15 @@ def main():
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
+    if arguments.volatile_status_file and arguments.stable_status_file:
+        version = resolve_version_stamp(arguments.version,
+                                        arguments.volatile_status_file,
+                                        arguments.stable_status_file)
+    else:
+        version = arguments.version
+
     with WheelMaker(name=arguments.name,
-                    version=arguments.version,
+                    version=version,
                     build_tag=arguments.build_tag,
                     python_tag=arguments.python_tag,
                     abi=arguments.abi,
@@ -332,6 +382,12 @@ def main():
                 "entry_points.txt"), arguments.entry_points_file)
 
         maker.add_recordfile()
+
+        # Since stamping may otherwise change the target name of the
+        # wheel, the canonical name (with stamps resolved) is written
+        # to a file so consumers of the wheel can easily determine
+        # the correct name.
+        arguments.name_file.write_text(maker.wheelname())
 
 
 if __name__ == '__main__':
