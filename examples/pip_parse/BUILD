@@ -1,6 +1,12 @@
-load("@pip_parsed_deps//:requirements.bzl", "entry_point", "requirement")
+load(
+    "@pip_parsed_deps//:requirements.bzl",
+    "data_requirement",
+    "dist_info_requirement",
+    "entry_point",
+    "requirement",
+)
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 # Toolchain setup, this is optional.
 # Demonstrate that we can use the same python interpreter for the toolchain and executing pip in pip install (see WORKSPACE).
@@ -54,16 +60,26 @@ alias(
     ),
 )
 
-py_test(
-    name = "entry_point_test",
-    srcs = ["entry_point_test.py"],
-    data = [":yamllint"],
-)
-
-# This rule adds a convenient way to update the requiremenst file.
+# This rule adds a convenient way to update the requirements file.
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
+)
+
+# Test the use of all pip_parse utilities in a single py_test
+py_test(
+    name = "pip_parse_test",
+    srcs = ["pip_parse_test.py"],
+    data = [
+        ":yamllint",
+        data_requirement("s3cmd"),
+        dist_info_requirement("requests"),
+    ],
+    env = {
+        "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
+        "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("requests")),
+        "WHEEL_ENTRY_POINT": "$(rootpath :yamllint)",
+    },
 )

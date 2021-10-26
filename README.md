@@ -120,7 +120,7 @@ re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can completely flush out your
 repo cache with `bazel clean --expunge`.
 
-### Fetch `pip` dependencies lazily (experimental)
+### Fetch `pip` dependencies lazily
 
 One pain point with `pip_install` is the need to download all dependencies resolved by
 your requirements.txt before the bazel analysis phase can start. For large python monorepos
@@ -131,9 +131,9 @@ file of all your python dependencies `pip_parse` will translate each requirement
 Bazel will only fetch/build wheels for the requirements in the subgraph of your build target.
 
 There are API differences between `pip_parse` and `pip_install`:
-1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this using
-   `pip-compile`, or a virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of `requirements`
-   to make this distinction clear.
+1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this by using the `compile_pip_requirements` rule,
+   running `pip-compile` directly, or using virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of 
+   `requirements` to make this distinction clear.
 2. `pip_parse` translates your requirements into a starlark macro called `install_deps`. You must call this macro in your WORKSPACE to
    declare your dependencies.
 

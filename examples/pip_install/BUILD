@@ -2,11 +2,13 @@ load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load(
     "@pip//:requirements.bzl",
+    "data_requirement",
+    "dist_info_requirement",
     "entry_point",
     "requirement",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load("@rules_python//python/pip_install:requirements.bzl", "compile_pip_requirements")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 # Toolchain setup, this is optional.
 # Demonstrate that we can use the same python interpreter for the toolchain and executing pip in pip install (see WORKSPACE).
@@ -55,16 +57,26 @@ alias(
     actual = entry_point("yamllint"),
 )
 
-py_test(
-    name = "entry_point_test",
-    srcs = ["entry_point_test.py"],
-    data = [":yamllint"],
-)
-
 # Check that our compiled requirements are up-to-date
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
+)
+
+# Test the use of all pip_install utilities in a single py_test
+py_test(
+    name = "pip_install_test",
+    srcs = ["pip_install_test.py"],
+    data = [
+        ":yamllint",
+        data_requirement("s3cmd"),
+        dist_info_requirement("boto3"),
+    ],
+    env = {
+        "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
+        "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("boto3")),
+        "WHEEL_ENTRY_POINT": "$(rootpath :yamllint)",
+    },
 )
 
 # Assert that tags are present on resulting py_library,

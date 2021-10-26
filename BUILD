@@ -29,6 +29,7 @@ filegroup(
         "internal_setup.bzl",
         "//python:distribution",
         "//python/pip_install:distribution",
+        "//third_party/github.com/bazelbuild/bazel-skylib/lib:distribution",
         "//tools:distribution",
     ],
     visibility = ["//distro:__pkg__"],

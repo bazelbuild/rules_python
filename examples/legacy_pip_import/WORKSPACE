@@ -13,15 +13,6 @@ load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repos
 pip_repositories()
 
 pip_import(
-    name = "helloworld_deps",
-    requirements = "//helloworld:requirements.txt",
-)
-
-load("@helloworld_deps//:requirements.bzl", _helloworld_install = "pip_install")
-
-_helloworld_install()
-
-pip_import(
     name = "boto_deps",
     requirements = "//boto:requirements.txt",
 )

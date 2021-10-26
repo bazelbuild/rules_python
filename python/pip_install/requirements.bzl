@@ -1,4 +1,4 @@
-"Rules to verify and update pip-compile locked requirements.txt"
+"""Rules to verify and update pip-compile locked requirements.txt"""
 
 load("//python:defs.bzl", "py_binary", "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
@@ -11,14 +11,13 @@ def compile_pip_requirements(
         requirements_txt = None,
         tags = None,
         **kwargs):
-    """
-    Macro creating targets for running pip-compile
+    """Generates targets for managing pip dependencies with pip-compile.
 
-    Produce a filegroup by default, named "[name]" which can be included in the data
+    By default this rules generates a filegroup named "[name]" which can be included in the data
     of some other compile_pip_requirements rule that references these requirements
-    (e.g. with `-r ../other/requirements.txt`)
+    (e.g. with `-r ../other/requirements.txt`).
 
-    Produce two targets for checking pip-compile:
+    It also generates two targets for running pip-compile:
 
     - validate with `bazel test <name>_test`
     - update with   `bazel run <name>.update`
