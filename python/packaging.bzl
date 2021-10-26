@@ -14,6 +14,19 @@
 
 """Rules for building wheels."""
 
+load("//python/private:stamp.bzl", "is_stamping_enabled")
+
+PyWheelInfo = provider(
+    doc = "Information about a wheel produced by `py_wheel`",
+    fields = {
+        "name_file": (
+            "File: A file containing the canonical name of the wheel (after " +
+            "stamping, if enabled)."
+        ),
+        "wheel": "File: The wheel file itself.",
+    },
+)
+
 def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
     # which is not a valid path within a zip file. Fix that.
@@ -110,6 +123,8 @@ def _py_wheel_impl(ctx):
         _escape_filename_segment(ctx.attr.platform),
     ]) + ".whl")
 
+    name_file = ctx.actions.declare_file(ctx.label.name + ".name")
+
     inputs_to_package = depset(
         direct = ctx.files.deps,
     )
@@ -133,8 +148,15 @@ def _py_wheel_impl(ctx):
     args.add("--python_requires", ctx.attr.python_requires)
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
-    args.add("--out", outfile.path)
+    args.add("--out", outfile)
+    args.add("--name_file", name_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
+
+    # Pass workspace status files if stamping is enabled
+    if is_stamping_enabled(ctx.attr):
+        args.add("--volatile_status_file", ctx.version_file)
+        args.add("--stable_status_file", ctx.version_file)
+        other_inputs.extend([ctx.version_file, ctx.info_file])
 
     args.add("--input_file_list", packageinputfile)
 
@@ -193,15 +215,21 @@ def _py_wheel_impl(ctx):
 
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
-        outputs = [outfile],
+        outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
         progress_message = "Building wheel",
     )
-    return [DefaultInfo(
-        files = depset([outfile]),
-        data_runfiles = ctx.runfiles(files = [outfile]),
-    )]
+    return [
+        DefaultInfo(
+            files = depset([outfile]),
+            runfiles = ctx.runfiles(files = [outfile]),
+        ),
+        PyWheelInfo(
+            wheel = outfile,
+            name_file = name_file,
+        ),
+    ]
 
 def _concat_dicts(*dicts):
     result = {}
@@ -247,9 +275,35 @@ platform = select({
         default = "py3",
         doc = "Supported Python version(s), eg `py3`, `cp35.cp36`, etc",
     ),
+    "stamp": attr.int(
+        doc = """\
+Whether to encode build information into the wheel. Possible values:
+
+- `stamp = 1`: Always stamp the build information into the wheel, even in \
+[--nostamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) builds. \
+This setting should be avoided, since it potentially kills remote caching for the target and \
+any downstream actions that depend on it.
+
+- `stamp = 0`: Always replace build information by constant values. This gives good build result caching.
+
+- `stamp = -1`: Embedding of build information is controlled by the \
+[--[no]stamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) flag.
+
+Stamped targets are not rebuilt unless their dependencies change.
+        """,
+        default = -1,
+        values = [1, 0, -1],
+    ),
     "version": attr.string(
         mandatory = True,
-        doc = "Version number of the package",
+        doc = (
+            "Version number of the package. Note that this attribute " +
+            "supports stamp format strings. Eg `1.2.3-{BUILD_TIMESTAMP}`"
+        ),
+    ),
+    "_stamp_flag": attr.label(
+        doc = "A setting used to determine whether or not the `--stamp` flag is enabled",
+        default = Label("//python/private:stamp"),
     ),
 }
 

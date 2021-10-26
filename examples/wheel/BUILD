@@ -58,6 +58,20 @@ py_wheel(
     ],
 )
 
+# Package just a specific py_libraries, without their dependencies
+py_wheel(
+    name = "minimal_with_py_library_with_stamp",
+    # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
+    distribution = "example_minimal_library",
+    python_tag = "py3",
+    stamp = 1,
+    version = "0.1.{BUILD_TIMESTAMP}",
+    deps = [
+        "//examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
+    ],
+)
+
 # Use py_package to collect all transitive dependencies of a target,
 # selecting just the files within a specific python package.
 py_package(
