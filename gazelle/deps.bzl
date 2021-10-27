@@ -157,6 +157,9 @@ def gazelle_deps():
     )
     go_repository(
         name = "org_golang_x_tools",
+        build_directives = [
+            "gazelle:exclude **/testdata/**/*",
+        ],
         importpath = "golang.org/x/tools",
         sum = "h1:aZzprAO9/8oim3qStq3wc1Xuxx4QmAGriC4VU4ojemQ=",
         version = "v0.0.0-20191119224855-298f0cb1881e",
