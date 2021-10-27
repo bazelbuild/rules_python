@@ -2,7 +2,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 
 # gazelle:python_extension enabled
 # gazelle:python_root
-# gazelle:python_coarse_grained_generation true
+# gazelle:python_generation_mode project
 
 # gazelle:exclude bar/baz/*_excluded.py
 

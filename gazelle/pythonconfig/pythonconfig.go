@@ -32,10 +32,9 @@ const (
 	// ValidateImportStatementsDirective represents the directive that controls
 	// whether the Python import statements should be validated.
 	ValidateImportStatementsDirective = "python_validate_import_statements"
-	// CoarseGrainedGeneration represents the directive that controls whether a
-	// single target should be created englobing sub-directories rather than the
-	// default fine-grained target generation.
-	CoarseGrainedGeneration = "python_coarse_grained_generation"
+	// GenerationMode represents the directive that controls the target generation
+	// mode. See below for the GenerationModeType constants.
+	GenerationMode = "python_generation_mode"
 	// LibraryNamingConvention represents the directive that controls the
 	// py_library naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -49,6 +48,21 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
+)
+
+// GenerationModeType represents one of the generation modes for the Python
+// extension.
+type GenerationModeType string
+
+// Generation modes
+const (
+	// GenerationModePackage defines the mode in which targets will be generated
+	// for each __init__.py, or when an existing BUILD or BUILD.bazel file already
+	// determines a Bazel package.
+	GenerationModePackage GenerationModeType = "package"
+	// GenerationModeProject defines the mode in which a coarse-grained target will
+	// be generated englobing sub-directories containing Python files.
+	GenerationModeProject GenerationModeType = "project"
 )
 
 const (

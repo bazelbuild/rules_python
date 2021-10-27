@@ -139,8 +139,8 @@ Python-specific directives are as follows:
 | Controls the ignored dependencies from the generated targets. | |
 | `# gazelle:python_validate_import_statements`| `true` |
 | Controls whether the Python import statements should be validated. Can be "true" or "false" | |
-| `# gazelle:python_coarse_grained_generation`| `false` |
-| Controls whether a single target should be created in this package, `glob`'ing sub-directories rather than fine-grained target generation. Can be "true" or "false" | |
+| `# gazelle:python_generation_mode`| `package` |
+| Controls the target generation mode. Can be "package" or "project" | |
 | `# gazelle:python_library_naming_convention`| `$package_name$` |
 | Controls the `py_library` naming convention. It interpolates $package_name$ with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
 | `# gazelle:python_binary_naming_convention` | `$package_name$_bin` |
