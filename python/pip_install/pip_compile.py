@@ -42,7 +42,7 @@ if "TEST_TMPDIR" in os.environ:
     copyfile(requirements_txt, requirements_out)
 
 elif "BUILD_WORKSPACE_DIRECTORY" in os.environ:
-    # This value, populated when running under `bazel run` is a path to the
+    # This value, populated when running under `bazel run`, is a path to the
     # "root of the workspace where the build was run."
     # This matches up with the values passed in via the macro using the 'rootpath' Make variable,
     # which for source files provides a path "relative to your workspace root."
