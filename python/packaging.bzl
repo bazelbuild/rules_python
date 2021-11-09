@@ -155,7 +155,7 @@ def _py_wheel_impl(ctx):
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):
         args.add("--volatile_status_file", ctx.version_file)
-        args.add("--stable_status_file", ctx.version_file)
+        args.add("--stable_status_file", ctx.info_file)
         other_inputs.extend([ctx.version_file, ctx.info_file])
 
     args.add("--input_file_list", packageinputfile)
