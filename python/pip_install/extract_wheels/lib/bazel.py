@@ -31,9 +31,12 @@ def generate_entry_point_contents(entry_point: str, shebang: str = "#!/usr/bin/e
     module, method = entry_point.split(":", 1)
     return textwrap.dedent("""\
         {shebang}
+        import sys
+        from {module} import {method}
         if __name__ == "__main__":
-            from {module} import {method}
-            {method}()
+            rc = {method}()
+            if rc.is_integer():
+                sys.exit(rc)
         """.format(
         shebang=shebang,
         module=module,
@@ -146,7 +149,7 @@ def generate_build_file_contents(
             data_exclude=json.dumps(data_exclude),
             whl_file_label=WHEEL_FILE_LABEL,
             whl_file_deps=",".join(whl_file_deps),
-            tags = ",".join(["\"%s\"" % t for t in tags]),
+            tags=",".join(["\"%s\"" % t for t in tags]),
             data_label=DATA_LABEL,
             dist_info_label=DIST_INFO_LABEL,
             entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
@@ -331,7 +334,8 @@ def extract_wheel(
     if incremental:
         # check for mypy Optional validity
         if incremental_repo_prefix is None:
-            raise TypeError("incremental_repo_prefix arguement cannot be None if incremental == True")
+            raise TypeError(
+                "incremental_repo_prefix arguement cannot be None if incremental == True")
         sanitised_dependencies = [
             sanitised_repo_library_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
         ]

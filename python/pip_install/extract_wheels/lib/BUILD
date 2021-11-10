@@ -22,6 +22,18 @@ py_library(
 )
 
 py_test(
+    name = "bazel_test",
+    size = "small",
+    srcs = [
+        "bazel_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_test(
     name = "namespace_pkgs_test",
     size = "small",
     srcs = [
