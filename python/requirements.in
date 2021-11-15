@@ -1,4 +1,4 @@
-pip==9.0.3
+pip==21.1
 setuptools==44.0.0
 wheel==0.30.0a0
 
