@@ -43,6 +43,7 @@ def gazelle_python_manifest(
             update_target_label,
         ],
         visibility = ["//visibility:private"],
+        tags = ["manual"],
     )
 
     test_binary = "_{}_test_bin".format(name)
