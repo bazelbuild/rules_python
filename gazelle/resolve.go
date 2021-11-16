@@ -177,6 +177,14 @@ func (py *Resolver) Resolve(
 				} else {
 					matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
 					if len(matches) == 0 {
+						// Check if the imported module is part of the standard library.
+						if isStd, err := isStdModule(mod); err != nil {
+							log.Println("ERROR: ", err)
+							hasFatalError = true
+							continue MODULE_LOOP
+						} else if isStd {
+							continue MODULE_LOOP
+						}
 						if cfg.ValidateImportStatements() {
 							err := fmt.Errorf(
 								"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
@@ -187,6 +195,7 @@ func (py *Resolver) Resolve(
 							)
 							log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
 							hasFatalError = true
+							continue MODULE_LOOP
 						}
 					}
 					filteredMatches := make([]resolve.FindResult, 0, len(matches))
@@ -214,6 +223,7 @@ func (py *Resolver) Resolve(
 								targetListFromResults(filteredMatches), mod.Name, mod.LineNumber, mod.Filepath)
 							log.Println("ERROR: ", err)
 							hasFatalError = true
+							continue MODULE_LOOP
 						}
 						filteredMatches = sameRootMatches
 					}

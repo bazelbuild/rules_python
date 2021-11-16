@@ -146,13 +146,6 @@ func (p *python3Parser) parse(pyFilepath string) (*treeset.Set, error) {
 			continue
 		}
 
-		// Check if the imported module is part of the standard library.
-		if isStd, err := isStdModule(m); err != nil {
-			return nil, err
-		} else if isStd {
-			continue
-		}
-
 		m.Filepath = relFilepath
 
 		modules.Add(m)
