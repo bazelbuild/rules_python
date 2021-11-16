@@ -4,60 +4,56 @@ Copyright © 2021 Aspect Build Systems Inc
 Not licensed for re-use.
 */
 
-package fix_visibility
+package main
 
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/buildtools/edit"
+	goplugin "github.com/hashicorp/go-plugin"
 	"github.com/manifoldco/promptui"
-	isatty "github.com/mattn/go-isatty"
 
 	buildeventstream "aspect.build/cli/bazel/buildeventstream/proto"
+	"aspect.build/cli/pkg/ioutils"
+	"aspect.build/cli/pkg/plugin/sdk/v1alpha1/config"
 )
 
+func main() {
+	goplugin.Serve(config.NewConfigFor(NewDefaultPlugin()))
+}
+
+// FixVisibilityPlugin implements an aspect CLI plugin.
 type FixVisibilityPlugin struct {
-	stdout            io.Writer
-	buildozer         Runner
-	isInteractiveMode bool
-	applyFixPrompt    promptui.Prompt
-	targetsToFix      *fixOrderedSet
+	buildozer    runner
+	targetsToFix *fixOrderedSet
 }
 
+// NewDefaultPlugin creates a new FixVisibilityPlugin with the default
+// dependencies.
 func NewDefaultPlugin() *FixVisibilityPlugin {
-	isInteractiveMode := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
-	applyFixPrompt := promptui.Prompt{
-		Label:     "Would you like to apply the visibility fixes",
-		IsConfirm: true,
-	}
-	return NewPlugin(os.Stdout, &buildozer{}, isInteractiveMode, applyFixPrompt)
+	return NewPlugin(&buildozer{})
 }
 
-func NewPlugin(
-	stdout io.Writer,
-	buildozer Runner,
-	isInteractiveMode bool,
-	applyFixPrompt promptui.Prompt,
-) *FixVisibilityPlugin {
+// NewPlugin creates a new FixVisibilityPlugin.
+func NewPlugin(buildozer runner) *FixVisibilityPlugin {
 	return &FixVisibilityPlugin{
-		stdout:            stdout,
-		buildozer:         buildozer,
-		isInteractiveMode: isInteractiveMode,
-		targetsToFix:      &fixOrderedSet{nodes: make(map[fixNode]struct{})},
-		applyFixPrompt:    applyFixPrompt,
+		buildozer:    buildozer,
+		targetsToFix: &fixOrderedSet{nodes: make(map[fixNode]struct{})},
 	}
 }
-
-var visibilityIssueRegex = regexp.MustCompile(`.*target '(.*)' is not visible from target '(.*)'.*`)
 
 const visibilityIssueSubstring = "is not visible from target"
 
+var visibilityIssueRegex = regexp.MustCompile(fmt.Sprintf(`.*target '(.*)' %s '(.*)'.*`, visibilityIssueSubstring))
+
+// BEPEventCallback satisfies the Plugin interface. It process all the analysis
+// failures that represent a visibility issue, collecting them for later
+// processing in the post-build hook execution.
 func (plugin *FixVisibilityPlugin) BEPEventCallback(event *buildeventstream.BuildEvent) error {
 	aborted := event.GetAborted()
 	if aborted != nil &&
@@ -73,7 +69,14 @@ func (plugin *FixVisibilityPlugin) BEPEventCallback(event *buildeventstream.Buil
 
 const removePrivateVisibilityBuildozerCommand = "remove visibility //visibility:private"
 
-func (plugin *FixVisibilityPlugin) PostBuildHook() error {
+// PostBuildHook satisfies the Plugin interface. It prompts the user for
+// automatic fixes when in interactive mode. If the user rejects the automatic
+// fixes, or if running in non-interactive mode, the commands to perform the fixes
+// are printed to the terminal.
+func (plugin *FixVisibilityPlugin) PostBuildHook(
+	isInteractiveMode bool,
+	promptRunner ioutils.PromptRunner,
+) error {
 	if plugin.targetsToFix.size == 0 {
 		return nil
 	}
@@ -91,26 +94,30 @@ func (plugin *FixVisibilityPlugin) PostBuildHook() error {
 		}
 
 		var applyFix bool
-		if plugin.isInteractiveMode {
-			_, err := plugin.applyFixPrompt.Run()
+		if isInteractiveMode {
+			applyFixPrompt := promptui.Prompt{
+				Label:     "Would you like to apply the visibility fixes",
+				IsConfirm: true,
+			}
+			_, err := promptRunner.Run(applyFixPrompt)
 			applyFix = err == nil
 		}
 
 		addVisibilityBuildozerCommand := fmt.Sprintf("add visibility %s", fromLabel)
 		if applyFix {
-			if _, err := plugin.buildozer.Run(addVisibilityBuildozerCommand, node.toFix); err != nil {
+			if _, err := plugin.buildozer.run(addVisibilityBuildozerCommand, node.toFix); err != nil {
 				return fmt.Errorf("failed to fix visibility: %w", err)
 			}
 			if hasPrivateVisibility {
-				if _, err := plugin.buildozer.Run(removePrivateVisibilityBuildozerCommand, node.toFix); err != nil {
+				if _, err := plugin.buildozer.run(removePrivateVisibilityBuildozerCommand, node.toFix); err != nil {
 					return fmt.Errorf("failed to fix visibility: %w", err)
 				}
 			}
 		} else {
-			fmt.Fprintf(plugin.stdout, "To fix the visibility errors, run:\n")
-			fmt.Fprintf(plugin.stdout, "buildozer '%s' %s\n", addVisibilityBuildozerCommand, node.toFix)
+			fmt.Fprintf(os.Stdout, "To fix the visibility errors, run:\n")
+			fmt.Fprintf(os.Stdout, "buildozer '%s' %s\n", addVisibilityBuildozerCommand, node.toFix)
 			if hasPrivateVisibility {
-				fmt.Fprintf(plugin.stdout, "buildozer '%s' %s\n", removePrivateVisibilityBuildozerCommand, node.toFix)
+				fmt.Fprintf(os.Stdout, "buildozer '%s' %s\n", removePrivateVisibilityBuildozerCommand, node.toFix)
 			}
 		}
 	}
@@ -119,7 +126,7 @@ func (plugin *FixVisibilityPlugin) PostBuildHook() error {
 }
 
 func (plugin *FixVisibilityPlugin) hasPrivateVisibility(toFix string) (bool, error) {
-	visibility, err := plugin.buildozer.Run("print visibility", toFix)
+	visibility, err := plugin.buildozer.run("print visibility", toFix)
 	if err != nil {
 		return false, fmt.Errorf("failed to check if target has private visibility: %w", err)
 	}
@@ -156,13 +163,13 @@ type fixNode struct {
 	from  string
 }
 
-type Runner interface {
-	Run(args ...string) ([]byte, error)
+type runner interface {
+	run(args ...string) ([]byte, error)
 }
 
 type buildozer struct{}
 
-func (b *buildozer) Run(args ...string) ([]byte, error) {
+func (b *buildozer) run(args ...string) ([]byte, error) {
 	var stdout bytes.Buffer
 	var stderr strings.Builder
 	edit.ShortenLabelsFlag = true

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "system",
+    srcs = [
+        "aspectplugins.go",
+        "setup.go",
+    ],
+    importpath = "aspect.build/cli/pkg/plugin/system",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/ioutils",
+        "//pkg/plugin/sdk/v1alpha1/config",
+        "//pkg/plugin/sdk/v1alpha1/plugin",
+        "@com_github_hashicorp_go_hclog//:go-hclog",
+        "@com_github_hashicorp_go_plugin//:go-plugin",
+        "@in_gopkg_yaml_v2//:yaml_v2",
+    ],
+)

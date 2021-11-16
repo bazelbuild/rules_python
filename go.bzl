@@ -341,6 +341,12 @@ def deps():
         version = "v0.5.1",
     )
     go_repository(
+        name = "com_github_hashicorp_go_hclog",
+        importpath = "github.com/hashicorp/go-hclog",
+        sum = "h1:bkKf0BeBXcSYa7f5Fyi9gMuQ8gNsxeiNpZjR6VxNZeo=",
+        version = "v1.0.0",
+    )
+    go_repository(
         name = "com_github_hashicorp_go_immutable_radix",
         importpath = "github.com/hashicorp/go-immutable-radix",
         sum = "h1:AKDB1HM5PWEA7i4nhcpwOrO2byshxBjXVn/J/3+z5/0=",
@@ -363,6 +369,12 @@ def deps():
         importpath = "github.com/hashicorp/go.net",
         sum = "h1:sNCoNyDEvN1xa+X0baata4RdcpKwcMS6DH+xwfqPgjw=",
         version = "v0.0.1",
+    )
+    go_repository(
+        name = "com_github_hashicorp_go_plugin",
+        importpath = "github.com/hashicorp/go-plugin",
+        sum = "h1:DXmvivbWD5qdiBts9TpBC7BYL1Aia5sxbRgQB+v6UZM=",
+        version = "v1.4.3",
     )
     go_repository(
         name = "com_github_hashicorp_go_rootcerts",
@@ -431,6 +443,12 @@ def deps():
         version = "v0.8.2",
     )
     go_repository(
+        name = "com_github_hashicorp_yamux",
+        importpath = "github.com/hashicorp/yamux",
+        sum = "h1:b5rjCoWHc7eqmAS4/qyk21ZsHyb6Mxv/jykxvNTkU4M=",
+        version = "v0.0.0-20180604194846-3520598351bb",
+    )
+    go_repository(
         name = "com_github_hpcloud_tail",
         importpath = "github.com/hpcloud/tail",
         sum = "h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=",
@@ -449,7 +467,12 @@ def deps():
         sum = "h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=",
         version = "v1.0.0",
     )
-
+    go_repository(
+        name = "com_github_jhump_protoreflect",
+        importpath = "github.com/jhump/protoreflect",
+        sum = "h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=",
+        version = "v1.6.0",
+    )
     go_repository(
         name = "com_github_json_iterator_go",
         importpath = "github.com/json-iterator/go",
@@ -607,7 +630,12 @@ def deps():
         sum = "h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=",
         version = "v1.4.8",
     )
-
+    go_repository(
+        name = "com_github_oklog_run",
+        importpath = "github.com/oklog/run",
+        sum = "h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=",
+        version = "v1.0.0",
+    )
     go_repository(
         name = "com_github_onsi_ginkgo",
         importpath = "github.com/onsi/ginkgo",
@@ -939,6 +967,7 @@ def deps():
     )
     go_repository(
         name = "org_golang_google_grpc",
+        build_file_proto_mode = "disable",
         importpath = "google.golang.org/grpc",
         sum = "h1:/9BgsAsa5nWe26HqOlvlgJnqBuktYOLCgjCPqsa56W0=",
         version = "v1.38.0",

@@ -19,6 +19,7 @@ import (
 	"aspect.build/cli/cmd/aspect/clean"
 	"aspect.build/cli/cmd/aspect/docs"
 	"aspect.build/cli/cmd/aspect/info"
+	"aspect.build/cli/cmd/aspect/root/flags"
 	"aspect.build/cli/cmd/aspect/test"
 	"aspect.build/cli/cmd/aspect/version"
 	"aspect.build/cli/docs/help/topics"
@@ -49,8 +50,8 @@ func NewRootCmd(streams ioutils.Streams, defaultInteractive bool) *cobra.Command
 	// ### Flags
 	var cfgFile string
 	var interactive bool
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.aspect.yaml)")
-	cmd.PersistentFlags().BoolVar(&interactive, "interactive", defaultInteractive, "Interactive mode (e.g. prompts for user input)")
+	cmd.PersistentFlags().StringVar(&cfgFile, flags.ConfigFlagName, "", "config file (default is $HOME/.aspect.yaml)")
+	cmd.PersistentFlags().BoolVar(&interactive, flags.InteractiveFlagName, defaultInteractive, "Interactive mode (e.g. prompts for user input)")
 
 	// ### Viper
 	if cfgFile != "" {

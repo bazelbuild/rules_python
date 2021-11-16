@@ -6,10 +6,11 @@ require (
 	github.com/bazelbuild/bazel-gazelle v0.23.0
 	github.com/bazelbuild/bazelisk v1.10.1
 	github.com/bazelbuild/buildtools v0.0.0-20210920153738-d6daef01a1a2
-	github.com/bazelbuild/rules_go v0.28.0
 	github.com/fatih/color v1.12.0
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2
+	github.com/hashicorp/go-hclog v1.0.0
+	github.com/hashicorp/go-plugin v1.4.3
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-isatty v0.0.13
 	github.com/mitchellh/go-homedir v1.1.0
@@ -23,4 +24,5 @@ require (
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
+	gopkg.in/yaml.v2 v2.4.0
 )

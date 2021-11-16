@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package proto;
+
+import "third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto/build_event_stream.proto";
+
+option go_package = "aspect.build/cli/pkg/plugin/sdk/v1alpha1/proto";
+
+// Plugin is the service used by the Core to communicate with a Plugin instance.
+service Plugin {
+  rpc BEPEventCallback(BEPEventCallbackReq) returns (BEPEventCallbackRes);
+  rpc PostBuildHook(PostBuildHookReq) returns (PostBuildHookRes);
+}
+
+message BEPEventCallbackReq {
+  build_event_stream.BuildEvent event = 1;
+}
+
+message BEPEventCallbackRes {}
+
+message PostBuildHookReq {
+  uint32 broker_id = 1;
+  bool is_interactive_mode = 2;
+}
+
+message PostBuildHookRes {}
+
+// Prompter is the service used by the Plugin instances to request prompt
+// actions to the Core from the CLI users.
+service Prompter {
+  rpc Run(PromptRunReq) returns (PromptRunRes);
+}
+
+// PromptRunReq maps the relevant values from
+// (github.com/manifoldco/promptui).Prompt.
+message PromptRunReq {
+  // Label is the value displayed on the command line prompt.
+  string label = 1;
+  // Default is the initial value for the prompt. This value will be displayed
+  // next to the prompt's label and the user will be able to view or change it
+  // depending on the options.
+  string default = 2;
+  // AllowEdit lets the user edit the default value. If false, any key press
+	// other than <Enter> automatically clears the default value.
+  bool allow_edit = 3;
+  // Mask is an optional rune that sets which character to display instead of
+  // the entered characters. This allows hiding private information like
+  // passwords.
+  string mask = 5;
+  // HideEntered sets whether to hide the text after the user has pressed enter.
+  bool hide_entered = 6;
+  // IsConfirm makes the prompt ask for a yes or no ([Y/N]) question rather than
+  // request an input. When set, most properties related to input will be
+  // ignored.
+  bool is_confirm = 8;
+  // IsVimMode enables vi-like movements (hjkl) and editing.
+  bool is_vim_mode = 9;
+}
+
+// PromptRunRes maps the returned values from promptui.Run.
+message PromptRunRes {
+  string result = 1;
+  message Error {
+    bool happened = 1;
+    string message = 2;
+  }
+  Error error = 2;
+}

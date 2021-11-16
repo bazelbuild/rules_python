@@ -8,27 +8,37 @@ package hooks
 
 import (
 	"aspect.build/cli/pkg/aspecterrors"
+	"aspect.build/cli/pkg/ioutils"
 )
 
+// Hooks represent the possible hook points from the plugin system. It accepts
+// registrations and can execute them as requested at the appropriate times.
 type Hooks struct {
 	postBuild *hookList
 }
 
+// New instantiates a new Hooks.
 func New() *Hooks {
 	return &Hooks{
 		postBuild: &hookList{},
 	}
 }
 
+// RegisterPostBuild registers a post-build hook function.
 func (hooks *Hooks) RegisterPostBuild(fn PostBuildFn) {
 	hooks.postBuild.insert(fn)
 }
 
-func (hooks *Hooks) ExecutePostBuild() *aspecterrors.ErrorList {
+// ExecutePostBuild executes the post-build hook functions in sequence they were
+// registered.
+func (hooks *Hooks) ExecutePostBuild(isInteractiveMode bool) *aspecterrors.ErrorList {
 	errors := &aspecterrors.ErrorList{}
 	node := hooks.postBuild.head
 	for node != nil {
-		if err := node.fn.(PostBuildFn)(); err != nil {
+		// promptRunner is nil here because it has to satisfy the PostBuild
+		// signature to comply with the go-plugin library. The real promptRunner is
+		// instantiated when the gRPC call is made.
+		if err := node.fn.(PostBuildFn)(isInteractiveMode, nil); err != nil {
 			errors.Insert(err)
 		}
 		node = node.next
@@ -36,7 +46,8 @@ func (hooks *Hooks) ExecutePostBuild() *aspecterrors.ErrorList {
 	return errors
 }
 
-type PostBuildFn func() error
+// PostBuildFn matches the plugin PostBuildHook method signature.
+type PostBuildFn func(isInteractiveMode bool, promptRunner ioutils.PromptRunner) error
 
 type hookList struct {
 	head *hookNode

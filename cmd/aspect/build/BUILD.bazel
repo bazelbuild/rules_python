@@ -6,12 +6,13 @@ go_library(
     importpath = "aspect.build/cli/cmd/aspect/build",
     visibility = ["//cmd/aspect/root:__pkg__"],
     deps = [
+        "//cmd/aspect/root/flags",
         "//pkg/aspect/build",
         "//pkg/aspect/build/bep",
         "//pkg/bazel",
         "//pkg/hooks",
         "//pkg/ioutils",
-        "//pkg/plugins/fix_visibility",
+        "//pkg/plugin/system",
         "@com_github_spf13_cobra//:cobra",
     ],
 )

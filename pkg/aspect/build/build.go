@@ -14,7 +14,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	buildeventstream "aspect.build/cli/bazel/buildeventstream/proto"
 	"aspect.build/cli/pkg/aspect/build/bep"
 	"aspect.build/cli/pkg/aspecterrors"
 	"aspect.build/cli/pkg/bazel"
@@ -47,11 +46,16 @@ func New(
 
 // Run runs the aspect build command, calling `bazel build` with a local Build
 // Event Protocol backend used by Aspect plugins to subscribe to build events.
-func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exitErr error) {
+func (b *Build) Run(
+	ctx context.Context,
+	cmd *cobra.Command,
+	args []string,
+	isInteractiveMode bool,
+) (exitErr error) {
 	// TODO(f0rmiga): this is a hook for the build command and should be discussed
 	// as part of the plugin design.
 	defer func() {
-		errs := b.hooks.ExecutePostBuild().Errors()
+		errs := b.hooks.ExecutePostBuild(isInteractiveMode).Errors()
 		if len(errs) > 0 {
 			for _, err := range errs {
 				fmt.Fprintf(b.Streams.Stderr, "Error: failed to run build command: %v\n", err)
@@ -94,13 +98,4 @@ func (b *Build) Run(ctx context.Context, cmd *cobra.Command, args []string) (exi
 	}
 
 	return nil
-}
-
-// Plugin defines only the methods for the build command.
-type Plugin interface {
-	// BEPEventsSubscriber is used to verify whether an Aspect plugin registers
-	// itself to receive the Build Event Protocol events.
-	BEPEventCallback(event *buildeventstream.BuildEvent) error
-	// TODO(f0rmiga): test the build hooks after implementing the plugin system.
-	PostBuildHook() error
 }

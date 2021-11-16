@@ -1,0 +1,7 @@
+genrule(
+    name = "bar",
+    srcs = [],
+    outs = ["bar.txt"],
+    cmd = "echo 'bar' > '$@'",
+    visibility = ["//visibility:private"],
+)

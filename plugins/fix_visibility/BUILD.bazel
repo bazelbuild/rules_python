@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "fix_visibility_lib",
+    srcs = ["plugin.go"],
+    importpath = "aspect.build/cli/plugins/fix_visibility",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/ioutils",
+        "//pkg/plugin/sdk/v1alpha1/config",
+        "//third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto",
+        "@bazel_gazelle//label:go_default_library",
+        "@com_github_bazelbuild_buildtools//edit:go_default_library",
+        "@com_github_hashicorp_go_plugin//:go-plugin",
+        "@com_github_manifoldco_promptui//:promptui",
+    ],
+)
+
+go_binary(
+    name = "fix_visibility",
+    embed = [":fix_visibility_lib"],
+    gc_linkopts = [
+        "-s",
+        "-w",
+    ],
+    visibility = ["//visibility:public"],
+)
