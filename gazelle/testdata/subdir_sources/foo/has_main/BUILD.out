@@ -1,0 +1,17 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "has_main",
+    srcs = ["python/my_module.py"],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
+)
+
+py_binary(
+    name = "has_main_bin",
+    srcs = ["__main__.py"],
+    imports = ["../.."],
+    main = "__main__.py",
+    visibility = ["//:__subpackages__"],
+    deps = [":has_main"],
+)

@@ -3,7 +3,15 @@
 # This lets us glob() up all the files inside the examples to make them inputs to tests
 # (Note, we cannot use `common --deleted_packages` because the bazel version command doesn't support it)
 # To update these lines, run tools/bazel_integration_test/update_deleted_packages.sh
-build --deleted_packages=examples/legacy_pip_import/boto,examples/legacy_pip_import/extras,examples/legacy_pip_import/helloworld,examples/pip_install,examples/pip_parse,examples/py_import,examples/relative_requirements
-query --deleted_packages=examples/legacy_pip_import/boto,examples/legacy_pip_import/extras,examples/legacy_pip_import/helloworld,examples/pip_install,examples/pip_parse,examples/py_import,examples/relative_requirements
+build --deleted_packages=examples/build_file_generation,examples/legacy_pip_import/boto,examples/legacy_pip_import/extras,examples/legacy_pip_import/helloworld,examples/pip_install,examples/pip_parse,examples/py_import,examples/relative_requirements
+query --deleted_packages=examples/build_file_generation,examples/legacy_pip_import/boto,examples/legacy_pip_import/extras,examples/legacy_pip_import/helloworld,examples/pip_install,examples/pip_parse,examples/py_import,examples/relative_requirements
 
 test --test_output=errors
+
+# Do NOT implicitly create empty __init__.py files in the runfiles tree.
+# By default, these are created in every directory containing Python source code
+# or shared libraries, and every parent directory of those directories,
+# excluding the repo root directory. With this flag set, we are responsible for
+# creating (possibly empty) __init__.py files and adding them to the srcs of
+# Python targets as required.
+build --incompatible_default_to_explicit_init_py

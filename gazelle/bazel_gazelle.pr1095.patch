@@ -1,0 +1,19 @@
+commit b1c61c0b77648f7345a7c42cce941e32d87c84bf
+Author: Alex Eagle <eagle@post.harvard.edu>
+Date:   Wed Aug 18 17:55:13 2021 -0700
+
+    Merge the private attribute
+
+diff --git a/rule/merge.go b/rule/merge.go
+index d5fbe94..e13e547 100644
+--- a/rule/merge.go
++++ b/rule/merge.go
+@@ -79,6 +79,8 @@ func MergeRules(src, dst *Rule, mergeable map[string]bool, filename string) {
+ 			}
+ 		}
+ 	}
++
++	dst.private = src.private
+ }
+ 
+ // mergeExprs combines information from src and dst and returns a merged

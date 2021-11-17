@@ -1,0 +1,72 @@
+load("@bazel_gazelle//:def.bzl", "gazelle_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+go_library(
+    name = "gazelle",
+    srcs = [
+        "configure.go",
+        "fix.go",
+        "generate.go",
+        "kinds.go",
+        "language.go",
+        "parser.go",
+        "resolve.go",
+        "std_modules.go",
+        "target.go",
+    ],
+    importpath = "github.com/bazelbuild/rules_python/gazelle",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//gazelle/manifest",
+        "//gazelle/pythonconfig",
+        "@bazel_gazelle//config:go_default_library",
+        "@bazel_gazelle//label:go_default_library",
+        "@bazel_gazelle//language:go_default_library",
+        "@bazel_gazelle//repo:go_default_library",
+        "@bazel_gazelle//resolve:go_default_library",
+        "@bazel_gazelle//rule:go_default_library",
+        "@com_github_bazelbuild_buildtools//build:go_default_library",
+        "@com_github_bmatcuk_doublestar//:doublestar",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+        "@com_github_emirpasic_gods//sets/treeset",
+        "@com_github_emirpasic_gods//utils",
+        "@com_github_google_uuid//:uuid",
+        "@io_bazel_rules_go//go/tools/bazel:go_default_library",
+    ],
+)
+
+py_binary(
+    name = "parse",
+    srcs = ["parse.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "std_modules",
+    srcs = ["std_modules.py"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "gazelle_test",
+    srcs = ["python_test.go"],
+    data = [
+        ":gazelle_python_binary",
+        ":parse",
+        ":std_modules",
+        #"@python_interpreter//:bazel_install/bin/python3",
+    ] + glob(["testdata/**"]),
+    deps = [
+        "@bazel_gazelle//testtools:go_default_library",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+        "@com_github_ghodss_yaml//:yaml",
+        "@io_bazel_rules_go//go/tools/bazel:go_default_library",
+    ],
+)
+
+gazelle_binary(
+    name = "gazelle_python_binary",
+    languages = ["//gazelle"],
+    visibility = ["//visibility:public"],
+)

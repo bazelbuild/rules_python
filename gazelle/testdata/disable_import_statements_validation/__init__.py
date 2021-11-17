@@ -1,0 +1,3 @@
+import abcdefg
+
+_ = abcdefg

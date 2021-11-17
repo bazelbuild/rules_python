@@ -1,0 +1,20 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+# gazelle:python_extension enabled
+# gazelle:python_root
+# gazelle:python_generation_mode project
+
+# gazelle:exclude bar/baz/*_excluded.py
+
+py_library(
+    name = "coarse_grained",
+    srcs = [
+        "__init__.py",
+        "bar/__init__.py",
+        "bar/baz/__init__.py",
+        "bar/baz/hue.py",
+        "foo/__init__.py",
+    ],
+    visibility = ["//:__subpackages__"],
+    deps = ["@root_pip_deps//pypi__rootboto3"],
+)

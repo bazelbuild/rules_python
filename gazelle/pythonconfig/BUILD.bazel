@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "pythonconfig",
+    srcs = [
+        "pythonconfig.go",
+        "types.go",
+    ],
+    importpath = "github.com/bazelbuild/rules_python/gazelle/pythonconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//gazelle/manifest",
+        "@com_github_emirpasic_gods//lists/singlylinkedlist",
+    ],
+)

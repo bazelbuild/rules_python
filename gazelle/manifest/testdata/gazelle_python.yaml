@@ -1,0 +1,13 @@
+manifest:
+  modules_mapping:
+    arrow: arrow
+    arrow.__init__: arrow
+    arrow.api: arrow
+    arrow.arrow: arrow
+    arrow.factory: arrow
+    arrow.formatter: arrow
+    arrow.locales: arrow
+    arrow.parser: arrow
+    arrow.util: arrow
+  pip_deps_repository_name: test_repository_name
+integrity: 624f5f6c078eb44b907efd5a64e308354ac3620c568232b815668bcdf3e3366a

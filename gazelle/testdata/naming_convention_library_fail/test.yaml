@@ -1,0 +1,7 @@
+---
+expect:
+  exit_code: 1
+  stderr: >
+    gazelle: ERROR: failed to generate target "//:naming_convention_library_fail" of kind "py_library":
+    a target of kind "go_library" with the same name already exists.
+    Use the '# gazelle:python_library_naming_convention' directive to change the naming convention.

@@ -24,3 +24,8 @@ rules_python_internal_deps()
 load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
+
+load("//gazelle:deps.bzl", "gazelle_deps")
+
+# gazelle:repository_macro gazelle/deps.bzl%gazelle_deps
+gazelle_deps()

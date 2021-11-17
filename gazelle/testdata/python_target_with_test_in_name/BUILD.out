@@ -1,0 +1,12 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "python_target_with_test_in_name",
+    srcs = [
+        "__init__.py",
+        "not_a_real_test.py",
+        "test_not_a_real.py",
+    ],
+    visibility = ["//:__subpackages__"],
+    deps = ["@gazelle_python_test//pypi__boto3"],
+)

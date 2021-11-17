@@ -1,0 +1,4 @@
+manifest:
+  modules_mapping:
+    boto3: twoboto3
+  pip_deps_repository_name: two_pip_deps

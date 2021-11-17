@@ -1,0 +1,7 @@
+---
+expect:
+  exit_code: 1
+  stderr: >
+    gazelle: ERROR: failed to generate target "//:naming_convention_binary_fail_bin" of kind "py_binary":
+    a target of kind "go_binary" with the same name already exists.
+    Use the '# gazelle:python_binary_naming_convention' directive to change the naming convention.

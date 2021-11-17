@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "test_lib",
+    srcs = ["test.go"],
+    importpath = "github.com/bazelbuild/rules_python/gazelle/manifest/test",
+    visibility = ["//visibility:public"],
+    deps = ["//gazelle/manifest"],
+)
+
+go_binary(
+    name = "test",
+    embed = [":test_lib"],
+    visibility = ["//visibility:public"],
+)
+
+exports_files(["run.sh"])
