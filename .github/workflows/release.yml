@@ -20,12 +20,10 @@ jobs:
           XDG_CACHE_HOME: ~/.cache/bazel-repo
         run: |
           # Test the repository.
-          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test
-          --config=release //...
+          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test --config=release //...
           # Copy the release artifacts to /tmp/aspect/release.
           rm -rf /tmp/aspect/release
-          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc run
-          --config=release //release -- /tmp/aspect/release
+          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc run --config=release //release -- /tmp/aspect/release
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
