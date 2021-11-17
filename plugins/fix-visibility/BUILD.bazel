@@ -1,9 +1,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "fix_visibility_lib",
+    name = "fix-visibility_lib",
     srcs = ["plugin.go"],
-    importpath = "aspect.build/cli/plugins/fix_visibility",
+    importpath = "aspect.build/cli/plugins/fix-visibility",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/ioutils",
@@ -17,8 +17,8 @@ go_library(
 )
 
 go_binary(
-    name = "fix_visibility",
-    embed = [":fix_visibility_lib"],
+    name = "fix-visibility",
+    embed = [":fix-visibility_lib"],
     gc_linkopts = [
         "-s",
         "-w",
