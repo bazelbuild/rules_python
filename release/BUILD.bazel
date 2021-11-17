@@ -1,0 +1,20 @@
+load(":release.bzl", "multi_platform_binaries", "release")
+
+multi_platform_binaries(
+    name = "aspect",
+    embed = ["//cmd/aspect:aspect_lib"],
+)
+
+multi_platform_binaries(
+    name = "fix-visibility",
+    embed = ["//plugins/fix-visibility:fix-visibility_lib"],
+    prefix = "plugin-",
+)
+
+release(
+    name = "release",
+    targets = [
+        ":aspect",
+        ":fix-visibility",
+    ],
+)

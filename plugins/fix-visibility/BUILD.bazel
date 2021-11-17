@@ -4,7 +4,7 @@ go_library(
     name = "fix-visibility_lib",
     srcs = ["plugin.go"],
     importpath = "aspect.build/cli/plugins/fix-visibility",
-    visibility = ["//visibility:private"],
+    visibility = ["//release:__pkg__"],
     deps = [
         "//pkg/ioutils",
         "//pkg/plugin/sdk/v1alpha1/config",

@@ -16,18 +16,18 @@ jobs:
         run: git status --porcelain
       - name: bazel test //...
         env:
-          # Bazelisk will download bazel to here
+          # Bazelisk will download bazel to here.
           XDG_CACHE_HOME: ~/.cache/bazel-repo
-        run:
+        run: |
+          # Test the repository.
           bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test
           --config=release //...
+          # Copy the release artifacts to /tmp/aspect/release.
+          rm -rf /tmp/aspect/release
+          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc run
+          --config=release //release -- /tmp/aspect/release
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          files: |
-            bazel-out/*-opt-*/bin/cmd/aspect/aspect-linux_amd64
-            bazel-out/*-opt-*/bin/cmd/aspect/aspect-linux_arm64
-            bazel-out/*-opt-*/bin/cmd/aspect/aspect-darwin_amd64
-            bazel-out/*-opt-*/bin/cmd/aspect/aspect-darwin_arm64
-            bazel-out/*-opt-*/bin/cmd/aspect/aspect-windows_amd64.exe
+          files: /tmp/aspect/release/*
