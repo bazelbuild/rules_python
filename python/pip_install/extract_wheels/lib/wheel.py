@@ -55,9 +55,10 @@ class Wheel:
             # Calculate the location of the entry_points.txt file
             metadata = self.metadata
             name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
-            entry_points_path = os.path.join(
-                "{}.dist-info".format(name), "entry_points.txt"
-            )
+            # Note that the zipfile module always uses the forward slash as
+            # directory separator, even on Windows, so don't use os.path.join
+            # here.
+            entry_points_path = "{}.dist-info/entry_points.txt".format(name)
 
             # If this file does not exist in the wheel, there are no entry points
             if entry_points_path not in whl.namelist():
