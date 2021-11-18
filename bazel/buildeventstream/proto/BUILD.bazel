@@ -1,1 +1,7 @@
 # gazelle:exclude dummy.go
+
+alias(
+    name = "proto",
+    actual = "//third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto",
+    visibility = ["//visibility:public"],
+)

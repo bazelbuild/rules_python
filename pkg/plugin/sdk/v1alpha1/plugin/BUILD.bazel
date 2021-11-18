@@ -9,9 +9,9 @@ go_library(
     importpath = "aspect.build/cli/pkg/plugin/sdk/v1alpha1/plugin",
     visibility = ["//visibility:public"],
     deps = [
+        "//bazel/buildeventstream/proto",
         "//pkg/ioutils",
         "//pkg/plugin/sdk/v1alpha1/proto",
-        "//third-party/github.com/bazelbuild/bazel/src/main/java/com/google/devtools/build/lib/buildeventstream/proto",
         "@com_github_hashicorp_go_plugin//:go-plugin",
         "@com_github_manifoldco_promptui//:promptui",
         "@org_golang_google_grpc//:go_default_library",

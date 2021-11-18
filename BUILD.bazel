@@ -3,6 +3,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # TODO: follow https://sagikazarmark.hu/blog/vanity-import-paths-in-go/
 # so we have savvy go imports for users
 # gazelle:prefix aspect.build/cli
+# gazelle:resolve go aspect.build/cli/bazel/buildeventstream/proto //bazel/buildeventstream/proto
 gazelle(name = "gazelle")
 
 gazelle(
