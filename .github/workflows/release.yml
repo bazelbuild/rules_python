@@ -12,20 +12,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - uses: bazelbuild/setup-bazelisk@v1
-      - name: check git state is clean
-        run: git status --porcelain
-      - name: bazel test //...
-        env:
-          # Bazelisk will download bazel to here.
-          XDG_CACHE_HOME: ~/.cache/bazel-repo
+      - name: Build release artifacts
         run: |
-          # Test the repository.
-          bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc test --config=release //...
-          # Copy the release artifacts to /tmp/aspect/release.
+          if [ -n "$(git status --porcelain)" ]; then
+            >&2 echo "ERROR: the git state is not clean, aborting build..."
+            exit 1
+          fi
           rm -rf /tmp/aspect/release
           bazel --bazelrc=.github/workflows/ci.bazelrc --bazelrc=.bazelrc run --config=release //release -- /tmp/aspect/release
-      - name: Release
+          if /tmp/aspect/release/aspect-linux_amd64 version | grep '(with local changes)'; then
+            >&2 echo "ERROR: the release contained changes in the git state and the release will not be produced"
+            exit 1
+          fi
+      - name: Create GitHub draft release and upload artifacts
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
+          draft: true
           files: /tmp/aspect/release/*
