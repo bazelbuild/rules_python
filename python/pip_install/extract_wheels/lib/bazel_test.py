@@ -10,9 +10,7 @@ class BazelTestCase(unittest.TestCase):
 import sys
 from sphinx.cmd.build import main
 if __name__ == "__main__":
-    rc = main()
-    if rc.is_integer():
-        sys.exit(rc)
+    sys.exit(main())
 """
         self.assertEqual(got, want)
 
@@ -22,8 +20,6 @@ if __name__ == "__main__":
         want = """#!/usr/bin/python
 import sys
 from sphinx.cmd.build import main
-rc = main()
-if rc.is_integer():
-    sys.exit(rc)
+sys.exit(main())
 """
         self.assertEqual(got, want)

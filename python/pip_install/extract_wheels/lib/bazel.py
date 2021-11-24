@@ -35,8 +35,7 @@ def generate_entry_point_contents(entry_point: str, shebang: str = "#!/usr/bin/e
         from {module} import {method}
         if __name__ == "__main__":
             rc = {method}()
-            if rc.is_integer():
-                sys.exit(rc)
+            sys.exit({method}())
         """.format(
         shebang=shebang,
         module=module,
