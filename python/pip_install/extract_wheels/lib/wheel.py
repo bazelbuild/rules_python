@@ -57,8 +57,9 @@ class Wheel:
             name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
             # Note that the zipfile module always uses the forward slash as
             # directory separator, even on Windows, so don't use os.path.join
-            # here.
-            # Ref, for Python 3.10: https://github.com/python/cpython/blob/3.10/Lib/zipfile.py#L355
+            # here.  Reference for Python 3.10:
+            # https://github.com/python/cpython/blob/3.10/Lib/zipfile.py#L355.
+            # TODO: use zipfile.Path once 3.8 is our minimum supported version
             entry_points_path = "{}.dist-info/entry_points.txt".format(name)
 
             # If this file does not exist in the wheel, there are no entry points
