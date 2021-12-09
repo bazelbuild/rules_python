@@ -60,14 +60,3 @@ pip_install(
 load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 _py_gazelle_deps()
-
-load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
-
-# This repository rule fetches the metadata for python packages we
-# depend on. That data is required for the gazelle_python_manifest
-# rule to update our manifest file.
-# To see what this rule does, try `bazel run @modules_map//:print`
-modules_mapping(
-    name = "modules_map",
-    requirements = "//:requirements_lock.txt",
-)
