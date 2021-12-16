@@ -154,11 +154,11 @@ func (py *Configurer) loadGazelleManifest(gazelleManifestPath string) (*manifest
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to load Gazelle manifest: %w", err)
+		return nil, fmt.Errorf("failed to load Gazelle manifest at %q: %w", gazelleManifestPath, err)
 	}
 	manifestFile := new(manifest.File)
 	if err := manifestFile.Decode(gazelleManifestPath); err != nil {
-		return nil, fmt.Errorf("failed to load Gazelle manifest: %w", err)
+		return nil, fmt.Errorf("failed to load Gazelle manifest at %q: %w", gazelleManifestPath, err)
 	}
 	return manifestFile.Manifest, nil
 }
