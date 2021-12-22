@@ -1,9 +1,7 @@
 """Dependencies that are needed for rules_python tests and tools."""
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import")
 
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
@@ -118,21 +116,6 @@ def rules_python_internal_deps():
             "https://mirror.bazel.build/pypi.python.org/packages/e6/35/f187bdf23be87092bd0f1200d43d23076cee4d0dec109f195173fd3ebc79/mock-2.0.0-py2.py3-none-any.whl",
             "https://pypi.python.org/packages/e6/35/f187bdf23be87092bd0f1200d43d23076cee4d0dec109f195173fd3ebc79/mock-2.0.0-py2.py3-none-any.whl",
         ],
-    )
-
-    maybe(
-        git_repository,
-        name = "subpar",
-        remote = "https://github.com/google/subpar",
-        # tag = "2.0.0",
-        commit = "35bb9f0092f71ea56b742a520602da9b3638a24f",
-        shallow_since = "1557863961 -0400",
-    )
-
-    maybe(
-        pip_import,
-        name = "piptool_deps",
-        requirements = "@rules_python//python:requirements.txt",
     )
 
     maybe(

@@ -23,19 +23,11 @@ py_binary(
     srcs = ["wheelmaker.py"],
 )
 
-# These files are generated and updated by ./update_tools.sh
-exports_files([
-    "piptool.par",
-    "whltool.par",
-])
-
 filegroup(
     name = "distribution",
     srcs = [
         "BUILD",
         "wheelmaker.py",
-    ] + glob([
-        "*.par",
-    ]),
+    ],
     visibility = ["//:__pkg__"],
 )

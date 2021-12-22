@@ -154,27 +154,6 @@ load("@my_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
-### Importing `pip` dependencies with `pip_import` (legacy)
-
-The deprecated `pip_import` can still be used if needed. It is the only packaging rule that supports Python 2,
-which has been [sunsetted since January 1st, 2020](https://www.python.org/doc/sunset-python-2/). 
-
-```
-load("@rules_python//python/legacy_pip_import:pip.bzl", "pip_import", "pip_repositories")
-
-# Create a central repo that knows about the dependencies needed for requirements.txt.
-pip_import(
-   name = "my_deps",
-   requirements = "//path/to:requirements.txt",
-)
-
-# Load the central repo's install function from its `//:requirements.bzl` file, and call it.
-load("@my_deps//:requirements.bzl", "pip_install")
-pip_install()
-```
-
-An example can be found in [`examples/legacy_pip_import`](examples/legacy_pip_import).
-
 ### Consuming `pip` dependencies
 
 Each extracted wheel repo contains a `py_library` target representing the
