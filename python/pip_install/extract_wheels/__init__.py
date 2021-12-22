@@ -68,8 +68,8 @@ def main() -> None:
     # relative requirements to be correctly resolved. The --wheel-dir is therefore required to be repointed back to the
     # current calling working directory (the repo root in .../external/name), where the wheel files should be written to
     pip_args = (
-        [sys.executable, "-m", "pip"] + 
-        (["--isolated"] if args.isolated else []) + 
+        [sys.executable, "-m", "pip"] +
+        (["--isolated"] if args.isolated else []) +
         ["wheel", "-r", args.requirements] +
         ["--wheel-dir", os.getcwd()] +
         deserialized_args["extra_pip_args"]
@@ -86,11 +86,14 @@ def main() -> None:
     repo_label = "@%s" % args.repo
 
     targets = [
-        '"%s%s"'
-        % (
+        '"{}{}"'.format(
             repo_label,
             bazel.extract_wheel(
-                whl, extras, deserialized_args["pip_data_exclude"], args.enable_implicit_namespace_pkgs
+                whl,
+                extras,
+                deserialized_args["pip_data_exclude"],
+                args.enable_implicit_namespace_pkgs,
+                args.repo_prefix,
             ),
         )
         for whl in glob.glob("*.whl")

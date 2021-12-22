@@ -34,12 +34,11 @@ pip_parse(
     # style env vars are read, but env vars that control requests and urllib3
     # can be passed
     # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
-
-    # Uses the default repository name "pip_parsed_deps"
+    name = "pypi",
     requirements_lock = "//:requirements_lock.txt",
 )
 
-load("@pip_parsed_deps//:requirements.bzl", "install_deps")
+load("@pypi//:requirements.bzl", "install_deps")
 
 # Initialize repositories for all packages in requirements_lock.txt.
 install_deps()

@@ -60,16 +60,19 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     args.setdefault("python_interpreter", sys.executable)
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
-    repo_prefix = bazel.whl_library_repo_prefix(args["repo"])
 
     install_req_and_lines = parse_install_requirements(requirements_lock, args["extra_pip_args"])
-    repo_names_and_reqs = repo_names_and_requirements(install_req_and_lines, repo_prefix)
-    all_requirements = ", ".join(
-        [bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
+    repo_names_and_reqs = repo_names_and_requirements(
+        install_req_and_lines, args["repo_prefix"]
     )
-    all_whl_requirements = ", ".join(
-        [bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix) for ir, _ in install_req_and_lines]
-    )
+    all_requirements = ", ".join([
+        bazel.sanitised_repo_library_label(ir.name, repo_prefix=args["repo_prefix"])
+        for ir, _ in install_req_and_lines
+    ])
+    all_whl_requirements = ", ".join([
+        bazel.sanitised_repo_file_label(ir.name, repo_prefix=args["repo_prefix"])
+        for ir, _ in install_req_and_lines
+    ])
     return textwrap.dedent("""\
         load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
@@ -112,7 +115,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             all_whl_requirements=all_whl_requirements,
             repo_names_and_reqs=repo_names_and_reqs,
             args=args,
-            repo_prefix=repo_prefix,
+            repo_prefix=args["repo_prefix"],
             py_library_label=bazel.PY_LIBRARY_LABEL,
             wheel_file_label=bazel.WHEEL_FILE_LABEL,
             data_label=bazel.DATA_LABEL,

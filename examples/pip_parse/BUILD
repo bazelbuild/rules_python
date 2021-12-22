@@ -1,9 +1,8 @@
 load(
-    "@pip_parsed_deps//:requirements.bzl",
+    "@pypi//:requirements.bzl",
     "data_requirement",
     "dist_info_requirement",
     "entry_point",
-    "requirement",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
@@ -38,7 +37,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        requirement("requests"),
+        "@pypi_requests//:pkg",
     ],
 )
 

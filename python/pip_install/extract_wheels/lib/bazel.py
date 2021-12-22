@@ -215,17 +215,7 @@ def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) 
     )
 
 
-DEFAULT_PACKAGE_PREFIX = "pypi__"
-
-
-def whl_library_repo_prefix(parent_repo: str) -> str:
-    return "{parent}_{default_package_prefix}".format(
-        parent=parent_repo,
-        default_package_prefix=DEFAULT_PACKAGE_PREFIX
-    )
-
-
-def sanitise_name(name: str, prefix: str = DEFAULT_PACKAGE_PREFIX) -> str:
+def sanitise_name(name: str, prefix: str) -> str:
     """Sanitises the name to be compatible with Bazel labels.
 
     There are certain requirements around Bazel labels that we need to consider. From the Bazel docs:
@@ -268,12 +258,12 @@ def setup_namespace_pkg_compatibility(wheel_dir: str) -> None:
         namespace_pkgs.add_pkgutil_style_namespace_pkg_init(ns_pkg_dir)
 
 
-def sanitised_library_label(whl_name: str) -> str:
-    return '"//%s"' % sanitise_name(whl_name)
+def sanitised_library_label(whl_name: str, prefix: str) -> str:
+    return '"//%s"' % sanitise_name(whl_name, prefix)
 
 
-def sanitised_file_label(whl_name: str) -> str:
-    return '"//%s:%s"' % (sanitise_name(whl_name), WHEEL_FILE_LABEL)
+def sanitised_file_label(whl_name: str, prefix: str) -> str:
+    return '"//%s:%s"' % (sanitise_name(whl_name, prefix), WHEEL_FILE_LABEL)
 
 
 def _whl_name_to_repo_root(whl_name: str, repo_prefix: str) -> str:
@@ -293,8 +283,8 @@ def extract_wheel(
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
+    repo_prefix: str,
     incremental: bool = False,
-    incremental_repo_prefix: Optional[str] = None,
 ) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
@@ -305,8 +295,6 @@ def extract_wheel(
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
         incremental: If true the extract the wheel in a format suitable for an external repository. This
             effects the names of libraries and their dependencies, which point to other external repositories.
-        incremental_repo_prefix: If incremental is true, use this prefix when creating labels from wheel
-            names instead of the default.
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
@@ -316,7 +304,7 @@ def extract_wheel(
     if incremental:
         directory = "."
     else:
-        directory = sanitise_name(whl.name)
+        directory = sanitise_name(whl.name, prefix=repo_prefix)
 
         os.mkdir(directory)
         # copy the original wheel
@@ -333,25 +321,21 @@ def extract_wheel(
     whl_deps = sorted(whl.dependencies(extras_requested))
 
     if incremental:
-        # check for mypy Optional validity
-        if incremental_repo_prefix is None:
-            raise TypeError(
-                "incremental_repo_prefix arguement cannot be None if incremental == True")
         sanitised_dependencies = [
-            sanitised_repo_library_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
+            sanitised_repo_library_label(d, repo_prefix=repo_prefix) for d in whl_deps
         ]
         sanitised_wheel_file_dependencies = [
-            sanitised_repo_file_label(d, repo_prefix=incremental_repo_prefix) for d in whl_deps
+            sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps
         ]
     else:
         sanitised_dependencies = [
-            sanitised_library_label(d) for d in whl_deps
+            sanitised_library_label(d, prefix=repo_prefix) for d in whl_deps
         ]
         sanitised_wheel_file_dependencies = [
-            sanitised_file_label(d) for d in whl_deps
+            sanitised_file_label(d, prefix=repo_prefix) for d in whl_deps
         ]
 
-    library_name = PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name)
+    library_name = PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name, repo_prefix)
 
     directory_path = Path(directory)
     entry_points = []
@@ -365,7 +349,7 @@ def extract_wheel(
 
     with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         contents = generate_build_file_contents(
-            library_name,
+            PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name, repo_prefix),
             sanitised_dependencies,
             sanitised_wheel_file_dependencies,
             pip_data_exclude,

@@ -30,6 +30,11 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         action="store",
         help="Extra environment variables to set on the pip environment.",
     )
+    parser.add_argument(
+        "--repo-prefix",
+        required=True,
+        help="Prefix to prepend to packages",
+    )
     return parser
 
 
@@ -45,4 +50,3 @@ def deserialize_structured_args(args):
         else:
             args[arg_name] = []
     return args
-

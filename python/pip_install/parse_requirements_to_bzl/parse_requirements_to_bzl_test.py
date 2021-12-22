@@ -6,7 +6,6 @@ from tempfile import NamedTemporaryFile
 from python.pip_install.parse_requirements_to_bzl import generate_parsed_requirements_contents
 from python.pip_install.extract_wheels.lib.bazel import (
     sanitised_repo_library_label,
-    whl_library_repo_prefix,
     sanitised_repo_file_label
 )
 
@@ -21,7 +20,7 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             requirements_lock.flush()
             args = argparse.Namespace()
             args.requirements_lock = requirements_lock.name
-            args.repo = "pip_parsed_deps"
+            args.repo_prefix = "pip_parsed_deps_pypi__"
             extra_pip_args = ["--index-url=pypi.org/simple"]
             pip_data_exclude = ["**.foo"]
             args.extra_pip_args = json.dumps({"arg": extra_pip_args})

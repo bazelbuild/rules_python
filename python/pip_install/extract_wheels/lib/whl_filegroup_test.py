@@ -24,8 +24,8 @@ class TestWhlFilegroup(unittest.TestCase):
 
     def _run(
         self,
+        repo_prefix: str,
         incremental: bool = False,
-        incremental_repo_prefix: Optional[str] = None,
     ) -> None:
         generated_bazel_dir = bazel.extract_wheel(
             self.wheel_path,
@@ -33,7 +33,7 @@ class TestWhlFilegroup(unittest.TestCase):
             pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,
             incremental=incremental,
-            incremental_repo_prefix=incremental_repo_prefix
+            repo_prefix=repo_prefix
         )
         # Take off the leading // from the returned label.
         # Assert that the raw wheel ends up in the package.
@@ -44,10 +44,10 @@ class TestWhlFilegroup(unittest.TestCase):
             self.assertIn('filegroup', build_file_content)
 
     def test_nonincremental(self) -> None:
-        self._run()
+        self._run(repo_prefix="prefix_")
 
     def test_incremental(self) -> None:
-        self._run(incremental=True, incremental_repo_prefix="test")
+        self._run(incremental=True, repo_prefix="prefix_")
 
 
 if __name__ == "__main__":
