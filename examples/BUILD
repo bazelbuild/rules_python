@@ -28,6 +28,11 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pip_repository_annotations_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "py_import_example",
     timeout = "long",
 )

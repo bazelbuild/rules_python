@@ -6,7 +6,12 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set
 
-from python.pip_install.extract_wheels.lib import namespace_pkgs, purelib, wheel
+from python.pip_install.extract_wheels.lib import (
+    annotation,
+    namespace_pkgs,
+    purelib,
+    wheel,
+)
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"
@@ -77,13 +82,45 @@ def generate_entry_point_rule(script: str, pkg: str) -> str:
     )
 
 
+def generate_copy_commands(src, dest, is_executable=False) -> str:
+    """Generate a [@bazel_skylib//rules:copy_file.bzl%copy_file][cf] target
+
+    [cf]: https://github.com/bazelbuild/bazel-skylib/blob/1.1.1/docs/copy_file_doc.md
+
+    Args:
+        src (str): The label for the `src` attribute of [copy_file][cf]
+        dest (str): The label for the `out` attribute of [copy_file][cf]
+        is_executable (bool, optional): Whether or not the file being copied is executable.
+            sets `is_executable` for [copy_file][cf]
+
+    Returns:
+        str: A `copy_file` instantiation.
+    """
+    return textwrap.dedent(
+        """\
+        copy_file(
+            name = "{dest}.copy",
+            src = "{src}",
+            out = "{dest}",
+            is_executable = {is_executable},
+        )
+    """.format(
+            src=src,
+            dest=dest,
+            is_executable=is_executable,
+        )
+    )
+
+
 def generate_build_file_contents(
     name: str,
     dependencies: List[str],
     whl_file_deps: List[str],
-    pip_data_exclude: List[str],
+    data_exclude: List[str],
     tags: List[str],
-    additional_targets: List[str] = [],
+    srcs_exclude: List[str] = [],
+    data: List[str] = [],
+    additional_content: List[str] = [],
 ) -> str:
     """Generate a BUILD file for an unzipped Wheel
 
@@ -91,9 +128,9 @@ def generate_build_file_contents(
         name: the target name of the py_library
         dependencies: a list of Bazel labels pointing to dependencies of the library
         whl_file_deps: a list of Bazel labels pointing to wheel file dependencies of this wheel.
-        pip_data_exclude: more patterns to exclude from the data attribute of generated py_library rules.
+        data_exclude: more patterns to exclude from the data attribute of generated py_library rules.
         tags: list of tags to apply to generated py_library rules.
-        additional_targets: A list of additional targets to append to the BUILD file contents.
+        additional_content: A list of additional content to append to the BUILD file.
 
     Returns:
         A complete BUILD file as a string
@@ -102,22 +139,28 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    data_exclude = [
-        "*.whl",
-        "**/__pycache__/**",
-        "**/*.py",
-        "**/*.pyc",
-        f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
-        "**/* *",
-        "BUILD.bazel",
-        "WORKSPACE",
-    ] + pip_data_exclude
+    data_exclude = list(
+        set(
+            [
+                "*.whl",
+                "**/__pycache__/**",
+                "**/* *",
+                "**/*.py",
+                "**/*.pyc",
+                "BUILD.bazel",
+                "WORKSPACE",
+                f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
+            ]
+            + data_exclude
+        )
+    )
 
     return "\n".join(
         [
             textwrap.dedent(
                 """\
         load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+        load("@rules_python//third_party/github.com/bazelbuild/bazel-skylib/rules:copy_file.bzl", "copy_file")
 
         package(default_visibility = ["//visibility:public"])
 
@@ -139,8 +182,8 @@ def generate_build_file_contents(
 
         py_library(
             name = "{name}",
-            srcs = glob(["**/*.py"], exclude=["{entry_point_prefix}*.py", "**/__pycache__/**"], allow_empty = True),
-            data = glob(["**/*"], exclude={data_exclude}),
+            srcs = glob(["**/*.py"], exclude={srcs_exclude}, allow_empty = True),
+            data = {data} + glob(["**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
             imports = ["."],
@@ -149,18 +192,20 @@ def generate_build_file_contents(
         )
         """.format(
                     name=name,
-                    dependencies=",".join(dependencies),
-                    data_exclude=json.dumps(data_exclude),
+                    dependencies=",".join(sorted(dependencies)),
+                    data_exclude=json.dumps(sorted(data_exclude)),
                     whl_file_label=WHEEL_FILE_LABEL,
-                    whl_file_deps=",".join(whl_file_deps),
-                    tags=",".join(['"%s"' % t for t in tags]),
+                    whl_file_deps=",".join(sorted(whl_file_deps)),
+                    tags=",".join(sorted(['"%s"' % t for t in tags])),
                     data_label=DATA_LABEL,
                     dist_info_label=DIST_INFO_LABEL,
                     entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
+                    srcs_exclude=json.dumps(sorted(srcs_exclude)),
+                    data=json.dumps(sorted(data)),
                 )
             )
         ]
-        + additional_targets
+        + additional_content
     )
 
 
@@ -297,6 +342,7 @@ def extract_wheel(
     repo_prefix: str,
     incremental: bool = False,
     incremental_dir: Path = Path("."),
+    annotation: Optional[annotation.Annotation] = None,
 ) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
@@ -308,6 +354,7 @@ def extract_wheel(
         incremental: If true the extract the wheel in a format suitable for an external repository. This
             effects the names of libraries and their dependencies, which point to other external repositories.
         incremental_dir: An optional override for the working directory of incremental builds.
+        annotation: An optional set of annotations to apply to the BUILD contents of the wheel.
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
@@ -367,13 +414,36 @@ def extract_wheel(
         )
 
     with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
+        additional_content = entry_points
+        data = []
+        data_exclude = pip_data_exclude
+        srcs_exclude = []
+        if annotation:
+            for src, dest in annotation.copy_files.items():
+                data.append(dest)
+                additional_content.append(generate_copy_commands(src, dest))
+            for src, dest in annotation.copy_executables.items():
+                data.append(dest)
+                additional_content.append(
+                    generate_copy_commands(src, dest, is_executable=True)
+                )
+            data.extend(annotation.data)
+            data_exclude.extend(annotation.data_exclude_glob)
+            srcs_exclude.extend(annotation.srcs_exclude_glob)
+            if annotation.additive_build_content:
+                additional_content.append(annotation.additive_build_content)
+
         contents = generate_build_file_contents(
-            PY_LIBRARY_LABEL if incremental else sanitise_name(whl.name, repo_prefix),
-            sanitised_dependencies,
-            sanitised_wheel_file_dependencies,
-            pip_data_exclude,
-            ["pypi_name=" + whl.name, "pypi_version=" + whl.metadata.version],
-            entry_points,
+            name=PY_LIBRARY_LABEL
+            if incremental
+            else sanitise_name(whl.name, repo_prefix),
+            dependencies=sanitised_dependencies,
+            whl_file_deps=sanitised_wheel_file_dependencies,
+            data_exclude=data_exclude,
+            data=data,
+            srcs_exclude=srcs_exclude,
+            tags=["pypi_name=" + whl.name, "pypi_version=" + whl.metadata.version],
+            additional_content=additional_content,
         )
         build_file.write(contents)
 

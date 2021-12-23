@@ -128,6 +128,11 @@ def _pip_repository_impl(rctx):
     # We need a BUILD file to load the generated requirements.bzl
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
 
+    # Write the annotations file to pass to the wheel maker
+    annotations = {package: json.decode(data) for (package, data) in rctx.attr.annotations.items()}
+    annotations_file = rctx.path("annotations.json")
+    rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
+
     pypath = _construct_pypath(rctx)
 
     if rctx.attr.incremental:
@@ -142,6 +147,8 @@ def _pip_repository_impl(rctx):
             str(rctx.attr.quiet),
             "--timeout",
             str(rctx.attr.timeout),
+            "--annotations",
+            annotations_file,
         ]
 
         args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
@@ -155,6 +162,8 @@ def _pip_repository_impl(rctx):
             "python.pip_install.extract_wheels",
             "--requirements",
             rctx.path(rctx.attr.requirements),
+            "--annotations",
+            annotations_file,
         ]
 
     args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
@@ -259,6 +268,9 @@ For incremental mode the packages will be of the form
 }
 
 pip_repository_attrs = {
+    "annotations": attr.string_dict(
+        doc = "Optional annotations to apply to packages",
+    ),
     "incremental": attr.bool(
         default = False,
         doc = "Create the repository in incremental mode.",
@@ -324,7 +336,7 @@ py_binary(
     environ = common_env,
 )
 
-def _impl_whl_library(rctx):
+def _whl_library_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
 
     # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
@@ -340,6 +352,12 @@ def _impl_whl_library(rctx):
         "--repo-prefix",
         rctx.attr.repo_prefix,
     ]
+    if rctx.attr.annotation:
+        args.extend([
+            "--annotation",
+            rctx.path(rctx.attr.annotation),
+        ])
+
     args = _parse_optional_attrs(rctx, args)
 
     result = rctx.execute(
@@ -356,6 +374,13 @@ def _impl_whl_library(rctx):
     return
 
 whl_library_attrs = {
+    "annotation": attr.label(
+        doc = (
+            "Optional json encoded file containing annotation to apply to the extracted wheel. " +
+            "See `package_annotation`"
+        ),
+        allow_files = True,
+    ),
     "repo": attr.string(
         mandatory = True,
         doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
@@ -373,6 +398,40 @@ whl_library = repository_rule(
     doc = """
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
-    implementation = _impl_whl_library,
+    implementation = _whl_library_impl,
     environ = common_env,
 )
+
+def package_annotation(
+        additive_build_content = None,
+        copy_files = {},
+        copy_executables = {},
+        data = [],
+        data_exclude_glob = [],
+        srcs_exclude_glob = []):
+    """Annotations to apply to the BUILD file content from package generated from a `pip_repository` rule.
+
+    [cf]: https://github.com/bazelbuild/bazel-skylib/blob/main/docs/copy_file_doc.md
+
+    Args:
+        additive_build_content (str, optional): Raw text to add to the generated `BUILD` file of a package.
+        copy_files (dict, optional): A mapping of `src` and `out` files for [@bazel_skylib//rules:copy_file.bzl][cf]
+        copy_executables (dict, optional): A mapping of `src` and `out` files for
+            [@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as
+            executable.
+        data (list, optional): A list of labels to add as `data` dependencies to the generated `py_library` target.
+        data_exclude_glob (list, optional): A list of exclude glob patterns to add as `data` to the generated
+            `py_library` target.
+        srcs_exclude_glob (list, optional): A list of labels to add as `srcs` to the generated `py_library` target.
+
+    Returns:
+        str: A json encoded string of the provided content.
+    """
+    return json.encode(struct(
+        additive_build_content = additive_build_content,
+        copy_files = copy_files,
+        copy_executables = copy_executables,
+        data = data,
+        data_exclude_glob = data_exclude_glob,
+        srcs_exclude_glob = srcs_exclude_glob,
+    ))

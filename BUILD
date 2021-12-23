@@ -32,6 +32,8 @@ filegroup(
         "//python:distribution",
         "//python/pip_install:distribution",
         "//third_party/github.com/bazelbuild/bazel-skylib/lib:distribution",
+        "//third_party/github.com/bazelbuild/bazel-skylib/rules:distribution",
+        "//third_party/github.com/bazelbuild/bazel-skylib/rules/private:distribution",
         "//tools:distribution",
     ],
     visibility = ["//examples:__pkg__"],

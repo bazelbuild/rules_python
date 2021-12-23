@@ -10,6 +10,7 @@ PIP_INSTALL_PY_SRCS = [
     "@rules_python//python/pip_install/extract_wheels:__init__.py",
     "@rules_python//python/pip_install/extract_wheels:__main__.py",
     "@rules_python//python/pip_install/extract_wheels/lib:__init__.py",
+    "@rules_python//python/pip_install/extract_wheels/lib:annotation.py",
     "@rules_python//python/pip_install/extract_wheels/lib:arguments.py",
     "@rules_python//python/pip_install/extract_wheels/lib:bazel.py",
     "@rules_python//python/pip_install/extract_wheels/lib:namespace_pkgs.py",
