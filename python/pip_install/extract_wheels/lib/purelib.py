@@ -1,4 +1,5 @@
 """Functions to make purelibs Bazel compatible"""
+import os
 import pathlib
 import shutil
 
@@ -34,6 +35,21 @@ def spread_purelib_into_root(wheel_dir: str) -> None:
             _spread_purelib(child, wheel_dir)
 
 
+def backport_copytree(src: pathlib.Path, dst: pathlib.Path):
+    """Implementation similar to shutil.copytree.
+
+    shutil.copytree before python3.8 does not allow merging one tree with
+    an existing one. This function does that, while ignoring complications around symlinks, which
+    can't exist is wheels (See https://bugs.python.org/issue27318).
+    """
+    os.makedirs(dst, exist_ok=True)
+    for path in src.iterdir():
+        if path.is_dir():
+            backport_copytree(path, pathlib.Path(dst, path.name))
+        elif not pathlib.Path(dst, path.name).exists():
+            shutil.copy(path, dst)
+
+
 def _spread_purelib(purelib_dir: pathlib.Path, root_dir: str) -> None:
     """Recursively moves all sibling directories of the purelib to the root.
 
@@ -41,13 +57,11 @@ def _spread_purelib(purelib_dir: pathlib.Path, root_dir: str) -> None:
         purelib_dir: The directory of the purelib.
         root_dir: The directory to move files into.
     """
-    for grandchild in purelib_dir.iterdir():
-        # Some purelib Wheels, like Tensorflow 2.0.0, have directories
-        # split between the root and the purelib directory. In this case
-        # we should leave the purelib 'sibling' alone.
-        # See: https://github.com/dillon-giacoppo/rules_python_external/issues/8
-        if not pathlib.Path(root_dir, grandchild.name).exists():
-            shutil.move(
+    for child in purelib_dir.iterdir():
+        if child.is_dir():
+            backport_copytree(src=child, dst=pathlib.Path(root_dir, child.name))
+        elif not pathlib.Path(root_dir, grandchild.name).exists():
+            shutil.copy(
                 src=str(grandchild),
                 dst=root_dir,
             )

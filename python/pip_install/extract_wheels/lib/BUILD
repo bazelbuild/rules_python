@@ -94,6 +94,17 @@ py_test(
     ],
 )
 
+py_test(
+    name = "purelib_test",
+    size = "small",
+    srcs = [
+        "purelib_test.py",
+    ],
+    deps = [
+        ":lib",
+    ],
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(
