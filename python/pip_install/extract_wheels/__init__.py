@@ -7,7 +7,6 @@ Under the hood, it depends on the `pip wheel` command to do resolution, download
 """
 import argparse
 import glob
-import json
 import os
 import pathlib
 import subprocess
