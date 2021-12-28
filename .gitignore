@@ -37,6 +37,7 @@
 /bazel-genfiles
 /bazel-out
 /bazel-testlogs
+user.bazelrc
 
 # vim swap files
 *.swp

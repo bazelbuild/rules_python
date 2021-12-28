@@ -35,24 +35,6 @@ It also generates two targets for running pip-compile:
 | kwargs |  other bazel attributes passed to the "_test" rule   |  none |
 
 
-<a name="#pip_import"></a>
-
-## pip_import
-
-<pre>
-pip_import(<a href="#pip_import-kwargs">kwargs</a>)
-</pre>
-
-    Rule for installing packages listed in a requirements file.
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| kwargs |  <p align="center"> - </p>   |  none |
-
-
 <a name="#pip_install"></a>
 
 ## pip_install

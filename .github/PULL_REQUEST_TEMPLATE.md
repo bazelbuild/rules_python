@@ -2,7 +2,6 @@
 
 Please check if your PR fulfills the following requirements:
 
-- [ ] Does not include precompiled binaries, eg. `.par` files. See [CONTRIBUTING.md](https://github.com/bazelbuild/rules_python/blob/master/CONTRIBUTING.md) for info
 - [ ] Tests for the changes have been added (for bug fixes / features)
 - [ ] Docs have been added / updated (for bug fixes / features)
 

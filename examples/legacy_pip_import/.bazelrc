@@ -1,2 +1,0 @@
-# Watch Bazel run, and only run one at a time
-test --test_output=streamed
