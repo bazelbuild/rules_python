@@ -19,10 +19,9 @@ class Generator:
     def dig_wheel(self, wheel):
         mapping = {}
         wheel_paths = glob.glob(wheel["path"])
-        assert (
-            len(wheel_paths) != 0
-        ), "wheel not found for {}: searched for {}".format(
-            wheel["name"], wheel["path"],
+        assert len(wheel_paths) != 0, "wheel not found for {}: searched for {}".format(
+            wheel["name"],
+            wheel["path"],
         )
         wheel_path = wheel_paths[0]
         assert (
@@ -46,7 +45,7 @@ class Generator:
                     if ext == ".so":
                         # Also remove extra metadata that is embeded as part of
                         # the file name as an extra extension.
-                        ext = ''.join(pathlib.Path(path).suffixes)
+                        ext = "".join(pathlib.Path(path).suffixes)
                     module = path[: -len(ext)].replace("/", ".")
                     mapping[module] = wheel["name"]
         return mapping

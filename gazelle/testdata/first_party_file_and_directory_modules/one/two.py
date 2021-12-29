@@ -1,2 +1,2 @@
 def two():
-    return 'two'
+    return "two"

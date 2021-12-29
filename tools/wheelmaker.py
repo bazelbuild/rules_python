@@ -38,8 +38,17 @@ def escape_filename_segment(segment):
 
 
 class WheelMaker(object):
-    def __init__(self, name, version, build_tag, python_tag, abi, platform,
-                 outfile=None, strip_path_prefixes=None):
+    def __init__(
+        self,
+        name,
+        version,
+        build_tag,
+        python_tag,
+        abi,
+        platform,
+        outfile=None,
+        strip_path_prefixes=None,
+    ):
         self._name = name
         self._version = version
         self._build_tag = build_tag
@@ -47,17 +56,23 @@ class WheelMaker(object):
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
-        self._strip_path_prefixes = strip_path_prefixes if strip_path_prefixes is not None else []
+        self._strip_path_prefixes = (
+            strip_path_prefixes if strip_path_prefixes is not None else []
+        )
 
-        self._distinfo_dir = (escape_filename_segment(self._name) + '-' +
-                              escape_filename_segment(self._version) +
-                              '.dist-info/')
+        self._distinfo_dir = (
+            escape_filename_segment(self._name)
+            + "-"
+            + escape_filename_segment(self._version)
+            + ".dist-info/"
+        )
         self._zipfile = None
         self._record = []
 
     def __enter__(self):
-        self._zipfile = zipfile.ZipFile(self.filename(), mode="w",
-                                        compression=zipfile.ZIP_DEFLATED)
+        self._zipfile = zipfile.ZipFile(
+            self.filename(), mode="w", compression=zipfile.ZIP_DEFLATED
+        )
         return self
 
     def __exit__(self, type, value, traceback):
@@ -69,7 +84,7 @@ class WheelMaker(object):
         if self._build_tag:
             components.append(self._build_tag)
         components += [self._python_tag, self._abi, self._platform]
-        return '-'.join(components) + '.whl'
+        return "-".join(components) + ".whl"
 
     def filename(self) -> str:
         if self._outfile:
@@ -77,7 +92,7 @@ class WheelMaker(object):
         return self.wheelname()
 
     def disttags(self):
-        return ['-'.join([self._python_tag, self._abi, self._platform])]
+        return ["-".join([self._python_tag, self._abi, self._platform])]
 
     def distinfo_path(self, basename):
         return self._distinfo_dir + basename
@@ -86,36 +101,37 @@ class WheelMaker(object):
         # https://www.python.org/dev/peps/pep-0376/#record
         # "base64.urlsafe_b64encode(digest) with trailing = removed"
         digest = base64.urlsafe_b64encode(hash.digest())
-        digest = b'sha256=' + digest.rstrip(b'=')
+        digest = b"sha256=" + digest.rstrip(b"=")
         return digest
 
     def add_string(self, filename, contents):
         """Add given 'contents' as filename to the distribution."""
         if sys.version_info[0] > 2 and isinstance(contents, str):
-            contents = contents.encode('utf-8', 'surrogateescape')
+            contents = contents.encode("utf-8", "surrogateescape")
         self._zipfile.writestr(filename, contents)
         hash = hashlib.sha256()
         hash.update(contents)
-        self._add_to_record(filename, self._serialize_digest(hash),
-                            len(contents))
+        self._add_to_record(filename, self._serialize_digest(hash), len(contents))
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
 
         def arcname_from(name):
             # Always use unix path separators.
-            normalized_arcname = name.replace(os.path.sep, '/')
+            normalized_arcname = name.replace(os.path.sep, "/")
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
-                    return normalized_arcname[len(prefix):]
+                    return normalized_arcname[len(prefix) :]
 
             return normalized_arcname
 
         if os.path.isdir(real_filename):
             directory_contents = os.listdir(real_filename)
             for file_ in directory_contents:
-                self.add_file("{}/{}".format(package_filename, file_),
-                              "{}/{}".format(real_filename, file_))
+                self.add_file(
+                    "{}/{}".format(package_filename, file_),
+                    "{}/{}".format(real_filename, file_),
+                )
             return
 
         arcname = arcname_from(package_filename)
@@ -124,7 +140,7 @@ class WheelMaker(object):
         # Find the hash and length
         hash = hashlib.sha256()
         size = 0
-        with open(real_filename, 'rb') as f:
+        with open(real_filename, "rb") as f:
             while True:
                 block = f.read(2 ** 20)
                 if not block:
@@ -140,13 +156,22 @@ class WheelMaker(object):
 Wheel-Version: 1.0
 Generator: bazel-wheelmaker 1.0
 Root-Is-Purelib: {}
-""".format("true" if self._platform == "any" else "false")
+""".format(
+            "true" if self._platform == "any" else "false"
+        )
         for tag in self.disttags():
             wheel_contents += "Tag: %s\n" % tag
-        self.add_string(self.distinfo_path('WHEEL'), wheel_contents)
+        self.add_string(self.distinfo_path("WHEEL"), wheel_contents)
 
-    def add_metadata(self, extra_headers, description, classifiers, python_requires,
-                     requires, extra_requires):
+    def add_metadata(
+        self,
+        extra_headers,
+        description,
+        classifiers,
+        python_requires,
+        requires,
+        extra_requires,
+    ):
         """Write METADATA file to the distribution."""
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
@@ -167,29 +192,30 @@ Root-Is-Purelib: {}
             metadata.append("Provides-Extra: %s" % option)
             for requirement in option_requires:
                 metadata.append(
-                    "Requires-Dist: %s; extra == '%s'" % (requirement, option))
+                    "Requires-Dist: %s; extra == '%s'" % (requirement, option)
+                )
 
-        metadata = '\n'.join(metadata) + '\n\n'
+        metadata = "\n".join(metadata) + "\n\n"
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
         metadata += "\n"
-        self.add_string(self.distinfo_path('METADATA'), metadata)
+        self.add_string(self.distinfo_path("METADATA"), metadata)
 
     def add_recordfile(self):
         """Write RECORD file to the distribution."""
-        record_path = self.distinfo_path('RECORD')
-        entries = self._record + [(record_path, b'', b'')]
+        record_path = self.distinfo_path("RECORD")
+        entries = self._record + [(record_path, b"", b"")]
         entries.sort()
-        contents = b''
+        contents = b""
         for filename, digest, size in entries:
             if sys.version_info[0] > 2 and isinstance(filename, str):
-                filename = filename.encode('utf-8', 'surrogateescape')
-            contents += b'%s,%s,%s\n' % (filename, digest, size)
+                filename = filename.encode("utf-8", "surrogateescape")
+            contents += b"%s,%s,%s\n" % (filename, digest, size)
         self.add_string(record_path, contents)
 
     def _add_to_record(self, filename, hash, size):
-        size = str(size).encode('ascii')
+        size = str(size).encode("ascii")
         self._record.append((filename, hash, size))
 
 
@@ -204,7 +230,9 @@ def get_files_to_package(input_files):
     return files
 
 
-def resolve_version_stamp(version: str, volatile_status_stamp: Path, stable_status_stamp: Path) -> str:
+def resolve_version_stamp(
+    version: str, volatile_status_stamp: Path, stable_status_stamp: Path
+) -> str:
     """Resolve workspace status stamps format strings found in the version string
 
     Args:
@@ -215,11 +243,14 @@ def resolve_version_stamp(version: str, volatile_status_stamp: Path, stable_stat
     Returns:
         str: A resolved version string
     """
-    lines = volatile_status_stamp.read_text().splitlines() + stable_status_stamp.read_text().splitlines()
+    lines = (
+        volatile_status_stamp.read_text().splitlines()
+        + stable_status_stamp.read_text().splitlines()
+    )
     for line in lines:
         if not line:
             continue
-        key, value = line.split(' ', maxsplit=1)
+        key, value = line.split(" ", maxsplit=1)
         stamp = "{" + key + "}"
         version = version.replace(stamp, value)
 
@@ -227,82 +258,114 @@ def resolve_version_stamp(version: str, volatile_status_stamp: Path, stable_stat
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Builds a python wheel')
-    metadata_group = parser.add_argument_group(
-        "Wheel name, version and platform")
-    metadata_group.add_argument('--name', required=True,
-                                type=str,
-                                help="Name of the distribution")
-    metadata_group.add_argument('--version', required=True,
-                                type=str,
-                                help="Version of the distribution")
-    metadata_group.add_argument('--build_tag', type=str, default='',
-                                help="Optional build tag for the distribution")
-    metadata_group.add_argument('--python_tag', type=str, default='py3',
-                                help="Python version, e.g. 'py2' or 'py3'")
-    metadata_group.add_argument('--abi', type=str, default='none')
-    metadata_group.add_argument('--platform', type=str, default='any',
-                                help="Target platform. ")
+    parser = argparse.ArgumentParser(description="Builds a python wheel")
+    metadata_group = parser.add_argument_group("Wheel name, version and platform")
+    metadata_group.add_argument(
+        "--name", required=True, type=str, help="Name of the distribution"
+    )
+    metadata_group.add_argument(
+        "--version", required=True, type=str, help="Version of the distribution"
+    )
+    metadata_group.add_argument(
+        "--build_tag",
+        type=str,
+        default="",
+        help="Optional build tag for the distribution",
+    )
+    metadata_group.add_argument(
+        "--python_tag",
+        type=str,
+        default="py3",
+        help="Python version, e.g. 'py2' or 'py3'",
+    )
+    metadata_group.add_argument("--abi", type=str, default="none")
+    metadata_group.add_argument(
+        "--platform", type=str, default="any", help="Target platform. "
+    )
 
     output_group = parser.add_argument_group("Output file location")
-    output_group.add_argument('--out', type=str, default=None,
-                              help="Override name of ouptut file")
-    output_group.add_argument('--name_file', type=Path,
-                              help="A file where the canonical name of the "
-                                   "wheel will be written")
+    output_group.add_argument(
+        "--out", type=str, default=None, help="Override name of ouptut file"
+    )
+    output_group.add_argument(
+        "--name_file",
+        type=Path,
+        help="A file where the canonical name of the " "wheel will be written",
+    )
 
-    output_group.add_argument('--strip_path_prefix',
-                              type=str,
-                              action="append",
-                              default=[],
-                              help="Path prefix to be stripped from input package files' path. "
-                                   "Can be supplied multiple times. "
-                                   "Evaluated in order."
-                              )
+    output_group.add_argument(
+        "--strip_path_prefix",
+        type=str,
+        action="append",
+        default=[],
+        help="Path prefix to be stripped from input package files' path. "
+        "Can be supplied multiple times. "
+        "Evaluated in order.",
+    )
 
     wheel_group = parser.add_argument_group("Wheel metadata")
     wheel_group.add_argument(
-        '--header', action='append',
+        "--header",
+        action="append",
         help="Additional headers to be embedded in the package metadata. "
-             "Can be supplied multiple times.")
-    wheel_group.add_argument('--classifier', action='append',
-                             help="Classifiers to embed in package metadata. "
-                                  "Can be supplied multiple times")
-    wheel_group.add_argument('--python_requires',
-                             help="Version of python that the wheel will work with")
-    wheel_group.add_argument('--description_file',
-                             help="Path to the file with package description")
-    wheel_group.add_argument('--entry_points_file',
-                             help="Path to a correctly-formatted entry_points.txt file")
+        "Can be supplied multiple times.",
+    )
+    wheel_group.add_argument(
+        "--classifier",
+        action="append",
+        help="Classifiers to embed in package metadata. "
+        "Can be supplied multiple times",
+    )
+    wheel_group.add_argument(
+        "--python_requires", help="Version of python that the wheel will work with"
+    )
+    wheel_group.add_argument(
+        "--description_file", help="Path to the file with package description"
+    )
+    wheel_group.add_argument(
+        "--entry_points_file",
+        help="Path to a correctly-formatted entry_points.txt file",
+    )
 
     contents_group = parser.add_argument_group("Wheel contents")
     contents_group.add_argument(
-        '--input_file', action='append',
+        "--input_file",
+        action="append",
         help="'package_path;real_path' pairs listing "
-             "files to be included in the wheel. "
-             "Can be supplied multiple times.")
+        "files to be included in the wheel. "
+        "Can be supplied multiple times.",
+    )
     contents_group.add_argument(
-        '--input_file_list', action='append',
-        help='A file that has all the input files defined as a list to avoid the long command'
+        "--input_file_list",
+        action="append",
+        help="A file that has all the input files defined as a list to avoid the long command",
     )
 
     requirements_group = parser.add_argument_group("Package requirements")
     requirements_group.add_argument(
-        '--requires', type=str, action='append',
-        help="List of package requirements. Can be supplied multiple times.")
+        "--requires",
+        type=str,
+        action="append",
+        help="List of package requirements. Can be supplied multiple times.",
+    )
     requirements_group.add_argument(
-        '--extra_requires', type=str, action='append',
+        "--extra_requires",
+        type=str,
+        action="append",
         help="List of optional requirements in a 'requirement;option name'. "
-             "Can be supplied multiple times.")
+        "Can be supplied multiple times.",
+    )
 
     build_group = parser.add_argument_group("Building requirements")
     build_group.add_argument(
-        '--volatile_status_file', type=Path,
-        help="Pass in the stamp info file for stamping"
+        "--volatile_status_file",
+        type=Path,
+        help="Pass in the stamp info file for stamping",
     )
     build_group.add_argument(
-        '--stable_status_file', type=Path,
-        help="Pass in the stamp info file for stamping"
+        "--stable_status_file",
+        type=Path,
+        help="Pass in the stamp info file for stamping",
     )
 
     return parser.parse_args(sys.argv[1:])
@@ -312,7 +375,7 @@ def main() -> None:
     arguments = parse_args()
 
     if arguments.input_file:
-        input_files = [i.split(';') for i in arguments.input_file]
+        input_files = [i.split(";") for i in arguments.input_file]
     else:
         input_files = []
 
@@ -321,7 +384,7 @@ def main() -> None:
             with open(input_file) as _file:
                 input_file_list = _file.read().splitlines()
             for _input_file in input_file_list:
-                input_files.append(_input_file.split(';'))
+                input_files.append(_input_file.split(";"))
 
     all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
@@ -330,21 +393,24 @@ def main() -> None:
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
     if arguments.volatile_status_file and arguments.stable_status_file:
-        version = resolve_version_stamp(arguments.version,
-                                        arguments.volatile_status_file,
-                                        arguments.stable_status_file)
+        version = resolve_version_stamp(
+            arguments.version,
+            arguments.volatile_status_file,
+            arguments.stable_status_file,
+        )
     else:
         version = arguments.version
 
-    with WheelMaker(name=arguments.name,
-                    version=version,
-                    build_tag=arguments.build_tag,
-                    python_tag=arguments.python_tag,
-                    abi=arguments.abi,
-                    platform=arguments.platform,
-                    outfile=arguments.out,
-                    strip_path_prefixes=strip_prefixes
-                    ) as maker:
+    with WheelMaker(
+        name=arguments.name,
+        version=version,
+        build_tag=arguments.build_tag,
+        python_tag=arguments.python_tag,
+        abi=arguments.abi,
+        platform=arguments.platform,
+        outfile=arguments.out,
+        strip_path_prefixes=strip_prefixes,
+    ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
         maker.add_wheelfile()
@@ -352,34 +418,37 @@ def main() -> None:
         description = None
         if arguments.description_file:
             if sys.version_info[0] == 2:
-                with open(arguments.description_file,
-                          'rt') as description_file:
+                with open(arguments.description_file, "rt") as description_file:
                     description = description_file.read()
             else:
-                with open(arguments.description_file, 'rt',
-                          encoding='utf-8') as description_file:
+                with open(
+                    arguments.description_file, "rt", encoding="utf-8"
+                ) as description_file:
                     description = description_file.read()
 
         extra_requires = collections.defaultdict(list)
         if arguments.extra_requires:
             for extra in arguments.extra_requires:
-                req, option = extra.rsplit(';', 1)
+                req, option = extra.rsplit(";", 1)
                 extra_requires[option].append(req)
         classifiers = arguments.classifier or []
         python_requires = arguments.python_requires or ""
         requires = arguments.requires or []
         extra_headers = arguments.header or []
 
-        maker.add_metadata(extra_headers=extra_headers,
-                           description=description,
-                           classifiers=classifiers,
-                           python_requires=python_requires,
-                           requires=requires,
-                           extra_requires=extra_requires)
+        maker.add_metadata(
+            extra_headers=extra_headers,
+            description=description,
+            classifiers=classifiers,
+            python_requires=python_requires,
+            requires=requires,
+            extra_requires=extra_requires,
+        )
 
         if arguments.entry_points_file:
-            maker.add_file(maker.distinfo_path(
-                "entry_points.txt"), arguments.entry_points_file)
+            maker.add_file(
+                maker.distinfo_path("entry_points.txt"), arguments.entry_points_file
+            )
 
         maker.add_recordfile()
 
@@ -390,5 +459,5 @@ def main() -> None:
         arguments.name_file.write_text(maker.wheelname())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

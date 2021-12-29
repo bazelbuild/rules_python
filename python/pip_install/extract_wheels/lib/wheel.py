@@ -55,7 +55,9 @@ class Wheel:
             # Calculate the location of the entry_points.txt file
             metadata = self.metadata
             name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
-            entry_points_path = os.path.join("{}.dist-info".format(name), "entry_points.txt")
+            entry_points_path = os.path.join(
+                "{}.dist-info".format(name), "entry_points.txt"
+            )
 
             # If this file does not exist in the wheel, there are no entry points
             if entry_points_path not in whl.namelist():
@@ -111,7 +113,7 @@ class Wheel:
 
 
 def get_dist_info(wheel_dir: str) -> str:
-    """"Returns the relative path to the dist-info directory if it exists.
+    """ "Returns the relative path to the dist-info directory if it exists.
 
     Args:
          wheel_dir: The root of the extracted wheel directory.

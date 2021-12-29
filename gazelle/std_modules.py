@@ -9,10 +9,11 @@ import sys
 
 # Don't return any paths, all userland site-packages should be ignored.
 def __override_getusersitepackages__():
-    return ''
+    return ""
 
 
 site.getusersitepackages = __override_getusersitepackages__
+
 
 def is_std_modules(module):
     try:

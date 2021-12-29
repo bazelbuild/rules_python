@@ -28,13 +28,13 @@ def main() -> None:
     configure_reproducible_wheels()
 
     pip_args = (
-        [sys.executable, "-m", "pip"] +
-        (["--isolated"] if args.isolated else []) +
-        ["wheel", "--no-deps"] +
-        deserialized_args["extra_pip_args"]
+        [sys.executable, "-m", "pip"]
+        + (["--isolated"] if args.isolated else [])
+        + ["wheel", "--no-deps"]
+        + deserialized_args["extra_pip_args"]
     )
 
-    requirement_file = NamedTemporaryFile(mode='wb', delete=False)
+    requirement_file = NamedTemporaryFile(mode="wb", delete=False)
     try:
         requirement_file.write(args.requirement.encode("utf-8"))
         requirement_file.flush()

@@ -19,7 +19,9 @@ from pip._internal.req.req_install import InstallRequirement
 from python.pip_install.extract_wheels.lib import arguments, bazel
 
 
-def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]) -> List[Tuple[InstallRequirement, str]]:
+def parse_install_requirements(
+    requirements_lock: str, extra_pip_args: List[str]
+) -> List[Tuple[InstallRequirement, str]]:
     ps = PipSession()
     # This is roughly taken from pip._internal.req.req_file.parse_requirements
     # (https://github.com/pypa/pip/blob/21.0.1/src/pip/_internal/req/req_file.py#L127) in order to keep
@@ -29,13 +31,12 @@ def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]
     parser = RequirementsFileParser(ps, line_parser)
     install_req_and_lines: List[Tuple[InstallRequirement, str]] = []
     _, content = get_file_content(requirements_lock, ps)
-    for parsed_line, (_, line) in zip(parser.parse(requirements_lock, constraint=False), preprocess(content)):
+    for parsed_line, (_, line) in zip(
+        parser.parse(requirements_lock, constraint=False), preprocess(content)
+    ):
         if parsed_line.is_requirement:
             install_req_and_lines.append(
-                (
-                    constructors.install_req_from_line(parsed_line.requirement),
-                    line
-                )
+                (constructors.install_req_from_line(parsed_line.requirement), line)
             )
 
         else:
@@ -43,7 +44,9 @@ def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]
     return install_req_and_lines
 
 
-def repo_names_and_requirements(install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str) -> List[Tuple[str, str]]:
+def repo_names_and_requirements(
+    install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str
+) -> List[Tuple[str, str]]:
     return [
         (
             bazel.sanitise_name(ir.name, prefix=repo_prefix),
@@ -68,19 +71,26 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     # Pop this off because it wont be used as a config argument to the whl_library rule.
     requirements_lock = args.pop("requirements_lock")
 
-    install_req_and_lines = parse_install_requirements(requirements_lock, args["extra_pip_args"])
+    install_req_and_lines = parse_install_requirements(
+        requirements_lock, args["extra_pip_args"]
+    )
     repo_names_and_reqs = repo_names_and_requirements(
         install_req_and_lines, args["repo_prefix"]
     )
-    all_requirements = ", ".join([
-        bazel.sanitised_repo_library_label(ir.name, repo_prefix=args["repo_prefix"])
-        for ir, _ in install_req_and_lines
-    ])
-    all_whl_requirements = ", ".join([
-        bazel.sanitised_repo_file_label(ir.name, repo_prefix=args["repo_prefix"])
-        for ir, _ in install_req_and_lines
-    ])
-    return textwrap.dedent("""\
+    all_requirements = ", ".join(
+        [
+            bazel.sanitised_repo_library_label(ir.name, repo_prefix=args["repo_prefix"])
+            for ir, _ in install_req_and_lines
+        ]
+    )
+    all_whl_requirements = ", ".join(
+        [
+            bazel.sanitised_repo_file_label(ir.name, repo_prefix=args["repo_prefix"])
+            for ir, _ in install_req_and_lines
+        ]
+    )
+    return textwrap.dedent(
+        """\
         load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
         all_requirements = [{all_requirements}]
@@ -128,11 +138,13 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
             data_label=bazel.DATA_LABEL,
             dist_info_label=bazel.DIST_INFO_LABEL,
             entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
-            )
         )
+    )
+
 
 def coerce_to_bool(option):
-    return str(option).lower() == 'true'
+    return str(option).lower() == "true"
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -173,6 +185,4 @@ If set, it will take precedence over python_interpreter.",
     args = parser.parse_args()
 
     with open("requirements.bzl", "w") as requirement_file:
-        requirement_file.write(
-            generate_parsed_requirements_contents(args)
-        )
+        requirement_file.write(generate_parsed_requirements_contents(args))

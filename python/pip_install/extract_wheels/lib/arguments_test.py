@@ -13,15 +13,17 @@ class ArgumentsTestCase(unittest.TestCase):
         repo_prefix = "pypi_"
         index_url = "--index_url=pypi.org/simple"
         extra_pip_args = [index_url]
-        args_dict = vars(parser.parse_args(
-            args=[
-                "--repo",
-                repo_name,
-                f"--extra_pip_args={json.dumps({'arg': extra_pip_args})}",
-                "--repo-prefix",
-                repo_prefix,
-            ]
-        ))
+        args_dict = vars(
+            parser.parse_args(
+                args=[
+                    "--repo",
+                    repo_name,
+                    f"--extra_pip_args={json.dumps({'arg': extra_pip_args})}",
+                    "--repo-prefix",
+                    repo_prefix,
+                ]
+            )
+        )
         args_dict = arguments.deserialize_structured_args(args_dict)
         self.assertIn("repo", args_dict)
         self.assertIn("extra_pip_args", args_dict)

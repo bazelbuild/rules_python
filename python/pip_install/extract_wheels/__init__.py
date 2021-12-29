@@ -68,18 +68,23 @@ def main() -> None:
     # relative requirements to be correctly resolved. The --wheel-dir is therefore required to be repointed back to the
     # current calling working directory (the repo root in .../external/name), where the wheel files should be written to
     pip_args = (
-        [sys.executable, "-m", "pip"] +
-        (["--isolated"] if args.isolated else []) +
-        ["wheel", "-r", args.requirements] +
-        ["--wheel-dir", os.getcwd()] +
-        deserialized_args["extra_pip_args"]
+        [sys.executable, "-m", "pip"]
+        + (["--isolated"] if args.isolated else [])
+        + ["wheel", "-r", args.requirements]
+        + ["--wheel-dir", os.getcwd()]
+        + deserialized_args["extra_pip_args"]
     )
 
     env = os.environ.copy()
     env.update(deserialized_args["environment"])
 
     # Assumes any errors are logged by pip so do nothing. This command will fail if pip fails
-    subprocess.run(pip_args, check=True, env=env, cwd=str(pathlib.Path(args.requirements).parent.resolve()))
+    subprocess.run(
+        pip_args,
+        check=True,
+        env=env,
+        cwd=str(pathlib.Path(args.requirements).parent.resolve()),
+    )
 
     extras = requirements.parse_extras(args.requirements)
 

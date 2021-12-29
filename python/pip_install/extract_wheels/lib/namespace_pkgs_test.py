@@ -33,7 +33,6 @@ class TempDir:
 
 
 class TestImplicitNamespacePackages(unittest.TestCase):
-
     def assertPathsEqual(self, actual: Set[pathlib.Path], expected: Set[str]) -> None:
         self.assertEqual(actual, {pathlib.Path(p) for p in expected})
 
