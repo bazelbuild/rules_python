@@ -55,8 +55,6 @@ modules_mapping(
 #   the manifest doesn't need to be updated
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
-    # The @modules_map refers to the name we gave in the modules_mapping
-    # rule in the WORKSPACE
     modules_mapping = ":modules_map",
     # This is what we called our `pip_install` rule, where third-party
     # python libraries are loaded in BUILD files.
