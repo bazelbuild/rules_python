@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-from typing import Optional
 import unittest
 
 from python.pip_install.extract_wheels.lib import bazel

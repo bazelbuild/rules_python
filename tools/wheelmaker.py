@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
 import argparse
 import base64
 import collections
@@ -21,6 +20,7 @@ import os
 import re
 import sys
 import zipfile
+from pathlib import Path
 
 
 def commonpath(path1, path2):

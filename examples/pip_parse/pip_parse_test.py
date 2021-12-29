@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import os
 import subprocess
 import unittest
+from pathlib import Path
 
 
 class PipInstallTest(unittest.TestCase):

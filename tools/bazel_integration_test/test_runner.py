@@ -1,14 +1,15 @@
-from pathlib import Path
 import json
 import os
 import platform
 import re
 import shutil
-from subprocess import Popen
 import sys
 import tempfile
+from pathlib import Path
+from subprocess import Popen
 
 from rules_python.python.runfiles import runfiles
+
 r = runfiles.Create()
 
 def modify_WORKSPACE(wksp, distro_path):

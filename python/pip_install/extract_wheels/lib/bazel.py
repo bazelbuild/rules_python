@@ -1,13 +1,12 @@
 """Utility functions to manipulate Bazel files"""
-import os
-import textwrap
 import json
-from typing import Iterable, List, Dict, Set, Optional
+import os
 import shutil
+import textwrap
 from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Set
 
-from python.pip_install.extract_wheels.lib import namespace_pkgs, wheel, purelib
-
+from python.pip_install.extract_wheels.lib import namespace_pkgs, purelib, wheel
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"

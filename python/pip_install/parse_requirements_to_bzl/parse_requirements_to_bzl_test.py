@@ -1,12 +1,10 @@
-import unittest
 import argparse
 import json
+import unittest
 from tempfile import NamedTemporaryFile
 
-from python.pip_install.parse_requirements_to_bzl import generate_parsed_requirements_contents
-from python.pip_install.extract_wheels.lib.bazel import (
-    sanitised_repo_library_label,
-    sanitised_repo_file_label
+from python.pip_install.parse_requirements_to_bzl import (
+    generate_parsed_requirements_contents,
 )
 
 

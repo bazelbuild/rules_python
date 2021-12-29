@@ -7,13 +7,13 @@ Under the hood, it depends on the `pip wheel` command to do resolution, download
 """
 import argparse
 import glob
+import json
 import os
 import pathlib
 import subprocess
 import sys
-import json
 
-from python.pip_install.extract_wheels.lib import bazel, requirements, arguments
+from python.pip_install.extract_wheels.lib import arguments, bazel, requirements
 
 
 def configure_reproducible_wheels() -> None:

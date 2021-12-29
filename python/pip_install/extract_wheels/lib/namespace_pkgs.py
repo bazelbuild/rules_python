@@ -1,8 +1,8 @@
 """Utility functions to discover python package types"""
 import os
-from pathlib import Path  # supported in >= 3.4
 import textwrap
-from typing import Set, List, Optional
+from pathlib import Path  # supported in >= 3.4
+from typing import List, Optional, Set
 
 
 def implicit_namespace_packages(

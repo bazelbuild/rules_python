@@ -1,15 +1,22 @@
 import argparse
 import json
-import textwrap
-import sys
 import shlex
+import sys
+import textwrap
 from typing import List, Tuple
 
-from python.pip_install.extract_wheels.lib import bazel, arguments
-from pip._internal.req import parse_requirements, constructors
-from pip._internal.req.req_install import InstallRequirement
-from pip._internal.req.req_file import get_file_content, preprocess, handle_line, get_line_parser, RequirementsFileParser
 from pip._internal.network.session import PipSession
+from pip._internal.req import constructors, parse_requirements
+from pip._internal.req.req_file import (
+    RequirementsFileParser,
+    get_file_content,
+    get_line_parser,
+    handle_line,
+    preprocess,
+)
+from pip._internal.req.req_install import InstallRequirement
+
+from python.pip_install.extract_wheels.lib import arguments, bazel
 
 
 def parse_install_requirements(requirements_lock: str, extra_pip_args: List[str]) -> List[Tuple[InstallRequirement, str]]:
