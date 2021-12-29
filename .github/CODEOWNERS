@@ -7,7 +7,6 @@
 /python/ @brandjon @lberki
 # But not everything under python/ is the core Python rules.
 /python/pip.bzl @thundergolfer @andyscott
-/python/whl.bzl @thundergolfer @andyscott
 /python/requirements.txt @thundergolfer @andyscott
 
 # Directory containing the Gazelle extension and Go code.
