@@ -1,8 +1,8 @@
 """Utility functions to discover python package types"""
 import os
-from pathlib import Path  # supported in >= 3.4
 import textwrap
-from typing import Set, List, Optional
+from pathlib import Path  # supported in >= 3.4
+from typing import List, Optional, Set
 
 
 def implicit_namespace_packages(
@@ -25,19 +25,27 @@ def implicit_namespace_packages(
     directory_path = Path(directory)
     ignored_dirname_paths: List[Path] = [Path(p) for p in ignored_dirnames or ()]
     # Traverse bottom-up because a directory can be a namespace pkg because its child contains module files.
-    for dirpath, dirnames, filenames in map(lambda t: (Path(t[0]), *t[1:]), os.walk(directory_path, topdown=False)):
+    for dirpath, dirnames, filenames in map(
+        lambda t: (Path(t[0]), *t[1:]), os.walk(directory_path, topdown=False)
+    ):
         if "__init__.py" in filenames:
             standard_pkg_dirs.add(dirpath)
             continue
         elif ignored_dirname_paths:
             is_ignored_dir = dirpath in ignored_dirname_paths
-            child_of_ignored_dir = any(d in dirpath.parents for d in ignored_dirname_paths)
+            child_of_ignored_dir = any(
+                d in dirpath.parents for d in ignored_dirname_paths
+            )
             if is_ignored_dir or child_of_ignored_dir:
                 continue
 
         dir_includes_py_modules = _includes_python_modules(filenames)
-        parent_of_namespace_pkg = any(Path(dirpath, d) in namespace_pkg_dirs for d in dirnames)
-        parent_of_standard_pkg = any(Path(dirpath, d) in standard_pkg_dirs for d in dirnames)
+        parent_of_namespace_pkg = any(
+            Path(dirpath, d) in namespace_pkg_dirs for d in dirnames
+        )
+        parent_of_standard_pkg = any(
+            Path(dirpath, d) in standard_pkg_dirs for d in dirnames
+        )
         parent_of_pkg = parent_of_namespace_pkg or parent_of_standard_pkg
         if (
             (dir_includes_py_modules or parent_of_pkg)
@@ -94,10 +102,6 @@ def _includes_python_modules(files: List[str]) -> bool:
         ".py",  # Source modules
         ".pyc",  # Compiled bytecode modules
         ".so",  # Unix extension modules
-        ".pyd"  # https://docs.python.org/3/faq/windows.html#is-a-pyd-file-the-same-as-a-dll
+        ".pyd",  # https://docs.python.org/3/faq/windows.html#is-a-pyd-file-the-same-as-a-dll
     }
-    return any(
-        Path(f).suffix in module_suffixes
-        for f
-        in files
-    )
+    return any(Path(f).suffix in module_suffixes for f in files)

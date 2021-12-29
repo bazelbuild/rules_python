@@ -1,14 +1,13 @@
-import os
 import argparse
-import sys
+import errno
 import glob
+import os
 import subprocess
-import json
-
+import sys
 from tempfile import NamedTemporaryFile
 
-from python.pip_install.extract_wheels.lib import bazel, requirements, arguments
 from python.pip_install.extract_wheels import configure_reproducible_wheels
+from python.pip_install.extract_wheels.lib import arguments, bazel, requirements
 
 
 def main() -> None:
@@ -29,13 +28,13 @@ def main() -> None:
     configure_reproducible_wheels()
 
     pip_args = (
-        [sys.executable, "-m", "pip"] +
-        (["--isolated"] if args.isolated else []) +
-        ["wheel", "--no-deps"] +
-        deserialized_args["extra_pip_args"]
+        [sys.executable, "-m", "pip"]
+        + (["--isolated"] if args.isolated else [])
+        + ["wheel", "--no-deps"]
+        + deserialized_args["extra_pip_args"]
     )
 
-    requirement_file = NamedTemporaryFile(mode='wb', delete=False)
+    requirement_file = NamedTemporaryFile(mode="wb", delete=False)
     try:
         requirement_file.write(args.requirement.encode("utf-8"))
         requirement_file.flush()

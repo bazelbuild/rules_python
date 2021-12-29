@@ -17,8 +17,14 @@ class TestRequirementExtrasParsing(unittest.TestCase):
                 "name[quux, strange];python_version<'2.7' and platform_version=='2'",
                 ("name", frozenset(["quux", "strange"])),
             ),
-            ("name; (os_name=='a' or os_name=='b') and os_name=='c'", (None, None),),
-            ("name@http://foo.com", (None, None),),
+            (
+                "name; (os_name=='a' or os_name=='b') and os_name=='c'",
+                (None, None),
+            ),
+            (
+                "name@http://foo.com",
+                (None, None),
+            ),
         ]
 
         for case, expected in cases:

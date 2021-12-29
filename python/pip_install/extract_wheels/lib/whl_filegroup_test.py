@@ -1,7 +1,6 @@
 import os
 import shutil
 import tempfile
-from typing import Optional
 import unittest
 
 from python.pip_install.extract_wheels.lib import bazel
@@ -12,9 +11,7 @@ class TestWhlFilegroup(unittest.TestCase):
         self.wheel_name = "example_minimal_package-0.0.1-py3-none-any.whl"
         self.wheel_dir = tempfile.mkdtemp()
         self.wheel_path = os.path.join(self.wheel_dir, self.wheel_name)
-        shutil.copy(
-            os.path.join("examples", "wheel", self.wheel_name), self.wheel_dir
-        )
+        shutil.copy(os.path.join("examples", "wheel", self.wheel_name), self.wheel_dir)
         self.original_dir = os.getcwd()
         os.chdir(self.wheel_dir)
 
@@ -33,15 +30,17 @@ class TestWhlFilegroup(unittest.TestCase):
             pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,
             incremental=incremental,
-            repo_prefix=repo_prefix
+            repo_prefix=repo_prefix,
         )
         # Take off the leading // from the returned label.
         # Assert that the raw wheel ends up in the package.
-        generated_bazel_dir = generated_bazel_dir[2:] if not incremental else self.wheel_dir
+        generated_bazel_dir = (
+            generated_bazel_dir[2:] if not incremental else self.wheel_dir
+        )
         self.assertIn(self.wheel_name, os.listdir(generated_bazel_dir))
         with open("{}/BUILD.bazel".format(generated_bazel_dir)) as build_file:
             build_file_content = build_file.read()
-            self.assertIn('filegroup', build_file_content)
+            self.assertIn("filegroup", build_file_content)
 
     def test_nonincremental(self) -> None:
         self._run(repo_prefix="prefix_")

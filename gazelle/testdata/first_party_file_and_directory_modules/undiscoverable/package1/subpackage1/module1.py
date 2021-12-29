@@ -1,2 +1,2 @@
 def find_me():
-    return 'found'
+    return "found"

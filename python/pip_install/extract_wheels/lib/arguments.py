@@ -10,10 +10,14 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         help="The external repo name to install dependencies. In the format '@{REPO_NAME}'",
     )
     parser.add_argument(
-        "--isolated", action="store_true", help="Whether or not to include the `--isolated` pip flag.",
+        "--isolated",
+        action="store_true",
+        help="Whether or not to include the `--isolated` pip flag.",
     )
     parser.add_argument(
-        "--extra_pip_args", action="store", help="Extra arguments to pass down to pip.",
+        "--extra_pip_args",
+        action="store",
+        help="Extra arguments to pass down to pip.",
     )
     parser.add_argument(
         "--pip_data_exclude",

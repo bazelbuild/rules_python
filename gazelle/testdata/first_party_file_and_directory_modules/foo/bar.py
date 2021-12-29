@@ -4,4 +4,4 @@ _ = two
 
 
 def baz():
-    return 'baz from foo/bar.py'
+    return "baz from foo/bar.py"

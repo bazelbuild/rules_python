@@ -1,4 +1,5 @@
 import unittest
+
 import main
 
 
@@ -7,5 +8,5 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual("2.25.1", main.version())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -16,7 +16,8 @@ if __name__ == "__main__":
 
     def test_generate_entry_point_contents_with_shebang(self):
         got = generate_entry_point_contents(
-            "sphinx.cmd.build:main", shebang="#!/usr/bin/python")
+            "sphinx.cmd.build:main", shebang="#!/usr/bin/python"
+        )
         want = """#!/usr/bin/python
 import sys
 from sphinx.cmd.build import main

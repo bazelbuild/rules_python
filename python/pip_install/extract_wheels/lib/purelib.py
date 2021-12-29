@@ -48,5 +48,6 @@ def _spread_purelib(purelib_dir: pathlib.Path, root_dir: str) -> None:
         # See: https://github.com/dillon-giacoppo/rules_python_external/issues/8
         if not pathlib.Path(root_dir, grandchild.name).exists():
             shutil.move(
-                src=str(grandchild), dst=root_dir,
+                src=str(grandchild),
+                dst=root_dir,
             )

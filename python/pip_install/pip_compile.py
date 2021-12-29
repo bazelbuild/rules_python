@@ -49,7 +49,7 @@ elif "BUILD_WORKSPACE_DIRECTORY" in os.environ:
     #
     # Changing to the WORKSPACE root avoids 'file not found' errors when the `.update` target is run
     # from different directories within the WORKSPACE.
-    os.chdir(os.environ['BUILD_WORKSPACE_DIRECTORY'])
+    os.chdir(os.environ["BUILD_WORKSPACE_DIRECTORY"])
 else:
     err_msg = (
         "Expected to find BUILD_WORKSPACE_DIRECTORY (running under `bazel run`) or "
@@ -61,11 +61,14 @@ else:
     )
     sys.exit(1)
 
-update_target_pkg = "/".join(requirements_in.split('/')[:-1])
+update_target_pkg = "/".join(requirements_in.split("/")[:-1])
 # $(rootpath) in the workspace root gives ./requirements.in
 if update_target_pkg == ".":
     update_target_pkg = ""
-update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (update_target_pkg, update_target_name)
+update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (
+    update_target_pkg,
+    update_target_name,
+)
 
 os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
 os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
@@ -100,18 +103,15 @@ else:
             if golden != out:
                 import difflib
 
-                print(''.join(difflib.unified_diff(golden, out)), file=sys.stderr)
+                print("".join(difflib.unified_diff(golden, out)), file=sys.stderr)
                 print(
-                    "Lock file out of date. Run '"
-                    + update_command
-                    + "' to update.",
+                    "Lock file out of date. Run '" + update_command + "' to update.",
                     file=sys.stderr,
                 )
                 sys.exit(1)
             sys.exit(0)
         else:
             print(
-                f"pip-compile unexpectedly exited with code {e.code}.",
-                file=sys.stderr
+                f"pip-compile unexpectedly exited with code {e.code}.", file=sys.stderr
             )
             sys.exit(1)

@@ -2,8 +2,8 @@ import os
 import pathlib
 import shutil
 import tempfile
-from typing import Optional, Set
 import unittest
+from typing import Optional, Set
 
 from python.pip_install.extract_wheels.lib import namespace_pkgs
 
@@ -33,7 +33,6 @@ class TempDir:
 
 
 class TestImplicitNamespacePackages(unittest.TestCase):
-
     def assertPathsEqual(self, actual: Set[pathlib.Path], expected: Set[str]) -> None:
         self.assertEqual(actual, {pathlib.Path(p) for p in expected})
 

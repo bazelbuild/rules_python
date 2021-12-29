@@ -6,8 +6,17 @@ repos:
     rev: 4.0.1.1
     hooks:
       - id: buildifier
-        args: &args
+        args: &args 
           # Keep this argument in sync with .bazelci/presubmit.yaml
           - --warnings=all
       - id: buildifier-lint
         args: *args
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort (python)
+  - repo: https://github.com/psf/black
+    rev: 21.12b0
+    hooks:
+      - id: black

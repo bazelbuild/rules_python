@@ -1,2 +1,2 @@
 def baz():
-    return 'baz from baz.py'
+    return "baz from baz.py"

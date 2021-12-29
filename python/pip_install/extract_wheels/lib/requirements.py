@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Set, Tuple, Optional
+from typing import Dict, Optional, Set, Tuple
 
 
 def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
