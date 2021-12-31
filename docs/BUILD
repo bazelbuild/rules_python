@@ -25,7 +25,6 @@ _DOCS = {
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
     "python": "//docs:core-docs",
-    "whl": "//docs:whl-docs",
 }
 
 # We define these bzl_library targets here rather than in the //python package
@@ -86,10 +85,6 @@ stardoc(
     deps = [":defs"],
 )
 
-# TODO: Consider merging documentation pages for whl and pip. This would
-# require re-exporting their symbols from a common .bzl; see
-# https://github.com/bazelbuild/skydoc/issues/208.
-
 stardoc(
     name = "pip-docs",
     out = "pip.md_",
@@ -99,12 +94,6 @@ stardoc(
         ":pip_install_bzl",
         "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
     ],
-)
-
-stardoc(
-    name = "whl-docs",
-    out = "whl.md_",
-    input = "//python:whl.bzl",
 )
 
 stardoc(

@@ -46,7 +46,6 @@ filegroup(
         "defs.bzl",
         "packaging.bzl",
         "pip.bzl",
-        "whl.bzl",
         "//python/private:bzl",
     ],
     visibility = ["//:__pkg__"],
@@ -135,5 +134,4 @@ alias(
 exports_files([
     "packaging.bzl",
     "pip.bzl",
-    "whl.bzl",
 ])
