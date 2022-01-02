@@ -26,7 +26,7 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD",
-        "LICENSE",
+        "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
         "//python:distribution",
@@ -34,7 +34,7 @@ filegroup(
         "//third_party/github.com/bazelbuild/bazel-skylib/lib:distribution",
         "//tools:distribution",
     ],
-    visibility = ["//distro:__pkg__"],
+    visibility = ["//examples:__pkg__"],
 )
 
 # Reexport of all bzl files used to allow downstream rules to generate docs
