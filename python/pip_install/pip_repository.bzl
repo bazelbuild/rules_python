@@ -24,6 +24,23 @@ def _construct_pypath(rctx):
     pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
     return pypath
 
+def _get_python_interpreter_attr(rctx):
+    """A helper function for getting the `python_interpreter` attribute or it's default
+
+    Args:
+        rctx (repository_ctx): Handle to the rule repository context.
+
+    Returns:
+        str: The attribute value or it's default
+    """
+    if rctx.attr.python_interpreter:
+        return rctx.attr.python_interpreter
+
+    if "win" in rctx.os.name:
+        return "python.exe"
+    else:
+        return "python3"
+
 def _resolve_python_interpreter(rctx):
     """Helper function to find the python interpreter from the common attributes
 
@@ -31,7 +48,8 @@ def _resolve_python_interpreter(rctx):
         rctx: Handle to the rule repository context.
     Returns: Python interpreter path.
     """
-    python_interpreter = rctx.attr.python_interpreter
+    python_interpreter = _get_python_interpreter_attr(rctx)
+
     if rctx.attr.python_interpreter_target != None:
         target = rctx.attr.python_interpreter_target
         python_interpreter = rctx.path(target)
@@ -39,7 +57,7 @@ def _resolve_python_interpreter(rctx):
         if "/" not in python_interpreter:
             python_interpreter = rctx.which(python_interpreter)
         if not python_interpreter:
-            fail("python interpreter not found")
+            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
     return python_interpreter
 
 def _parse_optional_attrs(rctx, args):
@@ -125,10 +143,10 @@ def _pip_repository_impl(rctx):
             str(rctx.attr.timeout),
         ]
 
-        if rctx.attr.python_interpreter:
-            args += ["--python_interpreter", rctx.attr.python_interpreter]
+        args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
         if rctx.attr.python_interpreter_target:
             args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
+
     else:
         args = [
             python_interpreter,
@@ -193,7 +211,15 @@ to control this flag.
     "pip_data_exclude": attr.string_list(
         doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
     ),
-    "python_interpreter": attr.string(default = "python3"),
+    "python_interpreter": attr.string(
+        doc = """\
+The python interpreter to use. This can either be an absolute path or the name
+of a binary found on the host's `PATH` environment variable. If no value is set
+`python3` is defaulted for Unix systems and `python.exe` for Windows.
+""",
+        # NOTE: This attribute should not have a default. See `_get_python_interpreter_attr`
+        # default = "python3"
+    ),
     "python_interpreter_target": attr.label(
         allow_single_file = True,
         doc = """
