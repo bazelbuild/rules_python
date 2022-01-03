@@ -1,7 +1,8 @@
 import argparse
 import json
+import tempfile
 import unittest
-from tempfile import NamedTemporaryFile
+from pathlib import Path
 
 from python.pip_install.parse_requirements_to_bzl import (
     generate_parsed_requirements_contents,
@@ -10,15 +11,15 @@ from python.pip_install.parse_requirements_to_bzl import (
 
 class TestParseRequirementsToBzl(unittest.TestCase):
     def test_generated_requirements_bzl(self) -> None:
-        with NamedTemporaryFile() as requirements_lock:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            requirements_lock = Path(temp_dir) / "requirements.txt"
             comments_and_flags = "#comment\n--require-hashes True\n"
             requirement_string = "foo==0.0.0 --hash=sha256:hashofFoowhl"
-            requirements_lock.write(
+            requirements_lock.write_bytes(
                 bytes(comments_and_flags + requirement_string, encoding="utf-8")
             )
-            requirements_lock.flush()
             args = argparse.Namespace()
-            args.requirements_lock = requirements_lock.name
+            args.requirements_lock = str(requirements_lock.resolve())
             args.repo_prefix = "pip_parsed_deps_pypi__"
             extra_pip_args = ["--index-url=pypi.org/simple"]
             pip_data_exclude = ["**.foo"]
