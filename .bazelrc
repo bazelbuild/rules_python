@@ -15,3 +15,6 @@ test --test_output=errors
 # creating (possibly empty) __init__.py files and adding them to the srcs of
 # Python targets as required.
 build --incompatible_default_to_explicit_init_py
+
+# Windows makes use of runfiles for some rules
+build --enable_runfiles

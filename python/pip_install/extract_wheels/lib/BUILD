@@ -73,14 +73,11 @@ py_test(
 py_test(
     name = "whl_filegroup_test",
     size = "small",
-    srcs = [
-        "whl_filegroup_test.py",
-    ],
+    srcs = ["whl_filegroup_test.py"],
     data = ["//examples/wheel:minimal_with_py_package"],
+    main = "whl_filegroup_test.py",
     tags = ["unit"],
-    deps = [
-        ":lib",
-    ],
+    deps = [":lib"],
 )
 
 py_test(
