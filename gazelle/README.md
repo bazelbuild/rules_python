@@ -9,11 +9,8 @@ that generates BUILD file content for Python code.
 First, you'll need to add Gazelle to your `WORKSPACE` file.
 Follow the instructions at https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
 
-Next, we need to add two more things to the `WORKSPACE`:
-
-1. fetch the third-party Go libraries that the python extension depends on
-1. fetch metadata about your Python dependencies, so that gazelle can
-   determine which package a given import statement comes from.
+Next, we need to fetch the third-party Go libraries that the python extension
+depends on.
 
 Add this to your `WORKSPACE`:
 
@@ -23,22 +20,12 @@ Add this to your `WORKSPACE`:
 load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 _py_gazelle_deps()
-
-load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
-
-# This repository rule fetches the metadata for python packages we
-# depend on. That data is required for the gazelle_python_manifest
-# rule to update our manifest file.
-# To see what this rule does, try `bazel run @modules_map//:print`
-modules_mapping(
-    name = "modules_map",
-    # This should point to wherever we declare our python dependencies
-    requirements = "//:requirements_lock.txt",
-)
 ```
 
-Next, we'll make a pair of targets for consuming that `modules_mapping` we
-fetched, and writing it as a manifest file for Gazelle to read.
+Next, we'll fetch metadata about your Python dependencies, so that gazelle can
+determine which package a given import statement comes from. This is provided
+by the `modules_mapping` rule. We'll make a target for consuming this
+`modules_mapping`, and writing it as a manifest file for Gazelle to read.
 This is checked into the repo for speed, as it takes some time to calculate
 in a large monorepo.
 
@@ -48,7 +35,16 @@ file. (You can just use `touch` at this point, it just needs to exist.)
 Then put this in your `BUILD.bazel` file next to the `requirements.txt`:
 
 ```starlark
+load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
+
+# This rule fetches the metadata for python packages we depend on. That data is
+# required for the gazelle_python_manifest rule to update our manifest file.
+modules_mapping(
+    name = "modules_map",
+    wheels = all_whl_requirements,
+)
 
 # Gazelle python extension needs a manifest file mapping from
 # an import to the installed package that provides it.
@@ -59,9 +55,7 @@ load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
 #   the manifest doesn't need to be updated
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
-    # The @modules_map refers to the name we gave in the modules_mapping
-    # rule in the WORKSPACE
-    modules_mapping = "@modules_map//:modules_mapping.json",
+    modules_mapping = ":modules_map",
     # This is what we called our `pip_install` rule, where third-party
     # python libraries are loaded in BUILD files.
     pip_deps_repository_name = "pip",
