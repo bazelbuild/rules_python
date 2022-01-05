@@ -140,7 +140,7 @@ alias(
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| requirements |  A 'requirements.txt' pip requirements file.   |  none |
+| requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
 | name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
 | kwargs |  Keyword arguments passed directly to the <code>pip_repository</code> repository rule.   |  none |
 
