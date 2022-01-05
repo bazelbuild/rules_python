@@ -296,6 +296,7 @@ def extract_wheel(
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
     incremental: bool = False,
+    incremental_dir: Path = Path("."),
 ) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
@@ -306,6 +307,7 @@ def extract_wheel(
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
         incremental: If true the extract the wheel in a format suitable for an external repository. This
             effects the names of libraries and their dependencies, which point to other external repositories.
+        incremental_dir: An optional override for the working directory of incremental builds.
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
@@ -313,7 +315,7 @@ def extract_wheel(
 
     whl = wheel.Wheel(wheel_file)
     if incremental:
-        directory = "."
+        directory = incremental_dir
     else:
         directory = sanitise_name(whl.name, prefix=repo_prefix)
 

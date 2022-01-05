@@ -62,7 +62,7 @@ fully migrated to Starlark code.
 
 Practically, this means that a Bazel team member should approve any PR
 concerning the core Python logic. This includes everything under the `python/`
-directory except for `pip.bzl`, `whl.bzl`, and `requirements.txt`.
+directory except for `pip.bzl` and `requirements.txt`.
 
 Issues should be triaged as follows:
 

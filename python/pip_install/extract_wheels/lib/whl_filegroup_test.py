@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 from python.pip_install.extract_wheels.lib import bazel
 
@@ -12,12 +13,9 @@ class TestWhlFilegroup(unittest.TestCase):
         self.wheel_dir = tempfile.mkdtemp()
         self.wheel_path = os.path.join(self.wheel_dir, self.wheel_name)
         shutil.copy(os.path.join("examples", "wheel", self.wheel_name), self.wheel_dir)
-        self.original_dir = os.getcwd()
-        os.chdir(self.wheel_dir)
 
     def tearDown(self):
         shutil.rmtree(self.wheel_dir)
-        os.chdir(self.original_dir)
 
     def _run(
         self,
@@ -31,12 +29,14 @@ class TestWhlFilegroup(unittest.TestCase):
             enable_implicit_namespace_pkgs=False,
             incremental=incremental,
             repo_prefix=repo_prefix,
+            incremental_dir=Path(self.wheel_dir),
         )
         # Take off the leading // from the returned label.
         # Assert that the raw wheel ends up in the package.
         generated_bazel_dir = (
             generated_bazel_dir[2:] if not incremental else self.wheel_dir
         )
+
         self.assertIn(self.wheel_name, os.listdir(generated_bazel_dir))
         with open("{}/BUILD.bazel".format(generated_bazel_dir)) as build_file:
             build_file_content = build_file.read()

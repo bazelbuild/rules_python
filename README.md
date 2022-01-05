@@ -36,18 +36,10 @@ contribute](CONTRIBUTING.md) page for information on our development workflow.
 ## Getting started
 
 To import rules_python in your project, you first need to add it to your
-`WORKSPACE` file:
+`WORKSPACE` file, using the snippet provided in the
+[release you choose](https://github.com/bazelbuild/rules_python/releases)
 
-```python
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-http_archive(
-    name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.5.0/rules_python-0.5.0.tar.gz",
-    sha256 = "cd6730ed53a002c56ce4e2f396ba3b3be262fd7cb68339f0377a45e8227fe332",
-)
-```
-
-To depend on a particular unreleased version (not recommended), you can do:
+To depend on a particular unreleased version, you can do:
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -132,7 +124,7 @@ Bazel will only fetch/build wheels for the requirements in the subgraph of your 
 
 There are API differences between `pip_parse` and `pip_install`:
 1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this by using the `compile_pip_requirements` rule,
-   running `pip-compile` directly, or using virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of 
+   running `pip-compile` directly, or using virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of
    `requirements` to make this distinction clear.
 2. `pip_parse` translates your requirements into a starlark macro called `install_deps`. You must call this macro in your WORKSPACE to
    declare your dependencies.
@@ -156,12 +148,11 @@ install_deps()
 
 ### Consuming `pip` dependencies
 
-Each extracted wheel repo contains a `py_library` target representing the
-wheel's contents. Rather than depend on this target's label directly -- which
-would require hardcoding the wheel repo's mangled name into your BUILD files --
-you should instead use the `requirement()` function defined in the central
-repo's `//:requirements.bzl` file. This function maps a pip package name to a
-label.
+Each extracted wheel repo contains a `py_library` target representing
+the wheel's contents. There are two ways to access this library. The
+first is using the `requirement()` function defined in the central
+repo's `//:requirements.bzl` file. This function maps a pip package
+name to a label:
 
 ```python
 load("@my_deps//:requirements.bzl", "requirement")
@@ -177,12 +168,37 @@ py_library(
 )
 ```
 
+The reason `requirement()` exists is that the pattern for the labels,
+while not expected to change frequently, is not guaranteed to be
+stable. Using `requirement()` ensures that you do not have to refactor
+your `BUILD` files if the pattern changes.
 
-For reference, the wheel repos are canonically named following the pattern:
-`@{central_repo_name}_pypi__{distribution}_{version}`. Characters in the
-distribution and version that are illegal in Bazel label names (e.g. `-`, `.`)
-are replaced with `_`. While this naming pattern doesn't change often, it is
-not guaranted to remain stable, so use of the `requirement()` function is recommended. 
+On the other hand, using `requirement()` has several drawbacks; see
+[this issue][requirements-drawbacks] for an enumeration. If you don't
+want to use `requirement()` then you can instead use the library
+labels directly. For `pip_parse` the labels are of the form
+
+```
+@{name}_{package}//:pkg
+```
+
+Here `name` is the `name` attribute that was passed to `pip_parse` and
+`package` is the pip package name with characters that are illegal in
+Bazel label names (e.g. `-`, `.`) replaced with `_`. If you need to
+update `name` from "old" to "new", then you can run the following
+buildozer command:
+
+```
+buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...
+```
+
+For `pip_install` the labels are instead of the form
+
+```
+@{name}//pypi__{package}
+```
+
+[requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
 
 #### 'Extras' requirement consumption
 
@@ -204,15 +220,15 @@ you'd just put `requirement("useful_dep")`.
 
 ### Consuming Wheel Dists Directly
 
-If you need to depend on the wheel dists themselves, for instance to pass them	
+If you need to depend on the wheel dists themselves, for instance to pass them
 to some other packaging tool, you can get a handle to them with the `whl_requirement` macro. For example:
-	
+
 ```python
-filegroup(	
-    name = "whl_files",	
-    data = [	
-        whl_requirement("boto3"),	
-    ]	
+filegroup(
+    name = "whl_files",
+    data = [
+        whl_requirement("boto3"),
+    ]
 )
 ```
 

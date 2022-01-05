@@ -55,6 +55,7 @@ class Wheel:
             # Calculate the location of the entry_points.txt file
             metadata = self.metadata
             name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
+
             # Note that the zipfile module always uses the forward slash as
             # directory separator, even on Windows, so don't use os.path.join
             # here.  Reference for Python 3.10:

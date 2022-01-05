@@ -14,23 +14,11 @@ changes still come under the minor-version digit. So releases with API changes a
 those with only bug fixes and other minor changes bump the patch digit.   
 
 #### Steps 
-
-1. Update `version.bzl` with the new semantic version `X.Y.Z`.
-2. Run `bazel build //distro:rules_python-X.Y.Z` to build the distributed tarball.
-3. Calculate the Sha256 hash of the tarball. This hash will be used in the `http_archive` rules that download the new release.
-    1. Example command for OSX: `shasum --algorithm 256 bazel-bin/distro/rules_python-0.1.0.tar.gz`
-4. Update nested examples in `examples/*/WORKSPACE` to get the new semantic version with the new `sha256` hash.
-5. Create commit called "Release X.Y.Z"
-    1. ["release 0.1.0"](https://github.com/bazelbuild/rules_python/commit/c8c79aae9aa1b61d199ad03d5fe06338febd0774) is an example commit.
-6. Tag that commit as `X.Y.Z`. Eg. `git tag X.Y.Z`
-7. Push the commit and the new tag to `main`.
-8. Run `bazel build //distro:relnotes` from within workspace and then from repo root run `cat bazel-bin/distro/relnotes.txt` to get the 'install instructions' that are added as release notes.
-    1. Check the `sha256` value matches the one you calculated earlier.
-9. ["Draft a new release"](https://github.com/bazelbuild/rules_python/releases/new) in Github (manual for now), selecting the recently pushed `X.Y.Z` tag.
-Upload the release artifact from `rules_python-[version].tar.gz`. Also copy the `relnotes.txt` from step 8, adding anything extra if desired.
+1. Determine what will be the next release, following semver.
+1. Create a tag and push, e.g. `git tag 0.5.0 upstream/main && git push upstream --tags`
+1. Watch the release automation run on https://github.com/bazelbuild/rules_python/actions
     
 #### After release creation in Github
 
-1. Update `README.md` to point at new release.
-2. Ping @philwo to get the new release added to mirror.bazel.build. See [this comment on issue #400](https://github.com/bazelbuild/rules_python/issues/400#issuecomment-779159530) for more context.
-3. Announce the release in the #python channel in the Bazel slack (bazelbuild.slack.com). 
+1. Ping @philwo to get the new release added to mirror.bazel.build. See [this comment on issue #400](https://github.com/bazelbuild/rules_python/issues/400#issuecomment-779159530) for more context.
+1. Announce the release in the #python channel in the Bazel slack (bazelbuild.slack.com). 

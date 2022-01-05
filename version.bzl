@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The version of rules_python."""
-
-version = "0.5.0"
+"""Versions of rules_python dependencies."""
 
 # Currently used Bazel version. This version is what the rules here are tested
 # against.
