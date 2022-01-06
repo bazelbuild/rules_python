@@ -60,17 +60,20 @@ def main(conf_file):
                 bazel_args.insert(0, bazelBinary)
                 bazel_process = Popen(bazel_args, cwd=workdir)
                 bazel_process.wait()
+                error = bazel_process.returncode != 0
 
                 if platform.system() == "Windows":
                     # Cleanup any bazel files
                     bazel_process = Popen([bazelBinary, "clean"], cwd=workdir)
                     bazel_process.wait()
+                    error |= bazel_process.returncode != 0
 
                     # Shutdown the bazel instance to avoid issues cleaning up the workspace
                     bazel_process = Popen([bazelBinary, "shutdown"], cwd=workdir)
                     bazel_process.wait()
+                    error |= bazel_process.returncode != 0
 
-                if bazel_process.returncode != 0:
+                if error:
                     # Test failure in Bazel is exit 3
                     # https://github.com/bazelbuild/bazel/blob/486206012a664ecb20bdb196a681efc9a9825049/src/main/java/com/google/devtools/build/lib/util/ExitCode.java#L44
                     sys.exit(3)
