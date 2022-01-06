@@ -189,7 +189,7 @@ update `name` from "old" to "new", then you can run the following
 buildozer command:
 
 ```
-buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...
+buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...:*
 ```
 
 For `pip_install` the labels are instead of the form
