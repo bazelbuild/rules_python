@@ -46,6 +46,7 @@ filegroup(
         "defs.bzl",
         "packaging.bzl",
         "pip.bzl",
+        "//python/pip_install:bzl",
         "//python/private:bzl",
     ],
     visibility = ["//:__pkg__"],

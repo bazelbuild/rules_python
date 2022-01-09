@@ -1,6 +1,7 @@
 ""
 
 load("//python/pip_install:repositories.bzl", "all_requirements")
+load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -111,6 +112,18 @@ def _parse_optional_attrs(rctx, args):
 
     return args
 
+def _detect_changes(rctx):
+    """Ensure sources used by the `pip_repository` rule are tracked as inputs.
+
+    This function ensures that if any source file used by the rule changes,
+    that the repository rule is re-triggered.
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object
+    """
+    for src in rctx.attr._py_srcs:
+        rctx.path(src)
+
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
 
@@ -126,6 +139,8 @@ def _pip_repository_impl(rctx):
 
     # We need a BUILD file to load the generated requirements.bzl
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
+
+    _detect_changes(rctx)
 
     pypath = _construct_pypath(rctx)
 
@@ -249,6 +264,11 @@ For incremental mode the packages will be of the form
     "timeout": attr.int(
         default = 600,
         doc = "Timeout (in seconds) on the rule's execution duration.",
+    ),
+    "_py_srcs": attr.label_list(
+        doc = "Python sources used in the repository rule",
+        allow_files = True,
+        default = PIP_INSTALL_PY_SRCS,
     ),
 }
 
