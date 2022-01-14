@@ -60,8 +60,8 @@ def _spread_purelib(purelib_dir: pathlib.Path, root_dir: str) -> None:
     for child in purelib_dir.iterdir():
         if child.is_dir():
             backport_copytree(src=child, dst=pathlib.Path(root_dir, child.name))
-        elif not pathlib.Path(root_dir, grandchild.name).exists():
+        elif not pathlib.Path(root_dir, child.name).exists():
             shutil.copy(
-                src=str(grandchild),
+                src=str(child),
                 dst=root_dir,
             )
