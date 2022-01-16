@@ -77,12 +77,12 @@ def _srcs_installer_impl(ctx):
     )
 
 _srcs_installer = rule(
-    doc = "A rule for writing a file back to the repository",
+    doc = "A rule for writing a `srcs.bzl` file back to the repository",
     implementation = _srcs_installer_impl,
     attrs = {
         "dest": attr.label(
-            doc = "the file name to use for installation",
-            allow_single_file = True,
+            doc = "The target to use installation",
+            allow_single_file = ["srcs.bzl"],
             mandatory = True,
         ),
         "input": attr.label(
