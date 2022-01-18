@@ -1,6 +1,7 @@
 ""
 
 load("//python/pip_install:repositories.bzl", "all_requirements")
+load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -249,6 +250,11 @@ For incremental mode the packages will be of the form
     "timeout": attr.int(
         default = 600,
         doc = "Timeout (in seconds) on the rule's execution duration.",
+    ),
+    "_py_srcs": attr.label_list(
+        doc = "Python sources used in the repository rule",
+        allow_files = True,
+        default = PIP_INSTALL_PY_SRCS,
     ),
 }
 
