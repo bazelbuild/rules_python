@@ -6,6 +6,7 @@ from pathlib import Path
 
 from python.pip_install.parse_requirements_to_bzl import (
     generate_parsed_requirements_contents,
+    parse_whl_library_args,
 )
 
 
@@ -28,7 +29,12 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             args.python_interpreter = "/custom/python3"
             args.python_interpreter_target = "@custom_python//:exec"
             args.environment = json.dumps({"arg": {}})
-            contents = generate_parsed_requirements_contents(args)
+            whl_library_args = parse_whl_library_args(args)
+            contents = generate_parsed_requirements_contents(
+                requirements_lock=args.requirements_lock,
+                repo_prefix=args.repo_prefix,
+                whl_library_args=whl_library_args,
+            )
             library_target = "@pip_parsed_deps_pypi__foo//:pkg"
             whl_target = "@pip_parsed_deps_pypi__foo//:whl"
             all_requirements = 'all_requirements = ["{library_target}"]'.format(

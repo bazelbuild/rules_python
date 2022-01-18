@@ -12,7 +12,13 @@ import pathlib
 import subprocess
 import sys
 
-from python.pip_install.extract_wheels.lib import arguments, bazel, requirements
+from python.pip_install.extract_wheels.lib import (
+    annotation,
+    arguments,
+    bazel,
+    requirements,
+    wheel,
+)
 
 
 def configure_reproducible_wheels() -> None:
@@ -58,6 +64,11 @@ def main() -> None:
         required=True,
         help="Path to requirements.txt from where to install dependencies",
     )
+    parser.add_argument(
+        "--annotations",
+        type=annotation.annotations_map_from_str_path,
+        help="A json encoded file containing annotations for rendered packages.",
+    )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
     deserialized_args = dict(vars(args))
@@ -89,18 +100,26 @@ def main() -> None:
 
     repo_label = "@%s" % args.repo
 
+    # Locate all wheels
+    wheels = [whl for whl in glob.glob("*.whl")]
+
+    # Collect all annotations
+    reqs = {whl: wheel.Wheel(whl).name for whl in wheels}
+    annotations = args.annotations.collect(reqs.values())
+
     targets = [
         '"{}{}"'.format(
             repo_label,
             bazel.extract_wheel(
-                whl,
-                extras,
-                deserialized_args["pip_data_exclude"],
-                args.enable_implicit_namespace_pkgs,
-                args.repo_prefix,
+                wheel_file=whl,
+                extras=extras,
+                pip_data_exclude=deserialized_args["pip_data_exclude"],
+                enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
+                repo_prefix=args.repo_prefix,
+                annotation=annotations.get(name),
             ),
         )
-        for whl in glob.glob("*.whl")
+        for whl, name in reqs.items()
     ]
 
     with open("requirements.bzl", "w") as requirement_file:

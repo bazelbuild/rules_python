@@ -8,6 +8,7 @@ from tempfile import NamedTemporaryFile
 
 from python.pip_install.extract_wheels import configure_reproducible_wheels
 from python.pip_install.extract_wheels.lib import arguments, bazel, requirements
+from python.pip_install.extract_wheels.lib.annotation import annotation_from_str_path
 
 
 def main() -> None:
@@ -19,6 +20,11 @@ def main() -> None:
         action="store",
         required=True,
         help="A single PEP508 requirement specifier string.",
+    )
+    parser.add_argument(
+        "--annotation",
+        type=annotation_from_str_path,
+        help="A json encoded file containing annotations for rendered packages.",
     )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
@@ -61,10 +67,11 @@ def main() -> None:
 
     whl = next(iter(glob.glob("*.whl")))
     bazel.extract_wheel(
-        whl,
-        extras,
-        deserialized_args["pip_data_exclude"],
-        args.enable_implicit_namespace_pkgs,
+        wheel_file=whl,
+        extras=extras,
+        pip_data_exclude=deserialized_args["pip_data_exclude"],
+        enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
         incremental=True,
         repo_prefix=args.repo_prefix,
+        annotation=args.annotation,
     )
