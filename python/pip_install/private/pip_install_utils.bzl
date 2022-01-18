@@ -56,7 +56,7 @@ set -euo pipefail
 cp -f "{path}" "${{BUILD_WORKSPACE_DIRECTORY}}/{dest}"
 """
 
-def _srcs_installer_impl(ctx):
+def _srcs_updater_impl(ctx):
     output = ctx.actions.declare_file(ctx.label.name + ".sh")
     target_file = ctx.file.input
     dest = ctx.file.dest.short_path
@@ -76,12 +76,12 @@ def _srcs_installer_impl(ctx):
         executable = output,
     )
 
-_srcs_installer = rule(
+_srcs_updater = rule(
     doc = "A rule for writing a `srcs.bzl` file back to the repository",
-    implementation = _srcs_installer_impl,
+    implementation = _srcs_updater_impl,
     attrs = {
         "dest": attr.label(
-            doc = "The target to use installation",
+            doc = "The target file to write the new `input` to.",
             allow_single_file = ["srcs.bzl"],
             mandatory = True,
         ),
@@ -110,8 +110,8 @@ def srcs_module(name, dest, **kwargs):
         **kwargs
     )
 
-    _srcs_installer(
-        name = name + ".install",
+    _srcs_updater(
+        name = name + ".update",
         input = name,
         dest = dest,
         tags = tags,
