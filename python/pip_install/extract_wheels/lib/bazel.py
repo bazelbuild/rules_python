@@ -97,8 +97,12 @@ def generate_copy_commands(src, dest, is_executable=False) -> str:
         str: A `copy_file` instantiation.
     """
     return textwrap.dedent(
+        # Here we use the aliased rule `rules_python_copy_file` to avoid
+        # naming conflicts with users who want to use `copy_file` themselves.
+        # See `generate_build_file_contents` and make sure the alias here
+        # matches.
         """\
-        copy_file(
+        rules_python_copy_file(
             name = "{dest}.copy",
             src = "{src}",
             out = "{dest}",
@@ -160,7 +164,7 @@ def generate_build_file_contents(
             textwrap.dedent(
                 """\
         load("@rules_python//python:defs.bzl", "py_library", "py_binary")
-        load("@rules_python//third_party/github.com/bazelbuild/bazel-skylib/rules:copy_file.bzl", "copy_file")
+        load("@rules_python//third_party/github.com/bazelbuild/bazel-skylib/rules:copy_file.bzl", rules_python_copy_file = "copy_file")
 
         package(default_visibility = ["//visibility:public"])
 
