@@ -134,6 +134,17 @@ alias(
 )
 ```
 
+Similar to the `entry_point` macro, `setup_py_script` allows accessing
+[`setup.py` generated scripts][scripts]:
+```python
+load("@pip_deps//:requirements.bzl", "setup_py_script")
+alias(
+    name = "flake8",
+    actual = setup_py_script("flake8"),
+)
+```
+[scripts]: https://docs.python.org/3/distutils/setupscript.html#installing-scripts
+
 
 **PARAMETERS**
 
@@ -218,6 +229,17 @@ alias(
     actual = entry_point("flake8"),
 )
 ```
+
+Similar to the `entry_point` macro, `setup_py_script` allows accessing
+[`setup.py` generated scripts][scripts]:
+```python
+load("@pip_deps//:requirements.bzl", "setup_py_script")
+alias(
+    name = "flake8",
+    actual = setup_py_script("flake8"),
+)
+```
+[scripts]: https://docs.python.org/3/distutils/setupscript.html#installing-scripts
 
 ## Vendoring the requirements.bzl file
 

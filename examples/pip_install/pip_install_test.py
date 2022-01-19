@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import platform
 import subprocess
 import unittest
 from pathlib import Path
@@ -30,6 +31,28 @@ class PipInstallTest(unittest.TestCase):
             stderr=subprocess.PIPE,
         )
         self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.26.3")
+
+    @unittest.skipIf(
+        platform.system() == "Windows",
+        "The `setup_py_script` macro does not currently support windows",
+    )
+    def test_setup_py_script_s3cmd(self):
+        env = os.environ.get("S3CMD_SETUP_PY_SCRIPT")
+        self.assertIsNotNone(env)
+
+        r = runfiles.Create()
+
+        # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
+        script = Path(r.Rlocation("rules_python_pip_install_example/{}".format(env)))
+        self.assertTrue(script.exists())
+
+        proc = subprocess.run(
+            [str(script), "--version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(proc.stdout.decode("utf-8").strip(), "s3cmd version 2.1.0")
 
     def test_data(self):
         env = os.environ.get("WHEEL_DATA_CONTENTS")

@@ -23,7 +23,7 @@ class TestWhlFilegroup(unittest.TestCase):
         incremental: bool = False,
     ) -> None:
         generated_bazel_dir = bazel.extract_wheel(
-            self.wheel_path,
+            wheel_file=self.wheel_path,
             extras={},
             pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,

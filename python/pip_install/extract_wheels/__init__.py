@@ -117,6 +117,9 @@ def main() -> None:
                 enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
                 repo_prefix=args.repo_prefix,
                 annotation=annotations.get(name),
+                # Only `pip_install` uses this path so the `repo` arg
+                # is what's expected by this parameter.
+                pip_install_repo_name=args.repo,
             ),
         )
         for whl, name in reqs.items()

@@ -6,6 +6,7 @@ load(
     "dist_info_requirement",
     "entry_point",
     "requirement",
+    "setup_py_script",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
@@ -58,6 +59,11 @@ alias(
     actual = entry_point("yamllint"),
 )
 
+alias(
+    name = "s3cmd",
+    actual = setup_py_script("s3cmd"),
+)
+
 # Check that our compiled requirements are up-to-date
 compile_pip_requirements(
     name = "requirements",
@@ -69,11 +75,13 @@ py_test(
     name = "pip_install_test",
     srcs = ["pip_install_test.py"],
     data = [
+        ":s3cmd",
         ":yamllint",
         data_requirement("s3cmd"),
         dist_info_requirement("boto3"),
     ],
     env = {
+        "S3CMD_SETUP_PY_SCRIPT": "$(rootpath :s3cmd)",
         "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("boto3")),
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",

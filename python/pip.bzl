@@ -85,6 +85,17 @@ def pip_install(requirements, name = "pip", **kwargs):
     )
     ```
 
+    Similar to the `entry_point` macro, `setup_py_script` allows accessing
+    [`setup.py` generated scripts][scripts]:
+    ```python
+    load("@pip_deps//:requirements.bzl", "setup_py_script")
+    alias(
+        name = "flake8",
+        actual = setup_py_script("flake8"),
+    )
+    ```
+    [scripts]: https://docs.python.org/3/distutils/setupscript.html#installing-scripts
+
     Args:
         requirements (Label): A 'requirements.txt' pip requirements file.
         name (str, optional): A unique name for the created external repository (default 'pip').
@@ -167,6 +178,17 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
         actual = entry_point("flake8"),
     )
     ```
+
+    Similar to the `entry_point` macro, `setup_py_script` allows accessing
+    [`setup.py` generated scripts][scripts]:
+    ```python
+    load("@pip_deps//:requirements.bzl", "setup_py_script")
+    alias(
+        name = "flake8",
+        actual = setup_py_script("flake8"),
+    )
+    ```
+    [scripts]: https://docs.python.org/3/distutils/setupscript.html#installing-scripts
 
     ## Vendoring the requirements.bzl file
 

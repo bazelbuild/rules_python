@@ -132,6 +132,11 @@ def generate_parsed_requirements_contents(
                 script = pkg
             return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
 
+        def setup_py_script(pkg, script = None):
+            if not script:
+                script = pkg
+            return "@{repo_prefix}" + _clean_name(pkg) + "//:{setup_py_script_prefix}_" + script
+
         def _get_annotation(requirement):
             # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
             # down wo `setuptools`.
@@ -158,6 +163,7 @@ def generate_parsed_requirements_contents(
             repo_names_and_reqs=repo_names_and_reqs,
             repo_prefix=repo_prefix,
             wheel_file_label=bazel.WHEEL_FILE_LABEL,
+            setup_py_script_prefix=bazel.SETUP_PY_SCRIPT_PREFIX,
         )
     )
 
