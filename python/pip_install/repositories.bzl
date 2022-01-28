@@ -1,7 +1,6 @@
-""
+"""Dependencies used for pip rules"""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 # Avoid a load from @bazel_skylib repository as users don't necessarily have it installed
 load("//third_party/github.com/bazelbuild/bazel-skylib/lib:versions.bzl", "versions")
@@ -74,11 +73,11 @@ def pip_install_dependencies():
     versions.check("4.0.0")
 
     for (name, url, sha256) in _RULE_DEPS:
-        maybe(
-            http_archive,
-            name,
-            url = url,
-            sha256 = sha256,
-            type = "zip",
-            build_file_content = _GENERIC_WHEEL,
-        )
+        if not native.existing_rule(name):
+            http_archive(
+                name = name,
+                url = url,
+                sha256 = sha256,
+                type = "zip",
+                build_file_content = _GENERIC_WHEEL,
+            )
