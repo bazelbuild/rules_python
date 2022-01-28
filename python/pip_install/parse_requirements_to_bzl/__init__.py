@@ -209,9 +209,11 @@ If set, it will take precedence over python_interpreter.",
     arguments.parse_common_args(parser)
     args = parser.parse_args()
 
+    whl_library_args = parse_whl_library_args(args)
+
     # Check for any annotations which match packages in the locked requirements file
     install_requirements = parse_install_requirements(
-        args.requirements_lock, args.extra_pip_args
+        args.requirements_lock, whl_library_args["extra_pip_args"]
     )
     req_names = sorted([req.name for req, _ in install_requirements])
     annotations = args.annotations.collect(req_names)
@@ -230,8 +232,6 @@ If set, it will take precedence over python_interpreter.",
         )
 
     with open("requirements.bzl", "w") as requirement_file:
-        whl_library_args = parse_whl_library_args(args)
-
         requirement_file.write(
             generate_parsed_requirements_contents(
                 requirements_lock=args.requirements_lock,
