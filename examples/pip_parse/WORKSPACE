@@ -1,4 +1,4 @@
-workspace(name = "example_repo")
+workspace(name = "rules_python_pip_parse_example")
 
 local_repository(
     name = "rules_python",
