@@ -36,7 +36,10 @@ filegroup(
         "//third_party/github.com/bazelbuild/bazel-skylib/rules/private:distribution",
         "//tools:distribution",
     ],
-    visibility = ["//examples:__pkg__"],
+    visibility = [
+        "//examples:__pkg__",
+        "//tests:__pkg__",
+    ],
 )
 
 # Reexport of all bzl files used to allow downstream rules to generate docs

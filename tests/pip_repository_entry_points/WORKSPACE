@@ -1,0 +1,24 @@
+workspace(name = "pip_repository_annotations_example")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python:pip.bzl", "pip_install", "pip_parse")
+
+# For a more thorough example of `pip_parse`. See `@rules_python//examples/pip_parse`
+pip_parse(
+    name = "pip_parsed",
+    requirements_lock = "//:requirements.txt",
+)
+
+load("@pip_parsed//:requirements.bzl", "install_deps")
+
+install_deps()
+
+# For a more thorough example of `pip_install`. See `@rules_python//examples/pip_install`
+pip_install(
+    name = "pip_installed",
+    requirements = "//:requirements.txt",
+)
