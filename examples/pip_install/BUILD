@@ -88,6 +88,7 @@ py_test(
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("boto3")),
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
     },
+    deps = ["@rules_python//python/runfiles"],
 )
 
 # Assert that tags are present on resulting py_library,
