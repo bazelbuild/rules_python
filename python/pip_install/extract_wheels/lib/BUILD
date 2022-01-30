@@ -1,9 +1,11 @@
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
+load(":annotations_test_helpers.bzl", "package_annotation", "package_annotations_file")
 
 py_library(
     name = "lib",
     srcs = [
+        "annotation.py",
         "arguments.py",
         "bazel.py",
         "namespace_pkgs.py",
@@ -19,6 +21,43 @@ py_library(
         requirement("pkginfo"),
         requirement("setuptools"),
     ],
+)
+
+package_annotations_file(
+    name = "mock_annotations",
+    annotations = {
+        "pkg_a": package_annotation(),
+        "pkg_b": package_annotation(
+            data_exclude_glob = [
+                "*.foo",
+                "*.bar",
+            ],
+        ),
+        "pkg_c": package_annotation(
+            additive_build_content = """\
+cc_library(
+    name = "my_target",
+    hdrs = glob(["**/*.h"]),
+    srcs = glob(["**/*.cc"]),
+)
+""",
+            data = [":my_target"],
+        ),
+        "pkg_d": package_annotation(
+            srcs_exclude_glob = ["pkg_d/tests/**"],
+        ),
+    },
+    tags = ["manual"],
+)
+
+py_test(
+    name = "annotations_test",
+    size = "small",
+    srcs = ["annotations_test.py"],
+    data = [":mock_annotations"],
+    env = {"MOCK_ANNOTATIONS": "$(rootpath :mock_annotations)"},
+    tags = ["unit"],
+    deps = [":lib"],
 )
 
 py_test(
@@ -107,6 +146,15 @@ filegroup(
     srcs = glob(
         ["*"],
         exclude = ["*_test.py"],
+    ),
+    visibility = ["//python/pip_install:__subpackages__"],
+)
+
+filegroup(
+    name = "py_srcs",
+    srcs = glob(
+        include = ["**/*.py"],
+        exclude = ["**/*_test.py"],
     ),
     visibility = ["//python/pip_install:__subpackages__"],
 )

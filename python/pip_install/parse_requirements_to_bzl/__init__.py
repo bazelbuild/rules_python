@@ -3,20 +3,20 @@ import json
 import shlex
 import sys
 import textwrap
-from typing import List, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from pip._internal.network.session import PipSession
-from pip._internal.req import constructors, parse_requirements
+from pip._internal.req import constructors
 from pip._internal.req.req_file import (
     RequirementsFileParser,
     get_file_content,
     get_line_parser,
-    handle_line,
     preprocess,
 )
 from pip._internal.req.req_install import InstallRequirement
 
-from python.pip_install.extract_wheels.lib import arguments, bazel
+from python.pip_install.extract_wheels.lib import annotation, arguments, bazel
 
 
 def parse_install_requirements(
@@ -56,7 +56,25 @@ def repo_names_and_requirements(
     ]
 
 
-def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
+def parse_whl_library_args(args: argparse.Namespace) -> Dict[str, Any]:
+    whl_library_args = dict(vars(args))
+    whl_library_args = arguments.deserialize_structured_args(whl_library_args)
+    whl_library_args.setdefault("python_interpreter", sys.executable)
+
+    # These arguments are not used by `whl_library`
+    for arg in ("requirements_lock", "annotations"):
+        if arg in whl_library_args:
+            whl_library_args.pop(arg)
+
+    return whl_library_args
+
+
+def generate_parsed_requirements_contents(
+    requirements_lock: Path,
+    repo_prefix: str,
+    whl_library_args: Dict[str, Any],
+    annotations: Dict[str, str] = dict(),
+) -> str:
     """
     Parse each requirement from the requirements_lock file, and prepare arguments for each
     repository rule, which will represent the individual requirements.
@@ -64,28 +82,21 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
     Generates a requirements.bzl file containing a macro (install_deps()) which instantiates
     a repository rule for each requirment in the lock file.
     """
-
-    args = dict(vars(all_args))
-    args = arguments.deserialize_structured_args(args)
-    args.setdefault("python_interpreter", sys.executable)
-    # Pop this off because it wont be used as a config argument to the whl_library rule.
-    requirements_lock = args.pop("requirements_lock")
-
     install_req_and_lines = parse_install_requirements(
-        requirements_lock, args["extra_pip_args"]
+        requirements_lock, whl_library_args["extra_pip_args"]
     )
     repo_names_and_reqs = repo_names_and_requirements(
-        install_req_and_lines, args["repo_prefix"]
+        install_req_and_lines, repo_prefix
     )
     all_requirements = ", ".join(
         [
-            bazel.sanitised_repo_library_label(ir.name, repo_prefix=args["repo_prefix"])
+            bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix)
             for ir, _ in install_req_and_lines
         ]
     )
     all_whl_requirements = ", ".join(
         [
-            bazel.sanitised_repo_file_label(ir.name, repo_prefix=args["repo_prefix"])
+            bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix)
             for ir, _ in install_req_and_lines
         ]
     )
@@ -99,6 +110,7 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
 
         _packages = {repo_names_and_reqs}
         _config = {args}
+        _annotations = {annotations}
 
         def _clean_name(name):
             return name.replace("-", "_").replace(".", "_").lower()
@@ -120,24 +132,32 @@ def generate_parsed_requirements_contents(all_args: argparse.Namespace) -> str:
                 script = pkg
             return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
 
+        def _get_annotation(requirement):
+            # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
+            # down wo `setuptools`.
+            name = requirement.split(" ")[0].split("=")[0]
+            return _annotations.get(name)
+
         def install_deps():
             for name, requirement in _packages:
                 whl_library(
                     name = name,
                     requirement = requirement,
+                    annotation = _get_annotation(requirement),
                     **_config,
                 )
         """.format(
             all_requirements=all_requirements,
             all_whl_requirements=all_whl_requirements,
-            repo_names_and_reqs=repo_names_and_reqs,
-            args=args,
-            repo_prefix=args["repo_prefix"],
-            py_library_label=bazel.PY_LIBRARY_LABEL,
-            wheel_file_label=bazel.WHEEL_FILE_LABEL,
+            annotations=json.dumps(annotations),
+            args=whl_library_args,
             data_label=bazel.DATA_LABEL,
             dist_info_label=bazel.DIST_INFO_LABEL,
             entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
+            py_library_label=bazel.PY_LIBRARY_LABEL,
+            repo_names_and_reqs=repo_names_and_reqs,
+            repo_prefix=repo_prefix,
+            wheel_file_label=bazel.WHEEL_FILE_LABEL,
         )
     )
 
@@ -181,8 +201,42 @@ If set, it will take precedence over python_interpreter.",
         required=True,
         help="timeout to use for pip operation.",
     )
+    parser.add_argument(
+        "--annotations",
+        type=annotation.annotations_map_from_str_path,
+        help="A json encoded file containing annotations for rendered packages.",
+    )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
 
+    whl_library_args = parse_whl_library_args(args)
+
+    # Check for any annotations which match packages in the locked requirements file
+    install_requirements = parse_install_requirements(
+        args.requirements_lock, whl_library_args["extra_pip_args"]
+    )
+    req_names = sorted([req.name for req, _ in install_requirements])
+    annotations = args.annotations.collect(req_names)
+
+    # Write all rendered annotation files and generate a list of the labels to write to the requirements file
+    annotated_requirements = dict()
+    for name, content in annotations.items():
+        annotation_path = Path(name + ".annotation.json")
+        annotation_path.write_text(json.dumps(content, indent=4))
+        annotated_requirements.update(
+            {
+                name: "@{}//:{}.annotation.json".format(
+                    args.repo_prefix.rstrip("_"), name
+                )
+            }
+        )
+
     with open("requirements.bzl", "w") as requirement_file:
-        requirement_file.write(generate_parsed_requirements_contents(args))
+        requirement_file.write(
+            generate_parsed_requirements_contents(
+                requirements_lock=args.requirements_lock,
+                repo_prefix=args.repo_prefix,
+                whl_library_args=whl_library_args,
+                annotations=annotated_requirements,
+            )
+        )

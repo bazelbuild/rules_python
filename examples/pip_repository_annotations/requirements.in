@@ -1,0 +1,5 @@
+# This flag allows for regression testing requirements arguments in 
+# `pip_repository` rules.
+--extra-index-url https://pypi.python.org/simple/
+
+wheel

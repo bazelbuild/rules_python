@@ -13,11 +13,12 @@
 # limitations under the License.
 """Import pip requirements into Bazel."""
 
-load("//python/pip_install:pip_repository.bzl", "pip_repository")
+load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 
 compile_pip_requirements = _compile_pip_requirements
+package_annotation = _package_annotation
 
 def pip_install(requirements, name = "pip", **kwargs):
     """Accepts a `requirements.txt` file and installs the dependencies listed within.

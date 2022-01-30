@@ -1,0 +1,57 @@
+workspace(name = "pip_repository_annotations_example")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+    ],
+)
+
+load("@rules_python//python:pip.bzl", "package_annotation", "pip_install", "pip_parse")
+
+# Here we can see an example of annotations being applied to an arbitrary
+# package. For details on `package_annotation` and it's uses, see the
+# docs at @rules_python//docs:pip.md`.
+ANNOTATIONS = {
+    "wheel": package_annotation(
+        additive_build_content = """\
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+write_file(
+    name = "generated_file",
+    out = "generated_file.txt",
+    content = ["Hello world from build content file"],
+)
+""",
+        copy_executables = {"@pip_repository_annotations_example//:data/copy_executable.py": "copied_content/executable.py"},
+        copy_files = {"@pip_repository_annotations_example//:data/copy_file.txt": "copied_content/file.txt"},
+        data = [":generated_file"],
+        data_exclude_glob = ["*.dist-info/RECORD"],
+    ),
+}
+
+# For a more thorough example of `pip_parse`. See `@rules_python//examples/pip_parse`
+pip_parse(
+    name = "pip_parsed",
+    annotations = ANNOTATIONS,
+    requirements_lock = "//:requirements.txt",
+)
+
+load("@pip_parsed//:requirements.bzl", "install_deps")
+
+install_deps()
+
+# For a more thorough example of `pip_install`. See `@rules_python//examples/pip_install`
+pip_install(
+    name = "pip_installed",
+    annotations = ANNOTATIONS,
+    requirements = "//:requirements.txt",
+)
