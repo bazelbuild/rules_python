@@ -59,6 +59,7 @@ def compile_pip_requirements(
 
     deps = [
         requirement("click"),
+        requirement("colorama"),
         requirement("pip"),
         requirement("pip_tools"),
         requirement("setuptools"),

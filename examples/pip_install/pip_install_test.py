@@ -5,6 +5,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from rules_python.python.runfiles import runfiles
+
 
 class PipInstallTest(unittest.TestCase):
     maxDiff = None
@@ -13,11 +15,16 @@ class PipInstallTest(unittest.TestCase):
         env = os.environ.get("YAMLLINT_ENTRY_POINT")
         self.assertIsNotNone(env)
 
-        entry_point = Path(env)
+        r = runfiles.Create()
+
+        # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
+        entry_point = Path(
+            r.Rlocation("rules_python_pip_install_example/{}".format(env))
+        )
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(
-            [entry_point, "--version"],
+            [str(entry_point), "--version"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -36,13 +43,16 @@ class PipInstallTest(unittest.TestCase):
 
     def test_entry_point_int_return(self):
         env = os.environ.get("SPHINX_BUILD_ENTRY_POINT")
-        self.assertIsNotNone(env)
+        r = runfiles.Create()
 
-        entry_point = Path(env)
+        # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
+        entry_point = Path(
+            r.Rlocation("rules_python_pip_install_example/{}".format(env))
+        )
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(
-            [entry_point, "--version"],
+            [str(entry_point), "--version"],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
