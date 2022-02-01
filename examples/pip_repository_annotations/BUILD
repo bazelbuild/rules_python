@@ -18,7 +18,10 @@ py_test(
     srcs = ["pip_repository_annotations_test.py"],
     env = {"WHEEL_PKG_DIR": "pip_parsed_wheel"},
     main = "pip_repository_annotations_test.py",
-    deps = ["@pip_parsed_wheel//:pkg"],
+    deps = [
+        "@pip_parsed_wheel//:pkg",
+        "@rules_python//python/runfiles",
+    ],
 )
 
 py_test(
@@ -26,5 +29,8 @@ py_test(
     srcs = ["pip_repository_annotations_test.py"],
     env = {"WHEEL_PKG_DIR": "pip_installed/pypi__wheel"},
     main = "pip_repository_annotations_test.py",
-    deps = [requirement("wheel")],
+    deps = [
+        requirement("wheel"),
+        "@rules_python//python/runfiles",
+    ],
 )

@@ -12,6 +12,11 @@ _RULE_DEPS = [
         "fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6",
     ),
     (
+        "pypi__colorama",
+        "https://files.pythonhosted.org/packages/44/98/5b86278fbbf250d239ae0ecb724f8572af1c91f4a11edf4d36a206189440/colorama-0.4.4-py2.py3-none-any.whl",
+        "9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2",
+    ),
+    (
         "pypi__pip",
         "https://files.pythonhosted.org/packages/47/ca/f0d790b6e18b3a6f3bd5e80c2ee4edbb5807286c21cdd0862ca933f751dd/pip-21.1.3-py3-none-any.whl",
         "78cb760711fedc073246543801c84dc5377affead832e103ad0211f99303a204",

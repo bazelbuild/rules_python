@@ -87,4 +87,5 @@ py_test(
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("requests")),
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
     },
+    deps = ["@rules_python//python/runfiles"],
 )
