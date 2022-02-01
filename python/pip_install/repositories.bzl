@@ -77,8 +77,9 @@ def pip_install_dependencies():
     # repository rules so it's likely that most users get the right error.
     versions.check("4.0.0")
 
+    existing_rules = native.existing_rules()
     for (name, url, sha256) in _RULE_DEPS:
-        if not native.existing_rule(name):
+        if name not in existing_rules:
             http_archive(
                 name = name,
                 url = url,
