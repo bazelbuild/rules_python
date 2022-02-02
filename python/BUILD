@@ -49,7 +49,7 @@ filegroup(
         "//python/pip_install:bzl",
         "//python/private:bzl",
     ],
-    visibility = ["//:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 # ========= Core rules =========
