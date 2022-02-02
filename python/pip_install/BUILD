@@ -26,7 +26,7 @@ filegroup(
         "//python/pip_install/extract_wheels:py_srcs",
         "//python/pip_install/parse_requirements_to_bzl:py_srcs",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//python/pip_install/private:__pkg__"],
 )
 
 exports_files(
