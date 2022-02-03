@@ -53,13 +53,27 @@ def _python_repo_impl(rctx):
     )
     unzstd = rctx.which("unzstd")
     if not unzstd:
-        # TODO(f0rmiga): compile from source if not present.
-        fail("Missing unzstd: please install zstd https://github.com/facebook/zstd")
+        url = rctx.attr._zstd_url.format(version = rctx.attr._zstd_version)
+        rctx.download_and_extract(
+            url = url,
+            sha256 = rctx.attr._zstd_sha256,
+        )
+        working_directory = "zstd-{version}".format(version = rctx.attr._zstd_version)
+        rctx.execute(
+            ["make", "--jobs=4"],
+            timeout = 600,
+            quiet = True,
+            working_directory = working_directory,
+        )
+        zstd = "{working_directory}/zstd".format(working_directory = working_directory)
+        unzstd = "./unzstd"
+        rctx.symlink(zstd, unzstd)
+
     exec_result = rctx.execute([
         "tar",
         "--extract",
         "--strip-components=2",
-        "--use-compress-program=unzstd",
+        "--use-compress-program={unzstd}".format(unzstd = unzstd),
         "--file={}".format(release_filename),
     ])
     if exec_result.return_code:
@@ -100,7 +114,17 @@ py_runtime_pair(
 python_repositories = repository_rule(
     _python_repo_impl,
     doc = _DOC,
-    attrs = _ATTRS,
+    attrs = dict({
+        "_zstd_version": attr.string(
+            default = "1.5.2",
+        ),
+        "_zstd_url": attr.string(
+            default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
+        ),
+        "_zstd_sha256": attr.string(
+            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
+        ),
+    }, **_ATTRS),
 )
 
 # Wrapper macro around everything above, this is the primary API.
