@@ -25,6 +25,13 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
+load("//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
 load("//gazelle:deps.bzl", "gazelle_deps")
 
 # gazelle:repository_macro gazelle/deps.bzl%gazelle_deps

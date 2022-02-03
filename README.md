@@ -52,6 +52,14 @@ http_archive(
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
+
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+# Multiple versions are available in the @rules_python//python:versions.bzl file.
+python_register_toolchains(
+    name = "python310",
+    python_version = "3.10",
+)
 ```
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
