@@ -20,6 +20,7 @@ RELEASE_DATE = "20211017T1616"
 
 # The integrity hashes can be computed with:
 # shasum -b -a 384 [downloaded file] | awk '{ print $1 }' | xxd -r -p | base64
+# buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
     "3.8.12": {
         "x86_64-apple-darwin": "sha384-es0kCVBb4q5xSC09lOw83TKXtR6qdt0NeU56JtK7Y5M5V784k9MM2q8leE3QWGH6",
@@ -37,6 +38,7 @@ TOOL_VERSIONS = {
     },
 }
 
+# buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
     "3.8": "3.8.12",
     "3.9": "3.9.7",

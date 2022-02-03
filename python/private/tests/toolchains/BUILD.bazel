@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//python:defs.bzl", "py_test")
 load(":versions_test.bzl", "versions_test_suite")
 
 versions_test_suite(name = "versions_test")

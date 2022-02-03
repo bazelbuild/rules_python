@@ -24,16 +24,16 @@ platform-specific repositories.
 """
 
 PLATFORMS = {
-    "x86_64-apple-darwin": struct(
-        compatible_with = [
-            "@platforms//os:macos",
-            "@platforms//cpu:x86_64",
-        ],
-    ),
     "aarch64-apple-darwin": struct(
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
+        ],
+    ),
+    "x86_64-apple-darwin": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:x86_64",
         ],
     ),
     "x86_64-unknown-linux-gnu": struct(

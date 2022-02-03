@@ -29,8 +29,8 @@ def py_repositories():
 ########
 _DOC = "Fetch external tools needed for python toolchain."
 _ATTRS = {
-    "python_version": attr.string(mandatory = True, values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys()),
     "platform": attr.string(mandatory = True, values = PLATFORMS.keys()),
+    "python_version": attr.string(mandatory = True, values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys()),
 }
 
 def _python_repo_impl(rctx):
@@ -115,14 +115,14 @@ python_repositories = repository_rule(
     _python_repo_impl,
     doc = _DOC,
     attrs = dict({
-        "_zstd_version": attr.string(
-            default = "1.5.2",
+        "_zstd_sha256": attr.string(
+            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
         ),
         "_zstd_url": attr.string(
             default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
         ),
-        "_zstd_sha256": attr.string(
-            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
+        "_zstd_version": attr.string(
+            default = "1.5.2",
         ),
     }, **_ATTRS),
 )
