@@ -51,14 +51,6 @@ py_test(
 # used from the generated `pip_parse` repository to access a runnable binary.
 
 alias(
-    name = "sphinx-build",
-    actual = entry_point(
-        pkg = "sphinx",
-        script = "sphinx-build",
-    ),
-)
-
-alias(
     name = "yamllint",
     actual = entry_point("yamllint"),
 )
@@ -71,18 +63,22 @@ compile_pip_requirements(
     requirements_txt = "requirements_lock.txt",
 )
 
+filegroup(
+    name = "yamllint_pyz",
+    srcs = [":yamllint"],
+    output_group = "python_zip_file",
+)
+
 # Test the use of all pip_parse utilities in a single py_test
 py_test(
     name = "pip_parse_test",
     srcs = ["pip_parse_test.py"],
     data = [
-        ":sphinx-build",
         ":yamllint",
         data_requirement("s3cmd"),
         dist_info_requirement("requests"),
     ],
     env = {
-        "SPHINX_BUILD_ENTRY_POINT": "$(rootpath :sphinx-build)",
         "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("requests")),
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
