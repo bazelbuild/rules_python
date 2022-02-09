@@ -63,12 +63,6 @@ compile_pip_requirements(
     requirements_txt = "requirements_lock.txt",
 )
 
-filegroup(
-    name = "yamllint_pyz",
-    srcs = [":yamllint"],
-    output_group = "python_zip_file",
-)
-
 # Test the use of all pip_parse utilities in a single py_test
 py_test(
     name = "pip_parse_test",
