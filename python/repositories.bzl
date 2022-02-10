@@ -113,8 +113,8 @@ py_runtime_pair(
     rctx.file("BUILD.bazel", build_content)
 
     return {
-        "name": rctx.attr.name,
         "integrity": integrity,
+        "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
     }
