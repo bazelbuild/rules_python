@@ -29,26 +29,27 @@ def py_repositories():
 ########
 _DOC = "Fetch external tools needed for python toolchain."
 _ATTRS = {
+    "integrity": attr.string(mandatory = True),
     "platform": attr.string(mandatory = True, values = PLATFORMS.keys()),
     "python_version": attr.string(mandatory = True, values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys()),
 }
 
 def _python_repo_impl(rctx):
-    version = rctx.attr.python_version
-    if version in MINOR_MAPPING:
-        version = MINOR_MAPPING[version]
+    python_version = rctx.attr.python_version
+    platform = rctx.attr.platform
     release_filename = "cpython-{version}-{platform}-pgo+lto-{release_date}.tar.zst".format(
         release_date = RELEASE_DATE,
-        version = version,
-        platform = rctx.attr.platform,
+        version = python_version,
+        platform = platform,
     )
     url = "{release_url}/{release_filename}".format(
         release_url = RELEASE_URL,
         release_filename = release_filename,
     )
+    integrity = rctx.attr.integrity
     rctx.download(
         url = url,
-        integrity = TOOL_VERSIONS[version][rctx.attr.platform],
+        integrity = integrity,
         output = release_filename,
     )
     unzstd = rctx.which("unzstd")
@@ -111,6 +112,13 @@ py_runtime_pair(
 """
     rctx.file("BUILD.bazel", build_content)
 
+    return {
+        "name": rctx.attr.name,
+        "integrity": integrity,
+        "platform": platform,
+        "python_version": python_version,
+    }
+
 python_repositories = repository_rule(
     _python_repo_impl,
     doc = _DOC,
@@ -128,7 +136,7 @@ python_repositories = repository_rule(
 )
 
 # Wrapper macro around everything above, this is the primary API.
-def python_register_toolchains(name, **kwargs):
+def python_register_toolchains(name, python_version, **kwargs):
     """Convenience macro for users which does typical setup.
 
     - Create a repository for each built-in platform like "python_linux_amd64" -
@@ -142,15 +150,22 @@ def python_register_toolchains(name, **kwargs):
     control.
     Args:
         name: base name for all created repos, like "python38".
+        python_version: the Python version.
         **kwargs: passed to each python_repositories call.
     """
+    if python_version in MINOR_MAPPING:
+        python_version = MINOR_MAPPING[python_version]
+
     for platform in PLATFORMS.keys():
+        integrity = TOOL_VERSIONS[python_version][platform]
         python_repositories(
             name = "{name}_{platform}".format(
                 name = name,
                 platform = platform,
             ),
+            integrity = integrity,
             platform = platform,
+            python_version = python_version,
             **kwargs
         )
         native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
