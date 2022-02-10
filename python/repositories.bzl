@@ -34,7 +34,7 @@ _ATTRS = {
     "python_version": attr.string(mandatory = True, values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys()),
 }
 
-def _python_repo_impl(rctx):
+def _python_repository_impl(rctx):
     python_version = rctx.attr.python_version
     platform = rctx.attr.platform
     release_filename = "cpython-{version}-{platform}-pgo+lto-{release_date}.tar.zst".format(
@@ -119,8 +119,8 @@ py_runtime_pair(
         "python_version": python_version,
     }
 
-python_repositories = repository_rule(
-    _python_repo_impl,
+python_repository = repository_rule(
+    _python_repository_impl,
     doc = _DOC,
     attrs = dict({
         "_zstd_sha256": attr.string(
@@ -158,7 +158,7 @@ def python_register_toolchains(name, python_version, **kwargs):
 
     for platform in PLATFORMS.keys():
         integrity = TOOL_VERSIONS[python_version][platform]
-        python_repositories(
+        python_repository(
             name = "{name}_{platform}".format(
                 name = name,
                 platform = platform,
