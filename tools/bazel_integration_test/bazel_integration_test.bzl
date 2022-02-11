@@ -24,13 +24,6 @@ Note that if a command contains a bare `--` argument, the --test_arg passed to B
     ),
 }
 
-# Avoid using non-normalized paths (workspace/../other_workspace/path)
-def _to_manifest_path(ctx, file):
-    if file.short_path.startswith("../"):
-        return file.short_path[3:]
-    else:
-        return ctx.workspace_name + "/" + file.short_path
-
 def _config_impl(ctx):
     if len(SUPPORTED_BAZEL_VERSIONS) > 1:
         fail("""
