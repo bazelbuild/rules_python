@@ -88,6 +88,7 @@ load("@bazel_tools//tools/python:toolchain.bzl", "py_runtime_pair")
 filegroup(
     name = "files",
     srcs = glob(["bin/**", "lib/**", "include/**", "share/**"]),
+    visibility = ["//visibility:public"],
 )
 
 exports_files(["bin/python3"])
