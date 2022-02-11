@@ -133,8 +133,6 @@ def _pip_repository_impl(rctx):
     annotations_file = rctx.path("annotations.json")
     rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
 
-    pypath = _construct_pypath(rctx)
-
     if rctx.attr.incremental:
         args = [
             python_interpreter,
@@ -339,8 +337,6 @@ py_binary(
 def _whl_library_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
 
-    # pointer to parent repo so these rules rerun if the definitions in requirements.bzl change.
-    _parent_repo_label = Label("@{parent}//:requirements.bzl".format(parent = rctx.attr.repo))
     args = [
         python_interpreter,
         "-m",
