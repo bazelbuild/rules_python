@@ -15,10 +15,10 @@
 
 # Currently used Bazel version. This version is what the rules here are tested
 # against.
-# This version should be updated together with the version of the Bazel
+# This version should be updated together with the version of Bazel
 # in .bazelversion.
 # TODO(alexeagle): assert this is the case in a test
-BAZEL_VERSION = "4.0.0"
+BAZEL_VERSION = "4.2.2"
 
 # Versions of Bazel which users should be able to use.
 # Ensures we don't break backwards-compatibility,
