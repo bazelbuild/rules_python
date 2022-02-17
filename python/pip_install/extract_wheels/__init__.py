@@ -65,6 +65,12 @@ def main() -> None:
         help="Path to requirements.txt from where to install dependencies",
     )
     parser.add_argument(
+        "--constraints",
+        action="store",
+        required=False,
+        help="Path to constraints.txt, to find the versions that should be used",
+    )
+    parser.add_argument(
         "--annotations",
         type=annotation.annotations_map_from_str_path,
         help="A json encoded file containing annotations for rendered packages.",
@@ -80,7 +86,9 @@ def main() -> None:
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
-        + ["wheel", "-r", args.requirements]
+        + ["wheel"]
+        + (["-c", args.constraints] if args.constraints else [])
+        + ["-r", args.requirements]
         + ["--wheel-dir", os.getcwd()]
         + deserialized_args["extra_pip_args"]
     )

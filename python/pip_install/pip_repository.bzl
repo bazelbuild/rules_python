@@ -163,6 +163,8 @@ def _pip_repository_impl(rctx):
             "--annotations",
             annotations_file,
         ]
+        if rctx.attr.constraints:
+            args += ["--constraints", rctx.path(rctx.attr.constraints)]
 
     args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
     args = _parse_optional_attrs(rctx, args)
@@ -272,6 +274,10 @@ pip_repository_attrs = {
     "incremental": attr.bool(
         default = False,
         doc = "Create the repository in incremental mode.",
+    ),
+    "constraints": attr.label(
+        allow_single_file = True,
+        doc = "A 'constraints.txt' pip constraints file.",
     ),
     "requirements": attr.label(
         allow_single_file = True,
