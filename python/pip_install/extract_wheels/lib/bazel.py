@@ -142,6 +142,7 @@ def generate_build_file_contents(
     data_exclude = list(
         set(
             [
+                "*.dist-info/**",
                 "*.whl",
                 "**/__pycache__/**",
                 "**/* *",
