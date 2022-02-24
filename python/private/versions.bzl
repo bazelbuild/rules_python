@@ -15,32 +15,33 @@
 """The Python versions we use for the toolchains.
 """
 
-RELEASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download/20211017"
-RELEASE_DATE = "20211017T1616"
+RELEASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download/20220227"
+RELEASE_DATE = "20220227"
 
-# The integrity hashes can be computed with:
-# shasum -b -a 384 [downloaded file] | awk '{ print $1 }' | xxd -r -p | base64
 # buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
     "3.8.12": {
-        "x86_64-apple-darwin": "sha384-es0kCVBb4q5xSC09lOw83TKXtR6qdt0NeU56JtK7Y5M5V784k9MM2q8leE3QWGH6",
-        "x86_64-unknown-linux-gnu": "sha384-61BjosOUm+Uo2yDtkLcRqbSIAXIPiHKmvySGO2J/GSOHXkj5QBf4cwzrDuOWR0H2",
+        "x86_64-apple-darwin": "sha256-8yP7xVgDXBOoXOImfQ+tnokoImjsuBDjZP/x0KB51SU=",
+        "x86_64-pc-windows-msvc": "sha256-kk+f1R/2zMUz7Y6WxUYXaNpXges9/BHYRvnjAPq0Tto=",
+        "x86_64-unknown-linux-gnu": "sha256-W+nG1h4ji5Df2UdVBRwNOi2AI+v/20sPpOj+3QmmyrY=",
     },
-    "3.9.7": {
-        "x86_64-apple-darwin": "sha384-Ix7lxb+niRWcDCOsK1q53dAkOp0CIw40kM8wHv//WQs2O/il8SRJ60cP3R67fEnm",
-        "aarch64-apple-darwin": "sha384-JSi3XZdHVZ+6DMybPYKgEYSQuBPpjXgBlj1uGqB9f/r3Wi6P0+CnYRG12TEzgcs6",
-        "x86_64-unknown-linux-gnu": "sha384-+PNcmKXJ+ZiyKyZ2WR1XedDXJ05ujC2w9TdXl80vloYMqfIOpcVPOWUgre+btI+3",
+    "3.9.10": {
+        "aarch64-apple-darwin": "sha256-rWbCo+cmMUfgRqMmlN57iXpG+wEkQJ0p06k+3mMciu4=",
+        "x86_64-apple-darwin": "sha256-/a9ZQUJEYCnjFKm+uR8ax1r4ZjILULi5aBgeWSVQzWg=",
+        "x86_64-pc-windows-msvc": "sha256-W8Zc4CNhS/SWpnSOQdypNLcPxfrG36zEaqjbytdyr8I=",
+        "x86_64-unknown-linux-gnu": "sha256-RVCJzFdr2aWNtF6RnR/IZ+zbsCCAZ9/8hFzJu/BwG3A=",
     },
-    "3.10.0": {
-        "x86_64-apple-darwin": "sha384-eVTq704heZyKW6SB/DzarWB9S5bRH1LTQ4rFHzlKTE9jDjHDCBKyQhSgYy8a62lt",
-        "aarch64-apple-darwin": "sha384-NbhxnZL0pBTKpzEfoCYWl6s2GYdfiI9HOSSHn1iCMZnIY6htt/KhzjwIgCP+Nj2u",
-        "x86_64-unknown-linux-gnu": "sha384-iYJF9Y9o2Ain3YkuuF7ZGrGuJ+MyiD/xnrjJSap0TF2DR+I9XDx4stunNgx17gSn",
+    "3.10.2": {
+        "aarch64-apple-darwin": "sha256-FAms2aUG4tHTtlwUiNtOQNjxnQmn3wmWZ8h6UG9xwO8=",
+        "x86_64-apple-darwin": "sha256-gUatQ5BxDsabMWpWSZEt8CR9NfSkLiqpYVv/2Hs+I1o=",
+        "x86_64-pc-windows-msvc": "sha256-opPFg43ZyEOKhDcvuV3al1LfY5KKiirlFkOPGH+JVn0=",
+        "x86_64-unknown-linux-gnu": "sha256-m2TsoqlPev+UCa1wvap/u/gUhpJmLnZEAYg5V5Q2IN0=",
     },
 }
 
 # buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
     "3.8": "3.8.12",
-    "3.9": "3.9.7",
-    "3.10": "3.10.0",
+    "3.9": "3.9.10",
+    "3.10": "3.10.2",
 }
