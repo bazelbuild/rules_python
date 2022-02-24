@@ -142,10 +142,10 @@ def generate_build_file_contents(
     data_exclude = list(
         set(
             [
-                "*.dist-info/**",
                 "*.whl",
                 "**/__pycache__/**",
                 "**/* *",
+                "**/*.dist-info/**",
                 "**/*.py",
                 "**/*.pyc",
                 "BUILD.bazel",
