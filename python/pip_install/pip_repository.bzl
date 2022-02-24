@@ -271,13 +271,13 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
-    "incremental": attr.bool(
-        default = False,
-        doc = "Create the repository in incremental mode.",
-    ),
     "constraints": attr.label(
         allow_single_file = True,
         doc = "A 'constraints.txt' pip constraints file.",
+    ),
+    "incremental": attr.bool(
+        default = False,
+        doc = "Create the repository in incremental mode.",
     ),
     "requirements": attr.label(
         allow_single_file = True,
