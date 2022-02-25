@@ -15,7 +15,7 @@ if len(sys.argv) < 4:
 
 requirements_in = os.path.relpath(sys.argv.pop(1))
 requirements_txt = sys.argv.pop(1)
-update_target_name = sys.argv.pop(1)
+update_target_label = sys.argv.pop(1)
 
 # Before loading click, set the locale for its parser.
 # If it leaks through to the system setting, it may fail:
@@ -65,9 +65,8 @@ update_target_pkg = "/".join(requirements_in.split("/")[:-1])
 # $(rootpath) in the workspace root gives ./requirements.in
 if update_target_pkg == ".":
     update_target_pkg = ""
-update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run //%s:%s" % (
-    update_target_pkg,
-    update_target_name,
+update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
+    update_target_label,
 )
 
 os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
