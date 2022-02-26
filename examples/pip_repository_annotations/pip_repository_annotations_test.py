@@ -64,33 +64,6 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         stdout = proc.stdout.decode("utf-8").strip()
         self.assertEqual(stdout, "Hello world from copied executable")
 
-    def test_data_exclude_glob(self):
-        current_wheel_version = "0.37.1"
-
-        r = runfiles.Create()
-        dist_info_dir = (
-            "pip_repository_annotations_example/external/{}/wheel-{}.dist-info".format(
-                self.wheel_pkg_dir(),
-                current_wheel_version,
-            )
-        )
-
-        # `WHEEL` is expected to be there to show dist-info files are included in the runfiles
-        wheel_path = r.Rlocation("{}/WHEEL".format(dist_info_dir))
-
-        # However, `RECORD` was explicitly excluded, so it should be missing
-        record_path = r.Rlocation("{}/RECORD".format(dist_info_dir))
-
-        # Because windows does not have `--enable_runfiles` on by default, the
-        # `runfiles.Rlocation` results will be different on this platform vs
-        # unix platforms. See `@rules_python//python/runfiles` for more details.
-        if platform.system() == "Windows":
-            self.assertIsNotNone(wheel_path)
-            self.assertIsNone(record_path)
-        else:
-            self.assertTrue(Path(wheel_path).exists())
-            self.assertFalse(Path(record_path).exists())
-
 
 if __name__ == "__main__":
     unittest.main()
