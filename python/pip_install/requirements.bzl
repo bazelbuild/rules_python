@@ -54,7 +54,7 @@ def compile_pip_requirements(
     args = [
         loc % requirements_in,
         loc % requirements_txt,
-        name + ".update",
+        "//%s:%s.update" % (native.package_name(), name),
     ] + extra_args
 
     deps = [
