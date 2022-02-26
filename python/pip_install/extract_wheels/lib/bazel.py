@@ -149,6 +149,7 @@ def generate_build_file_contents(
                 "*.whl",
                 "**/__pycache__/**",
                 "**/* *",
+                "**/*.dist-info/**",
                 "**/*.py",
                 "**/*.pyc",
                 "BUILD.bazel",

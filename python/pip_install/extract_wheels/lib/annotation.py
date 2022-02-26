@@ -81,7 +81,10 @@ class AnnotationsMap:
             if pkg in unused:
                 collection.update({pkg: unused.pop(pkg)})
 
-        logging.warning("Unused annotations: {}".format(sorted(list(unused.keys()))))
+        if unused:
+            logging.warning(
+                "Unused annotations: {}".format(sorted(list(unused.keys())))
+            )
 
         return collection
 
