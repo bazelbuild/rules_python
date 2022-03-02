@@ -36,33 +36,18 @@ def py_repositories():
 def _python_repository_impl(rctx):
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
-    (release_filename, url) = get_release_url(platform, python_version)
+    (_, url) = get_release_url(platform, python_version)
     download_result = rctx.download_and_extract(
         url = url,
         sha256 = rctx.attr.sha256,
         stripPrefix = "python",
     )
 
-    # Remove files with spaces.
-    if "win" in rctx.os.name:
-        arguments = [
-            "powershell.exe",
-            "-c",
-            """Get-ChildItem -File -Path "$(Get-Location)" -Include "* *" -Recurse | Remove-Item -Force -Verbose""",
-        ]
-    else:
-        arguments = [
-            "find",
-            ".",
-            "-type",
-            "f",
-            "-name",
-            "*[[:space:]]*",
-            "-delete",
-        ]
-    exec_result = rctx.execute(arguments)
-    if exec_result.return_code:
-        fail(exec_result.stderr)
+    # Make the Python installation read-only.
+    if "windows" not in rctx.os.name:
+        exec_result = rctx.execute(["chmod", "--recursive", "ugo-w", "lib"])
+        if exec_result.return_code:
+            fail(exec_result.stderr)
 
     python_bin = "python.exe" if ("windows" in rctx.attr.platform) else "bin/python3"
 
@@ -87,7 +72,7 @@ filegroup(
             "share/**",
         ],
         exclude = [
-            "**/__pycache__/**",
+            "**/* *", # Bazel does not support spaces in file names.
         ],
     ),
 )
