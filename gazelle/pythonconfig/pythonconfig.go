@@ -7,6 +7,7 @@ import (
 
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 
+	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
@@ -141,7 +142,6 @@ func (c *Config) NewChild() *Config {
 		extensionEnabled:         c.extensionEnabled,
 		repoRoot:                 c.repoRoot,
 		pythonProjectRoot:        c.pythonProjectRoot,
-		gazelleManifest:          c.gazelleManifest,
 		excludedPatterns:         c.excludedPatterns,
 		ignoreFiles:              make(map[string]struct{}),
 		ignoreDependencies:       make(map[string]struct{}),
@@ -190,20 +190,37 @@ func (c *Config) SetGazelleManifest(gazelleManifest *manifest.Manifest) {
 	c.gazelleManifest = gazelleManifest
 }
 
-// PipRepository returns the pip repository name from the manifest.
-func (c *Config) PipRepository() string {
-	if c.gazelleManifest != nil {
-		return c.gazelleManifest.PipDepsRepositoryName
+// FindThirdPartyDependency scans the gazelle manifests for the current config
+// and the parent configs up to the root finding if it can resolve the module
+// name.
+func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
+	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
+		if currentCfg.gazelleManifest != nil {
+			gazelleManifest := currentCfg.gazelleManifest
+			if distributionName, ok := gazelleManifest.ModulesMapping[modName]; ok {
+				var distributionRepositoryName string
+				if gazelleManifest.PipDepsRepositoryName != "" {
+					distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
+				} else if gazelleManifest.PipRepository != nil {
+					distributionRepositoryName = gazelleManifest.PipRepository.Name
+				}
+				sanitizedDistribution := strings.ToLower(distributionName)
+				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
+				var lbl label.Label
+				if gazelleManifest.PipRepository != nil && gazelleManifest.PipRepository.Incremental {
+					// @<repository_name>_<distribution_name>//:pkg
+					distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
+					lbl = label.New(distributionRepositoryName, "", "pkg")
+				} else {
+					// @<repository_name>//pypi__<distribution_name>
+					distributionPackage := "pypi__" + sanitizedDistribution
+					lbl = label.New(distributionRepositoryName, distributionPackage, distributionPackage)
+				}
+				return lbl.String(), true
+			}
+		}
 	}
-	return ""
-}
-
-// ModulesMapping returns the modules mapping from the manifest.
-func (c *Config) ModulesMapping() map[string]string {
-	if c.gazelleManifest != nil {
-		return c.gazelleManifest.ModulesMapping
-	}
-	return map[string]string{}
+	return "", false
 }
 
 // AddIgnoreFile adds a file to the list of ignored files for a given package.

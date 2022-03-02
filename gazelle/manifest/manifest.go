@@ -100,7 +100,18 @@ type Manifest struct {
 	// wheel name provides these modules.
 	ModulesMapping map[string]string `yaml:"modules_mapping"`
 	// PipDepsRepositoryName is the name of the pip_install repository target.
-	PipDepsRepositoryName string `yaml:"pip_deps_repository_name"`
+	// DEPRECATED
+	PipDepsRepositoryName string `yaml:"pip_deps_repository_name,omitempty"`
+	// PipRepository contains the information for pip_install or pip_repository
+	// target.
+	PipRepository *PipRepository `yaml:"pip_repository,omitempty"`
+}
+
+type PipRepository struct {
+	// The name of the pip_install or pip_repository target.
+	Name string
+	// The incremental property of pip_repository.
+	Incremental bool
 }
 
 // sha256File calculates the checksum of a given file path.
