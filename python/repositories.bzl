@@ -133,7 +133,7 @@ py_runtime_pair(
 
 python_repository = repository_rule(
     _python_repository_impl,
-    doc = "Fetch external tools needed for python toolchain.",
+    doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
         "integrity": attr.string(
             doc = "TODO",
