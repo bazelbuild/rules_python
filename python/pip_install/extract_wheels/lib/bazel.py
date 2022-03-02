@@ -146,7 +146,6 @@ def generate_build_file_contents(
     dist_info_ignores = [
         "**/*.dist-info/METADATA",
         "**/*.dist-info/RECORD",
-        "**/*.dist-info/WHEEL",
     ]
 
     data_exclude = list(
