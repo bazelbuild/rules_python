@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -171,16 +170,6 @@ type module struct {
 	LineNumber uint32 `json:"lineno"`
 	// The path to the module file relative to the Bazel workspace root.
 	Filepath string `json:"filepath"`
-}
-
-// path returns the replaced dots with the os-specific path separator.
-func (m *module) path() string {
-	return filepath.Join(strings.Split(m.Name, ".")...)
-}
-
-// bazelPath returns the replaced dots with forward slashes.
-func (m *module) bazelPath() string {
-	return strings.ReplaceAll(m.Name, ".", "/")
 }
 
 // moduleComparator compares modules by name.
