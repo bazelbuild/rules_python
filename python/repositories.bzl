@@ -136,7 +136,7 @@ python_repository = repository_rule(
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
         "integrity": attr.string(
-            doc = "TODO",
+            doc = "The integrity hash for the Python interpreter tarball.",
             mandatory = True,
         ),
         "platform": attr.string(
