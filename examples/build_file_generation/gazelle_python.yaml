@@ -126,5 +126,7 @@ manifest:
     urllib3.util.timeout: urllib3
     urllib3.util.url: urllib3
     urllib3.util.wait: urllib3
-  pip_deps_repository_name: pip
-integrity: 575d259c512b4b80f9923d1623d2aae3038654b731a4e088bf268e01138b6411
+  pip_repository:
+    name: pip
+    incremental: true
+integrity: c47bf2ca0a185cf6b8815d4a61e26e7457564e931de76c70653277e4eccfadc8

@@ -3,7 +3,7 @@ load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 # This rule fetches the metadata for python packages we depend on. That data is
 # required for the gazelle_python_manifest rule to update our manifest file.
@@ -22,7 +22,8 @@ modules_mapping(
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
-    pip_deps_repository_name = "pip",
+    pip_repository_incremental = True,
+    pip_repository_name = "pip",
     requirements = "//:requirements_lock.txt",
 )
 
@@ -43,4 +44,13 @@ py_library(
     name = "build_file_generation",
     srcs = ["__init__.py"],
     visibility = ["//:__subpackages__"],
+    deps = ["@pip_requests//:pkg"],
+)
+
+py_binary(
+    name = "build_file_generation_bin",
+    srcs = ["__main__.py"],
+    main = "__main__.py",
+    visibility = ["//:__subpackages__"],
+    deps = [":build_file_generation"],
 )

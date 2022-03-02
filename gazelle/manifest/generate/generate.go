@@ -25,7 +25,8 @@ func init() {
 
 func main() {
 	var requirementsPath string
-	var pipDepsRepositoryName string
+	var pipRepositoryName string
+	var pipRepositoryIncremental bool
 	var modulesMappingPath string
 	var outputPath string
 	var updateTarget string
@@ -35,10 +36,15 @@ func main() {
 		"",
 		"The requirements.txt file.")
 	flag.StringVar(
-		&pipDepsRepositoryName,
-		"pip-deps-repository-name",
+		&pipRepositoryName,
+		"pip-repository-name",
 		"",
-		"The name of the pip_install repository target.")
+		"The name of the pip_install or pip_repository target.")
+	flag.BoolVar(
+		&pipRepositoryIncremental,
+		"pip-repository-incremental",
+		false,
+		"The value for the incremental option in pip_repository.")
 	flag.StringVar(
 		&modulesMappingPath,
 		"modules-mapping",
@@ -80,8 +86,11 @@ func main() {
 	header := generateHeader(updateTarget)
 
 	manifestFile := manifest.NewFile(&manifest.Manifest{
-		ModulesMapping:        modulesMapping,
-		PipDepsRepositoryName: pipDepsRepositoryName,
+		ModulesMapping: modulesMapping,
+		PipRepository: &manifest.PipRepository{
+			Name:        pipRepositoryName,
+			Incremental: pipRepositoryIncremental,
+		},
 	})
 	if err := writeOutput(outputPath, header, manifestFile, requirementsPath); err != nil {
 		log.Fatalf("ERROR: %v\n", err)

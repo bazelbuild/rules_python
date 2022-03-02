@@ -58,7 +58,9 @@ gazelle_python_manifest(
     modules_mapping = ":modules_map",
     # This is what we called our `pip_install` rule, where third-party
     # python libraries are loaded in BUILD files.
-    pip_deps_repository_name = "pip",
+    pip_repository_name = "pip",
+    # If using pip_parse incremental, switch the following to True,
+    pip_repository_incremental = False,
     # This should point to wherever we declare our python dependencies
     # (the same as what we passed to the modules_mapping rule in WORKSPACE)
     requirements = "//:requirements_lock.txt",
