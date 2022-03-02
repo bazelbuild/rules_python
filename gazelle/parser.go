@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -91,64 +90,61 @@ func newPython3Parser(
 	}
 }
 
-// parseAll parses all provided Python files by consecutively calling p.parse.
-func (p *python3Parser) parseAll(pyFilepaths *treeset.Set) (*treeset.Set, error) {
-	allModules := treeset.NewWith(moduleComparator)
-	it := pyFilepaths.Iterator()
-	for it.Next() {
-		modules, err := p.parse(it.Value().(string))
-		if err != nil {
-			return nil, err
-		}
-		modulesIt := modules.Iterator()
-		for modulesIt.Next() {
-			allModules.Add(modulesIt.Value())
-		}
-	}
-	return allModules, nil
+// parseSingle parses a single Python file and returns the extracted modules
+// from the import statements as well as the parsed comments.
+func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, error) {
+	pyFilenames := treeset.NewWith(godsutils.StringComparator)
+	pyFilenames.Add(pyFilename)
+	return p.parse(pyFilenames)
 }
 
-// parse parses a Python file and returns the extracted modules from the import
-// statements. An error is raised if communicating with the long-lived Python
-// parser over stdin and stdout fails.
-func (p *python3Parser) parse(pyFilepath string) (*treeset.Set, error) {
+// parse parses multiple Python files and returns the extracted modules from
+// the import statements as well as the parsed comments.
+func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, error) {
 	parserMutex.Lock()
 	defer parserMutex.Unlock()
 
 	modules := treeset.NewWith(moduleComparator)
 
-	relFilepath := filepath.Join(p.relPackagePath, pyFilepath)
-	absFilepath := filepath.Join(p.repoRoot, relFilepath)
-	fmt.Fprintln(parserStdin, absFilepath)
+	req := map[string]interface{}{
+		"repo_root":        p.repoRoot,
+		"rel_package_path": p.relPackagePath,
+		"filenames":        pyFilenames.Values(),
+	}
+	encoder := json.NewEncoder(parserStdin)
+	if err := encoder.Encode(&req); err != nil {
+		return nil, fmt.Errorf("failed to parse: %w", err)
+	}
+
 	reader := bufio.NewReader(parserStdout)
 	data, err := reader.ReadBytes(0)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", pyFilepath, err)
+		return nil, fmt.Errorf("failed to parse: %w", err)
 	}
 	data = data[:len(data)-1]
-	var res parserResponse
-	if err := json.Unmarshal(data, &res); err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", pyFilepath, err)
+	var allRes []parserResponse
+	if err := json.Unmarshal(data, &allRes); err != nil {
+		return nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
-	annotations := annotationsFromComments(res.Comments)
+	for _, res := range allRes {
+		annotations := annotationsFromComments(res.Comments)
 
-	for _, m := range res.Modules {
-		// Check for ignored dependencies set via an annotation to the Python
-		// module.
-		if annotations.ignores(m.Name) {
-			continue
+		for _, m := range res.Modules {
+			// Check for ignored dependencies set via an annotation to the Python
+			// module.
+			if annotations.ignores(m.Name) {
+				continue
+			}
+
+			// Check for ignored dependencies set via a Gazelle directive in a BUILD
+			// file.
+			if p.ignoresDependency(m.Name) {
+				continue
+			}
+
+			modules.Add(m)
 		}
-
-		// Check for ignored dependencies set via a Gazelle directive in a BUILD
-		// file.
-		if p.ignoresDependency(m.Name) {
-			continue
-		}
-
-		m.Filepath = relFilepath
-
-		modules.Add(m)
 	}
 
 	return modules, nil
@@ -173,17 +169,7 @@ type module struct {
 	// The line number where the import happened.
 	LineNumber uint32 `json:"lineno"`
 	// The path to the module file relative to the Bazel workspace root.
-	Filepath string
-}
-
-// path returns the replaced dots with the os-specific path separator.
-func (m *module) path() string {
-	return filepath.Join(strings.Split(m.Name, ".")...)
-}
-
-// bazelPath returns the replaced dots with forward slashes.
-func (m *module) bazelPath() string {
-	return strings.ReplaceAll(m.Name, ".", "/")
+	Filepath string `json:"filepath"`
 }
 
 // moduleComparator compares modules by name.

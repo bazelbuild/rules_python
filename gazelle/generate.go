@@ -191,7 +191,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var pyLibrary *rule.Rule
 	if !pyLibraryFilenames.Empty() {
-		deps, err := parser.parseAll(pyLibraryFilenames)
+		deps, err := parser.parse(pyLibraryFilenames)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -228,7 +228,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	if hasPyBinary {
-		deps, err := parser.parse(pyBinaryEntrypointFilename)
+		deps, err := parser.parseSingle(pyBinaryEntrypointFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -275,7 +275,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			// the file exists on disk.
 			pyTestFilenames.Add(pyTestEntrypointFilename)
 		}
-		deps, err := parser.parseAll(pyTestFilenames)
+		deps, err := parser.parse(pyTestFilenames)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
