@@ -177,7 +177,10 @@ def python_register_toolchains(name, python_version, **kwargs):
         python_version = MINOR_MAPPING[python_version]
 
     for platform in PLATFORMS.keys():
-        integrity = TOOL_VERSIONS[python_version][platform]
+        integrity = TOOL_VERSIONS[python_version].get(platform, None)
+        if not integrity:
+            continue
+
         python_repository(
             name = "{name}_{platform}".format(
                 name = name,
