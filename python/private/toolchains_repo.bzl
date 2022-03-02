@@ -29,10 +29,10 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
-        # matches the value returned from
+        # Matches the value returned from:
         # repository_ctx.os.name.lower()
         os_name = "mac os",
-        # matches the value returned from
+        # Matches the value returned from:
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
         arch = "arm64",
     ),
@@ -41,7 +41,7 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
-        # See comments above
+        # See comments above.
         os_name = "mac os",
         arch = "x86_64",
     ),
@@ -50,6 +50,7 @@ PLATFORMS = {
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
         ],
+        # See comments above.
         os_name = "windows",
         arch = "x86_64",
     ),
@@ -58,14 +59,14 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ],
-        # See comments above
+        # See comments above.
         os_name = "linux",
         arch = "x86_64",
     ),
 }
 
 def host_platform(rctx):
-    """Infer the host platform from a repository context
+    """Infer the host platform from a repository context.
 
     Args:
         rctx: Bazel's repository_ctx
@@ -74,8 +75,8 @@ def host_platform(rctx):
     """
     os_name = rctx.os.name
 
-    # hardcode windows as we don't want to rely on a program on the PATH
-    if os_name.find("windows") != -1:
+    # We assume the arch for Windows is always x86_64.
+    if "windows" in os_name:
         arch = "x86_64"
     else:
         # This is not ideal, but bazel doesn't directly expose arch.
