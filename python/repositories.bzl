@@ -140,7 +140,7 @@ python_repository = repository_rule(
             mandatory = True,
         ),
         "platform": attr.string(
-            doc = "TODO",
+            doc = "The platform name for the Python interpreter tarball.",
             mandatory = True,
             values = PLATFORMS.keys(),
         ),
