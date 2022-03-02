@@ -143,13 +143,21 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
+    # `dist-info` contains non-determinisitc files which can change any time
+    # the repository rules run. Below is a list of known patterns to these
+    # files. However, not all files should be ignored as certain packages
+    # require things like `top_level.txt`.
+    dist_info_ignores = [
+        "**/*.dist-info/METADATA",
+        "**/*.dist-info/RECORD",
+    ]
+
     data_exclude = list(
         set(
             [
                 "*.whl",
                 "**/__pycache__/**",
                 "**/* *",
-                "**/*.dist-info/**",
                 "**/*.py",
                 "**/*.pyc",
                 "BUILD.bazel",
@@ -157,6 +165,7 @@ def generate_build_file_contents(
                 f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
             ]
             + data_exclude
+            + dist_info_ignores
         )
     )
 
