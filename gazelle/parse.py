@@ -47,6 +47,7 @@ def parse(repo_root, rel_package_path, filename):
     abs_filepath = os.path.join(repo_root, rel_filepath)
     with open(abs_filepath, "r") as file:
         content = file.read()
+       # From simple benchmarks, 2 workers gave the best performance here.
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             modules_future = executor.submit(parse_import_statements, content, rel_filepath)
             comments_future = executor.submit(parse_comments, content)
