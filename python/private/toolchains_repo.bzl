@@ -29,26 +29,63 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
+        # Matches the value returned from:
+        # repository_ctx.os.name.lower()
+        os_name = "mac os",
+        # Matches the value returned from:
+        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+        arch = "arm64",
     ),
     "x86_64-apple-darwin": struct(
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
+        # See comments above.
+        os_name = "mac os",
+        arch = "x86_64",
     ),
     "x86_64-pc-windows-msvc": struct(
         compatible_with = [
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
         ],
+        # See comments above.
+        os_name = "windows",
+        arch = "x86_64",
     ),
     "x86_64-unknown-linux-gnu": struct(
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ],
+        # See comments above.
+        os_name = "linux",
+        arch = "x86_64",
     ),
 }
+
+def host_platform(rctx):
+    """Infer the host platform from a repository context.
+
+    Args:
+        rctx: Bazel's repository_ctx
+    Returns:
+        a key from the PLATFORMS dictionary
+    """
+    os_name = rctx.os.name
+
+    # We assume the arch for Windows is always x86_64.
+    if "windows" in os_name:
+        arch = "x86_64"
+    else:
+        # This is not ideal, but bazel doesn't directly expose arch.
+        arch = rctx.execute(["uname", "-m"]).stdout.strip()
+
+    for platform, meta in PLATFORMS.items():
+        if meta.os_name == os_name and meta.arch == arch:
+            return platform
+    fail("No platform declared for host OS {} on arch {}".format(os_name, arch))
 
 def _toolchains_repo_impl(repository_ctx):
     build_content = """\
