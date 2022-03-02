@@ -36,6 +36,12 @@ PLATFORMS = {
             "@platforms//cpu:x86_64",
         ],
     ),
+    "x86_64-pc-windows-msvc": struct(
+        compatible_with = [
+            "@platforms//os:windows",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
     "x86_64-unknown-linux-gnu": struct(
         compatible_with = [
             "@platforms//os:linux",
