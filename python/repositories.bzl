@@ -145,7 +145,7 @@ python_repository = repository_rule(
             values = PLATFORMS.keys(),
         ),
         "python_version": attr.string(
-            doc = "TODO",
+            doc = "The Python version.",
             mandatory = True,
             values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys(),
         ),
