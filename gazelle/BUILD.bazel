@@ -55,7 +55,6 @@ go_test(
         ":gazelle_python_binary",
         ":parse",
         ":std_modules",
-        #"@python_interpreter//:bazel_install/bin/python3",
     ] + glob(["testdata/**"]),
     deps = [
         "@bazel_gazelle//testtools:go_default_library",
