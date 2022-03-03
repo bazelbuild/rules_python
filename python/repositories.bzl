@@ -36,12 +36,47 @@ def py_repositories():
 def _python_repository_impl(rctx):
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
-    (_, url) = get_release_url(platform, python_version)
-    download_result = rctx.download_and_extract(
-        url = url,
-        sha256 = rctx.attr.sha256,
-        stripPrefix = "python",
-    )
+    (release_filename, url) = get_release_url(platform, python_version)
+
+    if release_filename.endswith(".zst"):
+        rctx.download(
+            url = url,
+            sha256 = rctx.attr.sha256,
+            output = release_filename,
+        )
+        unzstd = rctx.which("unzstd")
+        if not unzstd:
+            url = rctx.attr._zstd_url.format(version = rctx.attr._zstd_version)
+            rctx.download_and_extract(
+                url = url,
+                sha256 = rctx.attr._zstd_sha256,
+            )
+            working_directory = "zstd-{version}".format(version = rctx.attr._zstd_version)
+            rctx.execute(
+                ["make", "--jobs=4"],
+                timeout = 600,
+                quiet = True,
+                working_directory = working_directory,
+            )
+            zstd = "{working_directory}/zstd".format(working_directory = working_directory)
+            unzstd = "./unzstd"
+            rctx.symlink(zstd, unzstd)
+
+        exec_result = rctx.execute([
+            "tar",
+            "--extract",
+            "--strip-components=2",
+            "--use-compress-program={unzstd}".format(unzstd = unzstd),
+            "--file={}".format(release_filename),
+        ])
+        if exec_result.return_code:
+            fail(exec_result.stderr)
+    else:
+        rctx.download_and_extract(
+            url = url,
+            sha256 = rctx.attr.sha256,
+            stripPrefix = "python",
+        )
 
     # Make the Python installation read-only.
     if "windows" not in rctx.os.name:
@@ -106,7 +141,7 @@ py_runtime_pair(
         "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
-        "sha256": download_result.sha256,
+        "sha256": rctx.attr.sha256,
     }
 
 python_repository = repository_rule(
