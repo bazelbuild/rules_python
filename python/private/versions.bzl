@@ -22,7 +22,7 @@ def get_release_url(platform, python_version):
     release_filename = _RELEASE_FILENAME_TEMPLATE.format(
         platform = platform,
         python_version = python_version,
-        build = "static-install_only" if ("windows" in platform) else "install_only"
+        build = "static-install_only" if ("windows" in platform) else "install_only",
     )
     url = "{release_url}/{release_filename}".format(
         release_url = _RELEASE_URL,
@@ -84,13 +84,12 @@ EOF
         executable = True,
     )
 
-
 def _commands_for_version(python_version):
     return "\n".join([
         "echo \"{python_version}: {platform}: $$(curl --location {release_url_sha256} 2>/dev/null)\"".format(
             python_version = python_version,
             platform = platform,
-            release_url_sha256 = get_release_url(platform, python_version)[1] + ".sha256"
+            release_url_sha256 = get_release_url(platform, python_version)[1] + ".sha256",
         )
         for platform in TOOL_VERSIONS[python_version].keys()
     ])
