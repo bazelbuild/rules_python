@@ -39,7 +39,7 @@ def _python_repository_impl(rctx):
     (release_filename, url) = get_release_url(platform, python_version)
 
     if release_filename.endswith(".zst"):
-        rctx.download(
+        download_results = rctx.download(
             url = url,
             sha256 = rctx.attr.sha256,
             output = release_filename,
@@ -72,7 +72,7 @@ def _python_repository_impl(rctx):
         if exec_result.return_code:
             fail(exec_result.stderr)
     else:
-        rctx.download_and_extract(
+        download_results = rctx.download_and_extract(
             url = url,
             sha256 = rctx.attr.sha256,
             stripPrefix = "python",
@@ -141,7 +141,7 @@ py_runtime_pair(
         "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
-        "sha256": rctx.attr.sha256,
+        "sha256": download_results.sha256,
     }
 
 python_repository = repository_rule(
@@ -160,7 +160,18 @@ python_repository = repository_rule(
         ),
         "sha256": attr.string(
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
-            mandatory = True,
+        ),
+        "_zstd_sha256": attr.string(
+            doc = "TODO",
+            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
+        ),
+        "_zstd_url": attr.string(
+            doc = "TODO",
+            default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
+        ),
+        "_zstd_version": attr.string(
+            doc = "TODO",
+            default = "1.5.2",
         ),
     },
 )
@@ -224,8 +235,6 @@ def python_register_toolchains(name, python_version, **kwargs):
 
     for platform in PLATFORMS.keys():
         sha256 = TOOL_VERSIONS[python_version]["sha256"].get(platform, None)
-        if not sha256:
-            continue
 
         python_repository(
             name = "{name}_{platform}".format(

@@ -32,6 +32,12 @@ def get_release_url(platform, python_version):
 #
 # buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
+    "3.7.9": {
+        "url": "20200822/cpython-{python_version}-{platform}-pgo-20200823T0036.tar.zst",
+        "sha256": {
+            "x86_64-unknown-linux-gnu": "c6d6256d13e929e77e7ee6e53470fe63ad19d173fee6d56bb1b2dbda67081543",
+        },
+    },
     "3.8.10": {
         "url": "20210506/cpython-{python_version}-{platform}-pgo+lto-20210506T0943.tar.zst",
         "sha256": {
@@ -69,6 +75,7 @@ TOOL_VERSIONS = {
 
 # buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
+    "3.7": "3.7.9",
     "3.8": "3.8.12",
     "3.9": "3.9.10",
     "3.10": "3.10.2",
