@@ -21,14 +21,13 @@ load("//python/private:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 required_platforms = [
     "x86_64-apple-darwin",
-    "x86_64-pc-windows-msvc",
     "x86_64-unknown-linux-gnu",
 ]
 
 def _smoke_test_impl(ctx):
     env = unittest.begin(ctx)
     for version in TOOL_VERSIONS.keys():
-        platforms = TOOL_VERSIONS[version]
+        platforms = TOOL_VERSIONS[version]["sha256"]
         for required_platform in required_platforms:
             asserts.true(
                 env,

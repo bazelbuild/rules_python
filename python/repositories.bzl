@@ -188,7 +188,7 @@ def python_register_toolchains(name, python_version, **kwargs):
         python_version = MINOR_MAPPING[python_version]
 
     for platform in PLATFORMS.keys():
-        sha256 = TOOL_VERSIONS[python_version].get(platform, None)
+        sha256 = TOOL_VERSIONS[python_version]["sha256"].get(platform, None)
         if not sha256:
             continue
 
