@@ -98,9 +98,10 @@ EOF
 
 def _commands_for_version(python_version):
     return "\n".join([
-        "echo \"{python_version}: {platform}: $$(curl --location {release_url_sha256} 2>/dev/null)\"".format(
+        "echo \"{python_version}: {platform}: $$(curl --location --fail {release_url_sha256} 2>/dev/null || curl --location --fail {release_url} 2>/dev/null | shasum -a 256 | awk '{{ print $$1 }}')\"".format(
             python_version = python_version,
             platform = platform,
+            release_url = get_release_url(platform, python_version)[1],
             release_url_sha256 = get_release_url(platform, python_version)[1] + ".sha256",
         )
         for platform in TOOL_VERSIONS[python_version]["sha256"].keys()
