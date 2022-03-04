@@ -23,15 +23,17 @@ alias repository with only the toolchain attribute pointing into the
 platform-specific repositories.
 """
 
+MACOS_NAME = "mac os"
+LINUX_NAME = "linux"
+WINDOWS_NAME = "windows"
+
 PLATFORMS = {
     "aarch64-apple-darwin": struct(
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
-        # Matches the value returned from:
-        # repository_ctx.os.name.lower()
-        os_name = "mac os",
+        os_name = MACOS_NAME,
         # Matches the value returned from:
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
         arch = "arm64",
@@ -41,8 +43,7 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
-        # See comments above.
-        os_name = "mac os",
+        os_name = MACOS_NAME,
         arch = "x86_64",
     ),
     "x86_64-pc-windows-msvc": struct(
@@ -50,8 +51,7 @@ PLATFORMS = {
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
         ],
-        # See comments above.
-        os_name = "windows",
+        os_name = WINDOWS_NAME,
         arch = "x86_64",
     ),
     "x86_64-unknown-linux-gnu": struct(
@@ -59,8 +59,7 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ],
-        # See comments above.
-        os_name = "linux",
+        os_name = LINUX_NAME,
         arch = "x86_64",
     ),
 }
@@ -113,7 +112,7 @@ def _host_os_alias_impl(rctx):
     if not host_platform:
         fail("No platform declared for host OS {} on arch {}".format(os_name, arch))
 
-    python3_binary_path = "python.exe" if (os_name == "windows") else "bin/python3"
+    python3_binary_path = "python.exe" if (os_name == WINDOWS_NAME) else "bin/python3"
 
     # Base BUILD file for this repository.
     build_contents = """\
@@ -170,15 +169,15 @@ def _host_os_arch(rctx):
         arch = "x86_64"
 
         # Normalize the os_name. E.g. os_name could be "OS windows server 2019".
-        os_name = "windows"
+        os_name = WINDOWS_NAME
     else:
         # This is not ideal, but bazel doesn't directly expose arch.
         arch = rctx.execute(["uname", "-m"]).stdout.strip()
 
         # Normalize the os_name.
         if "mac" in os_name.lower():
-            os_name = "mac os"
+            os_name = MACOS_NAME
         elif "linux" in os_name.lower():
-            os_name = "linux"
+            os_name = LINUX_NAME
 
     return (os_name, arch)
