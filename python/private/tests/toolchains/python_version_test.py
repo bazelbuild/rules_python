@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import platform
 import unittest
 
 
 class TestPythonVersion(unittest.TestCase):
     def test_match_toolchain(self):
-        self.assertEqual(platform.python_version(), "3.9.10")
+        self.assertEqual(platform.python_version(), os.getenv("PYTHON_VERSION"))
 
 
 if __name__ == "__main__":

@@ -26,10 +26,11 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 rules_python_internal_setup()
 
 load("//python:repositories.bzl", "python_register_toolchains")
+load("//python/private:versions.bzl", "MINOR_MAPPING")
 
 python_register_toolchains(
-    name = "python39",
-    python_version = "3.9",
+    name = "python_toolchain",
+    python_version = MINOR_MAPPING.values()[-1],
 )
 
 load("//gazelle:deps.bzl", "gazelle_deps")
