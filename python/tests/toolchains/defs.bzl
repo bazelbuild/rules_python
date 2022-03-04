@@ -57,22 +57,30 @@ def _acceptance_test_impl(ctx):
     if not interpreter_path:
         interpreter_path = py3_runtime.interpreter.short_path
 
-    executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
-    ctx.actions.write(
-        output = executable,
-        content = """\
-#!/bin/bash
-
-exec "{interpreter_path}" "{run_acceptance_test_py}"
-        """.format(
-            interpreter_path = interpreter_path,
-            run_acceptance_test_py = run_acceptance_test_py.short_path,
-        ),
-        is_executable = True,
-    )
+    if ctx.attr.is_windows:
+        executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
+        ctx.actions.write(
+            output = executable,
+            content = "{interpreter_path} {run_acceptance_test_py}".format(
+                interpreter_path = interpreter_path.replace("/", "\\"),
+                run_acceptance_test_py = run_acceptance_test_py.short_path.replace("/", "\\"),
+            ),
+            is_executable = True,
+        )
+    else:
+        executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
+        ctx.actions.write(
+            output = executable,
+            content = "exec '{interpreter_path}' '{run_acceptance_test_py}'".format(
+                interpreter_path = interpreter_path,
+                run_acceptance_test_py = run_acceptance_test_py.short_path,
+            ),
+            is_executable = True,
+        )
 
     files = [
         build_bazel,
+        executable,
         python_version_test,
         run_acceptance_test_py,
         workspace,
@@ -80,18 +88,19 @@ exec "{interpreter_path}" "{run_acceptance_test_py}"
     return [DefaultInfo(
         executable = executable,
         files = depset(files),
-        runfiles = ctx.runfiles(files),
+        runfiles = ctx.runfiles(
+            files = files,
+            collect_data = True,
+            collect_default = True,
+        ),
     )]
 
 _acceptance_test = rule(
     _acceptance_test_impl,
     attrs = {
-        "python_version": attr.string(
-            mandatory = True,
-        ),
-        "test_location": attr.string(
-            mandatory = True,
-        ),
+        "is_windows": attr.bool(mandatory = True),
+        "python_version": attr.string(mandatory = True),
+        "test_location": attr.string(mandatory = True),
         "_build_bazel_tmpl": attr.label(
             allow_single_file = True,
             default = "//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl",
@@ -115,6 +124,10 @@ _acceptance_test = rule(
 
 def acceptance_test(python_version, **kwargs):
     _acceptance_test(
+        is_windows = select({
+            "@bazel_tools//src/conditions:host_windows": True,
+            "//conditions:default": False,
+        }),
         python_version = python_version,
         test_location = native.package_name(),
         **kwargs

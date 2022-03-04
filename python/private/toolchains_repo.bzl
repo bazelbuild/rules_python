@@ -25,9 +25,9 @@ platform-specific repositories.
 
 load(
     "//python:versions.bzl",
-    "PLATFORMS",
-    "MACOS_NAME",
     "LINUX_NAME",
+    "MACOS_NAME",
+    "PLATFORMS",
     "WINDOWS_NAME",
 )
 
