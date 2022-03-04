@@ -178,5 +178,5 @@ def _host_os_arch(rctx):
             os_name = "mac os"
         elif "linux" in os_name.lower():
             os_name = "linux"
-    
+
     return (os_name, arch)
