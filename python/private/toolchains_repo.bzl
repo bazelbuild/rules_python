@@ -76,11 +76,18 @@ def host_platform(rctx):
     os_name = rctx.os.name
 
     # We assume the arch for Windows is always x86_64.
-    if "windows" in os_name:
+    if "windows" in os_name.lower():
         arch = "x86_64"
+        # Normalize the os_name. E.g. os_name could be "OS windows server 2019".
+        os_name = "windows"
     else:
         # This is not ideal, but bazel doesn't directly expose arch.
         arch = rctx.execute(["uname", "-m"]).stdout.strip()
+        # Normalize the os_name.
+        if "mac" in os_name.lower():
+            os_name = "mac os"
+        elif "linux" in os_name.lower():
+            os_name = "linux"
 
     for platform, meta in PLATFORMS.items():
         if meta.os_name == os_name and meta.arch == arch:
