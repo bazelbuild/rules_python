@@ -40,7 +40,7 @@ def _acceptance_test_impl(ctx):
         output = python_version_test,
     )
 
-    executable = ctx.actions.declare_file("run_acceptance_test_{}.sh".format(ctx.attr.python_version))
+    executable = ctx.actions.declare_file("run_acceptance_test_{}.py".format(ctx.attr.python_version))
     ctx.actions.expand_template(
         template = ctx.file._run_acceptance_test,
         output = executable,
@@ -81,7 +81,7 @@ _acceptance_test = rule(
         ),
         "_run_acceptance_test": attr.label(
             allow_single_file = True,
-            default = "//python/tests/toolchains:run_acceptance_test.sh",
+            default = "//python/tests/toolchains:run_acceptance_test.py",
         ),
         "_workspace_tmpl": attr.label(
             allow_single_file = True,
