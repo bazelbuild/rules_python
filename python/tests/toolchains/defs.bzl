@@ -40,22 +40,41 @@ def _acceptance_test_impl(ctx):
         output = python_version_test,
     )
 
-    executable = ctx.actions.declare_file("run_acceptance_test_{}.py".format(ctx.attr.python_version))
+    run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
         template = ctx.file._run_acceptance_test,
-        output = executable,
+        output = run_acceptance_test_py,
         substitutions = {
             "%python_version%": ctx.attr.python_version,
             "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
         },
-        is_executable = True,
+    )
+
+    py3_runtime = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime
+    interpreter_path = py3_runtime.interpreter_path
+    if not interpreter_path:
+        interpreter_path = py3_runtime.interpreter.short_path
+
+    executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
+    ctx.actions.write(
+        output=executable,
+        content="""\
+#!/bin/bash
+
+exec "{interpreter_path}" "{run_acceptance_test_py}"
+        """.format(
+            interpreter_path = interpreter_path,
+            run_acceptance_test_py = run_acceptance_test_py.short_path,
+        ),
+        is_executable=True,
     )
 
     files = [
-        workspace,
         build_bazel,
         python_version_test,
-    ]
+        run_acceptance_test_py,
+        workspace,
+    ] + py3_runtime.files.to_list()
     return [DefaultInfo(
         executable = executable,
         files = depset(files),
@@ -89,6 +108,7 @@ _acceptance_test = rule(
         ),
     },
     test = True,
+    toolchains = ["@bazel_tools//tools/python:toolchain_type"],
 )
 
 def acceptance_test(python_version, **kwargs):
