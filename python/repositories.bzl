@@ -17,10 +17,11 @@
 For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
-load("//python/private:toolchains_repo.bzl", "PLATFORMS", "host_os_alias", "toolchains_repo")
+load("//python/private:toolchains_repo.bzl", "host_os_alias", "toolchains_repo")
 load(
     ":versions.bzl",
     "MINOR_MAPPING",
+    "PLATFORMS",
     "TOOL_VERSIONS",
     "get_release_url",
 )

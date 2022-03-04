@@ -15,6 +15,8 @@
 """This module contains the definition for the toolchains testing rules.
 """
 
+load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+
 def _acceptance_test_impl(ctx):
     workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
     ctx.actions.expand_template(
@@ -57,8 +59,8 @@ def _acceptance_test_impl(ctx):
 
     executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
     ctx.actions.write(
-        output=executable,
-        content="""\
+        output = executable,
+        content = """\
 #!/bin/bash
 
 exec "{interpreter_path}" "{run_acceptance_test_py}"
@@ -66,7 +68,7 @@ exec "{interpreter_path}" "{run_acceptance_test_py}"
             interpreter_path = interpreter_path,
             run_acceptance_test_py = run_acceptance_test_py.short_path,
         ),
-        is_executable=True,
+        is_executable = True,
     )
 
     files = [
@@ -117,3 +119,20 @@ def acceptance_test(python_version, **kwargs):
         test_location = native.package_name(),
         **kwargs
     )
+
+# buildifier: disable=unnamed-macro
+def acceptance_tests():
+    """Creates a matrix of acceptance_test targets for all the toolchains.
+    """
+    for python_version in TOOL_VERSIONS.keys():
+        for platform, meta in PLATFORMS.items():
+            if platform not in TOOL_VERSIONS[python_version]["sha256"]:
+                continue
+            acceptance_test(
+                name = "python_{python_version}_{platform}_test".format(
+                    python_version = python_version.replace(".", "_"),
+                    platform = platform,
+                ),
+                python_version = python_version,
+                target_compatible_with = meta.compatible_with,
+            )

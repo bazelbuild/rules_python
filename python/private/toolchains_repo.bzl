@@ -23,46 +23,13 @@ alias repository with only the toolchain attribute pointing into the
 platform-specific repositories.
 """
 
-MACOS_NAME = "mac os"
-LINUX_NAME = "linux"
-WINDOWS_NAME = "windows"
-
-PLATFORMS = {
-    "aarch64-apple-darwin": struct(
-        compatible_with = [
-            "@platforms//os:macos",
-            "@platforms//cpu:aarch64",
-        ],
-        os_name = MACOS_NAME,
-        # Matches the value returned from:
-        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        arch = "arm64",
-    ),
-    "x86_64-apple-darwin": struct(
-        compatible_with = [
-            "@platforms//os:macos",
-            "@platforms//cpu:x86_64",
-        ],
-        os_name = MACOS_NAME,
-        arch = "x86_64",
-    ),
-    "x86_64-pc-windows-msvc": struct(
-        compatible_with = [
-            "@platforms//os:windows",
-            "@platforms//cpu:x86_64",
-        ],
-        os_name = WINDOWS_NAME,
-        arch = "x86_64",
-    ),
-    "x86_64-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:x86_64",
-        ],
-        os_name = LINUX_NAME,
-        arch = "x86_64",
-    ),
-}
+load(
+    "//python:versions.bzl",
+    "PLATFORMS",
+    "MACOS_NAME",
+    "LINUX_NAME",
+    "WINDOWS_NAME",
+)
 
 def _toolchains_repo_impl(rctx):
     build_content = """\

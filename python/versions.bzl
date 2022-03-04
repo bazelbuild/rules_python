@@ -15,13 +15,17 @@
 """The Python versions we use for the toolchains.
 """
 
+MACOS_NAME = "mac os"
+LINUX_NAME = "linux"
+WINDOWS_NAME = "windows"
+
 _RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
 
 def get_release_url(platform, python_version):
     release_filename = TOOL_VERSIONS[python_version]["url"].format(
         platform = platform,
         python_version = python_version,
-        build = "static-install_only" if ("windows" in platform) else "install_only",
+        build = "static-install_only" if (WINDOWS_NAME in platform) else "install_only",
     )
     url = "/".join([_RELEASE_BASE_URL, release_filename])
     return (release_filename, url)
@@ -72,6 +76,43 @@ MINOR_MAPPING = {
     "3.8": "3.8.12",
     "3.9": "3.9.10",
     "3.10": "3.10.2",
+}
+
+PLATFORMS = {
+    "aarch64-apple-darwin": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:aarch64",
+        ],
+        os_name = MACOS_NAME,
+        # Matches the value returned from:
+        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+        arch = "arm64",
+    ),
+    "x86_64-apple-darwin": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:x86_64",
+        ],
+        os_name = MACOS_NAME,
+        arch = "x86_64",
+    ),
+    "x86_64-pc-windows-msvc": struct(
+        compatible_with = [
+            "@platforms//os:windows",
+            "@platforms//cpu:x86_64",
+        ],
+        os_name = WINDOWS_NAME,
+        arch = "x86_64",
+    ),
+    "x86_64-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:x86_64",
+        ],
+        os_name = LINUX_NAME,
+        arch = "x86_64",
+    ),
 }
 
 def print_toolchains_checksums(name):
