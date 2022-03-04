@@ -79,7 +79,8 @@ def _host_os_alias_impl(rctx):
     if not host_platform:
         fail("No platform declared for host OS {} on arch {}".format(os_name, arch))
 
-    python3_binary_path = "python.exe" if (os_name == WINDOWS_NAME) else "bin/python3"
+    is_windows = (os_name == WINDOWS_NAME)
+    python3_binary_path = "python.exe" if is_windows else "bin/python3"
 
     # Base BUILD file for this repository.
     build_contents = """\
@@ -94,6 +95,13 @@ alias(name = "python3",         actual = "@{py_repository}_{host_platform}//:{py
         host_platform = host_platform,
         python3_binary_path = python3_binary_path,
     )
+    if not is_windows:
+        build_contents += """\
+alias(name = "pip",             actual = "@{py_repository}_{host_platform}//:bin/pip")
+""".format(
+            py_repository = rctx.attr.user_repository_name,
+            host_platform = host_platform,
+        )
     rctx.file("BUILD.bazel", build_contents)
 
     # Expose a Starlark file so rules can know what host platform we used and where to find an interpreter
