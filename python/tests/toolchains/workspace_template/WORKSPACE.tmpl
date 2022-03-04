@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:versions.bzl", "TOOL_VERSIONS")
-load(":defs.bzl", "acceptance_test")
-load(":versions_test.bzl", "versions_test_suite")
+workspace(name = "workspace_test")
 
-versions_test_suite(name = "versions_test")
+local_repository(
+    name = "rules_python",
+    path = "",
+)
 
-[acceptance_test(
-    name = "python_{}_test".format(python_version.replace(".", "_")),
-    python_version = python_version,
-) for python_version in TOOL_VERSIONS.keys()]
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python_toolchain",
+    python_version = "%python_version%",
+)

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright 2022 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:versions.bzl", "TOOL_VERSIONS")
-load(":defs.bzl", "acceptance_test")
-load(":versions_test.bzl", "versions_test_suite")
+set -o errexit -o nounset -o pipefail
 
-versions_test_suite(name = "versions_test")
+cd "%test_location%"
 
-[acceptance_test(
-    name = "python_{}_test".format(python_version.replace(".", "_")),
-    python_version = python_version,
-) for python_version in TOOL_VERSIONS.keys()]
+rules_python_path=$(realpath "$(dirname "$(realpath python_version_test.py)")/../../../..")
+
+cat > ".bazelrc" <<EOF
+build --override_repository rules_python="${rules_python_path}"
+build --test_output=errors
+EOF
+
+bazel run @python_toolchain_host//:python3 -- --version | grep "Python %python_version%"
+
+bazel test //...
