@@ -46,12 +46,12 @@ def _python_repository_impl(rctx):
         )
         unzstd = rctx.which("unzstd")
         if not unzstd:
-            url = rctx.attr._zstd_url.format(version = rctx.attr._zstd_version)
+            url = rctx.attr.zstd_url.format(version = rctx.attr.zstd_version)
             rctx.download_and_extract(
                 url = url,
-                sha256 = rctx.attr._zstd_sha256,
+                sha256 = rctx.attr.zstd_sha256,
             )
-            working_directory = "zstd-{version}".format(version = rctx.attr._zstd_version)
+            working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
             rctx.execute(
                 ["make", "--jobs=4"],
                 timeout = 600,
@@ -162,13 +162,13 @@ python_repository = repository_rule(
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
             mandatory = True,
         ),
-        "_zstd_sha256": attr.string(
+        "zstd_sha256": attr.string(
             default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
         ),
-        "_zstd_url": attr.string(
+        "zstd_url": attr.string(
             default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
         ),
-        "_zstd_version": attr.string(
+        "zstd_version": attr.string(
             default = "1.5.2",
         ),
     },
