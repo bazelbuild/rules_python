@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("//python:defs.bzl", "py_test")
-load("//python/private:versions.bzl", "MINOR_MAPPING")
+load("//python:versions.bzl", "MINOR_MAPPING")
 load(":versions_test.bzl", "versions_test_suite")
 
 versions_test_suite(name = "versions_test")

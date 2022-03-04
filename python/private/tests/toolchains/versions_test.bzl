@@ -17,7 +17,7 @@ See https://docs.bazel.build/versions/main/skylark/testing.html#for-testing-star
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
-load("//python/private:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 required_platforms = [
     "x86_64-apple-darwin",

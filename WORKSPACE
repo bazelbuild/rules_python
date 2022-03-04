@@ -26,7 +26,7 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 rules_python_internal_setup()
 
 load("//python:repositories.bzl", "python_register_toolchains")
-load("//python/private:versions.bzl", "MINOR_MAPPING")
+load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_toolchains(
     name = "python_toolchain",

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//python:versions.bzl", "print_toolchains_checksums")
 load(":stamp.bzl", "stamp_build_setting")
-load(":versions.bzl", "print_toolchains_checksums")
 
 licenses(["notice"])  # Apache 2.0
 
