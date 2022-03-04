@@ -13,10 +13,15 @@ python_register_toolchains(
 )
 
 load("@python39_host//:defs.bzl", "interpreter")
-
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
+    # (Optional) You can set an environment in the pip process to control its
+    # behavior. Note that pip is run in "isolated" mode so no PIP_<VAR>_<NAME>
+    # style env vars are read, but env vars that control requests and urllib3
+    # can be passed
+    # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
+    name = "pypi",
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
     # extra_pip_args = ["-v"],
@@ -30,19 +35,12 @@ pip_parse(
     # 1. Python interpreter that you compile in the build file (as above in @python_interpreter).
     # 2. Pre-compiled python interpreter included with http_archive
     # 3. Wrapper script, like in the autodetecting python toolchain.
-    # 
+    #
     # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
     python_interpreter_target = interpreter,
 
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,
-
-    # (Optional) You can set an environment in the pip process to control its
-    # behavior. Note that pip is run in "isolated" mode so no PIP_<VAR>_<NAME>
-    # style env vars are read, but env vars that control requests and urllib3
-    # can be passed
-    # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
-    name = "pypi",
     requirements_lock = "//:requirements_lock.txt",
 )
 
