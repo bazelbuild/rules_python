@@ -52,13 +52,27 @@ http_archive(
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )
+```
 
+To register a hermetic Python toolchain, you can add to the `WORKSPACE` file:
+
+```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 # Multiple versions are available in the @rules_python//python:versions.bzl file.
 python_register_toolchains(
     name = "python310",
     python_version = "3.10",
+)
+
+load("@python39_host//:defs.bzl", "interpreter")
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    ...
+    python_interpreter_target = interpreter,
+    ...
 )
 ```
 
