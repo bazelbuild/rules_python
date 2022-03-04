@@ -61,7 +61,7 @@ def _acceptance_test_impl(ctx):
         executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
         ctx.actions.write(
             output = executable,
-            content = "{interpreter_path} {run_acceptance_test_py}".format(
+            content = "call {interpreter_path} {run_acceptance_test_py}".format(
                 interpreter_path = interpreter_path.replace("/", "\\"),
                 run_acceptance_test_py = run_acceptance_test_py.short_path.replace("/", "\\"),
             ),
