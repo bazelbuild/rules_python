@@ -162,6 +162,15 @@ python_repository = repository_rule(
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
             mandatory = True,
         ),
+        "_zstd_sha256": attr.string(
+            default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
+        ),
+        "_zstd_url": attr.string(
+            default = "https://github.com/facebook/zstd/releases/download/v{version}/zstd-{version}.tar.gz",
+        ),
+        "_zstd_version": attr.string(
+            default = "1.5.2",
+        ),
     },
 )
 
