@@ -114,14 +114,12 @@ def _escape_filename_segment(segment):
             escaped += "_"
     return escaped
 
-
 def _replace_make_variables(flag, ctx):
     """Replace $(VERSION) etc make variables in flag"""
-    if '$' in flag:
+    if "$" in flag:
         for varname, varsub in ctx.var.items():
             flag = flag.replace("$(%s)" % varname, varsub)
     return flag
-
 
 def _py_wheel_impl(ctx):
     version = _replace_make_variables(ctx.attr.version, ctx)
