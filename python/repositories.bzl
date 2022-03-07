@@ -35,6 +35,9 @@ def py_repositories():
 ########
 
 def _python_repository_impl(rctx):
+    if rctx.attr.distutils and rctx.attr.distutils_content:
+        fail("Only one of (distutils, distutils_content) should be set.")
+
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
     (release_filename, url) = get_release_url(platform, python_version)
@@ -78,6 +81,17 @@ def _python_repository_impl(rctx):
             sha256 = rctx.attr.sha256,
             stripPrefix = "python",
         )
+
+    # Write distutils.cfg to the Python installation.
+    if "windows" in rctx.os.name:
+        distutils_path = "Lib/distutils/distutils.cfg"
+    else:
+        python_short_version = python_version.rpartition(".")[0]
+        distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)    
+    if rctx.attr.distutils:
+        rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
+    elif rctx.attr.distutils_content:
+        rctx.file(distutils_path, rctx.attr.distutils_content)
 
     # Make the Python installation read-only.
     if "windows" not in rctx.os.name:
@@ -135,6 +149,8 @@ py_runtime_pair(
 
     return {
         "name": rctx.attr.name,
+        "distutils": rctx.attr.distutils,
+        "distutils_content": rctx.attr.distutils_content,
         "platform": platform,
         "python_version": python_version,
         "sha256": rctx.attr.sha256,
@@ -144,6 +160,17 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "distutils": attr.label(
+            allow_single_file = True,
+            doc = "A distutils.cfg file to be included in the Python installation. " +
+                "Either distutils or distutils_content can be specified, but not both.",
+            mandatory = False,
+        ),
+        "distutils_content": attr.string(
+            doc = "A distutils.cfg file content to be included in the Python installation. " +
+                "Either distutils or distutils_content can be specified, but not both.",
+            mandatory = False,
+        ),
         "platform": attr.string(
             doc = "The platform name for the Python interpreter tarball.",
             mandatory = True,
@@ -171,7 +198,12 @@ python_repository = repository_rule(
 )
 
 # Wrapper macro around everything above, this is the primary API.
-def python_register_toolchains(name, python_version, **kwargs):
+def python_register_toolchains(
+    name,
+    python_version,
+    distutils = None,
+    distutils_content = None,
+    **kwargs):
     """Convenience macro for users which does typical setup.
 
     - Create a repository for each built-in platform like "python_linux_amd64" -
@@ -184,6 +216,8 @@ def python_register_toolchains(name, python_version, **kwargs):
     Args:
         name: base name for all created repos, like "python38".
         python_version: the Python version.
+        distutils: see the distutils attribute in the python_repository repository rule.
+        distutils_content: see the distutils_content attribute in the python_repository repository rule.
         **kwargs: passed to each python_repositories call.
     """
     if python_version in MINOR_MAPPING:
@@ -202,6 +236,8 @@ def python_register_toolchains(name, python_version, **kwargs):
             sha256 = sha256,
             platform = platform,
             python_version = python_version,
+            distutils = distutils,
+            distutils_content = distutils_content,
             **kwargs
         )
         native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
