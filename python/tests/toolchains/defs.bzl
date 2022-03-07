@@ -17,6 +17,12 @@
 
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 
+_WINDOWS_RUNNER_TEMPLATE = """\
+@ECHO OFF
+set PATHEXT=.COM;.EXE;.BAT
+powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
+"""
+
 def _acceptance_test_impl(ctx):
     workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
     ctx.actions.expand_template(
@@ -52,7 +58,8 @@ def _acceptance_test_impl(ctx):
         },
     )
 
-    py3_runtime = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime
+    toolchain = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"]
+    py3_runtime = toolchain.py3_runtime
     interpreter_path = py3_runtime.interpreter_path
     if not interpreter_path:
         interpreter_path = py3_runtime.interpreter.short_path
@@ -61,9 +68,9 @@ def _acceptance_test_impl(ctx):
         executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
         ctx.actions.write(
             output = executable,
-            content = "call {interpreter_path} {run_acceptance_test_py}".format(
-                interpreter_path = interpreter_path.replace("/", "\\"),
-                run_acceptance_test_py = run_acceptance_test_py.short_path.replace("/", "\\"),
+            content = _WINDOWS_RUNNER_TEMPLATE.format(
+                interpreter_path = interpreter_path.replace("../", "external/"),
+                run_acceptance_test_py = run_acceptance_test_py.short_path,
             ),
             is_executable = True,
         )
@@ -96,26 +103,40 @@ def _acceptance_test_impl(ctx):
     )]
 
 _acceptance_test = rule(
-    _acceptance_test_impl,
+    implementation = _acceptance_test_impl,
+    doc = "TODO",
     attrs = {
-        "is_windows": attr.bool(mandatory = True),
-        "python_version": attr.string(mandatory = True),
-        "test_location": attr.string(mandatory = True),
+        "is_windows": attr.bool(
+            doc = "TODO",
+            mandatory = True,
+        ),
+        "python_version": attr.string(
+            doc = "TODO",
+            mandatory = True,
+        ),
+        "test_location": attr.string(
+            doc = "TODO",
+            mandatory = True,
+        ),
         "_build_bazel_tmpl": attr.label(
+            doc = "TODO",
             allow_single_file = True,
-            default = "//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl",
+            default = Label("//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
         ),
         "_python_version_test": attr.label(
+            doc = "TODO",
             allow_single_file = True,
-            default = "//python/tests/toolchains/workspace_template:python_version_test.py",
+            default = Label("//python/tests/toolchains/workspace_template:python_version_test.py"),
         ),
         "_run_acceptance_test": attr.label(
+            doc = "TODO",
             allow_single_file = True,
-            default = "//python/tests/toolchains:run_acceptance_test.py",
+            default = Label("//python/tests/toolchains:run_acceptance_test.py"),
         ),
         "_workspace_tmpl": attr.label(
+            doc = "TODO",
             allow_single_file = True,
-            default = "//python/tests/toolchains/workspace_template:WORKSPACE.tmpl",
+            default = Label("//python/tests/toolchains/workspace_template:WORKSPACE.tmpl"),
         ),
     },
     test = True,
