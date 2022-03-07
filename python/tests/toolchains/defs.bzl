@@ -50,9 +50,10 @@ def _acceptance_test_impl(ctx):
 
     run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
-        template = ctx.file._run_acceptance_test,
+        template = ctx.file._run_acceptance_test_tmpl,
         output = run_acceptance_test_py,
         substitutions = {
+            "%is_windows%": str(ctx.attr.is_windows),
             "%python_version%": ctx.attr.python_version,
             "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
         },
@@ -104,37 +105,37 @@ def _acceptance_test_impl(ctx):
 
 _acceptance_test = rule(
     implementation = _acceptance_test_impl,
-    doc = "TODO",
+    doc = "A rule for the toolchain acceptance tests.",
     attrs = {
         "is_windows": attr.bool(
-            doc = "TODO",
+            doc = "(Provided by the macro) Whether this is running under Windows or not.",
             mandatory = True,
         ),
         "python_version": attr.string(
-            doc = "TODO",
+            doc = "The Python version to be used when requesting the toolchain.",
             mandatory = True,
         ),
         "test_location": attr.string(
-            doc = "TODO",
+            doc = "(Provided by the macro) The value of native.package_name().",
             mandatory = True,
         ),
         "_build_bazel_tmpl": attr.label(
-            doc = "TODO",
+            doc = "The BUILD.bazel template.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
         ),
         "_python_version_test": attr.label(
-            doc = "TODO",
+            doc = "The python_version_test.py used to test the Python version.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:python_version_test.py"),
         ),
-        "_run_acceptance_test": attr.label(
-            doc = "TODO",
+        "_run_acceptance_test_tmpl": attr.label(
+            doc = "The run_acceptance_test.py template.",
             allow_single_file = True,
-            default = Label("//python/tests/toolchains:run_acceptance_test.py"),
+            default = Label("//python/tests/toolchains:run_acceptance_test.py.tmpl"),
         ),
         "_workspace_tmpl": attr.label(
-            doc = "TODO",
+            doc = "The WORKSPACE template.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:WORKSPACE.tmpl"),
         ),

@@ -14,8 +14,6 @@
 
 import os
 import subprocess
-import sys
-import tempfile
 import unittest
 
 
@@ -30,17 +28,20 @@ class TestPythonVersion(unittest.TestCase):
             os.path.join(python_version_test_dirname, "..", "..", "..", "..")
         )
 
-        is_windows = "win" in sys.platform
-        if is_windows:
-            newline = "\r\n"
-            os.environ["HOME"] = tempfile.mkdtemp()
-            os.environ["LocalAppData"] = tempfile.mkdtemp()
-        else:
-            newline = "\n"
+        if %is_windows%:
+            test_tmpdir = os.environ["TEST_TMPDIR"]
+
+            home = os.path.join(test_tmpdir, "HOME")
+            os.mkdir(home)
+            os.environ["HOME"] = home
+
+            local_app_data = os.path.join(test_tmpdir, "LocalAppData")
+            os.mkdir(local_app_data)
+            os.environ["LocalAppData"] = local_app_data
 
         with open(".bazelrc", "w") as bazelrc:
             bazelrc.write(
-                newline.join(
+                os.linesep.join(
                     [
                         'build --override_repository rules_python="{}"'.format(
                             rules_python_path.replace("\\", "/")
