@@ -54,7 +54,9 @@ http_archive(
 )
 ```
 
-To register a hermetic Python toolchain, you can add to the `WORKSPACE` file:
+To register a hermetic Python toolchain (please refer to
+[this link](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for the list of
+quirks you may find while using the toolchain), you can add to the `WORKSPACE` file:
 
 ```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
