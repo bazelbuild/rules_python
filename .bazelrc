@@ -18,3 +18,4 @@ build --incompatible_default_to_explicit_init_py
 
 # Windows makes use of runfiles for some rules
 build --enable_runfiles
+startup --windows_enable_symlinks
