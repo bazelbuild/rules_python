@@ -117,12 +117,6 @@ filegroup(
 exports_files(["{python_path}"])
 
 py_runtime(
-    name = "py2_runtime",
-    interpreter_path = "/bin/false",
-    python_version = "PY2",
-)
-
-py_runtime(
     name = "py3_runtime",
     files = [":files"],
     interpreter = "{python_path}",
@@ -131,7 +125,7 @@ py_runtime(
 
 py_runtime_pair(
     name = "python_runtimes",
-    py2_runtime = ":py2_runtime",
+    py2_runtime = None,
     py3_runtime = ":py3_runtime",
 )
 """.format(
