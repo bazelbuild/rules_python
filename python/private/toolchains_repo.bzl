@@ -69,7 +69,7 @@ toolchains_repo = repository_rule(
     },
 )
 
-def _host_os_alias_impl(rctx):
+def _resolved_interpreter_os_alias_impl(rctx):
     (os_name, arch) = _host_os_arch(rctx)
 
     host_platform = None
@@ -116,8 +116,8 @@ interpreter = "@{py_repository}_{host_platform}//:{python3_binary_path}"
         python3_binary_path = python3_binary_path,
     ))
 
-host_os_alias = repository_rule(
-    _host_os_alias_impl,
+resolved_interpreter_os_alias = repository_rule(
+    _resolved_interpreter_os_alias_impl,
     doc = """Creates a repository with a shorter name meant for the host platform, which contains
     a BUILD.bazel file declaring aliases to the host platform's targets.
     """,

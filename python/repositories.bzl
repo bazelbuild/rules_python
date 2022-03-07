@@ -17,7 +17,7 @@
 For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
-load("//python/private:toolchains_repo.bzl", "host_os_alias", "toolchains_repo")
+load("//python/private:toolchains_repo.bzl", "resolved_interpreter_os_alias", "toolchains_repo")
 load(
     ":versions.bzl",
     "MINOR_MAPPING",
@@ -209,8 +209,8 @@ def python_register_toolchains(name, python_version, **kwargs):
             platform = platform,
         ))
 
-    host_os_alias(
-        name = "{name}_host".format(name = name),
+    resolved_interpreter_os_alias(
+        name = "{name}_resolved_interpreter".format(name = name),
         user_repository_name = name,
     )
 

@@ -29,7 +29,7 @@ load("//python:repositories.bzl", "python_register_toolchains")
 load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_toolchains(
-    name = "python_toolchain",
+    name = "python",
     python_version = MINOR_MAPPING.values()[-1],
 )
 
