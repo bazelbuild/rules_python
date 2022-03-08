@@ -92,14 +92,16 @@ def _acceptance_test_impl(ctx):
         python_version_test,
         run_acceptance_test_py,
         workspace,
-    ] + py3_runtime.files.to_list()
+    ]
     return [DefaultInfo(
         executable = executable,
-        files = depset(files),
+        files = depset(
+            direct = files,
+            transitive = [py3_runtime.files],
+        ),
         runfiles = ctx.runfiles(
             files = files,
-            collect_data = True,
-            collect_default = True,
+            transitive_files = py3_runtime.files,
         ),
     )]
 
