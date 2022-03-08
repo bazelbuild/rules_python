@@ -30,6 +30,7 @@ load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_toolchains(
     name = "python",
+    # We always use the latest Python internally.
     python_version = MINOR_MAPPING.values()[-1],
 )
 
