@@ -61,7 +61,7 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
     name = "python310",
-    # Available versions are listed in @rules_python//python:versions.bzl
+    # Available versions are listed in @rules_python//python:versions.bzl.
     python_version = "3.10",
 )
 
@@ -135,7 +135,7 @@ one another, and may result in downloading the same wheels multiple times.
 As with any repository rule, if you would like to ensure that `pip_install` is
 re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can force it to re-execute by running
-`bazel sync --only [pip_install name]`
+`bazel sync --only [pip_install name]`.
 
 ### Fetch `pip` dependencies lazily
 
