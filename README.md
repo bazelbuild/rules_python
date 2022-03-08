@@ -54,16 +54,14 @@ http_archive(
 )
 ```
 
-To register a hermetic Python toolchain (please refer to
-[this link](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for the list of
-quirks you may find while using the toolchain), you can add to the `WORKSPACE` file:
+To register a hermetic Python toolchain rather than rely on whatever is already on the machine, you can add to the `WORKSPACE` file:
 
 ```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
-# Multiple versions are available in the @rules_python//python:versions.bzl file.
 python_register_toolchains(
     name = "python310",
+    # Available versions are listed in @rules_python//python:versions.bzl
     python_version = "3.10",
 )
 
@@ -77,6 +75,9 @@ pip_parse(
     ...
 )
 ```
+
+> You may find some quirks while using this toolchain.
+> Please refer to [this link](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
 methods, you can then load the core rules in your `BUILD` files with:
@@ -133,8 +134,8 @@ one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_install` is
 re-executed in order to pick up a non-hermetic change to your environment (e.g.,
-updating your system `python` interpreter), you can completely flush out your
-repo cache with `bazel clean --expunge`.
+updating your system `python` interpreter), you can force it to re-execute by running
+`bazel sync --only [pip_install name]`
 
 ### Fetch `pip` dependencies lazily
 

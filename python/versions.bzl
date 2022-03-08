@@ -15,6 +15,7 @@
 """The Python versions we use for the toolchains.
 """
 
+# Values returned by https://bazel.build/rules/lib/repository_os
 MACOS_NAME = "mac os"
 LINUX_NAME = "linux"
 WINDOWS_NAME = "windows"
