@@ -87,7 +87,7 @@ def _python_repository_impl(rctx):
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
         python_short_version = python_version.rpartition(".")[0]
-        distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)    
+        distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)
     if rctx.attr.distutils:
         rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
     elif rctx.attr.distutils_content:
@@ -148,9 +148,9 @@ py_runtime_pair(
     rctx.file("BUILD.bazel", build_content)
 
     return {
-        "name": rctx.attr.name,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
+        "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
         "sha256": rctx.attr.sha256,
@@ -163,12 +163,12 @@ python_repository = repository_rule(
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
-                "Either distutils or distutils_content can be specified, but not both.",
+                  "Either distutils or distutils_content can be specified, but not both.",
             mandatory = False,
         ),
         "distutils_content": attr.string(
             doc = "A distutils.cfg file content to be included in the Python installation. " +
-                "Either distutils or distutils_content can be specified, but not both.",
+                  "Either distutils or distutils_content can be specified, but not both.",
             mandatory = False,
         ),
         "platform": attr.string(
@@ -199,11 +199,11 @@ python_repository = repository_rule(
 
 # Wrapper macro around everything above, this is the primary API.
 def python_register_toolchains(
-    name,
-    python_version,
-    distutils = None,
-    distutils_content = None,
-    **kwargs):
+        name,
+        python_version,
+        distutils = None,
+        distutils_content = None,
+        **kwargs):
     """Convenience macro for users which does typical setup.
 
     - Create a repository for each built-in platform like "python_linux_amd64" -
