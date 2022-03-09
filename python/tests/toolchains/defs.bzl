@@ -15,6 +15,7 @@
 """This module contains the definition for the toolchains testing rules.
 """
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 
 _WINDOWS_RUNNER_TEMPLATE = """\
@@ -38,15 +39,17 @@ def _acceptance_test_impl(ctx):
         substitutions = {"%python_version%": ctx.attr.python_version},
     )
 
-    python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
-
-    # With the current approach in the run_acceptance_test.sh, we use this
-    # symlink to find the absolute path to the rules_python to be passed to the
-    # --override_repository rules_python=<rules_python_path>.
-    ctx.actions.symlink(
-        target_file = ctx.file._python_version_test,
-        output = python_version_test,
-    )
+    symlinks = [
+        _symlink(ctx, file)
+        for file in [
+            ctx.file._native_extension_test,
+            ctx.file._python_version_test,
+            # With the current approach in the run_acceptance_test.sh, we use this
+            # symlink to find the absolute path to the rules_python to be passed to the
+            # --override_repository rules_python=<rules_python_path>.
+            ctx.file._requirements_txt,
+        ]
+    ]
 
     run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
@@ -89,10 +92,9 @@ def _acceptance_test_impl(ctx):
     files = [
         build_bazel,
         executable,
-        python_version_test,
         run_acceptance_test_py,
         workspace,
-    ]
+    ] + symlinks
     return [DefaultInfo(
         executable = executable,
         files = depset(
@@ -104,6 +106,15 @@ def _acceptance_test_impl(ctx):
             transitive_files = py3_runtime.files,
         ),
     )]
+
+def _symlink(ctx, file):
+    filename = paths.basename(file.short_path)
+    symlink = ctx.actions.declare_file("/".join([ctx.attr.python_version, filename]))
+    ctx.actions.symlink(
+        target_file = file,
+        output = symlink,
+    )
+    return symlink
 
 _acceptance_test = rule(
     implementation = _acceptance_test_impl,
@@ -126,10 +137,20 @@ _acceptance_test = rule(
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
         ),
+        "_native_extension_test": attr.label(
+            doc = "The native_extension_test.py used to test if the interpreter can deal with native extensions.",
+            allow_single_file = True,
+            default = Label("//python/tests/toolchains/workspace_template:native_extension_test.py"),
+        ),
         "_python_version_test": attr.label(
             doc = "The python_version_test.py used to test the Python version.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:python_version_test.py"),
+        ),
+        "_requirements_txt": attr.label(
+            doc = "The requirements.txt file.",
+            allow_single_file = True,
+            default = Label("//python/tests/toolchains/workspace_template:requirements.txt"),
         ),
         "_run_acceptance_test_tmpl": attr.label(
             doc = "The run_acceptance_test.py template.",

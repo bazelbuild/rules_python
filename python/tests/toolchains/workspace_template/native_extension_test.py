@@ -12,19 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_python//python:defs.bzl", "py_test")
-load("@pip//:requirements.bzl", "requirement")
+import unittest
 
-py_test(
-    name = "python_version_test",
-    srcs = ["python_version_test.py"],
-    env = {
-        "PYTHON_VERSION": "%python_version%",
-    },
-)
 
-py_test(
-    name = "native_extension_test",
-    srcs = ["native_extension_test.py"],
-    deps = [requirement("scipy")],
-)
+class TestNativeExtension(unittest.TestCase):
+    def test_scipy_integrate(self):
+        import scipy.integrate as integrate
+        import scipy.special as special
+
+        (y, _) = integrate.quad(lambda x: special.jv(2.5, x), 0, 4.5)
+        self.assertEqual(round(y, 4), 1.1178)
+
+
+class TestCtypes(unittest.TestCase):
+    def test_import_ctypes(self):
+        from _ctypes import Array, Structure, Union
+
+        self.assertIsNotNone(Union)
+        self.assertIsNotNone(Structure)
+        self.assertIsNotNone(Array)
+
+
+if __name__ == "__main__":
+    unittest.main()

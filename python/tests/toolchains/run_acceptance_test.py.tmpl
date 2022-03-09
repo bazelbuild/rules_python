@@ -21,11 +21,11 @@ class TestPythonVersion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir("%test_location%")
-        python_version_test_dirname = os.path.dirname(
-            os.path.realpath("python_version_test.py")
+        requirements_dirname = os.path.dirname(
+            os.path.realpath("requirements.txt")
         )
         rules_python_path = os.path.normpath(
-            os.path.join(python_version_test_dirname, "..", "..", "..", "..")
+            os.path.join(requirements_dirname, "..", "..", "..", "..")
         )
 
         if %is_windows%:

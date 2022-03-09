@@ -25,3 +25,12 @@ python_register_toolchains(
     name = "python",
     python_version = "%python_version%",
 )
+
+load("@python_resolved_interpreter//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name = "pip",
+    python_interpreter_target = interpreter,
+    requirements = "//:requirements.txt",
+)
