@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//python:versions.bzl", "print_toolchains_checksums")
 load(":stamp.bzl", "stamp_build_setting")
 
 licenses(["notice"])  # Apache 2.0
@@ -43,3 +44,5 @@ exports_files(
 
 # Used to determine the use of `--stamp` in Starlark rules
 stamp_build_setting(name = "stamp")
+
+print_toolchains_checksums(name = "print_toolchains_checksums")
