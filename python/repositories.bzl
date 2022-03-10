@@ -20,6 +20,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 load("//python/private:toolchains_repo.bzl", "resolved_interpreter_os_alias", "toolchains_repo")
 load(
     ":versions.bzl",
+    "DEFAULT_RELEASE_BASE_URL",
     "MINOR_MAPPING",
     "PLATFORMS",
     "TOOL_VERSIONS",
@@ -40,7 +41,8 @@ def _python_repository_impl(rctx):
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
-    (release_filename, url) = get_release_url(platform, python_version)
+    base_url = rctx.attr.base_url
+    (release_filename, url) = get_release_url(platform, python_version, base_url)
 
     if release_filename.endswith(".zst"):
         rctx.download(
@@ -160,6 +162,10 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "base_url": attr.string(
+            doc = "The base URL used for releases, will be joined to the templated 'url' field in the tool_versions dict",
+            default = DEFAULT_RELEASE_BASE_URL,
+        ),
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
@@ -203,6 +209,7 @@ def python_register_toolchains(
         python_version,
         distutils = None,
         distutils_content = None,
+        tool_versions = TOOL_VERSIONS,
         **kwargs):
     """Convenience macro for users which does typical setup.
 
@@ -218,13 +225,15 @@ def python_register_toolchains(
         python_version: the Python version.
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
+        tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
+        in python/versions.bzl will be used
         **kwargs: passed to each python_repositories call.
     """
     if python_version in MINOR_MAPPING:
         python_version = MINOR_MAPPING[python_version]
 
     for platform in PLATFORMS.keys():
-        sha256 = TOOL_VERSIONS[python_version]["sha256"].get(platform, None)
+        sha256 = tool_versions[python_version]["sha256"].get(platform, None)
         if not sha256:
             continue
 
