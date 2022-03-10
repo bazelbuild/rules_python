@@ -20,15 +20,15 @@ MACOS_NAME = "mac os"
 LINUX_NAME = "linux"
 WINDOWS_NAME = "windows"
 
-_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
+DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
 
-def get_release_url(platform, python_version):
+def get_release_url(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL):
     release_filename = TOOL_VERSIONS[python_version]["url"].format(
         platform = platform,
         python_version = python_version,
         build = "static-install_only" if (WINDOWS_NAME in platform) else "install_only",
     )
-    url = "/".join([_RELEASE_BASE_URL, release_filename])
+    url = "/".join([base_url, release_filename])
     return (release_filename, url)
 
 # When updating the versions and releases, run the following command to get
