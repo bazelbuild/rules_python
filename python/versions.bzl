@@ -122,10 +122,12 @@ def print_toolchains_checksums(name):
         srcs = [],
         outs = ["print_toolchains_checksums.sh"],
         cmd = """\
-cat > "$@" <<EOF
+cat > "$@" <<'EOF'
 #!/bin/bash
 
 set -o errexit -o nounset -o pipefail
+
+echo "Fetching hashes..."
 
 {commands}
 EOF
