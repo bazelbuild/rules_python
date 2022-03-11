@@ -17,7 +17,7 @@ http_archive(
     name = "rules_python",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}",
-    url = "https://github.com/bazelbuild/rules_python/archive/${TAG}.tar.gz",
+    url = "https://github.com/bazelbuild/rules_python/refs/tags/${TAG}.tar.gz",
 )
 \`\`\`
 EOF
