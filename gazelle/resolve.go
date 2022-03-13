@@ -137,8 +137,6 @@ func (py *Resolver) Resolve(
 		cfg := cfgs[from.Pkg]
 		pythonProjectRoot := cfg.PythonProjectRoot()
 		modules := modulesRaw.(*treeset.Set)
-		pipRepository := cfg.PipRepository()
-		modulesMapping := cfg.ModulesMapping()
 		it := modules.Iterator()
 		explainDependency := os.Getenv("EXPLAIN_DEPENDENCY")
 		hasFatalError := false
@@ -164,15 +162,13 @@ func (py *Resolver) Resolve(
 					}
 				}
 			} else {
-				if distribution, ok := modulesMapping[mod.Name]; ok {
-					distributionPackage := rulesPythonDistributionPackage(distribution)
-					dep := label.New(pipRepository, distributionPackage, distributionPackage).String()
+				if dep, ok := cfg.FindThirdPartyDependency(mod.Name); ok {
 					deps.Add(dep)
 					if explainDependency == dep {
 						log.Printf("Explaining dependency (%s): "+
 							"in the target %q, the file %q imports %q at line %d, "+
 							"which resolves from the third-party module %q from the wheel %q.\n",
-							explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber, mod.Name, distribution)
+							explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber, mod.Name, dep)
 					}
 				} else {
 					matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
@@ -253,17 +249,6 @@ func (py *Resolver) Resolve(
 	if !deps.Empty() {
 		r.SetAttr("deps", convertDependencySetToExpr(deps))
 	}
-}
-
-// rulesPythonDistributionPackage builds a token that mimics how the
-// rules_python does it for the generated requirement function. By doing this,
-// we avoid having to generate the load statement for this function and the
-// third-party dependency becomes an explicit Bazel target.
-// https://github.com/bazelbuild/rules_python/blob/c639955c/packaging/piptool.py#L238-L245
-func rulesPythonDistributionPackage(distribution string) string {
-	sanitizedDistribution := strings.ToLower(distribution)
-	sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-	return "pypi__" + sanitizedDistribution
 }
 
 // targetListFromResults returns a string with the human-readable list of

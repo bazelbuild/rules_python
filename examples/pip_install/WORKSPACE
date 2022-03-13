@@ -16,6 +16,14 @@ local_repository(
     path = "../..",
 )
 
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39_resolved_interpreter//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_install")
 
 pip_install(
@@ -32,7 +40,9 @@ pip_install(
     # 1. Python interpreter that you compile in the build file (as above in @python_interpreter).
     # 2. Pre-compiled python interpreter included with http_archive
     # 3. Wrapper script, like in the autodetecting python toolchain.
-    #python_interpreter_target = "@python_interpreter//:python_bin",
+    #
+    # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
+    python_interpreter_target = interpreter,
 
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,

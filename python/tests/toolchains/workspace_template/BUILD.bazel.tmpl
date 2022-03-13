@@ -1,0 +1,9 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "python_version_test",
+    srcs = ["python_version_test.py"],
+    env = {
+        "PYTHON_VERSION": "%python_version%",
+    },
+)

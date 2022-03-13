@@ -23,11 +23,11 @@ http_archive(
 # to include https://github.com/bazelbuild/bazel-gazelle/commit/2834ea4
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "0bb8056ab9ed4cbcab5b74348d8530c0e0b939987b0cfe36c1ab53d35a99e4de",
-    strip_prefix = "bazel-gazelle-2834ea44b3ec6371c924baaf28704730ec9d4559",
+    sha256 = "fd8d852ebcb770b41c1c933fc3085b4a23e1426a1af4e791d39b67bb8d894eb7",
+    strip_prefix = "bazel-gazelle-41b542f9b0fefe916a95ca5460458abf916f5fe5",
     urls = [
         # No release since March, and we need subsequent fixes
-        "https://github.com/bazelbuild/bazel-gazelle/archive/2834ea44b3ec6371c924baaf28704730ec9d4559.zip",
+        "https://github.com/bazelbuild/bazel-gazelle/archive/41b542f9b0fefe916a95ca5460458abf916f5fe5.zip",
     ],
 )
 
@@ -48,12 +48,16 @@ local_repository(
     path = "../..",
 )
 
-load("@rules_python//python:pip.bzl", "pip_install")
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-pip_install(
-    # Uses the default repository name "pip"
-    requirements = "//:requirements_lock.txt",
+pip_parse(
+    name = "pip",
+    requirements_lock = "//:requirements_lock.txt",
 )
+
+load("@pip//:requirements.bzl", "install_deps")
+
+install_deps()
 
 # The rules_python gazelle extension has some third-party go dependencies
 # which we need to fetch in order to compile it.
