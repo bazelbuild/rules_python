@@ -47,3 +47,6 @@ user.bazelrc
 # These otherwise match patterns above
 !go.mod
 !BUILD.out
+
+# Python cache
+**/__pycache__/
