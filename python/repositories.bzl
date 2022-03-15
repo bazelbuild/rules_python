@@ -183,7 +183,6 @@ python_repository = repository_rule(
         "python_version": attr.string(
             doc = "The Python version.",
             mandatory = True,
-            values = TOOL_VERSIONS.keys() + MINOR_MAPPING.keys(),
         ),
         "release_filename": attr.string(
             doc = "The filename of the interpreter to be downloaded",
