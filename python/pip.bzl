@@ -105,6 +105,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
     Those dependencies become available in a generated `requirements.bzl` file.
+    You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
     This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
 
@@ -165,6 +166,31 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
         name = "flake8",
         actual = entry_point("flake8"),
     )
+
+    ## Vendoring the requirements.bzl file
+
+    In some cases you may not want to generate the requirements.bzl file as a repository rule
+    while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
+    such as a ruleset, you may want to include the requirements.bzl file rather than make your users
+    install the WORKSPACE setup to generate it.
+    See https://github.com/bazelbuild/rules_python/issues/608
+
+    This is the same workflow as Gazelle, which creates `go_repository` rules with
+    [`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
+
+    Simply run the same tool that the `pip_parse` repository rule calls.
+    You can find the arguments in the generated BUILD file in the pip_parse repo,
+    for example in `$(bazel info output_base)/external/pypi/BUILD.bazel` for a repo
+    named `pypi`.
+
+    The command will look like this:
+    ```shell
+    bazel run -- @rules_python//python/pip_install/parse_requirements_to_bzl \\
+      --requirements_lock ./requirements_lock.txt \\
+      --quiet False --timeout 120 --repo pypi --repo-prefix pypi_ > requirements.bzl
+    ```
+
+    Then load the requirements.bzl file directly, without using `pip_parse` in the WORKSPACE.
     ```
 
     Args:

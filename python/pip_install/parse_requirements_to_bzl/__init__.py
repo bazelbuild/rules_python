@@ -166,7 +166,7 @@ def coerce_to_bool(option):
     return str(option).lower() == "true"
 
 
-def main() -> None:
+def main(output) -> None:
     parser = argparse.ArgumentParser(
         description="Create rules to incrementally fetch needed \
 dependencies from a fully resolved requirements lock file."
@@ -216,7 +216,7 @@ If set, it will take precedence over python_interpreter.",
         args.requirements_lock, whl_library_args["extra_pip_args"]
     )
     req_names = sorted([req.name for req, _ in install_requirements])
-    annotations = args.annotations.collect(req_names)
+    annotations = args.annotations.collect(req_names) if args.annotations else {}
 
     # Write all rendered annotation files and generate a list of the labels to write to the requirements file
     annotated_requirements = dict()
@@ -231,12 +231,11 @@ If set, it will take precedence over python_interpreter.",
             }
         )
 
-    with open("requirements.bzl", "w") as requirement_file:
-        requirement_file.write(
-            generate_parsed_requirements_contents(
-                requirements_lock=args.requirements_lock,
-                repo_prefix=args.repo_prefix,
-                whl_library_args=whl_library_args,
-                annotations=annotated_requirements,
-            )
+    output.write(
+        generate_parsed_requirements_contents(
+            requirements_lock=args.requirements_lock,
+            repo_prefix=args.repo_prefix,
+            whl_library_args=whl_library_args,
+            annotations=annotated_requirements,
         )
+    )
