@@ -266,8 +266,14 @@ def python_register_toolchains(
             platform = platform,
         ))
 
+    # Legacy support for the `_resolved_interpreter` repository name
     resolved_interpreter_os_alias(
         name = "{name}_resolved_interpreter".format(name = name),
+        user_repository_name = name,
+    )
+
+    resolved_interpreter_os_alias(
+        name = name,
         user_repository_name = name,
     )
 
