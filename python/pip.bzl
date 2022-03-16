@@ -166,6 +166,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
         name = "flake8",
         actual = entry_point("flake8"),
     )
+    ```
 
     ## Vendoring the requirements.bzl file
 
@@ -191,7 +192,6 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     ```
 
     Then load the requirements.bzl file directly, without using `pip_parse` in the WORKSPACE.
-    ```
 
     Args:
         requirements_lock (Label): A fully resolved 'requirements.txt' pip requirement file

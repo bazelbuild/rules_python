@@ -217,6 +217,7 @@ alias(
     name = "flake8",
     actual = entry_point("flake8"),
 )
+```
 
 ## Vendoring the requirements.bzl file
 
@@ -242,7 +243,6 @@ bazel run -- @rules_python//python/pip_install/parse_requirements_to_bzl \
 ```
 
 Then load the requirements.bzl file directly, without using `pip_parse` in the WORKSPACE.
-```
 
 
 **PARAMETERS**

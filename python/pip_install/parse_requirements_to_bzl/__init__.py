@@ -4,7 +4,7 @@ import shlex
 import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, TextIO, Tuple
 
 from pip._internal.network.session import PipSession
 from pip._internal.req import constructors
@@ -166,7 +166,11 @@ def coerce_to_bool(option):
     return str(option).lower() == "true"
 
 
-def main(output) -> None:
+def main(output: TextIO) -> None:
+    """Args:
+
+    output: where to write the resulting starlark, such as sys.stdout or an open file
+    """
     parser = argparse.ArgumentParser(
         description="Create rules to incrementally fetch needed \
 dependencies from a fully resolved requirements lock file."
