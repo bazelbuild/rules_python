@@ -266,7 +266,7 @@ def python_register_toolchains(
         ))
 
     resolved_interpreter_os_alias(
-        name = "{name}_resolved_interpreter".format(name = name),
+        name = name,
         user_repository_name = name,
     )
 
