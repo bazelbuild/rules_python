@@ -5,11 +5,20 @@ local_repository(
     path = "../..",
 )
 
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_install", "pip_parse")
 
 # For a more thorough example of `pip_parse`. See `@rules_python//examples/pip_parse`
 pip_parse(
     name = "pip_parsed",
+    python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
 
@@ -20,5 +29,6 @@ install_deps()
 # For a more thorough example of `pip_install`. See `@rules_python//examples/pip_install`
 pip_install(
     name = "pip_installed",
+    python_interpreter_target = interpreter,
     requirements = "//:requirements.txt",
 )
