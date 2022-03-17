@@ -22,15 +22,6 @@ WINDOWS_NAME = "windows"
 
 DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
 
-def get_release_url(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL):
-    release_filename = TOOL_VERSIONS[python_version]["url"].format(
-        platform = platform,
-        python_version = python_version,
-        build = "static-install_only" if (WINDOWS_NAME in platform) else "install_only",
-    )
-    url = "/".join([base_url, release_filename])
-    return (release_filename, url)
-
 # When updating the versions and releases, run the following command to get
 # the hashes:
 #   bazel run //python/private:print_toolchains_checksums
@@ -47,6 +38,7 @@ TOOL_VERSIONS = {
     "3.8.12": {
         "url": "20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz",
         "sha256": {
+            "aarch64-apple-darwin": "f9a3cbb81e0463d6615125964762d133387d561b226a30199f5b039b20f1d944",
             "x86_64-apple-darwin": "f323fbc558035c13a85ce2267d0fad9e89282268ecb810e364fff1d0a079d525",
             "x86_64-pc-windows-msvc": "924f9fd51ff6ccc533ed8e96c5461768da5781eb3dfc11d846f9e300fab44eda",
             "x86_64-unknown-linux-gnu": "5be9c6d61e238b90dfd94755051c0d3a2d8023ebffdb4b0fa4e8fedd09a6cab6",
@@ -115,6 +107,32 @@ PLATFORMS = {
         arch = "x86_64",
     ),
 }
+
+def get_release_url(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
+    """Resolve the release URL for the requested interpreter version
+
+    Args:
+        platform: The platform string for the interpreter
+        python_version: The version of the intterpreter to get
+        base_url: The URL to prepend to the 'url' attr in the tool_versions dict
+        tool_versions: A dict listing the interpreter versions, their SHAs and URL
+
+    Returns:
+        filename and url pair
+    """
+
+    url = tool_versions[python_version]["url"]
+
+    if type(url) == type({}):
+        url = url[platform]
+
+    release_filename = url.format(
+        platform = platform,
+        python_version = python_version,
+        build = "static-install_only" if (WINDOWS_NAME in platform) else "install_only",
+    )
+    url = "/".join([base_url, release_filename])
+    return (release_filename, url)
 
 def print_toolchains_checksums(name):
     native.genrule(

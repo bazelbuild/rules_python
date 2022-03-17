@@ -52,7 +52,7 @@ class TestPythonVersion(unittest.TestCase):
             )
 
     def test_match_toolchain(self):
-        stream = os.popen("bazel run @python_resolved_interpreter//:python3 -- --version")
+        stream = os.popen("bazel run @python//:python3 -- --version")
         output = stream.read().strip()
         self.assertEqual(output, "Python %python_version%")
 
