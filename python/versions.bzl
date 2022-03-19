@@ -28,6 +28,19 @@ DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/
 #
 # buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
+    "3.7.9": {
+        "url": {
+            "x86_64-apple-darwin": "20200822/cpython-{python_version}-{platform}-pgo-20200823T0123.tar.zst",
+            "x86_64-pc-windows-msvc": "20200822/cpython-{python_version}-{platform}-static-noopt-20200823T0153.tar.zst",
+            "x86_64-unknown-linux-gnu": "20200822/cpython-{python_version}-{platform}-pgo-20200823T0123.tar.zst",
+        },
+        "sha256": {
+            "x86_64-apple-darwin": "e50a03a0db1f49f4d8521fa531f67390652457c83ca9c20b1dcbaf2e36770b1b",
+            "x86_64-pc-windows-msvc": "eb55a56bcc40d63b22b44066efb2850120d30cfd8093f1b3c094ab0ad1dced1e",
+            "x86_64-unknown-linux-gnu": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        },
+        "strip_prefix": "python/install",
+    },
     "3.8.10": {
         "url": "20210506/cpython-{python_version}-{platform}-pgo+lto-20210506T0943.tar.zst",
         "sha256": {
@@ -70,6 +83,7 @@ TOOL_VERSIONS = {
 
 # buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
+    "3.7": "3.7.9",
     "3.8": "3.8.12",
     "3.9": "3.9.10",
     "3.10": "3.10.2",
