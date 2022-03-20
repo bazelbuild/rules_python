@@ -81,7 +81,7 @@ def _python_repository_impl(rctx):
         rctx.download_and_extract(
             url = url,
             sha256 = rctx.attr.sha256,
-            stripPrefix = "python",
+            stripPrefix = rctx.attr.strip_prefix,
         )
 
     # Write distutils.cfg to the Python installation.
@@ -157,6 +157,7 @@ py_runtime_pair(
         "python_version": python_version,
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
+        "strip_prefix": rctx.attr.strip_prefix,
         "url": url,
     }
 
@@ -190,6 +191,10 @@ python_repository = repository_rule(
         ),
         "sha256": attr.string(
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
+            mandatory = True,
+        ),
+        "strip_prefix": attr.string(
+            doc = "A directory prefix to strip from the extracted files.",
             mandatory = True,
         ),
         "url": attr.string(
@@ -244,7 +249,7 @@ def python_register_toolchains(
         if not sha256:
             continue
 
-        (release_filename, url) = get_release_url(platform, python_version, base_url, tool_versions)
+        (release_filename, url, strip_prefix) = get_release_url(platform, python_version, base_url, tool_versions)
 
         python_repository(
             name = "{name}_{platform}".format(
@@ -258,6 +263,7 @@ def python_register_toolchains(
             url = url,
             distutils = distutils,
             distutils_content = distutils_content,
+            strip_prefix = strip_prefix,
             **kwargs
         )
         native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
