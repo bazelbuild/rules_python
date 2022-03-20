@@ -16,6 +16,14 @@ http_archive(
     ],
 )
 
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "package_annotation", "pip_install", "pip_parse")
 
 # Here we can see an example of annotations being applied to an arbitrary
@@ -42,6 +50,7 @@ write_file(
 pip_parse(
     name = "pip_parsed",
     annotations = ANNOTATIONS,
+    python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
 
@@ -53,5 +62,6 @@ install_deps()
 pip_install(
     name = "pip_installed",
     annotations = ANNOTATIONS,
+    python_interpreter_target = interpreter,
     requirements = "//:requirements.txt",
 )
