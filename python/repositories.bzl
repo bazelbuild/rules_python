@@ -41,6 +41,7 @@ def _python_repository_impl(rctx):
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
+    python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
     url = rctx.attr.url
 
@@ -88,7 +89,6 @@ def _python_repository_impl(rctx):
     if "windows" in rctx.os.name:
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
-        python_short_version = python_version.rpartition(".")[0]
         distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)
     if rctx.attr.distutils:
         rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
@@ -130,6 +130,16 @@ filegroup(
     ),
 )
 
+cc_library(
+    name = "py_headers",
+    hdrs = glob(["include/**/*.h"]),
+    includes = [
+        "include",
+        "include/python{python_version}",
+        "include/python{python_version}m",
+    ],
+)
+
 exports_files(["{python_path}"])
 
 py_runtime(
@@ -146,6 +156,7 @@ py_runtime_pair(
 )
 """.format(
         python_path = python_bin,
+        python_version = python_short_version,
     )
     rctx.file("BUILD.bazel", build_content)
 
