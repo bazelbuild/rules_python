@@ -195,6 +195,7 @@ python_repository = repository_rule(
         ),
         "strip_prefix": attr.string(
             doc = "A directory prefix to strip from the extracted files.",
+            mandatory = True,
         ),
         "url": attr.string(
             doc = "The URL of the interpreter to download",
