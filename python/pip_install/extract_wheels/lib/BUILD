@@ -34,13 +34,15 @@ package_annotations_file(
             ],
         ),
         "pkg_c": package_annotation(
-            additive_build_content = """\
+            # The `join` and `strip` here accounts for potential differences
+            # in new lines between unix and windows hosts.
+            additive_build_content = "\n".join([line.strip() for line in """\
 cc_library(
     name = "my_target",
     hdrs = glob(["**/*.h"]),
     srcs = glob(["**/*.cc"]),
 )
-""",
+""".splitlines()]),
             data = [":my_target"],
         ),
         "pkg_d": package_annotation(
@@ -57,7 +59,10 @@ py_test(
     data = [":mock_annotations"],
     env = {"MOCK_ANNOTATIONS": "$(rootpath :mock_annotations)"},
     tags = ["unit"],
-    deps = [":lib"],
+    deps = [
+        ":lib",
+        "//python/runfiles",
+    ],
 )
 
 py_test(
