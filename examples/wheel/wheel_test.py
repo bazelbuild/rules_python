@@ -14,6 +14,7 @@
 
 import os
 import platform
+import subprocess
 import unittest
 import zipfile
 
@@ -308,12 +309,22 @@ UNKNOWN
             )
 
     def test_python_abi3_binary_wheel(self):
+        arch = "amd64"
+        if platform.system() != "Windows":
+            arch = subprocess.check_output(["uname", "-m"]).strip().decode()
+        # These strings match the strings from py_wheel() in BUILD
+        os_strings = {
+            "Linux": "manylinux2014",
+            "Darwin": "macosx_11_0",
+            "Windows": "win",
+        }
+        os_string = os_strings[platform.system()]
         filename = os.path.join(
             os.environ["TEST_SRCDIR"],
             "rules_python",
             "examples",
             "wheel",
-            "example_python_abi3_binary_wheel-0.0.1-cp38-abi3-manylinux2014_x86_64.whl",
+            f"example_python_abi3_binary_wheel-0.0.1-cp38-abi3-{os_string}_{arch}.whl",
         )
         with zipfile.ZipFile(filename) as zf:
             metadata_contents = zf.read(
@@ -335,12 +346,12 @@ UNKNOWN
                 "example_python_abi3_binary_wheel-0.0.1.dist-info/WHEEL"
             )
             self.assertEqual(
-                wheel_contents,
-                b"""\
+                wheel_contents.decode(),
+                f"""\
 Wheel-Version: 1.0
 Generator: bazel-wheelmaker 1.0
 Root-Is-Purelib: false
-Tag: cp38-abi3-manylinux2014_x86_64
+Tag: cp38-abi3-{os_string}_{arch}
 """,
             )
 
