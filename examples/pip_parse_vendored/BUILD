@@ -16,7 +16,7 @@ genrule(
     cmd = " | ".join([
         "cat $<",
         # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
-        """sed -e '/^load.*/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
+        """sed -e '/^load(\\"@rules_python.*/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
         """tr "'" '"' """,
         """sed 's#"@python39_.*//:bin/python3"#interpreter#' >$@""",
     ]),

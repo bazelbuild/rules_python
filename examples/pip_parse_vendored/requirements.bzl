@@ -4,6 +4,7 @@
 from //:requirements.txt
 """
 
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
@@ -43,7 +44,8 @@ def _get_annotation(requirement):
 
 def install_deps():
     for name, requirement in _packages:
-        whl_library(
+        maybe(
+            whl_library,
             name = name,
             requirement = requirement,
             annotation = _get_annotation(requirement),
