@@ -89,8 +89,9 @@ def _resolved_interpreter_os_alias_impl(rctx):
 package(default_visibility = ["//visibility:public"])
 exports_files(["defs.bzl"])
 alias(name = "files",           actual = "@{py_repository}_{host_platform}//:files")
-alias(name = "py_headers",      actual = "@{py_repository}_{host_platform}//:py_headers")
+alias(name = "includes",        actual = "@{py_repository}_{host_platform}//:includes")
 alias(name = "py3_runtime",     actual = "@{py_repository}_{host_platform}//:py3_runtime")
+alias(name = "python_headers",  actual = "@{py_repository}_{host_platform}//:python_headers")
 alias(name = "python_runtimes", actual = "@{py_repository}_{host_platform}//:python_runtimes")
 alias(name = "python3",         actual = "@{py_repository}_{host_platform}//:{python3_binary_path}")
 """.format(

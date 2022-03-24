@@ -130,9 +130,14 @@ filegroup(
     ),
 )
 
+filegroup(
+    name = "includes",
+    srcs = glob(["include/**/*.h"]),
+)
+
 cc_library(
-    name = "py_headers",
-    hdrs = glob(["include/**/*.h"]),
+    name = "python_headers",
+    hdrs = [":includes"],
     includes = [
         "include",
         "include/python{python_version}",
