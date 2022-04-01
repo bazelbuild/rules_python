@@ -230,19 +230,11 @@ See https://github.com/bazelbuild/rules_python/issues/608
 This is the same workflow as Gazelle, which creates `go_repository` rules with
 [`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
 
-Simply run the same tool that the `pip_parse` repository rule calls.
-You can find the arguments in the generated BUILD file in the pip_parse repo,
-for example in `$(bazel info output_base)/external/pypi/BUILD.bazel` for a repo
-named `pypi`.
-
-The command will look like this:
-```shell
-bazel run -- @rules_python//python/pip_install/parse_requirements_to_bzl \
-  --requirements_lock ./requirements_lock.txt \
-  --quiet False --timeout 120 --repo pypi --repo-prefix pypi_ > requirements.bzl
-```
-
-Then load the requirements.bzl file directly, without using `pip_parse` in the WORKSPACE.
+To do this, use the "write to source file" pattern documented in
+https://blog.aspect.dev/bazel-can-write-to-the-source-folder
+to put a copy of the generated requirements.bzl into your project.
+Then load the requirements.bzl file directly rather than from the generated repository.
+See the example in rules_python/examples/pip_parse_vendored.
 
 
 **PARAMETERS**

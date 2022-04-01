@@ -137,6 +137,8 @@ def _pip_repository_impl(rctx):
             "python.pip_install.parse_requirements_to_bzl",
             "--requirements_lock",
             rctx.path(rctx.attr.requirements_lock),
+            "--requirements_lock_label",
+            str(rctx.attr.requirements_lock),
             # pass quiet and timeout args through to child repos.
             "--quiet",
             str(rctx.attr.quiet),
