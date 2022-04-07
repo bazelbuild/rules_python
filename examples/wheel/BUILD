@@ -130,12 +130,15 @@ py_wheel(
 # An example of how to change the wheel package root directory using 'strip_path_prefixes'.
 py_wheel(
     name = "custom_package_root",
-    # Package data. We're building "custom_package_root-0.0.1-py3-none-any.whl"
-    distribution = "example_custom_package_root",
+    # Package data. We're building "examples_custom_package_root-0.0.1-py3-none-any.whl"
+    distribution = "examples_custom_package_root",
     python_tag = "py3",
     strip_path_prefixes = [
         "examples",
     ],
+    entry_points = {
+        "console_scripts": ["main = foo.bar:baz"],
+    },
     version = "0.0.1",
     deps = [
         ":example_pkg",

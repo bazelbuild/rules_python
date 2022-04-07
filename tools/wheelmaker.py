@@ -67,6 +67,7 @@ class WheelMaker(object):
             + ".dist-info/"
         )
         self._zipfile = None
+        # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
 
     def __enter__(self):
@@ -119,6 +120,9 @@ class WheelMaker(object):
         def arcname_from(name):
             # Always use unix path separators.
             normalized_arcname = name.replace(os.path.sep, "/")
+            # Don't manipulate names filenames in the .distinfo directory.
+            if normalized_arcname.startswith(self._distinfo_dir):
+                return normalized_arcname
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
                     return normalized_arcname[len(prefix) :]
