@@ -219,7 +219,7 @@ UNKNOWN
             "rules_python",
             "examples",
             "wheel",
-            "example_custom_package_root-0.0.1-py3-none-any.whl",
+            "examples_custom_package_root-0.0.1-py3-none-any.whl",
         )
 
         with zipfile.ZipFile(filename) as zf:
@@ -230,9 +230,10 @@ UNKNOWN
                     "wheel/lib/module_with_data.py",
                     "wheel/lib/simple_module.py",
                     "wheel/main.py",
-                    "example_custom_package_root-0.0.1.dist-info/WHEEL",
-                    "example_custom_package_root-0.0.1.dist-info/METADATA",
-                    "example_custom_package_root-0.0.1.dist-info/RECORD",
+                    "examples_custom_package_root-0.0.1.dist-info/WHEEL",
+                    "examples_custom_package_root-0.0.1.dist-info/METADATA",
+                    "examples_custom_package_root-0.0.1.dist-info/entry_points.txt",
+                    "examples_custom_package_root-0.0.1.dist-info/RECORD",
                 ],
             )
 
