@@ -432,7 +432,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
             ),
             "_wheelmaker": attr.label(
                 executable = True,
-                cfg = "host",
+                cfg = "exec",
                 default = "//tools:wheelmaker",
             ),
         },
