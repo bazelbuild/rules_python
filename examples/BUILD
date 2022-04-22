@@ -28,6 +28,12 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pip_parse_vendored_example",
+    timeout = "long",
+    tags = ["fix-windows"],
+)
+
+bazel_integration_test(
     name = "pip_repository_annotations_example",
     timeout = "long",
 )

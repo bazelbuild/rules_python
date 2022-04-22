@@ -235,6 +235,7 @@ def python_register_toolchains(
         python_version,
         distutils = None,
         distutils_content = None,
+        register_toolchains = True,
         tool_versions = TOOL_VERSIONS,
         **kwargs):
     """Convenience macro for users which does typical setup.
@@ -251,6 +252,7 @@ def python_register_toolchains(
         python_version: the Python version.
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
+        register_toolchains: Whether or not to register the downloaded toolchains.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
         in python/versions.bzl will be used
         **kwargs: passed to each python_repositories call.
@@ -282,10 +284,11 @@ def python_register_toolchains(
             strip_prefix = strip_prefix,
             **kwargs
         )
-        native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
-            name = name,
-            platform = platform,
-        ))
+        if register_toolchains:
+            native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
+                name = name,
+                platform = platform,
+            ))
 
     resolved_interpreter_os_alias(
         name = name,
