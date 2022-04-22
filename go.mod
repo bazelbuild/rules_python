@@ -1,6 +1,6 @@
 module github.com/bazelbuild/rules_python
 
-go 1.16
+go 1.18
 
 require (
 	github.com/bazelbuild/bazel-gazelle v0.23.0
