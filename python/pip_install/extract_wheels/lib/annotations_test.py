@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 from python.pip_install.extract_wheels.lib.annotation import Annotation, AnnotationsMap
+from python.runfiles import runfiles
 
 
 class AnnotationsTestCase(unittest.TestCase):
@@ -16,7 +17,9 @@ class AnnotationsTestCase(unittest.TestCase):
         annotations_env = os.environ.get("MOCK_ANNOTATIONS")
         self.assertIsNotNone(annotations_env)
 
-        annotations_path = Path.cwd() / annotations_env
+        r = runfiles.Create()
+
+        annotations_path = Path(r.Rlocation("rules_python/{}".format(annotations_env)))
         self.assertTrue(annotations_path.exists())
 
         annotations_map = AnnotationsMap(annotations_path)
@@ -59,14 +62,22 @@ class AnnotationsTestCase(unittest.TestCase):
             collection["pkg_c"],
             Annotation(
                 {
-                    "additive_build_content": textwrap.dedent(
-                        """\
+                    # The `join` and `strip` here accounts for potential
+                    # differences in new lines between unix and windows
+                    # hosts.
+                    "additive_build_content": "\n".join(
+                        [
+                            line.strip()
+                            for line in textwrap.dedent(
+                                """\
                 cc_library(
                     name = "my_target",
                     hdrs = glob(["**/*.h"]),
                     srcs = glob(["**/*.cc"]),
                 )
                 """
+                            ).splitlines()
+                        ]
                     ),
                     "copy_executables": {},
                     "copy_files": {},
