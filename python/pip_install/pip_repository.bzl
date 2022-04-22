@@ -126,7 +126,7 @@ def _locked_requirements(rctx):
         requirements_txt = rctx.attr.requirements_darwin
     elif os.startswith("linux") and rctx.attr.requirements_linux != None:
         requirements_txt = rctx.attr.requirements_linux
-    elif "win" in os:
+    elif "win" in os and rctx.attr.requirements_windows != None:
         requirements_txt = rctx.attr.requirements_windows
     if not requirements_txt:
         fail("""\

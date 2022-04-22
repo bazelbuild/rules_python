@@ -74,7 +74,8 @@ Accepts a `requirements.txt` file and installs the dependencies listed within.
 
 Those dependencies become available in a generated `requirements.bzl` file.
 
-This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
+This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
+In your WORKSPACE file:
 
 ```python
 pip_install(
@@ -142,7 +143,7 @@ alias(
 | :-------------: | :-------------: | :-------------: |
 | requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
 | name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
-| kwargs |  Keyword arguments passed directly to the <code>pip_repository</code> repository rule.   |  none |
+| kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
 <a name="#pip_parse"></a>
@@ -158,7 +159,8 @@ Accepts a locked/compiled requirements file and installs the dependencies listed
 Those dependencies become available in a generated `requirements.bzl` file.
 You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
+This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`, with `incremental` set.
+In your WORKSPACE file:
 
 ```python
 load("@rules_python//python:pip.bzl", "pip_parse")
@@ -242,9 +244,9 @@ See the example in rules_python/examples/pip_parse_vendored.
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.   |  none |
+| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.     Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code>     attributes.   |  none |
 | name |  The name of the generated repository. The generated repositories     containing each requirement will be of the form &lt;name&gt;_&lt;requirement-name&gt;.   |  <code>"pip_parsed_deps"</code> |
-| kwargs |  Additional keyword arguments for the underlying     <code>pip_repository</code> rule.   |  none |
+| kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
 <a name="#pip_repositories"></a>
