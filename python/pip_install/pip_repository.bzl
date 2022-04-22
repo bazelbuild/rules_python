@@ -119,11 +119,24 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["requirements.bzl"])
 """
 
+def _locked_requirements(rctx):
+    os = rctx.os.name.lower()
+    requirements_txt = rctx.attr.requirements_lock
+    if os.startswith("mac os") and rctx.attr.requirements_darwin != None:
+        requirements_txt = rctx.attr.requirements_darwin
+    elif os.startswith("linux") and rctx.attr.requirements_linux != None:
+        requirements_txt = rctx.attr.requirements_linux
+    elif "win" in os and rctx.attr.requirements_windows != None:
+        requirements_txt = rctx.attr.requirements_windows
+    if not requirements_txt:
+        fail("""\
+Incremental mode requires a requirements_lock attribute be specified,
+or a platform-specific lockfile using one of the requirements_* attributes.
+""")
+    return requirements_txt
+
 def _pip_repository_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
-
-    if rctx.attr.incremental and not rctx.attr.requirements_lock:
-        fail("Incremental mode requires a requirements_lock attribute be specified.")
 
     # Write the annotations file to pass to the wheel maker
     annotations = {package: json.decode(data) for (package, data) in rctx.attr.annotations.items()}
@@ -131,14 +144,15 @@ def _pip_repository_impl(rctx):
     rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
 
     if rctx.attr.incremental:
+        requirements_txt = _locked_requirements(rctx)
         args = [
             python_interpreter,
             "-m",
             "python.pip_install.parse_requirements_to_bzl",
             "--requirements_lock",
-            rctx.path(rctx.attr.requirements_lock),
+            rctx.path(requirements_txt),
             "--requirements_lock_label",
-            str(rctx.attr.requirements_lock),
+            str(requirements_txt),
             # pass quiet and timeout args through to child repos.
             "--quiet",
             str(rctx.attr.quiet),
@@ -282,6 +296,14 @@ pip_repository_attrs = {
         allow_single_file = True,
         doc = "A 'requirements.txt' pip requirements file.",
     ),
+    "requirements_darwin": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
+    ),
+    "requirements_linux": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Linux",
+    ),
     "requirements_lock": attr.label(
         allow_single_file = True,
         doc = """
@@ -289,6 +311,10 @@ A fully resolved 'requirements.txt' pip requirement file containing the transiti
 of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
 wheels are fetched/built only for the targets specified by 'build/run/test'.
 """,
+    ),
+    "requirements_windows": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Windows",
     ),
 }
 

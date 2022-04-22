@@ -20,12 +20,13 @@ load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compi
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 
-def pip_install(requirements, name = "pip", **kwargs):
+def pip_install(requirements = None, name = "pip", **kwargs):
     """Accepts a `requirements.txt` file and installs the dependencies listed within.
 
     Those dependencies become available in a generated `requirements.bzl` file.
 
-    This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
+    This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
+    In your WORKSPACE file:
 
     ```python
     pip_install(
@@ -88,7 +89,7 @@ def pip_install(requirements, name = "pip", **kwargs):
     Args:
         requirements (Label): A 'requirements.txt' pip requirements file.
         name (str, optional): A unique name for the created external repository (default 'pip').
-        **kwargs (dict): Keyword arguments passed directly to the `pip_repository` repository rule.
+        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
 
     # Just in case our dependencies weren't already fetched
@@ -107,7 +108,8 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     Those dependencies become available in a generated `requirements.bzl` file.
     You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-    This macro runs a repository rule that invokes `pip`. In your WORKSPACE file:
+    This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`, with `incremental` set.
+    In your WORKSPACE file:
 
     ```python
     load("@rules_python//python:pip.bzl", "pip_parse")
@@ -191,10 +193,11 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
             of 'requirements' no resolve will take place and pip_repository will create
             individual repositories for each of your dependencies so that wheels are
             fetched/built only for the targets specified by 'build/run/test'.
+            Note that if your lockfile is platform-dependent, you can use the `requirements_[platform]`
+            attributes.
         name (str, optional): The name of the generated repository. The generated repositories
             containing each requirement will be of the form <name>_<requirement-name>.
-        **kwargs (dict): Additional keyword arguments for the underlying
-            `pip_repository` rule.
+        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
 
     # Just in case our dependencies weren't already fetched
