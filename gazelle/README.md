@@ -90,7 +90,7 @@ gazelle(
 That's it, now you can finally run `bazel run //:gazelle` anytime
 you edit Python code, and it should update your `BUILD` files correctly.
 
-A fully-working example is in [`examples/build_file_generation`](examples/build_file_generation).
+A fully-working example is in [`examples/build_file_generation`](../examples/build_file_generation).
 
 ## Usage
 
