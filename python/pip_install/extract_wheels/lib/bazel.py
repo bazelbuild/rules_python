@@ -41,7 +41,6 @@ def generate_entry_point_contents(
         import sys
         from {module} import {method}
         if __name__ == "__main__":
-            rc = {method}()
             sys.exit({method}())
         """.format(
             shebang=shebang, module=module, method=method
