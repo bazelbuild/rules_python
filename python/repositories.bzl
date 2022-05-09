@@ -35,6 +35,8 @@ def py_repositories():
 # Remaining content of the file is only used to support toolchains.
 ########
 
+STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
@@ -176,6 +178,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+    rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 
     return {
