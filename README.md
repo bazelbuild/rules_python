@@ -56,7 +56,7 @@ http_archive(
 
 ### Toolchain registration
 
-To register a hermetic Python toolchain rather than rely on a system-install interpreter for runtime execution, you can add to the `WORKSPACE` file:
+To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
 ```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
@@ -80,7 +80,7 @@ pip_parse(
 ```
 
 After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
-is still required to 'boostrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
+is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
 You may also find some quirks while using this toolchain. Please refer to [python-build-standalone documentation's _Quirks_ section](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
 
 ### "Hello World"
