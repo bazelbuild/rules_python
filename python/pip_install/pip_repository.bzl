@@ -79,9 +79,11 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
         xcode_sdk_location = rctx.execute(["xcode-select", "-p"])
         if xcode_sdk_location.return_code == 0:
             xcode_root = xcode_sdk_location.stdout.strip()
-            print("XCODE ROOT CONTENTS")
-            xcode_root_contents = rctx.execute(["find", xcode_root, "-type", "d"], quiet=False)
-            environment[CFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_sdk_location.stdout.strip())
+            if "commandlinetools" not in xcode_root.lower():
+                # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
+                # so we need to change the path to to the macos specific tools.
+                xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+            environment[CFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
