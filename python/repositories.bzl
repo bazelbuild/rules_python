@@ -111,7 +111,6 @@ def _python_repository_impl(rctx):
             fail(exec_result.stderr)
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
-    # An empty shebang inputs falls back to PyRuntimeInfoApi.DEFAULT_STUB_SHEBANG.
     print(native.bazel_version)
     if _parse_native_bazel_version(native.bazel_version) >= (5,0,0):
         abs_python_bin_path = rctx.path(python_bin)
