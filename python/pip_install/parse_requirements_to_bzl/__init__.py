@@ -94,7 +94,7 @@ def generate_parsed_requirements_contents(
     repository rule, which will represent the individual requirements.
 
     Generates a requirements.bzl file containing a macro (install_deps()) which instantiates
-    a repository rule for each requirment in the lock file.
+    a repository rule for each requirement in the lock file.
     """
     install_req_and_lines = parse_install_requirements(
         requirements_lock, whl_library_args["extra_pip_args"]

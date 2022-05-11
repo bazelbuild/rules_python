@@ -71,24 +71,17 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
     otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
     """
-    if rctx.os.name.lower().startswith("mac os") and rctx.attr.python_interpreter_target != None:
-        is_builtin = rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME)))
-        if is_builtin and CFLAGS not in rctx.attr.environment:
-            xcode_sdk_location = rctx.execute(["xcode-select", "-p"])
-            if xcode_sdk_location.return_code == 0:
-                environment[CFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_sdk_location.stdout.strip())
-
-def _parse_environment_attr(rctx):
-    # Shallow copy existing environment dict, which defaults to empty.
-    environment = dict(rctx.attr.environment)
-    _maybe_set_xcode_location_cflags(rctx, environment)
-    if environment:
-        return [
-            "--environment",
-            struct(arg = environment).to_json(),
-        ]
-    else:
-        return []
+    if (
+        rctx.os.name.lower().startswith("mac os") and
+        rctx.attr.python_interpreter_target != None and
+        rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME)))
+    ):
+        xcode_sdk_location = rctx.execute(["xcode-select", "-p"])
+        if xcode_sdk_location.return_code == 0:
+            xcode_root = xcode_sdk_location.stdout.strip()
+            print("XCODE ROOT CONTENTS")
+            xcode_root_contents = rctx.execute(["find", xcode_root, "-type", "d"], quiet=False)
+            environment[CFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_sdk_location.stdout.strip())
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
@@ -133,9 +126,24 @@ def _parse_optional_attrs(rctx, args):
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
 
-    args += _parse_environment_attr(rctx)
+    if rctx.attr.environment != None:
+        args += [
+            "--environment",
+            struct(arg = rctx.attr.environment).to_json(),
+        ]
 
     return args
+
+def _create_repository_execution_environment(rctx):
+    """Create a environment dictionary for processes we spawn with rctx.execute.
+
+    Args:
+        rctx: The repository context.
+    Returns: Dictionary of envrionment variable suitable to pass to rctx.execute.
+    """
+    env = {"PYTHONPATH": _construct_pypath(rctx)}
+    _maybe_set_xcode_location_cflags(rctx, env)
+    return env
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
@@ -211,7 +219,7 @@ def _pip_repository_impl(rctx):
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = {"PYTHONPATH": _construct_pypath(rctx)},
+        environment = _create_repository_execution_environment(rctx),
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -415,7 +423,7 @@ def _whl_library_impl(rctx):
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = {"PYTHONPATH": _construct_pypath(rctx)},
+        environment = _create_repository_execution_environment(rctx),
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
