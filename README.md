@@ -54,7 +54,9 @@ http_archive(
 )
 ```
 
-To register a hermetic Python toolchain rather than rely on whatever is already on the machine, you can add to the `WORKSPACE` file:
+### Toolchain registration
+
+To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
 ```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
@@ -77,8 +79,11 @@ pip_parse(
 )
 ```
 
-> You may find some quirks while using this toolchain.
-> Please refer to [this link](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
+After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
+is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
+You may also find some quirks while using this toolchain. Please refer to [python-build-standalone documentation's _Quirks_ section](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
+
+### "Hello World"
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
 methods, you can then load the core rules in your `BUILD` files with:
