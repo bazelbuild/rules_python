@@ -1,5 +1,4 @@
 import boto3
-import tree_sitter
 
 def the_dir():
     return dir(boto3)
