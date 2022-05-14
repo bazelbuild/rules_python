@@ -1,5 +1,4 @@
 """Utility class to inspect an extracted wheel directory"""
-import configparser
 import email
 import glob
 import os
@@ -43,7 +42,7 @@ class Wheel:
 
     @property
     def metadata(self) -> email.message.Message:
-        with WheelFile.open(self.path) as wheel_source:
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
             metadata_file = wheel_source.read_dist_info("METADATA")
             metadata = installer.utils.parse_metadata_file(metadata_file)
         return metadata
@@ -53,7 +52,7 @@ class Wheel:
         # TODO Also available as installer.sources.WheelSource.version
         return str(self.metadata["Version"])
 
-    def entry_points(self) -> Dict[str, Tuple[str, str]]:
+    def entry_points(self) -> Dict[str, tuple[str, str]]:
         """Returns the entrypoints defined in the current wheel
 
         See https://packaging.python.org/specifications/entry-points/ for more info
@@ -61,7 +60,7 @@ class Wheel:
         Returns:
             Dict[str, Tuple[str, str]]: A mapping of the entry point's name to it's module and attribute
         """
-        with WheelFile.open(self.path) as wheel_source:
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
             entry_points_file = wheel_source.read_dist_info("entry_points.txt")
             if entry_points_file is None:
                 return dict()
@@ -75,7 +74,7 @@ class Wheel:
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
-        for wheel_req in self.metadata.get_all('Requires-Dist'):
+        for wheel_req in self.metadata.get_all('Requires-Dist', list()):
             req = pkg_resources.Requirement(wheel_req)  # type: ignore
 
             if req.marker is None or any(
