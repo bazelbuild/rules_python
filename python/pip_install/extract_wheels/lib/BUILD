@@ -18,7 +18,7 @@ py_library(
         "//python/pip_install/parse_requirements_to_bzl:__subpackages__",
     ],
     deps = [
-        requirement("pkginfo"),
+        requirement("installer"),
         requirement("setuptools"),
     ],
 )
