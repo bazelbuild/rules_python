@@ -43,8 +43,8 @@ class Wheel:
     @property
     def metadata(self) -> email.message.Message:
         with installer.sources.WheelFile.open(self.path) as wheel_source:
-            metadata_file = wheel_source.read_dist_info("METADATA")
-            metadata = installer.utils.parse_metadata_file(metadata_file)
+            metadata_contents = wheel_source.read_dist_info("METADATA")
+            metadata = installer.utils.parse_metadata_file(metadata_contents)
         return metadata
 
     @property
@@ -61,15 +61,17 @@ class Wheel:
             Dict[str, Tuple[str, str]]: A mapping of the entry point's name to it's module and attribute
         """
         with installer.sources.WheelFile.open(self.path) as wheel_source:
-            entry_points_file = wheel_source.read_dist_info("entry_points.txt")
-            if entry_points_file is None:
+            if "entry_points.txt" not in wheel_source.dist_info_filenames:
                 return dict()
 
-            d = dict()
-            entry_points = installer.utils.parse_entrypoints(entry_points_file)
+            entry_points_mapping = dict()
+            entry_points_contents = wheel_source.read_dist_info("entry_points.txt")
+            entry_points = installer.utils.parse_entrypoints(entry_points_contents)
             for script, module, attribute, kind in entry_points:
                 if kind == "console":
-                    d[script] = (module, attribute)
+                    entry_points_mapping[script] = (module, attribute)
+
+            return entry_points_mapping
 
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()

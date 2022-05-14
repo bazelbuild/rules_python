@@ -407,7 +407,7 @@ def extract_wheel(
 
     directory_path = Path(directory)
     entry_points = []
-    for name, module, attribute in sorted(whl.entry_points().items()):
+    for name, (module, attribute) in sorted(whl.entry_points().items()):
         entry_point_script = f"{WHEEL_ENTRY_POINT_PREFIX}_{name}.py"
         (directory_path / entry_point_script).write_text(
             generate_entry_point_contents(module, attribute)
