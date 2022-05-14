@@ -18,6 +18,11 @@ _RULE_DEPS = [
         "9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2",
     ),
     (
+        "pypi__installer",
+        "https://files.pythonhosted.org/packages/1b/21/3e6ebd12d8dccc55bcb7338db462c75ac86dbd0ac7439ac114616b21667b/installer-0.5.1-py3-none-any.whl",
+        "1d6c8d916ed82771945b9c813699e6f57424ded970c9d8bf16bbc23e1e826ed3",
+    ),
+    (
         "pypi__pip",
         "https://files.pythonhosted.org/packages/4d/16/0a14ca596f30316efd412a60bdfac02a7259bf8673d4d917dc60b9a21812/pip-22.0.4-py3-none-any.whl",
         "c6aca0f2f081363f689f041d90dab2a07a9a07fb840284db2218117a52da800b",
@@ -26,11 +31,6 @@ _RULE_DEPS = [
         "pypi__pip_tools",
         "https://files.pythonhosted.org/packages/6d/16/75d65bdccd48bb59a08e2bf167b01d8532f65604270d0a292f0f16b7b022/pip_tools-5.5.0-py2.py3-none-any.whl",
         "10841c1e56c234d610d0466447685b9ea4ee4a2c274f858c0ef3c33d9bd0d985",
-    ),
-    (
-        "pypi__pkginfo",
-        "https://files.pythonhosted.org/packages/cd/00/49f59cdd2c6a52e6665fda4de671dac5614366dc827e050c55428241b929/pkginfo-1.8.2-py2.py3-none-any.whl",
-        "c24c487c6a7f72c66e816ab1796b96ac6c3d14d49338293d2141664330b55ffc",
     ),
     (
         "pypi__setuptools",

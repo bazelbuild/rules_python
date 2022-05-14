@@ -1,13 +1,14 @@
 """Utility class to inspect an extracted wheel directory"""
 import configparser
+import email
 import glob
 import os
 import stat
 import zipfile
 from typing import Dict, Optional, Set
 
+import installer
 import pkg_resources
-import pkginfo
 
 
 def current_umask() -> int:
@@ -37,57 +38,44 @@ class Wheel:
 
     @property
     def name(self) -> str:
-        return str(self.metadata.name)
+        # TODO Also available as installer.sources.WheelSource.distribution
+        return str(self.metadata['Name'])
 
     @property
-    def metadata(self) -> pkginfo.Wheel:
-        return pkginfo.get_metadata(self.path)
+    def metadata(self) -> email.message.Message:
+        with WheelFile.open(self.path) as wheel_source:
+            metadata_file = wheel_source.read_dist_info("METADATA")
+            metadata = installer.utils.parse_metadata_file(metadata_file)
+        return metadata
 
-    def entry_points(self) -> Dict[str, str]:
+    @property
+    def version(self) -> str:
+        # TODO Also available as installer.sources.WheelSource.version
+        return str(self.metadata["Version"])
+
+    def entry_points(self) -> Dict[str, Tuple[str, str]]:
         """Returns the entrypoints defined in the current wheel
 
         See https://packaging.python.org/specifications/entry-points/ for more info
 
         Returns:
-            Dict[str, str]: A mappying of the entry point's name to it's method
+            Dict[str, Tuple[str, str]]: A mapping of the entry point's name to it's module and attribute
         """
-        with zipfile.ZipFile(self.path, "r") as whl:
-            # Calculate the location of the entry_points.txt file
-            metadata = self.metadata
-            name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
-
-            # Note that the zipfile module always uses the forward slash as
-            # directory separator, even on Windows, so don't use os.path.join
-            # here.  Reference for Python 3.10:
-            # https://github.com/python/cpython/blob/3.10/Lib/zipfile.py#L355.
-            # TODO: use zipfile.Path once 3.8 is our minimum supported version
-            entry_points_path = "{}.dist-info/entry_points.txt".format(name)
-
-            # If this file does not exist in the wheel, there are no entry points
-            if entry_points_path not in whl.namelist():
+        with WheelFile.open(self.path) as wheel_source:
+            entry_points_file = wheel_source.read_dist_info("entry_points.txt")
+            if entry_points_file is None:
                 return dict()
 
-            # Parse the avaialble entry points
-            config = configparser.ConfigParser()
-            try:
-                config.read_string(whl.read(entry_points_path).decode("utf-8"))
-                if "console_scripts" in config.sections():
-                    return dict(config["console_scripts"])
-
-            # TODO: It's unclear what to do in a situation with duplicate sections or options.
-            # For now, we treat the config file as though it contains no scripts. For more
-            # details on the config parser, see:
-            # https://docs.python.org/3.7/library/configparser.html#configparser.ConfigParser
-            # https://docs.python.org/3.7/library/configparser.html#configparser.Error
-            except configparser.Error:
-                pass
-
-        return dict()
+            d = dict()
+            entry_points = installer.utils.parse_entrypoints(entry_points_file)
+            for script, module, attribute, kind in entry_points:
+                if kind == "console":
+                    d[script] = (module, attribute)
 
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
-        for wheel_req in self.metadata.requires_dist:
+        for wheel_req in self.metadata.get_all('Requires-Dist'):
             req = pkg_resources.Requirement(wheel_req)  # type: ignore
 
             if req.marker is None or any(
