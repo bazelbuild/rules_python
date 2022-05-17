@@ -34,8 +34,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__setuptools",
-        "https://files.pythonhosted.org/packages/20/f7/205a71cc9cc68f23afd9f3083002d0fb0a8c2277baf41a528395552e13c0/setuptools-57.5.0.tar.gz",
-        "d9d3266d50f59c6967b9312844470babbdb26304fe740833a5f8d89829ba3a24",
+        "https://files.pythonhosted.org/packages/4b/b9/71687c5d2034c863db1db2e0704f5e27581ff3cb44d7f293968c5e08ceb3/setuptools-57.5.0-py3-none-any.whl",
+        "60d78588f15b048f86e35cdab73003d8b21dd45108ee61a6693881a427f22073",
     ),
     (
         "pypi__wheel",
