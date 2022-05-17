@@ -34,13 +34,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__setuptools",
-        "https://files.pythonhosted.org/packages/75/cd/178028262e067ed10011779e8de4c12821de3dc1598de42920988ebd412d/setuptools-60.1.0-py3-none-any.whl",
-        "ad0ea3d172404abb14d8f7bd7f54f2ccd4ed9dd00c9da0b1398862e69eb22c03",
+        "https://files.pythonhosted.org/packages/ff/27/92a1a57aff92dac23df4a6867be19e29449f52fb05e17de9b1d64e61ebe1/setuptools-60.0.5-py3-none-any.whl",
+        "8d1f26f7cc0c81b7b372b0d133bb8b1b0abbb36f2083cb4a474a8b64cede98a7",
     ),
     (
         "pypi__wheel",
-        "https://files.pythonhosted.org/packages/f9/73/a1e8254ee8604a7f8598f5b7c09d587b329ad2727f410a210f26c9595b7a/setuptools-60.0.0-py3-none-any.whl",
-        "75fd345a47ce3d79595b27bf57e6f49c2ca7904f3c7ce75f8a87012046c86b0b",
+        "https://files.pythonhosted.org/packages/27/d6/003e593296a85fd6ed616ed962795b2f87709c3eee2bca4f6d0fe55c6d00/wheel-0.37.1-py2.py3-none-any.whl",
+        "4bdcd7d840138086126cd09254dc6195fb4fc6f01c050a1d7236f2630db1d22a",
     ),
 ]
 
