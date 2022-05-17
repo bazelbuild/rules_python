@@ -39,8 +39,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__wheel",
-        "https://files.pythonhosted.org/packages/27/d6/003e593296a85fd6ed616ed962795b2f87709c3eee2bca4f6d0fe55c6d00/wheel-0.37.1-py2.py3-none-any.whl",
-        "4bdcd7d840138086126cd09254dc6195fb4fc6f01c050a1d7236f2630db1d22a",
+        "https://files.pythonhosted.org/packages/eb/53/0dd4c7960579da8be13fa9b2c2591643d37f323e3d79f8bc8b1b6c8e6217/setuptools-60.5.0-py3-none-any.whl",
+        "68eb94073fc486091447fcb0501efd6560a0e5a1839ba249e5ff3c4c93f05f90",
     ),
 ]
 
