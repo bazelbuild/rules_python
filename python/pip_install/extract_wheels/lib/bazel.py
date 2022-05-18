@@ -41,7 +41,6 @@ def generate_entry_point_contents(
         import sys
         from {module} import {method}
         if __name__ == "__main__":
-            rc = {method}()
             sys.exit({method}())
         """.format(
             shebang=shebang, module=module, method=method
@@ -49,7 +48,7 @@ def generate_entry_point_contents(
     )
 
 
-def generate_entry_point_rule(script: str, pkg: str) -> str:
+def generate_entry_point_rule(name: str, script: str, pkg: str) -> str:
     """Generate a Bazel `py_binary` rule for an entry point script.
 
     Note that the script is used to determine the name of the target. The name of
@@ -57,6 +56,7 @@ def generate_entry_point_rule(script: str, pkg: str) -> str:
     directories within a wheel.
 
     Args:
+        name (str): The name of the generated py_binary.
         script (str): The path to the entry point's python file.
         pkg (str): The package owning the entry point. This is expected to
             match up with the `py_library` defined for each repository.
@@ -65,7 +65,6 @@ def generate_entry_point_rule(script: str, pkg: str) -> str:
     Returns:
         str: A `py_binary` instantiation.
     """
-    name = os.path.splitext(script)[0]
     return textwrap.dedent(
         """\
         py_binary(
@@ -410,13 +409,18 @@ def extract_wheel(
     directory_path = Path(directory)
     entry_points = []
     for name, entry_point in sorted(whl.entry_points().items()):
-        entry_point_script = f"{WHEEL_ENTRY_POINT_PREFIX}_{name}.py"
-        (directory_path / entry_point_script).write_text(
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] if name.endswith(".py") else name
+        entry_point_target_name = f"{WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
+        entry_point_script_name = f"{entry_point_target_name}.py"
+        (directory_path / entry_point_script_name).write_text(
             generate_entry_point_contents(entry_point)
         )
         entry_points.append(
             generate_entry_point_rule(
-                entry_point_script,
+                entry_point_target_name,
+                entry_point_script_name,
                 library_name,
             )
         )
