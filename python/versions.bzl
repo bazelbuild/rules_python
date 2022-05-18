@@ -58,14 +58,14 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
-    "3.10.2": {
-        "url": "20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz",
+    "3.10.4": {
+        "url": "20220502/cpython-{python_version}+20220502-{platform}-{build}.tar.gz",
         "sha256": {
-            "aarch64-apple-darwin": "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
-            "aarch64-unknown-linux-gnu": "8f351a8cc348bb45c0f95b8634c8345ec6e749e483384188ad865b7428342703",
-            "x86_64-apple-darwin": "8146ad4390710ec69b316a5649912df0247d35f4a42e2aa9615bffd87b3e235a",
-            "x86_64-pc-windows-msvc": "a293c5838dd9c8438a84372fb95dda9752df63928a8a2ae516438f187f89567d",
-            "x86_64-unknown-linux-gnu": "9b64eca2a94f7aff9409ad70bdaa7fbbf8148692662e764401883957943620dd",
+            "aarch64-apple-darwin": "2c99983d1e83e4b6e7411ed9334019f193fba626344a50c36fba6c25d4de78a2",
+            "aarch64-unknown-linux-gnu": "d8098c0c54546637e7516f93b13403b11f9db285def8d7abd825c31407a13d7e",
+            "x86_64-apple-darwin": "f2711eaffff3477826a401d09a013c6802f11c04c63ab3686aa72664f1216a05",
+            "x86_64-pc-windows-msvc": "44b5b755ea3f6f26589710fe4d52ee6c1a20df2bb1f2ea46268fec36b3d93122",
+            "x86_64-unknown-linux-gnu": "f6f871e53a7b1469c13f9bd7920ad98c4589e549acad8e5a1e14760fff3dd5c9",
         },
         "strip_prefix": "python",
     },
@@ -75,7 +75,7 @@ TOOL_VERSIONS = {
 MINOR_MAPPING = {
     "3.8": "3.8.12",
     "3.9": "3.9.10",
-    "3.10": "3.10.2",
+    "3.10": "3.10.4",
 }
 
 PLATFORMS = {
