@@ -1,5 +1,15 @@
 ""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load(
+    "@bazel_tools//tools/build_defs/cc:action_names.bzl",
+    "ASSEMBLE_ACTION_NAME",
+    "CPP_COMPILE_ACTION_NAME",
+    "CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME",
+    "CPP_LINK_STATIC_LIBRARY_ACTION_NAME",
+    "C_COMPILE_ACTION_NAME",
+)
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
@@ -434,3 +444,209 @@ def package_annotation(
         data_exclude_glob = data_exclude_glob,
         srcs_exclude_glob = srcs_exclude_glob,
     ))
+
+def _wheel_impl(ctx):
+    tools = [
+        ("CC", C_COMPILE_ACTION_NAME),
+        ("CXX", CPP_COMPILE_ACTION_NAME),
+        ("AS", ASSEMBLE_ACTION_NAME),
+        ("LD", CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME),
+        ("AR", CPP_LINK_STATIC_LIBRARY_ACTION_NAME),
+    ]
+    flags = [
+        ("LDFLAGS", CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME, ctx.fragments.cpp.linkopts),
+        ("CFLAGS", C_COMPILE_ACTION_NAME, ctx.fragments.cpp.copts),
+        ("CXXFLAGS", CPP_COMPILE_ACTION_NAME, ctx.fragments.cpp.cxxopts),
+    ]
+    env = _environment_variables(
+        ctx,
+        tools,
+        flags,
+    )
+
+    python_toolchain = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"]
+    runtime = python_toolchain.py3_runtime
+    if not runtime.interpreter:
+        fail("py3_runtime must be set")
+
+    build_deps = ctx.files._build_deps
+    deps = ctx.files.deps
+
+    build_deps_pythonpath = _install_deps(ctx, runtime, env, [], "build_deps", build_deps)
+    deps_pythonpath = _install_deps(ctx, runtime, env, [build_deps_pythonpath], "deps", deps)
+
+    output_name = paths.replace_extension(paths.basename(ctx.file.src.path), ".whl").replace(".tar", "")
+    whl = ctx.actions.declare_file(output_name)
+    progress_message = "Building {}".format(output_name)
+
+    ctx.actions.run_shell(
+        command = """\
+set -o errexit -o nounset -o pipefail
+
+export PYTHONPATH="{pythonpath}"
+
+'{interpreter}' -m pip wheel \
+    --disable-pip-version-check \
+    --no-cache-dir \
+    --no-index \
+    --no-deps \
+    --no-build-isolation \
+    --use-pep517 \
+    --wheel-dir output/ \
+    '{src}'
+
+mv output/*.whl '{whl}'
+""".format(
+            interpreter = runtime.interpreter.path,
+            pythonpath = _construct_pythonpath([build_deps_pythonpath, deps_pythonpath]),
+            src = ctx.file.src.path,
+            whl = whl.path,
+        ),
+        env = env,
+        execution_requirements = {
+            "block-network": "1",
+        },
+        inputs = build_deps + [
+            ctx.file.src,
+            build_deps_pythonpath,
+            deps_pythonpath,
+        ],
+        mnemonic = "BuildWheel",
+        outputs = [whl],
+        progress_message = progress_message,
+        tools = runtime.files,
+    )
+
+    return [DefaultInfo(
+        files = depset([whl]),
+        runfiles = ctx.runfiles([whl]),
+    )]
+
+def _install_deps(ctx, runtime, env, extra_pythonpath, dirname, deps):
+    pythonpath = ctx.actions.declare_directory("{}_{}".format(dirname, ctx.attr.name))
+    commands = [
+        _install_dep_command(runtime.interpreter.path, dep.path, pythonpath.path)
+        for dep in deps
+    ]
+    ctx.actions.run_shell(
+        command = """\
+set -o errexit -o nounset -o pipefail
+
+export PYTHONPATH="{pythonpath}"
+
+{commands}
+""".format(
+            pythonpath = _construct_pythonpath(extra_pythonpath + [pythonpath]),
+            commands = "\n".join(commands),
+        ),
+        env = env,
+        execution_requirements = {
+            "block-network": "1",
+        },
+        inputs = deps + extra_pythonpath,
+        mnemonic = "InstallDeps",
+        outputs = [pythonpath],
+        progress_message = "Installing dependencies",
+        tools = runtime.files,
+    )
+    return pythonpath
+
+def _construct_pythonpath(paths):
+    return ":".join([
+        "$(pwd)/{}".format(p.path)
+        for p in paths
+    ])
+
+def _install_dep_command(interpreter, dep, pythonpath):
+    return """\
+if [[ '{dep}' =~ \\.whl$ ]]; then
+    # '{interpreter}' -m wheel unpack \
+    #     --dest-dir '{pythonpath}' \
+    #     '{dep}'
+    '{interpreter}' <<'EOF'
+import zipfile
+with zipfile.ZipFile('{dep}', 'r') as zf:
+    zf.extractall('{pythonpath}')
+EOF
+else
+    '{interpreter}' -m pip install \
+        --upgrade \
+        --disable-pip-version-check \
+        --no-cache-dir \
+        --no-index \
+        --no-deps \
+        --no-build-isolation \
+        --use-pep517 \
+        --target '{pythonpath}' \
+        '{dep}'
+fi
+""".format(
+            dep = dep,
+            interpreter = interpreter,
+            pythonpath = pythonpath,
+        )
+
+def _environment_variables(ctx, tools, flags):
+    cc_toolchain = find_cpp_toolchain(ctx)
+    feature_configuration = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+    )
+    env = {}
+    for (var, action) in tools:
+        env[var] = cc_common.get_tool_for_action(
+            feature_configuration = feature_configuration,
+            action_name = action,
+        )
+    for (var, action, user_compile_flags) in flags:
+        compile_variables = cc_common.create_compile_variables(
+            feature_configuration = feature_configuration,
+            cc_toolchain = cc_toolchain,
+            user_compile_flags = user_compile_flags,
+        )
+        env[var] = " ".join(cc_common.get_memory_inefficient_command_line(
+            feature_configuration = feature_configuration,
+            action_name = action,
+            variables = compile_variables,
+        ))
+
+    # TODO(f0rmiga): some libraries will not respect the env vars above, so the
+    # only way to still get them to compile successfuly is to add a PATH.
+    # E.g. compiling numpy calls `as` hardcoded somewhere. Even setting -B in
+    # the CFLAGS, CXXFLAGS and LDFLAGS won't solve fully.
+    # An alternative is to get binutils hermetic and put in the PATH to be found
+    # first.
+    env["PATH"] = "/usr/bin"
+    return env
+
+wheel = rule(
+    _wheel_impl,
+    attrs = {
+        "src": attr.label(
+            allow_single_file = True,
+            doc = "The wheel source distribution file.",
+            mandatory = True,
+        ),
+        "deps": attr.label_list(
+            allow_files = True,
+            doc = "Wheel distributions to be installed before building src.",
+            mandatory = False,
+        ),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+        "_build_deps": attr.label_list(
+            allow_files = True,
+            default = [
+                Label("@pypi__setuptools_whl//file"),
+                Label("@pypi__wheel_whl//file"),
+                Label("@pypi__cython//file"),
+            ],
+        ),
+    },
+    fragments = ["cpp"],
+    toolchains = [
+        "@bazel_tools//tools/cpp:toolchain_type",
+        "@bazel_tools//tools/python:toolchain_type",
+    ],
+)

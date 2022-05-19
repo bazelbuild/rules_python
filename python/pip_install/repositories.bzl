@@ -1,6 +1,7 @@
 ""
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 # Avoid a load from @bazel_skylib repository as users don't necessarily have it installed
@@ -42,6 +43,11 @@ _RULE_DEPS = [
         "https://files.pythonhosted.org/packages/27/d6/003e593296a85fd6ed616ed962795b2f87709c3eee2bca4f6d0fe55c6d00/wheel-0.37.1-py2.py3-none-any.whl",
         "4bdcd7d840138086126cd09254dc6195fb4fc6f01c050a1d7236f2630db1d22a",
     ),
+    (
+        "pypi__cython",
+        "https://files.pythonhosted.org/packages/cb/da/54a5d7a7d9afc90036d21f4b58229058270cc14b4c81a86d9b2c77fd072e/Cython-0.29.28.tar.gz",
+        "d6fac2342802c30e51426828fe084ff4deb1b3387367cf98976bb2e64b6f8e45",
+    ),
 ]
 
 _GENERIC_WHEEL = """\
@@ -60,7 +66,7 @@ py_library(
 """
 
 # Collate all the repository names so they can be easily consumed
-all_requirements = [name for (name, _, _) in _RULE_DEPS]
+all_requirements = [name for (name, url, _) in _RULE_DEPS if url.endswith(".whl")]
 
 def requirement(pkg):
     return "@pypi__" + pkg + "//:lib"
@@ -79,11 +85,30 @@ def pip_install_dependencies():
     versions.check("4.0.0")
 
     for (name, url, sha256) in _RULE_DEPS:
-        maybe(
-            http_archive,
-            name,
-            url = url,
-            sha256 = sha256,
-            type = "zip",
-            build_file_content = _GENERIC_WHEEL,
-        )
+        filename = paths.basename(url)
+
+        if filename.endswith(".whl"):
+            maybe(
+                http_file,
+                name + "_whl",
+                urls = [url],
+                sha256 = sha256,
+                downloaded_file_path = filename,
+            )
+
+            maybe(
+                http_archive,
+                name,
+                urls = [url],
+                sha256 = sha256,
+                type = "zip",
+                build_file_content = _GENERIC_WHEEL,
+            )
+        else:
+            maybe(
+                http_file,
+                name,
+                urls = [url],
+                sha256 = sha256,
+                downloaded_file_path = filename,
+            )

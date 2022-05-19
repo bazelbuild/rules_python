@@ -1,18 +1,37 @@
 workspace(name = "rules_python_pip_parse_example")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
 local_repository(
     name = "rules_python",
     path = "../..",
 )
 
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
-    name = "python39",
-    python_version = "3.9",
+    name = "python310",
+    python_version = "3.10",
 )
 
-load("@python39//:defs.bzl", "interpreter")
+load("@python310//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -48,3 +67,66 @@ load("@pypi//:requirements.bzl", "install_deps")
 
 # Initialize repositories for all packages in requirements_lock.txt.
 install_deps()
+
+http_file(
+    name = "numpy_wheel_source_distribution",
+    downloaded_file_path = "numpy-1.22.3.zip",
+    sha256 = "dbc7601a3b7472d559dc7b933b18b4b66f9aa7452c120e87dfb33d02008c8a18",
+    urls = ["https://files.pythonhosted.org/packages/64/4a/b008d1f8a7b9f5206ecf70a53f84e654707e7616a771d84c05151a4713e9/numpy-1.22.3.zip"],
+)
+
+http_file(
+    name = "pybind11_wheel_source_distribution",
+    downloaded_file_path = "pybind11-2.9.2.tar.gz",
+    sha256 = "e5541f8bccf9111d1a94f7897593b55c4cf1a28d5e8cfc8225a855651f011071",
+    urls = ["https://files.pythonhosted.org/packages/cf/6a/a7f2c40fdb43fcf59bc1eebb0a4c4206a99ccddee6391a1168fa6efebce9/pybind11-2.9.2.tar.gz"],
+)
+
+http_file(
+    name = "pythran_wheel_source_distribution",
+    downloaded_file_path = "pythran-0.11.0.tar.gz",
+    sha256 = "0b2cba712e09f7630879dff69f268460bfe34a6d6000451b47d598558a92a875",
+    urls = ["https://files.pythonhosted.org/packages/88/9f/161f08131abf7f23920cee29b691de27f10fd97ac09fb2f3532b3a7f9b96/pythran-0.11.0.tar.gz"],
+)
+
+http_file(
+    name = "gast_wheel_source_distribution",
+    downloaded_file_path = "gast-0.5.3.tar.gz",
+    sha256 = "cfbea25820e653af9c7d1807f659ce0a0a9c64f2439421a7bba4f0983f532dea",
+    urls = ["https://files.pythonhosted.org/packages/48/a3/0bd844c54ae8141642088b7ae09dd38fec2ec7faa9b7d25bb6a23c1f266f/gast-0.5.3.tar.gz"],
+)
+
+http_file(
+    name = "beniget_wheel_source_distribution",
+    downloaded_file_path = "beniget-0.4.1.tar.gz",
+    sha256 = "75554b3b8ad0553ce2f607627dad3d95c60c441189875b98e097528f8e23ac0c",
+    urls = ["https://files.pythonhosted.org/packages/14/e7/50cbac38f77eca8efd39516be6651fdb9f3c4c0fab8cf2cf05f612578737/beniget-0.4.1.tar.gz"],
+)
+
+http_file(
+    name = "ply_wheel_source_distribution",
+    downloaded_file_path = "ply-3.11.tar.gz",
+    sha256 = "00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3",
+    urls = ["https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz"],
+)
+
+http_file(
+    name = "scipy_wheel_source_distribution",
+    downloaded_file_path = "scipy-1.8.0.tar.gz",
+    sha256 = "31d4f2d6b724bc9a98e527b5849b8a7e589bf1ea630c33aa563eda912c9ff0bd",
+    urls = ["https://files.pythonhosted.org/packages/b4/a2/4faa34bf0cdbefd5c706625f1234987795f368eb4e97bde9d6f46860843e/scipy-1.8.0.tar.gz"],
+)
+
+http_file(
+    name = "boto3_wheel_source_distribution",
+    downloaded_file_path = "boto3-1.21.38.tar.gz",
+    sha256 = "62dde36a57697b40b4693e0ad0d39013f1e187e5a3c52fdb50dbe710633061bb",
+    urls = ["https://files.pythonhosted.org/packages/df/89/6b20ad811c1502f9fbb29369556010ef49e830650ad4d6ac257d40134220/boto3-1.21.38.tar.gz"],
+)
+
+http_file(
+    name = "django_wheel_source_distribution",
+    downloaded_file_path = "Django-4.0.4.tar.gz",
+    sha256 = "4e8177858524417563cc0430f29ea249946d831eacb0068a1455686587df40b5",
+    urls = ["https://files.pythonhosted.org/packages/d2/95/93d1f75da95624bf89e373d079fa72debf77f9b10acc31998cc52a5ff3f9/Django-4.0.4.tar.gz"],
+)

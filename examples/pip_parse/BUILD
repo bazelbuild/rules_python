@@ -4,6 +4,7 @@ load(
     "dist_info_requirement",
     "entry_point",
 )
+load("@rules_python//python/pip_install:pip_repository.bzl", "wheel")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -78,4 +79,57 @@ py_test(
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
     },
     deps = ["@rules_python//python/runfiles"],
+)
+
+wheel(
+    name = "numpy",
+    src = "@numpy_wheel_source_distribution//file",
+)
+
+# wheel(
+#     name = "pybind11",
+#     src = "@pybind11_wheel_source_distribution//file",
+# )
+
+# wheel(
+#     name = "pythran",
+#     src = "@pythran_wheel_source_distribution//file",
+# )
+
+# wheel(
+#     name = "gast",
+#     src = "@gast_wheel_source_distribution//file",
+# )
+
+# wheel(
+#     name = "beniget",
+#     src = "@beniget_wheel_source_distribution//file",
+# )
+
+# wheel(
+#     name = "ply",
+#     src = "@ply_wheel_source_distribution//file",
+# )
+
+# wheel(
+#     name = "scipy",
+#     src = "@scipy_wheel_source_distribution//file",
+#     deps = [
+#         ":numpy",
+#         ":pybind11",
+#         ":pythran",
+#         ":gast",
+#         ":beniget",
+#         ":ply",
+#     ],
+# )
+
+wheel(
+    name = "boto3",
+    src = "@boto3_wheel_source_distribution//file",
+)
+
+wheel(
+    name = "django",
+    src = "@django_wheel_source_distribution//file",
 )
