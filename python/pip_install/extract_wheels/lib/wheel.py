@@ -67,8 +67,8 @@ class Wheel:
             entry_points_mapping = dict()
             entry_points_contents = wheel_source.read_dist_info("entry_points.txt")
             entry_points = installer.utils.parse_entrypoints(entry_points_contents)
-            for script, module, attribute, kind in entry_points:
-                if kind == "console":
+            for script, module, attribute, script_section in entry_points:
+                if script_section == "console":
                     entry_points_mapping[script] = (module, attribute)
 
             return entry_points_mapping
@@ -76,7 +76,7 @@ class Wheel:
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
-        for wheel_req in self.metadata.get_all('Requires-Dist', list()):
+        for wheel_req in self.metadata.get_all('Requires-Dist', []):
             req = pkg_resources.Requirement(wheel_req)  # type: ignore
 
             if req.marker is None or any(
