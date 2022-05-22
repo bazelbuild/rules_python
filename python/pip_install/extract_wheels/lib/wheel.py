@@ -2,27 +2,10 @@
 import email
 import glob
 import os
-import stat
-import zipfile
 from typing import Dict, Optional, Set
 
 import installer
 import pkg_resources
-
-
-def current_umask() -> int:
-    """Get the current umask which involves having to set it temporarily."""
-    mask = os.umask(0)
-    os.umask(mask)
-    return mask
-
-
-def set_extracted_file_to_default_mode_plus_executable(path: str) -> None:
-    """
-    Make file present at path have execute for user/group/world
-    (chmod +x) is no-op on windows per python docs
-    """
-    os.chmod(path, (0o777 & ~current_umask() | 0o111))
 
 
 class Wheel:
@@ -88,21 +71,24 @@ class Wheel:
         return dependency_set
 
     def unzip(self, directory: str) -> None:
-        with zipfile.ZipFile(self.path, "r") as whl:
-            whl.extractall(directory)
-            # The following logic is borrowed from Pip:
-            # https://github.com/pypa/pip/blob/cc48c07b64f338ac5e347d90f6cb4efc22ed0d0b/src/pip/_internal/utils/unpacking.py#L240
-            for info in whl.infolist():
-                name = info.filename
-                # Do not attempt to modify directories.
-                if name.endswith("/") or name.endswith("\\"):
-                    continue
-                mode = info.external_attr >> 16
-                # if mode and regular file and any execute permissions for
-                # user/group/world?
-                if mode and stat.S_ISREG(mode) and mode & 0o111:
-                    name = os.path.join(directory, name)
-                    set_extracted_file_to_default_mode_plus_executable(name)
+        installation_schemes = {
+            "purelib": directory,
+            "platlib": directory,
+            "headers": directory,
+            "scripts": "/dev/null",  # entry_point scripts currently handled separately
+            "data": directory,
+        }
+        destination = installer.destinations.SchemeDictionaryDestination(
+            installation_schemes,
+            interpreter="/dev/null",  # entry_point scripts currently handled separately
+            script_kind="posix",
+        )
+
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
+            installer.install(
+                source=wheel_source,
+                destination=destination,
+            )
 
 
 def get_dist_info(wheel_dir: str) -> str:
