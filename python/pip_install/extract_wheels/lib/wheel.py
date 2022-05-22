@@ -88,6 +88,9 @@ class Wheel:
             installer.install(
                 source=wheel_source,
                 destination=destination,
+                additional_metadata={
+                    "INSTALLER": b"https://github.com/bazelbuild/rules_python",
+                },
             )
 
 
