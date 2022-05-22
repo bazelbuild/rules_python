@@ -75,7 +75,7 @@ class Wheel:
             "purelib": directory,
             "platlib": directory,
             "headers": directory,
-            "scripts": "/dev/null",  # entry_point scripts currently handled separately
+            "scripts": directory,
             "data": directory,
         }
         destination = installer.destinations.SchemeDictionaryDestination(
