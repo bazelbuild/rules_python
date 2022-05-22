@@ -9,7 +9,6 @@ from typing import Dict, Iterable, List, Optional, Set
 from python.pip_install.extract_wheels.lib import (
     annotation,
     namespace_pkgs,
-    purelib,
     wheel,
 )
 
@@ -376,9 +375,6 @@ def extract_wheel(
         # copy the original wheel
         shutil.copy(whl.path, directory)
     whl.unzip(directory)
-
-    # Note: Order of operations matters here
-    purelib.spread_purelib_into_root(directory)
 
     if not enable_implicit_namespace_pkgs:
         setup_namespace_pkg_compatibility(directory)

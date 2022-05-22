@@ -9,7 +9,6 @@ py_library(
         "arguments.py",
         "bazel.py",
         "namespace_pkgs.py",
-        "purelib.py",
         "requirements.py",
         "wheel.py",
     ],
@@ -129,17 +128,6 @@ py_test(
     size = "small",
     srcs = [
         "requirements_bzl_test.py",
-    ],
-    deps = [
-        ":lib",
-    ],
-)
-
-py_test(
-    name = "purelib_test",
-    size = "small",
-    srcs = [
-        "purelib_test.py",
     ],
     deps = [
         ":lib",
