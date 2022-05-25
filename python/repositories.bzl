@@ -128,7 +128,8 @@ filegroup(
             "share/**",
         ],
         exclude = [
-            "**/* *", # Bazel does not support spaces in file names.
+            "**/* *",   # Bazel does not support spaces in file names.
+            "**/*.pyc", # These are not deterministically generated, breaking remote caching
         ],
     ),
 )
