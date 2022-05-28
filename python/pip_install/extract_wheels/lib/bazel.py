@@ -9,7 +9,6 @@ from typing import Dict, Iterable, List, Optional, Set
 from python.pip_install.extract_wheels.lib import (
     annotation,
     namespace_pkgs,
-    purelib,
     wheel,
 )
 
@@ -21,34 +20,33 @@ WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 
 def generate_entry_point_contents(
-    entry_point: str, shebang: str = "#!/usr/bin/env python3"
+    module: str, attribute: str, shebang: str = "#!/usr/bin/env python3"
 ) -> str:
     """Generate the contents of an entry point script.
 
     Args:
-        entry_point (str): The name of the entry point as show in the
-            `console_scripts` section of `entry_point.txt`.
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
         shebang (str, optional): The shebang to use for the entry point python
             file.
 
     Returns:
         str: A string of python code.
     """
-    module, method = entry_point.split(":", 1)
     return textwrap.dedent(
         """\
         {shebang}
         import sys
-        from {module} import {method}
+        from {module} import {attribute}
         if __name__ == "__main__":
-            sys.exit({method}())
+            sys.exit({attribute}())
         """.format(
-            shebang=shebang, module=module, method=method
+            shebang=shebang, module=module, attribute=attribute
         )
     )
 
 
-def generate_entry_point_rule(script: str, pkg: str) -> str:
+def generate_entry_point_rule(name: str, script: str, pkg: str) -> str:
     """Generate a Bazel `py_binary` rule for an entry point script.
 
     Note that the script is used to determine the name of the target. The name of
@@ -56,6 +54,7 @@ def generate_entry_point_rule(script: str, pkg: str) -> str:
     directories within a wheel.
 
     Args:
+        name (str): The name of the generated py_binary.
         script (str): The path to the entry point's python file.
         pkg (str): The package owning the entry point. This is expected to
             match up with the `py_library` defined for each repository.
@@ -64,7 +63,6 @@ def generate_entry_point_rule(script: str, pkg: str) -> str:
     Returns:
         str: A `py_binary` instantiation.
     """
-    name = os.path.splitext(script)[0]
     return textwrap.dedent(
         """\
         py_binary(
@@ -138,27 +136,18 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    dist_info_ignores = [
-        # RECORD is known to contain sha256 checksums of files which might include the checksums
-        # of generated files produced when wheels are installed. The file is ignored to avoid
-        # Bazel caching issues.
-        "**/*.dist-info/RECORD",
-    ]
-
     data_exclude = list(
         set(
             [
-                "*.whl",
-                "**/__pycache__/**",
                 "**/* *",
                 "**/*.py",
                 "**/*.pyc",
-                "BUILD.bazel",
-                "WORKSPACE",
-                f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
+                # RECORD is known to contain sha256 checksums of files which might include the checksums
+                # of generated files produced when wheels are installed. The file is ignored to avoid
+                # Bazel caching issues.
+                "**/*.dist-info/RECORD",
             ]
             + data_exclude
-            + dist_info_ignores
         )
     )
 
@@ -173,12 +162,12 @@ def generate_build_file_contents(
 
         filegroup(
             name = "{dist_info_label}",
-            srcs = glob(["*.dist-info/**"], allow_empty = True),
+            srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
         )
 
         filegroup(
             name = "{data_label}",
-            srcs = glob(["*.data/**"], allow_empty = True),
+            srcs = glob(["data/**"], allow_empty = True),
         )
 
         filegroup(
@@ -189,11 +178,11 @@ def generate_build_file_contents(
 
         py_library(
             name = "{name}",
-            srcs = glob(["**/*.py"], exclude={srcs_exclude}, allow_empty = True),
-            data = {data} + glob(["**/*"], exclude={data_exclude}),
+            srcs = glob(["site-packages/**/*.py"], exclude={srcs_exclude}, allow_empty = True),
+            data = {data} + glob(["site-packages/**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
-            imports = ["."],
+            imports = ["site-packages"],
             deps = [{dependencies}],
             tags = [{tags}],
         )
@@ -378,9 +367,6 @@ def extract_wheel(
         shutil.copy(whl.path, directory)
     whl.unzip(directory)
 
-    # Note: Order of operations matters here
-    purelib.spread_purelib_into_root(directory)
-
     if not enable_implicit_namespace_pkgs:
         setup_namespace_pkg_compatibility(directory)
 
@@ -408,14 +394,19 @@ def extract_wheel(
 
     directory_path = Path(directory)
     entry_points = []
-    for name, entry_point in sorted(whl.entry_points().items()):
-        entry_point_script = f"{WHEEL_ENTRY_POINT_PREFIX}_{name}.py"
-        (directory_path / entry_point_script).write_text(
-            generate_entry_point_contents(entry_point)
+    for name, (module, attribute) in sorted(whl.entry_points().items()):
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] if name.endswith(".py") else name
+        entry_point_target_name = f"{WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
+        entry_point_script_name = f"{entry_point_target_name}.py"
+        (directory_path / entry_point_script_name).write_text(
+            generate_entry_point_contents(module, attribute)
         )
         entry_points.append(
             generate_entry_point_rule(
-                entry_point_script,
+                entry_point_target_name,
+                entry_point_script_name,
                 library_name,
             )
         )
@@ -449,7 +440,7 @@ def extract_wheel(
             data_exclude=data_exclude,
             data=data,
             srcs_exclude=srcs_exclude,
-            tags=["pypi_name=" + whl.name, "pypi_version=" + whl.metadata.version],
+            tags=["pypi_name=" + whl.name, "pypi_version=" + whl.version],
             additional_content=additional_content,
         )
         build_file.write(contents)

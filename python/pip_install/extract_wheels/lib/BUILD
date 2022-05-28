@@ -9,7 +9,6 @@ py_library(
         "arguments.py",
         "bazel.py",
         "namespace_pkgs.py",
-        "purelib.py",
         "requirements.py",
         "wheel.py",
     ],
@@ -18,7 +17,7 @@ py_library(
         "//python/pip_install/parse_requirements_to_bzl:__subpackages__",
     ],
     deps = [
-        requirement("pkginfo"),
+        requirement("installer"),
         requirement("setuptools"),
     ],
 )
@@ -129,17 +128,6 @@ py_test(
     size = "small",
     srcs = [
         "requirements_bzl_test.py",
-    ],
-    deps = [
-        ":lib",
-    ],
-)
-
-py_test(
-    name = "purelib_test",
-    size = "small",
-    srcs = [
-        "purelib_test.py",
     ],
     deps = [
         ":lib",

@@ -1,28 +1,9 @@
 """Utility class to inspect an extracted wheel directory"""
-import configparser
-import glob
-import os
-import stat
-import zipfile
+import email
 from typing import Dict, Optional, Set
 
+import installer
 import pkg_resources
-import pkginfo
-
-
-def current_umask() -> int:
-    """Get the current umask which involves having to set it temporarily."""
-    mask = os.umask(0)
-    os.umask(mask)
-    return mask
-
-
-def set_extracted_file_to_default_mode_plus_executable(path: str) -> None:
-    """
-    Make file present at path have execute for user/group/world
-    (chmod +x) is no-op on windows per python docs
-    """
-    os.chmod(path, (0o777 & ~current_umask() | 0o111))
 
 
 class Wheel:
@@ -37,57 +18,46 @@ class Wheel:
 
     @property
     def name(self) -> str:
-        return str(self.metadata.name)
+        # TODO Also available as installer.sources.WheelSource.distribution
+        return str(self.metadata['Name'])
 
     @property
-    def metadata(self) -> pkginfo.Wheel:
-        return pkginfo.get_metadata(self.path)
+    def metadata(self) -> email.message.Message:
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
+            metadata_contents = wheel_source.read_dist_info("METADATA")
+            metadata = installer.utils.parse_metadata_file(metadata_contents)
+        return metadata
 
-    def entry_points(self) -> Dict[str, str]:
+    @property
+    def version(self) -> str:
+        # TODO Also available as installer.sources.WheelSource.version
+        return str(self.metadata["Version"])
+
+    def entry_points(self) -> Dict[str, tuple[str, str]]:
         """Returns the entrypoints defined in the current wheel
 
         See https://packaging.python.org/specifications/entry-points/ for more info
 
         Returns:
-            Dict[str, str]: A mappying of the entry point's name to it's method
+            Dict[str, Tuple[str, str]]: A mapping of the entry point's name to it's module and attribute
         """
-        with zipfile.ZipFile(self.path, "r") as whl:
-            # Calculate the location of the entry_points.txt file
-            metadata = self.metadata
-            name = "{}-{}".format(metadata.name.replace("-", "_"), metadata.version)
-
-            # Note that the zipfile module always uses the forward slash as
-            # directory separator, even on Windows, so don't use os.path.join
-            # here.  Reference for Python 3.10:
-            # https://github.com/python/cpython/blob/3.10/Lib/zipfile.py#L355.
-            # TODO: use zipfile.Path once 3.8 is our minimum supported version
-            entry_points_path = "{}.dist-info/entry_points.txt".format(name)
-
-            # If this file does not exist in the wheel, there are no entry points
-            if entry_points_path not in whl.namelist():
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
+            if "entry_points.txt" not in wheel_source.dist_info_filenames:
                 return dict()
 
-            # Parse the avaialble entry points
-            config = configparser.ConfigParser()
-            try:
-                config.read_string(whl.read(entry_points_path).decode("utf-8"))
-                if "console_scripts" in config.sections():
-                    return dict(config["console_scripts"])
+            entry_points_mapping = dict()
+            entry_points_contents = wheel_source.read_dist_info("entry_points.txt")
+            entry_points = installer.utils.parse_entrypoints(entry_points_contents)
+            for script, module, attribute, script_section in entry_points:
+                if script_section == "console":
+                    entry_points_mapping[script] = (module, attribute)
 
-            # TODO: It's unclear what to do in a situation with duplicate sections or options.
-            # For now, we treat the config file as though it contains no scripts. For more
-            # details on the config parser, see:
-            # https://docs.python.org/3.7/library/configparser.html#configparser.ConfigParser
-            # https://docs.python.org/3.7/library/configparser.html#configparser.Error
-            except configparser.Error:
-                pass
-
-        return dict()
+            return entry_points_mapping
 
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
-        for wheel_req in self.metadata.requires_dist:
+        for wheel_req in self.metadata.get_all('Requires-Dist', []):
             req = pkg_resources.Requirement(wheel_req)  # type: ignore
 
             if req.marker is None or any(
@@ -99,91 +69,26 @@ class Wheel:
         return dependency_set
 
     def unzip(self, directory: str) -> None:
-        with zipfile.ZipFile(self.path, "r") as whl:
-            whl.extractall(directory)
-            # The following logic is borrowed from Pip:
-            # https://github.com/pypa/pip/blob/cc48c07b64f338ac5e347d90f6cb4efc22ed0d0b/src/pip/_internal/utils/unpacking.py#L240
-            for info in whl.infolist():
-                name = info.filename
-                # Do not attempt to modify directories.
-                if name.endswith("/") or name.endswith("\\"):
-                    continue
-                mode = info.external_attr >> 16
-                # if mode and regular file and any execute permissions for
-                # user/group/world?
-                if mode and stat.S_ISREG(mode) and mode & 0o111:
-                    name = os.path.join(directory, name)
-                    set_extracted_file_to_default_mode_plus_executable(name)
-
-
-def get_dist_info(wheel_dir: str) -> str:
-    """ "Returns the relative path to the dist-info directory if it exists.
-
-    Args:
-         wheel_dir: The root of the extracted wheel directory.
-
-    Returns:
-        Relative path to the dist-info directory if it exists, else, None.
-    """
-    dist_info_dirs = glob.glob(os.path.join(wheel_dir, "*.dist-info"))
-    if not dist_info_dirs:
-        raise ValueError(
-            "No *.dist-info directory found. %s is not a valid Wheel." % wheel_dir
+        installation_schemes = {
+            "purelib": f"/site-packages",
+            "platlib": f"/site-packages",
+            "headers": f"/include",
+            "scripts": f"/bin",
+            "data": f"/data",
+        }
+        destination = installer.destinations.SchemeDictionaryDestination(
+            installation_schemes,
+            # TODO Should entry_point scripts also be handled by installer rather than custom code?
+            interpreter="/dev/null",
+            script_kind="posix",
+            destdir=directory,
         )
 
-    if len(dist_info_dirs) > 1:
-        raise ValueError(
-            "Found more than 1 *.dist-info directory. %s is not a valid Wheel."
-            % wheel_dir
-        )
-
-    return dist_info_dirs[0]
-
-
-def get_dot_data_directory(wheel_dir: str) -> Optional[str]:
-    """Returns the relative path to the data directory if it exists.
-
-    See: https://www.python.org/dev/peps/pep-0491/#the-data-directory
-
-    Args:
-         wheel_dir: The root of the extracted wheel directory.
-
-    Returns:
-        Relative path to the data directory if it exists, else, None.
-    """
-
-    dot_data_dirs = glob.glob(os.path.join(wheel_dir, "*.data"))
-    if not dot_data_dirs:
-        return None
-
-    if len(dot_data_dirs) > 1:
-        raise ValueError(
-            "Found more than 1 *.data directory. %s is not a valid Wheel." % wheel_dir
-        )
-
-    return dot_data_dirs[0]
-
-
-def parse_wheel_meta_file(wheel_dir: str) -> Dict[str, str]:
-    """Parses the given WHEEL file into a dictionary.
-
-    Args:
-         wheel_dir: The file path of the WHEEL metadata file in dist-info.
-
-    Returns:
-        The WHEEL file mapped into a dictionary.
-    """
-    contents = {}
-    with open(wheel_dir, "r") as wheel_file:
-        for line in wheel_file:
-            cleaned = line.strip()
-            if not cleaned:
-                continue
-            try:
-                key, value = cleaned.split(":", maxsplit=1)
-                contents[key] = value.strip()
-            except ValueError:
-                raise RuntimeError(
-                    "Encounted invalid line in WHEEL file: '%s'" % cleaned
-                )
-    return contents
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
+            installer.install(
+                source=wheel_source,
+                destination=destination,
+                additional_metadata={
+                    "INSTALLER": b"https://github.com/bazelbuild/rules_python",
+                },
+            )
