@@ -59,12 +59,14 @@ def _python_repository_impl(rctx):
                 sha256 = rctx.attr.zstd_sha256,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
-            rctx.execute(
+            make_result = rctx.execute(
                 ["make", "--jobs=4"],
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
             )
+            if make_result.return_code:
+                fail(make_result.stderr)
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
             rctx.symlink(zstd, unzstd)
@@ -115,6 +117,7 @@ filegroup(
     srcs = glob(
         include = [
             "*.exe",
+            "*.dll",
             "bin/**",
             "DLLs/**",
             "extensions/**",
