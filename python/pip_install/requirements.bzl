@@ -9,6 +9,9 @@ def compile_pip_requirements(
         visibility = ["//visibility:private"],
         requirements_in = None,
         requirements_txt = None,
+        requirements_linux = None,
+        requirements_darwin = None,
+        requirements_windows = None,
         tags = None,
         **kwargs):
     """Generates targets for managing pip dependencies with pip-compile.
@@ -43,17 +46,21 @@ def compile_pip_requirements(
         visibility = visibility,
     )
 
-    data = [name, requirements_in, requirements_txt]
+    data = [name, requirements_in, requirements_txt] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
     pip_compile = Label("//python/pip_install:pip_compile.py")
 
-    loc = "$(rootpath %s)"
+    loc = "$(rootpath {})"
 
     args = [
-        loc % requirements_in,
-        loc % requirements_txt,
+        loc.format(requirements_in),
+        loc.format(requirements_txt),
+        # String None is a placeholder for argv ordering.
+        loc.format(requirements_linux) if requirements_linux else "None",
+        loc.format(requirements_darwin) if requirements_darwin else "None",
+        loc.format(requirements_windows) if requirements_windows else "None",
         "//%s:%s.update" % (native.package_name(), name),
     ] + extra_args
 
