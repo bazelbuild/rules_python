@@ -38,6 +38,6 @@ def rules_python_internal_setup():
 
     go_rules_dependencies()
 
-    go_register_toolchains(version = "1.17.6")
+    go_register_toolchains(version = "1.18")
 
     gazelle_dependencies()

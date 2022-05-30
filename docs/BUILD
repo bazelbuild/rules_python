@@ -24,6 +24,7 @@ licenses(["notice"])  # Apache 2.0
 _DOCS = {
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
+    "pip_repository": "//docs:pip-repository",
     "python": "//docs:core-docs",
 }
 
@@ -96,6 +97,18 @@ stardoc(
     name = "pip-docs",
     out = "pip.md_",
     input = "//python:pip.bzl",
+    target_compatible_with = _NOT_WINDOWS,
+    deps = [
+        ":bazel_repo_tools",
+        ":pip_install_bzl",
+        "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
+    ],
+)
+
+stardoc(
+    name = "pip-repository",
+    out = "pip_repository.md_",
+    input = "//python/pip_install:pip_repository.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [
         ":bazel_repo_tools",

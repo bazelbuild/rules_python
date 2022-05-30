@@ -1,0 +1,44 @@
+workspace(name = "pip_repository_annotations_example")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+    ],
+)
+
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+# This repository isn't referenced, except by our test that asserts the requirements.bzl is updated.
+# It also wouldn't be needed by users of this ruleset.
+pip_parse(
+    name = "pip",
+    python_interpreter_target = interpreter,
+    requirements_lock = "//:requirements.txt",
+)
+
+# This example vendors the file produced by `pip_parse` above into the repo.
+# This way our Bazel doesn't eagerly fetch and install the pip_parse'd
+# repository for builds that don't need it.
+# See discussion of the trade-offs in the pip_parse documentation
+# and the "vendor_requirements" target in the BUILD file.
+load("//:requirements.bzl", "install_deps")
+
+install_deps()

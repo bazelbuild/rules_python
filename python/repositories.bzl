@@ -41,6 +41,7 @@ def _python_repository_impl(rctx):
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
+    python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
     url = rctx.attr.url
 
@@ -58,12 +59,14 @@ def _python_repository_impl(rctx):
                 sha256 = rctx.attr.zstd_sha256,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
-            rctx.execute(
+            make_result = rctx.execute(
                 ["make", "--jobs=4"],
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
             )
+            if make_result.return_code:
+                fail(make_result.stderr)
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
             rctx.symlink(zstd, unzstd)
@@ -81,14 +84,13 @@ def _python_repository_impl(rctx):
         rctx.download_and_extract(
             url = url,
             sha256 = rctx.attr.sha256,
-            stripPrefix = "python",
+            stripPrefix = rctx.attr.strip_prefix,
         )
 
     # Write distutils.cfg to the Python installation.
     if "windows" in rctx.os.name:
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
-        python_short_version = python_version.rpartition(".")[0]
         distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)
     if rctx.attr.distutils:
         rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
@@ -115,6 +117,7 @@ filegroup(
     srcs = glob(
         include = [
             "*.exe",
+            "*.dll",
             "bin/**",
             "DLLs/**",
             "extensions/**",
@@ -128,6 +131,21 @@ filegroup(
             "**/* *", # Bazel does not support spaces in file names.
         ],
     ),
+)
+
+filegroup(
+    name = "includes",
+    srcs = glob(["include/**/*.h"]),
+)
+
+cc_library(
+    name = "python_headers",
+    hdrs = [":includes"],
+    includes = [
+        "include",
+        "include/python{python_version}",
+        "include/python{python_version}m",
+    ],
 )
 
 exports_files(["{python_path}"])
@@ -146,6 +164,7 @@ py_runtime_pair(
 )
 """.format(
         python_path = python_bin,
+        python_version = python_short_version,
     )
     rctx.file("BUILD.bazel", build_content)
 
@@ -157,6 +176,7 @@ py_runtime_pair(
         "python_version": python_version,
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
+        "strip_prefix": rctx.attr.strip_prefix,
         "url": url,
     }
 
@@ -192,6 +212,10 @@ python_repository = repository_rule(
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
             mandatory = True,
         ),
+        "strip_prefix": attr.string(
+            doc = "A directory prefix to strip from the extracted files.",
+            mandatory = True,
+        ),
         "url": attr.string(
             doc = "The URL of the interpreter to download",
             mandatory = True,
@@ -214,6 +238,7 @@ def python_register_toolchains(
         python_version,
         distutils = None,
         distutils_content = None,
+        register_toolchains = True,
         tool_versions = TOOL_VERSIONS,
         **kwargs):
     """Convenience macro for users which does typical setup.
@@ -230,6 +255,7 @@ def python_register_toolchains(
         python_version: the Python version.
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
+        register_toolchains: Whether or not to register the downloaded toolchains.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
         in python/versions.bzl will be used
         **kwargs: passed to each python_repositories call.
@@ -244,7 +270,7 @@ def python_register_toolchains(
         if not sha256:
             continue
 
-        (release_filename, url) = get_release_url(platform, python_version, base_url, tool_versions)
+        (release_filename, url, strip_prefix) = get_release_url(platform, python_version, base_url, tool_versions)
 
         python_repository(
             name = "{name}_{platform}".format(
@@ -258,12 +284,14 @@ def python_register_toolchains(
             url = url,
             distutils = distutils,
             distutils_content = distutils_content,
+            strip_prefix = strip_prefix,
             **kwargs
         )
-        native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
-            name = name,
-            platform = platform,
-        ))
+        if register_toolchains:
+            native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
+                name = name,
+                platform = platform,
+            ))
 
     resolved_interpreter_os_alias(
         name = name,

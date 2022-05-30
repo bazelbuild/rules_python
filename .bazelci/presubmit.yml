@@ -36,3 +36,5 @@ platforms:
       - "-//gazelle/..."
       # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
       - "-//tests:pip_repository_entry_points_example"
+    test_flags:
+      - "--test_tag_filters=-fix-windows"
