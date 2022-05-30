@@ -61,8 +61,8 @@ alias(
 # Check that our compiled requirements are up-to-date
 compile_pip_requirements(
     name = "requirements",
-    requirements_windows = ":requirements_windows.txt",
     extra_args = ["--allow-unsafe"],
+    requirements_windows = ":requirements_windows.txt",
 )
 
 # Test the use of all pip_install utilities in a single py_test

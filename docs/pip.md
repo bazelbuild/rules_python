@@ -5,8 +5,8 @@
 ## compile_pip_requirements
 
 <pre>
-compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>, <a href="#compile_pip_requirements-tags">tags</a>,
-                         <a href="#compile_pip_requirements-kwargs">kwargs</a>)
+compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
+                         <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
 </pre>
 
 Generates targets for managing pip dependencies with pip-compile.
@@ -31,6 +31,9 @@ It also generates two targets for running pip-compile:
 | visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
 | requirements_in |  file expressing desired dependencies   |  <code>None</code> |
 | requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
+| requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
 | tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
 | kwargs |  other bazel attributes passed to the "_test" rule   |  none |
 

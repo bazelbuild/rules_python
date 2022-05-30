@@ -31,6 +31,9 @@ def compile_pip_requirements(
         visibility: passed to both the _test and .update rules
         requirements_in: file expressing desired dependencies
         requirements_txt: result of "compiling" the requirements.in file
+        requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
+        requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
+        requirements_windows: File of windows specific resolve output to check validate if requirement.in has changes.
         tags: tagging attribute common to all build rules, passed to both the _test and .update rules
         **kwargs: other bazel attributes passed to the "_test" rule
     """

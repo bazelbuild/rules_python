@@ -15,10 +15,10 @@ def _select_golden_requirements_file(
     """
 
     plat = sys.platform
-    if plat == "darwin" and requirements_darwin is not None:
-        return requirements_darwin
-    elif plat == "linux" and requirements_linux is not None:
+    if plat == "linux" and requirements_linux is not None:
         return requirements_linux
+    elif plat == "darwin" and requirements_darwin is not None:
+        return requirements_darwin
     elif plat == "win32" and requirements_windows is not None:
         return requirements_windows
     else:
