@@ -130,6 +130,7 @@ filegroup(
     srcs = glob(
         include = [
             "*.exe",
+            "*.dll",
             "bin/**",
             "DLLs/**",
             "extensions/**",
