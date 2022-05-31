@@ -102,6 +102,10 @@ def _python_repository_impl(rctx):
         exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
         if exec_result.return_code:
             fail(exec_result.stderr)
+    else:
+        exec_result = rctx.execute(["attrib", "+r", "%cd%\\lib\\*.*", "/s", "/d"])
+        if exec_result.return_code:
+            fail(exec_result.stderr)
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
