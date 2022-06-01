@@ -28,13 +28,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/4d/16/0a14ca596f30316efd412a60bdfac02a7259bf8673d4d917dc60b9a21812/pip-22.0.4-py3-none-any.whl",
-        "c6aca0f2f081363f689f041d90dab2a07a9a07fb840284db2218117a52da800b",
+        "https://files.pythonhosted.org/packages/96/2f/caec18213f6a67852f6997fb0673ae08d2e93d1b81573edb93ba4ef06970/pip-22.1.2-py3-none-any.whl",
+        "a3edacb89022ef5258bf61852728bf866632a394da837ca49eb4303635835f17",
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/ba/42/5a9dfbaac47794c087d115fa275d3248a41614686b84d85cbb0bd146ebe5/pip_tools-6.6.0-py3-none-any.whl",
-        "66318bc2e884b61fafa1cb2cf01b35fdd779ab9ce82cc1bce277adb8cf3ab845",
+        "https://files.pythonhosted.org/packages/fe/5c/8995799b0ccf832906b4968b4eb2045beb9b3de79e96e6b1a6e4fc4e6974/pip_tools-6.6.2-py3-none-any.whl",
+        "6b486548e5a139e30e4c4a225b3b7c2d46942a9f6d1a91143c21b1de4d02fd9b",
     ),
     (
         "pypi__setuptools",
