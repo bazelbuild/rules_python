@@ -23,6 +23,11 @@ _RULE_DEPS = [
         "1d6c8d916ed82771945b9c813699e6f57424ded970c9d8bf16bbc23e1e826ed3",
     ),
     (
+        "pypi__pep517",
+        "https://files.pythonhosted.org/packages/f4/67/846c08e18fefb265a66e6fd5a34269d649b779718d9bf59622085dabd370/pep517-0.12.0-py2.py3-none-any.whl",
+        "dd884c326898e2c6e11f9e0b64940606a93eb10ea022a2e067959f3a110cf161",
+    ),
+    (
         "pypi__pip",
         "https://files.pythonhosted.org/packages/4d/16/0a14ca596f30316efd412a60bdfac02a7259bf8673d4d917dc60b9a21812/pip-22.0.4-py3-none-any.whl",
         "c6aca0f2f081363f689f041d90dab2a07a9a07fb840284db2218117a52da800b",
