@@ -46,6 +46,8 @@ filegroup(
         "defs.bzl",
         "packaging.bzl",
         "pip.bzl",
+        "repositories.bzl",
+        "versions.bzl",
         "//python/pip_install:bzl",
         "//python/private:bzl",
     ],
