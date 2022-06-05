@@ -52,7 +52,7 @@ class Wheel:
         # TODO Also available as installer.sources.WheelSource.version
         return str(self.metadata["Version"])
 
-    def entry_points(self) -> Dict[str, tuple[str, str]]:
+    def entry_points(self) -> Dict[str, Tuple[str, str]]:
         """Returns the entrypoints defined in the current wheel
 
         See https://packaging.python.org/specifications/entry-points/ for more info
