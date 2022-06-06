@@ -25,10 +25,9 @@ def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
 
 def sanitise_requirement(requirement: str) -> str:
     """Given a requirement string, returns a normalized version of the requirement name.
-    The case and use of "_" vs "-" in a requirements file may vary.
-    https://peps.python.org/pep-0426/#name
+    https://peps.python.org/pep-0503/#normalized-names
     """
-    return requirement.replace("-", "_").lower()
+    return re.sub(r"[-_.]+", "-", requirement).lower()
 
 
 def _parse_requirement_for_extra(
