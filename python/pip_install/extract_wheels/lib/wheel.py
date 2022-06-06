@@ -4,7 +4,7 @@ import glob
 import os
 import stat
 import zipfile
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Tuple
 
 import installer
 import pkg_resources
