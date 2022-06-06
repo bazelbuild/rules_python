@@ -23,6 +23,14 @@ def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
     return extras_requested
 
 
+def sanitise_requirement(requirement: str) -> str:
+    """Given a requirement string, returns a normalized version of the requirement name.
+    The case and use of "_" vs "-" in a requirements file may vary.
+    https://peps.python.org/pep-0426/#name
+    """
+    return requirement.replace("-", "_").lower()
+
+
 def _parse_requirement_for_extra(
     requirement: str,
 ) -> Tuple[Optional[str], Optional[Set[str]]]:
@@ -38,7 +46,7 @@ def _parse_requirement_for_extra(
     matches = extras_pattern.match(requirement)
     if matches:
         return (
-            matches.group(1),
+            sanitise_requirement(matches.group(1)),
             {extra.strip() for extra in matches.group(2).split(",")},
         )
 
