@@ -5,6 +5,98 @@
 
 manifest:
   modules_mapping:
+    _pytest: pytest
+    _pytest.__init__: pytest
+    _pytest._argcomplete: pytest
+    _pytest._code: pytest
+    _pytest._code.__init__: pytest
+    _pytest._code.code: pytest
+    _pytest._code.source: pytest
+    _pytest._io: pytest
+    _pytest._io.__init__: pytest
+    _pytest._io.saferepr: pytest
+    _pytest._io.terminalwriter: pytest
+    _pytest._io.wcwidth: pytest
+    _pytest._version: pytest
+    _pytest.assertion: pytest
+    _pytest.assertion.__init__: pytest
+    _pytest.assertion.rewrite: pytest
+    _pytest.assertion.truncate: pytest
+    _pytest.assertion.util: pytest
+    _pytest.cacheprovider: pytest
+    _pytest.capture: pytest
+    _pytest.compat: pytest
+    _pytest.config: pytest
+    _pytest.config.__init__: pytest
+    _pytest.config.argparsing: pytest
+    _pytest.config.compat: pytest
+    _pytest.config.exceptions: pytest
+    _pytest.config.findpaths: pytest
+    _pytest.debugging: pytest
+    _pytest.deprecated: pytest
+    _pytest.doctest: pytest
+    _pytest.faulthandler: pytest
+    _pytest.fixtures: pytest
+    _pytest.freeze_support: pytest
+    _pytest.helpconfig: pytest
+    _pytest.hookspec: pytest
+    _pytest.junitxml: pytest
+    _pytest.legacypath: pytest
+    _pytest.logging: pytest
+    _pytest.main: pytest
+    _pytest.mark: pytest
+    _pytest.mark.__init__: pytest
+    _pytest.mark.expression: pytest
+    _pytest.mark.structures: pytest
+    _pytest.monkeypatch: pytest
+    _pytest.nodes: pytest
+    _pytest.nose: pytest
+    _pytest.outcomes: pytest
+    _pytest.pastebin: pytest
+    _pytest.pathlib: pytest
+    _pytest.pytester: pytest
+    _pytest.pytester_assertions: pytest
+    _pytest.python: pytest
+    _pytest.python_api: pytest
+    _pytest.python_path: pytest
+    _pytest.recwarn: pytest
+    _pytest.reports: pytest
+    _pytest.runner: pytest
+    _pytest.scope: pytest
+    _pytest.setuponly: pytest
+    _pytest.setupplan: pytest
+    _pytest.skipping: pytest
+    _pytest.stash: pytest
+    _pytest.stepwise: pytest
+    _pytest.terminal: pytest
+    _pytest.threadexception: pytest
+    _pytest.timing: pytest
+    _pytest.tmpdir: pytest
+    _pytest.unittest: pytest
+    _pytest.unraisableexception: pytest
+    _pytest.warning_types: pytest
+    _pytest.warnings: pytest
+    attr: attrs
+    attr.__init__: attrs
+    attr._cmp: attrs
+    attr._compat: attrs
+    attr._config: attrs
+    attr._funcs: attrs
+    attr._make: attrs
+    attr._next_gen: attrs
+    attr._version_info: attrs
+    attr.converters: attrs
+    attr.exceptions: attrs
+    attr.filters: attrs
+    attr.setters: attrs
+    attr.validators: attrs
+    attrs: attrs
+    attrs.__init__: attrs
+    attrs.converters: attrs
+    attrs.exceptions: attrs
+    attrs.filters: attrs
+    attrs.setters: attrs
+    attrs.validators: attrs
     certifi: certifi
     certifi.__init__: certifi
     certifi.__main__: certifi
@@ -61,6 +153,89 @@ manifest:
     idna.intranges: idna
     idna.package_data: idna
     idna.uts46data: idna
+    iniconfig: iniconfig
+    iniconfig.__init__: iniconfig
+    packaging: packaging
+    packaging.__about__: packaging
+    packaging.__init__: packaging
+    packaging._manylinux: packaging
+    packaging._musllinux: packaging
+    packaging._structures: packaging
+    packaging.markers: packaging
+    packaging.requirements: packaging
+    packaging.specifiers: packaging
+    packaging.tags: packaging
+    packaging.utils: packaging
+    packaging.version: packaging
+    pluggy: pluggy
+    pluggy.__init__: pluggy
+    pluggy._callers: pluggy
+    pluggy._hooks: pluggy
+    pluggy._manager: pluggy
+    pluggy._result: pluggy
+    pluggy._tracing: pluggy
+    pluggy._version: pluggy
+    py: py
+    py.__init__: py
+    py.__metainfo: py
+    py._builtin: py
+    py._code: py
+    py._code.__init__: py
+    py._code._assertionnew: py
+    py._code._assertionold: py
+    py._code._py2traceback: py
+    py._code.assertion: py
+    py._code.code: py
+    py._code.source: py
+    py._error: py
+    py._io: py
+    py._io.__init__: py
+    py._io.capture: py
+    py._io.saferepr: py
+    py._io.terminalwriter: py
+    py._log: py
+    py._log.__init__: py
+    py._log.log: py
+    py._log.warning: py
+    py._path: py
+    py._path.__init__: py
+    py._path.cacheutil: py
+    py._path.common: py
+    py._path.local: py
+    py._path.svnurl: py
+    py._path.svnwc: py
+    py._process: py
+    py._process.__init__: py
+    py._process.cmdexec: py
+    py._process.forkedfunc: py
+    py._process.killproc: py
+    py._std: py
+    py._vendored_packages: py
+    py._vendored_packages.__init__: py
+    py._vendored_packages.apipkg: py
+    py._vendored_packages.apipkg.__init__: py
+    py._vendored_packages.apipkg.version: py
+    py._vendored_packages.iniconfig: py
+    py._vendored_packages.iniconfig.__init__: py
+    py._version: py
+    py._xmlgen: py
+    py.test: py
+    pyparsing: pyparsing
+    pyparsing.__init__: pyparsing
+    pyparsing.actions: pyparsing
+    pyparsing.common: pyparsing
+    pyparsing.core: pyparsing
+    pyparsing.diagram: pyparsing
+    pyparsing.diagram.__init__: pyparsing
+    pyparsing.exceptions: pyparsing
+    pyparsing.helpers: pyparsing
+    pyparsing.results: pyparsing
+    pyparsing.testing: pyparsing
+    pyparsing.unicode: pyparsing
+    pyparsing.util: pyparsing
+    pytest: pytest
+    pytest.__init__: pytest
+    pytest.__main__: pytest
     requests: requests
     requests.__init__: requests
     requests.__version__: requests
@@ -80,6 +255,11 @@ manifest:
     requests.status_codes: requests
     requests.structures: requests
     requests.utils: requests
+    tomli: tomli
+    tomli.__init__: tomli
+    tomli._parser: tomli
+    tomli._re: tomli
+    tomli._types: tomli
     urllib3: urllib3
     urllib3.__init__: urllib3
     urllib3._collections: urllib3
@@ -129,4 +309,4 @@ manifest:
   pip_repository:
     name: pip
     incremental: true
-integrity: c47bf2ca0a185cf6b8815d4a61e26e7457564e931de76c70653277e4eccfadc8
+integrity: 71c787ef3d0dca470bb9c1913a5ef3ca4373db13cbd24acada1c7fcb40ef10ee

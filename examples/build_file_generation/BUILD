@@ -3,7 +3,14 @@ load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_pytest_main", "py_test")
+
+compile_pip_requirements(
+    name = "pip_compile",
+    requirements_in = "requirements.txt",
+    requirements_txt = "requirements_lock.txt",
+)
 
 # This rule fetches the metadata for python packages we depend on. That data is
 # required for the gazelle_python_manifest rule to update our manifest file.
@@ -53,4 +60,23 @@ py_binary(
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
     deps = [":build_file_generation"],
+)
+
+# Generates an entrypoint for pytest that is picked up by Gazelle for the py_test target below.
+py_pytest_main(
+    name = "__test__",
+)
+
+py_test(
+    name = "build_file_generation_test",
+    srcs = [
+        "foo_test.py",
+        ":__test__",
+    ],
+    main = ":__test__.py",
+    deps = [
+        ":__test__",
+        ":build_file_generation",
+        "@pip_pytest//:pkg",
+    ],
 )

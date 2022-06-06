@@ -166,6 +166,10 @@ dependencies are added to the `deps` attribute.
 
 Python test files are those ending in `_test.py`.
 
+Gazelle will add a `py_test` target whenever it finds either of the following:
+* A target in the same Bazel package named __test__. The macro `py_pytest_main` provide these entrypoint wrappers.
+* A file in the same directory named __test__.py.
+
 A `py_test` target is added containing all test files as `srcs`.
 
 ### Binaries
