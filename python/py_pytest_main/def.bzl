@@ -2,6 +2,8 @@
 py_test entrypoint generation
 """
 
+load("//python/private:reexports.bzl", _py_library = "py_library")
+
 def _py_pytest_main_impl(ctx):
     substitutions = {
         "$$FLAGS$$": ", ".join(['"{}"'.format(f) for f in ctx.attr.args]).strip(),
@@ -56,7 +58,7 @@ def py_pytest_main(name, **kwargs):
         **kwargs
     )
 
-    native.py_library(
+    _py_library(
         name = name,
         srcs = [test_main],
         tags = tags,

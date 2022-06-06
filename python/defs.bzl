@@ -134,8 +134,6 @@ py_runtime_pair = _py_runtime_pair
 
 find_requirements = _find_requirements
 
-py_pytest_main = _py_pytest_main
-
 py_library = _py_library
 
 py_binary = _py_binary
@@ -143,3 +141,5 @@ py_binary = _py_binary
 py_test = _py_test
 
 py_runtime = _py_runtime
+
+py_pytest_main = _py_pytest_main
