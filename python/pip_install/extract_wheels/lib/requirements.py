@@ -1,4 +1,3 @@
-import re
 from typing import Dict, Optional, Set, Tuple
 
 import pkg_resources
@@ -31,17 +30,7 @@ def _parse_requirement_for_extra(
     """Given a requirement string, returns the requirement name and set of extras, if extras specified.
     Else, returns (None, None)
     """
-
-    # https://www.python.org/dev/peps/pep-0508/#grammar
-    extras_pattern = re.compile(
-        r"^\s*([0-9A-Za-z][0-9A-Za-z_.\-]*)\s*\[\s*([0-9A-Za-z][0-9A-Za-z_.\-]*(?:\s*,\s*[0-9A-Za-z][0-9A-Za-z_.\-]*)*)\s*\]"
-    )
-
-    matches = extras_pattern.match(requirement)
-    if matches:
-        return (
-            pkg_resources.Requirement.parse(matches.group(1)).key,
-            {extra.strip() for extra in matches.group(2).split(",")},
-        )
-
+    req = pkg_resources.Requirement.parse(requirement)
+    if req.extras:
+        return (req.key, set(req.extras))
     return None, None

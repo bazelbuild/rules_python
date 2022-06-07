@@ -7,8 +7,10 @@ class TestRequirementExtrasParsing(unittest.TestCase):
     def test_parses_requirement_for_extra(self) -> None:
         cases = [
             ("name[foo]", ("name", frozenset(["foo"]))),
-            ("name[ Foo123 ]", ("name", frozenset(["Foo123"]))),
+            ("name[ Foo123 ]", ("name", frozenset(["foo123"]))),
             (" name1[ foo ] ", ("name1", frozenset(["foo"]))),
+            ("Name[foo]", ("name", frozenset(["foo"]))),
+            ("Name_Foo[bar]", ("name-foo", frozenset(["bar"]))),
             (
                 "name [fred,bar] @ http://foo.com ; python_version=='2.7'",
                 ("name", frozenset(["fred", "bar"])),
