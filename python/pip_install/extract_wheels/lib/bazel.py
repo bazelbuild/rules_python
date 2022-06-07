@@ -10,7 +10,6 @@ from python.pip_install.extract_wheels.lib import (
     annotation,
     namespace_pkgs,
     purelib,
-    requirements,
     wheel,
 )
 
@@ -384,7 +383,7 @@ def extract_wheel(
     if not enable_implicit_namespace_pkgs:
         setup_namespace_pkg_compatibility(directory)
 
-    extras_requested = extras.get(requirements.sanitise_requirement(whl.name), set())
+    extras_requested = extras[whl.name] if whl.name in extras else set()
     whl_deps = sorted(whl.dependencies(extras_requested))
 
     if incremental:

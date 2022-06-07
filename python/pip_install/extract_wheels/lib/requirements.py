@@ -1,6 +1,8 @@
 import re
 from typing import Dict, Optional, Set, Tuple
 
+import pkg_resources
+
 
 def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
     """Parse over the requirements.txt file to find extras requested.
@@ -23,13 +25,6 @@ def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
     return extras_requested
 
 
-def sanitise_requirement(requirement: str) -> str:
-    """Given a requirement string, returns a normalized version of the requirement name.
-    https://peps.python.org/pep-0503/#normalized-names
-    """
-    return re.sub(r"[-_.]+", "-", requirement).lower()
-
-
 def _parse_requirement_for_extra(
     requirement: str,
 ) -> Tuple[Optional[str], Optional[Set[str]]]:
@@ -45,7 +40,7 @@ def _parse_requirement_for_extra(
     matches = extras_pattern.match(requirement)
     if matches:
         return (
-            sanitise_requirement(matches.group(1)),
+            pkg_resources.Requirement.parse(matches.group(1)).key,
             {extra.strip() for extra in matches.group(2).split(",")},
         )
 

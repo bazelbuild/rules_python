@@ -38,7 +38,8 @@ class Wheel:
     @property
     def name(self) -> str:
         # TODO Also available as installer.sources.WheelSource.distribution
-        return str(self.metadata['Name'])
+        name = str(self.metadata['Name'])
+        return pkg_resources.Requirement.parse(name).key
 
     @property
     def metadata(self) -> email.message.Message:
