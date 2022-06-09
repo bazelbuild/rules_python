@@ -210,14 +210,3 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
         incremental = True,
         **kwargs
     )
-
-def pip_repositories():
-    """
-    Obsolete macro to pull in dependencies needed to use the pip_import rule.
-
-    Deprecated:
-        the pip_repositories rule is obsolete. It is not used by pip_install.
-    """
-
-    # buildifier: disable=print
-    print("DEPRECATED: the pip_repositories rule has been replaced with pip_install, please see rules_python 0.1 release notes")
