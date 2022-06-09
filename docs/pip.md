@@ -249,17 +249,3 @@ See the example in rules_python/examples/pip_parse_vendored.
 | kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
-<a name="#pip_repositories"></a>
-
-## pip_repositories
-
-<pre>
-pip_repositories()
-</pre>
-
-    Obsolete macro to pull in dependencies needed to use the pip_import rule.
-
-**PARAMETERS**
-
-
-
