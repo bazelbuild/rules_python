@@ -35,7 +35,7 @@ if __name__ == "__main__":
     exit_code = pytest.main(args)
 
     if exit_code != 0:
-        print("Pytest exit code: " + str(exit_code))
-        print("Ran pytest.main with " + str(args))
+        print("Pytest exit code: " + str(exit_code), file=sys.stderr)
+        print("Ran pytest.main with " + str(args), file=sys.stderr)
 
     sys.exit(exit_code)

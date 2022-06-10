@@ -33,7 +33,7 @@ _py_pytest_main = rule(
             allow_single_file = True,
             default = "//python/py_pytest_main:pytest.tmpl.py",
         ),
-    },    
+    },
 )
 
 def py_pytest_main(name, **kwargs):
