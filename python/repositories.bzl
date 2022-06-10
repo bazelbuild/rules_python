@@ -152,7 +152,8 @@ cc_import(
     name = "libpython",
     hdrs = [":includes"],
     shared_library = glob([
-        "lib/libpython*.so", # Linux and macOS
+        "lib/libpython*.dylib", # macOS
+        "lib/libpython*.so", # Linux
         "python3.dll", # Windows
     ])[0],
 )
