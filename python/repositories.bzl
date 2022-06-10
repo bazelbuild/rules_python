@@ -148,6 +148,15 @@ cc_library(
     ],
 )
 
+cc_import(
+    name = "libpython",
+    hdrs = [":includes"],
+    shared_library = glob([
+        "lib/libpython*.so", # Linux and macOS
+        "python3.dll", # Windows
+    ])[0],
+)
+
 exports_files(["{python_path}"])
 
 py_runtime(
