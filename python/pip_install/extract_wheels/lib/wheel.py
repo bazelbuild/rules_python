@@ -70,11 +70,11 @@ class Wheel:
 
     def unzip(self, directory: str) -> None:
         installation_schemes = {
-            "purelib": f"/site-packages",
-            "platlib": f"/site-packages",
-            "headers": f"/include",
-            "scripts": f"/bin",
-            "data": f"/data",
+            "purelib": "/site-packages",
+            "platlib": "/site-packages",
+            "headers": "/include",
+            "scripts": "/bin",
+            "data": "/data",
         }
         destination = installer.destinations.SchemeDictionaryDestination(
             installation_schemes,
