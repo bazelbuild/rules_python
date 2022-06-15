@@ -384,7 +384,10 @@ def extract_wheel(
         setup_namespace_pkg_compatibility(directory)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
-    whl_deps = sorted(whl.dependencies(extras_requested))
+    # Packages may create dependency cycles when specifying optional-dependencies / 'extras'.
+    # Example: github.com/google/etils/blob/a0b71032095db14acf6b33516bca6d885fe09e35/pyproject.toml#L32.
+    self_edge_dep = set([whl.name])
+    whl_deps = sorted(whl.dependencies(extras_requested) - self_edge_dep)
 
     if incremental:
         sanitised_dependencies = [
