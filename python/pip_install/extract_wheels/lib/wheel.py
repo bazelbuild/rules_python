@@ -8,6 +8,7 @@ from typing import Dict, Optional, Set, Tuple
 
 import installer
 import pkg_resources
+from pip._vendor.packaging.utils import canonicalize_name
 
 
 def current_umask() -> int:
@@ -39,7 +40,7 @@ class Wheel:
     def name(self) -> str:
         # TODO Also available as installer.sources.WheelSource.distribution
         name = str(self.metadata['Name'])
-        return pkg_resources.Requirement.parse(name).key
+        return canonicalize_name(name)
 
     @property
     def metadata(self) -> email.message.Message:

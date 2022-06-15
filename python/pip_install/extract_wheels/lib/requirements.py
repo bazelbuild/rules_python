@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Optional, Set, Tuple
 
-import pkg_resources
+from pip._vendor.packaging.utils import canonicalize_name
 
 
 def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
@@ -40,7 +40,7 @@ def _parse_requirement_for_extra(
     matches = extras_pattern.match(requirement)
     if matches:
         return (
-            pkg_resources.Requirement.parse(matches.group(1)).key,
+            canonicalize_name(matches.group(1)),
             {extra.strip() for extra in matches.group(2).split(",")},
         )
 
