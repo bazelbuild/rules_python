@@ -37,11 +37,10 @@ def parse_install_requirements(
         if parsed_line.is_requirement:
             install_req = constructors.install_req_from_line(parsed_line.requirement)
             if not install_req.is_pinned:
-                raise RuntimeError(
-                    f"""requirements_lock must be fully pinned. See `compile_pip_requirements` or use pip-tools or a
-                    similar tool that is able to produce a lockfile.
-                    The following requirement was not pinned: {install_req}"""
-                )
+                raise RuntimeError(textwrap.dedent(f"""\
+                    The `requirements_lock` file must be fully pinned. See `compile_pip_requirements`. Alternatively,
+                    use `pip-tools` or a similar mechanism to produce a pinned lockfile.
+                    The following requirement was not pinned: {install_req}"""))
             install_req_and_lines.append(
                 (install_req, line)
             )
