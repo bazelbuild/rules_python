@@ -231,23 +231,10 @@ For `pip_install` the labels are instead of the form
 
 [requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
 
-#### 'Extras' requirement consumption
+#### 'Extras' dependencies
 
-When using the legacy `pip_import`, you must specify the extra in the argument to the `requirement` macro. For example:
-
-```python
-py_library(
-    name = "mylib",
-    srcs = ["mylib.py"],
-    deps = [
-        requirement("useful_dep[some_extra]"),
-    ]
-)
-```
-
-If using `pip_install` or `pip_parse`, any extras specified in the requirements file will be automatically
-linked as a dependency of the package so that you don't need to specify the extra. In the example above,
-you'd just put `requirement("useful_dep")`.
+Any 'extras' specified in the requirements lock-file will be automatically added as transitive dependencies of the 
+package. In the example above, you'd just put `requirement("useful_dep")`.
 
 ### Consuming Wheel Dists Directly
 
