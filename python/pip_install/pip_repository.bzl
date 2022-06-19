@@ -4,7 +4,7 @@ load("//python:repositories.bzl", "STANDALONE_INTERPRETER_FILENAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
-CFLAGS = "CFLAGS"
+CPPFLAGS = "CPPFLAGS"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -65,7 +65,7 @@ def _resolve_python_interpreter(rctx):
     return python_interpreter
 
 def _maybe_set_xcode_location_cflags(rctx, environment):
-    """Patch environment with CFLAGS of xcode sdk location.
+    """Patch environment with CPPFLAGS of xcode sdk location.
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -74,7 +74,8 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
     if (
         rctx.os.name.lower().startswith("mac os") and
         rctx.attr.python_interpreter_target != None and
-        rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME)))
+        rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME))) and
+        not environment.get(CPPFLAGS)
     ):
         xcode_sdk_location = rctx.execute(["xcode-select", "-p"])
         if xcode_sdk_location.return_code == 0:
@@ -83,7 +84,7 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
                 # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
                 # so we need to change the path to to the macos specific tools.
                 xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
