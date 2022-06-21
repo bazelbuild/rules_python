@@ -154,7 +154,7 @@ cc_import(
     shared_library = select({{
         "@platforms//os:windows": "python3.dll",
         "@platforms//os:macos": "lib/libpython{python_version}.dylib",
-        "@platforms//os:linux": "lib/libpython{python_version}.so",
+        "@platforms//os:linux": "lib/libpython{python_version}.so.1.0",
     }}),
 )
 
