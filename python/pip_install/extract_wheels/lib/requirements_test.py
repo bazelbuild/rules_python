@@ -9,6 +9,8 @@ class TestRequirementExtrasParsing(unittest.TestCase):
             ("name[foo]", ("name", frozenset(["foo"]))),
             ("name[ Foo123 ]", ("name", frozenset(["Foo123"]))),
             (" name1[ foo ] ", ("name1", frozenset(["foo"]))),
+            ("Name[foo]", ("name", frozenset(["foo"]))),
+            ("name_foo[bar]", ("name-foo", frozenset(["bar"]))),
             (
                 "name [fred,bar] @ http://foo.com ; python_version=='2.7'",
                 ("name", frozenset(["fred", "bar"])),

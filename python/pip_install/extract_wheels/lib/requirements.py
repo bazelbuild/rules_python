@@ -1,6 +1,8 @@
 import re
 from typing import Dict, Optional, Set, Tuple
 
+from pip._vendor.packaging.utils import canonicalize_name
+
 
 def parse_extras(requirements_path: str) -> Dict[str, Set[str]]:
     """Parse over the requirements.txt file to find extras requested.
@@ -38,7 +40,7 @@ def _parse_requirement_for_extra(
     matches = extras_pattern.match(requirement)
     if matches:
         return (
-            matches.group(1),
+            canonicalize_name(matches.group(1)),
             {extra.strip() for extra in matches.group(2).split(",")},
         )
 
