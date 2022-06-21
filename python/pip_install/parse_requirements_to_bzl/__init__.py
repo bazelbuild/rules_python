@@ -31,22 +31,30 @@ def parse_install_requirements(
     parser = RequirementsFileParser(ps, line_parser)
     install_req_and_lines: List[Tuple[InstallRequirement, str]] = []
     _, content = get_file_content(requirements_lock, ps)
+    unpinned_reqs = []
     for parsed_line, (_, line) in zip(
         parser.parse(requirements_lock, constraint=False), preprocess(content)
     ):
         if parsed_line.is_requirement:
             install_req = constructors.install_req_from_line(parsed_line.requirement)
             if not install_req.is_pinned:
-                raise RuntimeError(textwrap.dedent(f"""\
-                    The `requirements_lock` file must be fully pinned. See `compile_pip_requirements`. Alternatively,
-                    use `pip-tools` or a similar mechanism to produce a pinned lockfile.
-                    The following requirement was not pinned: {install_req}"""))
+                unpinned_reqs.append(str(install_req))
             install_req_and_lines.append(
                 (install_req, line)
             )
 
         else:
             extra_pip_args.extend(shlex.split(line))
+
+    if len(unpinned_reqs) > 0:
+        unpinned_reqs_str = "\n".join(unpinned_reqs)
+        raise RuntimeError(f"""\
+The `requirements_lock` file must be fully pinned. See `compile_pip_requirements`.
+Alternatively, use `pip-tools` or a similar mechanism to produce a pinned lockfile.
+
+The following requirements were not pinned:
+{unpinned_reqs_str}""")
+
     return install_req_and_lines
 
 
