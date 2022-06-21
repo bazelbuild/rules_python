@@ -41,6 +41,49 @@ def _add_tags(attrs):
         attrs["tags"] = [_MIGRATION_TAG]
     return attrs
 
+def _current_py_toolchain_impl(ctx):
+    toolchain = ctx.toolchains[ctx.attr._toolchain]
+
+    direct = []
+    transitive = []
+    vars = {}
+
+    if toolchain.py3_runtime and toolchain.py3_runtime.interpreter:
+        direct.append(toolchain.py3_runtime.interpreter)
+        transitive.append(toolchain.py3_runtime.files)
+        vars["PYTHON3"] = toolchain.py3_runtime.interpreter.path
+
+    if toolchain.py2_runtime and toolchain.py2_runtime.interpreter:
+        direct.append(toolchain.py2_runtime.interpreter)
+        transitive.append(toolchain.py2_runtime.files)
+        vars["PYTHON2"] = toolchain.py2_runtime.interpreter.path
+
+    files = depset(direct, transitive = transitive)
+    return [
+        toolchain,
+        platform_common.TemplateVariableInfo(vars),
+        DefaultInfo(
+            runfiles = ctx.runfiles(transitive_files = files),
+            files = files,
+        ),
+    ]
+
+current_py_toolchain = rule(
+    doc = """
+    This rule exists so that the current python toolchain can be used in the `toolchains` attribute of
+    other rules, such as genrule. It allows exposing a python toolchain after toolchain resolution has
+    happened, to a rule which expects a concrete implementation of a toolchain, rather than a
+    toolchain_type which could be resolved to that toolchain.
+    """,
+    implementation = _current_py_toolchain_impl,
+    attrs = {
+        "_toolchain": attr.string(default = str(Label("@bazel_tools//tools/python:toolchain_type"))),
+    },
+    toolchains = [
+        str(Label("@bazel_tools//tools/python:toolchain_type")),
+    ],
+)
+
 def py_library(**attrs):
     """See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/python.html#py_library) documentation.
 
