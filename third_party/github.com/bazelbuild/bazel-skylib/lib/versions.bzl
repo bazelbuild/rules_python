@@ -89,7 +89,7 @@ def _check_bazel_version(minimum_bazel_version, maximum_bazel_version = None, ba
     """
     if not bazel_version:
         if "bazel_version" not in dir(native):
-            fail("Current Bazel version is lower than 0.2.1; expected at least {}".format(
+            fail("Bazel version cannot be determined; expected at least {}".format(
                 minimum_bazel_version,
             ))
         elif not native.bazel_version:

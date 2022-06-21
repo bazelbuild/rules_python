@@ -37,7 +37,7 @@ modules_mapping = rule(
             mandatory = True,
         ),
         "_generator": attr.label(
-            cfg = "host",
+            cfg = "exec",
             default = "//gazelle/modules_mapping:generator",
             executable = True,
         ),

@@ -7,5 +7,5 @@ set -eux
 DIR="$(dirname $0)/../.."
 # The sed -i.bak pattern is compatible between macos and linux
 sed -i.bak "/^[^#].*--deleted_packages/s#=.*#=$(\
-    find examples/*/* \( -name BUILD -or -name BUILD.bazel \) | xargs -n 1 dirname | paste -sd, -\
+    find examples/*/* tests/*/* \( -name BUILD -or -name BUILD.bazel \) | xargs -n 1 dirname | paste -sd, -\
 )#" $DIR/.bazelrc && rm .bazelrc.bak

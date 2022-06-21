@@ -14,6 +14,7 @@
 
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
+load("//python:versions.bzl", "gen_python_config_settings")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -130,8 +131,11 @@ py_wheel(
 # An example of how to change the wheel package root directory using 'strip_path_prefixes'.
 py_wheel(
     name = "custom_package_root",
-    # Package data. We're building "custom_package_root-0.0.1-py3-none-any.whl"
-    distribution = "example_custom_package_root",
+    # Package data. We're building "examples_custom_package_root-0.0.1-py3-none-any.whl"
+    distribution = "examples_custom_package_root",
+    entry_points = {
+        "console_scripts": ["main = foo.bar:baz"],
+    },
     python_tag = "py3",
     strip_path_prefixes = [
         "examples",
@@ -193,11 +197,20 @@ py_wheel(
     ],
 )
 
+gen_python_config_settings()
+
 py_wheel(
     name = "python_abi3_binary_wheel",
     abi = "abi3",
     distribution = "example_python_abi3_binary_wheel",
-    platform = "manylinux2014_x86_64",
+    # these platform strings must line up with test_python_abi3_binary_wheel() in wheel_test.py
+    platform = select({
+        ":aarch64-apple-darwin": "macosx_11_0_arm64",
+        ":aarch64-unknown-linux-gnu": "manylinux2014_aarch64",
+        ":x86_64-apple-darwin": "macosx_11_0_x86_64",  # this is typically macosx_10_9_x86_64?
+        ":x86_64-pc-windows-msvc": "win_amd64",
+        ":x86_64-unknown-linux-gnu": "manylinux2014_x86_64",
+    }),
     python_requires = ">=3.8",
     python_tag = "cp38",
     version = "0.0.1",
