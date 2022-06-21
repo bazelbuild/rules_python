@@ -24,3 +24,11 @@ py_library(
     # Allow a test to verify an "outside package" doesn't get included
     visibility = ["//examples/wheel:__pkg__"],
 )
+
+genrule(
+    name = "test_current_py_toolchain",
+    srcs = [],
+    outs = ["out.txt"],
+    cmd = "$(PYTHON3) --version > $(location out.txt)",
+    toolchains = ["//python:current_py_toolchain"],
+)
