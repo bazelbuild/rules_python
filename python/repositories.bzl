@@ -117,6 +117,7 @@ filegroup(
     srcs = glob(
         include = [
             "*.exe",
+            "*.dll",
             "bin/**",
             "DLLs/**",
             "extensions/**",
@@ -145,6 +146,16 @@ cc_library(
         "include/python{python_version}",
         "include/python{python_version}m",
     ],
+)
+
+cc_import(
+    name = "libpython",
+    hdrs = [":includes"],
+    shared_library = select({{
+        "@platforms//os:windows": "python3.dll",
+        "@platforms//os:macos": "lib/libpython{python_version}.dylib",
+        "@platforms//os:linux": "lib/libpython{python_version}.so.1.0",
+    }}),
 )
 
 exports_files(["{python_path}"])

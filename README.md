@@ -54,7 +54,9 @@ http_archive(
 )
 ```
 
-To register a hermetic Python toolchain rather than rely on whatever is already on the machine, you can add to the `WORKSPACE` file:
+### Toolchain registration
+
+To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
 ```python
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
@@ -77,8 +79,16 @@ pip_parse(
 )
 ```
 
-> You may find some quirks while using this toolchain.
-> Please refer to [this link](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
+After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
+is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
+You may also find some quirks while using this toolchain. Please refer to [python-build-standalone documentation's _Quirks_ section](https://python-build-standalone.readthedocs.io/en/latest/quirks.html) for details.
+
+### Toolchain usage in other rules
+
+Python toolchains can be utilised in other bazel rules, such as `genrule()`, by adding the `toolchains=["@rules_python//python:current_py_toolchain"]` attribute. The path to the python interpreter can be obtained by using the `$(PYTHON2)` and `$(PYTHON3)` ["Make" Variables](https://bazel.build/reference/be/make-variables). See the [`test_current_py_toolchain`](tests/load_from_macro/BUILD) target for an example.
+
+
+### "Hello World"
 
 Once you've imported the rule set into your `WORKSPACE` using any of these
 methods, you can then load the core rules in your `BUILD` files with:
@@ -226,23 +236,10 @@ For `pip_install` the labels are instead of the form
 
 [requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
 
-#### 'Extras' requirement consumption
+#### 'Extras' dependencies
 
-When using the legacy `pip_import`, you must specify the extra in the argument to the `requirement` macro. For example:
-
-```python
-py_library(
-    name = "mylib",
-    srcs = ["mylib.py"],
-    deps = [
-        requirement("useful_dep[some_extra]"),
-    ]
-)
-```
-
-If using `pip_install` or `pip_parse`, any extras specified in the requirements file will be automatically
-linked as a dependency of the package so that you don't need to specify the extra. In the example above,
-you'd just put `requirement("useful_dep")`.
+Any 'extras' specified in the requirements lock-file will be automatically added as transitive dependencies of the 
+package. In the example above, you'd just put `requirement("useful_dep")`.
 
 ### Consuming Wheel Dists Directly
 
