@@ -1,5 +1,28 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+<a name="#current_py_toolchain"></a>
+
+## current_py_toolchain
+
+<pre>
+current_py_toolchain(<a href="#current_py_toolchain-name">name</a>)
+</pre>
+
+
+    This rule exists so that the current python toolchain can be used in the `toolchains` attribute of
+    other rules, such as genrule. It allows exposing a python toolchain after toolchain resolution has
+    happened, to a rule which expects a concrete implementation of a toolchain, rather than a
+    toolchain_type which could be resolved to that toolchain.
+    
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+
+
 <a name="#py_import"></a>
 
 ## py_import
