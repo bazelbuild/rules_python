@@ -4,6 +4,7 @@ from typing import Dict, Optional, Set, Tuple
 
 import installer
 import pkg_resources
+from pip._vendor.packaging.utils import canonicalize_name
 
 
 class Wheel:
@@ -19,7 +20,8 @@ class Wheel:
     @property
     def name(self) -> str:
         # TODO Also available as installer.sources.WheelSource.distribution
-        return str(self.metadata['Name'])
+        name = str(self.metadata['Name'])
+        return canonicalize_name(name)
 
     @property
     def metadata(self) -> email.message.Message:
