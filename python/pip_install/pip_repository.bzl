@@ -6,6 +6,8 @@ load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
 CPPFLAGS = "CPPFLAGS"
 
+COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
 
@@ -77,14 +79,16 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
         rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME))) and
         not environment.get(CPPFLAGS)
     ):
-        xcode_sdk_location = rctx.execute(["xcode-select", "-p"])
+        xcode_sdk_location = rctx.execute(["xcode-select", "--print-path"])
         if xcode_sdk_location.return_code == 0:
             xcode_root = xcode_sdk_location.stdout.strip()
-            if "commandlinetools" not in xcode_root.lower():
+            if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
                 # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
-                # so we need to change the path to to the macos specific tools.
+                # so we need to change the path to to the macos specific tools which are in a different relative
+                # path than xcode installed command line tools.
                 xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+            environment[CPPFLAGS] = "--sysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
