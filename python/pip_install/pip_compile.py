@@ -88,6 +88,8 @@ if __name__ == "__main__":
         print(
             err_msg,
             file=sys.stderr,
+        )
+        sys.exit(1)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,

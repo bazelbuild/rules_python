@@ -87,7 +87,7 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
                 # so we need to change the path to to the macos specific tools which are in a different relative
                 # path than xcode installed command line tools.
                 xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CPPFLAGS] = "--sysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
 
 
 def _parse_optional_attrs(rctx, args):
