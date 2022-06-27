@@ -89,7 +89,6 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
                 xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
             environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
 
-
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
