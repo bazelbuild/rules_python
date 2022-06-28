@@ -66,7 +66,11 @@ def _python_repository_impl(rctx):
                 working_directory = working_directory,
             )
             if make_result.return_code:
-                fail(make_result.stderr)
+                fail_msg = (
+                    "Failed to compile 'zstd' from source for use in Python interpreter extraction. " +
+                    "'make' error message: {}".format(make_result.stderr)
+                )
+                fail(fail_msg)
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
             rctx.symlink(zstd, unzstd)
@@ -79,7 +83,11 @@ def _python_repository_impl(rctx):
             "--file={}".format(release_filename),
         ])
         if exec_result.return_code:
-            fail(exec_result.stderr)
+            fail_msg = (
+                "Failed to extract Python interpreter from '{}'. ".format(release_filename) +
+                "'tar' error message: {}".format(exec_result.stderr)
+            )
+            fail(fail_msg)
     else:
         rctx.download_and_extract(
             url = url,
@@ -101,7 +109,10 @@ def _python_repository_impl(rctx):
     if "windows" not in rctx.os.name:
         exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
         if exec_result.return_code:
-            fail(exec_result.stderr)
+            fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
+                exec_result.stderr
+            )
+            fail(fail_msg)
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
