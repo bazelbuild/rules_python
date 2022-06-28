@@ -25,8 +25,7 @@ rate, but this repository will still follow
 [semantic versioning](https://semver.org).
 
 The packaging rules (`pip_install`, etc.) are less stable. We may make breaking
-changes as they evolve. There are no guarantees for rules underneath the
-`experimental/` directory.
+changes as they evolve.
 
 This repository is maintained by the Bazel community. Neither Google, nor the
 Bazel team, provides support for the code. However, this repository is part of
