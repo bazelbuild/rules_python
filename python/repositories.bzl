@@ -110,7 +110,7 @@ def _python_repository_impl(rctx):
         exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
         if exec_result.return_code:
             fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
-                exec_result.stderr
+                exec_result.stderr,
             )
             fail(fail_msg)
 
