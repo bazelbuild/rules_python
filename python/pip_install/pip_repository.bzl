@@ -1,7 +1,12 @@
 ""
 
+load("//python:repositories.bzl", "STANDALONE_INTERPRETER_FILENAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+
+CPPFLAGS = "CPPFLAGS"
+
+COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -61,6 +66,29 @@ def _resolve_python_interpreter(rctx):
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
     return python_interpreter
 
+def _maybe_set_xcode_location_cflags(rctx, environment):
+    """Patch environment with CPPFLAGS of xcode sdk location.
+
+    Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
+    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    """
+    if (
+        rctx.os.name.lower().startswith("mac os") and
+        rctx.attr.python_interpreter_target != None and
+        rctx.path(Label("@{}//:{}".format(rctx.attr.python_interpreter_target.workspace_name, STANDALONE_INTERPRETER_FILENAME))) and
+        not environment.get(CPPFLAGS)
+    ):
+        xcode_sdk_location = rctx.execute(["xcode-select", "--print-path"])
+        if xcode_sdk_location.return_code == 0:
+            xcode_root = xcode_sdk_location.stdout.strip()
+            if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
+                # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
+                # so we need to change the path to to the macos specific tools which are in a different relative
+                # path than xcode installed command line tools.
+                xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
@@ -111,6 +139,17 @@ def _parse_optional_attrs(rctx, args):
         ]
 
     return args
+
+def _create_repository_execution_environment(rctx):
+    """Create a environment dictionary for processes we spawn with rctx.execute.
+
+    Args:
+        rctx: The repository context.
+    Returns: Dictionary of envrionment variable suitable to pass to rctx.execute.
+    """
+    env = {"PYTHONPATH": _construct_pypath(rctx)}
+    _maybe_set_xcode_location_cflags(rctx, env)
+    return env
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
@@ -186,7 +225,7 @@ def _pip_repository_impl(rctx):
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = {"PYTHONPATH": _construct_pypath(rctx)},
+        environment = _create_repository_execution_environment(rctx),
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -390,7 +429,7 @@ def _whl_library_impl(rctx):
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = {"PYTHONPATH": _construct_pypath(rctx)},
+        environment = _create_repository_execution_environment(rctx),
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )

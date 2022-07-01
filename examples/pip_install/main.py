@@ -1,6 +1,5 @@
 import boto3
 
-
 def the_dir():
     return dir(boto3)
 
