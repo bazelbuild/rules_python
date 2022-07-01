@@ -9,7 +9,6 @@ from typing import Dict, Iterable, List, Optional, Set
 from python.pip_install.extract_wheels.lib import (
     annotation,
     namespace_pkgs,
-    purelib,
     wheel,
 )
 
@@ -137,27 +136,18 @@ def generate_build_file_contents(
     there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
-    dist_info_ignores = [
-        # RECORD is known to contain sha256 checksums of files which might include the checksums
-        # of generated files produced when wheels are installed. The file is ignored to avoid
-        # Bazel caching issues.
-        "**/*.dist-info/RECORD",
-    ]
-
     data_exclude = list(
         set(
             [
-                "*.whl",
-                "**/__pycache__/**",
                 "**/* *",
                 "**/*.py",
                 "**/*.pyc",
-                "BUILD.bazel",
-                "WORKSPACE",
-                f"{WHEEL_ENTRY_POINT_PREFIX}*.py",
+                # RECORD is known to contain sha256 checksums of files which might include the checksums
+                # of generated files produced when wheels are installed. The file is ignored to avoid
+                # Bazel caching issues.
+                "**/*.dist-info/RECORD",
             ]
             + data_exclude
-            + dist_info_ignores
         )
     )
 
@@ -172,12 +162,12 @@ def generate_build_file_contents(
 
         filegroup(
             name = "{dist_info_label}",
-            srcs = glob(["*.dist-info/**"], allow_empty = True),
+            srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
         )
 
         filegroup(
             name = "{data_label}",
-            srcs = glob(["*.data/**"], allow_empty = True),
+            srcs = glob(["data/**"], allow_empty = True),
         )
 
         filegroup(
@@ -188,11 +178,11 @@ def generate_build_file_contents(
 
         py_library(
             name = "{name}",
-            srcs = glob(["**/*.py"], exclude={srcs_exclude}, allow_empty = True),
-            data = {data} + glob(["**/*"], exclude={data_exclude}),
+            srcs = glob(["site-packages/**/*.py"], exclude={srcs_exclude}, allow_empty = True),
+            data = {data} + glob(["site-packages/**/*"], exclude={data_exclude}),
             # This makes this directory a top-level in the python import
             # search path for anything that depends on this.
-            imports = ["."],
+            imports = ["site-packages"],
             deps = [{dependencies}],
             tags = [{tags}],
         )
@@ -376,9 +366,6 @@ def extract_wheel(
         # copy the original wheel
         shutil.copy(whl.path, directory)
     whl.unzip(directory)
-
-    # Note: Order of operations matters here
-    purelib.spread_purelib_into_root(directory)
 
     if not enable_implicit_namespace_pkgs:
         setup_namespace_pkg_compatibility(directory)
