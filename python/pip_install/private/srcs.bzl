@@ -7,6 +7,7 @@ This file is auto-generated from the `@rules_python//python/pip_install/private:
 # Each source file is tracked as a target so `pip_repository` rules will know to automatically rebuild if any of the
 # sources changed.
 PIP_INSTALL_PY_SRCS = [
+    "@rules_python//python/pip_install/extract_wheels:__init__.py",
     "@rules_python//python/pip_install/extract_wheels:annotation.py",
     "@rules_python//python/pip_install/extract_wheels:arguments.py",
     "@rules_python//python/pip_install/extract_wheels:bazel.py",
