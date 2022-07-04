@@ -12,7 +12,7 @@ import pathlib
 import subprocess
 import sys
 
-from python.pip_install.extract_wheels.lib import (
+from python.pip_install.extract_wheels import (
     annotation,
     arguments,
     bazel,

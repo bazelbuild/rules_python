@@ -6,7 +6,7 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set
 
-from python.pip_install.extract_wheels.lib import (
+from python.pip_install.extract_wheels import (
     annotation,
     namespace_pkgs,
     wheel,

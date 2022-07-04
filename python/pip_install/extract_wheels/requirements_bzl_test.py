@@ -1,6 +1,6 @@
 import unittest
 
-from python.pip_install.extract_wheels.lib import bazel
+from python.pip_install.extract_wheels import bazel
 
 
 class TestGenerateRequirementsFileContents(unittest.TestCase):

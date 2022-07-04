@@ -7,8 +7,8 @@ import sys
 from tempfile import NamedTemporaryFile
 
 from python.pip_install.extract_wheels import configure_reproducible_wheels
-from python.pip_install.extract_wheels.lib import arguments, bazel, requirements
-from python.pip_install.extract_wheels.lib.annotation import annotation_from_str_path
+from python.pip_install.extract_wheels import arguments, bazel, requirements
+from python.pip_install.extract_wheels.annotation import annotation_from_str_path
 
 
 def main() -> None:
