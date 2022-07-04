@@ -26,7 +26,6 @@ py_binary(
     srcs = [
         "extract_wheels.py",
     ],
-    main = "extract_wheels.py",
     deps = [":lib"],
 )
 
@@ -35,7 +34,6 @@ py_binary(
     srcs = [
         "extract_single_wheel.py",
     ],
-    main = "extract_single_wheel.py",
     deps = [":lib"],
 )
 
@@ -44,7 +42,6 @@ py_binary(
     srcs = [
         "parse_requirements_to_bzl.py",
     ],
-    main = "parse_requirements_to_bzl.py",
     deps = [":lib"],
 )
 
