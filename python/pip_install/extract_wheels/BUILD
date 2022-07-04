@@ -8,6 +8,8 @@ py_library(
         "annotation.py",
         "arguments.py",
         "bazel.py",
+        "extract_wheels.py",
+        "extract_single_wheel.py",
         "namespace_pkgs.py",
         "parse_requirements_to_bzl.py",
         "requirements.py",
@@ -17,6 +19,33 @@ py_library(
         requirement("installer"),
         requirement("setuptools"),
     ],
+)
+
+py_binary(
+    name = "extract_wheels",
+    srcs = [
+        "extract_wheels.py",
+    ],
+    main = "extract_wheels.py",
+    deps = [":lib"],
+)
+
+py_binary(
+    name = "extract_single_wheel",
+    srcs = [
+        "extract_single_wheel.py",
+    ],
+    main = "extract_single_wheel.py",
+    deps = [":lib"],
+)
+
+py_binary(
+    name = "parse_requirements_to_bzl",
+    srcs = [
+        "parse_requirements_to_bzl.py",
+    ],
+    main = "parse_requirements_to_bzl.py",
+    deps = [":lib"],
 )
 
 package_annotations_file(
