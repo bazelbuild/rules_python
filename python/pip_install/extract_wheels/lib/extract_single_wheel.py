@@ -34,10 +34,10 @@ def main() -> None:
     configure_reproducible_wheels()
 
     pip_args = (
-        [sys.executable, "-m", "pip"]
-        + (["--isolated"] if args.isolated else [])
-        + ["wheel", "--no-deps"]
-        + deserialized_args["extra_pip_args"]
+            [sys.executable, "-m", "pip"]
+            + (["--isolated"] if args.isolated else [])
+            + ["wheel", "--no-deps"]
+            + deserialized_args["extra_pip_args"]
     )
 
     requirement_file = NamedTemporaryFile(mode="wb", delete=False)
@@ -75,3 +75,7 @@ def main() -> None:
         repo_prefix=args.repo_prefix,
         annotation=args.annotation,
     )
+
+
+if __name__ == "__main__":
+    main()

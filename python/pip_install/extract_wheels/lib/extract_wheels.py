@@ -126,3 +126,7 @@ def main() -> None:
         requirement_file.write(
             bazel.generate_requirements_file_contents(repo_label, targets)
         )
+
+
+if __name__ == "__main__":
+    main()

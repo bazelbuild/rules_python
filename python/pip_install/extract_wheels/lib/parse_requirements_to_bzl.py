@@ -270,3 +270,8 @@ If set, it will take precedence over python_interpreter.",
             annotations=annotated_requirements,
         )
     )
+
+
+if __name__ == "__main__":
+    with open("requirements.bzl", "w") as requirement_file:
+        main(requirement_file)
