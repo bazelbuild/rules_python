@@ -9,6 +9,7 @@ py_library(
         "arguments.py",
         "bazel.py",
         "namespace_pkgs.py",
+        "parse_requirements_to_bzl.py",
         "requirements.py",
         "wheel.py",
     ],
@@ -116,6 +117,18 @@ py_test(
     main = "whl_filegroup_test.py",
     tags = ["unit"],
     deps = [":lib"],
+)
+
+py_test(
+    name = "parse_requirements_to_bzl_test",
+    size = "small",
+    srcs = [
+        "parse_requirements_to_bzl_test.py",
+    ],
+    tags = ["unit"],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_test(
