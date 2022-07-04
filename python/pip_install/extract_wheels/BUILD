@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 load(":annotations_test_helpers.bzl", "package_annotation", "package_annotations_file")
 
