@@ -18,7 +18,7 @@ Core rules for building Python projects.
 
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
 load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
-load("//python/py_pytest_main:def.bzl", _py_pytest_main = "py_pytest_main")
+load("//python/py_pytest_main:defs.bzl", _py_pytest_main = "py_pytest_main")
 load(
     "//python/private:reexports.bzl",
     "internal_PyInfo",

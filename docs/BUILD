@@ -54,6 +54,7 @@ bzl_library(
     name = "defs",
     srcs = [
         "//python:defs.bzl",
+        "//python/py_pytest_main:defs.bzl",
         "//python/private:reexports.bzl",
     ],
     deps = [":bazel_python_tools"],

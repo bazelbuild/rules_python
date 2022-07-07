@@ -165,6 +165,25 @@ See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/pyth
 | attrs |  Rule attributes   |  none |
 
 
+<a name="#py_pytest_main"></a>
+
+## py_pytest_main
+
+<pre>
+py_pytest_main(<a href="#py_pytest_main-name">name</a>, <a href="#py_pytest_main-kwargs">kwargs</a>)
+</pre>
+
+py_pytest_main wraps the template rendering target and the final py_library.
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| name |  The name of the runable target that updates the test entry file.   |  none |
+| kwargs |  The extra arguments passed to the template rendering target.   |  none |
+
+
 <a name="#py_runtime"></a>
 
 ## py_runtime
