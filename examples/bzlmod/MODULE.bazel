@@ -1,0 +1,12 @@
+module(
+    name = "example_bzlmod",
+    compatibility_level = 1,
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_python", version = "0.0.0")
+
+local_path_override(
+    module_name = "rules_python",
+    path = "../..",
+)
