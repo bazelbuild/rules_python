@@ -26,6 +26,7 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD",
+        "MODULE.bazel",
         "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
