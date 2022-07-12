@@ -142,6 +142,7 @@ filegroup(
         ],
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
+            "**/__pycache__/**",
         ],
     ),
 )
