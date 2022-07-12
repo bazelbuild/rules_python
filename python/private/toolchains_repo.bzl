@@ -48,7 +48,7 @@ def _toolchains_repo_impl(rctx):
 # for executing build actions.
 toolchain(
     name = "{platform}_toolchain",
-    exec_compatible_with = {compatible_with},
+    target_compatible_with = {compatible_with},
     toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
