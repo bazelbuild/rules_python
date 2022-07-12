@@ -2,7 +2,7 @@ import argparse
 import json
 import unittest
 
-from python.pip_install.extract_wheels.lib import arguments
+from python.pip_install.extract_wheels import arguments
 
 
 class ArgumentsTestCase(unittest.TestCase):

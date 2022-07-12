@@ -7,7 +7,7 @@ from textwrap import dedent
 
 from pip._internal.req.req_install import InstallRequirement
 
-from python.pip_install.parse_requirements_to_bzl import (
+from python.pip_install.extract_wheels.parse_requirements_to_bzl import (
     generate_parsed_requirements_contents,
     parse_install_requirements,
     parse_whl_library_args,
