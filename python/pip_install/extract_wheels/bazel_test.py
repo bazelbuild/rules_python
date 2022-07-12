@@ -1,6 +1,6 @@
 import unittest
 
-from python.pip_install.extract_wheels.lib.bazel import generate_entry_point_contents
+from python.pip_install.extract_wheels.bazel import generate_entry_point_contents
 
 
 class BazelTestCase(unittest.TestCase):

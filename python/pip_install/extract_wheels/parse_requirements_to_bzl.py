@@ -16,7 +16,7 @@ from pip._internal.req.req_file import (
 )
 from pip._internal.req.req_install import InstallRequirement
 
-from python.pip_install.extract_wheels.lib import annotation, arguments, bazel
+from python.pip_install.extract_wheels import annotation, arguments, bazel
 
 
 def parse_install_requirements(
@@ -270,3 +270,8 @@ If set, it will take precedence over python_interpreter.",
             annotations=annotated_requirements,
         )
     )
+
+
+if __name__ == "__main__":
+    with open("requirements.bzl", "w") as requirement_file:
+        main(requirement_file)

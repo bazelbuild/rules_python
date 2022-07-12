@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.extract_wheels.lib import bazel
+from python.pip_install.extract_wheels import bazel
 
 
 class TestWhlFilegroup(unittest.TestCase):
