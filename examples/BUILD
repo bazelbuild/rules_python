@@ -23,6 +23,11 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pip_install_simple_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "pip_parse_example",
     timeout = "long",
 )
