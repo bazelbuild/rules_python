@@ -48,9 +48,9 @@ local_repository(
     path = "../..",
 )
 
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_install")
 
-pip_parse(
+pip_install(
     name = "pip",
     requirements_lock = "//:requirements_lock.txt",
 )

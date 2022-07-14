@@ -13,7 +13,7 @@ compile_pip_requirements(
 )
 
 py_test(
-    name = "pip_parse_annotations_test",
+    name = "pip_repository_annotations_test",
     srcs = ["pip_repository_annotations_test.py"],
     env = {"WHEEL_PKG_DIR": "pypi_wheel"},
     main = "pip_repository_annotations_test.py",

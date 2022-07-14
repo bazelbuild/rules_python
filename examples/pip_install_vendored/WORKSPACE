@@ -34,7 +34,7 @@ pip_install(
     requirements_lock = "//:requirements.txt",
 )
 
-# This example vendors the file produced by `pip_parse` above into the repo.
+# This example vendors the file produced by `pip_install` above into the repo.
 # This way our Bazel doesn't eagerly fetch and install the pip_parse'd
 # repository for builds that don't need it.
 # See discussion of the trade-offs in the pip_parse documentation
