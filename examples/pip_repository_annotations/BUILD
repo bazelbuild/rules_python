@@ -1,4 +1,3 @@
-load("@pip_installed//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -16,21 +15,10 @@ compile_pip_requirements(
 py_test(
     name = "pip_parse_annotations_test",
     srcs = ["pip_repository_annotations_test.py"],
-    env = {"WHEEL_PKG_DIR": "pip_parsed_wheel"},
+    env = {"WHEEL_PKG_DIR": "pypi_wheel"},
     main = "pip_repository_annotations_test.py",
     deps = [
-        "@pip_parsed_wheel//:pkg",
-        "@rules_python//python/runfiles",
-    ],
-)
-
-py_test(
-    name = "pip_install_annotations_test",
-    srcs = ["pip_repository_annotations_test.py"],
-    env = {"WHEEL_PKG_DIR": "pip_installed/pypi__wheel"},
-    main = "pip_repository_annotations_test.py",
-    deps = [
-        requirement("wheel"),
+        "@pypi_wheel//:pkg",
         "@rules_python//python/runfiles",
     ],
 )

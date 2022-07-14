@@ -48,12 +48,12 @@ write_file(
 
 # For a more thorough example of `pip_install`. See `@rules_python//examples/pip_parse`
 pip_install(
-    name = "pip_install",
+    name = "pypi",
     annotations = ANNOTATIONS,
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
 
-load("@pip_install//:requirements.bzl", "install_deps")
+load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()
