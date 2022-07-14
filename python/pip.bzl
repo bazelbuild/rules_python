@@ -30,11 +30,11 @@ def pip_install(requirements = None, requirements_lock = None, name = "pip", **k
     Those dependencies become available in a generated `requirements.bzl` file.
     You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-    This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`, with `incremental` set.
+    This macro wraps the [`pip_repository`](./pip_repository.md) rule.
     In your WORKSPACE file:
 
     ```python
-    load("@rules_python//python:pip.bzl", "pip_parse")
+    load("@rules_python//python:pip.bzl", "pip_install")
 
     pip_install(
         name = "pip_deps",
