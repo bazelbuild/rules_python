@@ -119,6 +119,33 @@ class TestParseRequirementsToBzl(unittest.TestCase):
                     ),
                 )
 
+    def test_parse_install_requirements_pinned_direct_reference(self):
+        # Test PEP-440 direct references
+        with tempfile.TemporaryDirectory() as temp_dir:
+            requirements_lock = Path(temp_dir) / "requirements.txt"
+            requirements_lock.write_text(
+                dedent(
+                    """\
+                onnx @ https://files.pythonhosted.org/packages/24/93/f5b001dc0f5de84ce049a34ff382032cd9478e1080aa6ac48470fa810577/onnx-1.11.0-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl \
+                    --hash=sha256:67c6d2654c1c203e5c839a47900b51f588fd0de71bbd497fb193d30a0b3ec1e9
+                """
+                )
+            )
+
+            install_req_and_lines = parse_install_requirements(
+                str(requirements_lock), ["-v"]
+            )
+
+            self.assertEqual(len(install_req_and_lines), 1)
+            self.assertEqual(install_req_and_lines[0][0].name, "onnx")
+
+            self.assertTupleEqual(
+                install_req_and_lines[0][1:],
+                (
+                    "onnx @ https://files.pythonhosted.org/packages/24/93/f5b001dc0f5de84ce049a34ff382032cd9478e1080aa6ac48470fa810577/onnx-1.11.0-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl                     --hash=sha256:67c6d2654c1c203e5c839a47900b51f588fd0de71bbd497fb193d30a0b3ec1e9",
+                ),
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
