@@ -1,4 +1,4 @@
-workspace(name = "pip_repository_annotations_example")
+workspace(name = "rules_python_pip_install_vendored_example")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -24,11 +24,11 @@ python_register_toolchains(
 )
 
 load("@python39//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_install")
 
 # This repository isn't referenced, except by our test that asserts the requirements.bzl is updated.
 # It also wouldn't be needed by users of this ruleset.
-pip_parse(
+pip_install(
     name = "pip",
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",

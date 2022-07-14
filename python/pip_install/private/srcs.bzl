@@ -12,7 +12,6 @@ PIP_INSTALL_PY_SRCS = [
     "@rules_python//python/pip_install/extract_wheels:arguments.py",
     "@rules_python//python/pip_install/extract_wheels:bazel.py",
     "@rules_python//python/pip_install/extract_wheels:extract_single_wheel.py",
-    "@rules_python//python/pip_install/extract_wheels:extract_wheels.py",
     "@rules_python//python/pip_install/extract_wheels:namespace_pkgs.py",
     "@rules_python//python/pip_install/extract_wheels:parse_requirements_to_bzl.py",
     "@rules_python//python/pip_install/extract_wheels:requirements.py",

@@ -1,16 +1,5 @@
 workspace(name = "rules_python_pip_install_example")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "bazel_skylib",
-    sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
-    urls = [
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
-    ],
-)
-
 local_repository(
     name = "rules_python",
     path = "../..",
@@ -27,9 +16,15 @@ load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_install")
 
 pip_install(
+    # (Optional) You can set an environment in the pip process to control its
+    # behavior. Note that pip is run in "isolated" mode so no PIP_<VAR>_<NAME>
+    # style env vars are read, but env vars that control requests and urllib3
+    # can be passed
+    # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
+    name = "pypi",
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
-    #extra_pip_args = ["-v"],
+    # extra_pip_args = ["-v"],
 
     # (Optional) You can exclude custom elements in the data section of the generated BUILD files for pip packages.
     # Exclude directories with spaces in their names in this example (avoids build errors if there are such directories).
@@ -46,55 +41,10 @@ pip_install(
 
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,
-
-    # (Optional) You can set an environment in the pip process to control its
-    # behavior. Note that pip is run in "isolated" mode so no PIP_<VAR>_<NAME>
-    # style env vars are read, but env vars that control requests and urllib3
-    # can be passed.
-    #environment = {"HTTP_PROXY": "http://my.proxy.fun/"},
-
-    # Uses the default repository name "pip"
-    requirements = "//:requirements.txt",
+    requirements_lock = "//:requirements_lock.txt",
 )
 
-# You could optionally use an in-build, compiled python interpreter as a toolchain,
-# and also use it to execute pip.
-#
-# Special logic for building python interpreter with OpenSSL from homebrew.
-# See https://devguide.python.org/setup/#macos-and-os-x
-#_py_configure = """
-#if [[ "$OSTYPE" == "darwin"* ]]; then
-#    ./configure --prefix=$(pwd)/bazel_install --with-openssl=$(brew --prefix openssl)
-#else
-#    ./configure --prefix=$(pwd)/bazel_install
-#fi
-#"""
-#
-# NOTE: you need to have the SSL headers installed to build with openssl support (and use HTTPS).
-# E.g. on Ubuntu: `sudo apt install libssl-dev`
-#http_archive(
-#    name = "python_interpreter",
-#    build_file_content = """
-#exports_files(["python_bin"])
-#filegroup(
-#    name = "files",
-#    srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),
-#    visibility = ["//visibility:public"],
-#)
-#""",
-#    patch_cmds = [
-#        "mkdir $(pwd)/bazel_install",
-#        _py_configure,
-#        "make",
-#        "make install",
-#        "ln -s bazel_install/bin/python3 python_bin",
-#    ],
-#    sha256 = "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
-#    strip_prefix = "Python-3.8.3",
-#    urls = ["https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz"],
-#)
+load("@pypi//:requirements.bzl", "install_deps")
 
-# Optional:
-# Register the toolchain with the same python interpreter we used for pip in pip_install().
-#register_toolchains("//:my_py_toolchain")
-# End of in-build Python interpreter setup.
+# Initialize repositories for all packages in requirements_lock.txt.
+install_deps()

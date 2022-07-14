@@ -20,89 +20,11 @@ load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compi
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 
-def pip_install(requirements = None, name = "pip", **kwargs):
-    """Accepts a `requirements.txt` file and installs the dependencies listed within.
-
-    Those dependencies become available in a generated `requirements.bzl` file.
-
-    This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
-    In your WORKSPACE file:
-
-    ```python
-    pip_install(
-        requirements = ":requirements.txt",
-    )
-    ```
-
-    You can then reference installed dependencies from a `BUILD` file with:
-
-    ```python
-    load("@pip//:requirements.bzl", "requirement")
-    py_library(
-        name = "bar",
-        ...
-        deps = [
-           "//my/other:dep",
-           requirement("requests"),
-           requirement("numpy"),
-        ],
-    )
-    ```
-
-    > Note that this convenience comes with a cost.
-    > Analysis of any BUILD file which loads the requirements helper in this way will
-    > cause an eager-fetch of all the pip dependencies,
-    > even if no python targets are requested to be built.
-    > In a multi-language repo, this may cause developers to fetch dependencies they don't need,
-    > so consider using the long form for dependencies if this happens.
-
-    In addition to the `requirement` macro, which is used to access the `py_library`
-    target generated from a package's wheel, the generated `requirements.bzl` file contains
-    functionality for exposing [entry points][whl_ep] as `py_binary` targets.
-
-    [whl_ep]: https://packaging.python.org/specifications/entry-points/
-
-    ```python
-    load("@pip_deps//:requirements.bzl", "entry_point")
-
-    alias(
-        name = "pip-compile",
-        actual = entry_point(
-            pkg = "pip-tools",
-            script = "pip-compile",
-        ),
-    )
-    ```
-
-    Note that for packages whose name and script are the same, only the name of the package
-    is needed when calling the `entry_point` macro.
-
-    ```python
-    load("@pip_deps//:requirements.bzl", "entry_point")
-
-    alias(
-        name = "flake8",
-        actual = entry_point("flake8"),
-    )
-    ```
-
-    Args:
-        requirements (Label): A 'requirements.txt' pip requirements file.
-        name (str, optional): A unique name for the created external repository (default 'pip').
-        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
-    """
-
-    # Just in case our dependencies weren't already fetched
-    pip_install_dependencies()
-
-    pip_repository(
-        name = name,
-        requirements = requirements,
-        repo_prefix = "pypi__",
-        **kwargs
-    )
-
 def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
+    # TODO Some kind of deprecation warning
+    pip_parse(**kwargs)
+
+def pip_install(requirements, requirements_lock, name = "pip", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
     Those dependencies become available in a generated `requirements.bzl` file.
@@ -114,7 +36,7 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     ```python
     load("@rules_python//python:pip.bzl", "pip_parse")
 
-    pip_parse(
+    pip_install(
         name = "pip_deps",
         requirements_lock = ":requirements.txt",
     )
@@ -203,9 +125,14 @@ def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     # Just in case our dependencies weren't already fetched
     pip_install_dependencies()
 
+    # Temporary compatibility shim
+    # pip_install was previously document to use requirements while pip_parse was using requirements_lock
+    # We would prefer everyone move to using requirements_lock, but we maintain a temporary shim
+    reqs_to_use = requirements_lock if requirements_lock else requirements
+
     pip_repository(
         name = name,
-        requirements_lock = requirements_lock,
+        requirements_lock = reqs_to_use,
         repo_prefix = "{}_".format(name),
         incremental = True,
         **kwargs

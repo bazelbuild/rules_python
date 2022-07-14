@@ -5,7 +5,7 @@ import main
 
 class ExampleTest(unittest.TestCase):
     def test_main(self):
-        self.assertIn("set_stream_logger", main.the_dir())
+        self.assertEqual("2.25.1", main.version())
 
 
 if __name__ == "__main__":

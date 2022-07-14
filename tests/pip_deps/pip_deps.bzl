@@ -1,6 +1,6 @@
 """ A demo implementation for pip_deps which provides @unpinned_pip//:pin. """
 
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_install")
 
 def _requirements_in_impl(repository_ctx):
     repository_ctx.file(
@@ -47,7 +47,7 @@ def pip_deps(
         packages = packages,
         requirements_lock = requirements_lock_target,
     )
-    pip_parse(
+    pip_install(
         name = name,
         requirements_lock = requirements_lock_file,
         python_interpreter_target = python_interpreter_target,

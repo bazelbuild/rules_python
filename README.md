@@ -7,8 +7,7 @@
 
 This repository is the home of the core Python rules -- `py_library`,
 `py_binary`, `py_test`, and related symbols that provide the basis for Python
-support in Bazel. It also contains packaging rules for integrating with PyPI
-(`pip`). Documentation lives in the
+support in Bazel. It also contains package installation rules for integrating with PyPI and other package indices. Documentation lives in the
 [`docs/`](https://github.com/bazelbuild/rules_python/tree/main/docs)
 directory and in the
 [Bazel Build Encyclopedia](https://docs.bazel.build/versions/master/be/python.html).
@@ -24,7 +23,7 @@ Once they are fully migrated to rules_python, they may evolve at a different
 rate, but this repository will still follow
 [semantic versioning](https://semver.org).
 
-The packaging rules (`pip_install`, etc.) are less stable. We may make breaking
+The package installation rules (`pip_install`, `pip_parse` etc.) are less stable. We may make breaking
 changes as they evolve.
 
 This repository is maintained by the Bazel community. Neither Google, nor the
@@ -69,9 +68,9 @@ python_register_toolchains(
 
 load("@python3_9//:defs.bzl", "interpreter")
 
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_install")
 
-pip_parse(
+pip_install(
     ...
     python_interpreter_target = interpreter,
     ...
@@ -101,14 +100,14 @@ py_binary(
 )
 ```
 
-## Using the packaging rules
+## Using the package installation rules
 
-Usage of the packaging rules involves two main steps.
+Usage of the package installation rules involves two main steps.
 
-1. [Installing `pip` dependencies](#installing-pip-dependencies)
-2. [Consuming `pip` dependencies](#consuming-pip-dependencies)
+1. [Installing third_party packages](#installing-third_party-packages)
+2. [Using third_party packages as dependencies](#using-third_party-packages-as-dependencies)
 
-The packaging rules create two kinds of repositories: A central external repo that holds
+The package installation rules create two kinds of repositories: A central external repo that holds
 downloaded wheel files, and individual external repos for each wheel's extracted
 contents. Users only need to interact with the central external repo; the wheel repos
 are essentially an implementation detail. The central external repo provides a
@@ -116,7 +115,7 @@ are essentially an implementation detail. The central external repo provides a
 `BUILD` files that translates a pip package name into the label of a `py_library`
 target in the appropriate wheel repo.
 
-### Installing `pip` dependencies
+### Installing third_party packages
 
 To add pip dependencies to your `WORKSPACE`, load the `pip_install` function, and call it to create the
 central external repo and individual wheel external repos.
@@ -125,12 +124,17 @@ central external repo and individual wheel external repos.
 ```python
 load("@rules_python//python:pip.bzl", "pip_install")
 
-# Create a central external repo, @my_deps, that contains Bazel targets for all the
-# third-party packages specified in the requirements.txt file.
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
 pip_install(
    name = "my_deps",
-   requirements = "//path/to:requirements.txt",
+   requirements_lock = "//path/to:requirements_lock.txt",
 )
+
+# Load the starlark macro which will define your dependencies.
+load("@my_deps//:requirements.bzl", "install_deps")
+# Call it to define repos for your requirements.
+install_deps()
 ```
 
 Note that since `pip_install` is a repository rule and therefore executes pip at WORKSPACE-evaluation time, Bazel has no
@@ -147,41 +151,10 @@ re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can force it to re-execute by running
 `bazel sync --only [pip_install name]`.
 
-### Fetch `pip` dependencies lazily
+Note: The `pip_parse` rule is deprecated. `pip_install` offers identical functionality and is both `pip_parse` 
+and `pip_install` now have the same implementation. `pip_parse` will be removed in a future version of the rules
 
-One pain point with `pip_install` is the need to download all dependencies resolved by
-your requirements.txt before the bazel analysis phase can start. For large python monorepos
-this can take a long time, especially on slow connections.
-
-`pip_parse` provides a solution to this problem. If you can provide a lock
-file of all your python dependencies `pip_parse` will translate each requirement into its own external repository.
-Bazel will only fetch/build wheels for the requirements in the subgraph of your build target.
-
-There are API differences between `pip_parse` and `pip_install`:
-1. `pip_parse` requires a fully resolved lock file of your python dependencies. You can generate this by using the `compile_pip_requirements` rule,
-   running `pip-compile` directly, or using virtualenv and `pip freeze`. `pip_parse` uses a label argument called `requirements_lock` instead of
-   `requirements` to make this distinction clear.
-2. `pip_parse` translates your requirements into a starlark macro called `install_deps`. You must call this macro in your WORKSPACE to
-   declare your dependencies.
-
-
-```python
-load("@rules_python//python:pip.bzl", "pip_parse")
-
-# Create a central repo that knows about the dependencies needed from
-# requirements_lock.txt.
-pip_parse(
-   name = "my_deps",
-   requirements_lock = "//path/to:requirements_lock.txt",
-)
-
-# Load the starlark macro which will define your dependencies.
-load("@my_deps//:requirements.bzl", "install_deps")
-# Call it to define repos for your requirements.
-install_deps()
-```
-
-### Consuming `pip` dependencies
+### Using third_party packages as dependencies 
 
 Each extracted wheel repo contains a `py_library` target representing
 the wheel's contents. There are two ways to access this library. The
@@ -217,21 +190,9 @@ labels directly. For `pip_parse` the labels are of the form
 @{name}_{package}//:pkg
 ```
 
-Here `name` is the `name` attribute that was passed to `pip_parse` and
-`package` is the pip package name with characters that are illegal in
-Bazel label names (e.g. `-`, `.`) replaced with `_`. If you need to
-update `name` from "old" to "new", then you can run the following
-buildozer command:
-
-```
-buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...:*
-```
-
-For `pip_install` the labels are instead of the form
-
-```
-@{name}//pypi__{package}
-```
+Here `name` is the `name` attribute that was passed to `pip_install` and
+`package` is the package name with characters that are illegal in
+Bazel label names (e.g. `-`, `.`) replaced with `_`.
 
 [requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
 

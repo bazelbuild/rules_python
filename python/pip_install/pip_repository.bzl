@@ -189,40 +189,28 @@ def _pip_repository_impl(rctx):
     annotations_file = rctx.path("annotations.json")
     rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
 
-    if rctx.attr.incremental:
-        requirements_txt = _locked_requirements(rctx)
-        args = [
-            python_interpreter,
-            "-m",
-            "python.pip_install.extract_wheels.parse_requirements_to_bzl",
-            "--requirements_lock",
-            rctx.path(requirements_txt),
-            "--requirements_lock_label",
-            str(requirements_txt),
-            # pass quiet and timeout args through to child repos.
-            "--quiet",
-            str(rctx.attr.quiet),
-            "--timeout",
-            str(rctx.attr.timeout),
-            "--annotations",
-            annotations_file,
-        ]
+    requirements_txt = _locked_requirements(rctx)
+    args = [
+        python_interpreter,
+        "-m",
+        "python.pip_install.extract_wheels.parse_requirements_to_bzl",
+        "--requirements_lock",
+        rctx.path(requirements_txt),
+        "--requirements_lock_label",
+        str(requirements_txt),
+        # pass quiet and timeout args through to child repos.
+        "--quiet",
+        str(rctx.attr.quiet),
+        "--timeout",
+        str(rctx.attr.timeout),
+        "--annotations",
+        annotations_file,
+    ]
 
-        args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
-        if rctx.attr.python_interpreter_target:
-            args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
-        progress_message = "Parsing requirements to starlark"
-    else:
-        args = [
-            python_interpreter,
-            "-m",
-            "python.pip_install.extract_wheels.extract_wheels",
-            "--requirements",
-            rctx.path(rctx.attr.requirements),
-            "--annotations",
-            annotations_file,
-        ]
-        progress_message = "Extracting wheels"
+    args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
+    if rctx.attr.python_interpreter_target:
+        args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
+    progress_message = "Parsing requirements to starlark"
 
     args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
     args = _parse_optional_attrs(rctx, args)
