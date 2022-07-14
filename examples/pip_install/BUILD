@@ -65,8 +65,8 @@ compile_pip_requirements(
 
 # Test the use of all pip_parse utilities in a single py_test
 py_test(
-    name = "pip_parse_test",
-    srcs = ["pip_parse_test.py"],
+    name = "pip_install_test",
+    srcs = ["pip_install_test.py"],
     data = [
         ":yamllint",
         data_requirement("s3cmd"),
