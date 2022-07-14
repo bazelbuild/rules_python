@@ -18,7 +18,7 @@ class PipInstallTest(unittest.TestCase):
         r = runfiles.Create()
 
         # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
-        entry_point = Path(r.Rlocation("rules_python_pip_parse_example/{}".format(env)))
+        entry_point = Path(r.Rlocation("rules_python_pip_install_example/{}".format(env)))
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(
