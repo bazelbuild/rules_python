@@ -151,7 +151,7 @@ re-executed in order to pick up a non-hermetic change to your environment (e.g.,
 updating your system `python` interpreter), you can force it to re-execute by running
 `bazel sync --only [pip_install name]`.
 
-Note: The `pip_parse` rule is deprecated. `pip_install` offers identical functionality and is both `pip_parse` 
+Note: The `pip_parse` rule is deprecated. `pip_install` offers identical functionality and both `pip_parse` 
 and `pip_install` now have the same implementation. `pip_parse` will be removed in a future version of the rules
 
 ### Using third_party packages as dependencies 

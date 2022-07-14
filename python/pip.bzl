@@ -22,9 +22,9 @@ package_annotation = _package_annotation
 
 def pip_parse(requirements_lock, name = "pip_parsed_deps", **kwargs):
     # TODO Some kind of deprecation warning
-    pip_parse(**kwargs)
+    pip_parse(requirements_lock = requirements_lock, name = name, **kwargs)
 
-def pip_install(requirements, requirements_lock, name = "pip", **kwargs):
+def pip_install(requirements = None, requirements_lock = None, name = "pip", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
     Those dependencies become available in a generated `requirements.bzl` file.
@@ -117,6 +117,7 @@ def pip_install(requirements, requirements_lock, name = "pip", **kwargs):
             fetched/built only for the targets specified by 'build/run/test'.
             Note that if your lockfile is platform-dependent, you can use the `requirements_[platform]`
             attributes.
+        requirements (Label): Deprecated. See requirements_lock.
         name (str, optional): The name of the generated repository. The generated repositories
             containing each requirement will be of the form <name>_<requirement-name>.
         **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
