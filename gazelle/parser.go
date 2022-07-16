@@ -133,13 +133,13 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, error) {
 		for _, m := range res.Modules {
 			// Check for ignored dependencies set via an annotation to the Python
 			// module.
-			if annotations.ignores(m.Name) {
+			if annotations.ignores(m.Name) || annotations.ignores(m.From) {
 				continue
 			}
 
 			// Check for ignored dependencies set via a Gazelle directive in a BUILD
 			// file.
-			if p.ignoresDependency(m.Name) {
+			if p.ignoresDependency(m.Name) || p.ignoresDependency(m.From) {
 				continue
 			}
 
@@ -170,6 +170,9 @@ type module struct {
 	LineNumber uint32 `json:"lineno"`
 	// The path to the module file relative to the Bazel workspace root.
 	Filepath string `json:"filepath"`
+	// If this was a from import, e.g. from foo import bar, From indicates the module
+	// from which it is imported.
+	From string `json:"from"`
 }
 
 // moduleComparator compares modules by name.
