@@ -142,6 +142,12 @@ filegroup(
         ],
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
+            # static libraries
+            "lib/*.a",
+            "lib/**/*.a",
+            # tests for the standard libraries.
+            "lib/**/test/**",
+            "lib/**/tests/**",
         ],
     ),
 )
