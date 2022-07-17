@@ -73,12 +73,17 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
     otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
     """
-    python_interpreter_workspace = rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname
     if (
         rctx.os.name.lower().startswith("mac os") and
         rctx.attr.python_interpreter_target != None and
         # This is a rules_python provided toolchain.
-        rctx.execute(["ls", "{}/{}".format(python_interpreter_workspace, STANDALONE_INTERPRETER_FILENAME)]).return_code == 0 and
+        rctx.execute([
+            "ls",
+            "{}/{}".format(
+                rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
+                STANDALONE_INTERPRETER_FILENAME,
+            ),
+        ]).return_code == 0 and
         not environment.get(CPPFLAGS)
     ):
         xcode_sdk_location = rctx.execute(["xcode-select", "--print-path"])
