@@ -157,9 +157,6 @@ func (py *Resolver) Resolve(
 				moduleParts = moduleParts[:len(moduleParts)-1]
 				possibleModules = append(possibleModules, strings.Join(moduleParts, "."))
 			}
-			// Set to true if a module has been found by iterating back through
-			// foo.bar.baz, foo.bar, foo.
-			foundValidModule := false
 			errs := []error{}
 		POSSIBLE_MODULE_LOOP:
 			for _, moduleName := range possibleModules {
@@ -185,7 +182,6 @@ func (py *Resolver) Resolve(
 				} else {
 					if dep, ok := cfg.FindThirdPartyDependency(moduleName); ok {
 						deps.Add(dep)
-						foundValidModule = true
 						if explainDependency == dep {
 							log.Printf("Explaining dependency (%s): "+
 								"in the target %q, the file %q imports %q at line %d, "+
@@ -202,7 +198,6 @@ func (py *Resolver) Resolve(
 								hasFatalError = true
 								continue POSSIBLE_MODULE_LOOP
 							} else if isStd {
-								foundValidModule = true
 								continue MODULES_LOOP
 							} else if cfg.ValidateImportStatements() {
 								err := fmt.Errorf(
@@ -220,7 +215,6 @@ func (py *Resolver) Resolve(
 						for _, match := range matches {
 							if match.IsSelfImport(from) {
 								// Prevent from adding itself as a dependency.
-								foundValidModule = true
 								continue MODULES_LOOP
 							}
 							filteredMatches = append(filteredMatches, match)
@@ -258,7 +252,7 @@ func (py *Resolver) Resolve(
 					}
 				}
 			} // End possible modules loop.
-			if !foundValidModule && len(errs) > 0 {
+			if len(errs) > 0 {
 				// If, after trying all possible modules, we still haven't found anything, error out.
 				log.Printf("Failed to find any valid modules from %v. Errors: %v\n", possibleModules, errs)
 				hasFatalError = true
