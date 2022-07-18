@@ -32,7 +32,7 @@ def parse_import_statements(content, filepath):
                     "filepath": filepath,
                     "from": node.module
                 }
-            modules.append(module)
+                modules.append(module)
     return modules
 
 
