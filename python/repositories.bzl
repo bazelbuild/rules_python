@@ -146,8 +146,8 @@ filegroup(
             "lib/*.a",
             "lib/**/*.a",
             # tests for the standard libraries.
-            "lib/**/test/**",
-            "lib/**/tests/**",
+            "lib/python{python_version}/**/test/**",
+            "lib/python{python_version}/**/tests/**",
         ],
     ),
 )
