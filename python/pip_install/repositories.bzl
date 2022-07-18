@@ -8,6 +8,11 @@ load("//third_party/github.com/bazelbuild/bazel-skylib/lib:versions.bzl", "versi
 
 _RULE_DEPS = [
     (
+        "pypi__build",
+        "https://files.pythonhosted.org/packages/7a/24/ee8271da317b692fcb9d026ff7f344ac6c4ec661a97f0e2a11fa7992544a/build-0.8.0-py3-none-any.whl",
+        "19b0ed489f92ace6947698c3ca8436cb0556a66e2aa2d34cd70e2a5d27cd0437",
+    ),
+    (
         "pypi__click",
         "https://files.pythonhosted.org/packages/76/0a/b6c5f311e32aeb3b406e03c079ade51e905ea630fc19d1262a46249c1c86/click-8.0.1-py3-none-any.whl",
         "fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6",
@@ -23,6 +28,11 @@ _RULE_DEPS = [
         "1d6c8d916ed82771945b9c813699e6f57424ded970c9d8bf16bbc23e1e826ed3",
     ),
     (
+        "pypi__packaging",
+        "https://files.pythonhosted.org/packages/05/8e/8de486cbd03baba4deef4142bd643a3e7bbe954a784dc1bb17142572d127/packaging-21.3-py3-none-any.whl",
+        "ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522",
+    ),
+    (
         "pypi__pep517",
         "https://files.pythonhosted.org/packages/f4/67/846c08e18fefb265a66e6fd5a34269d649b779718d9bf59622085dabd370/pep517-0.12.0-py2.py3-none-any.whl",
         "dd884c326898e2c6e11f9e0b64940606a93eb10ea022a2e067959f3a110cf161",
@@ -34,8 +44,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/fe/5c/8995799b0ccf832906b4968b4eb2045beb9b3de79e96e6b1a6e4fc4e6974/pip_tools-6.6.2-py3-none-any.whl",
-        "6b486548e5a139e30e4c4a225b3b7c2d46942a9f6d1a91143c21b1de4d02fd9b",
+        "https://files.pythonhosted.org/packages/bf/3a/a8b09ca5ea24e4ddfa4d2cdf885e8c6618a4b658b32553f897f948aa0f67/pip_tools-6.8.0-py3-none-any.whl",
+        "3e5cd4acbf383d19bdfdeab04738b6313ebf4ad22ce49bf529c729061eabfab8",
+    ),
+    (
+        "pypi__pyparsing",
+        "https://files.pythonhosted.org/packages/6c/10/a7d0fa5baea8fe7b50f448ab742f26f52b80bfca85ac2be9d35cdd9a3246/pyparsing-3.0.9-py3-none-any.whl",
+        "5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc",
     ),
     (
         "pypi__setuptools",
