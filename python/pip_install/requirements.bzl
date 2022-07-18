@@ -68,6 +68,7 @@ def compile_pip_requirements(
     ] + extra_args
 
     deps = [
+        requirement("build"),
         requirement("click"),
         requirement("colorama"),
         requirement("pep517"),
