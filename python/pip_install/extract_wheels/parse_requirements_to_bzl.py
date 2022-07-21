@@ -74,6 +74,13 @@ def repo_names_and_requirements(
         for ir, line in install_reqs
     ]
 
+def repo_names_to_short_requirments(
+    install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str
+) -> Dict[str, str]:
+    return {
+       bazel.sanitise_name(ir.name, prefix=repo_prefix): 
+       line.split(' ')[0] for ir, line in install_reqs
+    }
 
 def parse_whl_library_args(args: argparse.Namespace) -> Dict[str, Any]:
     whl_library_args = dict(vars(args))
@@ -107,6 +114,9 @@ def generate_parsed_requirements_contents(
     repo_names_and_reqs = repo_names_and_requirements(
         install_req_and_lines, repo_prefix
     )
+    repo_names_to_short_reqs = repo_names_to_short_requirments(
+        install_req_and_lines, repo_prefix
+    )
     all_requirements = ", ".join(
         [
             bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix)
@@ -131,6 +141,7 @@ def generate_parsed_requirements_contents(
         _packages = {repo_names_and_reqs}
         _config = {args}
         _annotations = {annotations}
+        _repo_names_to_short_reqs = {repo_names_to_short_reqs}
 
         def _clean_name(name):
             return name.replace("-", "_").replace(".", "_").lower()
@@ -151,6 +162,9 @@ def generate_parsed_requirements_contents(
             if not script:
                 script = pkg
             return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
+        
+        def short_requirement(repo_name):
+            return _repo_names_to_short_reqs[repo_name]
 
         def _get_annotation(requirement):
             # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
@@ -176,6 +190,7 @@ def generate_parsed_requirements_contents(
             entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
             py_library_label=bazel.PY_LIBRARY_LABEL,
             repo_names_and_reqs=repo_names_and_reqs,
+            repo_names_to_short_reqs=repo_names_to_short_reqs,
             repo_prefix=repo_prefix,
             wheel_file_label=bazel.WHEEL_FILE_LABEL,
         )
