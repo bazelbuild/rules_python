@@ -74,7 +74,7 @@ def repo_names_and_requirements(
         for ir, line in install_reqs
     ]
 
-def repo_names_to_short_requirments(
+def repo_names_to_short_requirements(
     install_reqs: List[Tuple[InstallRequirement, str]], repo_prefix: str
 ) -> Dict[str, str]:
     return {
@@ -114,7 +114,7 @@ def generate_parsed_requirements_contents(
     repo_names_and_reqs = repo_names_and_requirements(
         install_req_and_lines, repo_prefix
     )
-    repo_names_to_short_reqs = repo_names_to_short_requirments(
+    repo_names_to_short_reqs = repo_names_to_short_requirements(
         install_req_and_lines, repo_prefix
     )
     all_requirements = ", ".join(
