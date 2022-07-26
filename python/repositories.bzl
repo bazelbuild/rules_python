@@ -140,6 +140,8 @@ filegroup(
             "Scripts/**",
             "share/**",
         ],
+        # Platform-agnostic filegroup can't match on all patterns.
+        allow_empty = True,
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
         ],
