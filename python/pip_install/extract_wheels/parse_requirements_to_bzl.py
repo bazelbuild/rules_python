@@ -37,7 +37,12 @@ def parse_install_requirements(
     ):
         if parsed_line.is_requirement:
             install_req = constructors.install_req_from_line(parsed_line.requirement)
-            if not install_req.is_pinned:
+            if (
+                # PEP-440 direct references are considered pinned
+                # See: https://peps.python.org/pep-0440/#direct-references and https://peps.python.org/pep-0508/
+                not install_req.link and
+                not install_req.is_pinned
+            ):
                 unpinned_reqs.append(str(install_req))
             install_req_and_lines.append(
                 (install_req, line)
