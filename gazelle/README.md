@@ -4,6 +4,8 @@ This directory contains a plugin for
 [Gazelle](https://github.com/bazelbuild/bazel-gazelle)
 that generates BUILD file content for Python code.
 
+It requires Go 1.16+ to compile.
+
 ## Installation
 
 First, you'll need to add Gazelle to your `WORKSPACE` file.
