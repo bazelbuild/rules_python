@@ -110,7 +110,8 @@ def _python_repository_impl(rctx):
     # Make the Python installation read-only.
     if not rctx.attr.ignore_root_user_error:
         if "windows" not in rctx.os.name:
-            exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
+            lib_dir = "lib" if "windows" not in platform else "Lib"
+            exec_result = rctx.execute(["chmod", "-R", "ugo-w", lib_dir])
             if exec_result.return_code != 0:
                 fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
                     exec_result.stderr,
@@ -148,6 +149,7 @@ filegroup(
             "DLLs/**",
             "extensions/**",
             "include/**",
+            "Lib/**",
             "lib/**",
             "libs/**",
             "Scripts/**",
