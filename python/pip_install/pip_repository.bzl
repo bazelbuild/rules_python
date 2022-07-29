@@ -130,6 +130,9 @@ def _parse_optional_attrs(rctx, args):
             struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
+    if rctx.attr.download_only:
+        args.append("--download_only")
+
     if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
@@ -280,6 +283,13 @@ the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` envio
 to control this flag.
 """,
         default = True,
+    ),
+    "download_only": attr.bool(
+        doc = """
+Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of
+--platform, --python-version, --implementation, and --abi in --extra_pip_args to download wheels for a different
+platform from the host platform.
+        """
     ),
     "pip_data_exclude": attr.string_list(
         doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
