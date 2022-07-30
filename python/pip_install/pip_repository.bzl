@@ -258,7 +258,7 @@ common_attrs = {
 Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of
 --platform, --python-version, --implementation, and --abi in --extra_pip_args to download wheels for a different
 platform from the host platform.
-        """
+        """,
     ),
     "enable_implicit_namespace_pkgs": attr.bool(
         default = False,
