@@ -108,13 +108,26 @@ def _python_repository_impl(rctx):
         rctx.file(distutils_path, rctx.attr.distutils_content)
 
     # Make the Python installation read-only.
-    if "windows" not in rctx.os.name:
-        exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
-        if exec_result.return_code:
-            fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
-                exec_result.stderr,
-            )
-            fail(fail_msg)
+    if not rctx.attr.ignore_root_user_error:
+        if "windows" not in rctx.os.name:
+            exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
+            if exec_result.return_code != 0:
+                fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
+                    exec_result.stderr,
+                )
+                fail(fail_msg)
+            exec_result = rctx.execute(["touch", "lib/.test"])
+            if exec_result.return_code == 0:
+                exec_result = rctx.execute(["id", "-u"])
+                if exec_result.return_code != 0:
+                    fail("Could not determine current user ID. 'id -u' error msg: {}".format(
+                        exec_result.stderr,
+                    ))
+                uid = int(exec_result.stdout.strip())
+                if uid == 0:
+                    fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+                else:
+                    fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
@@ -225,6 +238,11 @@ python_repository = repository_rule(
         "distutils_content": attr.string(
             doc = "A distutils.cfg file content to be included in the Python installation. " +
                   "Either distutils or distutils_content can be specified, but not both.",
+            mandatory = False,
+        ),
+        "ignore_root_user_error": attr.bool(
+            default = False,
+            doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
         ),
         "platform": attr.string(
