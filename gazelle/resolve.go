@@ -254,7 +254,11 @@ func (py *Resolver) Resolve(
 			} // End possible modules loop.
 			if len(errs) > 0 {
 				// If, after trying all possible modules, we still haven't found anything, error out.
-				log.Printf("Failed to find any valid modules from %v. Errors: %v\n", possibleModules, errs)
+				joinedErrs := ""
+				for _, err := range errs {
+					joinedErrs = fmt.Sprintf("%s%s\n", joinedErrs, err)
+				}
+				log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), joinedErrs)
 				hasFatalError = true
 			}
 		}
