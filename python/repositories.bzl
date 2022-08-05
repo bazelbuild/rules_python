@@ -204,7 +204,7 @@ cc_import(
     }}),
 )
 
-exports_files(["{python_path}"])
+exports_files(["python", "{python_path}"])
 
 py_runtime(
     name = "py3_runtime",
@@ -223,6 +223,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+    rctx.symlink(python_bin, "python")
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 
