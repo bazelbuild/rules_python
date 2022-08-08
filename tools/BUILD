@@ -22,12 +22,3 @@ py_binary(
     name = "wheelmaker",
     srcs = ["wheelmaker.py"],
 )
-
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD",
-        "wheelmaker.py",
-    ],
-    visibility = ["//:__pkg__"],
-)

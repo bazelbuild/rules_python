@@ -18,17 +18,6 @@ filegroup(
     ] + glob(["*.bzl"]),
 )
 
-# The files needed for distribution
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD",
-    ] + glob(["*.bzl"]),
-    visibility = [
-        "//:__pkg__",
-    ],
-)
-
 # export bzl files for the documentation
 exports_files(
     glob(["*.bzl"]),

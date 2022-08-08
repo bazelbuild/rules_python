@@ -17,12 +17,6 @@ load(":stamp.bzl", "stamp_build_setting")
 
 licenses(["notice"])  # Apache 2.0
 
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//python:__pkg__"],
-)
-
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
 # Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
 filegroup(

@@ -10,12 +10,6 @@ exports_files(
     visibility = ["//:__subpackages__"],
 )
 
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//:__pkg__"],
-)
-
 bzl_library(
     name = "versions",
     srcs = ["versions.bzl"],

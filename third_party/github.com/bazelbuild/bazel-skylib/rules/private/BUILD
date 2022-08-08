@@ -7,12 +7,3 @@ bzl_library(
     srcs = ["copy_file_private.bzl"],
     visibility = ["//third_party/github.com/bazelbuild/bazel-skylib/rules:__pkg__"],
 )
-
-# The files needed for distribution
-filegroup(
-    name = "distribution",
-    srcs = glob(["*"]),
-    visibility = [
-        "//:__subpackages__",
-    ],
-)

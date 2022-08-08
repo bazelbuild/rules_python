@@ -7,12 +7,6 @@ exports_files([
 ])
 
 filegroup(
-    name = "distribution",
-    srcs = glob(["*"]),
-    visibility = ["//python/pip_install:__subpackages__"],
-)
-
-filegroup(
     name = "bzl_srcs",
     srcs = glob(["*.bzl"]),
 )

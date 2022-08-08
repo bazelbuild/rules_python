@@ -22,27 +22,6 @@ exports_files([
     "version.bzl",
 ])
 
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD",
-        "MODULE.bazel",
-        "WORKSPACE",
-        "internal_deps.bzl",
-        "internal_setup.bzl",
-        "//python:distribution",
-        "//python/pip_install:distribution",
-        "//third_party/github.com/bazelbuild/bazel-skylib/lib:distribution",
-        "//third_party/github.com/bazelbuild/bazel-skylib/rules:distribution",
-        "//third_party/github.com/bazelbuild/bazel-skylib/rules/private:distribution",
-        "//tools:distribution",
-    ],
-    visibility = [
-        "//examples:__pkg__",
-        "//tests:__pkg__",
-    ],
-)
-
 # Reexport of all bzl files used to allow downstream rules to generate docs
 # without shipping with a dependency on Skylib
 filegroup(
