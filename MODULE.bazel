@@ -11,7 +11,6 @@ use_repo(
     "pypi__click",
     "pypi__pip",
     "pypi__pip_tools",
-    "pypi__pkginfo",
     "pypi__setuptools",
     "pypi__wheel",
 )
