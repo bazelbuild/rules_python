@@ -102,13 +102,24 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.10.6": {
+        "url": "20220802/cpython-{python_version}+20220802-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "efaf66acdb9a4eb33d57702607d2e667b1a319d58c167a43c96896b97419b8b7",
+            "aarch64-unknown-linux-gnu": "81625f5c97f61e2e3d7e9f62c484b1aa5311f21bd6545451714b949a29da5435",
+            "x86_64-apple-darwin": "7718411adf3ea1480f3f018a643eb0550282aefe39e5ecb3f363a4a566a9398c",
+            "x86_64-pc-windows-msvc": "91889a7dbdceea585ff4d3b7856a6bb8f8a4eca83a0ff52a73542c2e67220eaa",
+            "x86_64-unknown-linux-gnu": "55aa2190d28dcfdf414d96dc5dcea9fe048fadcd583dc3981fec020869826111",
+        },
+        "strip_prefix": "python",
+    },
 }
 
 # buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
     "3.8": "3.8.13",
     "3.9": "3.9.12",
-    "3.10": "3.10.4",
+    "3.10": "3.10.6",
 }
 
 PLATFORMS = {
