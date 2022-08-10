@@ -170,6 +170,9 @@ filegroup(
         allow_empty = True,
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
+            # Unused shared libraries. `python` executable and the `:libpython` target
+            # depend on `libpython{python_version}.so.1.0`.
+            "lib/libpython{python_version}.so",
             # static libraries
             "lib/**/*.a",
             # tests for the standard libraries.
