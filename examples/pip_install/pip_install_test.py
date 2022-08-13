@@ -52,7 +52,7 @@ class PipInstallTest(unittest.TestCase):
             env.split(" "),
             [
                 "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/DESCRIPTION.rst",
-                'external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/INSTALLER',
+                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/INSTALLER",
                 "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/METADATA",
                 "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/RECORD",
                 "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/WHEEL",
