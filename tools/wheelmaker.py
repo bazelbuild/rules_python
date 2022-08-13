@@ -214,7 +214,7 @@ Root-Is-Purelib: {}
         contents = b""
         for filename, digest, size in entries:
             if sys.version_info[0] > 2 and isinstance(filename, str):
-                filename = filename.encode("utf-8", "surrogateescape")
+                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
             contents += b"%s,%s,%s\n" % (filename, digest, size)
         self.add_string(record_path, contents)
 
