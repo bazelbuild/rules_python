@@ -1,0 +1,5 @@
+manifest:
+  modules_mapping:
+    boto3: rootboto3
+    boto4: rootboto4
+  pip_deps_repository_name: root_pip_deps
