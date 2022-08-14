@@ -21,7 +21,7 @@ def parse_import_statements(content, filepath):
                     "name": subnode.name,
                     "lineno": node.lineno,
                     "filepath": filepath,
-                    "from": ""
+                    "from": "",
                 }
                 modules.append(module)
         elif isinstance(node, ast.ImportFrom) and node.level == 0:
@@ -30,7 +30,7 @@ def parse_import_statements(content, filepath):
                     "name": f"{node.module}.{subnode.name}",
                     "lineno": node.lineno,
                     "filepath": filepath,
-                    "from": node.module
+                    "from": node.module,
                 }
                 modules.append(module)
     return modules
@@ -52,8 +52,9 @@ def parse(repo_root, rel_package_path, filename):
         content = file.read()
         # From simple benchmarks, 2 workers gave the best performance here.
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            modules_future = executor.submit(parse_import_statements, content,
-                                             rel_filepath)
+            modules_future = executor.submit(
+                parse_import_statements, content, rel_filepath
+            )
             comments_future = executor.submit(parse_comments, content)
         modules = modules_future.result()
         comments = comments_future.result()
@@ -73,12 +74,11 @@ def main(stdin, stdout):
             filenames = parse_request["filenames"]
             outputs = list()
             if len(filenames) == 1:
-                outputs.append(parse(repo_root, rel_package_path,
-                                     filenames[0]))
+                outputs.append(parse(repo_root, rel_package_path, filenames[0]))
             else:
                 futures = [
-                    executor.submit(parse, repo_root, rel_package_path,
-                                    filename) for filename in filenames
+                    executor.submit(parse, repo_root, rel_package_path, filename)
+                    for filename in filenames
                     if filename != ""
                 ]
                 for future in concurrent.futures.as_completed(futures):

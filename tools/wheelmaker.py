@@ -146,7 +146,7 @@ class WheelMaker(object):
         size = 0
         with open(real_filename, "rb") as f:
             while True:
-                block = f.read(2 ** 20)
+                block = f.read(2**20)
                 if not block:
                     break
                 hash.update(block)
