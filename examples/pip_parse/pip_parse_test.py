@@ -49,7 +49,7 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                'external/pypi_requests/site-packages/requests-2.25.1.dist-info/INSTALLER',
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/INSTALLER",
                 "external/pypi_requests/site-packages/requests-2.25.1.dist-info/LICENSE",
                 "external/pypi_requests/site-packages/requests-2.25.1.dist-info/METADATA",
                 "external/pypi_requests/site-packages/requests-2.25.1.dist-info/RECORD",
