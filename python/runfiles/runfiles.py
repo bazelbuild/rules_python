@@ -68,16 +68,23 @@ USAGE:
 import os
 import posixpath
 
+if False:
+    # Mypy needs these symbols imported, but since they only exist in python 3.5+,
+    # this import may fail at runtime. Luckily mypy can follow this conditional import.
+    from typing import Callable, Dict, Optional, Tuple, Union
 
 def CreateManifestBased(manifest_path):
+    # type: (str) -> _Runfiles
     return _Runfiles(_ManifestBased(manifest_path))
 
 
 def CreateDirectoryBased(runfiles_dir_path):
+    # type: (str) -> _Runfiles
     return _Runfiles(_DirectoryBased(runfiles_dir_path))
 
 
 def Create(env=None):
+    # type: (Optional[Dict[str, str]]) -> Optional[_Runfiles]
     """Returns a new `Runfiles` instance.
 
     The returned object is either:
@@ -120,9 +127,11 @@ class _Runfiles(object):
     """
 
     def __init__(self, strategy):
+        # type: (Union[_ManifestBased, _DirectoryBased]) -> None
         self._strategy = strategy
 
     def Rlocation(self, path):
+        # type: (str) -> Optional[str]
         """Returns the runtime path of a runfile.
 
         Runfiles are data-dependencies of Bazel-built binaries and tests.
@@ -162,6 +171,7 @@ class _Runfiles(object):
         return self._strategy.RlocationChecked(path)
 
     def EnvVars(self):
+        # type: () -> Dict[str, str]
         """Returns environment variables for subprocesses.
 
         The caller should set the returned key-value pairs in the environment of
@@ -179,6 +189,7 @@ class _ManifestBased(object):
     """`Runfiles` strategy that parses a runfiles-manifest to look up runfiles."""
 
     def __init__(self, path):
+        # type: (str) -> None
         if not path:
             raise ValueError()
         if not isinstance(path, str):
@@ -187,10 +198,12 @@ class _ManifestBased(object):
         self._runfiles = _ManifestBased._LoadRunfiles(path)
 
     def RlocationChecked(self, path):
+        # type: (str) -> Optional[str]
         return self._runfiles.get(path)
 
     @staticmethod
     def _LoadRunfiles(path):
+        # type: (str) -> Dict[str, str]
         """Loads the runfiles manifest."""
         result = {}
         with open(path, "r") as f:
@@ -205,6 +218,7 @@ class _ManifestBased(object):
         return result
 
     def _GetRunfilesDir(self):
+        # type: () -> str
         if self._path.endswith("/MANIFEST") or self._path.endswith("\\MANIFEST"):
             return self._path[: -len("/MANIFEST")]
         elif self._path.endswith(".runfiles_manifest"):
@@ -213,6 +227,7 @@ class _ManifestBased(object):
             return ""
 
     def EnvVars(self):
+        # type: () -> Dict[str, str]
         directory = self._GetRunfilesDir()
         return {
             "RUNFILES_MANIFEST_FILE": self._path,
@@ -227,6 +242,7 @@ class _DirectoryBased(object):
     """`Runfiles` strategy that appends runfiles paths to the runfiles root."""
 
     def __init__(self, path):
+        # type: (str) -> None
         if not path:
             raise ValueError()
         if not isinstance(path, str):
@@ -234,12 +250,15 @@ class _DirectoryBased(object):
         self._runfiles_root = path
 
     def RlocationChecked(self, path):
+        # type: (str) -> str
+
         # Use posixpath instead of os.path, because Bazel only creates a runfiles
         # tree on Unix platforms, so `Create()` will only create a directory-based
         # runfiles strategy on those platforms.
         return posixpath.join(self._runfiles_root, path)
 
     def EnvVars(self):
+        # type: () -> Dict[str, str]
         return {
             "RUNFILES_DIR": self._runfiles_root,
             # TODO(laszlocsomor): remove JAVA_RUNFILES once the Java launcher can
@@ -251,6 +270,7 @@ class _DirectoryBased(object):
 def _PathsFrom(
     argv0, runfiles_mf, runfiles_dir, is_runfiles_manifest, is_runfiles_directory
 ):
+    # type: (str, str, str, Callable[[str], bool], Callable[[str], bool]) -> Tuple[str, str]
     """Discover runfiles manifest and runfiles directory paths.
 
     Args:
