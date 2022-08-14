@@ -238,6 +238,14 @@ UNKNOWN
                 ],
             )
 
+            record_contents = zf.read(
+                "examples_custom_package_root-0.0.1.dist-info/RECORD"
+            ).decode("utf-8")
+
+            # Ensure RECORD files do not have leading forward slashes
+            for line in record_contents.splitlines():
+                self.assertFalse(line.startswith("/"))
+
     def test_custom_package_root_multi_prefix_wheel(self):
         filename = os.path.join(
             os.environ["TEST_SRCDIR"],
@@ -261,6 +269,14 @@ UNKNOWN
                 ],
             )
 
+            record_contents = zf.read(
+                "example_custom_package_root_multi_prefix-0.0.1.dist-info/RECORD"
+            ).decode("utf-8")
+
+            # Ensure RECORD files do not have leading forward slashes
+            for line in record_contents.splitlines():
+                self.assertFalse(line.startswith("/"))
+
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
         filename = os.path.join(
             os.environ["TEST_SRCDIR"],
@@ -283,6 +299,14 @@ UNKNOWN
                     "example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD",
                 ],
             )
+
+            record_contents = zf.read(
+                "example_custom_package_root_multi_prefix_reverse_order-0.0.1.dist-info/RECORD"
+            ).decode("utf-8")
+
+            # Ensure RECORD files do not have leading forward slashes
+            for line in record_contents.splitlines():
+                self.assertFalse(line.startswith("/"))
 
     def test_python_requires_wheel(self):
         filename = os.path.join(
