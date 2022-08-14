@@ -68,10 +68,7 @@ def is_metadata(path):
 # Ref: https://peps.python.org/pep-0427/#what-s-the-deal-with-purelib-vs-platlib
 def data_has_purelib_or_platlib(path):
     maybe_lib = path.split("/")[1].lower()
-    return is_metadata(path) and (
-        maybe_lib == "purelib" or maybe_lib == "platlib"
-    )
-
+    return is_metadata(path) and (maybe_lib == "purelib" or maybe_lib == "platlib")
 
 
 def module_for_path(path, whl, mapping):
@@ -95,7 +92,7 @@ def module_for_path(path, whl, mapping):
         if ext == ".so":
             # Also remove extra metadata that is embeded as part of
             # the file name as an extra extension.
-            ext = ''.join(pathlib.Path(root).suffixes)
+            ext = "".join(pathlib.Path(root).suffixes)
         module = root[: -len(ext)].replace("/", ".")
         mapping[module] = wheel_name
 
