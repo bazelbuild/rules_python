@@ -20,7 +20,7 @@ class Wheel:
     @property
     def name(self) -> str:
         # TODO Also available as installer.sources.WheelSource.distribution
-        name = str(self.metadata['Name'])
+        name = str(self.metadata["Name"])
         return canonicalize_name(name)
 
     @property
@@ -59,7 +59,7 @@ class Wheel:
     def dependencies(self, extras_requested: Optional[Set[str]] = None) -> Set[str]:
         dependency_set = set()
 
-        for wheel_req in self.metadata.get_all('Requires-Dist', []):
+        for wheel_req in self.metadata.get_all("Requires-Dist", []):
             req = pkg_resources.Requirement(wheel_req)  # type: ignore
 
             if req.marker is None or any(

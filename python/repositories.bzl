@@ -170,6 +170,9 @@ filegroup(
         allow_empty = True,
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
+            # Unused shared libraries. `python` executable and the `:libpython` target
+            # depend on `libpython{python_version}.so.1.0`.
+            "lib/libpython{python_version}.so",
             # static libraries
             "lib/**/*.a",
             # tests for the standard libraries.
@@ -204,7 +207,7 @@ cc_import(
     }}),
 )
 
-exports_files(["{python_path}"])
+exports_files(["python", "{python_path}"])
 
 py_runtime(
     name = "py3_runtime",
@@ -223,6 +226,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+    rctx.symlink(python_bin, "python")
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 

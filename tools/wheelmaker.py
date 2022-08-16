@@ -146,7 +146,7 @@ class WheelMaker(object):
         size = 0
         with open(real_filename, "rb") as f:
             while True:
-                block = f.read(2 ** 20)
+                block = f.read(2**20)
                 if not block:
                     break
                 hash.update(block)
@@ -214,7 +214,7 @@ Root-Is-Purelib: {}
         contents = b""
         for filename, digest, size in entries:
             if sys.version_info[0] > 2 and isinstance(filename, str):
-                filename = filename.encode("utf-8", "surrogateescape")
+                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
             contents += b"%s,%s,%s\n" % (filename, digest, size)
         self.add_string(record_path, contents)
 
