@@ -94,7 +94,19 @@ def _maybe_set_xcode_location_cflags(rctx, environment):
                 # so we need to change the path to to the macos specific tools which are in a different relative
                 # path than xcode installed command line tools.
                 xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+            er = rctx.execute([
+                rctx.path(rctx.attr.python_interpreter_target).realpath,
+                "-c",
+                "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')",
+            ])
+            if er.return_code != 0:
+                fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
+            _python_version = er.stdout
+            include_path = "{}/include/python{}".format(
+                rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname.realpath,
+                _python_version,
+            )
+            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk -isystem {}".format(xcode_root, include_path)
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
