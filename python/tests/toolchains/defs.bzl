@@ -24,21 +24,26 @@ powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
 """
 
 def _acceptance_test_impl(ctx):
-    workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
+    stub_shebang = "hermetic-stub-shebang" if ctx.attr.hermetic_stub_shebang else "default-stub-shebang"
+    workspace_dir = "/".join([ctx.attr.python_version, stub_shebang])
+    workspace = ctx.actions.declare_file("/".join([workspace_dir, "WORKSPACE"]))
     ctx.actions.expand_template(
         template = ctx.file._workspace_tmpl,
         output = workspace,
-        substitutions = {"%python_version%": ctx.attr.python_version},
+        substitutions = {
+            "%python_version%": ctx.attr.python_version,
+            "%hermetic_stub_shebang%": repr(ctx.attr.hermetic_stub_shebang),
+        },
     )
 
-    build_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "BUILD.bazel"]))
+    build_bazel = ctx.actions.declare_file("/".join([workspace_dir, "BUILD.bazel"]))
     ctx.actions.expand_template(
         template = ctx.file._build_bazel_tmpl,
         output = build_bazel,
         substitutions = {"%python_version%": ctx.attr.python_version},
     )
 
-    python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
+    python_version_test = ctx.actions.declare_file("/".join([workspace_dir, "python_version_test.py"]))
 
     # With the current approach in the run_acceptance_test.sh, we use this
     # symlink to find the absolute path to the rules_python to be passed to the
@@ -48,14 +53,14 @@ def _acceptance_test_impl(ctx):
         output = python_version_test,
     )
 
-    run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
+    run_acceptance_test_py = ctx.actions.declare_file("/".join([workspace_dir, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
         template = ctx.file._run_acceptance_test_tmpl,
         output = run_acceptance_test_py,
         substitutions = {
             "%is_windows%": str(ctx.attr.is_windows),
             "%python_version%": ctx.attr.python_version,
-            "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
+            "%test_location%": "/".join([ctx.attr.test_location, workspace_dir]),
         },
     )
 
@@ -66,7 +71,7 @@ def _acceptance_test_impl(ctx):
         interpreter_path = py3_runtime.interpreter.short_path
 
     if ctx.attr.is_windows:
-        executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
+        executable = ctx.actions.declare_file("run_test_{}_{}.bat".format(ctx.attr.python_version, stub_shebang))
         ctx.actions.write(
             output = executable,
             content = _WINDOWS_RUNNER_TEMPLATE.format(
@@ -76,7 +81,7 @@ def _acceptance_test_impl(ctx):
             is_executable = True,
         )
     else:
-        executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
+        executable = ctx.actions.declare_file("run_test_{}_{}.sh".format(ctx.attr.python_version, stub_shebang))
         ctx.actions.write(
             output = executable,
             content = "exec '{interpreter_path}' '{run_acceptance_test_py}'".format(
@@ -109,6 +114,10 @@ _acceptance_test = rule(
     implementation = _acceptance_test_impl,
     doc = "A rule for the toolchain acceptance tests.",
     attrs = {
+        "hermetic_stub_shebang": attr.bool(
+            doc = "Whether to enable Python toolchain stub shebang for executable wrapper.",
+            mandatory = True,
+        ),
         "is_windows": attr.bool(
             doc = "(Provided by the macro) Whether this is running under Windows or not.",
             mandatory = True,
@@ -146,8 +155,9 @@ _acceptance_test = rule(
     toolchains = ["@bazel_tools//tools/python:toolchain_type"],
 )
 
-def acceptance_test(python_version, **kwargs):
+def acceptance_test(python_version, hermetic_stub_shebang=False, **kwargs):
     _acceptance_test(
+        hermetic_stub_shebang=hermetic_stub_shebang,
         is_windows = select({
             "@bazel_tools//src/conditions:host_windows": True,
             "//conditions:default": False,
@@ -165,11 +175,15 @@ def acceptance_tests():
         for platform, meta in PLATFORMS.items():
             if platform not in TOOL_VERSIONS[python_version]["sha256"]:
                 continue
-            acceptance_test(
-                name = "python_{python_version}_{platform}_test".format(
-                    python_version = python_version.replace(".", "_"),
-                    platform = platform,
-                ),
-                python_version = python_version,
-                target_compatible_with = meta.compatible_with,
-            )
+            for hermetic_stub_shebang in [False, True]:
+                stub_shebang = "hermetic-stub-shebang" if hermetic_stub_shebang else "default-stub-shebang"
+                acceptance_test(
+                    name = "python_{python_version}_{platform}_{stub_shebang}_test".format(
+                        python_version = python_version.replace(".", "_"),
+                        platform = platform,
+                        stub_shebang = stub_shebang,
+                    ),
+                    python_version = python_version,
+                    hermetic_stub_shebang = hermetic_stub_shebang,
+                    target_compatible_with = meta.compatible_with,
+                )

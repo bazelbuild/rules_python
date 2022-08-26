@@ -24,4 +24,5 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 python_register_toolchains(
     name = "python",
     python_version = "%python_version%",
+    hermetic_stub_shebang = %hermetic_stub_shebang%,
 )
