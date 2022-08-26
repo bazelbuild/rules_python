@@ -226,6 +226,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+
     # On older macos versions there is a Python directory containing
     # object files, which conflicts with a python symlink (macos is case
     # insensitive). Therefore remove any file/directory from the archive
