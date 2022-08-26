@@ -155,7 +155,7 @@ def _python_repository_impl(rctx):
             "share/**",
         ]
 
-    hermetic_stub_shebang = '#!external/{name}/{python_bin}'.format(name=rctx.attr.name, python_bin=python_bin)
+    hermetic_stub_shebang = "#!external/{name}/{python_bin}".format(name = rctx.attr.name, python_bin = python_bin)
     stub_shebang = hermetic_stub_shebang if rctx.attr.hermetic_stub_shebang else None
 
     build_content = """\

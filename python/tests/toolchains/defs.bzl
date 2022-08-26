@@ -155,9 +155,9 @@ _acceptance_test = rule(
     toolchains = ["@bazel_tools//tools/python:toolchain_type"],
 )
 
-def acceptance_test(python_version, hermetic_stub_shebang=False, **kwargs):
+def acceptance_test(python_version, hermetic_stub_shebang = False, **kwargs):
     _acceptance_test(
-        hermetic_stub_shebang=hermetic_stub_shebang,
+        hermetic_stub_shebang = hermetic_stub_shebang,
         is_windows = select({
             "@bazel_tools//src/conditions:host_windows": True,
             "//conditions:default": False,
