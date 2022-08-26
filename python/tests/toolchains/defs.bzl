@@ -31,8 +31,8 @@ def _acceptance_test_impl(ctx):
         template = ctx.file._workspace_tmpl,
         output = workspace,
         substitutions = {
-            "%python_version%": ctx.attr.python_version,
             "%hermetic_stub_shebang%": repr(ctx.attr.hermetic_stub_shebang),
+            "%python_version%": ctx.attr.python_version,
         },
     )
 

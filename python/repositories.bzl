@@ -238,8 +238,8 @@ py_runtime_pair(
     return {
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
-        "name": rctx.attr.name,
         "hermetic_stub_shebang": rctx.attr.hermetic_stub_shebang,
+        "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
         "release_filename": release_filename,
