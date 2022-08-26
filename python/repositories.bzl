@@ -226,6 +226,11 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+    # On older macos versions there is a Python directory containing
+    # object files, which conflicts with a python symlink (macos is case
+    # insensitive). Therefore remove any file/directory from the archive
+    # before adding a python symlink.
+    rctx.delete("python")
     rctx.symlink(python_bin, "python")
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
