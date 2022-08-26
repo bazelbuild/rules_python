@@ -80,13 +80,14 @@ pip_parse(
 
 After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
 is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691). It is possible to avoid the
-system-installed intrepreter by setting `hermetic_stub_shebang`.
-However if executing a Python executable target outside bazel,
-the python interpreteter used to 'bootstrap' may not be found:
+system-installed intrepreter by setting `hermetic_stub_shebang`
+when not on windows. However if executing a Python executable
+target outside bazel, the python interpreteter used to 'bootstrap' may not be found:
 ```
 python_register_toolchains(
     ...
     hermetic_stub_shebang = True
+    ...
 )
 ```
 
