@@ -130,9 +130,6 @@ def _parse_optional_attrs(rctx, args):
             struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
-    if rctx.attr.download_only:
-        args.append("--download_only")
-
     if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
@@ -253,13 +250,6 @@ common_env = [
 ]
 
 common_attrs = {
-    "download_only": attr.bool(
-        doc = """
-Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of
---platform, --python-version, --implementation, and --abi in --extra_pip_args to download wheels for a different
-platform from the host platform.
-        """,
-    ),
     "enable_implicit_namespace_pkgs": attr.bool(
         default = False,
         doc = """
