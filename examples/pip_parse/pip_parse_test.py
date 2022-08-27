@@ -35,12 +35,11 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/INSTALL.md",
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/LICENSE",
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/NEWS",
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/doc/packages/s3cmd/README.md",
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/data/share/man/man1/s3cmd.1",
-                "external/pypi_s3cmd/s3cmd-2.1.0.data/scripts/s3cmd",
+                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/INSTALL.md",
+                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/LICENSE",
+                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/NEWS",
+                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/README.md",
+                "external/pypi_s3cmd/data/share/man/man1/s3cmd.1",
             ],
         )
 
@@ -50,11 +49,12 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pypi_requests/requests-2.25.1.dist-info/LICENSE",
-                "external/pypi_requests/requests-2.25.1.dist-info/METADATA",
-                "external/pypi_requests/requests-2.25.1.dist-info/RECORD",
-                "external/pypi_requests/requests-2.25.1.dist-info/WHEEL",
-                "external/pypi_requests/requests-2.25.1.dist-info/top_level.txt",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/INSTALLER",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/LICENSE",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/METADATA",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/RECORD",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/WHEEL",
+                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/top_level.txt",
             ],
         )
 

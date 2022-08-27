@@ -48,7 +48,7 @@ def _toolchains_repo_impl(rctx):
 # for executing build actions.
 toolchain(
     name = "{platform}_toolchain",
-    exec_compatible_with = {compatible_with},
+    target_compatible_with = {compatible_with},
     toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
@@ -90,6 +90,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["defs.bzl"])
 alias(name = "files",           actual = "@{py_repository}_{host_platform}//:files")
 alias(name = "includes",        actual = "@{py_repository}_{host_platform}//:includes")
+alias(name = "libpython",       actual = "@{py_repository}_{host_platform}//:libpython")
 alias(name = "py3_runtime",     actual = "@{py_repository}_{host_platform}//:py3_runtime")
 alias(name = "python_headers",  actual = "@{py_repository}_{host_platform}//:python_headers")
 alias(name = "python_runtimes", actual = "@{py_repository}_{host_platform}//:python_runtimes")

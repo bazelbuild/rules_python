@@ -35,6 +35,32 @@ def py_repositories():
 # Remaining content of the file is only used to support toolchains.
 ########
 
+STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
+
+def is_standalone_interpreter(rctx, python_interpreter_target):
+    """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object.
+        python_interpreter_target (Target): A target representing a python interpreter.
+
+    Returns:
+        bool: Whether or not the target is from a rules_python generated toolchain.
+    """
+
+    # Only update the location when using a hermetic toolchain.
+    if not python_interpreter_target:
+        return False
+
+    # This is a rules_python provided toolchain.
+    return rctx.execute([
+        "ls",
+        "{}/{}".format(
+            rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
+            STANDALONE_INTERPRETER_FILENAME,
+        ),
+    ]).return_code == 0
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
@@ -59,12 +85,18 @@ def _python_repository_impl(rctx):
                 sha256 = rctx.attr.zstd_sha256,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
-            rctx.execute(
+            make_result = rctx.execute(
                 ["make", "--jobs=4"],
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
             )
+            if make_result.return_code:
+                fail_msg = (
+                    "Failed to compile 'zstd' from source for use in Python interpreter extraction. " +
+                    "'make' error message: {}".format(make_result.stderr)
+                )
+                fail(fail_msg)
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
             rctx.symlink(zstd, unzstd)
@@ -77,7 +109,11 @@ def _python_repository_impl(rctx):
             "--file={}".format(release_filename),
         ])
         if exec_result.return_code:
-            fail(exec_result.stderr)
+            fail_msg = (
+                "Failed to extract Python interpreter from '{}'. ".format(release_filename) +
+                "'tar' error message: {}".format(exec_result.stderr)
+            )
+            fail(fail_msg)
     else:
         rctx.download_and_extract(
             url = url,
@@ -96,12 +132,52 @@ def _python_repository_impl(rctx):
         rctx.file(distutils_path, rctx.attr.distutils_content)
 
     # Make the Python installation read-only.
-    if "windows" not in rctx.os.name:
-        exec_result = rctx.execute(["chmod", "-R", "ugo-w", "lib"])
-        if exec_result.return_code:
-            fail(exec_result.stderr)
+    if not rctx.attr.ignore_root_user_error:
+        if "windows" not in rctx.os.name:
+            lib_dir = "lib" if "windows" not in platform else "Lib"
+            exec_result = rctx.execute(["chmod", "-R", "ugo-w", lib_dir])
+            if exec_result.return_code != 0:
+                fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
+                    exec_result.stderr,
+                )
+                fail(fail_msg)
+            exec_result = rctx.execute(["touch", "{}/.test".format(lib_dir)])
+            if exec_result.return_code == 0:
+                exec_result = rctx.execute(["id", "-u"])
+                if exec_result.return_code != 0:
+                    fail("Could not determine current user ID. 'id -u' error msg: {}".format(
+                        exec_result.stderr,
+                    ))
+                uid = int(exec_result.stdout.strip())
+                if uid == 0:
+                    fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+                else:
+                    fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
+
+    if "windows" in platform:
+        glob_include = [
+            "*.exe",
+            "*.dll",
+            "bin/**",
+            "DLLs/**",
+            "extensions/**",
+            "include/**",
+            "Lib/**",
+            "libs/**",
+            "Scripts/**",
+            "share/**",
+        ]
+    else:
+        glob_include = [
+            "bin/**",
+            "extensions/**",
+            "include/**",
+            "lib/**",
+            "libs/**",
+            "share/**",
+        ]
 
     build_content = """\
 # Generated by python/repositories.bzl
@@ -113,19 +189,19 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "files",
     srcs = glob(
-        include = [
-            "*.exe",
-            "bin/**",
-            "DLLs/**",
-            "extensions/**",
-            "include/**",
-            "lib/**",
-            "libs/**",
-            "Scripts/**",
-            "share/**",
-        ],
+        include = {glob_include},
+        # Platform-agnostic filegroup can't match on all patterns.
+        allow_empty = True,
         exclude = [
             "**/* *", # Bazel does not support spaces in file names.
+            # Unused shared libraries. `python` executable and the `:libpython` target
+            # depend on `libpython{python_version}.so.1.0`.
+            "lib/libpython{python_version}.so",
+            # static libraries
+            "lib/**/*.a",
+            # tests for the standard libraries.
+            "lib/python{python_version}/**/test/**",
+            "lib/python{python_version}/**/tests/**",
         ],
     ),
 )
@@ -145,7 +221,17 @@ cc_library(
     ],
 )
 
-exports_files(["{python_path}"])
+cc_import(
+    name = "libpython",
+    hdrs = [":includes"],
+    shared_library = select({{
+        "@platforms//os:windows": "python3.dll",
+        "@platforms//os:macos": "lib/libpython{python_version}.dylib",
+        "@platforms//os:linux": "lib/libpython{python_version}.so.1.0",
+    }}),
+)
+
+exports_files(["python", "{python_path}"])
 
 py_runtime(
     name = "py3_runtime",
@@ -160,9 +246,12 @@ py_runtime_pair(
     py3_runtime = ":py3_runtime",
 )
 """.format(
+        glob_include = repr(glob_include),
         python_path = python_bin,
         python_version = python_short_version,
     )
+    rctx.symlink(python_bin, "python")
+    rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 
     return {
@@ -190,6 +279,11 @@ python_repository = repository_rule(
         "distutils_content": attr.string(
             doc = "A distutils.cfg file content to be included in the Python installation. " +
                   "Either distutils or distutils_content can be specified, but not both.",
+            mandatory = False,
+        ),
+        "ignore_root_user_error": attr.bool(
+            default = False,
+            doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
         ),
         "platform": attr.string(

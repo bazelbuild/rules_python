@@ -62,6 +62,7 @@ bzl_library(
 bzl_library(
     name = "pip_install_bzl",
     srcs = [
+        "//python:bzl",
         "//python/pip_install:bzl",
     ],
     deps = [

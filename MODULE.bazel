@@ -1,0 +1,16 @@
+module(
+    name = "rules_python",
+    compatibility_level = 1,
+    version = "0.0.0",
+)
+
+pip_install = use_extension("@rules_python//python:extensions.bzl", "pip_install")
+
+use_repo(
+    pip_install,
+    "pypi__click",
+    "pypi__pip",
+    "pypi__pip_tools",
+    "pypi__setuptools",
+    "pypi__wheel",
+)

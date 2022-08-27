@@ -140,99 +140,126 @@ func (py *Resolver) Resolve(
 		it := modules.Iterator()
 		explainDependency := os.Getenv("EXPLAIN_DEPENDENCY")
 		hasFatalError := false
-	MODULE_LOOP:
+	MODULES_LOOP:
 		for it.Next() {
 			mod := it.Value().(module)
-			imp := resolve.ImportSpec{Lang: languageName, Imp: mod.Name}
-			if override, ok := resolve.FindRuleWithOverride(c, imp, languageName); ok {
-				if override.Repo == "" {
-					override.Repo = from.Repo
-				}
-				if !override.Equal(from) {
-					if override.Repo == from.Repo {
-						override.Repo = ""
+			moduleParts := strings.Split(mod.Name, ".")
+			possibleModules := []string{mod.Name}
+			for len(moduleParts) > 1 {
+				// Iterate back through the possible imports until
+				// a match is found.
+				// For example, "from foo.bar import baz" where bar is a variable, we should try
+				// `foo.bar.baz` first, then `foo.bar`, then `foo`. In the first case, the import could be file `baz.py`
+				// in the directory `foo/bar`.
+				// Or, the import could be variable `bar` in file `foo/bar.py`.
+				// The import could also be from a standard module, e.g. `six.moves`, where
+				// the dependency is actually `six`.
+				moduleParts = moduleParts[:len(moduleParts)-1]
+				possibleModules = append(possibleModules, strings.Join(moduleParts, "."))
+			}
+			errs := []error{}
+		POSSIBLE_MODULE_LOOP:
+			for _, moduleName := range possibleModules {
+				imp := resolve.ImportSpec{Lang: languageName, Imp: moduleName}
+				if override, ok := resolve.FindRuleWithOverride(c, imp, languageName); ok {
+					if override.Repo == "" {
+						override.Repo = from.Repo
 					}
-					dep := override.String()
-					deps.Add(dep)
-					if explainDependency == dep {
-						log.Printf("Explaining dependency (%s): "+
-							"in the target %q, the file %q imports %q at line %d, "+
-							"which resolves using the \"gazelle:resolve\" directive.\n",
-							explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber)
-					}
-				}
-			} else {
-				if dep, ok := cfg.FindThirdPartyDependency(mod.Name); ok {
-					deps.Add(dep)
-					if explainDependency == dep {
-						log.Printf("Explaining dependency (%s): "+
-							"in the target %q, the file %q imports %q at line %d, "+
-							"which resolves from the third-party module %q from the wheel %q.\n",
-							explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber, mod.Name, dep)
+					if !override.Equal(from) {
+						if override.Repo == from.Repo {
+							override.Repo = ""
+						}
+						dep := override.String()
+						deps.Add(dep)
+						if explainDependency == dep {
+							log.Printf("Explaining dependency (%s): "+
+								"in the target %q, the file %q imports %q at line %d, "+
+								"which resolves using the \"gazelle:resolve\" directive.\n",
+								explainDependency, from.String(), mod.Filepath, moduleName, mod.LineNumber)
+						}
+						continue MODULES_LOOP
 					}
 				} else {
-					matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
-					if len(matches) == 0 {
-						// Check if the imported module is part of the standard library.
-						if isStd, err := isStdModule(mod); err != nil {
-							log.Println("ERROR: ", err)
-							hasFatalError = true
-							continue MODULE_LOOP
-						} else if isStd {
-							continue MODULE_LOOP
+					if dep, ok := cfg.FindThirdPartyDependency(moduleName); ok {
+						deps.Add(dep)
+						if explainDependency == dep {
+							log.Printf("Explaining dependency (%s): "+
+								"in the target %q, the file %q imports %q at line %d, "+
+								"which resolves from the third-party module %q from the wheel %q.\n",
+								explainDependency, from.String(), mod.Filepath, moduleName, mod.LineNumber, mod.Name, dep)
 						}
-						if cfg.ValidateImportStatements() {
-							err := fmt.Errorf(
-								"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
-									"\t1. Add it as a dependency in the requirements.txt file.\n"+
-									"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
-									"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the Python file.\n",
-								mod.Name, mod.LineNumber, mod.Filepath,
-							)
-							log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), err)
-							hasFatalError = true
-							continue MODULE_LOOP
-						}
-					}
-					filteredMatches := make([]resolve.FindResult, 0, len(matches))
-					for _, match := range matches {
-						if match.IsSelfImport(from) {
-							// Prevent from adding itself as a dependency.
-							continue MODULE_LOOP
-						}
-						filteredMatches = append(filteredMatches, match)
-					}
-					if len(filteredMatches) == 0 {
-						continue
-					}
-					if len(filteredMatches) > 1 {
-						sameRootMatches := make([]resolve.FindResult, 0, len(filteredMatches))
-						for _, match := range filteredMatches {
-							if strings.HasPrefix(match.Label.Pkg, pythonProjectRoot) {
-								sameRootMatches = append(sameRootMatches, match)
+						continue MODULES_LOOP
+					} else {
+						matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
+						if len(matches) == 0 {
+							// Check if the imported module is part of the standard library.
+							if isStd, err := isStdModule(module{Name: moduleName}); err != nil {
+								log.Println("Error checking if standard module: ", err)
+								hasFatalError = true
+								continue POSSIBLE_MODULE_LOOP
+							} else if isStd {
+								continue MODULES_LOOP
+							} else if cfg.ValidateImportStatements() {
+								err := fmt.Errorf(
+									"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
+										"\t1. Add it as a dependency in the requirements.txt file.\n"+
+										"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
+										"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the Python file.\n",
+									moduleName, mod.LineNumber, mod.Filepath,
+								)
+								errs = append(errs, err)
+								continue POSSIBLE_MODULE_LOOP
 							}
 						}
-						if len(sameRootMatches) != 1 {
-							err := fmt.Errorf(
-								"multiple targets (%s) may be imported with %q at line %d in %q "+
-									"- this must be fixed using the \"gazelle:resolve\" directive",
-								targetListFromResults(filteredMatches), mod.Name, mod.LineNumber, mod.Filepath)
-							log.Println("ERROR: ", err)
-							hasFatalError = true
-							continue MODULE_LOOP
+						filteredMatches := make([]resolve.FindResult, 0, len(matches))
+						for _, match := range matches {
+							if match.IsSelfImport(from) {
+								// Prevent from adding itself as a dependency.
+								continue MODULES_LOOP
+							}
+							filteredMatches = append(filteredMatches, match)
 						}
-						filteredMatches = sameRootMatches
-					}
-					matchLabel := filteredMatches[0].Label.Rel(from.Repo, from.Pkg)
-					dep := matchLabel.String()
-					deps.Add(dep)
-					if explainDependency == dep {
-						log.Printf("Explaining dependency (%s): "+
-							"in the target %q, the file %q imports %q at line %d, "+
-							"which resolves from the first-party indexed labels.\n",
-							explainDependency, from.String(), mod.Filepath, mod.Name, mod.LineNumber)
+						if len(filteredMatches) == 0 {
+							continue POSSIBLE_MODULE_LOOP
+						}
+						if len(filteredMatches) > 1 {
+							sameRootMatches := make([]resolve.FindResult, 0, len(filteredMatches))
+							for _, match := range filteredMatches {
+								if strings.HasPrefix(match.Label.Pkg, pythonProjectRoot) {
+									sameRootMatches = append(sameRootMatches, match)
+								}
+							}
+							if len(sameRootMatches) != 1 {
+								err := fmt.Errorf(
+									"multiple targets (%s) may be imported with %q at line %d in %q "+
+										"- this must be fixed using the \"gazelle:resolve\" directive",
+									targetListFromResults(filteredMatches), moduleName, mod.LineNumber, mod.Filepath)
+								errs = append(errs, err)
+								continue POSSIBLE_MODULE_LOOP
+							}
+							filteredMatches = sameRootMatches
+						}
+						matchLabel := filteredMatches[0].Label.Rel(from.Repo, from.Pkg)
+						dep := matchLabel.String()
+						deps.Add(dep)
+						if explainDependency == dep {
+							log.Printf("Explaining dependency (%s): "+
+								"in the target %q, the file %q imports %q at line %d, "+
+								"which resolves from the first-party indexed labels.\n",
+								explainDependency, from.String(), mod.Filepath, moduleName, mod.LineNumber)
+						}
+						continue MODULES_LOOP
 					}
 				}
+			} // End possible modules loop.
+			if len(errs) > 0 {
+				// If, after trying all possible modules, we still haven't found anything, error out.
+				joinedErrs := ""
+				for _, err := range errs {
+					joinedErrs = fmt.Sprintf("%s%s\n", joinedErrs, err)
+				}
+				log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), joinedErrs)
+				hasFatalError = true
 			}
 		}
 		if hasFatalError {

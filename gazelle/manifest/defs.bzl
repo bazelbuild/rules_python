@@ -89,3 +89,10 @@ def gazelle_python_manifest(
         },
         visibility = ["//visibility:private"],
     )
+
+    native.filegroup(
+        name = name,
+        srcs = [manifest],
+        tags = ["manual"],
+        visibility = ["//visibility:public"],
+    )

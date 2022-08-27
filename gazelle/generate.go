@@ -2,6 +2,7 @@ package python
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -29,9 +30,6 @@ const (
 
 var (
 	buildFilenames = []string{"BUILD", "BUILD.bazel"}
-	// errHaltDigging is an error that signals whether the generator should halt
-	// digging the source tree searching for modules in subdirectories.
-	errHaltDigging = fmt.Errorf("halt digging")
 )
 
 // GenerateRules extracts build metadata from source files in a directory.
@@ -106,9 +104,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		// boundaryPackages represents child Bazel packages that are used as a
 		// boundary to stop processing under that tree.
 		boundaryPackages := make(map[string]struct{})
-		err := filepath.Walk(
+		err := filepath.WalkDir(
 			filepath.Join(args.Dir, d),
-			func(path string, info os.FileInfo, err error) error {
+			func(path string, entry fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -120,7 +118,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						return nil
 					}
 				}
-				if info.IsDir() {
+				if entry.IsDir() {
 					// If we are visiting a directory, we determine if we should
 					// halt digging the tree based on a few criterias:
 					//   1. The directory has a BUILD or BUILD.bazel files. Then
@@ -135,7 +133,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					}
 
 					if !cfg.CoarseGrainedGeneration() && hasEntrypointFile(path) {
-						return errHaltDigging
+						return fs.SkipDir
 					}
 
 					return nil
@@ -168,7 +166,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				return nil
 			},
 		)
-		if err != nil && err != errHaltDigging {
+		if err != nil {
 			log.Printf("ERROR: %v\n", err)
 			return language.GenerateResult{}
 		}

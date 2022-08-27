@@ -1,0 +1,3 @@
+requests~=2.25.1
+s3cmd~=2.1.0
+yamllint~=1.26.3

@@ -24,6 +24,8 @@ In an ideal renaming, we'd move the packaging rules to a different package so
 that @rules_python//python is only concerned with the core rules.
 """
 
+load(":defs.bzl", "current_py_toolchain")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -46,6 +48,8 @@ filegroup(
         "defs.bzl",
         "packaging.bzl",
         "pip.bzl",
+        "repositories.bzl",
+        "versions.bzl",
         "//python/pip_install:bzl",
         "//python/private:bzl",
     ],
@@ -136,3 +140,7 @@ exports_files([
     "packaging.bzl",
     "pip.bzl",
 ])
+
+current_py_toolchain(
+    name = "current_py_toolchain",
+)

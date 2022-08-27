@@ -68,11 +68,9 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         current_wheel_version = "0.37.1"
 
         r = runfiles.Create()
-        dist_info_dir = (
-            "pip_repository_annotations_example/external/{}/wheel-{}.dist-info".format(
-                self.wheel_pkg_dir(),
-                current_wheel_version,
-            )
+        dist_info_dir = "pip_repository_annotations_example/external/{}/site-packages/wheel-{}.dist-info".format(
+            self.wheel_pkg_dir(),
+            current_wheel_version,
         )
 
         # Note: `METADATA` is important as it's consumed by https://docs.python.org/3/library/importlib.metadata.html

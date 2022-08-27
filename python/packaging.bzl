@@ -114,10 +114,18 @@ def _escape_filename_segment(segment):
             escaped += "_"
     return escaped
 
+def _replace_make_variables(flag, ctx):
+    """Replace $(VERSION) etc make variables in flag"""
+    if "$" in flag:
+        for varname, varsub in ctx.var.items():
+            flag = flag.replace("$(%s)" % varname, varsub)
+    return flag
+
 def _py_wheel_impl(ctx):
+    version = _replace_make_variables(ctx.attr.version, ctx)
     outfile = ctx.actions.declare_file("-".join([
         _escape_filename_segment(ctx.attr.distribution),
-        _escape_filename_segment(ctx.attr.version),
+        _escape_filename_segment(version),
         _escape_filename_segment(ctx.attr.python_tag),
         _escape_filename_segment(ctx.attr.abi),
         _escape_filename_segment(ctx.attr.platform),
@@ -143,7 +151,7 @@ def _py_wheel_impl(ctx):
 
     args = ctx.actions.args()
     args.add("--name", ctx.attr.distribution)
-    args.add("--version", ctx.attr.version)
+    args.add("--version", version)
     args.add("--python_tag", ctx.attr.python_tag)
     args.add("--python_requires", ctx.attr.python_requires)
     args.add("--abi", ctx.attr.abi)
@@ -218,7 +226,7 @@ def _py_wheel_impl(ctx):
         outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
-        progress_message = "Building wheel",
+        progress_message = "Building wheel {}".format(ctx.label),
     )
     return [
         DefaultInfo(
@@ -298,7 +306,8 @@ Stamped targets are not rebuilt unless their dependencies change.
         mandatory = True,
         doc = (
             "Version number of the package. Note that this attribute " +
-            "supports stamp format strings. Eg `1.2.3-{BUILD_TIMESTAMP}`"
+            "supports stamp format strings (eg. `1.2.3-{BUILD_TIMESTAMP}`) " +
+            "as well as 'make variables' (e.g. `1.2.3-$(VERSION)`)."
         ),
     ),
     "_stamp_flag": attr.label(

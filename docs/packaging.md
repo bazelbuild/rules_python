@@ -103,7 +103,7 @@ py_wheel(
 | requires |  List of requirements for this package   | List of strings | optional | [] |
 | stamp |  Whether to encode build information into the wheel. Possible values:<br><br>- <code>stamp = 1</code>: Always stamp the build information into the wheel, even in [--nostamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) builds. This setting should be avoided, since it potentially kills remote caching for the target and any downstream actions that depend on it.<br><br>- <code>stamp = 0</code>: Always replace build information by constant values. This gives good build result caching.<br><br>- <code>stamp = -1</code>: Embedding of build information is controlled by the [--[no]stamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) flag.<br><br>Stamped targets are not rebuilt unless their dependencies change.   | Integer | optional | -1 |
 | strip_path_prefixes |  path prefixes to strip from files added to the generated package   | List of strings | optional | [] |
-| version |  Version number of the package. Note that this attribute supports stamp format strings. Eg <code>1.2.3-{BUILD_TIMESTAMP}</code>   | String | required |  |
+| version |  Version number of the package. Note that this attribute supports stamp format strings (eg. <code>1.2.3-{BUILD_TIMESTAMP}</code>) as well as 'make variables' (e.g. <code>1.2.3-$(VERSION)</code>).   | String | required |  |
 
 
 <a name="#PyWheelInfo"></a>
