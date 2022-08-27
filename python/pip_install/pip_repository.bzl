@@ -189,7 +189,7 @@ def _create_repository_execution_environment(rctx):
     Args:
         rctx: The repository context.
     Returns:
-        Dictionary of envrionment variable suitable to pass to rctx.execute.
+        Dictionary of environment variable suitable to pass to rctx.execute.
     """
 
     # Gather any available CPPFLAGS values
