@@ -141,7 +141,7 @@ def _python_repository_impl(rctx):
                     exec_result.stderr,
                 )
                 fail(fail_msg)
-            exec_result = rctx.execute(["touch", "lib/.test"])
+            exec_result = rctx.execute(["touch", "{}/.test".format(lib_dir)])
             if exec_result.return_code == 0:
                 exec_result = rctx.execute(["id", "-u"])
                 if exec_result.return_code != 0:
