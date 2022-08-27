@@ -37,6 +37,30 @@ def py_repositories():
 
 STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
 
+def is_standalone_interpreter(rctx, python_interpreter_target):
+    """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object.
+        python_interpreter_target (Target): A target representing a python interpreter.
+
+    Returns:
+        bool: Whether or not the target is from a rules_python generated toolchain.
+    """
+
+    # Only update the location when using a hermetic toolchain.
+    if not python_interpreter_target:
+        return False
+
+    # This is a rules_python provided toolchain.
+    return rctx.execute([
+        "ls",
+        "{}/{}".format(
+            rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
+            STANDALONE_INTERPRETER_FILENAME,
+        ),
+    ]).return_code == 0
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
