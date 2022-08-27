@@ -35,20 +35,11 @@ if __name__ == "__main__":
 
     parse_str_none = lambda s: None if s == "None" else s
 
-    requirements_in = os.path.relpath(sys.argv.pop(1))
-    requirements_txt = os.path.relpath(sys.argv.pop(1))
+    requirements_in = sys.argv.pop(1)
+    requirements_txt = sys.argv.pop(1)
     requirements_linux = parse_str_none(sys.argv.pop(1))
     requirements_darwin = parse_str_none(sys.argv.pop(1))
     requirements_windows = parse_str_none(sys.argv.pop(1))
-    parts = requirements_in.split(os.path.sep, 2)
-    if parts[0] == "external":
-        requirements_in = parts[2]
-        requirements_txt = (
-            requirements_txt
-            if "BUILD_WORKSPACE_DIRECTORY" in os.environ
-            else os.path.join("..", "..", requirements_txt)
-        )
-        os.chdir(os.path.join(parts[0], parts[1]))
     update_target_label = sys.argv.pop(1)
 
     # Before loading click, set the locale for its parser.
@@ -83,9 +74,7 @@ if __name__ == "__main__":
         #
         # Changing to the WORKSPACE root avoids 'file not found' errors when the `.update` target is run
         # from different directories within the WORKSPACE.
-        requirements_txt = os.path.join(
-            os.environ["BUILD_WORKSPACE_DIRECTORY"], requirements_txt
-        )
+        os.chdir(os.environ["BUILD_WORKSPACE_DIRECTORY"])
     else:
         err_msg = (
             "Expected to find BUILD_WORKSPACE_DIRECTORY (running under `bazel run`) or "

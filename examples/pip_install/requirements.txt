@@ -7,7 +7,7 @@
 boto3==1.14.51 \
     --hash=sha256:a6bdb808e948bd264af135af50efb76253e85732c451fa605b7a287faf022432 \
     --hash=sha256:f9dbccbcec916051c6588adbccae86547308ac4cd154f1eb7cf6422f0e391a71
-    # via -r requirements.in
+    # via -r ./requirements.in
 botocore==1.17.63 \
     --hash=sha256:40f13f6c9c29c307a9dc5982739e537ddce55b29787b90c3447b507e3283bcd6 \
     --hash=sha256:aa88eafc6295132f4bc606f1df32b3248e0fa611724c0a216aceda767948ac75
@@ -77,7 +77,7 @@ pyyaml==6.0 \
 s3cmd==2.1.0 \
     --hash=sha256:49cd23d516b17974b22b611a95ce4d93fe326feaa07320bd1d234fed68cbccfa \
     --hash=sha256:966b0a494a916fc3b4324de38f089c86c70ee90e8e1cae6d59102103a4c0cc03
-    # via -r requirements.in
+    # via -r ./requirements.in
 s3transfer==0.3.7 \
     --hash=sha256:35627b86af8ff97e7ac27975fe0a98a312814b46c6333d8a6b889627bcd80994 \
     --hash=sha256:efa5bd92a897b6a8d5c1383828dca3d52d0790e0756d49740563a3fb6ed03246
@@ -89,14 +89,14 @@ six==1.16.0 \
 tree-sitter==0.20.0 ; sys_platform != "win32" \
     --hash=sha256:1940f64be1e8c9c3c0e34a2258f1e4c324207534d5b1eefc5ab2960a9d98f668 \
     --hash=sha256:51a609a7c1bd9d9e75d92ee128c12c7852ae70a482900fbbccf3d13a79e0378c
-    # via -r requirements.in
+    # via -r ./requirements.in
 urllib3==1.25.11 \
     --hash=sha256:8d7eaa5a82a1cac232164990f04874c594c9453ec55eef02eab885aa02fc17a2 \
     --hash=sha256:f5321fbe4bf3fefa0efd0bfe7fb14e90909eb62a48ccda331726b4319897dd5e
     # via botocore
 yamllint==1.26.3 \
     --hash=sha256:3934dcde484374596d6b52d8db412929a169f6d9e52e20f9ade5bf3523d9b96e
-    # via -r requirements.in
+    # via -r ./requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 setuptools==59.6.0 \
