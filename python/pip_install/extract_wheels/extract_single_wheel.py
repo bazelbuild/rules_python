@@ -38,7 +38,7 @@ def main() -> None:
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
-        + ["download" if args.download_only else "wheel", "--no-deps"]
+        + ["wheel", "--no-deps"]
         + deserialized_args["extra_pip_args"]
     )
 
