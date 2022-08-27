@@ -1,6 +1,6 @@
 ""
 
-load("//python:repositories.bzl", "STANDALONE_INTERPRETER_FILENAME")
+load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
@@ -66,35 +66,68 @@ def _resolve_python_interpreter(rctx):
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
     return python_interpreter
 
-def _maybe_set_xcode_location_cflags(rctx, environment):
-    """Patch environment with CPPFLAGS of xcode sdk location.
+def _get_xcode_location_cflags(rctx):
+    """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
     otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
     """
-    if (
-        rctx.os.name.lower().startswith("mac os") and
-        rctx.attr.python_interpreter_target != None and
-        # This is a rules_python provided toolchain.
-        rctx.execute([
-            "ls",
-            "{}/{}".format(
-                rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
-                STANDALONE_INTERPRETER_FILENAME,
-            ),
-        ]).return_code == 0 and
-        not environment.get(CPPFLAGS)
-    ):
-        xcode_sdk_location = rctx.execute(["xcode-select", "--print-path"])
-        if xcode_sdk_location.return_code == 0:
-            xcode_root = xcode_sdk_location.stdout.strip()
-            if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
-                # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
-                # so we need to change the path to to the macos specific tools which are in a different relative
-                # path than xcode installed command line tools.
-                xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+
+    # Only run on MacOS hosts
+    if not rctx.os.name.lower().startswith("mac os"):
+        return []
+
+    # Only update the location when using a hermetic toolchain.
+    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+        return []
+
+    # Locate xcode-select
+    xcode_select = rctx.which("xcode-select")
+
+    xcode_sdk_location = rctx.execute([xcode_select, "--print-path"])
+    if xcode_sdk_location.return_code != 0:
+        return []
+
+    xcode_root = xcode_sdk_location.stdout.strip()
+    if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
+        # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
+        # so we need to change the path to to the macos specific tools which are in a different relative
+        # path than xcode installed command line tools.
+        xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+    return [
+        "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
+    ]
+
+def _get_toolchain_unix_cflags(rctx):
+    """Gather cflags from a standalone toolchain for unix systems.
+
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
+    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    """
+
+    # Only run on Unix systems
+    if not rctx.os.name.lower().startswith(("mac os", "linux")):
+        return []
+
+    # Only update the location when using a standalone toolchain.
+    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+        return []
+
+    er = rctx.execute([
+        rctx.path(rctx.attr.python_interpreter_target).realpath,
+        "-c",
+        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')",
+    ])
+    if er.return_code != 0:
+        fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
+    _python_version = er.stdout
+    include_path = "{}/include/python{}".format(
+        rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname.realpath,
+        _python_version,
+    )
+
+    return ["-isystem {}".format(include_path)]
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
@@ -152,10 +185,20 @@ def _create_repository_execution_environment(rctx):
 
     Args:
         rctx: The repository context.
-    Returns: Dictionary of envrionment variable suitable to pass to rctx.execute.
+    Returns:
+        Dictionary of environment variable suitable to pass to rctx.execute.
     """
-    env = {"PYTHONPATH": _construct_pypath(rctx)}
-    _maybe_set_xcode_location_cflags(rctx, env)
+
+    # Gather any available CPPFLAGS values
+    cppflags = []
+    cppflags.extend(_get_xcode_location_cflags(rctx))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx))
+
+    env = {
+        "PYTHONPATH": _construct_pypath(rctx),
+        CPPFLAGS: " ".join(cppflags),
+    }
+
     return env
 
 _BUILD_FILE_CONTENTS = """\
