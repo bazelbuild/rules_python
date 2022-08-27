@@ -8,8 +8,3 @@ bazel_integration_test(
     name = "pip_repository_entry_points_example",
     timeout = "long",
 )
-
-bazel_integration_test(
-    name = "pip_deps_example",
-    timeout = "long",
-)
