@@ -37,11 +37,11 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pip/pypi__s3cmd/data/share/doc/packages/s3cmd/INSTALL.md",
-                "external/pip/pypi__s3cmd/data/share/doc/packages/s3cmd/LICENSE",
-                "external/pip/pypi__s3cmd/data/share/doc/packages/s3cmd/NEWS",
-                "external/pip/pypi__s3cmd/data/share/doc/packages/s3cmd/README.md",
-                "external/pip/pypi__s3cmd/data/share/man/man1/s3cmd.1",
+                "external/pip_s3cmd/data/share/doc/packages/s3cmd/INSTALL.md",
+                "external/pip_s3cmd/data/share/doc/packages/s3cmd/LICENSE",
+                "external/pip_s3cmd/data/share/doc/packages/s3cmd/NEWS",
+                "external/pip_s3cmd/data/share/doc/packages/s3cmd/README.md",
+                "external/pip_s3cmd/data/share/man/man1/s3cmd.1",
             ],
         )
 
@@ -51,13 +51,13 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/DESCRIPTION.rst",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/INSTALLER",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/METADATA",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/RECORD",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/WHEEL",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/metadata.json",
-                "external/pip/pypi__boto3/site-packages/boto3-1.14.51.dist-info/top_level.txt",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/DESCRIPTION.rst",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/INSTALLER",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/METADATA",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/RECORD",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/WHEEL",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/metadata.json",
+                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/top_level.txt",
             ],
         )
 

@@ -1,6 +1,6 @@
 ""
 
-load("//python:repositories.bzl", "STANDALONE_INTERPRETER_FILENAME")
+load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
@@ -66,35 +66,68 @@ def _resolve_python_interpreter(rctx):
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
     return python_interpreter
 
-def _maybe_set_xcode_location_cflags(rctx, environment):
-    """Patch environment with CPPFLAGS of xcode sdk location.
+def _get_xcode_location_cflags(rctx):
+    """Query the xcode sdk location to update cflags
 
     Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
     otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
     """
-    if (
-        rctx.os.name.lower().startswith("mac os") and
-        rctx.attr.python_interpreter_target != None and
-        # This is a rules_python provided toolchain.
-        rctx.execute([
-            "ls",
-            "{}/{}".format(
-                rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
-                STANDALONE_INTERPRETER_FILENAME,
-            ),
-        ]).return_code == 0 and
-        not environment.get(CPPFLAGS)
-    ):
-        xcode_sdk_location = rctx.execute(["xcode-select", "--print-path"])
-        if xcode_sdk_location.return_code == 0:
-            xcode_root = xcode_sdk_location.stdout.strip()
-            if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
-                # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
-                # so we need to change the path to to the macos specific tools which are in a different relative
-                # path than xcode installed command line tools.
-                xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-            environment[CPPFLAGS] = "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root)
+
+    # Only run on MacOS hosts
+    if not rctx.os.name.lower().startswith("mac os"):
+        return []
+
+    # Only update the location when using a hermetic toolchain.
+    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+        return []
+
+    # Locate xcode-select
+    xcode_select = rctx.which("xcode-select")
+
+    xcode_sdk_location = rctx.execute([xcode_select, "--print-path"])
+    if xcode_sdk_location.return_code != 0:
+        return []
+
+    xcode_root = xcode_sdk_location.stdout.strip()
+    if COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
+        # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
+        # so we need to change the path to to the macos specific tools which are in a different relative
+        # path than xcode installed command line tools.
+        xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
+    return [
+        "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
+    ]
+
+def _get_toolchain_unix_cflags(rctx):
+    """Gather cflags from a standalone toolchain for unix systems.
+
+    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
+    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
+    """
+
+    # Only run on Unix systems
+    if not rctx.os.name.lower().startswith(("mac os", "linux")):
+        return []
+
+    # Only update the location when using a standalone toolchain.
+    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+        return []
+
+    er = rctx.execute([
+        rctx.path(rctx.attr.python_interpreter_target).realpath,
+        "-c",
+        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')",
+    ])
+    if er.return_code != 0:
+        fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
+    _python_version = er.stdout
+    include_path = "{}/include/python{}".format(
+        rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname.realpath,
+        _python_version,
+    )
+
+    return ["-isystem {}".format(include_path)]
 
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
@@ -130,9 +163,6 @@ def _parse_optional_attrs(rctx, args):
             struct(arg = rctx.attr.extra_pip_args).to_json(),
         ]
 
-    if rctx.attr.download_only:
-        args.append("--download_only")
-
     if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
@@ -155,10 +185,20 @@ def _create_repository_execution_environment(rctx):
 
     Args:
         rctx: The repository context.
-    Returns: Dictionary of envrionment variable suitable to pass to rctx.execute.
+    Returns:
+        Dictionary of environment variable suitable to pass to rctx.execute.
     """
-    env = {"PYTHONPATH": _construct_pypath(rctx)}
-    _maybe_set_xcode_location_cflags(rctx, env)
+
+    # Gather any available CPPFLAGS values
+    cppflags = []
+    cppflags.extend(_get_xcode_location_cflags(rctx))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx))
+
+    env = {
+        "PYTHONPATH": _construct_pypath(rctx),
+        CPPFLAGS: " ".join(cppflags),
+    }
+
     return env
 
 _BUILD_FILE_CONTENTS = """\
@@ -179,8 +219,7 @@ def _locked_requirements(rctx):
         requirements_txt = rctx.attr.requirements_windows
     if not requirements_txt:
         fail("""\
-Incremental mode requires a requirements_lock attribute be specified,
-or a platform-specific lockfile using one of the requirements_* attributes.
+A requirements_lock attribute must be specified, or a platform-specific lockfile using one of the requirements_* attributes.
 """)
     return requirements_txt
 
@@ -192,40 +231,28 @@ def _pip_repository_impl(rctx):
     annotations_file = rctx.path("annotations.json")
     rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
 
-    if rctx.attr.incremental:
-        requirements_txt = _locked_requirements(rctx)
-        args = [
-            python_interpreter,
-            "-m",
-            "python.pip_install.extract_wheels.parse_requirements_to_bzl",
-            "--requirements_lock",
-            rctx.path(requirements_txt),
-            "--requirements_lock_label",
-            str(requirements_txt),
-            # pass quiet and timeout args through to child repos.
-            "--quiet",
-            str(rctx.attr.quiet),
-            "--timeout",
-            str(rctx.attr.timeout),
-            "--annotations",
-            annotations_file,
-        ]
+    requirements_txt = _locked_requirements(rctx)
+    args = [
+        python_interpreter,
+        "-m",
+        "python.pip_install.extract_wheels.parse_requirements_to_bzl",
+        "--requirements_lock",
+        rctx.path(requirements_txt),
+        "--requirements_lock_label",
+        str(requirements_txt),
+        # pass quiet and timeout args through to child repos.
+        "--quiet",
+        str(rctx.attr.quiet),
+        "--timeout",
+        str(rctx.attr.timeout),
+        "--annotations",
+        annotations_file,
+    ]
 
-        args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
-        if rctx.attr.python_interpreter_target:
-            args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
-        progress_message = "Parsing requirements to starlark"
-    else:
-        args = [
-            python_interpreter,
-            "-m",
-            "python.pip_install.extract_wheels.extract_wheels",
-            "--requirements",
-            rctx.path(rctx.attr.requirements),
-            "--annotations",
-            annotations_file,
-        ]
-        progress_message = "Extracting wheels"
+    args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
+    if rctx.attr.python_interpreter_target:
+        args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
+    progress_message = "Parsing requirements to starlark"
 
     args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
     args = _parse_optional_attrs(rctx, args)
@@ -253,13 +280,6 @@ common_env = [
 ]
 
 common_attrs = {
-    "download_only": attr.bool(
-        doc = """
-Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of
---platform, --python-version, --implementation, and --abi in --extra_pip_args to download wheels for a different
-platform from the host platform.
-        """,
-    ),
     "enable_implicit_namespace_pkgs": attr.bool(
         default = False,
         doc = """
@@ -318,12 +338,7 @@ python_interpreter.
     ),
     "repo_prefix": attr.string(
         doc = """
-Prefix for the generated packages. For non-incremental mode the
-packages will be of the form
-
-@<name>//<prefix><sanitized-package-name>/...
-
-For incremental mode the packages will be of the form
+Prefix for the generated packages will be of the form
 
 @<prefix><sanitized-package-name>//...
 """,
@@ -343,14 +358,6 @@ For incremental mode the packages will be of the form
 pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
-    ),
-    "incremental": attr.bool(
-        default = False,
-        doc = "Create the repository in incremental mode.",
-    ),
-    "requirements": attr.label(
-        allow_single_file = True,
-        doc = "A 'requirements.txt' pip requirements file.",
     ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
