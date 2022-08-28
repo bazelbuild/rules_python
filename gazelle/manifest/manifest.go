@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -94,11 +95,31 @@ func (f *File) Decode(manifestPath string) error {
 	return nil
 }
 
+// ModulesMapping is the type used to map from importable Python modules to
+// the wheel names that provide these modules
+type ModulesMapping map[string]string
+
+// MarshalYAML makes sure that we sort the module names before marshalling
+// the contents of `ModulesMapping` to a yaml file. This ensures that the
+// file is deterministically generated from the map
+func (m ModulesMapping) MarshalYAML() (interface{}, error) {
+	var mapslice yaml.MapSlice
+	var keys []string
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		mapslice = append(mapslice, yaml.MapItem{Key: key, Value: m[key]})
+	}
+	return mapslice, nil
+}
+
 // Manifest represents the structure of the Gazelle manifest file.
 type Manifest struct {
 	// ModulesMapping is the mapping from importable modules to which Python
 	// wheel name provides these modules.
-	ModulesMapping map[string]string `yaml:"modules_mapping"`
+	ModulesMapping ModulesMapping `yaml:"modules_mapping"`
 	// PipDepsRepositoryName is the name of the pip_install repository target.
 	// DEPRECATED
 	PipDepsRepositoryName string `yaml:"pip_deps_repository_name,omitempty"`

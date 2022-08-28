@@ -10,7 +10,7 @@ import (
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
-var modulesMapping = map[string]string{
+var modulesMapping = manifest.ModulesMapping{
 	"arrow":           "arrow",
 	"arrow.__init__":  "arrow",
 	"arrow.api":       "arrow",
