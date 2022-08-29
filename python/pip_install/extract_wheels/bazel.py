@@ -326,6 +326,10 @@ def sanitised_repo_file_label(whl_name: str, repo_prefix: str) -> str:
     )
 
 
+def sanitised_alias_repo_library_label(repo: str, name: str) -> str:
+    return '"@{}//{}"'.format(sanitise_name(repo, ""), sanitise_name(name, ""))
+
+
 def extract_wheel(
     wheel_file: str,
     extras: Dict[str, Set[str]],
@@ -335,6 +339,7 @@ def extract_wheel(
     incremental: bool = False,
     incremental_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
+    parent_repo_name: Optional[str] = None,
 ) -> Optional[str]:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
@@ -347,6 +352,7 @@ def extract_wheel(
             effects the names of libraries and their dependencies, which point to other external repositories.
         incremental_dir: An optional override for the working directory of incremental builds.
         annotation: An optional set of annotations to apply to the BUILD contents of the wheel.
+        parent_repo_name: The parent repo name, required when `incremental=True` and ignored otherwise.
 
     Returns:
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
@@ -373,8 +379,12 @@ def extract_wheel(
     whl_deps = sorted(whl.dependencies(extras_requested) - self_edge_dep)
 
     if incremental:
+        assert (
+            parent_repo_name is not None
+        ), '"parent_repo_name" is required when incremental=True.'
         sanitised_dependencies = [
-            sanitised_repo_library_label(d, repo_prefix=repo_prefix) for d in whl_deps
+            sanitised_alias_repo_library_label(repo=parent_repo_name, name=d)
+            for d in whl_deps
         ]
         sanitised_wheel_file_dependencies = [
             sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps

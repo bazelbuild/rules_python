@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Optional
 
 from python.pip_install.extract_wheels import bazel
 
@@ -21,6 +22,7 @@ class TestWhlFilegroup(unittest.TestCase):
         self,
         repo_prefix: str,
         incremental: bool = False,
+        repo_name: Optional[str] = None,
     ) -> None:
         generated_bazel_dir = bazel.extract_wheel(
             self.wheel_path,
@@ -28,6 +30,7 @@ class TestWhlFilegroup(unittest.TestCase):
             pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,
             incremental=incremental,
+            parent_repo_name=repo_name,
             repo_prefix=repo_prefix,
             incremental_dir=Path(self.wheel_dir),
         )
@@ -46,7 +49,7 @@ class TestWhlFilegroup(unittest.TestCase):
         self._run(repo_prefix="prefix_")
 
     def test_incremental(self) -> None:
-        self._run(incremental=True, repo_prefix="prefix_")
+        self._run(incremental=True, repo_prefix="prefix_", repo_name="prefix")
 
 
 if __name__ == "__main__":

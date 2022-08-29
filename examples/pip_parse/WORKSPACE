@@ -13,7 +13,7 @@ python_register_toolchains(
 )
 
 load("@python39//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@rules_python//python:pip.bzl", "package_overrides", "pip_parse")
 
 pip_parse(
     # (Optional) You can set an environment in the pip process to control its
@@ -22,6 +22,20 @@ pip_parse(
     # can be passed
     # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
     name = "pypi",
+
+    # Pip parse uses alias packages to create targets configurable aliases such as @pypi//package.
+    # You can then override these packages, either by default or in certain cases (under the hood, this uses select).
+    # Note that this will override it for everyone who uses @pypi//mypackage, including other pip packages. This
+    # will not affect callers who use @pypi_mypackage//:pkg directly.
+    library_overrides = package_overrides({
+        # Shorthand to override the default.
+        # "pip_package_1" : "//:my_pip_package_1",
+        # # Any valid select would work two (default not required).
+        # "pip_package_2" : {
+        #     "//:mycondition": "//:my_pip_package_2",
+        # }
+    }),
+
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
     # extra_pip_args = ["-v"],

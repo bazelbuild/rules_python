@@ -98,6 +98,7 @@ def main() -> None:
         incremental=True,
         repo_prefix=args.repo_prefix,
         annotation=args.annotation,
+        parent_repo_name=args.repo,
     )
 
 

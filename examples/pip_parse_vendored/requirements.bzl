@@ -7,7 +7,7 @@ from //:requirements.txt
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
-all_requirements = ["@pip_certifi//:pkg", "@pip_charset_normalizer//:pkg", "@pip_idna//:pkg", "@pip_requests//:pkg", "@pip_urllib3//:pkg"]
+all_requirements = ["@pip//certifi", "@pip//charset_normalizer", "@pip//idna", "@pip//requests", "@pip//urllib3"]
 
 all_whl_requirements = ["@pip_certifi//:whl", "@pip_charset_normalizer//:whl", "@pip_idna//:whl", "@pip_requests//:whl", "@pip_urllib3//:whl"]
 

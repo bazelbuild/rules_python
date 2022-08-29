@@ -1,8 +1,10 @@
 import argparse
 import json
+import os
 import shlex
 import sys
 import textwrap
+import warnings
 from pathlib import Path
 from typing import Any, Dict, List, TextIO, Tuple
 
@@ -86,6 +88,7 @@ def parse_whl_library_args(args: argparse.Namespace) -> Dict[str, Any]:
         "requirements_lock_label",
         "annotations",
         "bzlmod",
+        "library_overrides",
     ):
         if arg in whl_library_args:
             whl_library_args.pop(arg)
@@ -93,10 +96,85 @@ def parse_whl_library_args(args: argparse.Namespace) -> Dict[str, Any]:
     return whl_library_args
 
 
+def _create_alias_package(
+    alias_name: str,
+    py_library_selection: Dict[str, str],
+):
+    # The directory name is just the sanitized name.
+    os.mkdir(alias_name)
+
+    py_library_selection = json.dumps(py_library_selection)
+
+    build_file_content = textwrap.dedent(
+        """\
+
+        package(default_visibility = ["//visibility:public"])
+
+        alias(
+            name = "{py_library_label}",
+            actual = select({py_library_selection}),
+        )
+        """.format(
+            py_library_label=alias_name,
+            py_library_selection=py_library_selection,
+        )
+    )
+
+    with open(os.path.join(alias_name, "BUILD.bazel"), "w", encoding="utf-8") as f:
+        f.write(build_file_content)
+
+
+def create_alias_packages(
+    repo_prefix: str,
+    install_requirements: List[Tuple[InstallRequirement, str]],
+    library_overrides: Dict[str, Dict[str, str]],
+):
+    """Create alias packages and targets for each requirement."""
+    for ir, _ in install_requirements:
+        # The 'actual' library is the one in the incrementally fetched repo.
+        # We need to strip the quotes here as we will encode w/ json.
+        actual_library = bazel.sanitised_repo_library_label(
+            ir.name, repo_prefix=repo_prefix
+        )
+        actual_library = actual_library.replace('"', "")
+
+        alias_name = bazel.sanitise_name(ir.name, "")
+
+        # Apply any overrides on top. We pop the keys here so we can report
+        # unused libraries to the user. Currently this only accepts overrides
+        # which use the alias (sanitized) name.
+        py_library_selection = {
+            "//conditions:default": actual_library,
+            **library_overrides.pop(alias_name, {}),
+        }
+
+        _create_alias_package(
+            alias_name=alias_name, py_library_selection=py_library_selection
+        )
+
+    # By default, warn about overrides which aren't present in the requirements
+    # file, but create repos for these overrides anyway. This is useful in cases
+    # where the actual combination of libraries is unsupported but it works with
+    # the user's custom override(s).
+    # TODO(corypaik): Parameterize this behavior so that the users can whitelist
+    # specific libraries or throw an error instead.
+    if len(library_overrides) > 0:
+        warnings.warn(
+            "Ignoring library overrides for packages not present in the "
+            f"requirements file: {library_overrides}"
+        )
+
+    for alias_name, py_library_selection in library_overrides.items():
+        _create_alias_package(
+            alias_name=alias_name, py_library_selection=py_library_selection
+        )
+
+
 def generate_parsed_requirements_contents(
     requirements_lock: Path,
     repo: str,
     repo_prefix: str,
+    parent_repo_name: str,
     whl_library_args: Dict[str, Any],
     annotations: Dict[str, str] = dict(),
     bzlmod: bool = False,
@@ -114,10 +192,12 @@ def generate_parsed_requirements_contents(
     repo_names_and_reqs = repo_names_and_requirements(
         install_req_and_lines, repo_prefix
     )
-
+    # Use the alias targets for `all_requirements`.
     all_requirements = ", ".join(
         [
-            bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix)
+            bazel.sanitised_alias_repo_library_label(
+                repo=parent_repo_name, name=ir.name
+            )
             for ir, _ in install_req_and_lines
         ]
     )
@@ -212,6 +292,11 @@ def coerce_to_bool(option):
     return str(option).lower() == "true"
 
 
+def parse_json_from_file(option):
+    content = Path(option).read_text()
+    return json.loads(content) if content.strip() != "" else {}
+
+
 def main(output: TextIO) -> None:
     """Args:
 
@@ -266,6 +351,11 @@ If set, it will take precedence over python_interpreter.",
         default=False,
         help="Whether this script is run under bzlmod. Under bzlmod we don't generate the install_deps() macro as it isn't needed.",
     )
+    parser.add_argument(
+        "--library_overrides",
+        type=parse_json_from_file,
+        help="A json encoded file containing library overrides for packages.",
+    )
     arguments.parse_common_args(parser)
     args = parser.parse_args()
 
@@ -277,6 +367,13 @@ If set, it will take precedence over python_interpreter.",
     )
     req_names = sorted([req.name for req, _ in install_requirements])
     annotations = args.annotations.collect(req_names) if args.annotations else {}
+
+    # Generate build files for each library.
+    create_alias_packages(
+        repo_prefix=args.repo_prefix,
+        install_requirements=install_requirements,
+        library_overrides=args.library_overrides,
+    )
 
     # Write all rendered annotation files and generate a list of the labels to write to the requirements file
     annotated_requirements = dict()
@@ -310,6 +407,7 @@ If set, it will take precedence over python_interpreter.",
             requirements_lock=args.requirements_lock,
             repo=args.repo,
             repo_prefix=args.repo_prefix,
+            parent_repo_name=args.repo,
             whl_library_args=whl_library_args,
             annotations=annotated_requirements,
             bzlmod=args.bzlmod,

@@ -81,6 +81,7 @@ py_test(
         ":yamllint",
         data_requirement("s3cmd"),
         dist_info_requirement("requests"),
+        "@pypi//yamllint",
     ],
     env = {
         "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),

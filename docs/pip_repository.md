@@ -8,9 +8,10 @@
 
 <pre>
 pip_repository(<a href="#pip_repository-name">name</a>, <a href="#pip_repository-annotations">annotations</a>, <a href="#pip_repository-bzlmod">bzlmod</a>, <a href="#pip_repository-download_only">download_only</a>, <a href="#pip_repository-enable_implicit_namespace_pkgs">enable_implicit_namespace_pkgs</a>,
-               <a href="#pip_repository-environment">environment</a>, <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>, <a href="#pip_repository-python_interpreter">python_interpreter</a>,
-               <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>, <a href="#pip_repository-requirements_darwin">requirements_darwin</a>,
-               <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>, <a href="#pip_repository-timeout">timeout</a>)
+               <a href="#pip_repository-environment">environment</a>, <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-library_overrides">library_overrides</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>,
+               <a href="#pip_repository-python_interpreter">python_interpreter</a>, <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>,
+               <a href="#pip_repository-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>,
+               <a href="#pip_repository-timeout">timeout</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -66,6 +67,7 @@ py_binary(
 | <a id="pip_repository-environment"></a>environment |  Environment variables to set in the pip subprocess. Can be used to set common variables such as <code>http_proxy</code>, <code>https_proxy</code> and <code>no_proxy</code> Note that pip is run with "--isolated" on the CLI so PIP_&lt;VAR&gt;_&lt;NAME&gt; style env vars are ignored, but env vars that control requests and urllib3 can be passed.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional | <code>{}</code> |
 | <a id="pip_repository-extra_pip_args"></a>extra_pip_args |  Extra arguments to pass on to pip. Must not contain spaces.   | List of strings | optional | <code>[]</code> |
 | <a id="pip_repository-isolated"></a>isolated |  Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to the underlying pip command. Alternatively, the <code>RULES_PYTHON_PIP_ISOLATED</code> enviornment varaible can be used to control this flag.   | Boolean | optional | <code>True</code> |
+| <a id="pip_repository-library_overrides"></a>library_overrides |  Optional library overrides to apply to packages.   | String | optional | <code>""</code> |
 | <a id="pip_repository-pip_data_exclude"></a>pip_data_exclude |  Additional data exclusion parameters to add to the pip packages BUILD file.   | List of strings | optional | <code>[]</code> |
 | <a id="pip_repository-python_interpreter"></a>python_interpreter |  The python interpreter to use. This can either be an absolute path or the name of a binary found on the host's <code>PATH</code> environment variable. If no value is set <code>python3</code> is defaulted for Unix systems and <code>python.exe</code> for Windows.   | String | optional | <code>""</code> |
 | <a id="pip_repository-python_interpreter_target"></a>python_interpreter_target |  If you are using a custom python interpreter built by another repository rule, use this attribute to specify its BUILD target. This allows pip_repository to invoke pip using the same interpreter as your toolchain. If set, takes precedence over python_interpreter.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
@@ -168,6 +170,28 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 **RETURNS**
 
 str: A json encoded string of the provided content.
+
+
+<a id="package_overrides"></a>
+
+## package_overrides
+
+<pre>
+package_overrides(<a href="#package_overrides-overrides">overrides</a>)
+</pre>
+
+Overrides apply to alias rules generated from a `pip_repository` rule.
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="package_overrides-overrides"></a>overrides |  Dictionary mapping package names to either alternative default targets, or selection dictionaries. In this case, the dictionary will be merged with the default generated by <code>pip_repository</code>.   |  none |
+
+**RETURNS**
+
+str: A json encoded string of the provided overrides.
 
 
 <a id="use_isolated"></a>
