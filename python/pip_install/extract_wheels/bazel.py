@@ -6,11 +6,7 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set
 
-from python.pip_install.extract_wheels import (
-    annotation,
-    namespace_pkgs,
-    wheel,
-)
+from python.pip_install.extract_wheels import annotation, namespace_pkgs, wheel
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"

@@ -76,6 +76,9 @@ def compile_pip_requirements(
         requirement("pip_tools"),
         requirement("setuptools"),
         requirement("tomli"),
+        requirement("importlib_metadata"),
+        requirement("zipp"),
+        requirement("more_itertools"),
     ]
 
     attrs = {

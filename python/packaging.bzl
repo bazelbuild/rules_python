@@ -226,7 +226,7 @@ def _py_wheel_impl(ctx):
         outputs = [outfile, name_file],
         arguments = [args],
         executable = ctx.executable._wheelmaker,
-        progress_message = "Building wheel",
+        progress_message = "Building wheel {}".format(ctx.label),
     )
     return [
         DefaultInfo(

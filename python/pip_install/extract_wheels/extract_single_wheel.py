@@ -6,9 +6,11 @@ import subprocess
 import sys
 from tempfile import NamedTemporaryFile
 
-from python.pip_install.extract_wheels.extract_wheels import configure_reproducible_wheels
 from python.pip_install.extract_wheels import arguments, bazel, requirements
 from python.pip_install.extract_wheels.annotation import annotation_from_str_path
+from python.pip_install.extract_wheels.extract_wheels import (
+    configure_reproducible_wheels,
+)
 
 
 def main() -> None:
@@ -36,7 +38,7 @@ def main() -> None:
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
-        + ["wheel", "--no-deps"]
+        + ["download" if args.download_only else "wheel", "--no-deps"]
         + deserialized_args["extra_pip_args"]
     )
 
