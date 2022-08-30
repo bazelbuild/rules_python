@@ -80,7 +80,7 @@ def main() -> None:
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
-        + ["wheel", "-r", args.requirements]
+        + ["download" if args.download_only else "wheel", "-r", args.requirements]
         + ["--wheel-dir", os.getcwd()]
         + deserialized_args["extra_pip_args"]
     )
