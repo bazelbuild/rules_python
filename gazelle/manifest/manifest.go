@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sort"
+
+	"github.com/emirpasic/gods/sets/treeset"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -96,21 +97,20 @@ func (f *File) Decode(manifestPath string) error {
 }
 
 // ModulesMapping is the type used to map from importable Python modules to
-// the wheel names that provide these modules
+// the wheel names that provide these modules.
 type ModulesMapping map[string]string
 
-// MarshalYAML makes sure that we sort the module names before marshalling
-// the contents of `ModulesMapping` to a yaml file. This ensures that the
-// file is deterministically generated from the map
+// MarshalYAML makes sure that we sort the module names before marshaling
+// the contents of `ModulesMapping` to a YAML file. This ensures that the
+// file is deterministically generated from the map.
 func (m ModulesMapping) MarshalYAML() (interface{}, error) {
 	var mapslice yaml.MapSlice
-	var keys []string
+	keySet := treeset.NewWithStringComparator()
 	for key := range m {
-		keys = append(keys, key)
+		keySet.Add(key)
 	}
-	sort.Strings(keys)
-	for _, key := range keys {
-		mapslice = append(mapslice, yaml.MapItem{Key: key, Value: m[key]})
+	for _, key := range keySet.Values() {
+		mapslice = append(mapslice, yaml.MapItem{Key: key, Value: m[key.(string)]})
 	}
 	return mapslice, nil
 }
