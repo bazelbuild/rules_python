@@ -23,8 +23,6 @@ package_annotation = _package_annotation
 def pip_install(requirements = None, name = "pip", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-    Usage:
-
     ```python
     load("@rules_python//python:pip.bzl", "pip_install")
 

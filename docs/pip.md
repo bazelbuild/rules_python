@@ -75,8 +75,6 @@ pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_
 
 Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-Usage:
-
 ```python
 load("@rules_python//python:pip.bzl", "pip_install")
 
