@@ -88,6 +88,7 @@ def gazelle_python_manifest(
             "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
         },
         visibility = ["//visibility:private"],
+        timeout = "short",
     )
 
     native.filegroup(
