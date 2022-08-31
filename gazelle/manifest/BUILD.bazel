@@ -5,7 +5,10 @@ go_library(
     srcs = ["manifest.go"],
     importpath = "github.com/bazelbuild/rules_python/gazelle/manifest",
     visibility = ["//visibility:public"],
-    deps = ["@in_gopkg_yaml_v2//:yaml_v2"],
+    deps = [
+        "@com_github_emirpasic_gods//sets/treeset",
+        "@in_gopkg_yaml_v2//:yaml_v2",
+    ],
 )
 
 go_test(
