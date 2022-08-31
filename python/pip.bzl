@@ -21,8 +21,32 @@ compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 
 def pip_install(requirements = None, name = "pip", **kwargs):
-    # pip_install is now considered deprecated.
-    # In future, this may log a warning and eventually be removed.
+    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
+
+    Usage:
+
+    ```python
+    load("@rules_python//python:pip.bzl", "pip_install")
+
+    pip_install(
+        name = "pip_deps",
+        requirements = ":requirements.txt",
+    )
+
+    load("@pip_deps//:requirements.bzl", "install_deps")
+
+    install_deps()
+    ```
+
+    Args:
+        requirements (Label): A 'requirements.txt' pip requirements file.
+        name (str, optional): A unique name for the created external repository (default 'pip').
+        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
+
+    Deprecated:
+        Please use pip_parse.
+    """
+    print("pip_install is deprecated. Please switch to pip_parse. pip_install will be removed in a future release.")
     pip_parse(requirements = requirements, name = name, **kwargs)
 
 def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):

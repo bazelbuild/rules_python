@@ -73,6 +73,22 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-kwargs">kwargs</a>)
 </pre>
 
+Accepts a locked/compiled requirements file and installs the dependencies listed within.
+
+Usage:
+
+```python
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name = "pip_deps",
+    requirements = ":requirements.txt",
+)
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+
+install_deps()
+```
 
 
 **PARAMETERS**
@@ -80,9 +96,9 @@ pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| requirements |  <p align="center"> - </p>   |  <code>None</code> |
-| name |  <p align="center"> - </p>   |  <code>"pip"</code> |
-| kwargs |  <p align="center"> - </p>   |  none |
+| requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
+| name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
+| kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
 <a name="#pip_parse"></a>
