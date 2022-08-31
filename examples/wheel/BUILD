@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//examples/wheel/private:wheel_utils.bzl", "directory_writer")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
 load("//python:versions.bzl", "gen_python_config_settings")
@@ -40,10 +41,10 @@ py_library(
     ],
 )
 
-genrule(
+directory_writer(
     name = "gen_dir",
-    outs = ["someDir"],
-    cmd = "mkdir -p $@ && touch $@/foo.py",
+    out = "someDir",
+    files = {"foo.py": ""},
 )
 
 # Package just a specific py_libraries, without their dependencies
@@ -188,8 +189,8 @@ py_wheel(
 )
 
 py_wheel(
-    name = "use_genrule_with_dir_in_outs",
-    distribution = "use_genrule_with_dir_in_outs",
+    name = "use_rule_with_dir_in_outs",
+    distribution = "use_rule_with_dir_in_outs",
     python_tag = "py3",
     version = "0.0.1",
     deps = [
@@ -240,6 +241,6 @@ py_test(
         ":minimal_with_py_package",
         ":python_abi3_binary_wheel",
         ":python_requires_in_a_package",
-        ":use_genrule_with_dir_in_outs",
+        ":use_rule_with_dir_in_outs",
     ],
 )
