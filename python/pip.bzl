@@ -151,9 +151,9 @@ def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_
     # Just in case our dependencies weren't already fetched
     pip_install_dependencies()
 
-    # Temporary compatibility shim
-    # pip_install was previously document to use requirements while pip_parse was using requirements_lock
-    # We would prefer everyone move to using requirements_lock, but we maintain a temporary shim
+    # Temporary compatibility shim.
+    # pip_install was previously document to use requirements while pip_parse was using requirements_lock.
+    # We would prefer everyone move to using requirements_lock, but we maintain a temporary shim.
     reqs_to_use = requirements_lock if requirements_lock else requirements
 
     pip_repository(
