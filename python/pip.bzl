@@ -41,6 +41,7 @@ def pip_install(requirements = None, name = "pip", **kwargs):
         name (str, optional): A unique name for the created external repository (default 'pip').
         **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
+
     # buildifier: disable=print
     print("pip_install is deprecated. Please switch to pip_parse. pip_install will be removed in a future release.")
     pip_parse(requirements = requirements, name = name, **kwargs)
