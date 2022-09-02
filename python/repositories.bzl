@@ -221,13 +221,13 @@ cc_library(
     ],
 )
 
-cc_import(
+cc_library(
     name = "libpython",
     hdrs = [":includes"],
-    shared_library = select({{
-        "@platforms//os:windows": "python3.dll",
-        "@platforms//os:macos": "lib/libpython{python_version}.dylib",
-        "@platforms//os:linux": "lib/libpython{python_version}.so.1.0",
+    srcs = select({{
+        "@platforms//os:windows": ["python3.dll"],
+        "@platforms//os:macos": ["lib/libpython{python_version}.dylib"],
+        "@platforms//os:linux": ["lib/libpython{python_version}.so", "lib/libpython{python_version}.so.1.0"],
     }}),
 )
 
