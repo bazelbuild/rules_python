@@ -10,7 +10,7 @@ The requirements now form a triple:
 - requirements.txt - lockfile produced by pip-compile or other means
 - requirements.bzl - the "parsed" version of the lockfile readable by Bazel downloader
 
-The `requirements.bzl` file contains baked-in attributes such as `python_interpreter_target` as they were specified in the original `pip_parse` rule. These can be overridden at install type by passing arguments to `install_deps`. For example: 
+The `requirements.bzl` file contains baked-in attributes such as `python_interpreter_target` as they were specified in the original `pip_parse` rule. These can be overridden at install time by passing arguments to `install_deps`. For example: 
 
 ```python
 # Register a hermetic toolchain
