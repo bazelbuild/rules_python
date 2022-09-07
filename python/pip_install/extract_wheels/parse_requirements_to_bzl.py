@@ -158,13 +158,15 @@ def generate_parsed_requirements_contents(
             name = requirement.split(" ")[0].split("=")[0]
             return _annotations.get(name)
 
-        def install_deps():
+        def install_deps(**whl_library_kwargs):
+            whl_config = dict(_config)
+            whl_config.update(whl_library_kwargs)
             for name, requirement in _packages:
                 whl_library(
                     name = name,
                     requirement = requirement,
                     annotation = _get_annotation(requirement),
-                    **_config
+                    **whl_config
                 )
         """.format(
             all_requirements=all_requirements,
