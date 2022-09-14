@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 from shutil import copyfile
 
 from piptools.scripts.compile import cli
@@ -35,7 +36,10 @@ if __name__ == "__main__":
 
     parse_str_none = lambda s: None if s == "None" else s
 
-    requirements_in = sys.argv.pop(1)
+    # The requirements_in file could be generated. We need to get the path to it before we change
+    # directory into the workspace directory.
+    requirements_in = str(Path(sys.argv.pop(1)).resolve())
+
     requirements_txt = sys.argv.pop(1)
     requirements_linux = parse_str_none(sys.argv.pop(1))
     requirements_darwin = parse_str_none(sys.argv.pop(1))
