@@ -5,10 +5,13 @@ buildifier:
   warnings: "all"
 all_targets: &all_targets
   build_targets:
+    - "--"
     - "..."
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
+    # Disabled due to https://github.com/bazelbuild/rules_python/issues/827
+    - "-//python/tests/toolchains:python_3_8_10_x86_64-apple-darwin_test"
   # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
   skip_use_bazel_version_for_test: true
   test_targets:
