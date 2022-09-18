@@ -120,9 +120,9 @@ py_wheel(
         ],
     },
     extra_distinfo_files = {
-        "//examples/wheel:NOTICE" : "NOTICE",
+        "//examples/wheel:NOTICE": "NOTICE",
         # Rename the file when packaging to show we can.
-        "//examples/wheel:README.md" : "README",
+        "//examples/wheel:README.md": "README",
     },
     homepage = "www.example.com",
     license = "Apache 2.0",
