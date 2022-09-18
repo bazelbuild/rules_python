@@ -336,13 +336,20 @@ def parse_args() -> argparse.Namespace:
         "--input_file",
         action="append",
         help="'package_path;real_path' pairs listing "
-        "files to be included in the wheel. "
-        "Can be supplied multiple times.",
+             "files to be included in the wheel. "
+             "Can be supplied multiple times.",
     )
     contents_group.add_argument(
         "--input_file_list",
         action="append",
-        help="A file that has all the input files defined as a list to avoid the long command",
+        help="A file that has all the input files defined as a list to avoid "
+             "the long command",
+    )
+    contents_group.add_argument(
+        "--extra_distinfo_file",
+        action="append",
+        help="'filename;real_path' pairs listing extra files to include in"
+             "dist-info directory. Can be supplied multiple times.",
     )
 
     requirements_group = parser.add_argument_group("Package requirements")
@@ -382,6 +389,12 @@ def main() -> None:
         input_files = [i.split(";") for i in arguments.input_file]
     else:
         input_files = []
+
+    if arguments.extra_distinfo_file:
+        extra_distinfo_file = [i.split(";") for i in
+                               arguments.extra_distinfo_file]
+    else:
+        extra_distinfo_file = []
 
     if arguments.input_file_list:
         for input_file in arguments.input_file_list:
@@ -451,7 +464,15 @@ def main() -> None:
 
         if arguments.entry_points_file:
             maker.add_file(
-                maker.distinfo_path("entry_points.txt"), arguments.entry_points_file
+                maker.distinfo_path("entry_points.txt"),
+                arguments.entry_points_file
+            )
+
+        # Sort the files for reproducible order in the archive.
+        for filename, real_path in sorted(extra_distinfo_file):
+            maker.add_file(
+                maker.distinfo_path(filename),
+                real_path
             )
 
         maker.add_recordfile()
