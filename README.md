@@ -152,6 +152,9 @@ updating your system `python` interpreter), you can force it to re-execute by ru
 
 Note: The `pip_install` rule is deprecated. `pip_parse` offers identical functionality and both `pip_install`
 and `pip_parse` now have the same implementation. The name `pip_install` may be removed in a future version of the rules.
+The maintainers have taken all reasonable efforts to faciliate a smooth transition, but some users of `pip_install` will
+need to replace their existing `requirements.txt` with a fully resolved set of dependencies using a tool such as
+`pip-tools` or the `compile_pip_requirements` repository rule.
 
 ### Using third_party packages as dependencies
 
