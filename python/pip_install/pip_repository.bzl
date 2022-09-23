@@ -270,7 +270,7 @@ def _pip_repository_impl(rctx):
         ]
         progress_message = "Extracting wheels"
 
-    args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
+    args += ["--repo", rctx.attr.name.removeprefix("rules_python.pip."), "--repo-prefix", rctx.attr.repo_prefix]
     args = _parse_optional_attrs(rctx, args)
 
     rctx.report_progress(progress_message)

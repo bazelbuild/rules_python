@@ -10,3 +10,12 @@ local_path_override(
     module_name = "rules_python",
     path = "../..",
 )
+
+pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+
+pip.install(
+    name = "deps",
+    requirements = "//:requirements.txt",
+)
+
+use_repo(pip, "deps")

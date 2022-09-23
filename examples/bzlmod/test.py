@@ -1,4 +1,5 @@
 import unittest
+import boto3
 
 from __init__ import main
 
