@@ -257,6 +257,7 @@ py_runtime_pair(
     return {
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
+        "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
         "platform": platform,
         "python_version": python_version,
