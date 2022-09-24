@@ -26,14 +26,18 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
-def _fix_up_requirements_in_path(resolved_requirements_in, requirements_in, requirements_generated):
+def _fix_up_requirements_in_path(
+    resolved_requirements_in, requirements_in, requirements_generated
+):
     """Fix up references to the input file inside of the generated requirements file.
 
     We don't want fully resolved, absolute paths in the generated requirements file.
     The paths could differ for every invocation. Replace them with a predictable path.
     """
     requirements_generated = Path(requirements_generated)
-    fixed_requirements_text = requirements_generated.read_text().replace(resolved_requirements_in, requirements_in)
+    fixed_requirements_text = requirements_generated.read_text().replace(
+        resolved_requirements_in, requirements_in
+    )
     requirements_generated.write_text(fixed_requirements_text)
 
 
@@ -120,7 +124,9 @@ if __name__ == "__main__":
             cli()
         except SystemExit as e:
             if e.code == 0:
-                _fix_up_requirements_in_path(resolved_requirements_in, requirements_in, requirements_txt)
+                _fix_up_requirements_in_path(
+                    resolved_requirements_in, requirements_in, requirements_txt
+                )
         finally:
             sys.exit(e.code)
     else:
@@ -140,7 +146,9 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                _fix_up_requirements_in_path(resolved_requirements_in, requirements_in, requirements_out)
+                _fix_up_requirements_in_path(
+                    resolved_requirements_in, requirements_in, requirements_out
+                )
                 golden_filename = _select_golden_requirements_file(
                     requirements_txt,
                     requirements_linux,
