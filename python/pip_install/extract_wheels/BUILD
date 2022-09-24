@@ -9,7 +9,6 @@ py_library(
         "arguments.py",
         "bazel.py",
         "extract_single_wheel.py",
-        "extract_wheels.py",
         "namespace_pkgs.py",
         "parse_requirements_to_bzl.py",
         "requirements.py",
@@ -19,14 +18,6 @@ py_library(
         requirement("installer"),
         requirement("setuptools"),
     ],
-)
-
-py_binary(
-    name = "extract_wheels",
-    srcs = [
-        "extract_wheels.py",
-    ],
-    deps = [":lib"],
 )
 
 py_binary(
