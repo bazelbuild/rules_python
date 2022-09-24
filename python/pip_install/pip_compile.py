@@ -27,18 +27,18 @@ def _select_golden_requirements_file(
 
 
 def _fix_up_requirements_in_path(
-    resolved_requirements_in, requirements_in, requirements_generated
+    resolved_requirements_in, requirements_in, output_file
 ):
     """Fix up references to the input file inside of the generated requirements file.
 
     We don't want fully resolved, absolute paths in the generated requirements file.
     The paths could differ for every invocation. Replace them with a predictable path.
     """
-    requirements_generated = Path(requirements_generated)
-    fixed_requirements_text = requirements_generated.read_text().replace(
+    output_file = Path(output_file)
+    fixed_requirements_text = output_file.read_text().replace(
         resolved_requirements_in, requirements_in
     )
-    requirements_generated.write_text(fixed_requirements_text)
+    output_file.write_text(fixed_requirements_text)
 
 
 if __name__ == "__main__":
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt if UPDATE else requirements_out)
-    sys.argv.append(requirements_in)
+    sys.argv.append(resolved_requirements_in)
 
     if UPDATE:
         print("Updating " + requirements_txt)
@@ -127,8 +127,7 @@ if __name__ == "__main__":
                 _fix_up_requirements_in_path(
                     resolved_requirements_in, requirements_in, requirements_txt
                 )
-        finally:
-            sys.exit(e.code)
+            raise
     else:
         # cli will exit(0) on success
         try:
