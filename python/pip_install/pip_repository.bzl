@@ -160,7 +160,7 @@ def _parse_optional_attrs(rctx, args):
     if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            struct(arg = rctx.attr.extra_pip_args).to_json(),
+            json.encode(struct(arg = rctx.attr.extra_pip_args)),
         ]
 
     if rctx.attr.download_only:
@@ -169,7 +169,7 @@ def _parse_optional_attrs(rctx, args):
     if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
-            struct(arg = rctx.attr.pip_data_exclude).to_json(),
+            json.encode(struct(arg = rctx.attr.pip_data_exclude)),
         ]
 
     if rctx.attr.enable_implicit_namespace_pkgs:
@@ -178,7 +178,7 @@ def _parse_optional_attrs(rctx, args):
     if rctx.attr.environment != None:
         args += [
             "--environment",
-            struct(arg = rctx.attr.environment).to_json(),
+            json.encode(struct(arg = rctx.attr.environment)),
         ]
 
     return args
