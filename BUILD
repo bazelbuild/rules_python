@@ -39,6 +39,7 @@ filegroup(
     ],
     visibility = [
         "//examples:__pkg__",
+        "//python/tests/toolchains:__pkg__",
         "//tests:__pkg__",
     ],
 )
