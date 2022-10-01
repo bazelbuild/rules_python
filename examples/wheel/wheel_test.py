@@ -117,6 +117,8 @@ examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
                 # and the code should be updated to account for this.
                 rbe_expected_contents = b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=pzE96o3Sp63TDzxAZgl0F42EFevm8x15vpDLqDVp_EQ,378
+example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
+example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
 example_customized-0.0.1.dist-info/RECORD,,
 example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
 example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
