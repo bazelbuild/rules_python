@@ -195,7 +195,7 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Provides-Extra: %s" % option)
         for requirement in option_requirements:
             metadata_contents.append(
-                "Requires-Dist: %s; extra == '%s'" % (requirement, option)
+                "Requires-Dist: %s; extra == '%s'" % (requirement, option),
             )
     ctx.actions.write(
         output = metadata_file,
