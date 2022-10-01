@@ -120,6 +120,11 @@ py_wheel(
             "first = first.main:f",
         ],
     },
+    extra_distinfo_files = {
+        "//examples/wheel:NOTICE": "NOTICE",
+        # Rename the file when packaging to show we can.
+        "//examples/wheel:README.md": "README",
+    },
     homepage = "www.example.com",
     license = "Apache 2.0",
     python_tag = "py3",

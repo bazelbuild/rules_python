@@ -30,8 +30,8 @@ This rule is intended to be used as data dependency to py_wheel rule
 
 <pre>
 py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a href="#py_wheel-author">author</a>, <a href="#py_wheel-author_email">author_email</a>, <a href="#py_wheel-classifiers">classifiers</a>, <a href="#py_wheel-console_scripts">console_scripts</a>, <a href="#py_wheel-deps">deps</a>, <a href="#py_wheel-description_file">description_file</a>,
-         <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>, <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>,
-         <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-stamp">stamp</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
+         <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_distinfo_files">extra_distinfo_files</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>,
+         <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>, <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-stamp">stamp</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
 </pre>
 
 
@@ -94,6 +94,7 @@ py_wheel(
 | description_file |  A file containing text describing the package in a single line.   | <a href="https://bazel.build/docs/build-ref.html#labels">Label</a> | optional | None |
 | distribution |  Name of the distribution.<br><br>This should match the project name onm PyPI. It's also the name that is used to refer to the package in other packages' dependencies.   | String | required |  |
 | entry_points |  entry_points, e.g. <code>{'console_scripts': ['main = examples.wheel.main:main']}</code>.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
+| extra_distinfo_files |  Extra files to add to distinfo directory in the archive.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: Label -> String</a> | optional | {} |
 | extra_requires |  List of optional requirements for this package   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> List of strings</a> | optional | {} |
 | homepage |  A string specifying the URL for the package homepage.   | String | optional | "" |
 | license |  A string specifying the license of the package.   | String | optional | "" |

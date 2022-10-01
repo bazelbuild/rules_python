@@ -221,6 +221,19 @@ def _py_wheel_impl(ctx):
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
 
+    for target, filename in ctx.attr.extra_distinfo_files.items():
+        target_files = target.files.to_list()
+        if len(target_files) != 1:
+            fail(
+                "Multi-file target listed in extra_distinfo_files %s",
+                filename,
+            )
+        other_inputs.extend(target_files)
+        args.add(
+            "--extra_distinfo_file",
+            filename + ";" + target_files[0].path,
+        )
+
     ctx.actions.run(
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile, name_file],
@@ -355,6 +368,10 @@ _other_attrs = {
     "description_file": attr.label(
         doc = "A file containing text describing the package in a single line.",
         allow_single_file = True,
+    ),
+    "extra_distinfo_files": attr.label_keyed_string_dict(
+        doc = "Extra files to add to distinfo directory in the archive.",
+        allow_files = True,
     ),
     "homepage": attr.string(
         doc = "A string specifying the URL for the package homepage.",
