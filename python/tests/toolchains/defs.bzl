@@ -39,10 +39,6 @@ def _acceptance_test_impl(ctx):
     )
 
     python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
-
-    # With the current approach in the run_acceptance_test.sh, we use this
-    # symlink to find the absolute path to the rules_python to be passed to the
-    # --override_repository rules_python=<rules_python_path>.
     ctx.actions.symlink(
         target_file = ctx.file._python_version_test,
         output = python_version_test,
@@ -92,7 +88,7 @@ def _acceptance_test_impl(ctx):
         python_version_test,
         run_acceptance_test_py,
         workspace,
-    ]
+    ] + ctx.files._distribution
     return [DefaultInfo(
         executable = executable,
         files = depset(
@@ -125,6 +121,10 @@ _acceptance_test = rule(
             doc = "The BUILD.bazel template.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
+        ),
+        "_distribution": attr.label(
+            doc = "The rules_python source distribution.",
+            default = Label("//:distribution"),
         ),
         "_python_version_test": attr.label(
             doc = "The python_version_test.py used to test the Python version.",
