@@ -1,0 +1,15 @@
+load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+load(":platforms.bzl", "construct")
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["*.bzl"]) + [
+        "BUILD.bazel",
+    ],
+    visibility = ["//python:__pkg__"],
+)
+
+construct(
+    platforms = PLATFORMS.items(),
+    python_versions = TOOL_VERSIONS.keys(),
+)

@@ -1,0 +1,14 @@
+workspace(name = "rules_python_multi_python_versions")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python:repositories.bzl", "python_register_multi_toolchains")
+
+python_register_multi_toolchains(
+    name = "python",
+    python_versions = ["3.8", "3.9", "3.10"],
+    default_version = "3.9",
+)

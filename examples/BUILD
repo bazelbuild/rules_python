@@ -39,5 +39,10 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "multi_python_versions_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "bzlmod_example",
 )
