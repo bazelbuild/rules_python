@@ -106,6 +106,10 @@ _transition_py_test = rule(
 )
 
 def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
+    args = kwargs.pop("args", None)
+    if args:
+        fail("The args attribute is not supported under the custom transition rules. Refer to https://github.com/bazelbuild/rules_python/pull/846 for more context.")
+
     data = kwargs.pop("data", None)
     env = kwargs.pop("env", None)
 
