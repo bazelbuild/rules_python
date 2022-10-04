@@ -16,6 +16,9 @@ def _transition_py_binary_impl(ctx):
         output = ctx.outputs.output,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
+    env = {}
+    for k, v in ctx.attr.env.items():
+        env[k] = ctx.expand_location(v)
     providers = [
         DefaultInfo(
             executable = ctx.outputs.output,
@@ -26,6 +29,7 @@ def _transition_py_binary_impl(ctx):
         target[PyRuntimeInfo],
         target[InstrumentedFilesInfo],
         target[OutputGroupInfo],
+        RunEnvironmentInfo(environment = env),
     ]
     return providers
 
@@ -49,7 +53,7 @@ def _transition_py_test_impl(ctx):
         target[PyRuntimeInfo],
         target[InstrumentedFilesInfo],
         target[OutputGroupInfo],
-        testing.TestEnvironment(env),
+        RunEnvironmentInfo(environment = env),
     ]
     return providers
 
