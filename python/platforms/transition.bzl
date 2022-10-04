@@ -62,6 +62,8 @@ _COMMON_ATTRS = {
     # Since the default LocationExpander used by ctx.expand_location is not the same as the native
     # rules (it doesn't set "allowDataAttributeEntriesInLabel"), we use "tools" temporarily while a
     # proper fix in Bazel happens.
+    # 
+    # A fix for this was proposed in https://github.com/bazelbuild/bazel/pull/16381.
     "tools": attr.label_list(
         allow_files = True,
         mandatory = False,
