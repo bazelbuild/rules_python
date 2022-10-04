@@ -11,9 +11,10 @@ _transition_platform = transition(
 
 def _transition_py_binary_impl(ctx):
     target = ctx.attr.target[0]
+    output = ctx.actions.declare_file(ctx.attr.name)
     ctx.actions.symlink(
         is_executable = True,
-        output = ctx.outputs.output,
+        output = output,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
     env = {}
@@ -21,7 +22,7 @@ def _transition_py_binary_impl(ctx):
         env[k] = ctx.expand_location(v)
     providers = [
         DefaultInfo(
-            executable = ctx.outputs.output,
+            executable = output,
             files = target[DefaultInfo].files,
             runfiles = target[DefaultInfo].default_runfiles,
         ),
@@ -35,9 +36,10 @@ def _transition_py_binary_impl(ctx):
 
 def _transition_py_test_impl(ctx):
     target = ctx.attr.target[0]
+    output = ctx.actions.declare_file(ctx.attr.name)
     ctx.actions.symlink(
         is_executable = True,
-        output = ctx.outputs.output,
+        output = output,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
     env = {}
@@ -45,7 +47,7 @@ def _transition_py_test_impl(ctx):
         env[k] = ctx.expand_location(v)
     providers = [
         DefaultInfo(
-            executable = ctx.outputs.output,
+            executable = output,
             files = target[DefaultInfo].files,
             runfiles = target[DefaultInfo].default_runfiles,
         ),
@@ -74,9 +76,6 @@ _COMMON_ATTRS = {
     ),
     "env": attr.string_dict(
         mandatory = False,
-    ),
-    "output": attr.output(
-        mandatory = True,
     ),
     "target": attr.label(
         executable = True,
@@ -153,7 +152,6 @@ def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
         name = name,
         tools = data,
         env = env,
-        output = name,
         target = ":_" + name,
 
         # Attributes common to all build rules.
