@@ -54,6 +54,18 @@ py_test_3_10(
     env = {"VERSION_CHECK": "3.10"},
 )
 
+py_test(
+    name = "version_default_takes_3_10_subprocess_test",
+    main = "cross_version_test.py",
+    srcs = ["cross_version_test.py"],
+    data = [":version_3_10"],
+    env = {
+        "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_10)",
+        "SUBPROCESS_VERSION_CHECK": "3.10",
+        "VERSION_CHECK": "3.9",
+    },
+)
+
 py_test_3_10(
     name = "version_3_10_takes_3_9_subprocess_test",
     main = "cross_version_test.py",
