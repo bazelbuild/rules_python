@@ -64,11 +64,11 @@ _COMMON_ATTRS = {
     # location expansion in the same way it is in the native Python rules. The difference on how
     # the Bazel deals with those special attributes differ on the LocationExpander, e.g.:
     # https://github.com/bazelbuild/bazel/blob/ce611646/src/main/java/com/google/devtools/build/lib/analysis/LocationExpander.java#L415-L429
-    # 
+    #
     # Since the default LocationExpander used by ctx.expand_location is not the same as the native
     # rules (it doesn't set "allowDataAttributeEntriesInLabel"), we use "tools" temporarily while a
     # proper fix in Bazel happens.
-    # 
+    #
     # A fix for this was proposed in https://github.com/bazelbuild/bazel/pull/16381.
     "tools": attr.label_list(
         allow_files = True,
