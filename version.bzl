@@ -17,7 +17,6 @@
 # against.
 # This version should be updated together with the version of Bazel
 # in .bazelversion.
-# TODO(alexeagle): assert this is the case in a test
 BAZEL_VERSION = "5.2.0"
 
 # Versions of Bazel which users should be able to use.
