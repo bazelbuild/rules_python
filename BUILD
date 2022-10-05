@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -75,4 +77,30 @@ gazelle(
         "-prune",
     ],
     command = "update-repos",
+)
+
+genrule(
+    name = "assert_bazelversion",
+    srcs = [".bazelversion"],
+    outs = ["assert_bazelversion_test.sh"],
+    cmd = """\
+set -o errexit -o nounset -o pipefail
+current=$$(cat "$(execpath .bazelversion)")
+cat > "$@" <<EOF
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+if [[ \"$${{current}}\" != \"{expected}\" ]]; then
+    >&2 echo "ERROR: current bazel version '$${{current}}' is not the expected '{expected}'"
+    exit 1
+fi
+EOF
+""".format(
+        expected = BAZEL_VERSION,
+    ),
+    executable = True,
+)
+
+sh_test(
+    name = "assert_bazelversion_test",
+    srcs = [":assert_bazelversion_test.sh"],
 )
