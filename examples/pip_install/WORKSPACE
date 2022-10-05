@@ -57,6 +57,11 @@ pip_install(
     requirements = "//:requirements.txt",
 )
 
+load("@pip//:requirements.bzl", "install_deps")
+
+# Initialize repositories for all packages in requirements.txt.
+install_deps()
+
 # You could optionally use an in-build, compiled python interpreter as a toolchain,
 # and also use it to execute pip.
 #

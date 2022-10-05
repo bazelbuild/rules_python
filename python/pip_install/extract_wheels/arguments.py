@@ -43,7 +43,7 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         "--download_only",
         action="store_true",
         help="Use 'pip download' instead of 'pip wheel'. Disables building wheels from source, but allows use of "
-             "--platform, --python-version, --implementation, and --abi in --extra_pip_args.",
+        "--platform, --python-version, --implementation, and --abi in --extra_pip_args.",
     )
     return parser
 

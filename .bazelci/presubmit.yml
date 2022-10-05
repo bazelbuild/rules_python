@@ -9,6 +9,8 @@ all_targets: &all_targets
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
+  build_flags:
+      - "--keep_going"
   # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
   skip_use_bazel_version_for_test: true
   test_targets:
@@ -41,3 +43,22 @@ platforms:
       - "-//tests:pip_repository_entry_points_example"
     test_flags:
       - "--test_tag_filters=-fix-windows"
+  rbe_ubuntu1604:
+    build_targets:
+      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
+      - "..."
+    # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
+    skip_use_bazel_version_for_test: true
+    test_targets:
+      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
+      - "..."
+      # TODO: The toolchain tests do not currently work in RBE
+      - "-//python/tests/toolchains/..."
+      # TODO: The integration tests do not currently work on RBE
+      # This list is the result of `bazel query 'filter(".*_example$", attr(generator_function, bazel_integration_test, //...))'`
+      - "-//examples:bzlmod_example"
+      - "-//examples:pip_install_example"
+      - "-//examples:pip_parse_example"
+      - "-//examples:pip_parse_vendored_example"
+      - "-//examples:pip_repository_annotations_example"
+      - "-//tests:pip_repository_entry_points_example"
