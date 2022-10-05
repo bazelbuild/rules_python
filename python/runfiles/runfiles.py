@@ -73,6 +73,7 @@ if False:
     # this import may fail at runtime. Luckily mypy can follow this conditional import.
     from typing import Callable, Dict, Optional, Tuple, Union
 
+
 def CreateManifestBased(manifest_path):
     # type: (str) -> _Runfiles
     return _Runfiles(_ManifestBased(manifest_path))
