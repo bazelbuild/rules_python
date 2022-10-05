@@ -34,6 +34,7 @@ def configure_reproducible_wheels() -> None:
     if "PYTHONHASHSEED" not in os.environ:
         os.environ["PYTHONHASHSEED"] = "0"
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build and/or fetch a single wheel based on the requirement passed in"
