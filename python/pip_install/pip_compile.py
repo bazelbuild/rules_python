@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 from shutil import copyfile
 
 from piptools.scripts.compile import cli
@@ -25,6 +26,21 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
+def _fix_up_requirements_in_path(
+    resolved_requirements_in, requirements_in, output_file
+):
+    """Fix up references to the input file inside of the generated requirements file.
+
+    We don't want fully resolved, absolute paths in the generated requirements file.
+    The paths could differ for every invocation. Replace them with a predictable path.
+    """
+    output_file = Path(output_file)
+    fixed_requirements_text = output_file.read_text().replace(
+        resolved_requirements_in, requirements_in
+    )
+    output_file.write_text(fixed_requirements_text)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print(
@@ -41,6 +57,10 @@ if __name__ == "__main__":
     requirements_darwin = parse_str_none(sys.argv.pop(1))
     requirements_windows = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
+
+    # The requirements_in file could be generated. We need to get the path to it before we change
+    # directory into the workspace directory.
+    resolved_requirements_in = str(Path(requirements_in).resolve())
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -96,11 +116,18 @@ if __name__ == "__main__":
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt if UPDATE else requirements_out)
-    sys.argv.append(requirements_in)
+    sys.argv.append(resolved_requirements_in)
 
     if UPDATE:
         print("Updating " + requirements_txt)
-        cli()
+        try:
+            cli()
+        except SystemExit as e:
+            if e.code == 0:
+                _fix_up_requirements_in_path(
+                    resolved_requirements_in, requirements_in, requirements_txt
+                )
+            raise
     else:
         # cli will exit(0) on success
         try:
@@ -118,6 +145,9 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
+                _fix_up_requirements_in_path(
+                    resolved_requirements_in, requirements_in, requirements_out
+                )
                 golden_filename = _select_golden_requirements_file(
                     requirements_txt,
                     requirements_linux,
