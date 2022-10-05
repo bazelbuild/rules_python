@@ -1,5 +1,5 @@
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
-load(":platforms.bzl", "construct")
+load(":platforms.bzl", "construct_platforms")
 
 filegroup(
     name = "distribution",
@@ -9,7 +9,7 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
-construct(
+construct_platforms(
     platforms = PLATFORMS.items(),
     python_versions = TOOL_VERSIONS.keys(),
 )

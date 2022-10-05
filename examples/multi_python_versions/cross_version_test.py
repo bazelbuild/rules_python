@@ -1,6 +1,6 @@
 import os
-import sys
 import subprocess
+import sys
 
 process = subprocess.run(
     [os.getenv("SUBPROCESS_VERSION_PY_BINARY")],

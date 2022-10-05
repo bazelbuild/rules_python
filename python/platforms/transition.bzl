@@ -1,3 +1,7 @@
+"""The transition module contains the rule definitions to wrap py_binary and py_test and transition
+them to the desired target platform.
+"""
+
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 
 def _transition_platform_impl(_, attr):
@@ -63,6 +67,18 @@ def _transition_py_test_impl(ctx):
     return providers
 
 _COMMON_ATTRS = {
+    "env": attr.string_dict(
+        mandatory = False,
+    ),
+    "target": attr.label(
+        executable = True,
+        cfg = _transition_platform,
+        mandatory = True,
+        providers = [PyInfo],
+    ),
+    "target_platform": attr.label(
+        mandatory = True,
+    ),
     # "tools" is a hack here. It should be "data" but "data" is not included by default in the
     # location expansion in the same way it is in the native Python rules. The difference on how
     # the Bazel deals with those special attributes differ on the LocationExpander, e.g.:
@@ -76,18 +92,6 @@ _COMMON_ATTRS = {
     "tools": attr.label_list(
         allow_files = True,
         mandatory = False,
-    ),
-    "env": attr.string_dict(
-        mandatory = False,
-    ),
-    "target": attr.label(
-        executable = True,
-        cfg = _transition_platform,
-        mandatory = True,
-        providers = [PyInfo],
-    ),
-    "target_platform": attr.label(
-        mandatory = True,
     ),
     # Required to Opt-in to the transitions feature.
     "_allowlist_function_transition": attr.label(

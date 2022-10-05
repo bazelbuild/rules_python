@@ -1,4 +1,14 @@
-def construct(platforms, python_versions):
+"""This module is used to construct the platforms in the BUILD file in this same package.
+"""
+
+# buildifier: disable=unnamed-macro
+def construct_platforms(platforms, python_versions):
+    """Constructs a set of constraints, platforms and configs for all platforms and Python versions.
+
+    Args:
+        platforms: The platforms rules_python support for the Python toolchains.
+        python_versions: The Python versions supported by rules_python.
+    """
     native.constraint_setting(
         name = "python_version",
         visibility = ["//visibility:private"],
