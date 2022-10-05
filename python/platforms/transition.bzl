@@ -30,7 +30,7 @@ def _transition_py_binary_impl(ctx):
         target[PyRuntimeInfo],
         target[InstrumentedFilesInfo],
         target[OutputGroupInfo],
-        RunEnvironmentInfo(environment = env),
+        testing.TestEnvironment(environment = env),
     ]
     return providers
 
@@ -55,7 +55,10 @@ def _transition_py_test_impl(ctx):
         target[PyRuntimeInfo],
         target[InstrumentedFilesInfo],
         target[OutputGroupInfo],
-        RunEnvironmentInfo(environment = env),
+        # TODO(f0rmiga): testing.TestEnvironment is deprecated in favour of RunEnvironmentInfo but
+        # RunEnvironmentInfo is not exposed in Bazel < 5.3.
+        # https://github.com/bazelbuild/bazel/commit/dbdfa07e92f99497be9c14265611ad2920161483
+        testing.TestEnvironment(environment = env),
     ]
     return providers
 
