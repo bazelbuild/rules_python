@@ -153,7 +153,6 @@ def _py_wheel_impl(ctx):
     args.add("--name", ctx.attr.distribution)
     args.add("--version", version)
     args.add("--python_tag", ctx.attr.python_tag)
-    args.add("--python_requires", ctx.attr.python_requires)
     args.add("--abi", ctx.attr.abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile)
@@ -168,28 +167,42 @@ def _py_wheel_impl(ctx):
 
     args.add("--input_file_list", packageinputfile)
 
-    extra_headers = []
-    if ctx.attr.author:
-        extra_headers.append("Author: %s" % ctx.attr.author)
-    if ctx.attr.author_email:
-        extra_headers.append("Author-email: %s" % ctx.attr.author_email)
-    if ctx.attr.homepage:
-        extra_headers.append("Home-page: %s" % ctx.attr.homepage)
-    if ctx.attr.license:
-        extra_headers.append("License: %s" % ctx.attr.license)
+    # Note: Description file is not embedded into metadata.txt yet,
+    # it will be done later by wheelmaker script.
+    metadata_file = ctx.actions.declare_file(ctx.attr.name + ".metadata.txt")
+    metadata_contents = ["Metadata-Version: 2.1"]
+    metadata_contents.append("Name: %s" % ctx.attr.distribution)
+    metadata_contents.append("Version: %s" % version)
 
-    for h in extra_headers:
-        args.add("--header", h)
+    if ctx.attr.author:
+        metadata_contents.append("Author: %s" % ctx.attr.author)
+    if ctx.attr.author_email:
+        metadata_contents.append("Author-email: %s" % ctx.attr.author_email)
+    if ctx.attr.homepage:
+        metadata_contents.append("Home-page: %s" % ctx.attr.homepage)
+    if ctx.attr.license:
+        metadata_contents.append("License: %s" % ctx.attr.license)
 
     for c in ctx.attr.classifiers:
-        args.add("--classifier", c)
+        metadata_contents.append("Classifier: %s" % c)
 
-    for r in ctx.attr.requires:
-        args.add("--requires", r)
+    if ctx.attr.python_requires:
+        metadata_contents.append("Requires-Python: %s" % ctx.attr.python_requires)
+    for requirement in ctx.attr.requires:
+        metadata_contents.append("Requires-Dist: %s" % requirement)
 
-    for option, requirements in ctx.attr.extra_requires.items():
-        for r in requirements:
-            args.add("--extra_requires", r + ";" + option)
+    for option, option_requirements in sorted(ctx.attr.extra_requires.items()):
+        metadata_contents.append("Provides-Extra: %s" % option)
+        for requirement in option_requirements:
+            metadata_contents.append(
+                "Requires-Dist: %s; extra == '%s'" % (requirement, option),
+            )
+    ctx.actions.write(
+        output = metadata_file,
+        content = "\n".join(metadata_contents) + "\n",
+    )
+    other_inputs.append(metadata_file)
+    args.add("--metadata_file", metadata_file)
 
     # Merge console_scripts into entry_points.
     entrypoints = dict(ctx.attr.entry_points)  # Copy so we can mutate it
@@ -334,7 +347,9 @@ _requirement_attrs = {
         doc = "List of optional requirements for this package",
     ),
     "requires": attr.string_list(
-        doc = "List of requirements for this package",
+        doc = ("List of requirements for this package. See the section on " +
+               "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
+               "for details and examples of the format of this argument."),
     ),
 }
 
@@ -366,7 +381,7 @@ _other_attrs = {
         doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
     ),
     "description_file": attr.label(
-        doc = "A file containing text describing the package in a single line.",
+        doc = "A file containing text describing the package.",
         allow_single_file = True,
     ),
     "extra_distinfo_files": attr.label_keyed_string_dict(
@@ -383,10 +398,7 @@ _other_attrs = {
     ),
     "python_requires": attr.string(
         doc = (
-            "A string specifying what other distributions need to be installed " +
-            "when this one is. See the section on " +
-            "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
-            "for details and examples of the format of this argument."
+            "Python versions required by this distribution, e.g. '>=3.5,<3.7'"
         ),
         default = "",
     ),

@@ -94,40 +94,11 @@ class WheelTest(unittest.TestCase):
             entry_point_contents = zf.read(
                 "example_customized-0.0.1.dist-info/entry_points.txt"
             )
-            # The entries are guaranteed to be sorted.
-            if platform.system() == "Windows":
-                self.assertEqual(
-                    record_contents,
-                    b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=pzE96o3Sp63TDzxAZgl0F42EFevm8x15vpDLqDVp_EQ,378
-example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
-example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
-example_customized-0.0.1.dist-info/RECORD,,
-example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
-example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
-examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
-examples/wheel/lib/module_with_data.py,sha256=8s0Khhcqz3yVsBKv2IB5u4l4TMKh7-c_V6p65WVHPms,637
-examples/wheel/lib/simple_module.py,sha256=z2hwciab_XPNIBNH8B1Q5fYgnJvQTeYf0ZQJpY8yLLY,637
-examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
-""",
-                )
-            else:
-                # TODO: The non-ascii characters in the METADATA file are interpreted differently on the
-                # ubuntu16_rbe hosts in comparison to other unix platforms. This should not be the case
-                # and the code should be updated to account for this.
-                rbe_expected_contents = b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=pzE96o3Sp63TDzxAZgl0F42EFevm8x15vpDLqDVp_EQ,378
-example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
-example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
-example_customized-0.0.1.dist-info/RECORD,,
-example_customized-0.0.1.dist-info/WHEEL,sha256=sobxWSyDDkdg_rinUth-jxhXHqoNqlmNMJY3aTZn2Us,91
-example_customized-0.0.1.dist-info/entry_points.txt,sha256=pqzpbQ8MMorrJ3Jp0ntmpZcuvfByyqzMXXi2UujuXD0,137
-examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,12
-examples/wheel/lib/module_with_data.py,sha256=8s0Khhcqz3yVsBKv2IB5u4l4TMKh7-c_V6p65WVHPms,637
-examples/wheel/lib/simple_module.py,sha256=z2hwciab_XPNIBNH8B1Q5fYgnJvQTeYf0ZQJpY8yLLY,637
-examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
-"""
-                unix_expected_contents = b"""\
+
+            self.assertEqual(
+                record_contents,
+                # The entries are guaranteed to be sorted.
+                b"""\
 example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
 example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
 example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
@@ -138,15 +109,7 @@ examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,1
 examples/wheel/lib/module_with_data.py,sha256=8s0Khhcqz3yVsBKv2IB5u4l4TMKh7-c_V6p65WVHPms,637
 examples/wheel/lib/simple_module.py,sha256=z2hwciab_XPNIBNH8B1Q5fYgnJvQTeYf0ZQJpY8yLLY,637
 examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
-"""
-                self.assertIn(
-                    record_contents,
-                    [
-                        rbe_expected_contents,
-                        unix_expected_contents,
-                    ],
-                )
-
+""")
             self.assertEqual(
                 wheel_contents,
                 b"""\
@@ -156,44 +119,9 @@ Root-Is-Purelib: true
 Tag: py3-none-any
 """,
             )
-            if platform.system() == "Windows":
-                self.assertEqual(
-                    metadata_contents,
-                    b"""\
-Metadata-Version: 2.1
-Name: example_customized
-Version: 0.0.1
-Author: Example Author with non-ascii characters: \xc3\x85\xc2\xbc\xc3\x83\xc2\xb3\xc3\x85\xc2\x82w
-Author-email: example@example.com
-Home-page: www.example.com
-License: Apache 2.0
-Classifier: License :: OSI Approved :: Apache Software License
-Classifier: Intended Audience :: Developers
-Requires-Dist: pytest
-
-This is a sample description of a wheel.
-""",
-                )
-            else:
-                # TODO: The non-ascii characters in the METADATA file are interpreted differently on the
-                # ubuntu16_rbe hosts in comparison to other unix platforms. This should not be the case
-                # and the code should be updated to account for this.
-                rbe_expected_contents = b"""\
-Metadata-Version: 2.1
-Name: example_customized
-Version: 0.0.1
-Author: Example Author with non-ascii characters: \xc3\x85\xc2\xbc\xc3\x83\xc2\xb3\xc3\x85\xc2\x82w
-Author-email: example@example.com
-Home-page: www.example.com
-License: Apache 2.0
-Classifier: License :: OSI Approved :: Apache Software License
-Classifier: Intended Audience :: Developers
-Requires-Dist: pytest
-
-This is a sample description of a wheel.
-"""
-
-                unix_expected_contents = b"""\
+            self.assertEqual(
+                metadata_contents,
+                b"""\
 Metadata-Version: 2.1
 Name: example_customized
 Version: 0.0.1
@@ -206,14 +134,7 @@ Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
 
 This is a sample description of a wheel.
-"""
-                self.assertIn(
-                    metadata_contents,
-                    [
-                        rbe_expected_contents,
-                        unix_expected_contents,
-                    ],
-                )
+""")
             self.assertEqual(
                 entry_point_contents,
                 b"""\
