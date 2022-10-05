@@ -73,69 +73,19 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-kwargs">kwargs</a>)
 </pre>
 
-Accepts a `requirements.txt` file and installs the dependencies listed within.
-
-Those dependencies become available in a generated `requirements.bzl` file.
-
-This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
-In your WORKSPACE file:
+Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
 ```python
+load("@rules_python//python:pip.bzl", "pip_install")
+
 pip_install(
+    name = "pip_deps",
     requirements = ":requirements.txt",
 )
-```
 
-You can then reference installed dependencies from a `BUILD` file with:
+load("@pip_deps//:requirements.bzl", "install_deps")
 
-```python
-load("@pip//:requirements.bzl", "requirement")
-py_library(
-    name = "bar",
-    ...
-    deps = [
-       "//my/other:dep",
-       requirement("requests"),
-       requirement("numpy"),
-    ],
-)
-```
-
-> Note that this convenience comes with a cost.
-> Analysis of any BUILD file which loads the requirements helper in this way will
-> cause an eager-fetch of all the pip dependencies,
-> even if no python targets are requested to be built.
-> In a multi-language repo, this may cause developers to fetch dependencies they don't need,
-> so consider using the long form for dependencies if this happens.
-
-In addition to the `requirement` macro, which is used to access the `py_library`
-target generated from a package's wheel, the generated `requirements.bzl` file contains
-functionality for exposing [entry points][whl_ep] as `py_binary` targets.
-
-[whl_ep]: https://packaging.python.org/specifications/entry-points/
-
-```python
-load("@pip_deps//:requirements.bzl", "entry_point")
-
-alias(
-    name = "pip-compile",
-    actual = entry_point(
-        pkg = "pip-tools",
-        script = "pip-compile",
-    ),
-)
-```
-
-Note that for packages whose name and script are the same, only the name of the package
-is needed when calling the `entry_point` macro.
-
-```python
-load("@pip_deps//:requirements.bzl", "entry_point")
-
-alias(
-    name = "flake8",
-    actual = entry_point("flake8"),
-)
+install_deps()
 ```
 
 
@@ -154,7 +104,7 @@ alias(
 ## pip_parse
 
 <pre>
-pip_parse(<a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-kwargs">kwargs</a>)
+pip_parse(<a href="#pip_parse-requirements">requirements</a>, <a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-kwargs">kwargs</a>)
 </pre>
 
 Accepts a locked/compiled requirements file and installs the dependencies listed within.
@@ -247,7 +197,8 @@ See the example in rules_python/examples/pip_parse_vendored.
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.     Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code>     attributes.   |  none |
+| requirements |  Deprecated. See requirements_lock.   |  <code>None</code> |
+| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.     Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code>     attributes.   |  <code>None</code> |
 | name |  The name of the generated repository. The generated repositories     containing each requirement will be of the form &lt;name&gt;_&lt;requirement-name&gt;.   |  <code>"pip_parsed_deps"</code> |
 | kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
