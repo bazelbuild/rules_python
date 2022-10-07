@@ -3,7 +3,7 @@ import sys
 
 import libs.my_lib as my_lib
 
-sanitized_version_check = os.getenv("VERSION_CHECK").replace(".", "_")
+sanitized_version_check = f"{sys.version_info.major}_{sys.version_info.minor}"
 
 expected = (
     f"../pypi_{sanitized_version_check}_websockets/site-packages/websockets/__init__.py"
