@@ -1,17 +1,19 @@
 """Rules to verify and update pip-compile locked requirements.txt"""
 
-load("//python:defs.bzl", "py_binary", "py_test")
+load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 
 def compile_pip_requirements(
         name,
         extra_args = [],
-        visibility = ["//visibility:private"],
+        py_binary = _py_binary,
+        py_test = _py_test,
         requirements_in = None,
         requirements_txt = None,
-        requirements_linux = None,
         requirements_darwin = None,
+        requirements_linux = None,
         requirements_windows = None,
+        visibility = ["//visibility:private"],
         tags = None,
         **kwargs):
     """Generates targets for managing pip dependencies with pip-compile.
@@ -26,16 +28,18 @@ def compile_pip_requirements(
     - update with   `bazel run <name>.update`
 
     Args:
-        name: base name for generated targets, typically "requirements"
-        extra_args: passed to pip-compile
-        visibility: passed to both the _test and .update rules
-        requirements_in: file expressing desired dependencies
-        requirements_txt: result of "compiling" the requirements.in file
+        name: base name for generated targets, typically "requirements".
+        extra_args: passed to pip-compile.
+        py_binary: the py_binary rule to be used.
+        py_test: the py_test rule to be used.
+        requirements_in: file expressing desired dependencies.
+        requirements_txt: result of "compiling" the requirements.in file.
         requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
         requirements_windows: File of windows specific resolve output to check validate if requirement.in has changes.
-        tags: tagging attribute common to all build rules, passed to both the _test and .update rules
-        **kwargs: other bazel attributes passed to the "_test" rule
+        tags: tagging attribute common to all build rules, passed to both the _test and .update rules.
+        visibility: passed to both the _test and .update rules.
+        **kwargs: other bazel attributes passed to the "_test" rule.
     """
     requirements_in = name + ".in" if requirements_in == None else requirements_in
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt

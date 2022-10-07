@@ -28,6 +28,38 @@ py_binary_3_10(
 )
 
 py_test(
+    name = "my_lib_default_test",
+    srcs = ["my_lib_test.py"],
+    env = {"VERSION_CHECK": "3.9"},  # The default defined in the WORKSPACE.
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
+
+py_test_3_8(
+    name = "my_lib_3_8_test",
+    srcs = ["my_lib_test.py"],
+    env = {"VERSION_CHECK": "3.8"},
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
+
+py_test_3_9(
+    name = "my_lib_3_9_test",
+    srcs = ["my_lib_test.py"],
+    env = {"VERSION_CHECK": "3.9"},
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
+
+py_test_3_10(
+    name = "my_lib_3_10_test",
+    srcs = ["my_lib_test.py"],
+    env = {"VERSION_CHECK": "3.10"},
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
+
+py_test(
     name = "version_default_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.9"},  # The default defined in the WORKSPACE.
