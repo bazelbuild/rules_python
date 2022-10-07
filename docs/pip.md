@@ -1,12 +1,34 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
+<a name="#whl_library_alias"></a>
+
+## whl_library_alias
+
+<pre>
+whl_library_alias(<a href="#whl_library_alias-name">name</a>, <a href="#whl_library_alias-default_version">default_version</a>, <a href="#whl_library_alias-version_map">version_map</a>, <a href="#whl_library_alias-wheel_name">wheel_name</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| default_version |  -   | String | required |  |
+| version_map |  -   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | required |  |
+| wheel_name |  -   | String | required |  |
+
+
 <a name="#compile_pip_requirements"></a>
 
 ## compile_pip_requirements
 
 <pre>
-compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
-                         <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
+compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-py_binary">py_binary</a>, <a href="#compile_pip_requirements-py_test">py_test</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
+                         <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-visibility">visibility</a>,
+                         <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
 </pre>
 
 Generates targets for managing pip dependencies with pip-compile.
@@ -26,16 +48,44 @@ It also generates two targets for running pip-compile:
 
 | Name  | Description | Default Value |
 | :-------------: | :-------------: | :-------------: |
-| name |  base name for generated targets, typically "requirements"   |  none |
-| extra_args |  passed to pip-compile   |  <code>[]</code> |
-| visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
-| requirements_in |  file expressing desired dependencies   |  <code>None</code> |
-| requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
-| requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| name |  base name for generated targets, typically "requirements".   |  none |
+| extra_args |  passed to pip-compile.   |  <code>[]</code> |
+| py_binary |  the py_binary rule to be used.   |  <code><function py_binary></code> |
+| py_test |  the py_test rule to be used.   |  <code><function py_test></code> |
+| requirements_in |  file expressing desired dependencies.   |  <code>None</code> |
+| requirements_txt |  result of "compiling" the requirements.in file.   |  <code>None</code> |
 | requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
 | requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
-| kwargs |  other bazel attributes passed to the "_test" rule   |  none |
+| visibility |  passed to both the _test and .update rules.   |  <code>["//visibility:private"]</code> |
+| tags |  tagging attribute common to all build rules, passed to both the _test and .update rules.   |  <code>None</code> |
+| kwargs |  other bazel attributes passed to the "_test" rule.   |  none |
+
+
+<a name="#multi_pip_parse"></a>
+
+## multi_pip_parse
+
+<pre>
+multi_pip_parse(<a href="#multi_pip_parse-name">name</a>, <a href="#multi_pip_parse-default_version">default_version</a>, <a href="#multi_pip_parse-python_versions">python_versions</a>, <a href="#multi_pip_parse-requirements_lock">requirements_lock</a>, <a href="#multi_pip_parse-kwargs">kwargs</a>)
+</pre>
+
+NOT INTENDED FOR DIRECT USE!
+
+This is intended to be used by the multi_pip_parse implementation in the template of the
+multi_toolchain_aliases repository rule.
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| name |  the name of the multi_pip_parse repository.   |  none |
+| default_version |  the default Python version.   |  none |
+| python_versions |  all Python toolchain versions currently registered.   |  none |
+| requirements_lock |  a dictionary which keys are Python versions and values are locked requirements files.   |  none |
+| kwargs |  extra arguments passed to all wrapped pip_parse.   |  none |
 
 
 <a name="#package_annotation"></a>
