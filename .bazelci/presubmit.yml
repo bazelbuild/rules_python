@@ -16,8 +16,6 @@ all_targets: &all_targets
   test_targets:
     - "--"
     - "..."
-    # Disabled due to https://github.com/bazelbuild/rules_python/issues/827
-    - "-//python/tests/toolchains:python_3_8_10_x86_64-apple-darwin_test"
 platforms:
   ubuntu2004:
     <<: *all_targets
