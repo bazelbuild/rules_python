@@ -117,7 +117,7 @@ target in the appropriate wheel repo.
 
 ### Installing third_party packages
 
-To add pip dependencies to your `WORKSPACE`, load the `pip_install` function, and call it to create the
+To add pip dependencies to your `WORKSPACE`, load the `pip_parse` function, and call it to create the
 central external repo and individual wheel external repos.
 
 
