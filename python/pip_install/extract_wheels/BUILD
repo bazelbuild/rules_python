@@ -61,6 +61,9 @@ cc_library(
         "pkg_d": package_annotation(
             srcs_exclude_glob = ["pkg_d/tests/**"],
         ),
+        "pkg_e": package_annotation(
+            deps = ["//some:dep"],
+        ),
     },
     tags = ["manual"],
 )

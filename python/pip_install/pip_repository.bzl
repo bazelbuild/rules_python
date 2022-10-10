@@ -508,7 +508,8 @@ def package_annotation(
         copy_executables = {},
         data = [],
         data_exclude_glob = [],
-        srcs_exclude_glob = []):
+        srcs_exclude_glob = [],
+        deps = []):
     """Annotations to apply to the BUILD file content from package generated from a `pip_repository` rule.
 
     [cf]: https://github.com/bazelbuild/bazel-skylib/blob/main/docs/copy_file_doc.md
@@ -523,6 +524,7 @@ def package_annotation(
         data_exclude_glob (list, optional): A list of exclude glob patterns to add as `data` to the generated
             `py_library` target.
         srcs_exclude_glob (list, optional): A list of labels to add as `srcs` to the generated `py_library` target.
+        deps (list, optional): A list of labels to add as `deps` to the generated `py_library` target.
 
     Returns:
         str: A json encoded string of the provided content.
@@ -534,4 +536,5 @@ def package_annotation(
         data = data,
         data_exclude_glob = data_exclude_glob,
         srcs_exclude_glob = srcs_exclude_glob,
+        deps = deps,
     ))

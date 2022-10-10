@@ -25,10 +25,12 @@ class AnnotationsTestCase(unittest.TestCase):
         annotations_map = AnnotationsMap(annotations_path)
         self.assertListEqual(
             list(annotations_map.annotations.keys()),
-            ["pkg_a", "pkg_b", "pkg_c", "pkg_d"],
+            ["pkg_a", "pkg_b", "pkg_c", "pkg_d", "pkg_e"],
         )
 
-        collection = annotations_map.collect(["pkg_a", "pkg_b", "pkg_c", "pkg_d"])
+        collection = annotations_map.collect(
+            ["pkg_a", "pkg_b", "pkg_c", "pkg_d", "pkg_e"]
+        )
 
         self.assertEqual(
             collection["pkg_a"],
@@ -40,6 +42,7 @@ class AnnotationsTestCase(unittest.TestCase):
                     "data": [],
                     "data_exclude_glob": [],
                     "srcs_exclude_glob": [],
+                    "deps": [],
                 }
             ),
         )
@@ -54,6 +57,7 @@ class AnnotationsTestCase(unittest.TestCase):
                     "data": [],
                     "data_exclude_glob": ["*.foo", "*.bar"],
                     "srcs_exclude_glob": [],
+                    "deps": [],
                 }
             ),
         )
@@ -84,6 +88,7 @@ class AnnotationsTestCase(unittest.TestCase):
                     "data": [":my_target"],
                     "data_exclude_glob": [],
                     "srcs_exclude_glob": [],
+                    "deps": [],
                 }
             ),
         )
@@ -98,6 +103,22 @@ class AnnotationsTestCase(unittest.TestCase):
                     "data": [],
                     "data_exclude_glob": [],
                     "srcs_exclude_glob": ["pkg_d/tests/**"],
+                    "deps": [],
+                }
+            ),
+        )
+
+        self.assertEqual(
+            collection["pkg_e"],
+            Annotation(
+                {
+                    "additive_build_content": None,
+                    "copy_executables": {},
+                    "copy_files": {},
+                    "data": [],
+                    "data_exclude_glob": [],
+                    "srcs_exclude_glob": [],
+                    "deps": ["//some:dep"],
                 }
             ),
         )

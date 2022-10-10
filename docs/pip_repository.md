@@ -117,7 +117,7 @@ Instantiated from pip_repository and inherits config options from there.
 
 <pre>
 package_annotation(<a href="#package_annotation-additive_build_content">additive_build_content</a>, <a href="#package_annotation-copy_files">copy_files</a>, <a href="#package_annotation-copy_executables">copy_executables</a>, <a href="#package_annotation-data">data</a>, <a href="#package_annotation-data_exclude_glob">data_exclude_glob</a>,
-                   <a href="#package_annotation-srcs_exclude_glob">srcs_exclude_glob</a>)
+                   <a href="#package_annotation-srcs_exclude_glob">srcs_exclude_glob</a>, <a href="#package_annotation-deps">deps</a>)
 </pre>
 
 Annotations to apply to the BUILD file content from package generated from a `pip_repository` rule.
@@ -136,5 +136,6 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 | data |  A list of labels to add as <code>data</code> dependencies to the generated <code>py_library</code> target.   |  <code>[]</code> |
 | data_exclude_glob |  A list of exclude glob patterns to add as <code>data</code> to the generated     <code>py_library</code> target.   |  <code>[]</code> |
 | srcs_exclude_glob |  A list of labels to add as <code>srcs</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+| deps |  A list of labels to add as <code>deps</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
 
 

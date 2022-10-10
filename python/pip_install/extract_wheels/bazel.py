@@ -415,6 +415,7 @@ def extract_wheel(
         data = []
         data_exclude = pip_data_exclude
         srcs_exclude = []
+        deps = sanitised_dependencies
         if annotation:
             for src, dest in annotation.copy_files.items():
                 data.append(dest)
@@ -427,6 +428,7 @@ def extract_wheel(
             data.extend(annotation.data)
             data_exclude.extend(annotation.data_exclude_glob)
             srcs_exclude.extend(annotation.srcs_exclude_glob)
+            deps.extend('"%s"' % dep for dep in annotation.deps)
             if annotation.additive_build_content:
                 additional_content.append(annotation.additive_build_content)
 
@@ -434,7 +436,7 @@ def extract_wheel(
             name=PY_LIBRARY_LABEL
             if incremental
             else sanitise_name(whl.name, repo_prefix),
-            dependencies=sanitised_dependencies,
+            dependencies=deps,
             whl_file_deps=sanitised_wheel_file_dependencies,
             data_exclude=data_exclude,
             data=data,
