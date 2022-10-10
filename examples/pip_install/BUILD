@@ -88,9 +88,9 @@ py_test(
 genquery(
     name = "yamllint_lib_by_version",
     expression = """
-    attr("tags", "\\bpypi_version=1.26.3\\b", "@pip//pypi__yamllint")
+    attr("tags", "\\bpypi_version=1.26.3\\b", "@pip_yamllint//:pkg")
     intersect
-    attr("tags", "\\bpypi_name=yamllint\\b", "@pip//pypi__yamllint")
+    attr("tags", "\\bpypi_name=yamllint\\b", "@pip_yamllint//:pkg")
     """,
     scope = [requirement("yamllint")],
 )
@@ -99,7 +99,7 @@ write_file(
     name = "write_expected",
     out = "expected",
     content = [
-        "@pip//pypi__yamllint:pypi__yamllint",
+        "@pip_yamllint//:pkg",
         "",
     ],
 )

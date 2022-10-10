@@ -31,10 +31,12 @@ by the `modules_mapping` rule. We'll make a target for consuming this
 This is checked into the repo for speed, as it takes some time to calculate
 in a large monorepo.
 
-Create a file `gazelle_python.yaml` next to your `requirements.txt`
-file. (You can just use `touch` at this point, it just needs to exist.)
+Gazelle will walk up the filesystem from a Python file to find this metadata,
+looking for a file called `gazelle_python.yaml` in an ancestor folder of the Python code.
+Create an empty file with this name. It might be next to your `requirements.txt` file.
+(You can just use `touch` at this point, it just needs to exist.)
 
-Then put this in your `BUILD.bazel` file next to the `requirements.txt`:
+To keep the metadata updated, put this in your `BUILD.bazel` file next to `gazelle_python.yaml`:
 
 ```starlark
 load("@pip//:requirements.bzl", "all_whl_requirements")

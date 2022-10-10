@@ -27,7 +27,7 @@ py_test(
 py_test(
     name = "pip_install_annotations_test",
     srcs = ["pip_repository_annotations_test.py"],
-    env = {"WHEEL_PKG_DIR": "pip_installed/pypi__wheel"},
+    env = {"WHEEL_PKG_DIR": "pip_installed_wheel"},
     main = "pip_repository_annotations_test.py",
     deps = [
         requirement("wheel"),
