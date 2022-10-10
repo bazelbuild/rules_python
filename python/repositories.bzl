@@ -250,6 +250,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
     )
+    rctx.delete("python")
     rctx.symlink(python_bin, "python")
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
