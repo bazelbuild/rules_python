@@ -258,6 +258,12 @@ def parse_args() -> argparse.Namespace:
     metadata_group.add_argument(
         "--platform", type=str, default="any", help="Target platform. "
     )
+    metadata_group.add_argument(
+        "--requires_file",
+        type=Path,
+        default="",
+        help="Requirements file for list of requirements for this package",
+    )
 
     output_group = parser.add_argument_group("Output file location")
     output_group.add_argument(
@@ -398,6 +404,9 @@ def main() -> None:
                       encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
+        if arguments.requires_file:
+            with open(arguments.requires_file) as fp:
+                metadata += "\n" + fp.read().strip().split("\n")
         maker.add_metadata(metadata=metadata, description=description)
 
         if arguments.entry_points_file:

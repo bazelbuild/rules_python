@@ -188,6 +188,12 @@ def _py_wheel_impl(ctx):
 
     if ctx.attr.python_requires:
         metadata_contents.append("Requires-Python: %s" % ctx.attr.python_requires)
+
+    if len(ctx.attr.requires) == 0 and ctx.attr.requires_file:
+        requires_file = ctx.file.requires_file
+        args.add("--requires_file", requires_file)
+        other_inputs.append(requires_file)
+
     for requirement in ctx.attr.requires:
         metadata_contents.append("Requires-Dist: %s" % requirement)
 
@@ -350,6 +356,13 @@ _requirement_attrs = {
         doc = ("List of requirements for this package. See the section on " +
                "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
                "for details and examples of the format of this argument."),
+    ),
+    "requires_file": attr.label(
+        doc = (
+            "Requirements file for list of requirements for this package." +
+            "If set `requires`, this flag will be ignored.",
+        ),
+        allow_single_file = True,
     ),
 }
 
