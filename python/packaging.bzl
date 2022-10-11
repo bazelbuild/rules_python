@@ -358,10 +358,7 @@ _requirement_attrs = {
                "for details and examples of the format of this argument."),
     ),
     "requires_file": attr.label(
-        doc = (
-            "Requirements file for list of requirements for this package." +
-            "If set `requires`, this flag will be ignored.",
-        ),
+        doc = "Requirements file for list of requirements for this package. If set `requires`, this flag will be ignored.",
         allow_single_file = True,
     ),
 }
