@@ -321,7 +321,7 @@ whl_library_alias = repository_rule(
     },
 )
 
-def multi_pip_parse(name, default_version, python_versions, requirements_lock, **kwargs):
+def multi_pip_parse(name, default_version, python_versions, python_interpreter_target, requirements_lock, **kwargs):
     """NOT INTENDED FOR DIRECT USE!
 
     This is intended to be used by the multi_pip_parse implementation in the template of the
@@ -331,6 +331,7 @@ def multi_pip_parse(name, default_version, python_versions, requirements_lock, *
         name: the name of the multi_pip_parse repository.
         default_version: the default Python version.
         python_versions: all Python toolchain versions currently registered.
+        python_interpreter_target: a dictionary which keys are Python versions and values are resolved host interpreters.
         requirements_lock: a dictionary which keys are Python versions and values are locked requirements files.
         **kwargs: extra arguments passed to all wrapped pip_parse.
 
@@ -339,12 +340,15 @@ def multi_pip_parse(name, default_version, python_versions, requirements_lock, *
     """
     pip_parses = {}
     for python_version in python_versions:
+        if not python_version in python_interpreter_target:
+            fail("Missing python_interpreter_target for Python version %s in '%s'" % (python_version, name))
         if not python_version in requirements_lock:
             fail("Missing requirements_lock for Python version %s in '%s'" % (python_version, name))
 
         pip_parse_name = name + "_" + python_version.replace(".", "_")
         pip_parse(
             name = pip_parse_name,
+            python_interpreter_target = python_interpreter_target[python_version],
             requirements_lock = requirements_lock[python_version],
             **kwargs
         )

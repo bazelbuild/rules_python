@@ -67,7 +67,8 @@ It also generates two targets for running pip-compile:
 ## multi_pip_parse
 
 <pre>
-multi_pip_parse(<a href="#multi_pip_parse-name">name</a>, <a href="#multi_pip_parse-default_version">default_version</a>, <a href="#multi_pip_parse-python_versions">python_versions</a>, <a href="#multi_pip_parse-requirements_lock">requirements_lock</a>, <a href="#multi_pip_parse-kwargs">kwargs</a>)
+multi_pip_parse(<a href="#multi_pip_parse-name">name</a>, <a href="#multi_pip_parse-default_version">default_version</a>, <a href="#multi_pip_parse-python_versions">python_versions</a>, <a href="#multi_pip_parse-python_interpreter_target">python_interpreter_target</a>,
+                <a href="#multi_pip_parse-requirements_lock">requirements_lock</a>, <a href="#multi_pip_parse-kwargs">kwargs</a>)
 </pre>
 
 NOT INTENDED FOR DIRECT USE!
@@ -84,6 +85,7 @@ multi_toolchain_aliases repository rule.
 | name |  the name of the multi_pip_parse repository.   |  none |
 | default_version |  the default Python version.   |  none |
 | python_versions |  all Python toolchain versions currently registered.   |  none |
+| python_interpreter_target |  a dictionary which keys are Python versions and values are resolved host interpreters.   |  none |
 | requirements_lock |  a dictionary which keys are Python versions and values are locked requirements files.   |  none |
 | kwargs |  extra arguments passed to all wrapped pip_parse.   |  none |
 
