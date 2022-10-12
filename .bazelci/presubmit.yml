@@ -10,14 +10,16 @@ buildifier:
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
-     # Gazelle is not fully Windows compatible: https://github.com/bazelbuild/bazel-gazelle/issues/1122
     - "-//gazelle/..."
   build_flags:
     - "--keep_going"
   test_targets:
     - "--"
     - "..."
-    # Gazelle is not fully Windows compatible: https://github.com/bazelbuild/bazel-gazelle/issues/1122
+    # The gazelle tests are not compatible with Windows, so we only test them
+    # on Linux. The build file generation, which uses this Gazelle extension,
+    # runs on all platforms, and is asserted by the build_file_generation
+    # integration tests below.
     - "-//gazelle/..."
   test_flags:
     - "--test_tag_filters=-integration-test"
