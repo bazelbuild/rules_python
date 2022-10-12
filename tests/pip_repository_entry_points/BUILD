@@ -28,8 +28,6 @@ py_test(
         "YAMLLINT_ENTRY_POINT": "$(rootpath {})".format(pip_parsed_yamllint),
     },
     main = "pip_repository_entry_points_test.py",
-    # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
-    tags = ["fix-windows"],
     deps = ["@rules_python//python/runfiles"],
 )
 
