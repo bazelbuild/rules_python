@@ -85,6 +85,22 @@ tasks:
     working_directory: examples/bzlmod
     platform: windows
 
+  integration_test_multi_python_versions_linux:
+    <<: *reusable_build_test_all
+    name: multi_python_versions integration tests on Linux
+    working_directory: examples/multi_python_versions
+    platform: ubuntu2004
+  integration_test_multi_python_versions_macos:
+    <<: *reusable_build_test_all
+    name: multi_python_versions integration tests on macOS
+    working_directory: examples/multi_python_versions
+    platform: macos
+  integration_test_multi_python_versions_windows:
+    <<: *reusable_build_test_all
+    name: multi_python_versions integration tests on Windows
+    working_directory: examples/multi_python_versions
+    platform: windows
+
   integration_test_pip_install_linux:
     <<: *reusable_build_test_all
     name: pip_install integration tests on Linux
