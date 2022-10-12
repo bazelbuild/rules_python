@@ -7,4 +7,5 @@ licenses(["notice"])  # Apache 2.0
 bazel_integration_test(
     name = "pip_repository_entry_points_example",
     timeout = "long",
+    tags = ["integration-test"],
 )
