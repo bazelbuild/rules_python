@@ -189,7 +189,7 @@ def _py_wheel_impl(ctx):
     if ctx.attr.python_requires:
         metadata_contents.append("Requires-Python: %s" % ctx.attr.python_requires)
 
-    if len(ctx.attr.requires) == 0 and ctx.attr.requires_file:
+    if ctx.attr.requires_file:
         requires_file = ctx.file.requires_file
         args.add("--requires_file", requires_file)
         other_inputs.append(requires_file)
@@ -358,7 +358,7 @@ _requirement_attrs = {
                "for details and examples of the format of this argument."),
     ),
     "requires_file": attr.label(
-        doc = "Requirements file for list of requirements for this package. If set `requires`, this flag will be ignored.",
+        doc = "Requirements file for list of requirements for this package, which will be additive after `requires`",
         allow_single_file = True,
     ),
 }

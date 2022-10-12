@@ -261,8 +261,7 @@ def parse_args() -> argparse.Namespace:
     metadata_group.add_argument(
         "--requires_file",
         type=Path,
-        default="",
-        help="Requirements file for list of requirements for this package",
+        help="Requirements file for list of requirements for this package, which will be additive after `requires`",
     )
 
     output_group = parser.add_argument_group("Output file location")
@@ -406,7 +405,8 @@ def main() -> None:
 
         if arguments.requires_file:
             with open(arguments.requires_file) as fp:
-                metadata += "\n" + fp.read().strip().split("\n")
+                additive_requires_list = ["Requires-Dist: {}".format(line) for line in fp.read().strip().split("\n")]
+                metadata += "\n" + "\n".join(additive_requires_list)
         maker.add_metadata(metadata=metadata, description=description)
 
         if arguments.entry_points_file:
