@@ -15,20 +15,33 @@ _transition_platform = transition(
 
 def _transition_py_binary_impl(ctx):
     target = ctx.attr.target[0]
-    output = ctx.actions.declare_file(ctx.attr.name)
+    executable = ctx.actions.declare_file(ctx.attr.name + (".exe" if ctx.attr.is_windows else ""))
     ctx.actions.symlink(
         is_executable = True,
-        output = output,
+        output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
+    zipfile_symlink = None
+    if ctx.attr.is_windows:
+        zipfile = None
+        expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
+        for file in target[DefaultInfo].default_runfiles.files.to_list():
+            if file.short_path == expected_target_path:
+                zipfile = file
+        zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
+        ctx.actions.symlink(
+            is_executable = True,
+            output = zipfile_symlink,
+            target_file = zipfile,
+        )
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
     providers = [
         DefaultInfo(
-            executable = output,
-            files = target[DefaultInfo].files,
-            runfiles = target[DefaultInfo].default_runfiles,
+            executable = executable,
+            files = depset([zipfile_symlink] if zipfile_symlink else [], transitive = [target[DefaultInfo].files]),
+            runfiles = ctx.runfiles([zipfile_symlink] if zipfile_symlink else []).merge(target[DefaultInfo].default_runfiles),
         ),
         target[PyInfo],
         target[PyRuntimeInfo],
@@ -40,20 +53,33 @@ def _transition_py_binary_impl(ctx):
 
 def _transition_py_test_impl(ctx):
     target = ctx.attr.target[0]
-    output = ctx.actions.declare_file(ctx.attr.name)
+    executable = ctx.actions.declare_file(ctx.attr.name + (".exe" if ctx.attr.is_windows else ""))
     ctx.actions.symlink(
         is_executable = True,
-        output = output,
+        output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
+    zipfile_symlink = None
+    if ctx.attr.is_windows:
+        zipfile = None
+        expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
+        for file in target[DefaultInfo].default_runfiles.files.to_list():
+            if file.short_path == expected_target_path:
+                zipfile = file
+        zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
+        ctx.actions.symlink(
+            is_executable = True,
+            output = zipfile_symlink,
+            target_file = zipfile,
+        )
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
     providers = [
         DefaultInfo(
-            executable = output,
-            files = target[DefaultInfo].files,
-            runfiles = target[DefaultInfo].default_runfiles,
+            executable = executable,
+            files = depset([zipfile_symlink] if zipfile_symlink else [], transitive = [target[DefaultInfo].files]),
+            runfiles = ctx.runfiles([zipfile_symlink] if zipfile_symlink else []).merge(target[DefaultInfo].default_runfiles),
         ),
         target[PyInfo],
         target[PyRuntimeInfo],
@@ -69,6 +95,9 @@ def _transition_py_test_impl(ctx):
 _COMMON_ATTRS = {
     "env": attr.string_dict(
         mandatory = False,
+    ),
+    "is_windows": attr.bool(
+        mandatory = True,
     ),
     "target": attr.label(
         executable = True,
@@ -158,6 +187,10 @@ def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
         tools = data,
         args = args,
         env = env,
+        is_windows = select({
+            "@platforms//os:windows": True,
+            "//conditions:default": False,
+        }),
         target = ":_" + name,
 
         # Attributes common to all build rules.
