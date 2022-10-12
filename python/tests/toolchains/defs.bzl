@@ -172,4 +172,5 @@ def acceptance_tests():
                 ),
                 python_version = python_version,
                 target_compatible_with = meta.compatible_with,
+                tags = ["acceptance-test"],
             )

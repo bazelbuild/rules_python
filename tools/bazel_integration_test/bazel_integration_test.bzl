@@ -88,6 +88,9 @@ def bazel_integration_test(name, **kwargs):
         workspace_files = workspace_files,
     )
 
+    tags = kwargs.pop("tags", [])
+    tags.append("integration-test")
+
     py_test(
         name = name,
         srcs = [Label("//tools/bazel_integration_test:test_runner.py")],
@@ -100,5 +103,6 @@ def bazel_integration_test(name, **kwargs):
             "_%s_config" % name,
             workspace_files,
         ],
+        tags = tags,
         **kwargs
     )
