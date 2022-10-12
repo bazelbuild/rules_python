@@ -3,60 +3,168 @@ buildifier:
   version: latest
   # keep this argument in sync with .pre-commit-config.yaml
   warnings: "all"
-all_targets: &all_targets
+.reusable_config: &reusable_config
   build_targets:
+    - "--"
     - "..."
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
+    - "-//gazelle/..."
   build_flags:
-      - "--keep_going"
-  # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
-  skip_use_bazel_version_for_test: true
+    - "--keep_going"
   test_targets:
     - "--"
     - "..."
-platforms:
-  ubuntu2004:
-    <<: *all_targets
+    # The gazelle tests are not compatible with Windows, so we only test them
+    # on Linux. The build file generation, which uses this Gazelle extension,
+    # runs on all platforms, and is asserted by the build_file_generation
+    # integration tests below.
+    - "-//gazelle/..."
+  test_flags:
+    - "--test_tag_filters=-integration-test"
+.reusable_build_test_all: &reusable_build_test_all
+  build_targets: ["..."]
+  test_targets: ["..."]
+tasks:
+  gazelle_extension:
+    name: Test the Gazelle extension
+    platform: ubuntu2004
+    build_targets: ["//gazelle/..."]
+    test_targets: ["//gazelle/..."]
+  linux:
+    <<: *reusable_config
+    name: Default test on Linux
+    platform: ubuntu2004
   macos:
-    <<: *all_targets
+    <<: *reusable_config
+    name: Default test on macOS
+    platform: macos
   windows:
-    build_targets:
-      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
-      - "..."
-      # Gazelle is not fully Windows compatible: https://github.com/bazelbuild/bazel-gazelle/issues/1122
-      - "-//gazelle/..."
-      # As a regression test for #225, check that wheel targets still build when
-      # their package path is qualified with the repo name.
-      - "@rules_python//examples/wheel/..."
-      # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
-    skip_use_bazel_version_for_test: true
-    test_targets:
-      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
-      - "..."
-      # Gazelle is not fully Windows compatible: https://github.com/bazelbuild/bazel-gazelle/issues/1122
-      - "-//gazelle/..."
-      # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
-      - "-//tests:pip_repository_entry_points_example"
+    <<: *reusable_config
+    name: Default test on Windows
+    platform: windows
     test_flags:
-      - "--test_tag_filters=-fix-windows"
-  rbe_ubuntu1604:
-    build_targets:
-      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
-      - "..."
-    # We control Bazel version in integration tests, so we don't need USE_BAZEL_VERSION for tests.
-    skip_use_bazel_version_for_test: true
-    test_targets:
-      - "--" # Allows negative patterns; hack for https://github.com/bazelbuild/continuous-integration/pull/245
-      - "..."
-      # TODO: The toolchain tests do not currently work in RBE
-      - "-//python/tests/toolchains/..."
-      # TODO: The integration tests do not currently work on RBE
-      # This list is the result of `bazel query 'filter(".*_example$", attr(generator_function, bazel_integration_test, //...))'`
-      - "-//examples:bzlmod_example"
-      - "-//examples:pip_install_example"
-      - "-//examples:pip_parse_example"
-      - "-//examples:pip_parse_vendored_example"
-      - "-//examples:pip_repository_annotations_example"
-      - "-//tests:pip_repository_entry_points_example"
+      - "--test_tag_filters=-integration-test,-fix-windows"
+  rbe:
+    <<: *reusable_config
+    name: Test on RBE
+    platform: rbe_ubuntu1604
+    test_flags:
+      - "--test_tag_filters=-integration-test,-acceptance-test"
+
+  integration_test_build_file_generation_linux:
+    <<: *reusable_build_test_all
+    name: build_file_generation integration tests on Linux
+    working_directory: examples/build_file_generation
+    platform: ubuntu2004
+  integration_test_build_file_generation_macos:
+    <<: *reusable_build_test_all
+    name: build_file_generation integration tests on macOS
+    working_directory: examples/build_file_generation
+    platform: macos
+  integration_test_build_file_generation_windows:
+    <<: *reusable_build_test_all
+    name: build_file_generation integration tests on Windows
+    working_directory: examples/build_file_generation
+    platform: windows
+
+  integration_test_bzlmod_linux:
+    <<: *reusable_build_test_all
+    name: bzlmod integration tests on Linux
+    working_directory: examples/bzlmod
+    platform: ubuntu2004
+  integration_test_bzlmod_macos:
+    <<: *reusable_build_test_all
+    name: bzlmod integration tests on macOS
+    working_directory: examples/bzlmod
+    platform: macos
+  integration_test_bzlmod_windows:
+    <<: *reusable_build_test_all
+    name: bzlmod integration tests on Windows
+    working_directory: examples/bzlmod
+    platform: windows
+
+  integration_test_pip_install_linux:
+    <<: *reusable_build_test_all
+    name: pip_install integration tests on Linux
+    working_directory: examples/pip_install
+    platform: ubuntu2004
+  integration_test_pip_install_macos:
+    <<: *reusable_build_test_all
+    name: pip_install integration tests on macOS
+    working_directory: examples/pip_install
+    platform: macos
+  integration_test_pip_install_windows:
+    <<: *reusable_build_test_all
+    name: pip_install integration tests on Windows
+    working_directory: examples/pip_install
+    platform: windows
+
+  integration_test_pip_parse_linux:
+    <<: *reusable_build_test_all
+    name: pip_parse integration tests on Linux
+    working_directory: examples/pip_parse
+    platform: ubuntu2004
+  integration_test_pip_parse_macos:
+    <<: *reusable_build_test_all
+    name: pip_parse integration tests on macOS
+    working_directory: examples/pip_parse
+    platform: macos
+  integration_test_pip_parse_windows:
+    <<: *reusable_build_test_all
+    name: pip_parse integration tests on Windows
+    working_directory: examples/pip_parse
+    platform: windows
+
+  integration_test_pip_parse_vendored_linux:
+    <<: *reusable_build_test_all
+    name: pip_parse_vendored integration tests on Linux
+    working_directory: examples/pip_parse_vendored
+    platform: ubuntu2004
+  integration_test_pip_parse_vendored_macos:
+    <<: *reusable_build_test_all
+    name: pip_parse_vendored integration tests on macOS
+    working_directory: examples/pip_parse_vendored
+    platform: macos
+  # TODO(f0rmiga): fix this test under Windows. It needs to be consistent on
+  # characters across all platforms.
+  # integration_test_pip_parse_vendored_windows:
+  #   <<: *reusable_build_test_all
+  #   name: pip_parse_vendored integration tests on Windows
+  #   working_directory: examples/pip_parse_vendored
+  #   platform: windows
+
+  integration_test_pip_repository_annotations_linux:
+    <<: *reusable_build_test_all
+    name: pip_repository_annotations integration tests on Linux
+    working_directory: examples/pip_repository_annotations
+    platform: ubuntu2004
+  integration_test_pip_repository_annotations_macos:
+    <<: *reusable_build_test_all
+    name: pip_repository_annotations integration tests on macOS
+    working_directory: examples/pip_repository_annotations
+    platform: macos
+  integration_test_pip_repository_annotations_windows:
+    <<: *reusable_build_test_all
+    name: pip_repository_annotations integration tests on Windows
+    working_directory: examples/pip_repository_annotations
+    platform: windows
+
+  integration_test_pip_repository_entry_points_linux:
+    <<: *reusable_build_test_all
+    name: pip_repository_entry_points integration tests on Linux
+    working_directory: tests/pip_repository_entry_points
+    platform: ubuntu2004
+  integration_test_pip_repository_entry_points_macos:
+    <<: *reusable_build_test_all
+    name: pip_repository_entry_points integration tests on macOS
+    working_directory: tests/pip_repository_entry_points
+    platform: macos
+  # TODO(f0rmiga): fix me. The dependencies needed for this test are not cross-platform:
+  # https://github.com/bazelbuild/rules_python/issues/260
+  # integration_test_pip_repository_entry_points_windows:
+  #   <<: *reusable_build_test_all
+  #   name: pip_repository_entry_points integration tests on Windows
+  #   working_directory: tests/pip_repository_entry_points
+  #   platform: windows
