@@ -38,7 +38,7 @@ def entry_point(pkg, script = None):
 def _get_annotation(requirement):
     # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
     # down wo `setuptools`.
-    name = requirement.split(" ")[0].split("=")[0]
+    name = requirement.split(" ")[0].split("=")[0].split("[")[0]
     return _annotations.get(name)
 
 def install_deps(**whl_library_kwargs):
