@@ -3,3 +3,4 @@
 --extra-index-url https://pypi.python.org/simple/
 
 wheel
+requests[security]>=2.8.1

@@ -16,9 +16,13 @@ compile_pip_requirements(
 py_test(
     name = "pip_parse_annotations_test",
     srcs = ["pip_repository_annotations_test.py"],
-    env = {"WHEEL_PKG_DIR": "pip_parsed_wheel"},
+    env = {
+        "REQUESTS_PKG_DIR": "pip_parsed_requests",
+        "WHEEL_PKG_DIR": "pip_parsed_wheel",
+    },
     main = "pip_repository_annotations_test.py",
     deps = [
+        "@pip_parsed_requests//:pkg",
         "@pip_parsed_wheel//:pkg",
         "@rules_python//python/runfiles",
     ],
@@ -27,10 +31,14 @@ py_test(
 py_test(
     name = "pip_install_annotations_test",
     srcs = ["pip_repository_annotations_test.py"],
-    env = {"WHEEL_PKG_DIR": "pip_installed_wheel"},
+    env = {
+        "REQUESTS_PKG_DIR": "pip_installed_requests",
+        "WHEEL_PKG_DIR": "pip_installed_wheel",
+    },
     main = "pip_repository_annotations_test.py",
     deps = [
         requirement("wheel"),
+        requirement("requests"),
         "@rules_python//python/runfiles",
     ],
 )
