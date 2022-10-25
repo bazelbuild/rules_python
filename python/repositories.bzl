@@ -185,7 +185,7 @@ def _python_repository_impl(rctx):
 
 set -o errexit -o nounset -o pipefail
 
-external/{repo_name}/{python_bin} -B -s -I "$@"
+external/{repo_name}/{python_bin} -B -s "$@"
 """.format(repo_name = rctx.name, python_bin = python_bin)
     rctx.file(python_wrapper, python_wrapper_content, executable = True)
 
