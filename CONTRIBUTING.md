@@ -6,6 +6,7 @@ just a few small guidelines you need to follow.
 ## Formatting
 
 Starlark files should be formatted by buildifier.
+Otherwise the Buildkite CI will yell at you about formatting/linting violations.
 We suggest using a pre-commit hook to automate this.
 First [install pre-commit](https://pre-commit.com/#installation),
 then run
@@ -13,8 +14,15 @@ then run
 ```shell
 pre-commit install
 ```
+### Running buildifer manually
 
-Otherwise the Buildkite CI will yell at you about formatting/linting violations.
+If you choose to run buildifier manually, run the following command:
+
+```shell
+$ buildifier --lint=fix --warnings=native-py -warnings=all WORKSPACE
+```
+
+Replace the argument "WORKSPACE" with the file that you are linting.
 
 ## Contributor License Agreement
 
