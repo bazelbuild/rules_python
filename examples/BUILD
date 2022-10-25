@@ -40,4 +40,6 @@ bazel_integration_test(
 
 bazel_integration_test(
     name = "bzlmod_example",
+    bzlmod = True,
+    override_bazel_version = "6.0.0rc1",
 )

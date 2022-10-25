@@ -31,6 +31,13 @@ def rules_python_internal_setup():
     # Depend on the Bazel binaries for running bazel-in-bazel tests
     bazel_binaries(versions = SUPPORTED_BAZEL_VERSIONS)
 
+    # Bazel 5.3.0 has bzlmod bugs so we use 6.0 prerelease for the bzlmod example.
+    # SUPPORTED_BAZEL_VERSIONS doesn't currently support multiple versions. For now,
+    # we only want to run the bzlmod example with a separate version.
+    bazel_binaries(versions = [
+        "6.0.0rc1",
+    ])
+
     bazel_skylib_workspace()
 
     # gazelle:repository_macro gazelle/deps.bzl%gazelle_deps
