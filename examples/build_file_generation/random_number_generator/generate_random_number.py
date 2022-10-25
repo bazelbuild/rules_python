@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __init__ import main
+import random
 
-if __name__ == '__main__':
-    main()
+"""Generate a random number"""
+def generate_random_number():
+    return random.randint(1, 10)
