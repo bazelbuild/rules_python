@@ -12,22 +12,19 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # needed platforms.
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "69de5c704a05ff37862f7e0f5534d4f479418afc21806c887db544a316f3cb6b",
+    sha256 = "099a9fb96a376ccbbb7d291ed4ecbdfd42f6bc822ab77ae6f1b5cb9e914e94fa",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.35.0/rules_go-v0.35.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.35.0/rules_go-v0.35.0.zip",
     ],
 )
 
-# NB: bazel-gazelle version must be after 18 August 2021
-# to include https://github.com/bazelbuild/bazel-gazelle/commit/2834ea4
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "fd8d852ebcb770b41c1c933fc3085b4a23e1426a1af4e791d39b67bb8d894eb7",
-    strip_prefix = "bazel-gazelle-41b542f9b0fefe916a95ca5460458abf916f5fe5",
+    sha256 = "efbbba6ac1a4fd342d5122cbdfdb82aeb2cf2862e35022c752eaddffada7c3f3",
     urls = [
-        # No release since March, and we need subsequent fixes
-        "https://github.com/bazelbuild/bazel-gazelle/archive/41b542f9b0fefe916a95ca5460458abf916f5fe5.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
     ],
 )
 
@@ -36,7 +33,7 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(version = "1.16.5")
+go_register_toolchains(version = "1.18.3")
 
 gazelle_dependencies()
 
