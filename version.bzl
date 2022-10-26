@@ -28,3 +28,6 @@ SUPPORTED_BAZEL_VERSIONS = [
     # TODO: add LTS versions of bazel like 1.0.0, 2.0.0
     BAZEL_VERSION,
 ]
+
+def bazel_version_to_binary_label(version):
+    return "@build_bazel_bazel_%s//:bazel_binary" % version.replace(".", "_")
