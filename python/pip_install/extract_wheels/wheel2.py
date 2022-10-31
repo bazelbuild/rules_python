@@ -71,6 +71,20 @@ class Wheel:
         return dependency_set
 
     def unzip(self, directory: str) -> None:
+        if self.name == "torchvision" and self.version == "0.14.0":
+            import os
+            import wheel.cli.unpack as unpack
+            import wheel.cli.pack as pack
+
+            tmp_torchvision = str(directory) + "/tmp_repack/"
+            unpack.unpack(path=self.path, dest=tmp_torchvision)
+
+            tmp_torchvision_unpacked = str(directory) + "/tmp_repack/torchvision-0.14.0"
+            pack.pack(directory=tmp_torchvision_unpacked, dest_dir=tmp_torchvision, build_number=None)
+
+            tmp_torchvision_whl = str(directory) + "/tmp_repack/torchvision-0.14.0-cp39-cp39-manylinux1_x86_64.whl"
+            self._path=tmp_torchvision_whl
+
         installation_schemes = {
             "purelib": "/site-packages",
             "platlib": "/site-packages",

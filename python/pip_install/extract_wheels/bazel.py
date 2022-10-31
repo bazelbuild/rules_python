@@ -6,7 +6,7 @@ import textwrap
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set
 
-from python.pip_install.extract_wheels import annotation, namespace_pkgs, wheel
+from python.pip_install.extract_wheels import annotation, namespace_pkgs, wheel2
 
 WHEEL_FILE_LABEL = "whl"
 PY_LIBRARY_LABEL = "pkg"
@@ -352,7 +352,7 @@ def extract_wheel(
         The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
     """
 
-    whl = wheel.Wheel(wheel_file)
+    whl = wheel2.Wheel(wheel_file)
     if incremental:
         directory = incremental_dir
     else:

@@ -12,11 +12,12 @@ py_library(
         "namespace_pkgs.py",
         "parse_requirements_to_bzl.py",
         "requirements.py",
-        "wheel.py",
+        "wheel2.py",
     ],
     deps = [
         requirement("installer"),
         requirement("setuptools"),
+        requirement("wheel"),
     ],
 )
 
