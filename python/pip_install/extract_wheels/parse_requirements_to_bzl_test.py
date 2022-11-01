@@ -27,6 +27,7 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             )
             args = argparse.Namespace()
             args.requirements_lock = str(requirements_lock.resolve())
+            args.repo = ("pip_parsed_deps_pypi__",)
             args.repo_prefix = "pip_parsed_deps_pypi__"
             extra_pip_args = ["--index-url=pypi.org/simple"]
             pip_data_exclude = ["**.foo"]
@@ -38,6 +39,7 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             whl_library_args = parse_whl_library_args(args)
             contents = generate_parsed_requirements_contents(
                 requirements_lock=args.requirements_lock,
+                repo=args.repo,
                 repo_prefix=args.repo_prefix,
                 whl_library_args=whl_library_args,
             )
