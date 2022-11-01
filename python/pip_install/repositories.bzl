@@ -103,7 +103,7 @@ py_library(
 all_requirements = [name for (name, _, _) in _RULE_DEPS]
 
 def requirement(pkg):
-    return "@pypi__" + pkg + "//:lib"
+    return Label("@pypi__" + pkg + "//:lib")
 
 def pip_install_dependencies():
     """

@@ -46,7 +46,7 @@ def pip_install(requirements = None, name = "pip", **kwargs):
     print("pip_install is deprecated. Please switch to pip_parse. pip_install will be removed in a future release.")
     pip_parse(requirements = requirements, name = name, **kwargs)
 
-def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):
+def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", bzlmod = False, **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
     Those dependencies become available in a generated `requirements.bzl` file.
@@ -142,11 +142,14 @@ def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_
         requirements (Label): Deprecated. See requirements_lock.
         name (str, optional): The name of the generated repository. The generated repositories
             containing each requirement will be of the form <name>_<requirement-name>.
+        bzlmod (bool, optional): Whether this rule is being run under a bzlmod module extension.
         **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
 
-    # Just in case our dependencies weren't already fetched
-    pip_install_dependencies()
+    # Don't try to fetch dependencies under bzlmod because they are already fetched via the internal_deps
+    # module extention, and because the maybe-install pattern doesn't work under bzlmod.
+    if not bzlmod:
+        pip_install_dependencies()
 
     # Temporary compatibility shim.
     # pip_install was previously document to use requirements while pip_parse was using requirements_lock.
@@ -157,5 +160,6 @@ def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_
         name = name,
         requirements_lock = reqs_to_use,
         repo_prefix = "{}_".format(name),
+        bzlmod = bzlmod,
         **kwargs
     )

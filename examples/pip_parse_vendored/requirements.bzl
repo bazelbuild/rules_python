@@ -14,20 +14,29 @@ all_whl_requirements = ["@pip_certifi//:whl", "@pip_charset_normalizer//:whl", "
 _packages = [("pip_certifi", "certifi==2021.10.8     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"), ("pip_charset_normalizer", "charset-normalizer==2.0.12     --hash=sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597     --hash=sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"), ("pip_idna", "idna==3.3     --hash=sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff     --hash=sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"), ("pip_requests", "requests==2.27.1     --hash=sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61     --hash=sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"), ("pip_urllib3", "urllib3==1.26.9     --hash=sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14     --hash=sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e")]
 _config = {"download_only": False, "enable_implicit_namespace_pkgs": False, "environment": {}, "extra_pip_args": [], "isolated": True, "pip_data_exclude": [], "python_interpreter": "python3", "python_interpreter_target": interpreter, "quiet": True, "repo": "pip", "repo_prefix": "pip_", "timeout": 600}
 _annotations = {}
+_bzlmod = False
 
 def _clean_name(name):
     return name.replace("-", "_").replace(".", "_").lower()
 
 def requirement(name):
+    if _bzlmod:
+        return "@@pip//:" + _clean_name(name) + "_pkg"
     return "@pip_" + _clean_name(name) + "//:pkg"
 
 def whl_requirement(name):
+    if _bzlmod:
+        return "@@pip//:" + _clean_name(name) + "_whl"
     return "@pip_" + _clean_name(name) + "//:whl"
 
 def data_requirement(name):
+    if _bzlmod:
+        return "@@pip//:" + _clean_name(name) + "_data"
     return "@pip_" + _clean_name(name) + "//:data"
 
 def dist_info_requirement(name):
+    if _bzlmod:
+        return "@@pip//:" + _clean_name(name) + "_dist_info"
     return "@pip_" + _clean_name(name) + "//:dist_info"
 
 def entry_point(pkg, script = None):
