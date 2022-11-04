@@ -90,6 +90,26 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
             self.assertTrue(Path(metadata_path).exists())
             self.assertFalse(Path(wheel_path).exists())
 
+    def requests_pkg_dir(self) -> str:
+        env = os.environ.get("REQUESTS_PKG_DIR")
+        self.assertIsNotNone(env)
+        return env
+
+    def test_extra(self):
+        # This test verifies that annotations work correctly for pip packages with extras
+        # specified, in this case requests[security].
+        r = runfiles.Create()
+        rpath = r.Rlocation(
+            "pip_repository_annotations_example/external/{}/generated_file.txt".format(
+                self.requests_pkg_dir()
+            )
+        )
+        generated_file = Path(rpath)
+        self.assertTrue(generated_file.exists())
+
+        content = generated_file.read_text().rstrip()
+        self.assertEqual(content, "Hello world from requests")
+
 
 if __name__ == "__main__":
     unittest.main()

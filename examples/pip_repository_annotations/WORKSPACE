@@ -30,6 +30,19 @@ load("@rules_python//python:pip.bzl", "package_annotation", "pip_install", "pip_
 # package. For details on `package_annotation` and it's uses, see the
 # docs at @rules_python//docs:pip.md`.
 ANNOTATIONS = {
+    # This annotation verifies that annotations work correctly for pip packages with extras
+    # specified, in this case requests[security].
+    "requests": package_annotation(
+        additive_build_content = """\
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+write_file(
+    name = "generated_file",
+    out = "generated_file.txt",
+    content = ["Hello world from requests"],
+)
+""",
+        data = [":generated_file"],
+    ),
     "wheel": package_annotation(
         additive_build_content = """\
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
