@@ -11,6 +11,7 @@ py_library(
 
 py_library(
     name = "conftest",
+    testonly = "True",
     srcs = ["conftest.py"],
     visibility = ["//:__subpackages__"],
 )

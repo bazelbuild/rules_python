@@ -300,6 +300,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
+			setTestonly().
 			generateImportsAttribute()
 
 		conftest = conftestTarget.build()
