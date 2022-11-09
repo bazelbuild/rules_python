@@ -9,12 +9,18 @@ py_library(
     visibility = ["//:__subpackages__"],
 )
 
+py_library(
+    name = "conftest",
+    srcs = ["conftest.py"],
+    visibility = ["//:__subpackages__"],
+)
+
 py_test(
     name = "simple_test_with_conftest_test",
-    srcs = [
-        "__test__.py",
-        "conftest.py",
-    ],
+    srcs = ["__test__.py"],
     main = "__test__.py",
-    deps = [":simple_test_with_conftest"],
+    deps = [
+        ":conftest",
+        ":simple_test_with_conftest",
+    ],
 )
