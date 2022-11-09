@@ -81,7 +81,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			hasPyBinary = true
 		} else if !hasPyTestFile && f == pyTestEntrypointFilename {
 			hasPyTestFile = true
-		} else if strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
+		} else if f == "conftest.py" || strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
 			pyTestFilenames.Add(f)
 		} else if ext == ".py" {
 			pyLibraryFilenames.Add(f)
