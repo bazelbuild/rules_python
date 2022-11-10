@@ -139,7 +139,7 @@ func (t *targetBuilder) build() *rule.Rule {
 		r.SetPrivateAttr(config.GazelleImportsKey, t.deps)
 	}
 	if t.testonly {
-		r.SetAttr("testonly", "True")
+		r.SetAttr("testonly", true)
 	}
 	r.SetPrivateAttr(resolvedDepsKey, t.resolvedDeps)
 	return r
