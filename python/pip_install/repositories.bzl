@@ -92,7 +92,17 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "lib",
     srcs = glob(["**/*.py"]),
-    data = glob(["**/*"], exclude=["**/*.py", "**/* *", "BUILD", "WORKSPACE"]),
+    data = glob(["**/*"], exclude=[
+        # These entries include those put into user-installed dependencies by
+        # data_exclude in /python/pip_install/extract_wheels/bazel.py
+        # to avoid non-determinism following pip install's behavior.
+        "**/*.py",
+        "**/*.pyc",
+        "**/* *",
+        "**/*.dist-info/RECORD",
+        "BUILD",
+        "WORKSPACE",
+    ]),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],
