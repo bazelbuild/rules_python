@@ -37,6 +37,8 @@ different name. Then we can load it from defs.bzl and export it there under
 the original name.
 """
 
+load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
+
 # The implementation of the macros and tagging mechanism follows the example
 # set by rules_cc and rules_java.
 
@@ -64,6 +66,8 @@ def py_library(**attrs):
     Args:
       **attrs: Rule attributes
     """
+    if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
 
     # buildifier: disable=native-python
     native.py_library(**_add_tags(attrs))
@@ -74,6 +78,10 @@ def py_binary(**attrs):
     Args:
       **attrs: Rule attributes
     """
+    if attrs.get("python_version") == "PY2":
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
+    if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
 
     # buildifier: disable=native-python
     native.py_binary(**_add_tags(attrs))
@@ -84,6 +92,10 @@ def py_test(**attrs):
     Args:
       **attrs: Rule attributes
     """
+    if attrs.get("python_version") == "PY2":
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
+    if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
 
     # buildifier: disable=native-python
     native.py_test(**_add_tags(attrs))
@@ -94,6 +106,13 @@ def py_runtime(**attrs):
     Args:
       **attrs: Rule attributes
     """
+    if attrs.get("python_version") == "PY2":
+        fail("Python 2 is no longer supported: see https://github.com/bazelbuild/rules_python/issues/886")
 
     # buildifier: disable=native-python
     native.py_runtime(**_add_tags(attrs))
+
+def py_runtime_pair(**attrs):
+    if attrs.get("py2_runtime"):
+        fail("PYthon 2 is no longer supported: see https://github.com/bazelbuild/rules_python/issues/886")
+    _py_runtime_pair(**attrs)
