@@ -229,6 +229,10 @@ cc_library(
         "@platforms//os:macos": ["lib/libpython{python_version}.dylib"],
         "@platforms//os:linux": ["lib/libpython{python_version}.so", "lib/libpython{python_version}.so.1.0"],
     }}),
+    interface_library = select({{
+        "@platforms//os:windows": "libs/python{python_version_nodot}.lib",
+        "//conditions:default": None,
+    }}),
 )
 
 exports_files(["python", "{python_path}"])
@@ -249,6 +253,7 @@ py_runtime_pair(
         glob_include = repr(glob_include),
         python_path = python_bin,
         python_version = python_short_version,
+        python_version_nodot = python_short_version.replace(".", ""),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
