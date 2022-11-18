@@ -175,4 +175,9 @@ def py_runtime_pair(name, py2_runtime = None, py3_runtime = None, **attrs):
     """
     if attrs.get("py2_runtime"):
         fail("PYthon 2 is no longer supported: see https://github.com/bazelbuild/rules_python/issues/886")
-    _py_runtime_pair(**attrs)
+    _py_runtime_pair(
+        name = name,
+        py2_runtime = py2_runtime,
+        py3_runtime = py3_runtime,
+        **attrs
+    )
