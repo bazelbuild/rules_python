@@ -16,7 +16,7 @@
 load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
-load(":versions.bzl", "MINOR_MAPPING", "PLATFORMS")
+load(":versions.bzl", "MINOR_MAPPING")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
@@ -285,19 +285,17 @@ def _whl_library_render_alias_target(
 alias(
     name = "{alias_name}",
     actual = select({{""".format(alias_name = alias_name)]
-    for [platform_name, meta] in PLATFORMS.items():
-        for [python_version, repo_prefix] in version_map:
-            alias.append("""\
-        "@{rules_python}//python/platforms:{platform_name}_{full_python_version}_config": "{actual}",""".format(
-                full_python_version = MINOR_MAPPING[python_version] if python_version in MINOR_MAPPING else python_version,
-                platform_name = platform_name,
-                actual = "@{repo_prefix}{wheel_name}//:{alias_name}".format(
-                    repo_prefix = repo_prefix,
-                    wheel_name = wheel_name,
-                    alias_name = alias_name,
-                ),
-                rules_python = rules_python,
-            ))
+    for [python_version, repo_prefix] in version_map:
+        alias.append("""\
+        "@{rules_python}//python/config_settings:is_python_{full_python_version}": "{actual}",""".format(
+            full_python_version = MINOR_MAPPING[python_version] if python_version in MINOR_MAPPING else python_version,
+            actual = "@{repo_prefix}{wheel_name}//:{alias_name}".format(
+                repo_prefix = repo_prefix,
+                wheel_name = wheel_name,
+                alias_name = alias_name,
+            ),
+            rules_python = rules_python,
+        ))
     alias.append("""\
         "//conditions:default": "{default_actual}",
     }}),

@@ -4,13 +4,13 @@ them to the desired target platform.
 
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 
-def _transition_platform_impl(_, attr):
-    return {"//command_line_option:platforms": str(attr.target_platform)}
+def _transition_python_version_impl(_, attr):
+    return {"//python/config_settings:python_version": str(attr.python_version)}
 
-_transition_platform = transition(
-    implementation = _transition_platform_impl,
+_transition_python_version = transition(
+    implementation = _transition_python_version_impl,
     inputs = [],
-    outputs = ["//command_line_option:platforms"],
+    outputs = ["//python/config_settings:python_version"],
 )
 
 def _transition_py_impl(ctx):
@@ -61,14 +61,14 @@ _COMMON_ATTRS = {
     "is_windows": attr.bool(
         mandatory = True,
     ),
+    "python_version": attr.string(
+        mandatory = True,
+    ),
     "target": attr.label(
         executable = True,
-        cfg = _transition_platform,
+        cfg = _transition_python_version,
         mandatory = True,
         providers = [PyInfo],
-    ),
-    "target_platform": attr.label(
-        mandatory = True,
     ),
     # "tools" is a hack here. It should be "data" but "data" is not included by default in the
     # location expansion in the same way it is in the native Python rules. The difference on how
@@ -102,7 +102,7 @@ _transition_py_test = rule(
     test = True,
 )
 
-def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
+def _py_rule(rule, transition_rule, name, python_version, **kwargs):
     args = kwargs.pop("args", None)
     data = kwargs.pop("data", None)
     env = kwargs.pop("env", None)
@@ -154,9 +154,9 @@ def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
             "//conditions:default": False,
         }),
         target = ":_" + name,
+        python_version = python_version,
 
         # Attributes common to all build rules.
-        target_platform = target_platform,
         compatible_with = compatible_with,
         deprecation = deprecation,
         distribs = distribs,
@@ -171,8 +171,8 @@ def _py_rule(rule, transition_rule, name, target_platform, **kwargs):
         visibility = visibility,
     )
 
-def py_binary(name, target_platform, **kwargs):
-    return _py_rule(_py_binary, _transition_py_binary, name, target_platform, **kwargs)
+def py_binary(name, python_version, **kwargs):
+    return _py_rule(_py_binary, _transition_py_binary, name, python_version, **kwargs)
 
-def py_test(name, target_platform, **kwargs):
-    return _py_rule(_py_test, _transition_py_test, name, target_platform, **kwargs)
+def py_test(name, python_version, **kwargs):
+    return _py_rule(_py_test, _transition_py_test, name, python_version, **kwargs)
