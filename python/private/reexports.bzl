@@ -117,54 +117,54 @@ def py_runtime(**attrs):
 def py_runtime_pair(name, py2_runtime = None, py3_runtime = None, **attrs):
     """A toolchain rule for Python.
 
-This used to wrap up to two Python runtimes, one for Python 2 and one for Python 3.
-However, Python 2 is no longer supported, so it now only wraps a single Python 3
-runtime.
+    This used to wrap up to two Python runtimes, one for Python 2 and one for Python 3.
+    However, Python 2 is no longer supported, so it now only wraps a single Python 3
+    runtime.
 
-Usually the wrapped runtimes are declared using the `py_runtime` rule, but any
-rule returning a `PyRuntimeInfo` provider may be used.
+    Usually the wrapped runtimes are declared using the `py_runtime` rule, but any
+    rule returning a `PyRuntimeInfo` provider may be used.
 
-This rule returns a `platform_common.ToolchainInfo` provider with the following
-schema:
+    This rule returns a `platform_common.ToolchainInfo` provider with the following
+    schema:
 
-```python
-platform_common.ToolchainInfo(
-    py2_runtime = None,
-    py3_runtime = <PyRuntimeInfo or None>,
-)
-```
+    ```python
+    platform_common.ToolchainInfo(
+        py2_runtime = None,
+        py3_runtime = <PyRuntimeInfo or None>,
+    )
+    ```
 
-Example usage:
+    Example usage:
 
-```python
-# In your BUILD file...
+    ```python
+    # In your BUILD file...
 
-load("@rules_python//python:defs.bzl", "py_runtime_pair")
+    load("@rules_python//python:defs.bzl", "py_runtime_pair")
 
-py_runtime(
-    name = "my_py3_runtime",
-    interpreter_path = "/system/python3",
-    python_version = "PY3",
-)
+    py_runtime(
+        name = "my_py3_runtime",
+        interpreter_path = "/system/python3",
+        python_version = "PY3",
+    )
 
-py_runtime_pair(
-    name = "my_py_runtime_pair",
-    py3_runtime = ":my_py3_runtime",
-)
+    py_runtime_pair(
+        name = "my_py_runtime_pair",
+        py3_runtime = ":my_py3_runtime",
+    )
 
-toolchain(
-    name = "my_toolchain",
-    target_compatible_with = <...>,
-    toolchain = ":my_py_runtime_pair",
-    toolchain_type = "@rules_python//python:toolchain_type",
-)
-```
+    toolchain(
+        name = "my_toolchain",
+        target_compatible_with = <...>,
+        toolchain = ":my_py_runtime_pair",
+        toolchain_type = "@rules_python//python:toolchain_type",
+    )
+    ```
 
-```python
-# In your WORKSPACE...
+    ```python
+    # In your WORKSPACE...
 
-register_toolchains("//my_pkg:my_toolchain")
-```
+    register_toolchains("//my_pkg:my_toolchain")
+    ```
 
     Args:
         name: str, the name of the target
