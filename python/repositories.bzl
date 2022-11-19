@@ -225,13 +225,9 @@ cc_library(
     name = "libpython",
     hdrs = [":includes"],
     srcs = select({{
-        "@platforms//os:windows": ["python3.dll"],
+        "@platforms//os:windows": ["python3.dll", "libs/python{python_version_nodot}.lib"],
         "@platforms//os:macos": ["lib/libpython{python_version}.dylib"],
         "@platforms//os:linux": ["lib/libpython{python_version}.so", "lib/libpython{python_version}.so.1.0"],
-    }}),
-    interface_library = select({{
-        "@platforms//os:windows": "libs/python{python_version_nodot}.lib",
-        "//conditions:default": None,
     }}),
 )
 
