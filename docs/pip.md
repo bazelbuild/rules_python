@@ -1,6 +1,8 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-<a name="#compile_pip_requirements"></a>
+Import pip requirements into Bazel.
+
+<a id="compile_pip_requirements"></a>
 
 ## compile_pip_requirements
 
@@ -17,28 +19,28 @@ of some other compile_pip_requirements rule that references these requirements
 
 It also generates two targets for running pip-compile:
 
-- validate with `bazel test <name>_test`
-- update with   `bazel run <name>.update`
+- validate with `bazel test &lt;name&gt;_test`
+- update with   `bazel run &lt;name&gt;.update`
 
 
 **PARAMETERS**
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| name |  base name for generated targets, typically "requirements"   |  none |
-| extra_args |  passed to pip-compile   |  <code>[]</code> |
-| visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
-| requirements_in |  file expressing desired dependencies   |  <code>None</code> |
-| requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
-| requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
-| kwargs |  other bazel attributes passed to the "_test" rule   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="compile_pip_requirements-name"></a>name |  base name for generated targets, typically "requirements"   |  none |
+| <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile   |  <code>[]</code> |
+| <a id="compile_pip_requirements-visibility"></a>visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
+| <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_txt"></a>requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_linux"></a>requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_darwin"></a>requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_windows"></a>requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| <a id="compile_pip_requirements-tags"></a>tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
+| <a id="compile_pip_requirements-kwargs"></a>kwargs |  other bazel attributes passed to the "_test" rule   |  none |
 
 
-<a name="#package_annotation"></a>
+<a id="package_annotation"></a>
 
 ## package_annotation
 
@@ -56,16 +58,20 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| additive_build_content |  Raw text to add to the generated <code>BUILD</code> file of a package.   |  <code>None</code> |
-| copy_files |  A mapping of <code>src</code> and <code>out</code> files for [@bazel_skylib//rules:copy_file.bzl][cf]   |  <code>{}</code> |
-| copy_executables |  A mapping of <code>src</code> and <code>out</code> files for     [@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as     executable.   |  <code>{}</code> |
-| data |  A list of labels to add as <code>data</code> dependencies to the generated <code>py_library</code> target.   |  <code>[]</code> |
-| data_exclude_glob |  A list of exclude glob patterns to add as <code>data</code> to the generated     <code>py_library</code> target.   |  <code>[]</code> |
-| srcs_exclude_glob |  A list of labels to add as <code>srcs</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+| :------------- | :------------- | :------------- |
+| <a id="package_annotation-additive_build_content"></a>additive_build_content |  Raw text to add to the generated <code>BUILD</code> file of a package.   |  <code>None</code> |
+| <a id="package_annotation-copy_files"></a>copy_files |  A mapping of <code>src</code> and <code>out</code> files for [@bazel_skylib//rules:copy_file.bzl][cf]   |  <code>{}</code> |
+| <a id="package_annotation-copy_executables"></a>copy_executables |  A mapping of <code>src</code> and <code>out</code> files for [@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as executable.   |  <code>{}</code> |
+| <a id="package_annotation-data"></a>data |  A list of labels to add as <code>data</code> dependencies to the generated <code>py_library</code> target.   |  <code>[]</code> |
+| <a id="package_annotation-data_exclude_glob"></a>data_exclude_glob |  A list of exclude glob patterns to add as <code>data</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+| <a id="package_annotation-srcs_exclude_glob"></a>srcs_exclude_glob |  A list of labels to add as <code>srcs</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+
+**RETURNS**
+
+str: A json encoded string of the provided content.
 
 
-<a name="#pip_install"></a>
+<a id="pip_install"></a>
 
 ## pip_install
 
@@ -93,13 +99,13 @@ install_deps()
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
-| name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
-| kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="pip_install-requirements"></a>requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
+| <a id="pip_install-name"></a>name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
+| <a id="pip_install-kwargs"></a>kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
-<a name="#pip_parse"></a>
+<a id="pip_parse"></a>
 
 ## pip_parse
 
@@ -196,11 +202,11 @@ See the example in rules_python/examples/pip_parse_vendored.
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| requirements |  Deprecated. See requirements_lock.   |  <code>None</code> |
-| requirements_lock |  A fully resolved 'requirements.txt' pip requirement file     containing the transitive set of your dependencies. If this file is passed instead     of 'requirements' no resolve will take place and pip_repository will create     individual repositories for each of your dependencies so that wheels are     fetched/built only for the targets specified by 'build/run/test'.     Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code>     attributes.   |  <code>None</code> |
-| name |  The name of the generated repository. The generated repositories     containing each requirement will be of the form &lt;name&gt;_&lt;requirement-name&gt;.   |  <code>"pip_parsed_deps"</code> |
-| bzlmod |  Whether this rule is being run under a bzlmod module extension.   |  <code>False</code> |
-| kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="pip_parse-requirements"></a>requirements |  Deprecated. See requirements_lock.   |  <code>None</code> |
+| <a id="pip_parse-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'. Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code> attributes.   |  <code>None</code> |
+| <a id="pip_parse-name"></a>name |  The name of the generated repository. The generated repositories containing each requirement will be of the form &lt;name&gt;_&lt;requirement-name&gt;.   |  <code>"pip_parsed_deps"</code> |
+| <a id="pip_parse-bzlmod"></a>bzlmod |  Whether this rule is being run under a bzlmod module extension.   |  <code>False</code> |
+| <a id="pip_parse-kwargs"></a>kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
