@@ -2,6 +2,7 @@
 
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python/pip_install:repositories.bzl", "all_requirements")
+load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
 CPPFLAGS = "CPPFLAGS"
@@ -129,6 +130,28 @@ def _get_toolchain_unix_cflags(rctx):
 
     return ["-isystem {}".format(include_path)]
 
+def use_isolated(ctx, attr):
+    """Determine whether or not to pass the pip `--isolated` flag to the pip invocation.
+
+    Args:
+        ctx: repository or module context
+        attr: attributes for the repo rule or tag extension
+
+    Returns:
+        True if --isolated should be passed
+    """
+    use_isolated = attr.isolated
+
+    # The environment variable will take precedence over the attribute
+    isolated_env = ctx.os.environ.get("RULES_PYTHON_PIP_ISOLATED", None)
+    if isolated_env != None:
+        if isolated_env.lower() in ("0", "false"):
+            use_isolated = False
+        else:
+            use_isolated = True
+
+    return use_isolated
+
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
@@ -141,18 +164,7 @@ def _parse_optional_attrs(rctx, args):
     Returns: Augmented args list.
     """
 
-    # Determine whether or not to pass the pip `--isloated` flag to the pip invocation
-    use_isolated = rctx.attr.isolated
-
-    # The environment variable will take precedence over the attribute
-    isolated_env = rctx.os.environ.get("RULES_PYTHON_PIP_ISOLATED", None)
-    if isolated_env != None:
-        if isolated_env.lower() in ("0", "false"):
-            use_isolated = False
-        else:
-            use_isolated = True
-
-    if use_isolated:
+    if use_isolated(rctx, rctx.attr):
         args.append("--isolated")
 
     # Check for None so we use empty default types from our attrs.
@@ -211,20 +223,73 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["requirements.bzl"])
 """
 
-def _locked_requirements(rctx):
-    os = rctx.os.name.lower()
-    requirements_txt = rctx.attr.requirements_lock
-    if os.startswith("mac os") and rctx.attr.requirements_darwin != None:
-        requirements_txt = rctx.attr.requirements_darwin
-    elif os.startswith("linux") and rctx.attr.requirements_linux != None:
-        requirements_txt = rctx.attr.requirements_linux
-    elif "win" in os and rctx.attr.requirements_windows != None:
-        requirements_txt = rctx.attr.requirements_windows
+def locked_requirements_label(ctx, attr):
+    """Get the preferred label for a locked requirements file based on platform.
+
+    Args:
+        ctx: repository or module context
+        attr: attributes for the repo rule or tag extension
+
+    Returns:
+        Label
+    """
+    os = ctx.os.name.lower()
+    requirements_txt = attr.requirements_lock
+    if os.startswith("mac os") and attr.requirements_darwin != None:
+        requirements_txt = attr.requirements_darwin
+    elif os.startswith("linux") and attr.requirements_linux != None:
+        requirements_txt = attr.requirements_linux
+    elif "win" in os and attr.requirements_windows != None:
+        requirements_txt = attr.requirements_windows
     if not requirements_txt:
         fail("""\
 A requirements_lock attribute must be specified, or a platform-specific lockfile using one of the requirements_* attributes.
 """)
     return requirements_txt
+
+# Keep in sync with `_clean_name` in generated requirements.bzl
+def _clean_pkg_name(name):
+    return name.replace("-", "_").replace(".", "_").lower()
+
+def _bzlmod_pkg_aliases(rctx, requirements_txt):
+    """Create alias declarations for each python dependency.
+
+    The aliases should be appended to the pip_parse repo's BUILD.bazel file. These aliases
+    allow users to use requirement() without needed a corresponding `use_repo()` for each dep
+    when using bzlmod.
+
+    Args:
+        rctx: the repository context
+        requirements_txt: label to the requirements lock file
+    """
+    requirements = parse_requirements(rctx.read(requirements_txt)).requirements
+
+    build_content = ""
+    for requirement in requirements:
+        build_content += """\
+
+alias(
+    name = "{name}_pkg",
+    actual = "@{repo_prefix}{dep}//:pkg",
+)
+
+alias(
+    name = "{name}_whl",
+    actual = "@{repo_prefix}{dep}//:whl",
+)
+
+alias(
+    name = "{name}_data",
+    actual = "@{repo_prefix}{dep}//:data",
+)
+
+alias(
+    name = "{name}_dist_info",
+    actual = "@{repo_prefix}{dep}//:dist_info",
+)
+""".format(name = _clean_pkg_name(requirement[0]), repo_prefix = rctx.attr.repo_prefix, dep = requirement[0])
+
+    return build_content
 
 def _pip_repository_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
@@ -234,7 +299,7 @@ def _pip_repository_impl(rctx):
     annotations_file = rctx.path("annotations.json")
     rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
 
-    requirements_txt = _locked_requirements(rctx)
+    requirements_txt = locked_requirements_label(rctx, rctx.attr)
     args = [
         python_interpreter,
         "-m",
@@ -250,6 +315,8 @@ def _pip_repository_impl(rctx):
         str(rctx.attr.timeout),
         "--annotations",
         annotations_file,
+        "--bzlmod",
+        str(rctx.attr.bzlmod).lower(),
     ]
 
     args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
@@ -274,7 +341,12 @@ def _pip_repository_impl(rctx):
         fail("rules_python failed: %s (%s)" % (result.stdout, result.stderr))
 
     # We need a BUILD file to load the generated requirements.bzl
-    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS + "\n# The requirements.bzl file was generated by running:\n# " + " ".join([str(a) for a in args]))
+    build_contents = _BUILD_FILE_CONTENTS
+
+    if rctx.attr.bzlmod:
+        build_contents += _bzlmod_pkg_aliases(rctx, requirements_txt)
+
+    rctx.file("BUILD.bazel", build_contents + "\n# The requirements.bzl file was generated by running:\n# " + " ".join([str(a) for a in args]))
 
     return
 
@@ -368,6 +440,12 @@ Prefix for the generated packages will be of the form
 pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
+    ),
+    "bzlmod": attr.bool(
+        default = False,
+        doc = """Whether this repository rule is invoked under bzlmod, in which case
+we do not create the install_deps() macro.
+""",
     ),
     "requirements_darwin": attr.label(
         allow_single_file = True,

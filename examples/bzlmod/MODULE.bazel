@@ -10,3 +10,25 @@ local_path_override(
     module_name = "rules_python",
     path = "../..",
 )
+
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+
+python.toolchain(
+    name = "python3_9",
+    python_version = "3.9",
+)
+
+use_repo(python, "python3_9_toolchains")
+
+register_toolchains(
+    "@python3_9_toolchains//:all",
+)
+
+pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+
+pip.parse(
+    name = "pip",
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+use_repo(pip, "pip")

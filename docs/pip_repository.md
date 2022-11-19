@@ -5,8 +5,8 @@
 ## pip_repository
 
 <pre>
-pip_repository(<a href="#pip_repository-name">name</a>, <a href="#pip_repository-annotations">annotations</a>, <a href="#pip_repository-download_only">download_only</a>, <a href="#pip_repository-enable_implicit_namespace_pkgs">enable_implicit_namespace_pkgs</a>, <a href="#pip_repository-environment">environment</a>,
-               <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>, <a href="#pip_repository-python_interpreter">python_interpreter</a>,
+pip_repository(<a href="#pip_repository-name">name</a>, <a href="#pip_repository-annotations">annotations</a>, <a href="#pip_repository-bzlmod">bzlmod</a>, <a href="#pip_repository-download_only">download_only</a>, <a href="#pip_repository-enable_implicit_namespace_pkgs">enable_implicit_namespace_pkgs</a>,
+               <a href="#pip_repository-environment">environment</a>, <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>, <a href="#pip_repository-python_interpreter">python_interpreter</a>,
                <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>, <a href="#pip_repository-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository-requirements_linux">requirements_linux</a>,
                <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>, <a href="#pip_repository-timeout">timeout</a>)
 </pre>
@@ -58,6 +58,7 @@ py_binary(
 | :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
 | name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
 | annotations |  Optional annotations to apply to packages   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
+| bzlmod |  Whether this repository rule is invoked under bzlmod, in which case we do not create the install_deps() macro.   | Boolean | optional | False |
 | download_only |  Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of --platform, --python-version, --implementation, and --abi in --extra_pip_args to download wheels for a different platform from the host platform.   | Boolean | optional | False |
 | enable_implicit_namespace_pkgs |  If true, disables conversion of native namespace packages into pkg-util style namespace packages. When set all py_binary and py_test targets must specify either <code>legacy_create_init=False</code> or the global Bazel option <code>--incompatible_default_to_explicit_init_py</code> to prevent <code>__init__.py</code> being automatically generated in every directory.<br><br>This option is required to support some packages which cannot handle the conversion to pkg-util style.   | Boolean | optional | False |
 | environment |  Environment variables to set in the pip subprocess. Can be used to set common variables such as <code>http_proxy</code>, <code>https_proxy</code> and <code>no_proxy</code> Note that pip is run with "--isolated" on the CLI so PIP_&lt;VAR&gt;_&lt;NAME&gt; style env vars are ignored, but env vars that control requests and urllib3 can be passed.   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | optional | {} |
@@ -111,6 +112,25 @@ Instantiated from pip_repository and inherits config options from there.
 | timeout |  Timeout (in seconds) on the rule's execution duration.   | Integer | optional | 600 |
 
 
+<a name="#locked_requirements_label"></a>
+
+## locked_requirements_label
+
+<pre>
+locked_requirements_label(<a href="#locked_requirements_label-ctx">ctx</a>, <a href="#locked_requirements_label-attr">attr</a>)
+</pre>
+
+Get the preferred label for a locked requirements file based on platform.
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| ctx |  repository or module context   |  none |
+| attr |  attributes for the repo rule or tag extension   |  none |
+
+
 <a name="#package_annotation"></a>
 
 ## package_annotation
@@ -136,5 +156,24 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 | data |  A list of labels to add as <code>data</code> dependencies to the generated <code>py_library</code> target.   |  <code>[]</code> |
 | data_exclude_glob |  A list of exclude glob patterns to add as <code>data</code> to the generated     <code>py_library</code> target.   |  <code>[]</code> |
 | srcs_exclude_glob |  A list of labels to add as <code>srcs</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+
+
+<a name="#use_isolated"></a>
+
+## use_isolated
+
+<pre>
+use_isolated(<a href="#use_isolated-ctx">ctx</a>, <a href="#use_isolated-attr">attr</a>)
+</pre>
+
+Determine whether or not to pass the pip `--isolated` flag to the pip invocation.
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :-------------: | :-------------: | :-------------: |
+| ctx |  repository or module context   |  none |
+| attr |  attributes for the repo rule or tag extension   |  none |
 
 

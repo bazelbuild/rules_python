@@ -4,13 +4,27 @@ module(
     version = "0.0.0",
 )
 
-pip_install = use_extension("@rules_python//python:extensions.bzl", "pip_install")
+bazel_dep(name = "platforms", version = "0.0.4")
+
+internal_deps = use_extension("@rules_python//python:extensions.bzl", "internal_deps")
+
+internal_deps.install()
 
 use_repo(
-    pip_install,
+    internal_deps,
+    "pypi__build",
     "pypi__click",
+    "pypi__colorama",
+    "pypi__importlib_metadata",
+    "pypi__installer",
+    "pypi__more_itertools",
+    "pypi__packaging",
+    "pypi__pep517",
     "pypi__pip",
     "pypi__pip_tools",
+    "pypi__pyparsing",
     "pypi__setuptools",
+    "pypi__tomli",
     "pypi__wheel",
+    "pypi__zipp",
 )

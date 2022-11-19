@@ -1,0 +1,10 @@
+bcr_test_module:
+  module_path: "examples/bzlmod"
+  matrix:
+    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  tasks:
+    run_tests:
+      name: "Run test module"
+      platform: ${{ platform }}
+      test_targets:
+        - "//..."

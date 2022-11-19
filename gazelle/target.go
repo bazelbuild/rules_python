@@ -22,6 +22,7 @@ type targetBuilder struct {
 	visibility        *treeset.Set
 	main              *string
 	imports           []string
+	testonly          bool
 }
 
 // newTargetBuilder constructs a new targetBuilder.
@@ -96,6 +97,12 @@ func (t *targetBuilder) setMain(main string) *targetBuilder {
 	return t
 }
 
+// setTestonly sets the testonly attribute to true.
+func (t *targetBuilder) setTestonly() *targetBuilder {
+	t.testonly = true
+	return t
+}
+
 // generateImportsAttribute generates the imports attribute.
 // These are a list of import directories to be added to the PYTHONPATH. In our
 // case, the value we add is on Bazel sub-packages to be able to perform imports
@@ -130,6 +137,9 @@ func (t *targetBuilder) build() *rule.Rule {
 	}
 	if !t.deps.Empty() {
 		r.SetPrivateAttr(config.GazelleImportsKey, t.deps)
+	}
+	if t.testonly {
+		r.SetAttr("testonly", true)
 	}
 	r.SetPrivateAttr(resolvedDepsKey, t.resolvedDeps)
 	return r
