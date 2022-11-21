@@ -90,19 +90,19 @@ package(default_visibility = ["//visibility:public"])
 load("@rules_python//python:versions.bzl", "PLATFORMS", "gen_python_config_settings")
 gen_python_config_settings()
 exports_files(["defs.bzl"])
-alias(name = "files",           actual = select({{":" + item : "@{py_repository}_" + item + "//:files" for item in PLATFORMS.keys()}}))
-alias(name = "includes",        actual = select({{":" + item : "@{py_repository}_" + item + "//:includes" for item in PLATFORMS.keys()}}))
-alias(name = "libpython",       actual = select({{":" + item : "@{py_repository}_" + item + "//:libpython" for item in PLATFORMS.keys()}}))
-alias(name = "py3_runtime",     actual = select({{":" + item : "@{py_repository}_" + item + "//:py3_runtime" for item in PLATFORMS.keys()}}))
-alias(name = "python_headers",  actual = select({{":" + item : "@{py_repository}_" + item + "//:python_headers" for item in PLATFORMS.keys()}}))
-alias(name = "python_runtimes", actual = select({{":" + item : "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS.keys()}}))
-alias(name = "python3",         actual = select({{":" + item : "@{py_repository}_" + item + "//:" + ("python.exe" if "windows" in item else "bin/python3") for item in PLATFORMS.keys()}}))
+alias(name = "files",           actual = select({{":" + item: "@{py_repository}_" + item + "//:files" for item in PLATFORMS.keys()}}))
+alias(name = "includes",        actual = select({{":" + item: "@{py_repository}_" + item + "//:includes" for item in PLATFORMS.keys()}}))
+alias(name = "libpython",       actual = select({{":" + item: "@{py_repository}_" + item + "//:libpython" for item in PLATFORMS.keys()}}))
+alias(name = "py3_runtime",     actual = select({{":" + item: "@{py_repository}_" + item + "//:py3_runtime" for item in PLATFORMS.keys()}}))
+alias(name = "python_headers",  actual = select({{":" + item: "@{py_repository}_" + item + "//:python_headers" for item in PLATFORMS.keys()}}))
+alias(name = "python_runtimes", actual = select({{":" + item: "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS.keys()}}))
+alias(name = "python3",         actual = select({{":" + item: "@{py_repository}_" + item + "//:" + ("python.exe" if "windows" in item else "bin/python3") for item in PLATFORMS.keys()}}))
 """.format(
         py_repository = rctx.attr.user_repository_name,
     )
     if not is_windows:
         build_contents += """\
-alias(name = "pip",             actual = select({{":" + item : "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS.keys() if "windows" not in item}}))
+alias(name = "pip",             actual = select({{":" + item: "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS.keys() if "windows" not in item}}))
 """.format(
             py_repository = rctx.attr.user_repository_name,
             host_platform = host_platform,
