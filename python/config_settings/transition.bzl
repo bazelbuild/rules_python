@@ -136,6 +136,24 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
         "toolchains": toolchains,
     }
 
+    # Test-specific extra attributes.
+    if "env_inherit" in kwargs:
+        common_attrs["env_inherit"] = kwargs.pop("env_inherit")
+    if "size" in kwargs:
+        common_attrs["size"] = kwargs.pop("size")
+    if "timeout" in kwargs:
+        common_attrs["timeout"] = kwargs.pop("timeout")
+    if "flaky" in kwargs:
+        common_attrs["flaky"] = kwargs.pop("flaky")
+    if "shard_count" in kwargs:
+        common_attrs["shard_count"] = kwargs.pop("shard_count")
+    if "local" in kwargs:
+        common_attrs["local"] = kwargs.pop("local")
+
+    # Binary-specific extra attributes.
+    if "output_licenses" in kwargs:
+        common_attrs["output_licenses"] = kwargs.pop("output_licenses")
+
     rule_impl(
         name = "_" + name,
         args = args,
