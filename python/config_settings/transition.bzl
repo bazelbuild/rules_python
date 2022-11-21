@@ -56,6 +56,9 @@ def _transition_py_impl(ctx):
     return providers
 
 _COMMON_ATTRS = {
+    "deps": attr.label_list(
+        mandatory = False,
+    ),
     "env": attr.string_dict(
         mandatory = False,
     ),
@@ -64,6 +67,10 @@ _COMMON_ATTRS = {
     ),
     "python_version": attr.string(
         mandatory = True,
+    ),
+    "srcs": attr.label_list(
+        allow_files = True,
+        mandatory = False,
     ),
     "target": attr.label(
         executable = True,
@@ -107,6 +114,8 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     args = kwargs.pop("args", None)
     data = kwargs.pop("data", None)
     env = kwargs.pop("env", None)
+    srcs = kwargs.pop("srcs", None)
+    deps = kwargs.pop("deps", None)
 
     # Attributes common to all build rules.
     # https://bazel.build/reference/be/common-definitions#common-attributes
@@ -158,7 +167,9 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
         name = "_" + name,
         args = args,
         data = data,
+        deps = deps,
         env = env,
+        srcs = srcs,
         tags = ["manual"] + (tags if tags else []),
         visibility = ["//visibility:private"],
         **dicts.add(common_attrs, kwargs)
@@ -167,12 +178,14 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     return transition_rule(
         name = name,
         args = args,
+        deps = deps,
         env = env,
         is_windows = select({
             "@platforms//os:windows": True,
             "//conditions:default": False,
         }),
         python_version = python_version,
+        srcs = srcs,
         tags = tags,
         target = ":_" + name,
         tools = data,
