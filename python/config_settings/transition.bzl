@@ -2,6 +2,7 @@
 them to the desired target platform.
 """
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 
 def _transition_python_version_impl(_, attr):
@@ -122,53 +123,43 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     toolchains = kwargs.pop("toolchains", None)
     visibility = kwargs.pop("visibility", None)
 
+    common_attrs = {
+        "compatible_with": compatible_with,
+        "deprecation": deprecation,
+        "distribs": distribs,
+        "exec_compatible_with": exec_compatible_with,
+        "exec_properties": exec_properties,
+        "features": features,
+        "restricted_to": restricted_to,
+        "target_compatible_with": target_compatible_with,
+        "testonly": testonly,
+        "toolchains": toolchains,
+    }
+
     rule_impl(
         name = "_" + name,
         args = args,
         data = data,
         env = env,
-
-        # Attributes common to all build rules.
-        compatible_with = compatible_with,
-        deprecation = deprecation,
-        distribs = distribs,
-        exec_compatible_with = exec_compatible_with,
-        exec_properties = exec_properties,
-        features = features,
-        restricted_to = restricted_to,
         tags = ["manual"] + (tags if tags else []),
-        target_compatible_with = target_compatible_with,
-        testonly = testonly,
-        toolchains = toolchains,
         visibility = ["//visibility:private"],
-        **kwargs
+        **dicts.add(common_attrs, kwargs)
     )
 
     return transition_rule(
         name = name,
-        tools = data,
         args = args,
         env = env,
         is_windows = select({
             "@platforms//os:windows": True,
             "//conditions:default": False,
         }),
-        target = ":_" + name,
         python_version = python_version,
-
-        # Attributes common to all build rules.
-        compatible_with = compatible_with,
-        deprecation = deprecation,
-        distribs = distribs,
-        exec_compatible_with = exec_compatible_with,
-        exec_properties = exec_properties,
-        features = features,
-        restricted_to = restricted_to,
         tags = tags,
-        target_compatible_with = target_compatible_with,
-        testonly = testonly,
-        toolchains = toolchains,
+        target = ":_" + name,
+        tools = data,
         visibility = visibility,
+        **common_attrs
     )
 
 def py_binary(name, python_version, **kwargs):
