@@ -29,6 +29,7 @@ pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 pip.parse(
     name = "pip",
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 
 use_repo(pip, "pip")

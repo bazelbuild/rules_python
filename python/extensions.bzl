@@ -61,7 +61,7 @@ def _pip_impl(module_ctx):
 
             for name, requirement_line in requirements:
                 whl_library(
-                    name = "%s_%s" % (attr.name, name),
+                    name = "%s_%s" % (attr.name, _sanitize_name(name)),
                     requirement = requirement_line,
                     repo = attr.name,
                     repo_prefix = attr.name + "_",
@@ -77,6 +77,10 @@ def _pip_impl(module_ctx):
                     enable_implicit_namespace_pkgs = attr.enable_implicit_namespace_pkgs,
                     environment = attr.environment,
                 )
+
+# Keep in sync with python/pip_install/extract_wheels/bazel.py
+def _sanitize_name(name):
+    return name.replace("-", "_").replace(".", "_").lower()
 
 def _pip_parse_ext_attrs():
     attrs = dict({

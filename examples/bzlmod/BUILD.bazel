@@ -7,12 +7,14 @@ compile_pip_requirements(
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.in",
     requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_windows.txt",
 )
 
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
     deps = [
+        requirement("pylint"),
         requirement("tabulate"),
     ],
 )
