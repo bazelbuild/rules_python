@@ -102,7 +102,7 @@ _transition_py_test = rule(
     test = True,
 )
 
-def _py_rule(rule, transition_rule, name, python_version, **kwargs):
+def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     args = kwargs.pop("args", None)
     data = kwargs.pop("data", None)
     env = kwargs.pop("env", None)
@@ -122,7 +122,7 @@ def _py_rule(rule, transition_rule, name, python_version, **kwargs):
     toolchains = kwargs.pop("toolchains", None)
     visibility = kwargs.pop("visibility", None)
 
-    rule(
+    rule_impl(
         name = "_" + name,
         args = args,
         data = data,
