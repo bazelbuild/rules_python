@@ -1,8 +1,20 @@
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+)
 
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
+    deps = [
+        requirement("tabulate"),
+    ],
 )
 
 py_binary(
@@ -10,7 +22,9 @@ py_binary(
     srcs = ["__main__.py"],
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
-    deps = [":lib"],
+    deps = [
+        ":lib",
+    ],
 )
 
 py_test(

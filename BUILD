@@ -67,10 +67,11 @@ filegroup(
 # See https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
 # gazelle:prefix github.com/bazelbuild/rules_python
 # gazelle:exclude bazel-out
+# gazelle:exclude examples/**
 gazelle(name = "gazelle")
 
 gazelle(
-    name = "update_go_deps",
+    name = "gazelle_update_repos",
     args = [
         "-from_file=go.mod",
         "-to_macro=gazelle/deps.bzl%gazelle_deps",

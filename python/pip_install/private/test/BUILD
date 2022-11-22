@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load(":requirements_parser_tests.bzl", parse_requirements_tests = "parse_tests")
 
 diff_test(
     name = "srcs_diff_test",
@@ -15,3 +16,5 @@ diff_test(
         "//conditions:default": [],
     }),
 )
+
+parse_requirements_tests(name = "test_parse_requirements")

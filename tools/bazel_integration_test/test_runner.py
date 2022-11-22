@@ -53,6 +53,15 @@ def main(conf_file):
                     % os.environ["TEST_SRCDIR"]
                 )
 
+                # TODO: --override_module isn't supported in the current BAZEL_VERSION (5.2.0)
+                # This condition and attribute can be removed when bazel is updated for
+                # the rest of rules_python.
+                if (config["bzlmod"]):
+                    bazel_args.append(
+                        "--override_module=rules_python=%s/rules_python"
+                        % os.environ["TEST_SRCDIR"]
+                    )
+
                 # Bazel's wrapper script needs this or you get
                 # 2020/07/13 21:58:11 could not get the user's cache directory: $HOME is not defined
                 os.environ["HOME"] = str(tmp_homedir)

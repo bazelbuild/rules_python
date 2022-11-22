@@ -29,31 +29,28 @@ def rules_python_internal_deps():
     maybe(
         http_archive,
         name = "io_bazel_stardoc",
-        url = "https://github.com/bazelbuild/stardoc/archive/0.4.0.tar.gz",
-        sha256 = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c",
-        strip_prefix = "stardoc-0.4.0",
+        url = "https://github.com/bazelbuild/stardoc/archive/6f274e903009158504a9d9130d7f7d5f3e9421ed.tar.gz",
+        sha256 = "b5d6891f869d5b5a224316ec4dd9e9d481885a9b1a1c81eb846e20180156f2fa",
+        strip_prefix = "stardoc-6f274e903009158504a9d9130d7f7d5f3e9421ed",
     )
 
     maybe(
         http_archive,
         name = "io_bazel_rules_go",
-        sha256 = "f2dcd210c7095febe54b804bb1cd3a58fe8435a909db2ec04e31542631cf715c",
+        sha256 = "099a9fb96a376ccbbb7d291ed4ecbdfd42f6bc822ab77ae6f1b5cb9e914e94fa",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.31.0/rules_go-v0.31.0.zip",
-            "https://github.com/bazelbuild/rules_go/releases/download/v0.31.0/rules_go-v0.31.0.zip",
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.35.0/rules_go-v0.35.0.zip",
+            "https://github.com/bazelbuild/rules_go/releases/download/v0.35.0/rules_go-v0.35.0.zip",
         ],
     )
 
     maybe(
         http_archive,
         name = "bazel_gazelle",
-        patch_args = ["-p1"],
-        patches = ["@rules_python//gazelle:bazel_gazelle.pr1095.patch"],
-        sha256 = "0bb8056ab9ed4cbcab5b74348d8530c0e0b939987b0cfe36c1ab53d35a99e4de",
-        strip_prefix = "bazel-gazelle-2834ea44b3ec6371c924baaf28704730ec9d4559",
+        sha256 = "efbbba6ac1a4fd342d5122cbdfdb82aeb2cf2862e35022c752eaddffada7c3f3",
         urls = [
-            # No release since March, and we need subsequent fixes
-            "https://github.com/bazelbuild/bazel-gazelle/archive/2834ea44b3ec6371c924baaf28704730ec9d4559.zip",
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
         ],
     )
 

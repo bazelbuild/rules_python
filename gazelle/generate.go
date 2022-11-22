@@ -26,6 +26,8 @@ const (
 	pyBinaryEntrypointFilename  = "__main__.py"
 	pyTestEntrypointFilename    = "__test__.py"
 	pyTestEntrypointTargetname  = "__test__"
+	conftestFilename            = "conftest.py"
+	conftestTargetname          = "conftest"
 )
 
 var (
@@ -71,6 +73,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	// be generated for this package or not.
 	hasPyTestFile := false
 	hasPyTestTarget := false
+	hasConftestFile := false
 
 	for _, f := range args.RegularFiles {
 		if cfg.IgnoresFile(filepath.Base(f)) {
@@ -81,6 +84,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			hasPyBinary = true
 		} else if !hasPyTestFile && f == pyTestEntrypointFilename {
 			hasPyTestFile = true
+		} else if f == conftestFilename {
+			hasConftestFile = true
 		} else if strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
 			pyTestFilenames.Add(f)
 		} else if ext == ".py" {
@@ -196,10 +201,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		pyLibraryTargetName := cfg.RenderLibraryName(packageName)
 
-		// Check if a target with the same name we are generating alredy exists,
-		// and if it is of a different kind from the one we are generating. If
-		// so, we have to throw an error since Gazelle won't generate it
-		// correctly.
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
 		if args.File != nil {
 			for _, t := range args.File.Rules {
 				if t.Name() == pyLibraryTargetName && t.Kind() != pyLibraryKind {
@@ -233,10 +238,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		pyBinaryTargetName := cfg.RenderBinaryName(packageName)
 
-		// Check if a target with the same name we are generating alredy exists,
-		// and if it is of a different kind from the one we are generating. If
-		// so, we have to throw an error since Gazelle won't generate it
-		// correctly.
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
 		if args.File != nil {
 			for _, t := range args.File.Rules {
 				if t.Name() == pyBinaryTargetName && t.Kind() != pyBinaryKind {
@@ -267,6 +272,43 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
 	}
 
+	var conftest *rule.Rule
+	if hasConftestFile {
+		deps, err := parser.parseSingle(conftestFilename)
+		if err != nil {
+			log.Fatalf("ERROR: %v\n", err)
+		}
+
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
+		if args.File != nil {
+			for _, t := range args.File.Rules {
+				if t.Name() == conftestTargetname && t.Kind() != pyLibraryKind {
+					fqTarget := label.New("", args.Rel, conftestTargetname)
+					err := fmt.Errorf("failed to generate target %q of kind %q: "+
+						"a target of kind %q with the same name already exists.",
+						fqTarget.String(), pyLibraryKind, t.Kind())
+					collisionErrors.Add(err)
+				}
+			}
+		}
+
+		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel).
+			setUUID(uuid.Must(uuid.NewUUID()).String()).
+			addSrc(conftestFilename).
+			addModuleDependencies(deps).
+			addVisibility(visibility).
+			setTestonly().
+			generateImportsAttribute()
+
+		conftest = conftestTarget.build()
+
+		result.Gen = append(result.Gen, conftest)
+		result.Imports = append(result.Imports, conftest.PrivateAttr(config.GazelleImportsKey))
+	}
+
 	if hasPyTestFile || hasPyTestTarget {
 		if hasPyTestFile {
 			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
@@ -280,10 +322,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		pyTestTargetName := cfg.RenderTestName(packageName)
 
-		// Check if a target with the same name we are generating alredy exists,
-		// and if it is of a different kind from the one we are generating. If
-		// so, we have to throw an error since Gazelle won't generate it
-		// correctly.
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
 		if args.File != nil {
 			for _, t := range args.File.Rules {
 				if t.Name() == pyTestTargetName && t.Kind() != pyTestKind {
@@ -315,6 +357,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		if pyLibrary != nil {
 			pyTestTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(uuidKey).(string)})
+		}
+
+		if conftest != nil {
+			pyTestTarget.addModuleDependency(module{Name: conftest.PrivateAttr(uuidKey).(string)})
 		}
 
 		pyTest := pyTestTarget.build()

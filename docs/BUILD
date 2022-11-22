@@ -71,6 +71,13 @@ bzl_library(
 )
 
 bzl_library(
+    name = "requirements_parser_bzl",
+    srcs = [
+        "//python/pip_install:requirements_parser.bzl",
+    ],
+)
+
+bzl_library(
     name = "packaging_bzl",
     srcs = [
         "//python:packaging.bzl",
@@ -114,6 +121,7 @@ stardoc(
     deps = [
         ":bazel_repo_tools",
         ":pip_install_bzl",
+        ":requirements_parser_bzl",
         "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
     ],
 )
