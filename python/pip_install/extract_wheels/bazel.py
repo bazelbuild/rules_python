@@ -396,7 +396,7 @@ def extract_wheel(
     for name, (module, attribute) in sorted(whl.entry_points().items()):
         # There is an extreme edge-case with entry_points that end with `.py`
         # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
-        entry_point_without_py = name[:-3] if name.endswith(".py") else name
+        entry_point_without_py = f"{name[:-3]}_py" if name.endswith(".py") else name
         entry_point_target_name = f"{WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
         entry_point_script_name = f"{entry_point_target_name}.py"
         (directory_path / entry_point_script_name).write_text(
