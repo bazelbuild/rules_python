@@ -26,6 +26,9 @@ def _transition_py_impl(ctx):
     )
     zipfile_symlink = None
     if target_is_windows:
+        # Under Windows, the expected "<name>.zip" does not exist, so we have to
+        # create the symlink ourselves to achieve the same behaviour as in macOS
+        # and Linux.
         zipfile = None
         expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
         for file in target[DefaultInfo].default_runfiles.files.to_list():
