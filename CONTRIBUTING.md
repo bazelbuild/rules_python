@@ -84,7 +84,7 @@ pre-commit install
 
 ### Running buildifer manually
 
-You can also run buildifier manually. To do this
+You can also run buildifier manually. To do this,
 [install buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md),
 and run the following command:
 
