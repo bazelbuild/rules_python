@@ -15,7 +15,7 @@ _transition_python_version = transition(
 )
 
 def _transition_py_impl(ctx):
-    target = ctx.attr.target[0]
+    target = ctx.attr.target
     windows_constraint = ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]
     target_is_windows = ctx.target_platform_has_constraint(windows_constraint)
     executable = ctx.actions.declare_file(ctx.attr.name + (".exe" if target_is_windows else ""))
@@ -81,7 +81,7 @@ _COMMON_ATTRS = {
     ),
     "target": attr.label(
         executable = True,
-        cfg = _transition_python_version,
+        cfg = "exec",
         mandatory = True,
         providers = [PyInfo],
     ),
@@ -111,12 +111,14 @@ _COMMON_ATTRS = {
 _transition_py_binary = rule(
     _transition_py_impl,
     attrs = _COMMON_ATTRS,
+    cfg = _transition_python_version,
     executable = True,
 )
 
 _transition_py_test = rule(
     _transition_py_impl,
     attrs = _COMMON_ATTRS,
+    cfg = _transition_python_version,
     test = True,
 )
 
