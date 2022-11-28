@@ -81,7 +81,7 @@ _COMMON_ATTRS = {
     ),
     "target": attr.label(
         executable = True,
-        cfg = "exec",
+        cfg = "target",
         mandatory = True,
         providers = [PyInfo],
     ),
