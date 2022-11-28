@@ -25,13 +25,13 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
-load("//python:repositories.bzl", "python_register_toolchains")
+load("//python:repositories.bzl", "python_register_multi_toolchains")
 load("//python:versions.bzl", "MINOR_MAPPING")
 
-python_register_toolchains(
+python_register_multi_toolchains(
     name = "python",
-    # We always use the latest Python internally.
-    python_version = MINOR_MAPPING.values()[-1],
+    default_version = MINOR_MAPPING.values()[-1],
+    python_versions = MINOR_MAPPING.values(),
 )
 
 load("//gazelle:deps.bzl", "gazelle_deps")

@@ -2,13 +2,36 @@
 
 Import pip requirements into Bazel.
 
+<a id="whl_library_alias"></a>
+
+## whl_library_alias
+
+<pre>
+whl_library_alias(<a href="#whl_library_alias-name">name</a>, <a href="#whl_library_alias-default_version">default_version</a>, <a href="#whl_library_alias-repo_mapping">repo_mapping</a>, <a href="#whl_library_alias-version_map">version_map</a>, <a href="#whl_library_alias-wheel_name">wheel_name</a>)
+</pre>
+
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="whl_library_alias-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="whl_library_alias-default_version"></a>default_version |  -   | String | required |  |
+| <a id="whl_library_alias-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
+| <a id="whl_library_alias-version_map"></a>version_map |  -   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
+| <a id="whl_library_alias-wheel_name"></a>wheel_name |  -   | String | required |  |
+
+
 <a id="compile_pip_requirements"></a>
 
 ## compile_pip_requirements
 
 <pre>
-compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
-                         <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
+compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-py_binary">py_binary</a>, <a href="#compile_pip_requirements-py_test">py_test</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
+                         <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-visibility">visibility</a>,
+                         <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
 </pre>
 
 Generates targets for managing pip dependencies with pip-compile.
@@ -28,16 +51,50 @@ It also generates two targets for running pip-compile:
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="compile_pip_requirements-name"></a>name |  base name for generated targets, typically "requirements"   |  none |
-| <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile   |  <code>[]</code> |
-| <a id="compile_pip_requirements-visibility"></a>visibility |  passed to both the _test and .update rules   |  <code>["//visibility:private"]</code> |
-| <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_txt"></a>requirements_txt |  result of "compiling" the requirements.in file   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_linux"></a>requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| <a id="compile_pip_requirements-name"></a>name |  base name for generated targets, typically "requirements".   |  none |
+| <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile.   |  <code>[]</code> |
+| <a id="compile_pip_requirements-py_binary"></a>py_binary |  the py_binary rule to be used.   |  <code>&lt;function py_binary&gt;</code> |
+| <a id="compile_pip_requirements-py_test"></a>py_test |  the py_test rule to be used.   |  <code>&lt;function py_test&gt;</code> |
+| <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies.   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_txt"></a>requirements_txt |  result of "compiling" the requirements.in file.   |  <code>None</code> |
 | <a id="compile_pip_requirements-requirements_darwin"></a>requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
+| <a id="compile_pip_requirements-requirements_linux"></a>requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
 | <a id="compile_pip_requirements-requirements_windows"></a>requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| <a id="compile_pip_requirements-tags"></a>tags |  tagging attribute common to all build rules, passed to both the _test and .update rules   |  <code>None</code> |
-| <a id="compile_pip_requirements-kwargs"></a>kwargs |  other bazel attributes passed to the "_test" rule   |  none |
+| <a id="compile_pip_requirements-visibility"></a>visibility |  passed to both the _test and .update rules.   |  <code>["//visibility:private"]</code> |
+| <a id="compile_pip_requirements-tags"></a>tags |  tagging attribute common to all build rules, passed to both the _test and .update rules.   |  <code>None</code> |
+| <a id="compile_pip_requirements-kwargs"></a>kwargs |  other bazel attributes passed to the "_test" rule.   |  none |
+
+
+<a id="multi_pip_parse"></a>
+
+## multi_pip_parse
+
+<pre>
+multi_pip_parse(<a href="#multi_pip_parse-name">name</a>, <a href="#multi_pip_parse-default_version">default_version</a>, <a href="#multi_pip_parse-python_versions">python_versions</a>, <a href="#multi_pip_parse-python_interpreter_target">python_interpreter_target</a>,
+                <a href="#multi_pip_parse-requirements_lock">requirements_lock</a>, <a href="#multi_pip_parse-kwargs">kwargs</a>)
+</pre>
+
+NOT INTENDED FOR DIRECT USE!
+
+This is intended to be used by the multi_pip_parse implementation in the template of the
+multi_toolchain_aliases repository rule.
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="multi_pip_parse-name"></a>name |  the name of the multi_pip_parse repository.   |  none |
+| <a id="multi_pip_parse-default_version"></a>default_version |  the default Python version.   |  none |
+| <a id="multi_pip_parse-python_versions"></a>python_versions |  all Python toolchain versions currently registered.   |  none |
+| <a id="multi_pip_parse-python_interpreter_target"></a>python_interpreter_target |  a dictionary which keys are Python versions and values are resolved host interpreters.   |  none |
+| <a id="multi_pip_parse-requirements_lock"></a>requirements_lock |  a dictionary which keys are Python versions and values are locked requirements files.   |  none |
+| <a id="multi_pip_parse-kwargs"></a>kwargs |  extra arguments passed to all wrapped pip_parse.   |  none |
+
+**RETURNS**
+
+The internal implementation of multi_pip_parse repository rule.
 
 
 <a id="package_annotation"></a>

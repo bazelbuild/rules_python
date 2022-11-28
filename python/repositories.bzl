@@ -17,7 +17,12 @@
 For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
-load("//python/private:toolchains_repo.bzl", "resolved_interpreter_os_alias", "toolchains_repo")
+load(
+    "//python/private:toolchains_repo.bzl",
+    "multi_toolchain_aliases",
+    "toolchain_aliases",
+    "toolchains_repo",
+)
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -333,6 +338,7 @@ def python_register_toolchains(
         distutils = None,
         distutils_content = None,
         register_toolchains = True,
+        set_python_version_constraint = False,
         tool_versions = TOOL_VERSIONS,
         **kwargs):
     """Convenience macro for users which does typical setup.
@@ -350,6 +356,7 @@ def python_register_toolchains(
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
         register_toolchains: Whether or not to register the downloaded toolchains.
+        set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
         in python/versions.bzl will be used
         **kwargs: passed to each python_repositories call.
@@ -358,6 +365,8 @@ def python_register_toolchains(
 
     if python_version in MINOR_MAPPING:
         python_version = MINOR_MAPPING[python_version]
+
+    toolchain_repo_name = "{name}_toolchains".format(name = name)
 
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
@@ -382,17 +391,67 @@ def python_register_toolchains(
             **kwargs
         )
         if register_toolchains:
-            native.register_toolchains("@{name}_toolchains//:{platform}_toolchain".format(
-                name = name,
+            native.register_toolchains("@{toolchain_repo_name}//:{platform}_toolchain".format(
+                toolchain_repo_name = toolchain_repo_name,
                 platform = platform,
             ))
 
-    resolved_interpreter_os_alias(
-        name = name,
+    toolchains_repo(
+        name = toolchain_repo_name,
+        python_version = python_version,
+        set_python_version_constraint = set_python_version_constraint,
         user_repository_name = name,
     )
 
-    toolchains_repo(
-        name = "{name}_toolchains".format(name = name),
+    toolchain_aliases(
+        name = name,
+        python_version = python_version,
         user_repository_name = name,
+    )
+
+def python_register_multi_toolchains(
+        name,
+        python_versions,
+        default_version = None,
+        **kwargs):
+    """Convenience macro for registering multiple Python toolchains.
+
+    Args:
+        name: base name for each name in python_register_toolchains call.
+        python_versions: the Python version.
+        default_version: the default Python version. If not set, the first version in
+            python_versions is used.
+        **kwargs: passed to each python_register_toolchains call.
+    """
+    if len(python_versions) == 0:
+        fail("python_versions must not be empty")
+
+    if not default_version:
+        default_version = python_versions.pop(0)
+    for python_version in python_versions:
+        if python_version == default_version:
+            # We register the default version lastly so that it's not picked first when --platforms
+            # is set with a constraint during toolchain resolution. This is due to the fact that
+            # Bazel will match the unconstrained toolchain if we register it before the constrained
+            # ones.
+            continue
+        python_register_toolchains(
+            name = name + "_" + python_version.replace(".", "_"),
+            python_version = python_version,
+            set_python_version_constraint = True,
+            **kwargs
+        )
+    python_register_toolchains(
+        name = name + "_" + default_version.replace(".", "_"),
+        python_version = default_version,
+        set_python_version_constraint = False,
+        **kwargs
+    )
+
+    multi_toolchain_aliases(
+        name = name,
+        python_versions = {
+            python_version: name + "_" + python_version.replace(".", "_")
+            for python_version in (python_versions + [default_version])
+        },
     )
