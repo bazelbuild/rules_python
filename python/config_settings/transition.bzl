@@ -16,14 +16,16 @@ _transition_python_version = transition(
 
 def _transition_py_impl(ctx):
     target = ctx.attr.target[0]
-    executable = ctx.actions.declare_file(ctx.attr.name + (".exe" if ctx.attr.is_windows else ""))
+    windows_constraint = ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]
+    target_is_windows = ctx.target_platform_has_constraint(windows_constraint)
+    executable = ctx.actions.declare_file(ctx.attr.name + (".exe" if target_is_windows else ""))
     ctx.actions.symlink(
         is_executable = True,
         output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
     zipfile_symlink = None
-    if ctx.attr.is_windows:
+    if target_is_windows:
         zipfile = None
         expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
         for file in target[DefaultInfo].default_runfiles.files.to_list():
@@ -62,9 +64,6 @@ _COMMON_ATTRS = {
     "env": attr.string_dict(
         mandatory = False,
     ),
-    "is_windows": attr.bool(
-        mandatory = True,
-    ),
     "python_version": attr.string(
         mandatory = True,
     ),
@@ -95,6 +94,9 @@ _COMMON_ATTRS = {
     # Required to Opt-in to the transitions feature.
     "_allowlist_function_transition": attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+    ),
+    "_windows_constraint": attr.label(
+        default = "@platforms//os:windows",
     ),
 }
 
@@ -180,10 +182,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
         args = args,
         deps = deps,
         env = env,
-        is_windows = select({
-            "@platforms//os:windows": True,
-            "//conditions:default": False,
-        }),
         python_version = python_version,
         srcs = srcs,
         tags = tags,
