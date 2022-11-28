@@ -43,6 +43,7 @@ def _transition_py_impl(ctx):
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
+
     providers = [
         DefaultInfo(
             executable = executable,
@@ -51,7 +52,11 @@ def _transition_py_impl(ctx):
         ),
         target[PyInfo],
         target[PyRuntimeInfo],
-        target[InstrumentedFilesInfo],
+        # Ensure that the binary we're wrapping is included in code coverage.
+        coverage_common.instrumented_files_info(
+            ctx,
+            dependency_attributes = ["target"],
+        ),
         target[OutputGroupInfo],
         # TODO(f0rmiga): testing.TestEnvironment is deprecated in favour of RunEnvironmentInfo but
         # RunEnvironmentInfo is not exposed in Bazel < 5.3.
