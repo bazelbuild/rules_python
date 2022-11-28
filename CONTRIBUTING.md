@@ -48,7 +48,7 @@ git push origin my-feature
 ```
 
 Once the code is in your github repo, you can then turn it into a Pull Request
-to the actual rules\_python project and begin the code review process.
+to the actual rules_python project and begin the code review process.
 
 
 ## Running tests
