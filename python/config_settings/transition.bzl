@@ -60,6 +60,7 @@ def _transition_py_impl(ctx):
         target[OutputGroupInfo],
         # TODO(f0rmiga): testing.TestEnvironment is deprecated in favour of RunEnvironmentInfo but
         # RunEnvironmentInfo is not exposed in Bazel < 5.3.
+        # https://github.com/bazelbuild/rules_python/issues/901
         # https://github.com/bazelbuild/bazel/commit/dbdfa07e92f99497be9c14265611ad2920161483
         testing.TestEnvironment(environment = env),
     ]
