@@ -33,7 +33,7 @@ def _fix_up_requirements_in_path(absolute_prefix, output_file):
     The paths could differ for every invocation. Replace them with a predictable path.
     """
     output_file = Path(output_file)
-    fixed_requirements_text = output_file.read_text().replace(absolute_prefix, "")
+    fixed_requirements_text = output_file.read_text().replace(absolute_prefix, "./")
     output_file.write_text(fixed_requirements_text)
 
 
@@ -114,7 +114,9 @@ if __name__ == "__main__":
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt if UPDATE else requirements_out)
-    sys.argv.append(resolved_requirements_in)
+    sys.argv.append(
+        requirements_in if requirements_in_path.exists() else resolved_requirements_in
+    )
 
     if UPDATE:
         print("Updating " + requirements_txt)
