@@ -55,16 +55,6 @@ alias(
     actual = entry_point("yamllint"),
 )
 
-# The requirements.in file can be checked in to the source tree or it can be
-# generated. Pretend that we do some generating of the file. For this example,
-# the "template" is already the file we want.
-genrule(
-    name = "generate_requirements_in",
-    srcs = ["requirements.in.template"],
-    outs = ["requirements.in"],
-    cmd = "cp $(SRCS) $(OUTS)",
-)
-
 # This rule adds a convenient way to update the requirements file.
 compile_pip_requirements(
     name = "requirements",

@@ -1,0 +1,8 @@
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
