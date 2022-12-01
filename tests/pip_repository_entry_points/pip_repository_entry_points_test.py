@@ -5,6 +5,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from rules_python.python.runfiles import runfiles
+
 
 class PipRepositoryEntryPointsTest(unittest.TestCase):
     maxDiff = None
@@ -13,7 +15,8 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
         env = os.environ.get("YAMLLINT_ENTRY_POINT")
         self.assertIsNotNone(env)
 
-        entry_point = Path(env)
+        r = runfiles.Create()
+        entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(
@@ -38,7 +41,8 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
         env = os.environ.get("SPHINX_BUILD_ENTRY_POINT")
         self.assertIsNotNone(env)
 
-        entry_point = Path(env)
+        r = runfiles.Create()
+        entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(

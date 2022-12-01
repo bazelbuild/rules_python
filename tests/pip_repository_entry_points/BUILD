@@ -7,6 +7,7 @@ load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
+    requirements_windows = ":requirements_windows.txt",
 )
 
 pip_parsed_sphinx = parsed_entry_point(
@@ -50,4 +51,5 @@ py_test(
         "YAMLLINT_ENTRY_POINT": "$(rootpath {})".format(pip_installed_yamllint),
     },
     main = "pip_repository_entry_points_test.py",
+    deps = ["@rules_python//python/runfiles"],
 )
