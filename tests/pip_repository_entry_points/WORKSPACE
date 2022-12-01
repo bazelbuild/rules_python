@@ -33,6 +33,7 @@ pip_parse(
     name = "pip_parsed",
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 
 load("@pip_parsed//:requirements.bzl", install_pip_parse_deps = "install_deps")
@@ -44,6 +45,7 @@ pip_install(
     name = "pip_installed",
     python_interpreter_target = interpreter,
     requirements = "//:requirements.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 
 load("@pip_installed//:requirements.bzl", install_pip_install_deps = "install_deps")

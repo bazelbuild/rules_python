@@ -177,13 +177,8 @@ tasks:
     name: pip_parse_vendored integration tests on macOS
     working_directory: examples/pip_parse_vendored
     platform: macos
-  # TODO(f0rmiga): fix this test under Windows. It needs to be consistent on
-  # characters across all platforms.
-  # integration_test_pip_parse_vendored_windows:
-  #   <<: *reusable_build_test_all
-  #   name: pip_parse_vendored integration tests on Windows
-  #   working_directory: examples/pip_parse_vendored
-  #   platform: windows
+  # We don't run pip_parse_vendored under Windows as the file checked in is
+  # generated from a repository rule containing OS-specific rendered paths.
 
   integration_test_pip_repository_annotations_ubuntu:
     <<: *reusable_build_test_all
@@ -242,10 +237,8 @@ tasks:
     name: pip_repository_entry_points integration tests on macOS
     working_directory: tests/pip_repository_entry_points
     platform: macos
-  # TODO(f0rmiga): fix me. The dependencies needed for this test are not cross-platform:
-  # https://github.com/bazelbuild/rules_python/issues/260
-  # integration_test_pip_repository_entry_points_windows:
-  #   <<: *reusable_build_test_all
-  #   name: pip_repository_entry_points integration tests on Windows
-  #   working_directory: tests/pip_repository_entry_points
-  #   platform: windows
+  integration_test_pip_repository_entry_points_windows:
+    <<: *reusable_build_test_all
+    name: pip_repository_entry_points integration tests on Windows
+    working_directory: tests/pip_repository_entry_points
+    platform: windows
