@@ -32,10 +32,14 @@ tasks:
     platform: ubuntu2004
     build_targets: ["//gazelle/..."]
     test_targets: ["//gazelle/..."]
-  linux:
+  ubuntu:
     <<: *reusable_config
-    name: Default test on Linux
+    name: Default test on Ubuntu
     platform: ubuntu2004
+  debian:
+    <<: *reusable_config
+    name: Default test on Debian
+    platform: debian11
   macos:
     <<: *reusable_config
     name: Default test on macOS
@@ -53,11 +57,16 @@ tasks:
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
 
-  integration_test_build_file_generation_linux:
+  integration_test_build_file_generation_ubuntu:
     <<: *reusable_build_test_all
-    name: build_file_generation integration tests on Linux
+    name: build_file_generation integration tests on Ubuntu
     working_directory: examples/build_file_generation
     platform: ubuntu2004
+  integration_test_build_file_generation_debian:
+    <<: *reusable_build_test_all
+    name: build_file_generation integration tests on Debian
+    working_directory: examples/build_file_generation
+    platform: debian11
   integration_test_build_file_generation_macos:
     <<: *reusable_build_test_all
     name: build_file_generation integration tests on macOS
@@ -69,11 +78,16 @@ tasks:
     working_directory: examples/build_file_generation
     platform: windows
 
-  integration_test_bzlmod_linux:
+  integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
-    name: bzlmod integration tests on Linux
+    name: bzlmod integration tests on Ubuntu
     working_directory: examples/bzlmod
     platform: ubuntu2004
+  integration_test_bzlmod_debian:
+    <<: *reusable_build_test_all
+    name: bzlmod integration tests on Debian
+    working_directory: examples/bzlmod
+    platform: debian11
   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     name: bzlmod integration tests on macOS
@@ -85,11 +99,16 @@ tasks:
     working_directory: examples/bzlmod
     platform: windows
 
-  integration_test_multi_python_versions_linux:
+  integration_test_multi_python_versions_ubuntu:
     <<: *reusable_build_test_all
-    name: multi_python_versions integration tests on Linux
+    name: multi_python_versions integration tests on Ubuntu
     working_directory: examples/multi_python_versions
     platform: ubuntu2004
+  integration_test_multi_python_versions_debian:
+    <<: *reusable_build_test_all
+    name: multi_python_versions integration tests on Debian
+    working_directory: examples/multi_python_versions
+    platform: debian11
   integration_test_multi_python_versions_macos:
     <<: *reusable_build_test_all
     name: multi_python_versions integration tests on macOS
@@ -101,11 +120,16 @@ tasks:
     working_directory: examples/multi_python_versions
     platform: windows
 
-  integration_test_pip_install_linux:
+  integration_test_pip_install_ubuntu:
     <<: *reusable_build_test_all
-    name: pip_install integration tests on Linux
+    name: pip_install integration tests on Ubuntu
     working_directory: examples/pip_install
     platform: ubuntu2004
+  integration_test_pip_install_debian:
+    <<: *reusable_build_test_all
+    name: pip_install integration tests on Debian
+    working_directory: examples/pip_install
+    platform: debian11
   integration_test_pip_install_macos:
     <<: *reusable_build_test_all
     name: pip_install integration tests on macOS
@@ -117,11 +141,16 @@ tasks:
     working_directory: examples/pip_install
     platform: windows
 
-  integration_test_pip_parse_linux:
+  integration_test_pip_parse_ubuntu:
     <<: *reusable_build_test_all
-    name: pip_parse integration tests on Linux
+    name: pip_parse integration tests on Ubuntu
     working_directory: examples/pip_parse
     platform: ubuntu2004
+  integration_test_pip_parse_debian:
+    <<: *reusable_build_test_all
+    name: pip_parse integration tests on Debian
+    working_directory: examples/pip_parse
+    platform: debian11
   integration_test_pip_parse_macos:
     <<: *reusable_build_test_all
     name: pip_parse integration tests on macOS
@@ -133,11 +162,16 @@ tasks:
     working_directory: examples/pip_parse
     platform: windows
 
-  integration_test_pip_parse_vendored_linux:
+  integration_test_pip_parse_vendored_ubuntu:
     <<: *reusable_build_test_all
-    name: pip_parse_vendored integration tests on Linux
+    name: pip_parse_vendored integration tests on Ubuntu
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
+  integration_test_pip_parse_vendored_debian:
+    <<: *reusable_build_test_all
+    name: pip_parse_vendored integration tests on Debian
+    working_directory: examples/pip_parse_vendored
+    platform: debian11
   integration_test_pip_parse_vendored_macos:
     <<: *reusable_build_test_all
     name: pip_parse_vendored integration tests on macOS
@@ -151,11 +185,16 @@ tasks:
   #   working_directory: examples/pip_parse_vendored
   #   platform: windows
 
-  integration_test_pip_repository_annotations_linux:
+  integration_test_pip_repository_annotations_ubuntu:
     <<: *reusable_build_test_all
-    name: pip_repository_annotations integration tests on Linux
+    name: pip_repository_annotations integration tests on Ubuntu
     working_directory: examples/pip_repository_annotations
     platform: ubuntu2004
+  integration_test_pip_repository_annotations_debian:
+    <<: *reusable_build_test_all
+    name: pip_repository_annotations integration tests on Debian
+    working_directory: examples/pip_repository_annotations
+    platform: debian11
   integration_test_pip_repository_annotations_macos:
     <<: *reusable_build_test_all
     name: pip_repository_annotations integration tests on macOS
@@ -167,11 +206,16 @@ tasks:
     working_directory: examples/pip_repository_annotations
     platform: windows
 
-  integration_test_compile_pip_requirements_linux:
+  integration_test_compile_pip_requirements_ubuntu:
     <<: *reusable_build_test_all
-    name: compile_pip_requirements integration tests on Linux
+    name: compile_pip_requirements integration tests on Ubuntu
     working_directory: tests/compile_pip_requirements
     platform: ubuntu2004
+  integration_test_compile_pip_requirements_debian:
+    <<: *reusable_build_test_all
+    name: compile_pip_requirements integration tests on Debian
+    working_directory: tests/compile_pip_requirements
+    platform: debian11
   integration_test_compile_pip_requirements_macos:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on macOS
@@ -183,11 +227,16 @@ tasks:
     working_directory: tests/compile_pip_requirements
     platform: windows
 
-  integration_test_pip_repository_entry_points_linux:
+  integration_test_pip_repository_entry_points_ubuntu:
     <<: *reusable_build_test_all
-    name: pip_repository_entry_points integration tests on Linux
+    name: pip_repository_entry_points integration tests on Ubuntu
     working_directory: tests/pip_repository_entry_points
     platform: ubuntu2004
+  integration_test_pip_repository_entry_points_debian:
+    <<: *reusable_build_test_all
+    name: pip_repository_entry_points integration tests on Debian
+    working_directory: tests/pip_repository_entry_points
+    platform: debian11
   integration_test_pip_repository_entry_points_macos:
     <<: *reusable_build_test_all
     name: pip_repository_entry_points integration tests on macOS
