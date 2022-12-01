@@ -1,0 +1,33 @@
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+genrule(
+    name = "generate_requirements_extra_in",
+    srcs = [],
+    outs = ["requirements_extra.in"],
+    cmd = "echo 'setuptools~=65.6.3' > $@",
+)
+
+genrule(
+    name = "generate_requirements_in",
+    srcs = [],
+    outs = ["requirements.in"],
+    cmd = """
+cat > $@ <<EOF
+-r requirements_extra.in
+pip~=22.3.1
+EOF
+""",
+)
+
+compile_pip_requirements(
+    name = "pip_dependencies",
+    data = [
+        "requirements_extra.in",
+    ],
+    extra_args = [
+        "--allow-unsafe",
+        "--resolver=backtracking",
+    ],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+)

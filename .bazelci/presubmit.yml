@@ -167,6 +167,22 @@ tasks:
     working_directory: examples/pip_repository_annotations
     platform: windows
 
+  integration_test_compile_pip_requirements_linux:
+    <<: *reusable_build_test_all
+    name: compile_pip_requirements integration tests on Linux
+    working_directory: tests/compile_pip_requirements
+    platform: ubuntu2004
+  integration_test_compile_pip_requirements_macos:
+    <<: *reusable_build_test_all
+    name: compile_pip_requirements integration tests on macOS
+    working_directory: tests/compile_pip_requirements
+    platform: macos
+  integration_test_compile_pip_requirements_windows:
+    <<: *reusable_build_test_all
+    name: compile_pip_requirements integration tests on Windows
+    working_directory: tests/compile_pip_requirements
+    platform: windows
+
   integration_test_pip_repository_entry_points_linux:
     <<: *reusable_build_test_all
     name: pip_repository_entry_points integration tests on Linux
