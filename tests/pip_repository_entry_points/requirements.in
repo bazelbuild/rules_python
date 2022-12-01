@@ -1,5 +1,5 @@
 sphinx==4.3.2
-yamllint==1.26.3
+yamllint>=1.28.0
 
 # Last avialable for ubuntu python3.6
 setuptools==59.6.0
