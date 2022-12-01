@@ -1,6 +1,7 @@
 "Set defaults for the pip-compile command to run it under Bazel"
 
 import os
+import re
 import sys
 from pathlib import Path
 from shutil import copyfile
@@ -33,8 +34,10 @@ def _fix_up_requirements_in_path(absolute_prefix, output_file):
     The paths could differ for every invocation. Replace them with a predictable path.
     """
     output_file = Path(output_file)
-    fixed_requirements_text = output_file.read_text().replace(absolute_prefix, "./")
-    output_file.write_text(fixed_requirements_text)
+    contents = output_file.read_text()
+    contents = contents.replace(absolute_prefix, "")
+    contents = re.sub(r"\\(?!(\n|\r\n))", "/", contents)
+    output_file.write_text(contents)
 
 
 if __name__ == "__main__":
