@@ -1,6 +1,7 @@
 "Set defaults for the pip-compile command to run it under Bazel"
 
 import os
+import re
 import sys
 from pathlib import Path
 from shutil import copyfile
@@ -26,19 +27,17 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
-def _fix_up_requirements_in_path(
-    resolved_requirements_in, requirements_in, output_file
-):
+def _fix_up_requirements_in_path(absolute_prefix, output_file):
     """Fix up references to the input file inside of the generated requirements file.
 
     We don't want fully resolved, absolute paths in the generated requirements file.
     The paths could differ for every invocation. Replace them with a predictable path.
     """
     output_file = Path(output_file)
-    fixed_requirements_text = output_file.read_text().replace(
-        resolved_requirements_in, requirements_in
-    )
-    output_file.write_text(fixed_requirements_text)
+    contents = output_file.read_text()
+    contents = contents.replace(absolute_prefix, "")
+    contents = re.sub(r"\\(?!(\n|\r\n))", "/", contents)
+    output_file.write_text(contents)
 
 
 if __name__ == "__main__":
@@ -58,9 +57,11 @@ if __name__ == "__main__":
     requirements_windows = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
-    # The requirements_in file could be generated. We need to get the path to it before we change
-    # directory into the workspace directory.
-    resolved_requirements_in = str(Path(requirements_in).resolve())
+    # The requirements_in file could be generated, so we will need to remove the
+    # absolute prefixes in the locked requirements output file.
+    requirements_in_path = Path(requirements_in)
+    resolved_requirements_in = str(requirements_in_path.resolve())
+    absolute_prefix = resolved_requirements_in[: -len(str(requirements_in_path))]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -116,7 +117,9 @@ if __name__ == "__main__":
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt if UPDATE else requirements_out)
-    sys.argv.append(resolved_requirements_in)
+    sys.argv.append(
+        requirements_in if requirements_in_path.exists() else resolved_requirements_in
+    )
 
     if UPDATE:
         print("Updating " + requirements_txt)
@@ -124,9 +127,7 @@ if __name__ == "__main__":
             cli()
         except SystemExit as e:
             if e.code == 0:
-                _fix_up_requirements_in_path(
-                    resolved_requirements_in, requirements_in, requirements_txt
-                )
+                _fix_up_requirements_in_path(absolute_prefix, requirements_txt)
             raise
     else:
         # cli will exit(0) on success
@@ -145,9 +146,7 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                _fix_up_requirements_in_path(
-                    resolved_requirements_in, requirements_in, requirements_out
-                )
+                _fix_up_requirements_in_path(absolute_prefix, requirements_out)
                 golden_filename = _select_golden_requirements_file(
                     requirements_txt,
                     requirements_linux,

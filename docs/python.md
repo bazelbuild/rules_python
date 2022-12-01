@@ -1,6 +1,10 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-<a name="#current_py_toolchain"></a>
+
+Core rules for building Python projects.
+
+
+<a id="current_py_toolchain"></a>
 
 ## current_py_toolchain
 
@@ -19,11 +23,11 @@ current_py_toolchain(<a href="#current_py_toolchain-name">name</a>)
 
 
 | Name  | Description | Type | Mandatory | Default |
-| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
-| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="current_py_toolchain-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 
 
-<a name="#py_import"></a>
+<a id="py_import"></a>
 
 ## py_import
 
@@ -45,13 +49,13 @@ This rule allows the use of Python packages as dependencies.
 
 
 | Name  | Description | Type | Mandatory | Default |
-| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
-| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| deps |  The list of other libraries to be linked in to the binary target.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
-| srcs |  The list of Python package files provided to Python targets that depend on this target. Note that currently only the .egg format is accepted. For .whl files, try the whl_library rule. We accept contributions to extend py_import to handle .whl.   | <a href="https://bazel.build/docs/build-ref.html#labels">List of labels</a> | optional | [] |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="py_import-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="py_import-deps"></a>deps |  The list of other libraries to be linked in to the binary target.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
+| <a id="py_import-srcs"></a>srcs |  The list of Python package files provided to Python targets that depend on this target. Note that currently only the .egg format is accepted. For .whl files, try the whl_library rule. We accept contributions to extend py_import to handle .whl.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
 
 
-<a name="#py_binary"></a>
+<a id="py_binary"></a>
 
 ## py_binary
 
@@ -65,11 +69,11 @@ See the Bazel core [py_binary](https://docs.bazel.build/versions/master/be/pytho
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| attrs |  Rule attributes   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="py_binary-attrs"></a>attrs |  Rule attributes   |  none |
 
 
-<a name="#py_library"></a>
+<a id="py_library"></a>
 
 ## py_library
 
@@ -83,11 +87,11 @@ See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/pyth
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| attrs |  Rule attributes   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="py_library-attrs"></a>attrs |  Rule attributes   |  none |
 
 
-<a name="#py_runtime"></a>
+<a id="py_runtime"></a>
 
 ## py_runtime
 
@@ -101,11 +105,11 @@ See the Bazel core [py_runtime](https://docs.bazel.build/versions/master/be/pyth
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| attrs |  Rule attributes   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="py_runtime-attrs"></a>attrs |  Rule attributes   |  none |
 
 
-<a name="#py_runtime_pair"></a>
+<a id="py_runtime_pair"></a>
 
 ## py_runtime_pair
 
@@ -128,7 +132,7 @@ schema:
 ```python
 platform_common.ToolchainInfo(
     py2_runtime = None,
-    py3_runtime = <PyRuntimeInfo or None>,
+    py3_runtime = &lt;PyRuntimeInfo or None&gt;,
 )
 ```
 
@@ -152,7 +156,7 @@ py_runtime_pair(
 
 toolchain(
     name = "my_toolchain",
-    target_compatible_with = <...>,
+    target_compatible_with = &lt;...&gt;,
     toolchain = ":my_py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
 )
@@ -169,14 +173,14 @@ register_toolchains("//my_pkg:my_toolchain")
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| name |  str, the name of the target   |  none |
-| py2_runtime |  optional Label; must be unset or None; an error is raised     otherwise.   |  <code>None</code> |
-| py3_runtime |  Label; a target with <code>PyRuntimeInfo</code> for Python 3.   |  <code>None</code> |
-| attrs |  Extra attrs passed onto the native rule   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="py_runtime_pair-name"></a>name |  str, the name of the target   |  none |
+| <a id="py_runtime_pair-py2_runtime"></a>py2_runtime |  optional Label; must be unset or None; an error is raised otherwise.   |  <code>None</code> |
+| <a id="py_runtime_pair-py3_runtime"></a>py3_runtime |  Label; a target with <code>PyRuntimeInfo</code> for Python 3.   |  <code>None</code> |
+| <a id="py_runtime_pair-attrs"></a>attrs |  Extra attrs passed onto the native rule   |  none |
 
 
-<a name="#py_test"></a>
+<a id="py_test"></a>
 
 ## py_test
 
@@ -190,11 +194,11 @@ See the Bazel core [py_test](https://docs.bazel.build/versions/master/be/python.
 
 
 | Name  | Description | Default Value |
-| :-------------: | :-------------: | :-------------: |
-| attrs |  Rule attributes   |  none |
+| :------------- | :------------- | :------------- |
+| <a id="py_test-attrs"></a>attrs |  Rule attributes   |  none |
 
 
-<a name="#find_requirements"></a>
+<a id="find_requirements"></a>
 
 ## find_requirements
 
@@ -211,7 +215,7 @@ The aspect definition. Can be invoked on the command line as
 
 
 | Name | Type |
-| :-------------: | :-------------: |
+| :------------- | :------------- |
 | deps| String |
 
 
@@ -219,7 +223,7 @@ The aspect definition. Can be invoked on the command line as
 
 
 | Name  | Description | Type | Mandatory | Default |
-| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
-| name |  A unique name for this target.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |   |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="find_requirements-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |   |
 
 

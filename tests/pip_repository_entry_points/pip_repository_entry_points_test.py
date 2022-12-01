@@ -22,7 +22,7 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.26.3")
+        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.28.0")
 
         # yamllint entry_point is of the form `def run(argv=None):`
         with self.assertRaises(subprocess.CalledProcessError) as context:

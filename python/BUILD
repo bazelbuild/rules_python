@@ -34,8 +34,9 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
         "//python/constraints:distribution",
-        "//python/runfiles:distribution",
+        "//python/config_settings:distribution",
         "//python/private:distribution",
+        "//python/runfiles:distribution",
     ],
     visibility = ["//:__pkg__"],
 )

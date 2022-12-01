@@ -1,0 +1,59 @@
+workspace(name = "rules_python_multi_python_versions")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+    ],
+)
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
+load("@rules_python//python:repositories.bzl", "python_register_multi_toolchains")
+
+default_python_version = "3.9"
+
+python_register_multi_toolchains(
+    name = "python",
+    default_version = default_python_version,
+    python_versions = [
+        "3.8",
+        "3.9",
+        "3.10",
+    ],
+)
+
+load("@python//:pip.bzl", "multi_pip_parse")
+load("@python//3.10:defs.bzl", interpreter_3_10 = "interpreter")
+load("@python//3.8:defs.bzl", interpreter_3_8 = "interpreter")
+load("@python//3.9:defs.bzl", interpreter_3_9 = "interpreter")
+
+multi_pip_parse(
+    name = "pypi",
+    default_version = default_python_version,
+    python_interpreter_target = {
+        "3.10": interpreter_3_10,
+        "3.8": interpreter_3_8,
+        "3.9": interpreter_3_9,
+    },
+    requirements_lock = {
+        "3.10": "//requirements:requirements_lock_3_10.txt",
+        "3.8": "//requirements:requirements_lock_3_8.txt",
+        "3.9": "//requirements:requirements_lock_3_9.txt",
+    },
+)
+
+load("@pypi//:requirements.bzl", "install_deps")
+
+install_deps()
