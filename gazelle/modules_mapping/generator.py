@@ -1,5 +1,7 @@
+import argparse
 import json
 import pathlib
+import re
 import sys
 import zipfile
 
@@ -8,36 +10,69 @@ import zipfile
 class Generator:
     stderr = None
     output_file = None
+    excluded_patterns = None
+    mapping = {}
 
-    def __init__(self, stderr, output_file):
+    def __init__(self, stderr, output_file, excluded_patterns):
         self.stderr = stderr
         self.output_file = output_file
+        self.excluded_patterns = [re.compile(pattern) for pattern in excluded_patterns]
 
     # dig_wheel analyses the wheel .whl file determining the modules it provides
     # by looking at the directory structure.
     def dig_wheel(self, whl):
-        mapping = {}
         with zipfile.ZipFile(whl, "r") as zip_file:
             for path in zip_file.namelist():
                 if is_metadata(path):
                     if data_has_purelib_or_platlib(path):
-                        module_for_path(path, whl, mapping)
+                        self.module_for_path(path, whl)
                     else:
                         continue
                 else:
-                    module_for_path(path, whl, mapping)
-        return mapping
+                    self.module_for_path(path, whl)
+
+    def module_for_path(self, path, whl):
+        ext = pathlib.Path(path).suffix
+        if ext == ".py" or ext == ".so":
+            if "purelib" in path or "platlib" in path:
+                root = "/".join(path.split("/")[2:])
+            else:
+                root = path
+
+            wheel_name = get_wheel_name(whl)
+
+            if root.endswith("/__init__.py"):
+                # Note the '/' here means that the __init__.py is not in the
+                # root of the wheel, therefore we can index the directory
+                # where this file is as an importable package.
+                module = root[: -len("/__init__.py")].replace("/", ".")
+                if not self.is_excluded(module):
+                    self.mapping[module] = wheel_name
+
+            # Always index the module file.
+            if ext == ".so":
+                # Also remove extra metadata that is embeded as part of
+                # the file name as an extra extension.
+                ext = "".join(pathlib.Path(root).suffixes)
+            module = root[: -len(ext)].replace("/", ".")
+            if not self.is_excluded(module):
+                self.mapping[module] = wheel_name
+
+    def is_excluded(self, module):
+        for pattern in self.excluded_patterns:
+            if pattern.search(module):
+                return True
+        return False
 
     # run is the entrypoint for the generator.
     def run(self, wheels):
-        mapping = {}
         for whl in wheels:
             try:
-                mapping.update(self.dig_wheel(whl))
+                self.dig_wheel(whl)
             except AssertionError as error:
                 print(error, file=self.stderr)
                 return 1
-        mapping_json = json.dumps(mapping)
+        mapping_json = json.dumps(self.mapping)
         with open(self.output_file, "w") as f:
             f.write(mapping_json)
         return 0
@@ -71,34 +106,14 @@ def data_has_purelib_or_platlib(path):
     return is_metadata(path) and (maybe_lib == "purelib" or maybe_lib == "platlib")
 
 
-def module_for_path(path, whl, mapping):
-    ext = pathlib.Path(path).suffix
-    if ext == ".py" or ext == ".so":
-        if "purelib" in path or "platlib" in path:
-            root = "/".join(path.split("/")[2:])
-        else:
-            root = path
-
-        wheel_name = get_wheel_name(whl)
-
-        if root.endswith("/__init__.py"):
-            # Note the '/' here means that the __init__.py is not in the
-            # root of the wheel, therefore we can index the directory
-            # where this file is as an importable package.
-            module = root[: -len("/__init__.py")].replace("/", ".")
-            mapping[module] = wheel_name
-
-        # Always index the module file.
-        if ext == ".so":
-            # Also remove extra metadata that is embeded as part of
-            # the file name as an extra extension.
-            ext = "".join(pathlib.Path(root).suffixes)
-        module = root[: -len(ext)].replace("/", ".")
-        mapping[module] = wheel_name
-
-
 if __name__ == "__main__":
-    output_file = sys.argv[1]
-    wheels = sys.argv[2:]
-    generator = Generator(sys.stderr, output_file)
-    exit(generator.run(wheels))
+    parser = argparse.ArgumentParser(
+        prog="generator",
+        description="Generates the modules mapping used by the Gazelle manifest.",
+    )
+    parser.add_argument("--output_file", type=str)
+    parser.add_argument("--exclude_patterns", nargs="+", default=[])
+    parser.add_argument("--wheels", nargs="+", default=[])
+    args = parser.parse_args()
+    generator = Generator(sys.stderr, args.output_file, args.exclude_patterns)
+    exit(generator.run(args.wheels))
