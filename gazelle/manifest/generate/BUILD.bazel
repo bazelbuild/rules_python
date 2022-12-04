@@ -13,3 +13,9 @@ go_binary(
     embed = [":generate_lib"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//gazelle/manifest:__pkg__"],
+)

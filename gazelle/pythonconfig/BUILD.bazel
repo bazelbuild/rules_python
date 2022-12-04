@@ -14,3 +14,9 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
     ],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//gazelle:__pkg__"],
+)
