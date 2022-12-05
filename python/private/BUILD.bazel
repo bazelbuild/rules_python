@@ -19,7 +19,7 @@ licenses(["notice"])  # Apache 2.0
 
 filegroup(
     name = "distribution",
-    srcs = glob(["**"]),
+    srcs = glob(["**"]) + ["//python/private/proto:distribution"],
     visibility = ["//python:__pkg__"],
 )
 
