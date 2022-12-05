@@ -32,6 +32,7 @@ filegroup(
         "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
+        "//gazelle:distribution",
         "//python:distribution",
         "//python/pip_install:distribution",
         "//third_party/github.com/bazelbuild/bazel-skylib/lib:distribution",
