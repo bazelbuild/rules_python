@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//gazelle/manifest:defs.bzl", "sources_hash")
 
 go_library(
     name = "generate_lib",
@@ -6,6 +7,12 @@ go_library(
     importpath = "github.com/bazelbuild/rules_python/gazelle/manifest/generate",
     visibility = ["//visibility:public"],
     deps = ["//gazelle/manifest"],
+)
+
+sources_hash(
+    name = "generate_lib_sources_hash",
+    go_library = ":generate_lib",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(

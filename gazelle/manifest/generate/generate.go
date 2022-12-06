@@ -24,12 +24,19 @@ func init() {
 }
 
 func main() {
+	var manifestGeneratorHashPath string
 	var requirementsPath string
 	var pipRepositoryName string
 	var pipRepositoryIncremental bool
 	var modulesMappingPath string
 	var outputPath string
 	var updateTarget string
+	flag.StringVar(
+		&manifestGeneratorHashPath,
+		"manifest-generator-hash",
+		"",
+		"The file containing the hash for the source code of the manifest generator."+
+			"This is important to force manifest updates when the generator logic changes.")
 	flag.StringVar(
 		&requirementsPath,
 		"requirements",
@@ -92,7 +99,13 @@ func main() {
 			Incremental: pipRepositoryIncremental,
 		},
 	})
-	if err := writeOutput(outputPath, header, manifestFile, requirementsPath); err != nil {
+	if err := writeOutput(
+		outputPath,
+		header,
+		manifestFile,
+		manifestGeneratorHashPath,
+		requirementsPath,
+	); err != nil {
 		log.Fatalf("ERROR: %v\n", err)
 	}
 }
@@ -129,6 +142,7 @@ func writeOutput(
 	outputPath string,
 	header string,
 	manifestFile *manifest.File,
+	manifestGeneratorHashPath string,
 	requirementsPath string,
 ) error {
 	stat, err := os.Stat(outputPath)
@@ -146,7 +160,19 @@ func writeOutput(
 		return fmt.Errorf("failed to write output: %w", err)
 	}
 
-	if err := manifestFile.Encode(outputFile, requirementsPath); err != nil {
+	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
+	if err != nil {
+		return fmt.Errorf("failed to write output: %w", err)
+	}
+	defer manifestGeneratorHash.Close()
+
+	requirements, err := os.Open(requirementsPath)
+	if err != nil {
+		return fmt.Errorf("failed to write output: %w", err)
+	}
+	defer requirements.Close()
+
+	if err := manifestFile.Encode(outputFile, manifestGeneratorHash, requirements); err != nil {
 		return fmt.Errorf("failed to write output: %w", err)
 	}
 
