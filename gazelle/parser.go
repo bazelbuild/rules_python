@@ -202,6 +202,9 @@ func (c *comment) asAnnotation() *annotation {
 	}
 	withoutPrefix := strings.TrimPrefix(uncomment, annotationPrefix)
 	annotationParts := strings.SplitN(withoutPrefix, " ", 2)
+	if len(annotationParts) < 2 {
+		return nil
+	}
 	return &annotation{
 		kind:  annotationKind(annotationParts[0]),
 		value: annotationParts[1],
