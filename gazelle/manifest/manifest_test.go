@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
@@ -31,7 +33,14 @@ func TestFile(t *testing.T) {
 			PipDepsRepositoryName: pipDepsRepositoryName,
 		})
 		var b bytes.Buffer
-		if err := f.Encode(&b, "testdata/requirements.txt"); err != nil {
+		manifestGeneratorHashFile := strings.NewReader("")
+		requirements, err := os.Open("testdata/requirements.txt")
+		if err != nil {
+			log.Println(err)
+			t.FailNow()
+		}
+		defer requirements.Close()
+		if err := f.Encode(&b, manifestGeneratorHashFile, requirements); err != nil {
 			log.Println(err)
 			t.FailNow()
 		}
@@ -66,7 +75,14 @@ func TestFile(t *testing.T) {
 			log.Println(err)
 			t.FailNow()
 		}
-		valid, err := f.VerifyIntegrity("testdata/requirements.txt")
+		manifestGeneratorHashFile := strings.NewReader("")
+		requirements, err := os.Open("testdata/requirements.txt")
+		if err != nil {
+			log.Println(err)
+			t.FailNow()
+		}
+		defer requirements.Close()
+		valid, err := f.VerifyIntegrity(manifestGeneratorHashFile, requirements)
 		if err != nil {
 			log.Println(err)
 			t.FailNow()

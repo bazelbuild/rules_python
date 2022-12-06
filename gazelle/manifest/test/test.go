@@ -10,14 +10,22 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
 func main() {
+	var manifestGeneratorHashPath string
 	var requirementsPath string
 	var manifestPath string
+	flag.StringVar(
+		&manifestGeneratorHashPath,
+		"manifest-generator-hash",
+		"",
+		"The file containing the hash for the source code of the manifest generator."+
+			"This is important to force manifest updates when the generator logic changes.")
 	flag.StringVar(
 		&requirementsPath,
 		"requirements",
@@ -47,7 +55,19 @@ func main() {
 		log.Fatalln("ERROR: failed to find the Gazelle manifest file integrity")
 	}
 
-	valid, err := manifestFile.VerifyIntegrity(requirementsPath)
+	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
+	if err != nil {
+		log.Fatalf("ERROR: %v\n", err)
+	}
+	defer manifestGeneratorHash.Close()
+
+	requirements, err := os.Open(requirementsPath)
+	if err != nil {
+		log.Fatalf("ERROR: %v\n", err)
+	}
+	defer requirements.Close()
+
+	valid, err := manifestFile.VerifyIntegrity(manifestGeneratorHash, requirements)
 	if err != nil {
 		log.Fatalf("ERROR: %v\n", err)
 	}
