@@ -5,3 +5,9 @@ py_binary(
     srcs = ["generator.py"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//gazelle:__pkg__"],
+)

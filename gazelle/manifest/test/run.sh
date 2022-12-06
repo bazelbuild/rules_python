@@ -5,4 +5,7 @@
 
 set -o errexit -o nounset
 
-"${_TEST_BINARY}" --requirements "${_TEST_REQUIREMENTS}" --manifest "${_TEST_MANIFEST}"
+"${_TEST_BINARY}" \
+    --manifest-generator-hash "${_TEST_MANIFEST_GENERATOR_HASH}" \
+    --requirements "${_TEST_REQUIREMENTS}" \
+    --manifest "${_TEST_MANIFEST}"

@@ -18,5 +18,4 @@ build --incompatible_default_to_explicit_init_py
 
 # Windows makes use of runfiles for some rules
 build --enable_runfiles
-# TODO(f0rmiga): remove this so that other features don't start relying on it.
 startup --windows_enable_symlinks

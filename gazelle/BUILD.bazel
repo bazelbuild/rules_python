@@ -69,3 +69,13 @@ gazelle_binary(
     languages = ["//gazelle"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//gazelle/manifest:distribution",
+        "//gazelle/modules_mapping:distribution",
+        "//gazelle/pythonconfig:distribution",
+    ],
+    visibility = ["//:__pkg__"],
+)

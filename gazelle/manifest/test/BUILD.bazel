@@ -15,3 +15,9 @@ go_binary(
 )
 
 exports_files(["run.sh"])
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//gazelle/manifest:__pkg__"],
+)

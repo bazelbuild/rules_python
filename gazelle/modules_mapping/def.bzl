@@ -12,8 +12,9 @@ module name doesn't match the wheel distribution name.
 def _modules_mapping_impl(ctx):
     modules_mapping = ctx.actions.declare_file(ctx.attr.modules_mapping_name)
     args = ctx.actions.args()
-    args.add(modules_mapping.path)
-    args.add_all([whl.path for whl in ctx.files.wheels])
+    args.add("--output_file", modules_mapping.path)
+    args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
+    args.add_all("--wheels", [whl.path for whl in ctx.files.wheels])
     ctx.actions.run(
         inputs = ctx.files.wheels,
         outputs = [modules_mapping],
@@ -26,6 +27,11 @@ def _modules_mapping_impl(ctx):
 modules_mapping = rule(
     _modules_mapping_impl,
     attrs = {
+        "exclude_patterns": attr.string_list(
+            default = ["^_|(\\._)+"],
+            doc = "A set of regex patterns to match against each calculated module path. By default, exclude the modules starting with underscores.",
+            mandatory = False,
+        ),
         "modules_mapping_name": attr.string(
             default = "modules_mapping.json",
             doc = "The name for the output JSON file.",

@@ -17,3 +17,12 @@ go_test(
     data = glob(["testdata/**"]),
     deps = [":manifest"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//gazelle/manifest/generate:distribution",
+        "//gazelle/manifest/test:distribution",
+    ],
+    visibility = ["//gazelle:__pkg__"],
+)

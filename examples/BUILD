@@ -18,6 +18,11 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 bazel_integration_test(
+    name = "build_file_generation_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "pip_install_example",
     timeout = "long",
 )
