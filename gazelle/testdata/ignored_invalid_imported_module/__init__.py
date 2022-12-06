@@ -1,5 +1,6 @@
 # gazelle:ignore abcdefg1,abcdefg2
 # gazelle:ignore abcdefg3
+# gazelle:ignore
 
 import abcdefg1
 import abcdefg2
