@@ -206,7 +206,7 @@ func (c *comment) asAnnotation() (*annotation, error) {
 	withoutPrefix := strings.TrimPrefix(uncomment, annotationPrefix)
 	annotationParts := strings.SplitN(withoutPrefix, " ", 2)
 	if len(annotationParts) < 2 {
-		return nil, fmt.Errorf("`%s` is not valid annotation", *c)
+		return nil, fmt.Errorf("`%s` requires a value", *c)
 	}
 	return &annotation{
 		kind:  annotationKind(annotationParts[0]),
