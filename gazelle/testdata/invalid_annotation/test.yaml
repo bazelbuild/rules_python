@@ -2,4 +2,4 @@
 expect:
   exit_code: 1
   stderr: |
-    gazelle: ERROR: failed to parse annotations: `# gazelle:ignore` is not valid annotation
+    gazelle: ERROR: failed to parse annotations: `# gazelle:ignore` requires a value
