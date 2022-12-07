@@ -128,7 +128,10 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, error) {
 	}
 
 	for _, res := range allRes {
-		annotations := annotationsFromComments(res.Comments)
+		annotations, err := annotationsFromComments(res.Comments)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse annotations: %w", err)
+		}
 
 		for _, m := range res.Modules {
 			// Check for ignored dependencies set via an annotation to the Python
@@ -195,17 +198,20 @@ type comment string
 
 // asAnnotation returns an annotation object if the comment has the
 // annotationPrefix.
-func (c *comment) asAnnotation() *annotation {
+func (c *comment) asAnnotation() (*annotation, error) {
 	uncomment := strings.TrimLeft(string(*c), "# ")
 	if !strings.HasPrefix(uncomment, annotationPrefix) {
-		return nil
+		return nil, nil
 	}
 	withoutPrefix := strings.TrimPrefix(uncomment, annotationPrefix)
 	annotationParts := strings.SplitN(withoutPrefix, " ", 2)
+	if len(annotationParts) < 2 {
+		return nil, fmt.Errorf("`%s` requires a value", *c)
+	}
 	return &annotation{
 		kind:  annotationKind(annotationParts[0]),
 		value: annotationParts[1],
-	}
+	}, nil
 }
 
 // annotation represents a single Gazelle annotation parsed from a Python
@@ -224,10 +230,13 @@ type annotations struct {
 
 // annotationsFromComments returns all the annotations parsed out of the
 // comments of a Python module.
-func annotationsFromComments(comments []comment) *annotations {
+func annotationsFromComments(comments []comment) (*annotations, error) {
 	ignore := make(map[string]struct{})
 	for _, comment := range comments {
-		annotation := comment.asAnnotation()
+		annotation, err := comment.asAnnotation()
+		if err != nil {
+			return nil, err
+		}
 		if annotation != nil {
 			if annotation.kind == annotationKindIgnore {
 				modules := strings.Split(annotation.value, ",")
@@ -243,7 +252,7 @@ func annotationsFromComments(comments []comment) *annotations {
 	}
 	return &annotations{
 		ignore: ignore,
-	}
+	}, nil
 }
 
 // ignored returns true if the given module was ignored via the ignore
