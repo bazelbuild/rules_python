@@ -60,11 +60,11 @@ def _resolve_python_interpreter(rctx):
     if rctx.attr.python_interpreter_target != None:
         target = rctx.attr.python_interpreter_target
         python_interpreter = rctx.path(target)
-    else:
-        if "/" not in python_interpreter:
-            python_interpreter = rctx.which(python_interpreter)
-        if not python_interpreter:
+    elif "/" not in python_interpreter:
+        found_python_interpreter = rctx.which(python_interpreter)
+        if not found_python_interpreter:
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
+        python_interpreter = found_python_interpreter
     return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
