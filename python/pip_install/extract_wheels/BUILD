@@ -148,17 +148,6 @@ py_test(
     ],
 )
 
-py_test(
-    name = "requirements_bzl_test",
-    size = "small",
-    srcs = [
-        "requirements_bzl_test.py",
-    ],
-    deps = [
-        ":lib",
-    ],
-)
-
 filegroup(
     name = "distribution",
     srcs = glob(

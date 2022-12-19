@@ -201,63 +201,6 @@ def generate_build_file_contents(
     )
 
 
-def generate_requirements_file_contents(repo_name: str, targets: Iterable[str]) -> str:
-    """Generate a requirements.bzl file for a given pip repository
-
-    The file allows converting the PyPI name to a bazel label. Additionally, it adds a function which can glob all the
-    installed dependencies.
-
-    Args:
-        repo_name: the name of the pip repository
-        targets: a list of Bazel labels pointing to all the generated targets
-
-    Returns:
-        A complete requirements.bzl file as a string
-    """
-
-    sorted_targets = sorted(targets)
-    requirement_labels = ",".join(sorted_targets)
-    whl_requirement_labels = ",".join(
-        '"{}:whl"'.format(target.strip('"')) for target in sorted_targets
-    )
-    return textwrap.dedent(
-        """\
-        all_requirements = [{requirement_labels}]
-
-        all_whl_requirements = [{whl_requirement_labels}]
-
-        def requirement(name):
-           name_key = name.replace("-", "_").replace(".", "_").lower()
-           return "{repo}//pypi__" + name_key
-
-        def whl_requirement(name):
-            return requirement(name) + ":{whl_file_label}"
-
-        def data_requirement(name):
-            return requirement(name) + ":{data_label}"
-
-        def dist_info_requirement(name):
-            return requirement(name) + ":{dist_info_label}"
-
-        def entry_point(pkg, script = None):
-            if not script:
-                script = pkg
-            return requirement(pkg) + ":{entry_point_prefix}_" + script
-
-        def install_deps():
-            fail("install_deps() only works if you are creating an incremental repo. Did you mean to use pip_parse()?")
-        """.format(
-            repo=repo_name,
-            requirement_labels=requirement_labels,
-            whl_requirement_labels=whl_requirement_labels,
-            whl_file_label=WHEEL_FILE_LABEL,
-            data_label=DATA_LABEL,
-            dist_info_label=DIST_INFO_LABEL,
-            entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
-        )
-    )
-
-
 def sanitise_name(name: str, prefix: str) -> str:
     """Sanitises the name to be compatible with Bazel labels.
 
