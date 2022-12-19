@@ -33,11 +33,11 @@ def generate_entry_point_contents(
         """\
         {shebang}
         import sys
-        from {module} import {attribute}
+        from {module} import {attribute_import}
         if __name__ == "__main__":
             sys.exit({attribute}())
         """.format(
-            shebang=shebang, module=module, attribute=attribute
+            shebang=shebang, module=module, attribute=attribute, attribute_import = attribute.split(".")[0]
         )
     )
 
