@@ -99,7 +99,7 @@ class WheelTest(unittest.TestCase):
                 record_contents,
                 # The entries are guaranteed to be sorted.
                 b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
+example_customized-0.0.1.dist-info/METADATA,sha256=YUnzQ9gTMXspIBURe90Ct3aL_CCn8fwC3SiZe6MMTs8,372
 example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
 example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
 example_customized-0.0.1.dist-info/RECORD,,
@@ -124,7 +124,6 @@ Tag: py3-none-any
                 b"""\
 Metadata-Version: 2.1
 Name: example_customized
-Version: 0.0.1
 Author: Example Author with non-ascii characters: \xc5\xbc\xc3\xb3\xc5\x82w
 Author-email: example@example.com
 Home-page: www.example.com
@@ -132,6 +131,7 @@ License: Apache 2.0
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
+Version: 0.0.1
 
 This is a sample description of a wheel.
 """)
@@ -297,8 +297,8 @@ UNKNOWN
                 b"""\
 Metadata-Version: 2.1
 Name: example_python_requires_in_a_package
-Version: 0.0.1
 Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
+Version: 0.0.1
 
 UNKNOWN
 """,
@@ -332,8 +332,8 @@ UNKNOWN
                 b"""\
 Metadata-Version: 2.1
 Name: example_python_abi3_binary_wheel
-Version: 0.0.1
 Requires-Python: >=3.8
+Version: 0.0.1
 
 UNKNOWN
 """,

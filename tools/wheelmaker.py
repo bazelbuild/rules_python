@@ -167,10 +167,12 @@ Root-Is-Purelib: {}
             wheel_contents += "Tag: %s\n" % tag
         self.add_string(self.distinfo_path("WHEEL"), wheel_contents)
 
-    def add_metadata(self, metadata, description):
+    def add_metadata(self, metadata, description, version):
         """Write METADATA file to the distribution."""
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
+        metadata += "Version: " + version
+        metadata += "\n"
         metadata += "\n"
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
@@ -398,7 +400,7 @@ def main() -> None:
                       encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
-        maker.add_metadata(metadata=metadata, description=description)
+        maker.add_metadata(metadata=metadata, description=description, version=version)
 
         if arguments.entry_points_file:
             maker.add_file(
