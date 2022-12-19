@@ -372,6 +372,31 @@ Tag: cp38-abi3-{os_string}_{arch}
                 ],
             )
 
+    def test_rule_sets_stamped_version_in_wheel_metadata(self):
+        filename = os.path.join(
+            os.environ["TEST_SRCDIR"],
+            "rules_python",
+            "examples",
+            "wheel",
+            "example_minimal_library-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
+        )
+
+        with zipfile.ZipFile(filename) as zf:
+            metadata_file = None
+            for f in zf.namelist():
+                self.assertNotIn("_BUILD_TIMESTAMP_", f)
+                if os.path.basename(f) == "METADATA":
+                    metadata_file = f
+            self.assertIsNotNone(metadata_file)
+
+            version = None
+            with zf.open(metadata_file) as fp:
+                for line in fp:
+                    if line.startswith(b'Version:'):
+                        version = line.decode().split()[-1]
+            self.assertIsNotNone(version)
+            self.assertNotIn("{BUILD_TIMESTAMP}", version)
+
 
 if __name__ == "__main__":
     unittest.main()
