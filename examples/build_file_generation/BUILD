@@ -15,6 +15,7 @@ compile_pip_requirements(
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_windows.txt",
 )
 
 # This repository rule fetches the metadata for python packages we
