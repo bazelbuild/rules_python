@@ -95,6 +95,7 @@ py_test(
     srcs = [
         "wheel_installer_test.py",
     ],
+    data = ["//examples/wheel:minimal_with_py_package"],
     tags = ["unit"],
     deps = [
         ":lib",

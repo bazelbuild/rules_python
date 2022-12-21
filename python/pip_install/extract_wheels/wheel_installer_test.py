@@ -1,6 +1,8 @@
 import os
+import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 from python.pip_install.extract_wheels import wheel_installer
 
@@ -56,7 +58,8 @@ if __name__ == "__main__":
         want = """#!/usr/bin/python
 import sys
 from sphinx.cmd.build import main
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())
 """
         self.assertEqual(got, want)
 
