@@ -77,7 +77,7 @@ func main() {
 			log.Fatalf("ERROR: %v\n", err)
 		}
 		log.Fatalf(
-			"ERROR: %q is out-of-date, follow the intructions on this file for updating.\n",
+			"ERROR: %q is out-of-date. Follow the update instructions in that file to resolve this.\n",
 			manifestRealpath)
 	}
 }
