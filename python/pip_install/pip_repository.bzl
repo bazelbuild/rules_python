@@ -522,7 +522,7 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "python.pip_install.extract_wheels.extract_single_wheel",
+        "python.pip_install.extract_wheels.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
         "--repo",
