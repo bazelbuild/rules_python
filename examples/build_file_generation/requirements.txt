@@ -1,2 +1,1 @@
-requests==2.25.1
-psutil==5.9.4
+flask

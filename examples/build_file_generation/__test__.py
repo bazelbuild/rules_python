@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __init__ import main
+import unittest
+from __init__ import app
 
+class TestServer(unittest.TestCase):
+    def setUp(self):
+        self.app = app.test_client()
+        
+    def test_get_random_number(self):
+        response = self.app.get('/random-number')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('number', response.json)
+        
 if __name__ == '__main__':
-    main()
+    unittest.main()

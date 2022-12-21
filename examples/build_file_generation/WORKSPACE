@@ -1,15 +1,22 @@
+# Set the name of the bazel workspace.
 workspace(name = "build_file_generation_example")
 
+# Load the http_archive rule so that we can have bazel download
+# various rulesets and dependencies.
+# The `load` statement imports the symbol for http_archive from the http.bzl
+# file.  When the symbol is loaded you can use the rule.
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 ######################################################################
 # We need rules_go and bazel_gazelle, to build the gazelle plugin from source.
 # Setup instructions for this section are at
 # https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
+# You may need to update the version of the rule, which is listed in the above
+# documentation.
+######################################################################
 
-# Note, you could omit the rules_go dependency, if you have some way to statically
-# compile the gazelle binary for your workspace and distribute it to users on all
-# needed platforms.
+# Define an http_archive rule that will download the below ruleset,
+# test the sha, and extract the ruleset to you local bazel cache.
 http_archive(
     name = "io_bazel_rules_go",
     sha256 = "099a9fb96a376ccbbb7d291ed4ecbdfd42f6bc822ab77ae6f1b5cb9e914e94fa",
@@ -19,54 +26,107 @@ http_archive(
     ],
 )
 
+# Download the bazel_gazelle ruleset.
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "efbbba6ac1a4fd342d5122cbdfdb82aeb2cf2862e35022c752eaddffada7c3f3",
+    sha256 = "448e37e0dbf61d6fa8f00aaa12d191745e14f07c31cabfa731f0c8e8a4f41b97",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.27.0/bazel-gazelle-v0.27.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.28.0/bazel-gazelle-v0.28.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.28.0/bazel-gazelle-v0.28.0.tar.gz",
     ],
 )
 
+# Load rules_go ruleset and expose the toolchain and dep rules.
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
+# go_rules_dependencies is a function that registers external dependencies
+# needed by the Go rules.
+# See: https://github.com/bazelbuild/rules_go/blob/master/go/dependencies.rst#go_rules_dependencies
 go_rules_dependencies()
 
-go_register_toolchains(version = "1.18.3")
+# go_rules_dependencies is a function that registers external dependencies
+# needed by the Go rules.
+# See: https://github.com/bazelbuild/rules_go/blob/master/go/dependencies.rst#go_rules_dependencies
+go_register_toolchains(version = "1.19.4")
 
+# The following call configured the gazelle dependencies, Go environment and Go SDK.
 gazelle_dependencies()
 
-######################################################################
-# Remaining setup is for rules_python
+# Remaining setup is for rules_python.
 
+# You do not want to use the following command when you are using a WORKSPACE file
+# that is outside of rules_python repository.
+# This command allows targets from a local directory to be bound.
+# Which allows bazel to use targets defined in base rules_python directory.
+# If you are using this example outside of the rules_python git repo,
+# use the http_archive command that is commented out below.
+# https://bazel.build/reference/be/workspace#local_repository
 local_repository(
     name = "rules_python",
     path = "../..",
 )
 
+# When not using this example in the rules_python git repo you would load the python
+# ruleset using the following StarLark.
+# See https://github.com/bazelbuild/rules_python#getting-started for the latest
+# ruleset version.
+#
+# The following StarLark would replace the `local_repository` rule mentioned above.
+#
+# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# http_archive(
+#     name = "rules_python",
+#     sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
+#     strip_prefix = "rules_python-0.16.1",
+#     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
+# )
+
+# Next we load the toolchain from rules_python.
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
+# We now register a hermetic Python interpreter rather than relying on a system-installed interpreter.
+# This toolchain will allow bazel to download a specific python version, and use that version
+# for compilation.
 python_register_toolchains(
     name = "python39",
     python_version = "3.9",
 )
 
+# Load the interpreter and pip_parse rules.
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
+# This macro wraps the `pip_repository` rule that invokes `pip`, with `incremental` set.
+# Accepts a locked/compiled requirements file and installs the dependencies listed within.
+# Those dependencies become available in a generated `requirements.bzl` file.
+# You can instead check this `requirements.bzl` file into your repo.
 pip_parse(
     name = "pip",
+    # (Optional) You can provide a python_interpreter (path) or a python_interpreter_target (a Bazel target, that
+    # acts as an executable). The latter can be anything that could be used as Python interpreter. E.g.:
+    # 1. Python interpreter that you compile in the build file.
+    # 2. Pre-compiled python interpreter included with http_archive.
+    # 3. Wrapper script, like in the autodetecting python toolchain.
+    #
+    # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
     python_interpreter_target = interpreter,
+    # Set the location of the lock file.
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 
+# Load the install_deps macro.
 load("@pip//:requirements.bzl", "install_deps")
 
+# Initialize repositories for all packages in requirements_lock.txt.
 install_deps()
 
 # The rules_python gazelle extension has some third-party go dependencies
 # which we need to fetch in order to compile it.
 load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
+# See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# This rule loads and compiles various go dependencies that running gazelle
+# for python requirements.
 _py_gazelle_deps()
