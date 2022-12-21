@@ -9,7 +9,7 @@ import sys
 import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict, Iterable, List, Optional, Set
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from python.pip_install.extract_wheels import (
     annotation,
