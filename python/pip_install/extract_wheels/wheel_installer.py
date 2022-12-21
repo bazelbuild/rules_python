@@ -3,6 +3,7 @@ import errno
 import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -10,6 +11,8 @@ import textwrap
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, Iterable, List, Optional, Set, Tuple
+
+from pip._vendor.packaging.utils import canonicalize_name
 
 from python.pip_install.extract_wheels import (
     annotation,
@@ -262,12 +265,12 @@ def _generate_build_file_contents(
                     name=name,
                     dependencies=",".join(sorted(dependencies)),
                     data_exclude=json.dumps(sorted(data_exclude)),
-                    whl_file_label=WHEEL_FILE_LABEL,
+                    whl_file_label=bazel.WHEEL_FILE_LABEL,
                     whl_file_deps=",".join(sorted(whl_file_deps)),
                     tags=",".join(sorted(['"%s"' % t for t in tags])),
-                    data_label=DATA_LABEL,
-                    dist_info_label=DIST_INFO_LABEL,
-                    entry_point_prefix=WHEEL_ENTRY_POINT_PREFIX,
+                    data_label=bazel.DATA_LABEL,
+                    dist_info_label=bazel.DIST_INFO_LABEL,
+                    entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
                     srcs_exclude=json.dumps(sorted(srcs_exclude)),
                     data=json.dumps(sorted(data)),
                 )
@@ -282,7 +285,7 @@ def _sanitised_library_label(whl_name: str, prefix: str) -> str:
 
 
 def _sanitised_file_label(whl_name: str, prefix: str) -> str:
-    return '"//%s:%s"' % (bazel.sanitise_name(whl_name, prefix), WHEEL_FILE_LABEL)
+    return '"//%s:%s"' % (bazel.sanitise_name(whl_name, prefix), bazel.WHEEL_FILE_LABEL)
 
 
 def _extract_wheel(
@@ -349,7 +352,9 @@ def _extract_wheel(
         ]
 
     library_name = (
-        PY_LIBRARY_LABEL if incremental else bazel.sanitise_name(whl.name, repo_prefix)
+        bazel.PY_LIBRARY_LABEL
+        if incremental
+        else bazel.sanitise_name(whl.name, repo_prefix)
     )
 
     directory_path = Path(directory)
@@ -358,7 +363,9 @@ def _extract_wheel(
         # There is an extreme edge-case with entry_points that end with `.py`
         # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
         entry_point_without_py = f"{name[:-3]}_py" if name.endswith(".py") else name
-        entry_point_target_name = f"{WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
+        entry_point_target_name = (
+            f"{bazel.WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
+        )
         entry_point_script_name = f"{entry_point_target_name}.py"
         (directory_path / entry_point_script_name).write_text(
             _generate_entry_point_contents(module, attribute)
@@ -392,7 +399,7 @@ def _extract_wheel(
                 additional_content.append(annotation.additive_build_content)
 
         contents = _generate_build_file_contents(
-            name=PY_LIBRARY_LABEL
+            name=bazel.PY_LIBRARY_LABEL
             if incremental
             else bazel.sanitise_name(whl.name, repo_prefix),
             dependencies=sanitised_dependencies,
@@ -423,7 +430,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--annotation",
-        type=annotations.annotation_from_str_path,
+        type=annotation.annotation_from_str_path,
         help="A json encoded file containing annotations for rendered packages.",
     )
     arguments.parse_common_args(parser)

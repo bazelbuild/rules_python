@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 
 from python.pip_install.extract_wheels import wheel_installer
@@ -38,7 +40,7 @@ class TestRequirementExtrasParsing(unittest.TestCase):
 
 class BazelTestCase(unittest.TestCase):
     def test_generate_entry_point_contents(self):
-        got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build:main")
+        got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
         want = """#!/usr/bin/env python3
 import sys
 from sphinx.cmd.build import main
@@ -49,7 +51,7 @@ if __name__ == "__main__":
 
     def test_generate_entry_point_contents_with_shebang(self):
         got = wheel_installer._generate_entry_point_contents(
-            "sphinx.cmd.build:main", shebang="#!/usr/bin/python"
+            "sphinx.cmd.build", "main", shebang="#!/usr/bin/python"
         )
         want = """#!/usr/bin/python
 import sys
