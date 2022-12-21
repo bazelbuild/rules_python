@@ -8,10 +8,10 @@ py_library(
         "annotation.py",
         "arguments.py",
         "bazel.py",
-        "wheel_installer.py",
         "namespace_pkgs.py",
         "parse_requirements_to_bzl.py",
         "wheel.py",
+        "wheel_installer.py",
     ],
     deps = [
         requirement("installer"),

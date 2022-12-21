@@ -7,11 +7,17 @@ import shutil
 import subprocess
 import sys
 import textwrap
-from tempfile import NamedTemporaryFile
-
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Dict, Iterable, List, Optional, Set
-from python.pip_install.extract_wheels import annotation, arguments, bazel, namespace_pkgs, wheel
+
+from python.pip_install.extract_wheels import (
+    annotation,
+    arguments,
+    bazel,
+    namespace_pkgs,
+    wheel,
+)
 
 
 def _configure_reproducible_wheels() -> None:
@@ -327,10 +333,12 @@ def _extract_wheel(
 
     if incremental:
         sanitised_dependencies = [
-            bazel.sanitised_repo_library_label(d, repo_prefix=repo_prefix) for d in whl_deps
+            bazel.sanitised_repo_library_label(d, repo_prefix=repo_prefix)
+            for d in whl_deps
         ]
         sanitised_wheel_file_dependencies = [
-            bazel.sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps
+            bazel.sanitised_repo_file_label(d, repo_prefix=repo_prefix)
+            for d in whl_deps
         ]
     else:
         sanitised_dependencies = [

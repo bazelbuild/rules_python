@@ -56,7 +56,7 @@ def main(conf_file):
                 # TODO: --override_module isn't supported in the current BAZEL_VERSION (5.2.0)
                 # This condition and attribute can be removed when bazel is updated for
                 # the rest of rules_python.
-                if (config["bzlmod"]):
+                if config["bzlmod"]:
                     bazel_args.append(
                         "--override_module=rules_python=%s/rules_python"
                         % os.environ["TEST_SRCDIR"]
