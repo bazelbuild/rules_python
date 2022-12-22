@@ -1,9 +1,13 @@
+# Load various rules so that we can have bazel download
+# various rulesets and dependencies.
+# The `load` statement imports the symbol for the rule, in the defined
+# ruleset. When the symbol is loaded you can use the rule.
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 compile_pip_requirements(
@@ -11,10 +15,13 @@ compile_pip_requirements(
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_windows.txt",
 )
 
-# This rule fetches the metadata for python packages we depend on. That data is
-# required for the gazelle_python_manifest rule to update our manifest file.
+# This repository rule fetches the metadata for python packages we
+# depend on. That data is required for the gazelle_python_manifest
+# rule to update our manifest file.
+# To see what this rule does, try `bazel run @modules_map//:print`
 modules_mapping(
     name = "modules_map",
     exclude_patterns = [
@@ -52,17 +59,44 @@ gazelle(
 
 # This rule is auto-generated and managed by Gazelle,
 # because it found the __init__.py file in this folder.
+# See: https://bazel.build/reference/be/python#py_library
 py_library(
     name = "build_file_generation",
     srcs = ["__init__.py"],
     visibility = ["//:__subpackages__"],
-    deps = ["@pip_requests//:pkg"],
+    deps = [
+        "//random_number_generator",
+        "@pip_flask//:pkg",
+    ],
 )
 
+# A py_binary is an executable Python program consisting of a collection of .py source files.
+# See: https://bazel.build/reference/be/python#py_binary
+#
+# This rule is auto-generated and managed by Gazelle,
+# because it found the __main__.py file in this folder.
+# This rule creates a target named //:build_file_generation_bin and you can use
+# bazel to run the target:
+# `bazel run //:build_file_generation_bin`
 py_binary(
     name = "build_file_generation_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
+    deps = [":build_file_generation"],
+)
+
+# A py_test is a Python unit test.
+# See: https://bazel.build/reference/be/python#py_test
+#
+# This rule is auto-generated and managed by Gazelle,
+# because it found the __test__.py file in this folder.
+# This rule creates a target named //:build_file_generation_test and you can use
+# bazel to run the target:
+# `bazel test //:build_file_generation_test`
+py_test(
+    name = "build_file_generation_test",
+    srcs = ["__test__.py"],
+    main = "__test__.py",
     deps = [":build_file_generation"],
 )
