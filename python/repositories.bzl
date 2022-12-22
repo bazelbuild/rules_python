@@ -42,6 +42,19 @@ def py_repositories():
 
 STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
 
+def get_interpreter_dirname(rctx, python_interpreter_target):
+    """Get a python interpreter target dirname.
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object.
+        python_interpreter_target (Target): A target representing a python interpreter.
+
+    Returns:
+        str: The Python interpreter directory.
+    """
+
+    return rctx.path(Label("{}//:WORKSPACE".format(str(python_interpreter_target).split("//")[0]))).dirname
+
 def is_standalone_interpreter(rctx, python_interpreter_target):
     """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
 
@@ -61,7 +74,7 @@ def is_standalone_interpreter(rctx, python_interpreter_target):
     return rctx.execute([
         "ls",
         "{}/{}".format(
-            rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname,
+            get_interpreter_dirname(rctx, python_interpreter_target),
             STANDALONE_INTERPRETER_FILENAME,
         ),
     ]).return_code == 0
