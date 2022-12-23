@@ -26,6 +26,9 @@ def _construct_pypath(rctx):
         # Includes all the external dependencies from repositories.bzl
         rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
         for repo in all_requirements
+    ] + [
+        rctx.path(dep).dirname
+        for dep in rctx.attr.deps
     ]
     separator = ":" if not "windows" in rctx.os.name.lower() else ";"
     pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
@@ -355,6 +358,12 @@ common_env = [
 ]
 
 common_attrs = {
+    "deps": attr.label_list(
+        doc = """
+External third-party dependencies list for building wheels. List labels should reference files in repository directories that will be
+added to PYTHONPATH of a build environment.
+""",
+    ),
     "download_only": attr.bool(
         doc = """
 Whether to use "pip download" instead of "pip wheel". Disables building wheels from source, but allows use of

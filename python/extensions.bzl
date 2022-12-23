@@ -76,6 +76,7 @@ def _pip_impl(module_ctx):
                     pip_data_exclude = attr.pip_data_exclude,
                     enable_implicit_namespace_pkgs = attr.enable_implicit_namespace_pkgs,
                     environment = attr.environment,
+                    deps = attr.deps,
                 )
 
 # Keep in sync with python/pip_install/extract_wheels/bazel.py
