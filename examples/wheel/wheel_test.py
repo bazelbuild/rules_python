@@ -99,7 +99,7 @@ class WheelTest(unittest.TestCase):
                 record_contents,
                 # The entries are guaranteed to be sorted.
                 b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=TeeEmokHE2NWjkaMcVJuSAq4_AXUoIad2-SLuquRmbg,372
+example_customized-0.0.1.dist-info/METADATA,sha256=YUnzQ9gTMXspIBURe90Ct3aL_CCn8fwC3SiZe6MMTs8,372
 example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
 example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
 example_customized-0.0.1.dist-info/RECORD,,
@@ -125,7 +125,6 @@ Tag: py3-none-any
                 b"""\
 Metadata-Version: 2.1
 Name: example_customized
-Version: 0.0.1
 Author: Example Author with non-ascii characters: \xc5\xbc\xc3\xb3\xc5\x82w
 Author-email: example@example.com
 Home-page: www.example.com
@@ -133,6 +132,7 @@ License: Apache 2.0
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
+Version: 0.0.1
 
 This is a sample description of a wheel.
 """,
@@ -299,8 +299,8 @@ UNKNOWN
                 b"""\
 Metadata-Version: 2.1
 Name: example_python_requires_in_a_package
-Version: 0.0.1
 Requires-Python: >=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*
+Version: 0.0.1
 
 UNKNOWN
 """,
@@ -334,8 +334,8 @@ UNKNOWN
                 b"""\
 Metadata-Version: 2.1
 Name: example_python_abi3_binary_wheel
-Version: 0.0.1
 Requires-Python: >=3.8
+Version: 0.0.1
 
 UNKNOWN
 """,
@@ -373,6 +373,31 @@ Tag: cp38-abi3-{os_string}_{arch}
                     "use_rule_with_dir_in_outs-0.0.1.dist-info/RECORD",
                 ],
             )
+
+    def test_rule_sets_stamped_version_in_wheel_metadata(self):
+        filename = os.path.join(
+            os.environ["TEST_SRCDIR"],
+            "rules_python",
+            "examples",
+            "wheel",
+            "example_minimal_library-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
+        )
+
+        with zipfile.ZipFile(filename) as zf:
+            metadata_file = None
+            for f in zf.namelist():
+                self.assertNotIn("_BUILD_TIMESTAMP_", f)
+                if os.path.basename(f) == "METADATA":
+                    metadata_file = f
+            self.assertIsNotNone(metadata_file)
+
+            version = None
+            with zf.open(metadata_file) as fp:
+                for line in fp:
+                    if line.startswith(b'Version:'):
+                        version = line.decode().split()[-1]
+            self.assertIsNotNone(version)
+            self.assertNotIn("{BUILD_TIMESTAMP}", version)
 
 
 if __name__ == "__main__":
