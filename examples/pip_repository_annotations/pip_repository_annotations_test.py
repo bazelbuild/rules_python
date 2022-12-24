@@ -65,7 +65,7 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         self.assertEqual(stdout, "Hello world from copied executable")
 
     def test_data_exclude_glob(self):
-        current_wheel_version = "0.37.1"
+        current_wheel_version = "0.38.4"
 
         r = runfiles.Create()
         dist_info_dir = "pip_repository_annotations_example/external/{}/site-packages/wheel-{}.dist-info".format(
