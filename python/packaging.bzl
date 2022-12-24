@@ -167,12 +167,11 @@ def _py_wheel_impl(ctx):
 
     args.add("--input_file_list", packageinputfile)
 
-    # Note: Description file is not embedded into metadata.txt yet,
+    # Note: Description file and version are not embedded into metadata.txt yet,
     # it will be done later by wheelmaker script.
     metadata_file = ctx.actions.declare_file(ctx.attr.name + ".metadata.txt")
     metadata_contents = ["Metadata-Version: 2.1"]
     metadata_contents.append("Name: %s" % ctx.attr.distribution)
-    metadata_contents.append("Version: %s" % version)
 
     if ctx.attr.author:
         metadata_contents.append("Author: %s" % ctx.attr.author)
