@@ -172,8 +172,7 @@ Root-Is-Purelib: {}
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
         metadata += "Version: " + version
-        metadata += "\n"
-        metadata += "\n"
+        metadata += "\n\n"
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
