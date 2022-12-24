@@ -109,7 +109,8 @@ examples/wheel/lib/data.txt,sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg,1
 examples/wheel/lib/module_with_data.py,sha256=8s0Khhcqz3yVsBKv2IB5u4l4TMKh7-c_V6p65WVHPms,637
 examples/wheel/lib/simple_module.py,sha256=z2hwciab_XPNIBNH8B1Q5fYgnJvQTeYf0ZQJpY8yLLY,637
 examples/wheel/main.py,sha256=sgg5iWN_9inYBjm6_Zw27hYdmo-l24fA-2rfphT-IlY,909
-""")
+""",
+            )
             self.assertEqual(
                 wheel_contents,
                 b"""\
@@ -134,7 +135,8 @@ Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
 
 This is a sample description of a wheel.
-""")
+""",
+            )
             self.assertEqual(
                 entry_point_contents,
                 b"""\

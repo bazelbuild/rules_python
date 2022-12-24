@@ -275,7 +275,7 @@ def parse_args() -> argparse.Namespace:
         action="append",
         default=[],
         help="Path prefix to be stripped from input package files' path. "
-             "Can be supplied multiple times. Evaluated in order.",
+        "Can be supplied multiple times. Evaluated in order.",
     )
 
     wheel_group = parser.add_argument_group("Wheel metadata")
@@ -283,7 +283,7 @@ def parse_args() -> argparse.Namespace:
         "--metadata_file",
         type=Path,
         help="Contents of the METADATA file (before appending contents of "
-             "--description_file)",
+        "--description_file)",
     )
     wheel_group.add_argument(
         "--description_file", help="Path to the file with package description"
@@ -381,12 +381,12 @@ def main() -> None:
         description = None
         if arguments.description_file:
             if sys.version_info[0] == 2:
-                with open(arguments.description_file,
-                          "rt") as description_file:
+                with open(arguments.description_file, "rt") as description_file:
                     description = description_file.read()
             else:
-                with open(arguments.description_file, "rt",
-                          encoding="utf-8") as description_file:
+                with open(
+                    arguments.description_file, "rt", encoding="utf-8"
+                ) as description_file:
                     description = description_file.read()
 
         metadata = None
@@ -394,8 +394,7 @@ def main() -> None:
             with open(arguments.metadata_file, "rt") as metadata_file:
                 metadata = metadata_file.read()
         else:
-            with open(arguments.metadata_file, "rt",
-                      encoding="utf-8") as metadata_file:
+            with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
         maker.add_metadata(metadata=metadata, description=description)
