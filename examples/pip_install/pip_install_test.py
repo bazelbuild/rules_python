@@ -51,13 +51,13 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             env.split(" "),
             [
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/DESCRIPTION.rst",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/INSTALLER",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/METADATA",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/RECORD",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/WHEEL",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/metadata.json",
-                "external/pip_boto3/site-packages/boto3-1.14.51.dist-info/top_level.txt",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/DESCRIPTION.rst",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/INSTALLER",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/METADATA",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/RECORD",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/WHEEL",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/metadata.json",
+                "external/pip_boto3/site-packages/boto3-1.14.63.dist-info/top_level.txt",
             ],
         )
 
