@@ -21,7 +21,7 @@ def _construct_pypath(rctx):
     """
 
     # Get the root directory of these rules
-    rules_root = rctx.path(Label("//:BUILD")).dirname
+    rules_root = rctx.path(Label("//:BUILD.bazel")).dirname
     thirdparty_roots = [
         # Includes all the external dependencies from repositories.bzl
         rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
