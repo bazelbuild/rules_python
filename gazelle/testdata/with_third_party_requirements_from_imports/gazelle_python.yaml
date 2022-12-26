@@ -1661,5 +1661,4 @@ manifest:
     urllib3.util.wait: urllib3
   pip_repository:
     name: gazelle_python_test
-    incremental: true
 integrity: 32e38932043eca090a64ca741758d8e4a5817c2cd7dc821fc927914c32fb3114

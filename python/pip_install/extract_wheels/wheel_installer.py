@@ -294,7 +294,6 @@ def _extract_wheel(
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
-    incremental: bool = False,
     incremental_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
 ) -> Optional[str]:
@@ -478,7 +477,6 @@ def main() -> None:
         extras=extras,
         pip_data_exclude=deserialized_args["pip_data_exclude"],
         enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
-        incremental=True,
         repo_prefix=args.repo_prefix,
         annotation=args.annotation,
     )

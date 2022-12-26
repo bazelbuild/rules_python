@@ -130,6 +130,4 @@ type Manifest struct {
 type PipRepository struct {
 	// The name of the pip_install or pip_repository target.
 	Name string
-	// The incremental property of pip_repository.
-	Incremental bool
 }

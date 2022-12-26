@@ -27,7 +27,6 @@ func main() {
 	var manifestGeneratorHashPath string
 	var requirementsPath string
 	var pipRepositoryName string
-	var pipRepositoryIncremental bool
 	var modulesMappingPath string
 	var outputPath string
 	var updateTarget string
@@ -47,11 +46,6 @@ func main() {
 		"pip-repository-name",
 		"",
 		"The name of the pip_install or pip_repository target.")
-	flag.BoolVar(
-		&pipRepositoryIncremental,
-		"pip-repository-incremental",
-		false,
-		"The value for the incremental option in pip_repository.")
 	flag.StringVar(
 		&modulesMappingPath,
 		"modules-mapping",
@@ -96,7 +90,6 @@ func main() {
 		ModulesMapping: modulesMapping,
 		PipRepository: &manifest.PipRepository{
 			Name:        pipRepositoryName,
-			Incremental: pipRepositoryIncremental,
 		},
 	})
 	if err := writeOutput(
