@@ -9,9 +9,9 @@ py_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
-        "@gazelle_python_test//pypi__baz",
-        "@gazelle_python_test//pypi__boto3",
-        "@gazelle_python_test//pypi__djangorestframework",
+        "@gazelle_python_test_baz//:pkg",
+        "@gazelle_python_test_boto3//:pkg",
+        "@gazelle_python_test_djangorestframework//:pkg",
     ],
 )
 
@@ -22,6 +22,6 @@ py_binary(
     visibility = ["//:__subpackages__"],
     deps = [
         ":with_third_party_requirements",
-        "@gazelle_python_test//pypi__baz",
+        "@gazelle_python_test_baz//:pkg",
     ],
 )

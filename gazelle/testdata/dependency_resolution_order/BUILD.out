@@ -9,6 +9,6 @@ py_library(
     deps = [
         "//baz",
         "//somewhere/bar",
-        "@gazelle_python_test//pypi__some_foo",
+        "@gazelle_python_test_some_foo//:pkg",
     ],
 )

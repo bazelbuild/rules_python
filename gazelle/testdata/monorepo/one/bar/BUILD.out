@@ -8,5 +8,5 @@ py_library(
         "//one:__subpackages__",
         "//three:__subpackages__",
     ],
-    deps = ["@one_pip_deps//pypi__oneboto3"],
+    deps = ["@one_pip_deps_oneboto3//:pkg"],
 )
