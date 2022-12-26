@@ -20,7 +20,7 @@ EOF
 )
 
 compile_pip_requirements(
-    name = "pip_dependencies",
+    name = "requirements",
     data = [
         "requirements_extra.in",
     ],
