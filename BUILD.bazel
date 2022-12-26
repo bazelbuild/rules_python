@@ -27,7 +27,7 @@ exports_files([
 filegroup(
     name = "distribution",
     srcs = [
-        "BUILD",
+        "BUILD.bazel",
         "MODULE.bazel",
         "WORKSPACE",
         "internal_deps.bzl",
