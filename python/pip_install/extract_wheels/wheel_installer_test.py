@@ -75,7 +75,7 @@ class TestWhlFilegroup(unittest.TestCase):
         shutil.rmtree(self.wheel_dir)
 
     def test_wheel_exists(self) -> None:
-        generated_bazel_dir = wheel_installer._extract_wheel(
+        wheel_installer._extract_wheel(
             self.wheel_path,
             extras={},
             pip_data_exclude=[],
@@ -85,7 +85,7 @@ class TestWhlFilegroup(unittest.TestCase):
         )
 
         self.assertIn(self.wheel_name, os.listdir(self.wheel_dir))
-        with open("{}/BUILD.bazel".format(generated_bazel_dir)) as build_file:
+        with open("{}/BUILD.bazel".format(self.wheel_dir)) as build_file:
             build_file_content = build_file.read()
             self.assertIn("filegroup", build_file_content)
 

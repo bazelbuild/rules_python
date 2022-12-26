@@ -296,7 +296,7 @@ def _extract_wheel(
     repo_prefix: str,
     incremental_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
-) -> Optional[str]:
+) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
@@ -383,8 +383,6 @@ def _extract_wheel(
             additional_content=additional_content,
         )
         build_file.write(contents)
-
-    return None
 
 
 def main() -> None:
