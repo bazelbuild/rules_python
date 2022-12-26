@@ -175,7 +175,7 @@ Accepts a locked/compiled requirements file and installs the dependencies listed
 Those dependencies become available in a generated `requirements.bzl` file.
 You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`, with `incremental` set.
+This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
 In your WORKSPACE file:
 
 ```python
