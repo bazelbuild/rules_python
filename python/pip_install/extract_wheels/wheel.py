@@ -84,7 +84,7 @@ class Wheel:
             interpreter="/dev/null",
             script_kind="posix",
             destdir=directory,
-            bytecode_levels=[],
+            bytecode_optimization_levels=[],
         )
 
         with installer.sources.WheelFile.open(self.path) as wheel_source:
