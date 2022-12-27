@@ -8,5 +8,5 @@ py_library(
         "test_not_a_real.py",
     ],
     visibility = ["//:__subpackages__"],
-    deps = ["@gazelle_python_test//pypi__boto3"],
+    deps = ["@gazelle_python_test_boto3//:pkg"],
 )

@@ -10,6 +10,6 @@ py_library(
     visibility = ["//two:__subpackages__"],
     deps = [
         "//one/foo",
-        "@two_pip_deps//pypi__twoboto3",
+        "@two_pip_deps_twoboto3//:pkg",
     ],
 )

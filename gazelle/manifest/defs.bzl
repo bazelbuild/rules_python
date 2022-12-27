@@ -9,7 +9,6 @@ def gazelle_python_manifest(
         requirements,
         modules_mapping,
         pip_repository_name = "",
-        pip_repository_incremental = False,
         pip_deps_repository_name = "",
         manifest = ":gazelle_python.yaml"):
     """A macro for defining the updating and testing targets for the Gazelle manifest file.
@@ -18,7 +17,6 @@ def gazelle_python_manifest(
         name: the name used as a base for the targets.
         requirements: the target for the requirements.txt file.
         pip_repository_name: the name of the pip_install or pip_repository target.
-        pip_repository_incremental: the incremental property of pip_repository.
         pip_deps_repository_name: deprecated - the old pip_install target name.
         modules_mapping: the target for the generated modules_mapping.json file.
         manifest: the target for the Gazelle manifest file.
@@ -54,8 +52,6 @@ def gazelle_python_manifest(
         "--update-target",
         update_target_label,
     ]
-    if pip_repository_incremental:
-        update_args.append("--pip-repository-incremental")
 
     go_binary(
         name = update_target,

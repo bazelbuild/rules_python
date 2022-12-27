@@ -41,7 +41,6 @@ modules_mapping(
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
-    pip_repository_incremental = True,
     pip_repository_name = "pip",
     requirements = "//:requirements_lock.txt",
 )

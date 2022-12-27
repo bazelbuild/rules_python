@@ -207,15 +207,9 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				sanitizedDistribution := strings.ToLower(distributionName)
 				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
 				var lbl label.Label
-				if gazelleManifest.PipRepository != nil && gazelleManifest.PipRepository.Incremental {
-					// @<repository_name>_<distribution_name>//:pkg
-					distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
-					lbl = label.New(distributionRepositoryName, "", "pkg")
-				} else {
-					// @<repository_name>//pypi__<distribution_name>
-					distributionPackage := "pypi__" + sanitizedDistribution
-					lbl = label.New(distributionRepositoryName, distributionPackage, distributionPackage)
-				}
+				// @<repository_name>_<distribution_name>//:pkg
+				distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
+				lbl = label.New(distributionRepositoryName, "", "pkg")
 				return lbl.String(), true
 			}
 		}

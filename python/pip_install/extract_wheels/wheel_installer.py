@@ -294,10 +294,9 @@ def _extract_wheel(
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
-    incremental: bool = False,
     incremental_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
-) -> Optional[str]:
+) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
@@ -305,8 +304,6 @@ def _extract_wheel(
         extras: a list of extras to add as dependencies for the installed wheel
         pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
-        incremental: If true the extract the wheel in a format suitable for an external repository. This
-            effects the names of libraries and their dependencies, which point to other external repositories.
         incremental_dir: An optional override for the working directory of incremental builds.
         annotation: An optional set of annotations to apply to the BUILD contents of the wheel.
 
@@ -315,14 +312,7 @@ def _extract_wheel(
     """
 
     whl = wheel.Wheel(wheel_file)
-    if incremental:
-        directory = incremental_dir
-    else:
-        directory = bazel.sanitise_name(whl.name, prefix=repo_prefix)
-
-        os.mkdir(directory)
-        # copy the original wheel
-        shutil.copy(whl.path, directory)
+    directory = incremental_dir
     whl.unzip(directory)
 
     if not enable_implicit_namespace_pkgs:
@@ -334,28 +324,12 @@ def _extract_wheel(
     self_edge_dep = set([whl.name])
     whl_deps = sorted(whl.dependencies(extras_requested) - self_edge_dep)
 
-    if incremental:
-        sanitised_dependencies = [
-            bazel.sanitised_repo_library_label(d, repo_prefix=repo_prefix)
-            for d in whl_deps
-        ]
-        sanitised_wheel_file_dependencies = [
-            bazel.sanitised_repo_file_label(d, repo_prefix=repo_prefix)
-            for d in whl_deps
-        ]
-    else:
-        sanitised_dependencies = [
-            _sanitised_library_label(d, prefix=repo_prefix) for d in whl_deps
-        ]
-        sanitised_wheel_file_dependencies = [
-            _sanitised_file_label(d, prefix=repo_prefix) for d in whl_deps
-        ]
-
-    library_name = (
-        bazel.PY_LIBRARY_LABEL
-        if incremental
-        else bazel.sanitise_name(whl.name, repo_prefix)
-    )
+    sanitised_dependencies = [
+        bazel.sanitised_repo_library_label(d, repo_prefix=repo_prefix) for d in whl_deps
+    ]
+    sanitised_wheel_file_dependencies = [
+        bazel.sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps
+    ]
 
     directory_path = Path(directory)
     entry_points = []
@@ -374,7 +348,7 @@ def _extract_wheel(
             _generate_entry_point_rule(
                 entry_point_target_name,
                 entry_point_script_name,
-                library_name,
+                bazel.PY_LIBRARY_LABEL,
             )
         )
 
@@ -399,9 +373,7 @@ def _extract_wheel(
                 additional_content.append(annotation.additive_build_content)
 
         contents = _generate_build_file_contents(
-            name=bazel.PY_LIBRARY_LABEL
-            if incremental
-            else bazel.sanitise_name(whl.name, repo_prefix),
+            name=bazel.PY_LIBRARY_LABEL,
             dependencies=sanitised_dependencies,
             whl_file_deps=sanitised_wheel_file_dependencies,
             data_exclude=data_exclude,
@@ -411,11 +383,6 @@ def _extract_wheel(
             additional_content=additional_content,
         )
         build_file.write(contents)
-
-    if not incremental:
-        os.remove(whl.path)
-        return f"//{directory}"
-    return None
 
 
 def main() -> None:
@@ -478,7 +445,6 @@ def main() -> None:
         extras=extras,
         pip_data_exclude=deserialized_args["pip_data_exclude"],
         enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
-        incremental=True,
         repo_prefix=args.repo_prefix,
         annotation=args.annotation,
     )

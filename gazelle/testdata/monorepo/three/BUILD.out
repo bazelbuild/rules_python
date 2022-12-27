@@ -15,7 +15,7 @@ py_library(
         "//one/bar",
         "//one/bar/baz:modified_name_baz",
         "//one/foo",
-        "@root_pip_deps//pypi__rootboto4",
+        "@root_pip_deps_rootboto4//:pkg",
         "@three_pip_deps_threeboto3//:pkg",
     ],
 )

@@ -12,6 +12,6 @@ py_binary(
         "//one/bar",
         "//one/bar/baz:modified_name_baz",
         "//one/foo",
-        "@one_pip_deps//pypi__oneboto3",
+        "@one_pip_deps_oneboto3//:pkg",
     ],
 )

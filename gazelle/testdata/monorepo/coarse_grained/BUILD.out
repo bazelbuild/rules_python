@@ -16,5 +16,5 @@ py_library(
         "foo/__init__.py",
     ],
     visibility = ["//:__subpackages__"],
-    deps = ["@root_pip_deps//pypi__rootboto3"],
+    deps = ["@root_pip_deps_rootboto3//:pkg"],
 )
