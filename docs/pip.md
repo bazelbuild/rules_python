@@ -252,7 +252,7 @@ To do this, use the "write to source file" pattern documented in
 https://blog.aspect.dev/bazel-can-write-to-the-source-folder
 to put a copy of the generated requirements.bzl into your project.
 Then load the requirements.bzl file directly rather than from the generated repository.
-See the example in rules_python/examples/pip_parse_vendored.
+See the example in [rules_python/examples/pip_parse_vendored](../examples/pip_parse_vendored).
 
 
 **PARAMETERS**
