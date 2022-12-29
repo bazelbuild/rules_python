@@ -83,7 +83,7 @@ You may also find some quirks while using this toolchain. Please refer to [pytho
 
 ### Toolchain usage in other rules
 
-Python toolchains can be utilised in other bazel rules, such as `genrule()`, by adding the `toolchains=["@rules_python//python:current_py_toolchain"]` attribute. The path to the python interpreter can be obtained by using the `$(PYTHON2)` and `$(PYTHON3)` ["Make" Variables](https://bazel.build/reference/be/make-variables). See the [`test_current_py_toolchain`](tests/load_from_macro/BUILD) target for an example.
+Python toolchains can be utilised in other bazel rules, such as `genrule()`, by adding the `toolchains=["@rules_python//python:current_py_toolchain"]` attribute. The path to the python interpreter can be obtained by using the `$(PYTHON2)` and `$(PYTHON3)` ["Make" Variables](https://bazel.build/reference/be/make-variables). See the [`test_current_py_toolchain`](tests/load_from_macro/BUILD.bazel) target for an example.
 
 
 ### "Hello World"
