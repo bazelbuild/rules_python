@@ -303,7 +303,7 @@ def _pip_repository_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "python.pip_install.extract_wheels.parse_requirements_to_bzl",
+        "python.pip_install.tools.lock_file_generator.lock_file_generator",
         "--requirements_lock",
         rctx.path(requirements_txt),
         "--requirements_lock_label",
@@ -522,7 +522,7 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "python.pip_install.extract_wheels.wheel_installer",
+        "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
         "--repo",

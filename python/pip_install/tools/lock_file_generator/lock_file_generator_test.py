@@ -7,11 +7,7 @@ from textwrap import dedent
 
 from pip._internal.req.req_install import InstallRequirement
 
-from python.pip_install.extract_wheels.parse_requirements_to_bzl import (
-    generate_parsed_requirements_contents,
-    parse_install_requirements,
-    parse_whl_library_args,
-)
+from python.pip_install.tools.lock_file_generator import lock_file_generator
 
 
 class TestParseRequirementsToBzl(unittest.TestCase):
@@ -36,8 +32,8 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             args.python_interpreter = "/custom/python3"
             args.python_interpreter_target = "@custom_python//:exec"
             args.environment = json.dumps({"arg": {}})
-            whl_library_args = parse_whl_library_args(args)
-            contents = generate_parsed_requirements_contents(
+            whl_library_args = lock_file_generator.parse_whl_library_args(args)
+            contents = lock_file_generator.generate_parsed_requirements_contents(
                 requirements_lock=args.requirements_lock,
                 repo=args.repo,
                 repo_prefix=args.repo_prefix,
@@ -96,7 +92,7 @@ class TestParseRequirementsToBzl(unittest.TestCase):
                     )
                 )
 
-                install_req_and_lines = parse_install_requirements(
+                install_req_and_lines = lock_file_generator.parse_install_requirements(
                     str(requirements_lock), ["-v"]
                 )
 
@@ -134,7 +130,7 @@ class TestParseRequirementsToBzl(unittest.TestCase):
                 )
             )
 
-            install_req_and_lines = parse_install_requirements(
+            install_req_and_lines = lock_file_generator.parse_install_requirements(
                 str(requirements_lock), ["-v"]
             )
 

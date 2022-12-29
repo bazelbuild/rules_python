@@ -1,4 +1,4 @@
-"""Helper macros and rules for testing the `annotations` module of `extract_wheels`"""
+"""Helper macros and rules for testing the `annotations` module of `tools`"""
 
 load("//python:pip.bzl", _package_annotation = "package_annotation")
 

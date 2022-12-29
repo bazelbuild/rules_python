@@ -14,13 +14,8 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from pip._vendor.packaging.utils import canonicalize_name
 
-from python.pip_install.extract_wheels import (
-    annotation,
-    arguments,
-    bazel,
-    namespace_pkgs,
-    wheel,
-)
+from python.pip_install.tools.lib import annotation, arguments, bazel
+from python.pip_install.tools.wheel_installer import namespace_pkgs, wheel
 
 
 def _configure_reproducible_wheels() -> None:

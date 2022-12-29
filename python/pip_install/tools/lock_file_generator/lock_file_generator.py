@@ -16,7 +16,7 @@ from pip._internal.req.req_file import (
 )
 from pip._internal.req.req_install import InstallRequirement
 
-from python.pip_install.extract_wheels import annotation, arguments, bazel
+from python.pip_install.tools.lib import annotation, arguments, bazel
 
 
 def parse_install_requirements(
