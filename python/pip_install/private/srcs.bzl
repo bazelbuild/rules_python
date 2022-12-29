@@ -1,6 +1,6 @@
 """A generated file containing all source files used for `@rules_python//python/pip_install:pip_repository.bzl` rules
 
-This file is auto-generated from the `@rules_python//python/pip_install/private:srcs_module.install` target. Please
+This file is auto-generated from the `@rules_python//python/pip_install/private:srcs_module.update` target. Please
 `bazel run` this target to apply any updates. Note that doing so will discard any local modifications.
 """
 
