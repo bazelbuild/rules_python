@@ -62,7 +62,7 @@ def _transition_py_impl(ctx):
         # RunEnvironmentInfo is not exposed in Bazel < 5.3.
         # https://github.com/bazelbuild/rules_python/issues/901
         # https://github.com/bazelbuild/bazel/commit/dbdfa07e92f99497be9c14265611ad2920161483
-        testing.TestEnvironment(environment = env),
+        testing.TestEnvironment(env),
     ]
     return providers
 
