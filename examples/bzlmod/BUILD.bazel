@@ -16,6 +16,7 @@ py_library(
     deps = [
         requirement("pylint"),
         requirement("tabulate"),
+        requirement("python-dateutil"),
     ],
 )
 

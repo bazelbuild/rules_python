@@ -287,7 +287,11 @@ alias(
     name = "{name}_dist_info",
     actual = "@{repo_prefix}{dep}//:dist_info",
 )
-""".format(name = _clean_pkg_name(requirement[0]), repo_prefix = rctx.attr.repo_prefix, dep = requirement[0])
+""".format(
+            name = _clean_pkg_name(requirement[0]),
+            repo_prefix = rctx.attr.repo_prefix,
+            dep = _clean_pkg_name(requirement[0]),
+        )
 
     return build_content
 
