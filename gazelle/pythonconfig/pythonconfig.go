@@ -49,6 +49,17 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
+	// PipRepoNamingConvention represents the directive that controls the
+	// mapping between Python modules and the repos. E.g. if the Python package name is `foo` and the
+	// pip repository is named `my_pip`, setting this
+	// to `$repo_name$_$distribution_name$` would render to `@my_pip_foo`.
+	PipRepoNamingConvention = "python_pip_repo_naming_convention"
+	// PipPackageNamingConvention represents the directive that controls the
+	// mapping between Python modules and the repos. By default it is ``
+	PipPackageNamingConvention = "python_pip_package_naming_convention"
+	// PipTargetNamingConvention represents the directive that controls the
+	// mapping between Python modules and the repos. By default it is `pkg`
+	PipTargetNamingConvention = "python_pip_target_naming_convention"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -67,7 +78,9 @@ const (
 )
 
 const (
-	packageNameNamingConventionSubstitution = "$package_name$"
+	repoNamePipRepoNamingConventionSubstitution         = "$repo_name$"
+	distributionNamePipRepoNamingConventionSubstitution = "$distribution_name$"
+	packageNameNamingConventionSubstitution             = "$package_name$"
 )
 
 // defaultIgnoreFiles is the list of default values used in the
@@ -99,14 +112,17 @@ type Config struct {
 	pythonProjectRoot string
 	gazelleManifest   *manifest.Manifest
 
-	excludedPatterns         *singlylinkedlist.List
-	ignoreFiles              map[string]struct{}
-	ignoreDependencies       map[string]struct{}
-	validateImportStatements bool
-	coarseGrainedGeneration  bool
-	libraryNamingConvention  string
-	binaryNamingConvention   string
-	testNamingConvention     string
+	excludedPatterns           *singlylinkedlist.List
+	ignoreFiles                map[string]struct{}
+	ignoreDependencies         map[string]struct{}
+	validateImportStatements   bool
+	coarseGrainedGeneration    bool
+	libraryNamingConvention    string
+	binaryNamingConvention     string
+	testNamingConvention       string
+	pipRepoNamingConvention    string
+	pipPackageNamingConvention string
+	pipTargetNamingConvention  string
 }
 
 // New creates a new Config.
@@ -115,17 +131,20 @@ func New(
 	pythonProjectRoot string,
 ) *Config {
 	return &Config{
-		extensionEnabled:         true,
-		repoRoot:                 repoRoot,
-		pythonProjectRoot:        pythonProjectRoot,
-		excludedPatterns:         singlylinkedlist.New(),
-		ignoreFiles:              make(map[string]struct{}),
-		ignoreDependencies:       make(map[string]struct{}),
-		validateImportStatements: true,
-		coarseGrainedGeneration:  false,
-		libraryNamingConvention:  packageNameNamingConventionSubstitution,
-		binaryNamingConvention:   fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
-		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		extensionEnabled:           true,
+		repoRoot:                   repoRoot,
+		pythonProjectRoot:          pythonProjectRoot,
+		excludedPatterns:           singlylinkedlist.New(),
+		ignoreFiles:                make(map[string]struct{}),
+		ignoreDependencies:         make(map[string]struct{}),
+		validateImportStatements:   true,
+		coarseGrainedGeneration:    false,
+		libraryNamingConvention:    packageNameNamingConventionSubstitution,
+		binaryNamingConvention:     fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
+		testNamingConvention:       fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		pipRepoNamingConvention:    fmt.Sprintf("%s_%s", repoNamePipRepoNamingConventionSubstitution, distributionNamePipRepoNamingConventionSubstitution),
+		pipPackageNamingConvention: "",
+		pipTargetNamingConvention:  "pkg",
 	}
 }
 
@@ -150,6 +169,9 @@ func (c *Config) NewChild() *Config {
 		libraryNamingConvention:  c.libraryNamingConvention,
 		binaryNamingConvention:   c.binaryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
+		pipRepoNamingConvention:  c.pipRepoNamingConvention,
+		pipPackageNamingConvention: c.pipPackageNamingConvention,
+		pipTargetNamingConvention:  c.pipTargetNamingConvention,
 	}
 }
 
@@ -195,24 +217,32 @@ func (c *Config) SetGazelleManifest(gazelleManifest *manifest.Manifest) {
 // name.
 func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
-		if currentCfg.gazelleManifest != nil {
-			gazelleManifest := currentCfg.gazelleManifest
-			if distributionName, ok := gazelleManifest.ModulesMapping[modName]; ok {
-				var distributionRepositoryName string
-				if gazelleManifest.PipDepsRepositoryName != "" {
-					distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
-				} else if gazelleManifest.PipRepository != nil {
-					distributionRepositoryName = gazelleManifest.PipRepository.Name
-				}
-				sanitizedDistribution := strings.ToLower(distributionName)
-				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-				var lbl label.Label
-				// @<repository_name>_<distribution_name>//:pkg
-				distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
-				lbl = label.New(distributionRepositoryName, "", "pkg")
-				return lbl.String(), true
-			}
+
+		if currentCfg.gazelleManifest == nil {
+			continue
 		}
+
+		gazelleManifest := currentCfg.gazelleManifest
+		distributionName, ok := gazelleManifest.ModulesMapping[modName]
+		if !ok {
+			continue
+		}
+
+		var distributionRepositoryName string
+		if gazelleManifest.PipDepsRepositoryName != "" {
+			distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
+		} else if gazelleManifest.PipRepository != nil {
+			distributionRepositoryName = gazelleManifest.PipRepository.Name
+		}
+		sanitizedDistribution := strings.ToLower(distributionName)
+		sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
+
+		lbl := label.New(
+			currentCfg.renderPipRepository(distributionRepositoryName, sanitizedDistribution),
+			currentCfg.renderPipPackage(sanitizedDistribution),
+			currentCfg.renderPipTarget(sanitizedDistribution),
+		)
+		return lbl.String(), true
 	}
 	return "", false
 }
@@ -325,6 +355,37 @@ func (c *Config) RenderBinaryName(packageName string) string {
 // SetTestNamingConvention sets the py_test target naming convention.
 func (c *Config) SetTestNamingConvention(testNamingConvention string) {
 	c.testNamingConvention = testNamingConvention
+}
+
+// SetPipRepoNamingConvention sets the dependency naming convention.
+func (c *Config) SetPipRepoNamingConvention(pipRepoNamingConvention string) {
+	c.pipRepoNamingConvention = pipRepoNamingConvention
+}
+
+// Accepts sanitized input.
+func (c *Config) renderPipRepository(distributionRepoName, distributionName string) string {
+	rendered := strings.ReplaceAll(c.pipRepoNamingConvention, repoNamePipRepoNamingConventionSubstitution, distributionRepoName)
+	return strings.ReplaceAll(rendered, distributionNamePipRepoNamingConventionSubstitution, distributionName)
+}
+
+// SetPipPackageNamingConvention sets the dependency naming convention.
+func (c *Config) SetPipPackageNamingConvention(pipPackageNamingConvention string) {
+	c.pipPackageNamingConvention = pipPackageNamingConvention
+}
+
+// Accepts sanitized input.
+func (c *Config) renderPipPackage(distributionName string) string {
+	return strings.ReplaceAll(c.pipPackageNamingConvention, distributionNamePipRepoNamingConventionSubstitution, distributionName)
+}
+
+// SetPipTargetNamingConvention sets the dependency naming convention.
+func (c *Config) SetPipTargetNamingConvention(pipTargetNamingConvention string) {
+	c.pipTargetNamingConvention = pipTargetNamingConvention
+}
+
+// Accepts sanitized input.
+func (c *Config) renderPipTarget(distributionName string) string {
+	return strings.ReplaceAll(c.pipTargetNamingConvention, distributionNamePipRepoNamingConventionSubstitution, distributionName)
 }
 
 // RenderTestName returns the py_test target name by performing all

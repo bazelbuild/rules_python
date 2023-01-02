@@ -56,6 +56,11 @@ gazelle(
     gazelle = "@rules_python//gazelle:gazelle_python_binary",
 )
 
+# Using bzlmod we also need to set a different pip repository naming convention:
+#
+# gazelle:python_pip_repo_naming_convention $repo_name$
+# gazelle:python_pip_target_naming_convention $distribution_name$_pkg
+
 # This rule is auto-generated and managed by Gazelle,
 # because it found the __init__.py file in this folder.
 # See: https://bazel.build/reference/be/python#py_library
