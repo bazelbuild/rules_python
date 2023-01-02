@@ -204,7 +204,7 @@ func (py *Resolver) Resolve(
 									"%[1]q at line %[2]d from %[3]q is an invalid dependency: possible solutions:\n"+
 										"\t1. Add it as a dependency in the requirements.txt file.\n"+
 										"\t2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.\n"+
-										"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the Python file.\n",
+										"\t3. Ignore it with a comment '# gazelle:ignore %[1]s' in the Python file.",
 									moduleName, mod.LineNumber, mod.Filepath,
 								)
 								errs = append(errs, err)
@@ -252,20 +252,25 @@ func (py *Resolver) Resolve(
 					}
 				}
 			} // End possible modules loop.
+
 			if len(errs) > 0 {
 				// If, after trying all possible modules, we still haven't found anything, error out.
 				joinedErrs := ""
 				for _, err := range errs {
 					joinedErrs = fmt.Sprintf("%s%s\n", joinedErrs, err)
 				}
-				log.Printf("ERROR: failed to validate dependencies for target %q: %v\n", from.String(), joinedErrs)
+
+				// no need for newline character here, because the 'joinedErrs' will have an extra one.
+				log.Printf("ERROR: failed to validate dependencies for target %q: %v", from.String(), joinedErrs)
 				hasFatalError = true
 			}
 		}
+
 		if hasFatalError {
 			os.Exit(1)
 		}
 	}
+
 	resolvedDeps := r.PrivateAttr(resolvedDepsKey).(*treeset.Set)
 	if !resolvedDeps.Empty() {
 		it := resolvedDeps.Iterator()

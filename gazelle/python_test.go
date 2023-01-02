@@ -76,25 +76,25 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
 
-		config := newTestCase(t, name, files)
-		config.createFiles(t, config.inputs)
+		tt := newTestCase(t, name, files)
+		tt.createFiles(t, tt.inputs)
 
-		got := config.RunCommand(t, gazellePath, "-build_file_name=BUILD,BUILD.bazel")
+		got := tt.RunCommand(t, gazellePath, "-build_file_name=BUILD,BUILD.bazel")
 
-		if config.Expect.ExitCode != got.ExitCode {
+		if tt.Expect.ExitCode != got.ExitCode {
 			t.Errorf("expected gazelle exit code: %d\ngot: %d",
-				config.Expect.ExitCode, got.ExitCode,
+				tt.Expect.ExitCode, got.ExitCode,
 			)
 		}
 
-		if strings.TrimSpace(config.Expect.Stdout) != got.Stdout {
-			t.Errorf("expected gazelle stdout: %s\ngot: %s",
-				config.Expect.Stdout, got.Stdout,
+		if tt.Expect.Stdout != got.Stdout {
+			t.Errorf("expected gazelle stdout: %q\ngot: %q",
+				tt.Expect.Stdout, got.Stdout,
 			)
 		}
-		if strings.TrimSpace(config.Expect.Stderr) != got.Stderr {
-			t.Errorf("expected gazelle stderr: %s\ngot: %s",
-				config.Expect.Stderr, got.Stderr,
+		if tt.Expect.Stderr != got.Stderr {
+			t.Errorf("expected gazelle stderr: %q\ngot: %q",
+				tt.Expect.Stderr, got.Stderr,
 			)
 		}
 
@@ -102,7 +102,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 			return
 		}
 
-		testtools.CheckFiles(t, config.dir, config.goldens)
+		testtools.CheckFiles(t, tt.dir, tt.goldens)
 	})
 }
 
@@ -198,6 +198,8 @@ func newTestCase(t testing.TB, name string, files []bazel.RunfileEntry) *testCas
 		if err := yaml.Unmarshal(content, config); err != nil {
 			t.Fatal(err)
 		}
+		config.Expect.Stdout = config.Expect.Stdout
+		config.Expect.Stderr = config.Expect.Stderr
 	}
 
 	config.inputs = inputs
@@ -210,16 +212,18 @@ func (tc *testCase) createFiles(t *testing.T, files []testtools.FileSpec) {
 	dir, cleanup := testtools.CreateFiles(t, files)
 	t.Cleanup(cleanup)
 	t.Cleanup(func() {
-		if t.Failed() {
-			filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-				if err != nil {
-					return err
-				}
-
-				t.Logf("%q exists", strings.TrimPrefix(path, dir))
-				return nil
-			})
+		if !t.Failed() {
+			return
 		}
+
+		filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			t.Logf("%q exists", strings.TrimPrefix(path, dir))
+			return nil
+		})
 	})
 
 	tc.dir = dir
@@ -232,7 +236,7 @@ func (tc *testCase) context(t *testing.T) context.Context {
 	deadline, ok := t.Deadline()
 	if !ok {
 		// no timeout set on the CLI, let's respect this, because there may be
-		// a debugger or something present.
+		// a debugger present.
 		return ctx
 	}
 
@@ -263,7 +267,7 @@ func (tc *testCase) RunCommand(t *testing.T, bin string, args ...string) Command
 
 	return CommandResult{
 		ExitCode: cmd.ProcessState.ExitCode(),
-		Stdout: strings.TrimSpace(stdout.String()),
-		Stderr: strings.TrimSpace(stderr.String()),
+		Stdout: stdout.String(),
+		Stderr: stderr.String(),
 	}
 }
