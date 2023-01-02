@@ -380,7 +380,7 @@ This option is required to support some packages which cannot handle the convers
         doc = """
 Environment variables to set in the pip subprocess.
 Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
-Note that pip is run with "--isolated" on the CLI so PIP_<VAR>_<NAME>
+Note that pip is run with "--isolated" on the CLI so `PIP_<VAR>_<NAME>`
 style env vars are ignored, but env vars that control requests and urllib3
 can be passed.
         """,
@@ -424,9 +424,7 @@ python_interpreter.
     ),
     "repo_prefix": attr.string(
         doc = """
-Prefix for the generated packages will be of the form
-
-@<prefix><sanitized-package-name>//...
+Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
