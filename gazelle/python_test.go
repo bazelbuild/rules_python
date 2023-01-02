@@ -77,6 +77,8 @@ func TestGazelleBinary(t *testing.T) {
 
 func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
+		t.Parallel()
+
 		var inputs []testtools.FileSpec
 		var goldens []testtools.FileSpec
 
