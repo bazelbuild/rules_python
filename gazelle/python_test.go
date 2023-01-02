@@ -102,7 +102,8 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 				if config != nil {
 					t.Fatal("only 1 'test.yaml' is supported")
 				}
-				config = new(testCase)
+
+				config = &testCase{name: name}
 				if err := yaml.Unmarshal(content, config); err != nil {
 					t.Fatal(err)
 				}
@@ -130,21 +131,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 			}
 		}
 
-		testdataDir, cleanup := testtools.CreateFiles(t, inputs)
-		t.Cleanup(cleanup)
-		t.Cleanup(func() {
-			if t.Failed() {
-				filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
-					if err != nil {
-						return err
-					}
-					t.Logf("%q exists", strings.TrimPrefix(path, testdataDir))
-					return nil
-				})
-			}
-		})
-
-		workspaceRoot := filepath.Join(testdataDir, name)
+		config.createFiles(t, inputs)
 
 		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
 
@@ -154,7 +141,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
-		cmd.Dir = workspaceRoot
+		cmd.Dir = config.workspaceRoot
 		if err := cmd.Run(); err != nil {
 			var e *exec.ExitError
 			if !errors.As(err, &e) {
@@ -185,7 +172,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 			return
 		}
 
-		testtools.CheckFiles(t, testdataDir, goldens)
+		testtools.CheckFiles(t, config.dir, goldens)
 	})
 }
 
@@ -198,9 +185,33 @@ func mustFindGazelle() string {
 }
 
 type testCase struct {
+	name string
+	dir string
+	workspaceRoot string
+
 	Expect struct {
 		ExitCode int    `json:"exit_code"`
 		Stdout   string `json:"stdout"`
 		Stderr   string `json:"stderr"`
 	} `json:"expect"`
+}
+
+func (tc *testCase) createFiles(t *testing.T, files []testtools.FileSpec) {
+	dir, cleanup := testtools.CreateFiles(t, files)
+	t.Cleanup(cleanup)
+	t.Cleanup(func() {
+		if t.Failed() {
+			filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+
+				t.Logf("%q exists", strings.TrimPrefix(path, dir))
+				return nil
+			})
+		}
+	})
+
+	tc.dir = dir
+	tc.workspaceRoot = filepath.Join(dir, tc.name)
 }
