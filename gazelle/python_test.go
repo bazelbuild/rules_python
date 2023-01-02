@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
