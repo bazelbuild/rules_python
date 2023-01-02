@@ -24,7 +24,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -94,9 +93,9 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 				continue
 			}
 
-			content, err := ioutil.ReadFile(path)
+			content, err := os.ReadFile(path)
 			if err != nil {
-				t.Errorf("ioutil.ReadFile(%q) error: %v", path, err)
+				t.Errorf("os.ReadFile(%q) error: %v", path, err)
 			}
 
 			if filepath.Base(shortPath) == "test.yaml" {

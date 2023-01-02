@@ -2,7 +2,6 @@ package manifest_test
 
 import (
 	"bytes"
-	"io/ioutil"
 	"log"
 	"os"
 	"reflect"
@@ -44,7 +43,7 @@ func TestFile(t *testing.T) {
 			log.Println(err)
 			t.FailNow()
 		}
-		expected, err := ioutil.ReadFile("testdata/gazelle_python.yaml")
+		expected, err := os.ReadFile("testdata/gazelle_python.yaml")
 		if err != nil {
 			log.Println(err)
 			t.FailNow()
