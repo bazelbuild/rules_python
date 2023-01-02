@@ -142,7 +142,7 @@ def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_
             attributes.
         requirements (Label): Deprecated. See requirements_lock.
         name (str, optional): The name of the generated repository. The generated repositories
-            containing each requirement will be of the form <name>_<requirement-name>.
+            containing each requirement will be of the form `<name>_<requirement-name>`.
         bzlmod (bool, optional): Whether this rule is being run under a bzlmod module extension.
         **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
