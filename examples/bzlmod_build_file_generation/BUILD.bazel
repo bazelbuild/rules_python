@@ -2,7 +2,6 @@
 # various rulesets and dependencies.
 # The `load` statement imports the symbol for the rule, in the defined
 # ruleset. When the symbol is loaded you can use the rule.
-load("@pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -23,7 +22,7 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//random_number_generator",
-        requirement("flask"),
+        "@pip//:flask_pkg",
     ],
 )
 
