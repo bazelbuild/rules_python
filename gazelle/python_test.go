@@ -76,95 +76,25 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
 
-		var inputs []testtools.FileSpec
-		var goldens []testtools.FileSpec
+		config := newTestCase(t, name, files)
+		config.createFiles(t, config.inputs)
 
-		var config *testCase
-		for _, f := range files {
-			path := f.Path
-			trim := testDataPath + name + "/"
-			shortPath := strings.TrimPrefix(f.ShortPath, trim)
-			info, err := os.Stat(path)
-			if err != nil {
-				t.Fatalf("os.Stat(%q) error: %v", path, err)
-			}
+		got := config.RunCommand(t, gazellePath, "-build_file_name=BUILD,BUILD.bazel")
 
-			if info.IsDir() {
-				continue
-			}
-
-			content, err := os.ReadFile(path)
-			if err != nil {
-				t.Errorf("os.ReadFile(%q) error: %v", path, err)
-			}
-
-			if filepath.Base(shortPath) == "test.yaml" {
-				if config != nil {
-					t.Fatal("only 1 'test.yaml' is supported")
-				}
-
-				config = &testCase{name: name}
-				if err := yaml.Unmarshal(content, config); err != nil {
-					t.Fatal(err)
-				}
-			}
-
-			if strings.HasSuffix(shortPath, ".in") {
-				inputs = append(inputs, testtools.FileSpec{
-					Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".in")),
-					Content: string(content),
-				})
-			} else if strings.HasSuffix(shortPath, ".out") {
-				goldens = append(goldens, testtools.FileSpec{
-					Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".out")),
-					Content: string(content),
-				})
-			} else {
-				inputs = append(inputs, testtools.FileSpec{
-					Path:    filepath.Join(name, shortPath),
-					Content: string(content),
-				})
-				goldens = append(goldens, testtools.FileSpec{
-					Path:    filepath.Join(name, shortPath),
-					Content: string(content),
-				})
-			}
-		}
-
-		config.createFiles(t, inputs)
-
-		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
-
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		t.Cleanup(cancel)
-		cmd := exec.CommandContext(ctx, gazellePath, args...)
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		cmd.Dir = config.workspaceRoot
-		if err := cmd.Run(); err != nil {
-			var e *exec.ExitError
-			if !errors.As(err, &e) {
-				t.Fatal(err)
-			}
-		}
-
-		actualExitCode := cmd.ProcessState.ExitCode()
-		if config.Expect.ExitCode != actualExitCode {
+		if config.Expect.ExitCode != got.ExitCode {
 			t.Errorf("expected gazelle exit code: %d\ngot: %d",
-				config.Expect.ExitCode, actualExitCode,
+				config.Expect.ExitCode, got.ExitCode,
 			)
 		}
-		actualStdout := stdout.String()
-		if strings.TrimSpace(config.Expect.Stdout) != strings.TrimSpace(actualStdout) {
+
+		if strings.TrimSpace(config.Expect.Stdout) != got.Stdout {
 			t.Errorf("expected gazelle stdout: %s\ngot: %s",
-				config.Expect.Stdout, actualStdout,
+				config.Expect.Stdout, got.Stdout,
 			)
 		}
-		actualStderr := stderr.String()
-		if strings.TrimSpace(config.Expect.Stderr) != strings.TrimSpace(actualStderr) {
+		if strings.TrimSpace(config.Expect.Stderr) != got.Stderr {
 			t.Errorf("expected gazelle stderr: %s\ngot: %s",
-				config.Expect.Stderr, actualStderr,
+				config.Expect.Stderr, got.Stderr,
 			)
 		}
 
@@ -172,7 +102,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 			return
 		}
 
-		testtools.CheckFiles(t, config.dir, goldens)
+		testtools.CheckFiles(t, config.dir, config.goldens)
 	})
 }
 
@@ -188,12 +118,92 @@ type testCase struct {
 	name string
 	dir string
 	workspaceRoot string
+	timeout time.Duration
 
-	Expect struct {
-		ExitCode int    `json:"exit_code"`
-		Stdout   string `json:"stdout"`
-		Stderr   string `json:"stderr"`
-	} `json:"expect"`
+	inputs, goldens []testtools.FileSpec
+
+	Expect CommandResult `json:"expect"`
+}
+
+type CommandResult struct {
+	ExitCode int    `json:"exit_code"`
+	Stdout   string `json:"stdout"`
+	Stderr   string `json:"stderr"`
+}
+
+func newTestCase(t testing.TB, name string, files []bazel.RunfileEntry) *testCase {
+	var (
+		inputs, goldens []testtools.FileSpec
+		config *testCase
+	)
+
+	for _, f := range files {
+		info, err := os.Stat(f.Path)
+		if err != nil {
+			t.Fatalf("stat %q: %v", f.Path, err)
+		}
+
+		if info.IsDir() {
+			continue
+		}
+
+		content, err := os.ReadFile(f.Path)
+		if err != nil {
+			t.Fatalf("read %q: %w", f.Path, err)
+		}
+
+		shortPath, err := filepath.Rel(testDataPath + name, f.ShortPath)
+		if err != nil {
+			t.Fatalf("relpath: %w", err)
+		}
+
+
+		if strings.HasSuffix(shortPath, ".in") {
+			inputs = append(inputs, testtools.FileSpec{
+				Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".in")),
+				Content: string(content),
+			})
+			continue
+		}
+
+		if strings.HasSuffix(shortPath, ".out") {
+			goldens = append(goldens, testtools.FileSpec{
+				Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".out")),
+				Content: string(content),
+			})
+			continue
+		}
+
+		inputs = append(inputs, testtools.FileSpec{
+			Path:    filepath.Join(name, shortPath),
+			Content: string(content),
+		})
+		goldens = append(goldens, testtools.FileSpec{
+			Path:    filepath.Join(name, shortPath),
+			Content: string(content),
+		})
+
+		if filepath.Base(shortPath) != "test.yaml" {
+			continue
+		}
+
+		if config != nil {
+			t.Fatal("only 1 'test.yaml' is supported")
+		}
+
+		config = &testCase{
+			name: name,
+			timeout: 2 * time.Second,
+		}
+		if err := yaml.Unmarshal(content, config); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	config.inputs = inputs
+	config.goldens = goldens
+
+	return config
 }
 
 func (tc *testCase) createFiles(t *testing.T, files []testtools.FileSpec) {
@@ -214,4 +224,46 @@ func (tc *testCase) createFiles(t *testing.T, files []testtools.FileSpec) {
 
 	tc.dir = dir
 	tc.workspaceRoot = filepath.Join(dir, tc.name)
+}
+
+func (tc *testCase) context(t *testing.T) context.Context {
+	ctx := context.Background()
+
+	deadline, ok := t.Deadline()
+	if !ok {
+		// no timeout set on the CLI, let's respect this, because there may be
+		// a debugger or something present.
+		return ctx
+	}
+
+	ctx, cancel := context.WithDeadline(ctx, deadline)
+	t.Cleanup(cancel)
+
+	ctx, cancel = context.WithTimeout(ctx, tc.timeout)
+	t.Cleanup(cancel)
+	return ctx
+}
+
+func (tc *testCase) RunCommand(t *testing.T, bin string, args ...string) CommandResult {
+	ctx := tc.context(t)
+	cmd := exec.CommandContext(ctx, bin, args...)
+
+	var stdout, stderr bytes.Buffer
+
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	cmd.Dir = tc.workspaceRoot
+
+	if err := cmd.Run(); err != nil {
+		var e *exec.ExitError
+		if !errors.As(err, &e) {
+			t.Fatal(err)
+		}
+	}
+
+	return CommandResult{
+		ExitCode: cmd.ProcessState.ExitCode(),
+		Stdout: strings.TrimSpace(stdout.String()),
+		Stderr: strings.TrimSpace(stderr.String()),
+	}
 }
