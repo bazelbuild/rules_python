@@ -134,8 +134,8 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		}
 
 		testdataDir, cleanup := testtools.CreateFiles(t, inputs)
-		defer cleanup()
-		defer func() {
+		t.Cleanup(cleanup)
+		t.Cleanup(func() {
 			if t.Failed() {
 				filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
 					if err != nil {
@@ -145,14 +145,14 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 					return nil
 				})
 			}
-		}()
+		})
 
 		workspaceRoot := filepath.Join(testdataDir, name)
 
 		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
+		t.Cleanup(cancel)
 		cmd := exec.CommandContext(ctx, gazellePath, args...)
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
