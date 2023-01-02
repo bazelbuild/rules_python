@@ -2,6 +2,8 @@
 # various rulesets and dependencies.
 # The `load` statement imports the symbol for the rule, in the defined
 # ruleset. When the symbol is loaded you can use the rule.
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -11,6 +13,17 @@ compile_pip_requirements(
     requirements_in = "requirements.in",
     requirements_txt = "requirements_lock.txt",
     requirements_windows = "requirements_windows.txt",
+)
+
+# Our gazelle target points to the python gazelle binary.
+# This is the simple case where we only need one language supported.
+# If you also had proto, go, or other gazelle-supported languages,
+# you would also need a gazelle_binary rule.
+# See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
+gazelle(
+    name = "gazelle",
+    data = GAZELLE_PYTHON_RUNTIME_DEPS,
+    gazelle = "@rules_python//gazelle:gazelle_python_binary",
 )
 
 # This rule is auto-generated and managed by Gazelle,
@@ -55,4 +68,18 @@ py_test(
     srcs = ["__test__.py"],
     main = "__test__.py",
     deps = [":bzlmod_build_file_generation"],
+)
+
+# This repository rule fetches the metadata for python packages we
+# depend on. That data is required for the gazelle_python_manifest
+# rule to update our manifest file.
+# To see what this rule does, try `bazel run @modules_map//:print`
+modules_mapping(
+    name = "modules_map",
+    exclude_patterns = [
+        "^_|(\\._)+",  # This is the default.
+        "(\\.tests)+",  # Add a custom one to get rid of the psutil tests.
+    ],
+    # TODO @aignas 2023-01-02: Think of a better way to do this
+    wheels = [r.replace("@pip_", "@pip//:").replace("//:whl", "_whl") for r in all_whl_requirements],
 )
