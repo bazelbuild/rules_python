@@ -80,7 +80,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		var inputs []testtools.FileSpec
 		var goldens []testtools.FileSpec
 
-		var config *testYAML
+		var config *testCase
 		for _, f := range files {
 			path := f.Path
 			trim := testDataPath + name + "/"
@@ -101,9 +101,9 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 
 			if filepath.Base(shortPath) == "test.yaml" {
 				if config != nil {
-					t.Fatal("only 1 test.yaml is supported")
+					t.Fatal("only 1 'test.yaml' is supported")
 				}
-				config = new(testYAML)
+				config = new(testCase)
 				if err := yaml.Unmarshal(content, config); err != nil {
 					t.Fatal(err)
 				}
@@ -202,7 +202,7 @@ func mustFindGazelle() string {
 	return gazellePath
 }
 
-type testYAML struct {
+type testCase struct {
 	Expect struct {
 		ExitCode int    `json:"exit_code"`
 		Stdout   string `json:"stdout"`
