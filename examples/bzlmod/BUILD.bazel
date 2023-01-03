@@ -14,7 +14,8 @@ py_library(
     name = "lib",
     srcs = ["__init__.py"],
     deps = [
-        requirement("pylint"),
+        # You can reference libraries using plain text form or the 'requirement' macro
+        "@pip//:pylint_pkg",
         requirement("tabulate"),
         requirement("python-dateutil"),
     ],
