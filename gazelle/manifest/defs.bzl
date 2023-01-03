@@ -3,38 +3,30 @@ for updating and testing the Gazelle manifest file.
 """
 
 load("@io_bazel_rules_go//go:def.bzl", "GoSource", "go_binary")
+load("//modules_mapping:def.bzl", "modules_mapping")
 
 def gazelle_python_manifest(
         name,
-        requirements,
-        modules_mapping,
-        pip_repository_name = "",
-        pip_deps_repository_name = "",
+        metadata,
+        extend_exclude_patterns = None,
         manifest = ":gazelle_python.yaml"):
     """A macro for defining the updating and testing targets for the Gazelle manifest file.
 
     Args:
         name: the name used as a base for the targets.
-        requirements: the target for the requirements.txt file.
-        pip_repository_name: the name of the pip_install or pip_repository target.
-        pip_deps_repository_name: deprecated - the old pip_install target name.
-        modules_mapping: the target for the generated modules_mapping.json file.
+        metadata: the metadata exported by the pip repository for the generation.
+        extend_exclude_patterns: TODO
         manifest: the target for the Gazelle manifest file.
     """
-    if pip_deps_repository_name != "":
-        # buildifier: disable=print
-        print("DEPRECATED pip_deps_repository_name in //{}:{}. Please use pip_repository_name instead.".format(
-            native.package_name(),
-            name,
-        ))
-        pip_repository_name = pip_deps_repository_name
-
-    if pip_repository_name == "":
-        # This is a temporary check while pip_deps_repository_name exists as deprecated.
-        fail("pip_repository_name must be set in //{}:{}".format(native.package_name(), name))
+    modules_mapping(
+        name = name + ".modules",
+        exclude_patterns = ["^_|(\\._)+"] + extend_exclude_patterns,
+        wheels = metadata.wheels,
+    )
 
     update_target = "{}.update".format(name)
     update_target_label = "//{}:{}".format(native.package_name(), update_target)
+    modules_mapping_target = name + ".modules"
 
     manifest_generator_hash = Label("//manifest/generate:generate_lib_sources_hash")
 
@@ -42,15 +34,17 @@ def gazelle_python_manifest(
         "--manifest-generator-hash",
         "$(rootpath {})".format(manifest_generator_hash),
         "--requirements",
-        "$(rootpath {})".format(requirements),
-        "--pip-repository-name",
-        pip_repository_name,
+        "$(rootpath {})".format(metadata.requirements),
         "--modules-mapping",
-        "$(rootpath {})".format(modules_mapping),
+        "$(rootpath {})".format(modules_mapping_target),
         "--output",
         "$(rootpath {})".format(manifest),
         "--update-target",
         update_target_label,
+        "--pip-repository-convention",
+        metadata.pip_repository_convention,
+        "--pip-target-convention",
+        metadata.pip_target_convention,
     ]
 
     go_binary(
@@ -58,8 +52,8 @@ def gazelle_python_manifest(
         embed = [Label("//manifest/generate:generate_lib")],
         data = [
             manifest,
-            modules_mapping,
-            requirements,
+            modules_mapping_target,
+            metadata.requirements,
             manifest_generator_hash,
         ],
         args = update_args,
@@ -81,14 +75,14 @@ def gazelle_python_manifest(
         data = [
             ":{}".format(test_binary),
             manifest,
-            requirements,
+            metadata.requirements,
             manifest_generator_hash,
         ],
         env = {
             "_TEST_BINARY": "$(rootpath :{})".format(test_binary),
             "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
             "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
-            "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
+            "_TEST_REQUIREMENTS": "$(rootpath {})".format(metadata.requirements),
         },
         visibility = ["//visibility:private"],
         timeout = "short",

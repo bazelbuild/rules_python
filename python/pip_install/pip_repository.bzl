@@ -219,8 +219,8 @@ def _create_repository_execution_environment(rctx):
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
 
-# Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
-exports_files(["requirements.bzl"])
+# Ensure the `requirements.bzl` and `gazelle.bzl` source can be accessed by stardoc, since users load() from them.
+exports_files(["requirements.bzl", "gazelle.bzl"])
 """
 
 def locked_requirements_label(ctx, attr):

@@ -18,3 +18,12 @@ added to the `py_library` target in the `BUILD` file.
 
 For more information on the behavior of the rules_python gazelle extension,
 see the README.md file in the /gazelle folder.
+
+# bzlmod
+
+This also works with bzlmod. To do that:
+1. Add a line into the `.bazelrc` to enable `bzlmod`.
+1. Run `bazel run //:gazelle_python_manifest.update`
+1. Run `bazel run //:gazelle`
+
+This is necessary to switch to the `bzlmod` way of accessing third-party dependencies.

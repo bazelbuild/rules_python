@@ -24,12 +24,16 @@ func init() {
 }
 
 func main() {
-	var manifestGeneratorHashPath string
-	var requirementsPath string
-	var pipRepositoryName string
-	var modulesMappingPath string
-	var outputPath string
-	var updateTarget string
+	var (
+		manifestGeneratorHashPath string
+		requirementsPath string
+		pipRepositoryName string
+		pipRepositoryConvention string
+		pipTargetConvention string
+		modulesMappingPath string
+		outputPath string
+		updateTarget string
+	)
 	flag.StringVar(
 		&manifestGeneratorHashPath,
 		"manifest-generator-hash",
@@ -46,6 +50,16 @@ func main() {
 		"pip-repository-name",
 		"",
 		"The name of the pip_install or pip_repository target.")
+	flag.StringVar(
+		&pipRepositoryConvention,
+		"pip-repository-convention",
+		"",
+		"The pip repo convention, necessary for bzlmod support.")
+	flag.StringVar(
+		&pipTargetConvention,
+		"pip-target-convention",
+		"",
+		"The pip target convention, necessary for bzlmod support.")
 	flag.StringVar(
 		&modulesMappingPath,
 		"modules-mapping",
@@ -89,7 +103,9 @@ func main() {
 	manifestFile := manifest.NewFile(&manifest.Manifest{
 		ModulesMapping: modulesMapping,
 		PipRepository: &manifest.PipRepository{
-			Name:        pipRepositoryName,
+			Name:              pipRepositoryName,
+			RepoConvention:    pipRepositoryConvention,
+			TargetConvention:  pipTargetConvention,
 		},
 	})
 	if err := writeOutput(

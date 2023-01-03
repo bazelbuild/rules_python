@@ -128,6 +128,10 @@ type Manifest struct {
 }
 
 type PipRepository struct {
-	// The name of the pip_install or pip_repository target.
-	Name string
+	// The name of the pip_install or pip_repository target. DEPRECATED.
+	Name string `yaml:"name,omitempty"`
+	// RepoConvention allows to set the naming convention of the external dependencies.
+	RepoConvention string `yaml:"repo_convention"`
+	// TargetConvention allows to set the naming convention of the external dependencies.
+	TargetConvention string `yaml:"target_convention"`
 }

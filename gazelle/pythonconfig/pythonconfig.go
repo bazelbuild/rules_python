@@ -195,24 +195,66 @@ func (c *Config) SetGazelleManifest(gazelleManifest *manifest.Manifest) {
 // name.
 func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
-		if currentCfg.gazelleManifest != nil {
-			gazelleManifest := currentCfg.gazelleManifest
-			if distributionName, ok := gazelleManifest.ModulesMapping[modName]; ok {
-				var distributionRepositoryName string
-				if gazelleManifest.PipDepsRepositoryName != "" {
-					distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
-				} else if gazelleManifest.PipRepository != nil {
-					distributionRepositoryName = gazelleManifest.PipRepository.Name
-				}
-				sanitizedDistribution := strings.ToLower(distributionName)
-				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-				var lbl label.Label
-				// @<repository_name>_<distribution_name>//:pkg
-				distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
-				lbl = label.New(distributionRepositoryName, "", "pkg")
-				return lbl.String(), true
-			}
+		if currentCfg.gazelleManifest == nil {
+			continue
 		}
+
+		gazelleManifest := currentCfg.gazelleManifest
+		distributionName, ok := gazelleManifest.ModulesMapping[modName]
+		if !ok {
+			continue
+		}
+
+		sanitizedDistribution := strings.ToLower(distributionName)
+		sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
+
+		if gazelleManifest.PipDepsRepositoryName != "" {
+			lbl := label.New(
+				fmt.Sprintf("%s_%s",
+					gazelleManifest.PipDepsRepositoryName,
+					sanitizedDistribution,
+				),
+				"",
+				"pkg",
+			)
+			return lbl.String(), true
+		}
+
+		repo := gazelleManifest.PipRepository
+		if repo == nil {
+			// TODO @aignas 2023-01-03: error out
+			continue
+		}
+
+		if repo.Name != "" {
+			// Handle old gazelle files
+			lbl := label.New(
+				fmt.Sprintf("%s_%s",
+					repo.Name,
+					sanitizedDistribution,
+				),
+				"",
+				"pkg",
+			)
+			return lbl.String(), true
+		}
+
+		// The substitutions are not documented on purpose, use them if the
+		// manifest contains the information.
+		lbl := label.New(
+			strings.ReplaceAll(
+				repo.RepoConvention,
+				"%s",
+				sanitizedDistribution,
+			),
+			"",
+			strings.ReplaceAll(
+				repo.TargetConvention,
+				"%s",
+				sanitizedDistribution,
+			),
+		)
+		return lbl.String(), true
 	}
 	return "", false
 }
