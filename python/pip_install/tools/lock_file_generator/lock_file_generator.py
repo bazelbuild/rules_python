@@ -117,13 +117,18 @@ def generate_parsed_requirements_contents(
 
     all_requirements = ", ".join(
         [
-            bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix)
+            bazel.sanitised_repo_library_label(
+                ir.name, repo_prefix=repo_prefix, bzlmod=bzlmod
+            )
             for ir, _ in install_req_and_lines
         ]
     )
+
     all_whl_requirements = ", ".join(
         [
-            bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix)
+            bazel.sanitised_repo_file_label(
+                ir.name, repo_prefix=repo_prefix, bzlmod=bzlmod
+            )
             for ir, _ in install_req_and_lines
         ]
     )
