@@ -34,4 +34,4 @@ pip.parse(
 
 use_repo(pip, "pip")
 
-bazel_dep(name = "gazelle", version = "0.28.0")
+bazel_dep(name = "gazelle", repo_name = "bazel_gazelle", version = "0.28.0")

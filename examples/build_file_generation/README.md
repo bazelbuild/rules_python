@@ -18,3 +18,7 @@ added to the `py_library` target in the `BUILD` file.
 
 For more information on the behavior of the rules_python gazelle extension,
 see the README.md file in the /gazelle folder.
+
+## bzlmod
+
+This example works with and without bzlmod.
