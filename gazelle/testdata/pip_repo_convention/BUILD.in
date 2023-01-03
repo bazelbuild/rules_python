@@ -1,0 +1,3 @@
+# gazelle:python_pip_repo_naming_convention $repo_name$
+# gazelle:python_pip_package_naming_convention $distribution_name$
+# gazelle:python_pip_target_naming_convention $distribution_name$_pkg

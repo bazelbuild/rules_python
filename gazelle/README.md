@@ -147,6 +147,12 @@ Python-specific directives are as follows:
 | Controls the `py_test` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
 | `# gazelle:resolve py ...` | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
+| `# gazelle:python_pip_repo_naming_convention` | `$repo_name$_$distribution_name$` |
+| Controls the external dependency label naming convention. It interpolates `$repo_name$` and `$distribution_name$` with the Bazel external pip repository name and the sanitized Python package name respectively. E.g. if the Bazel external pip repository name is `my_pip_deps` and we are resolving external Python package named `flake-bugbear`, setting this to `$repo_name$_host_$distribution_name$` would result in a generated target named `my_pip_deps_host_flake8_bugbear`. | |
+| `# gazelle:python_pip_package_naming_convention` | `` |
+| Controls the external dependency label naming convention. It interpolates `$distribution_name$` with the sanitized Python package name. See `gazelle:python_pip_repo_naming_convention` for details. This may be useful if you have `alias` targets which point to platform specific Python wheels in your repo, e.g. `//third_party/pip:flake8_bugbear_alias`. | |
+| `# gazelle:python_pip_target_naming_convention` | `pkg` |
+| Controls the external dependency label naming convention. It interpolates `$distribution_name$` with the sanitized Python package name respectively. See `gazelle:python_pip_repo_naming_convention` for details. This may be useful if you have `alias` targets which point to platform specific Python wheels in your repo, e.g. `//third_party/pip:flake8_bugbear_alias` or if you are using `gazelle` with `bzlmod`. | |
 
 ### Libraries
 
