@@ -48,6 +48,9 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
+		pythonconfig.PipRepoNamingConvention,
+		pythonconfig.PipPackageNamingConvention,
+		pythonconfig.PipTargetNamingConvention,
 	}
 }
 
@@ -136,6 +139,12 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			config.SetBinaryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
+		case pythonconfig.PipRepoNamingConvention:
+			config.SetPipRepoNamingConvention(strings.TrimSpace(d.Value))
+		case pythonconfig.PipPackageNamingConvention:
+			config.SetPipPackageNamingConvention(strings.TrimSpace(d.Value))
+		case pythonconfig.PipTargetNamingConvention:
+			config.SetPipTargetNamingConvention(strings.TrimSpace(d.Value))
 		}
 	}
 

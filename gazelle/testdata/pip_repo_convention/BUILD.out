@@ -1,0 +1,31 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+# gazelle:python_pip_repo_naming_convention $repo_name$
+# gazelle:python_pip_package_naming_convention $distribution_name$
+# gazelle:python_pip_target_naming_convention $distribution_name$_pkg
+
+py_library(
+    name = "pip_repo_convention",
+    srcs = [
+        "__init__.py",
+        "bar.py",
+        "foo.py",
+    ],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@pip_deps//baz:baz_pkg",
+        "@pip_deps//boto3:boto3_pkg",
+        "@pip_deps//djangorestframework:djangorestframework_pkg",
+    ],
+)
+
+py_binary(
+    name = "pip_repo_convention_bin",
+    srcs = ["__main__.py"],
+    main = "__main__.py",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":pip_repo_convention",
+        "@pip_deps//baz:baz_pkg",
+    ],
+)

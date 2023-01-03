@@ -1,0 +1,8 @@
+manifest:
+  modules_mapping:
+    boto3: boto3
+    rest_framework: djangorestframework
+    foo: baz
+    bar: baz
+  pip_repository:
+    name: pip_deps
