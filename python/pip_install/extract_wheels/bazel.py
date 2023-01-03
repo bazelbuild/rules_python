@@ -25,17 +25,29 @@ def sanitise_name(name: str, prefix: str) -> str:
     return prefix + name.replace("-", "_").replace(".", "_").lower()
 
 
-def _whl_name_to_repo_root(whl_name: str, repo_prefix: str) -> str:
-    return "@{}//".format(sanitise_name(whl_name, prefix=repo_prefix))
+def _sanitized_label(
+    whl_name: str, repo_prefix: str, label: str, bzlmod: bool = False
+) -> str:
+    if bzlmod:
+        return '"@{}//:{}_{}"'.format(
+            repo_prefix[:-1],
+            sanitise_name(whl_name, prefix=""),
+            label,
+        )
 
-
-def sanitised_repo_library_label(whl_name: str, repo_prefix: str) -> str:
-    return '"{}:{}"'.format(
-        _whl_name_to_repo_root(whl_name, repo_prefix), PY_LIBRARY_LABEL
+    return '"@{}//:{}"'.format(
+        sanitise_name(whl_name, prefix=repo_prefix),
+        label,
     )
 
 
-def sanitised_repo_file_label(whl_name: str, repo_prefix: str) -> str:
-    return '"{}:{}"'.format(
-        _whl_name_to_repo_root(whl_name, repo_prefix), WHEEL_FILE_LABEL
-    )
+def sanitised_repo_library_label(
+    whl_name: str, repo_prefix: str, bzlmod: bool = False
+) -> str:
+    return _sanitized_label(whl_name, repo_prefix, PY_LIBRARY_LABEL, bzlmod=bzlmod)
+
+
+def sanitised_repo_file_label(
+    whl_name: str, repo_prefix: str, bzlmod: bool = False
+) -> str:
+    return _sanitized_label(whl_name, repo_prefix, WHEEL_FILE_LABEL, bzlmod=bzlmod)
