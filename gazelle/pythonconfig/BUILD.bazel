@@ -9,7 +9,7 @@ go_library(
     importpath = "github.com/bazelbuild/rules_python/gazelle/pythonconfig",
     visibility = ["//visibility:public"],
     deps = [
-        "//gazelle/manifest",
+        "//manifest",
         "@bazel_gazelle//label:go_default_library",
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
     ],
@@ -18,5 +18,5 @@ go_library(
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//gazelle:__pkg__"],
+    visibility = ["//:__pkg__"],
 )

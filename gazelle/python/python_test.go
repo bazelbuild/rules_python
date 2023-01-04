@@ -38,9 +38,9 @@ import (
 )
 
 const (
-	extensionDir      = "gazelle/"
+	extensionDir      = "python/"
 	testDataPath      = extensionDir + "testdata/"
-	gazelleBinaryName = "gazelle_python_binary"
+	gazelleBinaryName = "gazelle_binary"
 )
 
 var gazellePath = mustFindGazelle()

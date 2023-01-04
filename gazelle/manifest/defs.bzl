@@ -36,7 +36,7 @@ def gazelle_python_manifest(
     update_target = "{}.update".format(name)
     update_target_label = "//{}:{}".format(native.package_name(), update_target)
 
-    manifest_generator_hash = Label("//gazelle/manifest/generate:generate_lib_sources_hash")
+    manifest_generator_hash = Label("//manifest/generate:generate_lib_sources_hash")
 
     update_args = [
         "--manifest-generator-hash",
@@ -55,7 +55,7 @@ def gazelle_python_manifest(
 
     go_binary(
         name = update_target,
-        embed = [Label("//gazelle/manifest/generate:generate_lib")],
+        embed = [Label("//manifest/generate:generate_lib")],
         data = [
             manifest,
             modules_mapping,
@@ -71,13 +71,13 @@ def gazelle_python_manifest(
 
     go_binary(
         name = test_binary,
-        embed = [Label("//gazelle/manifest/test:test_lib")],
+        embed = [Label("//manifest/test:test_lib")],
         visibility = ["//visibility:private"],
     )
 
     native.sh_test(
         name = "{}.test".format(name),
-        srcs = [Label("//gazelle/manifest/test:run.sh")],
+        srcs = [Label("//manifest/test:run.sh")],
         data = [
             ":{}".format(test_binary),
             manifest,
@@ -104,7 +104,7 @@ def gazelle_python_manifest(
 # buildifier: disable=provider-params
 AllSourcesInfo = provider(fields = {"all_srcs": "All sources collected from the target and dependencies."})
 
-_rules_python_workspace = Label("//:WORKSPACE")
+_rules_python_workspace = Label("@rules_python//:WORKSPACE")
 
 def _get_all_sources_impl(target, ctx):
     is_rules_python = target.label.workspace_name == _rules_python_workspace.workspace_name
@@ -148,7 +148,7 @@ sources_hash = rule(
         ),
         "_hasher": attr.label(
             cfg = "exec",
-            default = Label("//gazelle/manifest/hasher"),
+            default = Label("//manifest/hasher"),
             executable = True,
         ),
     },

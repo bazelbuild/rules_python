@@ -34,11 +34,6 @@ python_register_multi_toolchains(
     python_versions = MINOR_MAPPING.values(),
 )
 
-load("//gazelle:deps.bzl", "gazelle_deps")
-
-# gazelle:repository_macro gazelle/deps.bzl%gazelle_deps
-gazelle_deps()
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Used for Bazel CI
@@ -58,3 +53,17 @@ rbe_preconfig(
     name = "buildkite_config",
     toolchain = "ubuntu1804-bazel-java11",
 )
+
+local_repository(
+    name = "rules_python_gazelle_plugin",
+    path = "gazelle",
+)
+
+# The rules_python gazelle extension has some third-party go dependencies
+# which we need to fetch in order to compile it.
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+
+# See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# This rule loads and compiles various go dependencies that running gazelle
+# for python requirements.
+_py_gazelle_deps()

@@ -10,17 +10,11 @@ buildifier:
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
-    - "-//gazelle/..."
   build_flags:
     - "--keep_going"
   test_targets:
     - "--"
     - "..."
-    # The gazelle tests are not compatible with Windows, so we only test them
-    # on Linux. The build file generation, which uses this Gazelle extension,
-    # runs on all platforms, and is asserted by the build_file_generation
-    # integration tests below.
-    - "-//gazelle/..."
   test_flags:
     - "--test_tag_filters=-integration-test"
 .reusable_build_test_all: &reusable_build_test_all
@@ -30,8 +24,9 @@ tasks:
   gazelle_extension:
     name: Test the Gazelle extension
     platform: ubuntu2004
-    build_targets: ["//gazelle/..."]
-    test_targets: ["//gazelle/..."]
+    build_targets: ["//..."]
+    test_targets: ["//..."]
+    working_directory: gazelle
   ubuntu:
     <<: *reusable_config
     name: Default test on Ubuntu

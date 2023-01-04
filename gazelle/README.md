@@ -19,7 +19,7 @@ Add this to your `WORKSPACE`:
 ```starlark
 # To compile the rules_python gazelle extension from source,
 # we must fetch some third-party go dependencies that it uses.
-load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 _py_gazelle_deps()
 ```
@@ -40,8 +40,8 @@ To keep the metadata updated, put this in your `BUILD.bazel` file next to `gazel
 
 ```starlark
 load("@pip//:requirements.bzl", "all_whl_requirements")
-load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
-load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
 # This rule fetches the metadata for python packages we depend on. That data is
 # required for the gazelle_python_manifest rule to update our manifest file.
@@ -75,7 +75,7 @@ with the rules_python extension included. This typically goes in your root
 
 ```
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
+load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 
 # Our gazelle target points to the python gazelle binary.
 # This is the simple case where we only need one language supported.
@@ -85,7 +85,7 @@ load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 gazelle(
     name = "gazelle",
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
-    gazelle = "@rules_python//gazelle:gazelle_python_binary",
+    gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
 ```
 

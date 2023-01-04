@@ -34,6 +34,8 @@ def rules_python_internal_deps():
         strip_prefix = "stardoc-6f274e903009158504a9d9130d7f7d5f3e9421ed",
     )
 
+    # The below two deps are required for the integration test with bazel
+    # gazelle. Maybe the test should be moved to the `gazelle` workspace?
     maybe(
         http_archive,
         name = "io_bazel_rules_go",

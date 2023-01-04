@@ -67,6 +67,11 @@ local_repository(
     path = "../..",
 )
 
+local_repository(
+    name = "rules_python_gazelle_plugin",
+    path = "../../gazelle",
+)
+
 # When not using this example in the rules_python git repo you would load the python
 # ruleset using the following StarLark.
 # See https://github.com/bazelbuild/rules_python#getting-started for the latest
@@ -79,6 +84,14 @@ local_repository(
 #     name = "rules_python",
 #     sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
 #     strip_prefix = "rules_python-0.16.1",
+#     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
+# )
+#
+# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+# http_archive(
+#     name = "rules_python_gazelle_plugin",
+#     sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
+#     strip_prefix = "rules_python-0.16.1/gazelle",
 #     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
 # )
 
@@ -124,7 +137,7 @@ install_deps()
 
 # The rules_python gazelle extension has some third-party go dependencies
 # which we need to fetch in order to compile it.
-load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 # See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
 # This rule loads and compiles various go dependencies that running gazelle
