@@ -43,10 +43,5 @@ user.bazelrc
 *.swp
 *.swo
 
-# Go/Gazelle files
-# These otherwise match patterns above
-!go.mod
-!BUILD.out
-
 # Python cache
 **/__pycache__/

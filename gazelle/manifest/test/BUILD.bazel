@@ -5,7 +5,7 @@ go_library(
     srcs = ["test.go"],
     importpath = "github.com/bazelbuild/rules_python/gazelle/manifest/test",
     visibility = ["//visibility:public"],
-    deps = ["//gazelle/manifest"],
+    deps = ["//manifest"],
 )
 
 go_binary(
@@ -19,5 +19,5 @@ exports_files(["run.sh"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//gazelle/manifest:__pkg__"],
+    visibility = ["//manifest:__pkg__"],
 )

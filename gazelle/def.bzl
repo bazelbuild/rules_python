@@ -2,6 +2,6 @@
 """
 
 GAZELLE_PYTHON_RUNTIME_DEPS = [
-    "@rules_python//gazelle/python:parse",
-    "@rules_python//gazelle/python:std_modules",
+    "@rules_python_gazelle_plugin//python:parse",
+    "@rules_python_gazelle_plugin//python:std_modules",
 ]
