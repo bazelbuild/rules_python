@@ -3,10 +3,11 @@
 # The `load` statement imports the symbol for the rule, in the defined
 # ruleset. When the symbol is loaded you can use the rule.
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@pip//:gazelle.bzl", "gazelle_python_manifest")
+load("@pip//:gazelle.bzl", "GAZELLE_PLUGIN_ARGS")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
 
 compile_pip_requirements(
     name = "requirements",
@@ -31,6 +32,7 @@ gazelle_python_manifest(
     extend_exclude_patterns = [
         "(\\.tests)+",  # Add a custom one to get rid of the psutil tests.
     ],
+    metadata = GAZELLE_PLUGIN_ARGS,
 )
 
 # Our gazelle target points to the python gazelle binary.

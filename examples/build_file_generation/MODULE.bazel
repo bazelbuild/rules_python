@@ -5,10 +5,16 @@ module(
 )
 
 bazel_dep(name = "rules_python", version = "0.0.0")
+bazel_dep(name = "rules_python_gazelle_plugin", version = "0.0.0")
 
 local_path_override(
     module_name = "rules_python",
     path = "../..",
+)
+
+local_path_override(
+    module_name = "rules_python_gazelle_plugin",
+    path = "../../gazelle",
 )
 
 python = use_extension("@rules_python//python:extensions.bzl", "python")
