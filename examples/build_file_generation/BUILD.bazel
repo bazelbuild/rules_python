@@ -55,7 +55,7 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//random_number_generator",
-        "@pip//:flask_pkg",
+        "@pip_flask//:pkg",
     ],
 )
 
