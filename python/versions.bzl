@@ -275,7 +275,10 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         python_version = python_version,
         build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
     )
-    url = "/".join([base_url, release_filename])
+    if "://" in release_filename:  # is absolute url?
+        url = release_filename
+    else:
+        url = "/".join([base_url, release_filename])
 
     patches = tool_versions[python_version].get("patches", [])
     if type(patches) == type({}):
