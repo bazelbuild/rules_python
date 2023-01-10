@@ -89,7 +89,7 @@ py_library(
     srcs = glob(["**/*.py"]),
     data = glob(["**/*"], exclude=[
         # These entries include those put into user-installed dependencies by
-        # data_exclude in /python/pip_install/extract_wheels/bazel.py
+        # data_exclude in /python/pip_install/tools/bazel.py
         # to avoid non-determinism following pip install's behavior.
         "**/*.py",
         "**/*.pyc",

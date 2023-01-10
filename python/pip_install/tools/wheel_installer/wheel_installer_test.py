@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.extract_wheels import wheel_installer
+from python.pip_install.tools.wheel_installer import wheel_installer
 
 
 class TestRequirementExtrasParsing(unittest.TestCase):

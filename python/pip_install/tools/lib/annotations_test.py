@@ -5,7 +5,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from python.pip_install.extract_wheels.annotation import Annotation, AnnotationsMap
+from python.pip_install.tools.lib.annotation import Annotation, AnnotationsMap
 from python.runfiles import runfiles
 
 

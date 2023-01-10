@@ -1,0 +1,50 @@
+load("//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("//python/pip_install:repositories.bzl", "requirement")
+
+py_library(
+    name = "lib",
+    srcs = [
+        "lock_file_generator.py",
+    ],
+    deps = [
+        "//python/pip_install/tools/lib",
+        requirement("pip"),
+    ],
+)
+
+py_binary(
+    name = "lock_file_generator",
+    srcs = [
+        "lock_file_generator.py",
+    ],
+    deps = [":lib"],
+)
+
+py_test(
+    name = "lock_file_generator_test",
+    size = "small",
+    srcs = [
+        "lock_file_generator_test.py",
+    ],
+    deps = [
+        ":lib",
+    ],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(
+        ["*"],
+        exclude = ["*_test.py"],
+    ),
+    visibility = ["//python/pip_install:__subpackages__"],
+)
+
+filegroup(
+    name = "py_srcs",
+    srcs = glob(
+        include = ["**/*.py"],
+        exclude = ["**/*_test.py"],
+    ),
+    visibility = ["//python/pip_install:__subpackages__"],
+)

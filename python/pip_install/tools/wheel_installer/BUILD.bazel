@@ -1,0 +1,66 @@
+load("//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("//python/pip_install:repositories.bzl", "requirement")
+
+py_library(
+    name = "lib",
+    srcs = [
+        "namespace_pkgs.py",
+        "wheel.py",
+        "wheel_installer.py",
+    ],
+    deps = [
+        "//python/pip_install/tools/lib",
+        requirement("installer"),
+        requirement("pip"),
+        requirement("setuptools"),
+    ],
+)
+
+py_binary(
+    name = "wheel_installer",
+    srcs = [
+        "wheel_installer.py",
+    ],
+    deps = [":lib"],
+)
+
+py_test(
+    name = "namespace_pkgs_test",
+    size = "small",
+    srcs = [
+        "namespace_pkgs_test.py",
+    ],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_test(
+    name = "wheel_installer_test",
+    size = "small",
+    srcs = [
+        "wheel_installer_test.py",
+    ],
+    data = ["//examples/wheel:minimal_with_py_package"],
+    deps = [
+        ":lib",
+    ],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(
+        ["*"],
+        exclude = ["*_test.py"],
+    ),
+    visibility = ["//python/pip_install:__subpackages__"],
+)
+
+filegroup(
+    name = "py_srcs",
+    srcs = glob(
+        include = ["**/*.py"],
+        exclude = ["**/*_test.py"],
+    ),
+    visibility = ["//python/pip_install:__subpackages__"],
+)

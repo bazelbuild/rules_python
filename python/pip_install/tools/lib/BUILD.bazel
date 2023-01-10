@@ -1,5 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
-load("//python/pip_install:repositories.bzl", "requirement")
+load("//python:defs.bzl", "py_library", "py_test")
 load(":annotations_test_helpers.bzl", "package_annotation", "package_annotations_file")
 
 py_library(
@@ -8,31 +7,8 @@ py_library(
         "annotation.py",
         "arguments.py",
         "bazel.py",
-        "namespace_pkgs.py",
-        "parse_requirements_to_bzl.py",
-        "wheel.py",
-        "wheel_installer.py",
     ],
-    deps = [
-        requirement("installer"),
-        requirement("setuptools"),
-    ],
-)
-
-py_binary(
-    name = "wheel_installer",
-    srcs = [
-        "wheel_installer.py",
-    ],
-    deps = [":lib"],
-)
-
-py_binary(
-    name = "parse_requirements_to_bzl",
-    srcs = [
-        "parse_requirements_to_bzl.py",
-    ],
-    deps = [":lib"],
+    visibility = ["//python/pip_install:__subpackages__"],
 )
 
 package_annotations_file(
@@ -70,35 +46,9 @@ py_test(
     srcs = ["annotations_test.py"],
     data = [":mock_annotations"],
     env = {"MOCK_ANNOTATIONS": "$(rootpath :mock_annotations)"},
-    tags = ["unit"],
     deps = [
         ":lib",
         "//python/runfiles",
-    ],
-)
-
-py_test(
-    name = "namespace_pkgs_test",
-    size = "small",
-    srcs = [
-        "namespace_pkgs_test.py",
-    ],
-    tags = ["unit"],
-    deps = [
-        ":lib",
-    ],
-)
-
-py_test(
-    name = "wheel_installer_test",
-    size = "small",
-    srcs = [
-        "wheel_installer_test.py",
-    ],
-    data = ["//examples/wheel:minimal_with_py_package"],
-    tags = ["unit"],
-    deps = [
-        ":lib",
     ],
 )
 
@@ -108,19 +58,6 @@ py_test(
     srcs = [
         "arguments_test.py",
     ],
-    tags = ["unit"],
-    deps = [
-        ":lib",
-    ],
-)
-
-py_test(
-    name = "parse_requirements_to_bzl_test",
-    size = "small",
-    srcs = [
-        "parse_requirements_to_bzl_test.py",
-    ],
-    tags = ["unit"],
     deps = [
         ":lib",
     ],

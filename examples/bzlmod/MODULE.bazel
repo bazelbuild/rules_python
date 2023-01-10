@@ -1,23 +1,20 @@
 module(
     name = "example_bzlmod",
-    compatibility_level = 1,
     version = "0.0.0",
+    compatibility_level = 1,
 )
 
 bazel_dep(name = "rules_python", version = "0.0.0")
-
 local_path_override(
     module_name = "rules_python",
     path = "../..",
 )
 
 python = use_extension("@rules_python//python:extensions.bzl", "python")
-
 python.toolchain(
     name = "python3_9",
     python_version = "3.9",
 )
-
 use_repo(python, "python3_9_toolchains")
 
 register_toolchains(
@@ -25,11 +22,9 @@ register_toolchains(
 )
 
 pip = use_extension("@rules_python//python:extensions.bzl", "pip")
-
 pip.parse(
     name = "pip",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
-
 use_repo(pip, "pip")

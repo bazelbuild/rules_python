@@ -78,7 +78,7 @@ def _pip_impl(module_ctx):
                     environment = attr.environment,
                 )
 
-# Keep in sync with python/pip_install/extract_wheels/bazel.py
+# Keep in sync with python/pip_install/tools/bazel.py
 def _sanitize_name(name):
     return name.replace("-", "_").replace(".", "_").lower()
 

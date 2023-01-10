@@ -1,11 +1,11 @@
-exports_files(["pip_compile.py"])
-
 filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
-        "pip_compile.py",
-        "//python/pip_install/extract_wheels:distribution",
+        "//python/pip_install/tools/dependency_resolver:distribution",
+        "//python/pip_install/tools/lib:distribution",
+        "//python/pip_install/tools/lock_file_generator:distribution",
+        "//python/pip_install/tools/wheel_installer:distribution",
         "//python/pip_install/private:distribution",
     ],
     visibility = ["//:__pkg__"],
@@ -22,7 +22,10 @@ filegroup(
 filegroup(
     name = "py_srcs",
     srcs = [
-        "//python/pip_install/extract_wheels:py_srcs",
+        "//python/pip_install/tools/dependency_resolver:py_srcs",
+        "//python/pip_install/tools/lib:py_srcs",
+        "//python/pip_install/tools/lock_file_generator:py_srcs",
+        "//python/pip_install/tools/wheel_installer:py_srcs",
     ],
     visibility = ["//python/pip_install/private:__pkg__"],
 )

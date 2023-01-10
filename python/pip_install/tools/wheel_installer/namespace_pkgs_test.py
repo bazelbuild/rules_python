@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from typing import Optional, Set
 
-from python.pip_install.extract_wheels import namespace_pkgs
+from python.pip_install.tools.wheel_installer import namespace_pkgs
 
 
 class TempDir:
