@@ -1,15 +1,13 @@
 module(
     name = "rules_python",
-    compatibility_level = 1,
     version = "0.0.0",
+    compatibility_level = 1,
 )
 
 bazel_dep(name = "platforms", version = "0.0.4")
 
 internal_deps = use_extension("@rules_python//python:extensions.bzl", "internal_deps")
-
 internal_deps.install()
-
 use_repo(
     internal_deps,
     "pypi__build",
