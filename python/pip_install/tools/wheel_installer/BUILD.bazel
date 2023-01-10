@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 
 py_library(
@@ -30,7 +30,6 @@ py_test(
     srcs = [
         "namespace_pkgs_test.py",
     ],
-    tags = ["unit"],
     deps = [
         ":lib",
     ],
@@ -43,7 +42,6 @@ py_test(
         "wheel_installer_test.py",
     ],
     data = ["//examples/wheel:minimal_with_py_package"],
-    tags = ["unit"],
     deps = [
         ":lib",
     ],
