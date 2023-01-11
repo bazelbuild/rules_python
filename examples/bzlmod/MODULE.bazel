@@ -28,3 +28,9 @@ pip.parse(
     requirements_windows = "//:requirements_windows.txt",
 )
 use_repo(pip, "pip")
+
+bazel_dep(name = "other_module", version = "")
+local_path_override(
+    module_name = "other_module",
+    path = "other_module",
+)
