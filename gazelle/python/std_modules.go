@@ -26,7 +26,7 @@ var (
 func init() {
 	stdModulesSeen = make(map[string]struct{})
 
-	stdModulesScriptRunfile, err := bazel.Runfile("gazelle/std_modules")
+	stdModulesScriptRunfile, err := bazel.Runfile("gazelle/python/std_modules")
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
 		os.Exit(1)
