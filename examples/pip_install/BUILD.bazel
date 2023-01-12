@@ -84,8 +84,8 @@ py_test(
     env = {
         "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("boto3")),
-        "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
-        "YAMLLINT_ENTRY_POINT_BINARY": "$(rootpath :yamllint_binary)",
+        "YAMLLINT_ENTRY_POINT": "$(rlocationpath :yamllint)",
+        "YAMLLINT_ENTRY_POINT_BINARY": "$(rlocationpath :yamllint_binary)",
     },
     deps = ["@rules_python//python/runfiles"],
 )
