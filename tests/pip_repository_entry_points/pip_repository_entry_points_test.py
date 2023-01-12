@@ -17,7 +17,7 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
             self.assertIsNotNone(env)
 
             r = runfiles.Create()
-            entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
+            entry_point = Path(r.Rlocation(env))
             self.assertTrue(entry_point.exists())
 
             proc = subprocess.run(
@@ -44,7 +44,7 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
             self.assertIsNotNone(env)
 
             r = runfiles.Create()
-            entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
+            entry_point = Path(r.Rlocation(env))
             self.assertTrue(entry_point.exists())
 
             proc = subprocess.run(
