@@ -235,6 +235,9 @@ def dist_info_requirement(name):
 def entry_point(pkg, script = None):
     fail("Not implemented yet")
 
+def entry_point_binary(name, pkg, script = None, **kwargs):
+    fail("Not implemented yet")
+
 def install_deps(**whl_library_kwargs):
 {install_deps_calls}
     for wheel_name in _wheel_names:

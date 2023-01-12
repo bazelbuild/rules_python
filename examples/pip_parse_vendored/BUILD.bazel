@@ -15,10 +15,10 @@ genrule(
     outs = ["requirements.clean.bzl"],
     cmd = " | ".join([
         "cat $<",
-        # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
-        """sed -e '/^load.*/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
+        # Insert our load statement after the existing first one so we don't produce a file with buildifier warnings
+        """sed -e '1,/^load.*/s|^load.*|load("@python39//:defs.bzl", "interpreter")\\n&|'""",
         """tr "'" '"' """,
-        """sed 's#"@python39_.*//:bin/python3"#interpreter#' >$@""",
+        """sed 's|"@python39_.*//:bin/python3"|interpreter|' >$@""",
     ]),
 )
 

@@ -12,24 +12,28 @@ class PipInstallTest(unittest.TestCase):
     maxDiff = None
 
     def test_entry_point(self):
-        env = os.environ.get("YAMLLINT_ENTRY_POINT")
-        self.assertIsNotNone(env)
 
-        r = runfiles.Create()
+        for target in ["YAMLLINT_ENTRY_POINT", "YAMLLINT_ENTRY_POINT_BINARY"]:
+            env = os.environ.get(target)
+            self.assertIsNotNone(env)
 
-        # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
-        entry_point = Path(
-            r.Rlocation("rules_python_pip_install_example/{}".format(env))
-        )
-        self.assertTrue(entry_point.exists())
+            r = runfiles.Create()
 
-        proc = subprocess.run(
-            [str(entry_point), "--version"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.26.3")
+            # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
+            entry_point = Path(
+                r.Rlocation(
+                    "rules_python_pip_install_example/{}".format(env.lstrip("./"))
+                )
+            )
+            self.assertTrue(entry_point.exists())
+
+            proc = subprocess.run(
+                [str(entry_point), "--version"],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.26.3")
 
     def test_data(self):
         env = os.environ.get("WHEEL_DATA_CONTENTS")

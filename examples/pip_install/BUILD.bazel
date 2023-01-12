@@ -5,6 +5,7 @@ load(
     "data_requirement",
     "dist_info_requirement",
     "entry_point",
+    "entry_point_binary",
     "requirement",
 )
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
@@ -58,6 +59,11 @@ alias(
     actual = entry_point("yamllint"),
 )
 
+entry_point_binary(
+    name = "yamllint_binary",
+    pkg = "yamllint",
+)
+
 # Check that our compiled requirements are up-to-date
 compile_pip_requirements(
     name = "requirements",
@@ -71,6 +77,7 @@ py_test(
     srcs = ["pip_install_test.py"],
     data = [
         ":yamllint",
+        ":yamllint_binary",
         data_requirement("s3cmd"),
         dist_info_requirement("boto3"),
     ],
@@ -78,6 +85,7 @@ py_test(
         "WHEEL_DATA_CONTENTS": "$(rootpaths {})".format(data_requirement("s3cmd")),
         "WHEEL_DIST_INFO_CONTENTS": "$(rootpaths {})".format(dist_info_requirement("boto3")),
         "YAMLLINT_ENTRY_POINT": "$(rootpath :yamllint)",
+        "YAMLLINT_ENTRY_POINT_BINARY": "$(rootpath :yamllint_binary)",
     },
     deps = ["@rules_python//python/runfiles"],
 )

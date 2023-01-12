@@ -116,6 +116,10 @@ def _generate_entry_point_contents(
     )
 
 
+def _generate_entry_point_exports(wheel_entry_point_prefix: str):
+    return f'exports_files(glob(["{wheel_entry_point_prefix}_*.py"]))'
+
+
 def _generate_entry_point_rule(name: str, script: str, pkg: str) -> str:
     """Generate a Bazel `py_binary` rule for an entry point script.
 
@@ -349,6 +353,11 @@ def _extract_wheel(
 
     with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
         additional_content = entry_points
+        if entry_points:
+            additional_content.append(
+                _generate_entry_point_exports(bazel.WHEEL_ENTRY_POINT_PREFIX)
+            )
+
         data = []
         data_exclude = pip_data_exclude
         srcs_exclude = []

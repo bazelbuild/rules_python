@@ -12,57 +12,59 @@ class PipRepositoryEntryPointsTest(unittest.TestCase):
     maxDiff = None
 
     def test_entry_point_void_return(self):
-        env = os.environ.get("YAMLLINT_ENTRY_POINT")
-        self.assertIsNotNone(env)
+        for target in ["YAMLLINT_ENTRY_POINT", "YAMLLINT_ENTRY_POINT_BINARY"]:
+            env = os.environ.get(target)
+            self.assertIsNotNone(env)
 
-        r = runfiles.Create()
-        entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
-        self.assertTrue(entry_point.exists())
+            r = runfiles.Create()
+            entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
+            self.assertTrue(entry_point.exists())
 
-        proc = subprocess.run(
-            [str(entry_point), "--version"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.28.0")
-
-        # yamllint entry_point is of the form `def run(argv=None):`
-        with self.assertRaises(subprocess.CalledProcessError) as context:
-            subprocess.run(
-                [str(entry_point), "--option-does-not-exist"],
+            proc = subprocess.run(
+                [str(entry_point), "--version"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        self.assertIn("returned non-zero exit status 2", str(context.exception))
+            self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.28.0")
+
+            # yamllint entry_point is of the form `def run(argv=None):`
+            with self.assertRaises(subprocess.CalledProcessError) as context:
+                subprocess.run(
+                    [str(entry_point), "--option-does-not-exist"],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            self.assertIn("returned non-zero exit status 2", str(context.exception))
 
     def test_entry_point_int_return(self):
-        env = os.environ.get("SPHINX_BUILD_ENTRY_POINT")
-        self.assertIsNotNone(env)
+        for target in ["SPHINX_BUILD_ENTRY_POINT", "SPHINX_BUILD_ENTRY_POINT_BINARY"]:
+            env = os.environ.get(target)
+            self.assertIsNotNone(env)
 
-        r = runfiles.Create()
-        entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
-        self.assertTrue(entry_point.exists())
+            r = runfiles.Create()
+            entry_point = Path(r.Rlocation(str(Path(*Path(env).parts[1:]))))
+            self.assertTrue(entry_point.exists())
 
-        proc = subprocess.run(
-            [str(entry_point), "--version"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        # sphinx-build uses args[0] for its name, only assert the version here
-        self.assertTrue(proc.stdout.decode("utf-8").strip().endswith("4.3.2"))
-
-        # sphinx-build entry_point is of the form `def main(argv: List[str] = sys.argv[1:]) -> int:`
-        with self.assertRaises(subprocess.CalledProcessError) as context:
-            subprocess.run(
-                [entry_point, "--option-does-not-exist"],
+            proc = subprocess.run(
+                [str(entry_point), "--version"],
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        self.assertIn("returned non-zero exit status 2", str(context.exception))
+            # sphinx-build uses args[0] for its name, only assert the version here
+            self.assertTrue(proc.stdout.decode("utf-8").strip().endswith("4.3.2"))
+
+            # sphinx-build entry_point is of the form `def main(argv: List[str] = sys.argv[1:]) -> int:`
+            with self.assertRaises(subprocess.CalledProcessError) as context:
+                subprocess.run(
+                    [entry_point, "--option-does-not-exist"],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            self.assertIn("returned non-zero exit status 2", str(context.exception))
 
 
 if __name__ == "__main__":
