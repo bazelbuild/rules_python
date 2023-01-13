@@ -205,6 +205,159 @@ class RunfilesTest(unittest.TestCase):
             else:
                 self.assertEqual(r.Rlocation("/foo"), "/foo")
 
+    def testManifestBasedRlocationWithRepoMappingFromMain(self):
+        with _MockFile(
+            contents=[
+                ",my_module,_main",
+                ",my_protobuf,protobuf~3.19.2",
+                ",my_workspace,_main",
+                "protobuf~3.19.2,protobuf,protobuf~3.19.2",
+            ]
+        ) as rm, _MockFile(
+            contents=[
+                "_repo_mapping " + rm.Path(),
+                "config.json /etc/config.json",
+                "protobuf~3.19.2/foo/runfile C:/Actual Path\\protobuf\\runfile",
+                "_main/bar/runfile /the/path/./to/other//other runfile.txt",
+                "protobuf~3.19.2/bar/dir E:\\Actual Path\\Directory",
+            ],
+        ) as mf:
+            r = runfiles.CreateManifestBased(mf.Path())
+
+            self.assertEqual(
+                r.Rlocation("my_module/bar/runfile", ""),
+                "/the/path/./to/other//other runfile.txt",
+            )
+            self.assertEqual(
+                r.Rlocation("my_workspace/bar/runfile", ""),
+                "/the/path/./to/other//other runfile.txt",
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/foo/runfile", ""),
+                "C:/Actual Path\\protobuf\\runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir", ""), "E:\\Actual Path\\Directory"
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir/file", ""),
+                "E:\\Actual Path\\Directory/file",
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir/de eply/nes ted/fi~le", ""),
+                "E:\\Actual Path\\Directory/de eply/nes ted/fi~le",
+            )
+
+            self.assertIsNone(r.Rlocation("protobuf/foo/runfile"))
+            self.assertIsNone(r.Rlocation("protobuf/bar/dir"))
+            self.assertIsNone(r.Rlocation("protobuf/bar/dir/file"))
+            self.assertIsNone(r.Rlocation("protobuf/bar/dir/dir/de eply/nes ted/fi~le"))
+
+            self.assertEqual(
+                r.Rlocation("_main/bar/runfile", ""),
+                "/the/path/./to/other//other runfile.txt",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/foo/runfile", ""),
+                "C:/Actual Path\\protobuf\\runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir", ""), "E:\\Actual Path\\Directory"
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/file", ""),
+                "E:\\Actual Path\\Directory/file",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le", ""),
+                "E:\\Actual Path\\Directory/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(r.Rlocation("config.json", ""), "/etc/config.json")
+            self.assertIsNone(r.Rlocation("_main", ""))
+            self.assertIsNone(r.Rlocation("my_module", ""))
+            self.assertIsNone(r.Rlocation("protobuf", ""))
+
+    def testManifestBasedRlocationWithRepoMappingFromOtherRepo(self):
+        with _MockFile(
+            contents=[
+                ",my_module,_main",
+                ",my_protobuf,protobuf~3.19.2",
+                ",my_workspace,_main",
+                "protobuf~3.19.2,protobuf,protobuf~3.19.2",
+            ]
+        ) as rm, _MockFile(
+            contents=[
+                "_repo_mapping " + rm.Path(),
+                "config.json /etc/config.json",
+                "protobuf~3.19.2/foo/runfile C:/Actual Path\\protobuf\\runfile",
+                "_main/bar/runfile /the/path/./to/other//other runfile.txt",
+                "protobuf~3.19.2/bar/dir E:\\Actual Path\\Directory",
+            ],
+        ) as mf:
+            r = runfiles.CreateManifestBased(mf.Path())
+
+            self.assertEqual(
+                r.Rlocation("protobuf/foo/runfile", "protobuf~3.19.2"),
+                "C:/Actual Path\\protobuf\\runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf/bar/dir", "protobuf~3.19.2"),
+                "E:\\Actual Path\\Directory",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf/bar/dir/file", "protobuf~3.19.2"),
+                "E:\\Actual Path\\Directory/file",
+            )
+            self.assertEqual(
+                r.Rlocation(
+                    "protobuf/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                ),
+                "E:\\Actual Path\\Directory/de eply/nes  ted/fi~le",
+            )
+
+            self.assertIsNone(r.Rlocation("my_module/bar/runfile", "protobuf~3.19.2"))
+            self.assertIsNone(r.Rlocation("my_protobuf/foo/runfile", "protobuf~3.19.2"))
+            self.assertIsNone(r.Rlocation("my_protobuf/bar/dir", "protobuf~3.19.2"))
+            self.assertIsNone(
+                r.Rlocation("my_protobuf/bar/dir/file", "protobuf~3.19.2")
+            )
+            self.assertIsNone(
+                r.Rlocation(
+                    "my_protobuf/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                )
+            )
+
+            self.assertEqual(
+                r.Rlocation("_main/bar/runfile", "protobuf~3.19.2"),
+                "/the/path/./to/other//other runfile.txt",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/foo/runfile", "protobuf~3.19.2"),
+                "C:/Actual Path\\protobuf\\runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir", "protobuf~3.19.2"),
+                "E:\\Actual Path\\Directory",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/file", "protobuf~3.19.2"),
+                "E:\\Actual Path\\Directory/file",
+            )
+            self.assertEqual(
+                r.Rlocation(
+                    "protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                ),
+                "E:\\Actual Path\\Directory/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("config.json", "protobuf~3.19.2"), "/etc/config.json"
+            )
+            self.assertIsNone(r.Rlocation("_main", "protobuf~3.19.2"))
+            self.assertIsNone(r.Rlocation("my_module", "protobuf~3.19.2"))
+            self.assertIsNone(r.Rlocation("protobuf", "protobuf~3.19.2"))
+
     def testDirectoryBasedRlocation(self):
         # The _DirectoryBased strategy simply joins the runfiles directory and the
         # runfile's path on a "/". This strategy does not perform any normalization,
@@ -216,6 +369,141 @@ class RunfilesTest(unittest.TestCase):
             self.assertEqual(r.Rlocation("c:\\foo"), "c:\\foo")
         else:
             self.assertEqual(r.Rlocation("/foo"), "/foo")
+
+    def testDirectoryBasedRlocationWithRepoMappingFromMain(self):
+        with _MockFile(
+            name="_repo_mapping",
+            contents=[
+                ",my_module,_main",
+                ",my_protobuf,protobuf~3.19.2",
+                ",my_workspace,_main",
+                "protobuf~3.19.2,protobuf,protobuf~3.19.2",
+            ],
+        ) as rm:
+            dir = os.path.dirname(rm.Path())
+            r = runfiles.CreateDirectoryBased(dir)
+
+            self.assertEqual(
+                r.Rlocation("my_module/bar/runfile", ""), dir + "/_main/bar/runfile"
+            )
+            self.assertEqual(
+                r.Rlocation("my_workspace/bar/runfile", ""), dir + "/_main/bar/runfile"
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/foo/runfile", ""),
+                dir + "/protobuf~3.19.2/foo/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir", ""), dir + "/protobuf~3.19.2/bar/dir"
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir/file", ""),
+                dir + "/protobuf~3.19.2/bar/dir/file",
+            )
+            self.assertEqual(
+                r.Rlocation("my_protobuf/bar/dir/de eply/nes ted/fi~le", ""),
+                dir + "/protobuf~3.19.2/bar/dir/de eply/nes ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("protobuf/foo/runfile", ""), dir + "/protobuf/foo/runfile"
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf/bar/dir/dir/de eply/nes ted/fi~le", ""),
+                dir + "/protobuf/bar/dir/dir/de eply/nes ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("_main/bar/runfile", ""), dir + "/_main/bar/runfile"
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/foo/runfile", ""),
+                dir + "/protobuf~3.19.2/foo/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir", ""),
+                dir + "/protobuf~3.19.2/bar/dir",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/file", ""),
+                dir + "/protobuf~3.19.2/bar/dir/file",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le", ""),
+                dir + "/protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(r.Rlocation("config.json", ""), dir + "/config.json")
+
+    def testDirectoryBasedRlocationWithRepoMappingFromOtherRepo(self):
+        with _MockFile(
+            name="_repo_mapping",
+            contents=[
+                ",my_module,_main",
+                ",my_protobuf,protobuf~3.19.2",
+                ",my_workspace,_main",
+                "protobuf~3.19.2,protobuf,protobuf~3.19.2",
+            ],
+        ) as rm:
+            dir = os.path.dirname(rm.Path())
+            r = runfiles.CreateDirectoryBased(dir)
+
+            self.assertEqual(
+                r.Rlocation("protobuf/foo/runfile", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/foo/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf/bar/dir", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/bar/dir",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf/bar/dir/file", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/bar/dir/file",
+            )
+            self.assertEqual(
+                r.Rlocation(
+                    "protobuf/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                ),
+                dir + "/protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("my_module/bar/runfile", "protobuf~3.19.2"),
+                dir + "/my_module/bar/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation(
+                    "my_protobuf/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                ),
+                dir + "/my_protobuf/bar/dir/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("_main/bar/runfile", "protobuf~3.19.2"),
+                dir + "/_main/bar/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/foo/runfile", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/foo/runfile",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/bar/dir",
+            )
+            self.assertEqual(
+                r.Rlocation("protobuf~3.19.2/bar/dir/file", "protobuf~3.19.2"),
+                dir + "/protobuf~3.19.2/bar/dir/file",
+            )
+            self.assertEqual(
+                r.Rlocation(
+                    "protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le", "protobuf~3.19.2"
+                ),
+                dir + "/protobuf~3.19.2/bar/dir/de eply/nes  ted/fi~le",
+            )
+
+            self.assertEqual(
+                r.Rlocation("config.json", "protobuf~3.19.2"), dir + "/config.json"
+            )
 
     def testPathsFromEnvvars(self):
         # Both envvars have a valid value.

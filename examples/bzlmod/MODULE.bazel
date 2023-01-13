@@ -29,7 +29,7 @@ pip.parse(
 )
 use_repo(pip, "pip")
 
-bazel_dep(name = "other_module", version = "")
+bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(
     module_name = "other_module",
     path = "other_module",
