@@ -98,6 +98,7 @@ def generate_parsed_requirements_contents(
     repo_prefix: str,
     whl_library_args: Dict[str, Any],
     annotations: Dict[str, str] = dict(),
+    bzlmod: bool = False,
 ) -> str:
     """
     Parse each requirement from the requirements_lock file, and prepare arguments for each
@@ -269,6 +270,7 @@ If set, it will take precedence over python_interpreter.",
             repo_prefix=args.repo_prefix,
             whl_library_args=whl_library_args,
             annotations=annotated_requirements,
+            bzlmod=args.bzlmod,
         )
     )
 
