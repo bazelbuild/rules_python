@@ -95,7 +95,6 @@ def parse_whl_library_args(args: argparse.Namespace) -> Dict[str, Any]:
 
 def generate_parsed_requirements_contents(
     requirements_lock: Path,
-    repo: str,
     repo_prefix: str,
     whl_library_args: Dict[str, Any],
     annotations: Dict[str, str] = dict(),
@@ -113,19 +112,6 @@ def generate_parsed_requirements_contents(
     )
     repo_names_and_reqs = repo_names_and_requirements(
         install_req_and_lines, repo_prefix
-    )
-
-    all_requirements = ", ".join(
-        [
-            bazel.sanitised_repo_library_label(ir.name, repo_prefix=repo_prefix)
-            for ir, _ in install_req_and_lines
-        ]
-    )
-    all_whl_requirements = ", ".join(
-        [
-            bazel.sanitised_repo_file_label(ir.name, repo_prefix=repo_prefix)
-            for ir, _ in install_req_and_lines
-        ]
     )
 
     install_deps_macro = """
@@ -146,44 +132,27 @@ def generate_parsed_requirements_contents(
 
         load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
-        all_requirements = [{all_requirements}]
-
-        all_whl_requirements = [{all_whl_requirements}]
-
         _packages = {repo_names_and_reqs}
         _config = {args}
         _annotations = {annotations}
-        _bzlmod = {bzlmod}
-
-        def _clean_name(name):
-            return name.replace("-", "_").replace(".", "_").lower()
 
         def requirement(name):
-            if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{py_library_label}"
-            return "@{repo_prefix}" + _clean_name(name) + "//:{py_library_label}"
+            fail("This function has been replaced with a regular macro in TODO.bzl. Update your imports to TODO. See TODO for further migration details.")
 
         def whl_requirement(name):
-            if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{wheel_file_label}"
-            return "@{repo_prefix}" + _clean_name(name) + "//:{wheel_file_label}"
+            fail("This function has been replaced with a regular macro in TODO.bzl. Update your imports to TODO. See TODO for further migration details.")
 
         def data_requirement(name):
-            if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{data_label}"
-            return "@{repo_prefix}" + _clean_name(name) + "//:{data_label}"
+            fail("This function has been replaced with a regular macro in TODO.bzl. Update your imports to TODO. See TODO for further migration details.")
 
         def dist_info_requirement(name):
-            if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{dist_info_label}"
-            return "@{repo_prefix}" + _clean_name(name) + "//:{dist_info_label}"
+            fail("This function has been replaced with a regular macro in TODO.bzl. Update your imports to TODO. See TODO for further migration details.")
 
         def entry_point(pkg, script = None):
-            if not script:
-                script = pkg
-            return "@{repo_prefix}" + _clean_name(pkg) + "//:{entry_point_prefix}_" + script
+            fail("This function has been replaced with a regular macro in TODO.bzl. Update your imports to TODO. See TODO for further migration details.")
 
         def _get_annotation(requirement):
+            # TODO(greg) Consider deprecating the annotation functionality to occur
             # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
             # down wo `setuptools`.
             name = requirement.split(" ")[0].split("=")[0].split("[")[0]
@@ -191,19 +160,9 @@ def generate_parsed_requirements_contents(
 """
             + (install_deps_macro if not bzlmod else "")
         ).format(
-            all_requirements=all_requirements,
-            all_whl_requirements=all_whl_requirements,
             annotations=json.dumps(annotations),
             args=dict(sorted(whl_library_args.items())),
-            data_label=bazel.DATA_LABEL,
-            dist_info_label=bazel.DIST_INFO_LABEL,
-            entry_point_prefix=bazel.WHEEL_ENTRY_POINT_PREFIX,
-            py_library_label=bazel.PY_LIBRARY_LABEL,
             repo_names_and_reqs=repo_names_and_reqs,
-            repo=repo,
-            repo_prefix=repo_prefix,
-            wheel_file_label=bazel.WHEEL_FILE_LABEL,
-            bzlmod=bzlmod,
         )
     )
 
