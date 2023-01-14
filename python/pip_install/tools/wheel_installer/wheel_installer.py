@@ -265,7 +265,7 @@ def _extract_wheel(
         _sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps
     ]
 
-    with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
+    with open(os.path.join(incremental_dir, "BUILD.bazel"), "w") as build_file:
         additional_content = entry_points
         data = []
         data_exclude = pip_data_exclude
