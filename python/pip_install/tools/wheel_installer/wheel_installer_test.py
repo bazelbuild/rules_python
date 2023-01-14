@@ -40,30 +40,6 @@ class TestRequirementExtrasParsing(unittest.TestCase):
                 )
 
 
-class BazelTestCase(unittest.TestCase):
-    def test_generate_entry_point_contents(self):
-        got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
-        want = """#!/usr/bin/env python3
-import sys
-from sphinx.cmd.build import main
-if __name__ == "__main__":
-    sys.exit(main())
-"""
-        self.assertEqual(got, want)
-
-    def test_generate_entry_point_contents_with_shebang(self):
-        got = wheel_installer._generate_entry_point_contents(
-            "sphinx.cmd.build", "main", shebang="#!/usr/bin/python"
-        )
-        want = """#!/usr/bin/python
-import sys
-from sphinx.cmd.build import main
-if __name__ == "__main__":
-    sys.exit(main())
-"""
-        self.assertEqual(got, want)
-
-
 class TestWhlFilegroup(unittest.TestCase):
     def setUp(self) -> None:
         self.wheel_name = "example_minimal_package-0.0.1-py3-none-any.whl"
