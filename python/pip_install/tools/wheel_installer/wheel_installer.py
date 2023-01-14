@@ -277,11 +277,11 @@ def _generate_build_file_contents(
 
 def _extract_wheel(
     wheel_file: str,
-    installation_dir: Path = Path("."),
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
+    installation_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
 ) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
