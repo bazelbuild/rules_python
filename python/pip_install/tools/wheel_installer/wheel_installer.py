@@ -229,6 +229,7 @@ def _extract_wheel(
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
+    incremental_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
 ) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
@@ -246,11 +247,10 @@ def _extract_wheel(
     """
 
     whl = wheel.Wheel(wheel_file)
-    directory = Path(".")
-    whl.unzip(directory)
+    whl.unzip(incremental_dir)
 
     if not enable_implicit_namespace_pkgs:
-        _setup_namespace_pkg_compatibility(directory)
+        _setup_namespace_pkg_compatibility(incremental_dir)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
     # Packages may create dependency cycles when specifying optional-dependencies / 'extras'.
