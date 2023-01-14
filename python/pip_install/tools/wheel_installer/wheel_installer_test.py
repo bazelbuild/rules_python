@@ -77,11 +77,11 @@ class TestWhlFilegroup(unittest.TestCase):
     def test_wheel_exists(self) -> None:
         wheel_installer._extract_wheel(
             self.wheel_path,
+            installation_dir=Path(self.wheel_dir),
             extras={},
             pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,
             repo_prefix="prefix_",
-            incremental_dir=Path(self.wheel_dir),
         )
 
         self.assertIn(self.wheel_name, os.listdir(self.wheel_dir))

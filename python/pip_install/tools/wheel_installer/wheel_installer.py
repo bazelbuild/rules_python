@@ -275,43 +275,31 @@ def _generate_build_file_contents(
     )
 
 
-def _sanitised_library_label(whl_name: str, prefix: str) -> str:
-    return '"//%s"' % bazel.sanitise_name(whl_name, prefix)
-
-
-def _sanitised_file_label(whl_name: str, prefix: str) -> str:
-    return '"//%s:%s"' % (bazel.sanitise_name(whl_name, prefix), bazel.WHEEL_FILE_LABEL)
-
-
 def _extract_wheel(
     wheel_file: str,
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
-    incremental_dir: Path = Path("."),
+    installation_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
 ) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
         wheel_file: the filepath of the .whl
+        installation_dir: the destination directory for installation of the wheel.
         extras: a list of extras to add as dependencies for the installed wheel
         pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
-        incremental_dir: An optional override for the working directory of incremental builds.
         annotation: An optional set of annotations to apply to the BUILD contents of the wheel.
-
-    Returns:
-        The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
     """
 
     whl = wheel.Wheel(wheel_file)
-    directory = incremental_dir
-    whl.unzip(directory)
+    whl.unzip(installation_dir)
 
     if not enable_implicit_namespace_pkgs:
-        _setup_namespace_pkg_compatibility(directory)
+        _setup_namespace_pkg_compatibility(installation_dir)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
     # Packages may create dependency cycles when specifying optional-dependencies / 'extras'.
@@ -326,7 +314,6 @@ def _extract_wheel(
         bazel.sanitised_repo_file_label(d, repo_prefix=repo_prefix) for d in whl_deps
     ]
 
-    directory_path = Path(directory)
     entry_points = []
     for name, (module, attribute) in sorted(whl.entry_points().items()):
         # There is an extreme edge-case with entry_points that end with `.py`
@@ -336,7 +323,7 @@ def _extract_wheel(
             f"{bazel.WHEEL_ENTRY_POINT_PREFIX}_{entry_point_without_py}"
         )
         entry_point_script_name = f"{entry_point_target_name}.py"
-        (directory_path / entry_point_script_name).write_text(
+        (installation_dir / entry_point_script_name).write_text(
             _generate_entry_point_contents(module, attribute)
         )
         entry_points.append(
@@ -347,7 +334,7 @@ def _extract_wheel(
             )
         )
 
-    with open(os.path.join(directory, "BUILD.bazel"), "w") as build_file:
+    with open(os.path.join(installation_dir, "BUILD.bazel"), "w") as build_file:
         additional_content = entry_points
         data = []
         data_exclude = pip_data_exclude
