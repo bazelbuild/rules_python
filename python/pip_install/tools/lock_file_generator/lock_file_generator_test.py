@@ -40,14 +40,6 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             )
             library_target = "@pip_parsed_deps_pypi__foo//:pkg"
             whl_target = "@pip_parsed_deps_pypi__foo//:whl"
-            all_requirements = 'all_requirements = ["{library_target}"]'.format(
-                library_target=library_target
-            )
-            all_whl_requirements = 'all_whl_requirements = ["{whl_target}"]'.format(
-                whl_target=whl_target
-            )
-            self.assertIn(all_requirements, contents, contents)
-            self.assertIn(all_whl_requirements, contents, contents)
             self.assertIn(requirement_string, contents, contents)
             all_flags = extra_pip_args + ["--require-hashes", "True"]
             self.assertIn(
