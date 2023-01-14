@@ -269,7 +269,6 @@ If set, it will take precedence over python_interpreter.",
             repo_prefix=args.repo_prefix,
             whl_library_args=whl_library_args,
             annotations=annotated_requirements,
-            bzlmod=args.bzlmod,
         )
     )
 
