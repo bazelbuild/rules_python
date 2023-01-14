@@ -35,7 +35,6 @@ class TestParseRequirementsToBzl(unittest.TestCase):
             whl_library_args = lock_file_generator.parse_whl_library_args(args)
             contents = lock_file_generator.generate_parsed_requirements_contents(
                 requirements_lock=args.requirements_lock,
-                repo=args.repo,
                 repo_prefix=args.repo_prefix,
                 whl_library_args=whl_library_args,
             )
