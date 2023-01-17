@@ -211,46 +211,31 @@ def _generate_build_file_contents(
     )
 
 
-def _whl_name_to_repo_root(whl_name: str, repo_prefix: str) -> str:
-    return "@{}//".format(bazel.sanitise_name(whl_name, prefix=repo_prefix))
-
-
-def _sanitised_repo_library_label(whl_name: str, repo_prefix: str) -> str:
-    return '"{}:{}"'.format(_whl_name_to_repo_root(whl_name, repo_prefix), "pkg")
-
-
-def _sanitised_repo_file_label(whl_name: str, repo_prefix: str) -> str:
-    return '"{}:{}"'.format(_whl_name_to_repo_root(whl_name, repo_prefix), "whl")
-
-
 def _extract_wheel(
     wheel_file: str,
     extras: Dict[str, Set[str]],
     pip_data_exclude: List[str],
     enable_implicit_namespace_pkgs: bool,
     repo_prefix: str,
-    incremental_dir: Path = Path("."),
+    installation_dir: Path = Path("."),
     annotation: Optional[annotation.Annotation] = None,
 ) -> None:
     """Extracts wheel into given directory and creates py_library and filegroup targets.
 
     Args:
         wheel_file: the filepath of the .whl
+        installation_dir: the destination directory for installation of the wheel.
         extras: a list of extras to add as dependencies for the installed wheel
         pip_data_exclude: list of file patterns to exclude from the generated data section of the py_library
         enable_implicit_namespace_pkgs: if true, disables conversion of implicit namespace packages and will unzip as-is
-        incremental_dir: An optional override for the working directory of incremental builds.
         annotation: An optional set of annotations to apply to the BUILD contents of the wheel.
-
-    Returns:
-        The Bazel label for the extracted wheel, in the form '//path/to/wheel'.
     """
 
     whl = wheel.Wheel(wheel_file)
-    whl.unzip(incremental_dir)
+    whl.unzip(installation_dir)
 
     if not enable_implicit_namespace_pkgs:
-        _setup_namespace_pkg_compatibility(incremental_dir)
+        _setup_namespace_pkg_compatibility(installation_dir)
 
     extras_requested = extras[whl.name] if whl.name in extras else set()
     # Packages may create dependency cycles when specifying optional-dependencies / 'extras'.
