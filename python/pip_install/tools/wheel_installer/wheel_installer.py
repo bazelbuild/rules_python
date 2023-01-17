@@ -388,12 +388,15 @@ def main() -> None:
     arguments.deserialize_structured_args(deserialized_args)
 
     _configure_reproducible_wheels()
+    extra_pip_args = []
+    for extra_pip_arg in deserialized_args["extra_pip_args"]:
+        extra_pip_args.extend(extra_pip_arg.split())
 
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
         + ["download" if args.download_only else "wheel", "--no-deps"]
-        + deserialized_args["extra_pip_args"]
+        + extra_pip_args
     )
 
     requirement_file = NamedTemporaryFile(mode="wb", delete=False)
