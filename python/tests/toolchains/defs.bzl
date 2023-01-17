@@ -24,15 +24,13 @@ powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
 """
 
 def _acceptance_test_impl(ctx):
-    cov_suffix = "cov" if ctx.attr.register_coverage_tool else "nocov"
-    base = "/".join([ctx.attr.python_version, cov_suffix])
+    base = "/".join([ctx.attr.python_version])
     workspace = ctx.actions.declare_file("/".join([base, "WORKSPACE"]))
     ctx.actions.expand_template(
         template = ctx.file._workspace_tmpl,
         output = workspace,
         substitutions = {
             "%python_version%": ctx.attr.python_version,
-            "%register_coverage_tool%": "True" if ctx.attr.register_coverage_tool else "False",
         },
     )
 
@@ -54,7 +52,6 @@ def _acceptance_test_impl(ctx):
         template = ctx.file._run_acceptance_test_tmpl,
         output = run_acceptance_test_py,
         substitutions = {
-            "%is_coverage%": str(ctx.attr.register_coverage_tool),
             "%is_windows%": str(ctx.attr.is_windows),
             "%python_version%": ctx.attr.python_version,
             "%test_location%": "/".join([ctx.attr.test_location, base]),
@@ -68,7 +65,7 @@ def _acceptance_test_impl(ctx):
         interpreter_path = py3_runtime.interpreter.short_path
 
     if ctx.attr.is_windows:
-        executable = ctx.actions.declare_file("run_test_{}_{}.bat".format(ctx.attr.python_version, cov_suffix))
+        executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
         ctx.actions.write(
             output = executable,
             content = _WINDOWS_RUNNER_TEMPLATE.format(
@@ -78,7 +75,7 @@ def _acceptance_test_impl(ctx):
             is_executable = True,
         )
     else:
-        executable = ctx.actions.declare_file("run_test_{}_{}.sh".format(ctx.attr.python_version, cov_suffix))
+        executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
         ctx.actions.write(
             output = executable,
             content = "exec '{interpreter_path}' '{run_acceptance_test_py}'".format(
@@ -117,10 +114,6 @@ _acceptance_test = rule(
         ),
         "python_version": attr.string(
             doc = "The Python version to be used when requesting the toolchain.",
-            mandatory = True,
-        ),
-        "register_coverage_tool": attr.bool(
-            doc = "Whether to register the coverage tool to the toolchain.",
             mandatory = True,
         ),
         "test_location": attr.string(
@@ -176,15 +169,12 @@ def acceptance_tests():
             if platform not in TOOL_VERSIONS[python_version]["sha256"]:
                 continue
 
-            for register_coverage_tool in [True, False]:
-                acceptance_test(
-                    name = "python_{python_version}_{platform}_{cov}_test".format(
-                        python_version = python_version.replace(".", "_"),
-                        platform = platform,
-                        cov = "cov" if register_coverage_tool else "nocov",
-                    ),
-                    python_version = python_version,
-                    register_coverage_tool = register_coverage_tool,
-                    target_compatible_with = meta.compatible_with,
-                    tags = ["acceptance-test"],
-                )
+            acceptance_test(
+                name = "python_{python_version}_{platform}_test".format(
+                    python_version = python_version.replace(".", "_"),
+                    platform = platform,
+                ),
+                python_version = python_version,
+                target_compatible_with = meta.compatible_with,
+                tags = ["acceptance-test"],
+            )

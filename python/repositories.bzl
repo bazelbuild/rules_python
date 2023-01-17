@@ -324,7 +324,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
-        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None else "\"{}\"".format(rctx.attr.coverage_tool),
+        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None and "windows" not in rctx.os.name else "\"{}\"".format(rctx.attr.coverage_tool),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -479,7 +479,7 @@ def python_register_toolchains(
         # allow passing in a tool version
         coverage_tool = None
         coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
-        if register_coverage_tool and coverage_tool == None:
+        if register_coverage_tool and coverage_tool == None and "windows" not in platform:
             python_short_version = python_version.rpartition(".")[0]
             coverage_tool = Label("@pypi__coverage_cp{python_version_nodot}_{platform}//:coverage".format(
                 python_version_nodot = python_short_version.replace(".", ""),

@@ -17,7 +17,8 @@ from urllib import request
 
 # This should be kept in sync with //python:versions.bzl
 _supported_platforms = {
-    "win_amd64": "x86_64-pc-windows-msvc",
+    # Windows is unsupported right now
+    # "win_amd64": "x86_64-pc-windows-msvc",
     "manylinux2014_x86_64": "x86_64-unknown-linux-gnu",
     "manylinux2014_aarch64": "aarch64-unknown-linux-gnu",
     "macosx_11_0_arm64": "aarch64-apple-darwin",

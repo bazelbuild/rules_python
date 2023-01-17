@@ -27,12 +27,6 @@ _coverage_deps = [
         "x86_64-apple-darwin",
     ),
     (
-        "pypi__coverage_cp310_x86_64-pc-windows-msvc",
-        "https://files.pythonhosted.org/packages/ae/a3/f45cb5d32de0751863945d22083c15eb8854bb53681b2e792f2066c629b9/coverage-6.5.0-cp310-cp310-win_amd64.whl",
-        "59f53f1dc5b656cafb1badd0feb428c1e7bc19b867479ff72f7a9dd9b479f10e",
-        "x86_64-pc-windows-msvc",
-    ),
-    (
         "pypi__coverage_cp310_x86_64-unknown-linux-gnu",
         "https://files.pythonhosted.org/packages/3c/7d/d5211ea782b193ab8064b06dc0cc042cf1a4ca9c93a530071459172c550f/coverage-6.5.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
         "af4fffaffc4067232253715065e30c5a7ec6faac36f8fc8d6f64263b15f74db0",
@@ -57,12 +51,6 @@ _coverage_deps = [
         "x86_64-apple-darwin",
     ),
     (
-        "pypi__coverage_cp38_x86_64-pc-windows-msvc",
-        "https://files.pythonhosted.org/packages/06/f1/5177428c35f331f118e964f727f79e3a3073a10271a644c8361d3cea8bfd/coverage-6.5.0-cp38-cp38-win_amd64.whl",
-        "7ccf362abd726b0410bf8911c31fbf97f09f8f1061f8c1cf03dfc4b6372848f6",
-        "x86_64-pc-windows-msvc",
-    ),
-    (
         "pypi__coverage_cp38_x86_64-unknown-linux-gnu",
         "https://files.pythonhosted.org/packages/bd/a0/e263b115808226fdb2658f1887808c06ac3f1b579ef5dda02309e0d54459/coverage-6.5.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
         "6b07130585d54fe8dff3d97b93b0e20290de974dc8177c320aeaf23459219c0b",
@@ -85,12 +73,6 @@ _coverage_deps = [
         "https://files.pythonhosted.org/packages/ea/52/c08080405329326a7ff16c0dfdb4feefaa8edd7446413df67386fe1bbfe0/coverage-6.5.0-cp39-cp39-macosx_10_9_x86_64.whl",
         "633713d70ad6bfc49b34ead4060531658dc6dfc9b3eb7d8a716d5873377ab745",
         "x86_64-apple-darwin",
-    ),
-    (
-        "pypi__coverage_cp39_x86_64-pc-windows-msvc",
-        "https://files.pythonhosted.org/packages/b6/08/a88a9f3a11bb2d97c7a6719535a984b009728433838fbc65766488867c80/coverage-6.5.0-cp39-cp39-win_amd64.whl",
-        "fc2af30ed0d5ae0b1abdb4ebdce598eafd5b35397d4d75deb341a614d333d987",
-        "x86_64-pc-windows-msvc",
     ),
     (
         "pypi__coverage_cp39_x86_64-unknown-linux-gnu",

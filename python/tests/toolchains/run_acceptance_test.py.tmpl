@@ -40,12 +40,8 @@ class TestPythonVersion(unittest.TestCase):
                 rules_python_path.replace("\\", "/")
             ),
             "build --test_output=errors",
+            "coverage --java_runtime_version=remotejdk_11",
         ]
-
-        if %is_coverage%:
-            bazelrc_lines.append(
-                "coverage --java_runtime_version=remotejdk_11"
-            )
 
         with open(".bazelrc", "w") as bazelrc:
             bazelrc.write(os.linesep.join(bazelrc_lines))
@@ -57,14 +53,14 @@ class TestPythonVersion(unittest.TestCase):
 
         subprocess.run("bazel test //...", shell=True, check=True)
 
-        if %is_coverage%:
-            subprocess.run("bazel coverage //...", shell=True, check=True)
-            return
-
         stream = os.popen("bazel info execution_root")
         exec_root = pathlib.Path(stream.read().strip())
         external = exec_root / "external"
-        self.assertEqual([], list(external.glob("pypi__coverage_*")), "coverage toolchain should not be downloaded")
+        self.assertEqual([], list(external.glob("pypi__coverage_*")), "coverage toolchain should not be downloaded upon bazel test")
+
+    @unittest.skipIf(%is_windows%, "not supported on Windows")
+    def test_coverage_toolchain(self):
+        subprocess.run("bazel coverage //...", shell=True, check=True)
 
 
 if __name__ == "__main__":
