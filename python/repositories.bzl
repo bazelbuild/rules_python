@@ -19,6 +19,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:coverage_deps.bzl", "install_coverage_deps")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -431,8 +432,10 @@ def python_register_toolchains(
         distutils = None,
         distutils_content = None,
         register_toolchains = True,
+        register_coverage_tool = True,
         set_python_version_constraint = False,
         tool_versions = TOOL_VERSIONS,
+        bzlmod = False,
         **kwargs):
     """Convenience macro for users which does typical setup.
 
@@ -449,9 +452,11 @@ def python_register_toolchains(
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
         register_toolchains: Whether or not to register the downloaded toolchains.
+        register_coverage_tool: Whether or not to register the downloaded coverage tool to the toolchains.
         set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
-        in python/versions.bzl will be used
+            in python/versions.bzl will be used.
+        bzlmod: Whether this rule is being run under a bzlmod module extension.
         **kwargs: passed to each python_repositories call.
     """
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
@@ -461,12 +466,25 @@ def python_register_toolchains(
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
+    if not bzlmod and register_coverage_tool:
+        install_coverage_deps()
+
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
         if not sha256:
             continue
 
         (release_filename, url, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
+
+        # allow passing in a tool version
+        coverage_tool = None
+        coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
+        if register_coverage_tool and coverage_tool == None:
+            python_short_version = python_version.rpartition(".")[0]
+            coverage_tool = Label("@pypi__coverage_cp{python_version_nodot}_{platform}//:coverage".format(
+                python_version_nodot = python_short_version.replace(".", ""),
+                platform = platform,
+            ))
 
         python_repository(
             name = "{name}_{platform}".format(
@@ -482,6 +500,7 @@ def python_register_toolchains(
             distutils = distutils,
             distutils_content = distutils_content,
             strip_prefix = strip_prefix,
+            coverage_tool = coverage_tool,
             **kwargs
         )
         if register_toolchains:

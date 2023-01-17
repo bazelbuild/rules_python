@@ -27,6 +27,7 @@ def _python_impl(module_ctx):
             python_register_toolchains(
                 name = attr.name,
                 python_version = attr.python_version,
+                bzlmod = True,
                 # Toolchain registration in bzlmod is done in MODULE file
                 register_toolchains = False,
             )

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import pathlib
 import subprocess
 import unittest
 
@@ -34,17 +35,20 @@ class TestPythonVersion(unittest.TestCase):
             os.mkdir(local_app_data)
             os.environ["LocalAppData"] = local_app_data
 
-        with open(".bazelrc", "w") as bazelrc:
-            bazelrc.write(
-                os.linesep.join(
-                    [
-                        'build --override_repository rules_python="{}"'.format(
-                            rules_python_path.replace("\\", "/")
-                        ),
-                        "build --test_output=errors",
-                    ]
-                )
+        bazelrc_lines = [
+            'build --override_repository rules_python="{}"'.format(
+                rules_python_path.replace("\\", "/")
+            ),
+            "build --test_output=errors",
+        ]
+
+        if %is_coverage%:
+            bazelrc_lines.append(
+                "coverage --java_runtime_version=remotejdk_11"
             )
+
+        with open(".bazelrc", "w") as bazelrc:
+            bazelrc.write(os.linesep.join(bazelrc_lines))
 
     def test_match_toolchain(self):
         stream = os.popen("bazel run @python//:python3 -- --version")
@@ -52,6 +56,15 @@ class TestPythonVersion(unittest.TestCase):
         self.assertEqual(output, "Python %python_version%")
 
         subprocess.run("bazel test //...", shell=True, check=True)
+
+        if %is_coverage%:
+            subprocess.run("bazel coverage //...", shell=True, check=True)
+            return
+
+        stream = os.popen("bazel info execution_root")
+        exec_root = pathlib.Path(stream.read().strip())
+        external = exec_root / "external"
+        self.assertEqual([], list(external.glob("pypi__coverage_*")), "coverage toolchain should not be downloaded")
 
 
 if __name__ == "__main__":
