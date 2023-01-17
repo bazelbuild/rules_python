@@ -295,9 +295,20 @@ cc_library(
 
 exports_files(["python", "{python_path}"])
 
+# Used to only download coverage toolchain when the coverage is collected by
+# bazel.
+config_setting(
+    name = "coverage_enabled",
+    values = {{"collect_code_coverage": "true"}},
+)
+
 py_runtime(
     name = "py3_runtime",
     files = [":files"],
+    coverage_tool = select({{
+        ":coverage_enabled": {coverage_tool},
+        "//conditions:default": None,
+    }}),
     interpreter = "{python_path}",
     python_version = "PY3",
 )
@@ -312,6 +323,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
+        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None else "\"{}\"".format(rctx.attr.coverage_tool),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -319,6 +331,7 @@ py_runtime_pair(
     rctx.file("BUILD.bazel", build_content)
 
     return {
+        "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
@@ -336,6 +349,25 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "coverage_tool": attr.label(
+            # Mirrors the definition at
+            # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
+            allow_files = False,
+            doc = """
+This is a target to use for collecting code coverage information from `py_binary`
+and `py_test` targets.
+
+If set, the target must either produce a single file or be an executable target.
+The path to the single file, or the executable if the target is executable,
+determines the entry point for the python coverage tool.  The target and its
+runfiles will be added to the runfiles when coverage is enabled.
+
+The entry point for the tool must be loadable by a Python interpreter (e.g. a
+`.py` or `.pyc` file).  It must accept the command line arguments
+of coverage.py (https://coverage.readthedocs.io), at least including
+the `run` and `lcov` subcommands.
+""",
+        ),
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
