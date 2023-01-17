@@ -19,6 +19,7 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "use_isolated", "whl_library")
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
 
 def _python_impl(module_ctx):
     for mod in module_ctx.modules:
@@ -33,13 +34,19 @@ def _python_impl(module_ctx):
 python = module_extension(
     implementation = _python_impl,
     tag_classes = {
-        "toolchain": tag_class(attrs = dict({"name": attr.string(mandatory = True), "python_version": attr.string(mandatory = True)})),
+        "toolchain": tag_class(
+            attrs = {
+                "name": attr.string(mandatory = True),
+                "python_version": attr.string(mandatory = True),
+            },
+        ),
     },
 )
 
 # buildifier: disable=unused-variable
 def _internal_deps_impl(module_ctx):
     pip_install_dependencies()
+    install_coverage_deps()
 
 internal_deps = module_extension(
     implementation = _internal_deps_impl,

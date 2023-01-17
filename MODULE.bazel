@@ -29,4 +29,5 @@ use_repo(
     "pypi__tomli",
     "pypi__wheel",
     "pypi__zipp",
+    # coverage_deps managed by running ./tools/update_coverage_deps.py <version>
 )
