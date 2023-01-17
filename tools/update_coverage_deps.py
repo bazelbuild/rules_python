@@ -44,6 +44,7 @@ class Dep:
                 f'    "{self.repo_name}",',
                 f'    "{self.url}",',
                 f'    "{self.sha256}",',
+                f'    "{self.platform}",',
                 ")",
             ]
         )
