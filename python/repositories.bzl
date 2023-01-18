@@ -368,6 +368,9 @@ The entry point for the tool must be loadable by a Python interpreter (e.g. a
 `.py` or `.pyc` file).  It must accept the command line arguments
 of coverage.py (https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
+
+For more information see the official bazel docs
+(https://bazel.build/reference/be/python#py_runtime.coverage_tool).
 """,
         ),
         "distutils": attr.label(
