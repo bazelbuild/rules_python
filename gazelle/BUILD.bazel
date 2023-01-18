@@ -15,6 +15,10 @@ go_library(
         "std_modules.go",
         "target.go",
     ],
+    data = [
+        ":parse",
+        ":std_modules",
+    ],
     importpath = "github.com/bazelbuild/rules_python/gazelle",
     visibility = ["//visibility:public"],
     deps = [
