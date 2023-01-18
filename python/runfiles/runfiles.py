@@ -12,12 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-###############################################################################
-# Vendored in from bazelbuild/bazel (tools/python/runfiles/runfiles.py) at    #
-# commit 6c60a8ec049b6b8540c473969dd7bd1dad46acb9 (2019-07-19). See           #
-# //python/runfiles:BUILD for details.                                        #
-###############################################################################
-
 """Runfiles lookup library for Bazel-built Python binaries and tests.
 
 USAGE:
