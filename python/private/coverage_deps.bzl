@@ -109,10 +109,10 @@ def install_coverage_deps():
             http_archive,
             name = name,
             build_file_content = """
-py_library(
+filegroup(
     name = "coverage",
     srcs = ["coverage/__main__.py"],
-    data = glob(["coverage/*.py", "coverage/**/*.py", "coverage/*.so"]),
+    data = glob(["coverage/*", "coverage/**/*.py", "coverage/*.so"]),
     exec_compatible_with = {compatible_with},
     visibility = ["//visibility:public"],
 )
