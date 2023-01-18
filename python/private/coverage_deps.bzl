@@ -3,7 +3,6 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python:versions.bzl", "PLATFORMS")
 
 # Update with './tools/update_coverage_deps.py <version>'
 #START: managed by update_coverage_deps.py script
@@ -104,7 +103,7 @@ _coverage_deps = [
 def install_coverage_deps():
     """Register the dependency for the coverage dep.
     """
-    for name, url, sha256, platform in _coverage_deps:
+    for name, url, sha256, _ in _coverage_deps:
         maybe(
             http_archive,
             name = name,
@@ -113,10 +112,9 @@ filegroup(
     name = "coverage",
     srcs = ["coverage/__main__.py"],
     data = glob(["coverage/*", "coverage/**/*.py", "coverage/*.so"]),
-    exec_compatible_with = {compatible_with},
     visibility = ["//visibility:public"],
 )
-        """.format(compatible_with = PLATFORMS[platform].compatible_with),
+        """,
             sha256 = sha256,
             type = "zip",
             urls = [url],
