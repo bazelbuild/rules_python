@@ -111,7 +111,7 @@ def install_coverage_deps():
 filegroup(
     name = "coverage",
     srcs = ["coverage/__main__.py"],
-    data = glob(["coverage/*", "coverage/**/*.py", "coverage/*.so"]),
+    data = glob(["coverage/*.py", "coverage/**/*.py", "coverage/*.so"]),
     visibility = ["//visibility:public"],
 )
         """,
