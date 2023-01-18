@@ -301,6 +301,7 @@ exports_files(["python", "{python_path}"])
 config_setting(
     name = "coverage_enabled",
     values = {{"collect_code_coverage": "true"}},
+    visibility = ["//visibility:private"],
 )
 
 py_runtime(

@@ -112,7 +112,7 @@ def install_coverage_deps():
 py_library(
     name = "coverage",
     srcs = ["coverage/__main__.py"],
-    data = glob(["coverage/*", "coverage/**/*.py", "coverage/*.so"]),
+    data = glob(["coverage/*.py", "coverage/**/*.py", "coverage/*.so"]),
     exec_compatible_with = {compatible_with},
     visibility = ["//visibility:public"],
 )
