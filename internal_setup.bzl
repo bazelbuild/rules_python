@@ -17,7 +17,9 @@
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@build_bazel_integration_testing//tools:repositories.bzl", "bazel_binaries")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load("//gazelle:deps.bzl", _go_repositories = "gazelle_deps")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
@@ -41,3 +43,8 @@ def rules_python_internal_setup():
     go_register_toolchains(version = "1.19.2")
 
     gazelle_dependencies()
+
+    rules_proto_dependencies()
+    rules_proto_toolchains()
+
+    protobuf_deps()
