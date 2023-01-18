@@ -33,6 +33,24 @@ _coverage_deps = [
         "x86_64-unknown-linux-gnu",
     ),
     (
+        "pypi__coverage_cp311_aarch64-unknown-linux-gnu",
+        "https://files.pythonhosted.org/packages/36/f3/5cbd79cf4cd059c80b59104aca33b8d05af4ad5bf5b1547645ecee716378/coverage-6.5.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "c4ed2820d919351f4167e52425e096af41bfabacb1857186c1ea32ff9983ed75",
+        "aarch64-unknown-linux-gnu",
+    ),
+    (
+        "pypi__coverage_cp311_x86_64-apple-darwin",
+        "https://files.pythonhosted.org/packages/50/cf/455930004231fa87efe8be06d13512f34e070ddfee8b8bf5a050cdc47ab3/coverage-6.5.0-cp311-cp311-macosx_10_9_x86_64.whl",
+        "4a5375e28c5191ac38cca59b38edd33ef4cc914732c916f2929029b4bfb50795",
+        "x86_64-apple-darwin",
+    ),
+    (
+        "pypi__coverage_cp311_x86_64-unknown-linux-gnu",
+        "https://files.pythonhosted.org/packages/6a/63/8e82513b7e4a1b8d887b4e85c1c2b6c9b754a581b187c0b084f3330ac479/coverage-6.5.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "a8fb6cf131ac4070c9c5a3e21de0f7dc5a0fbe8bc77c9456ced896c12fcdad91",
+        "x86_64-unknown-linux-gnu",
+    ),
+    (
         "pypi__coverage_cp38_aarch64-apple-darwin",
         "https://files.pythonhosted.org/packages/07/82/79fa21ceca9a9b091eb3c67e27eb648dade27b2c9e1eb23af47232a2a365/coverage-6.5.0-cp38-cp38-macosx_11_0_arm64.whl",
         "2198ea6fc548de52adc826f62cb18554caedfb1d26548c1b7c88d8f7faa8f6ba",

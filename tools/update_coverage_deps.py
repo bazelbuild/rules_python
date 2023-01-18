@@ -165,7 +165,7 @@ def _parse_args() -> argparse.Namespace:
         "--py",
         nargs="+",
         type=str,
-        default=["cp38", "cp39", "cp310"],
+        default=["cp38", "cp39", "cp310", "cp311"],
         help="Supported python versions",
     )
     parser.add_argument(
