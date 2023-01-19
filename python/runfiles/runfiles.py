@@ -58,9 +58,10 @@ USAGE:
       env.update(r.EnvVars())
       p = subprocess.Popen([r.Rlocation("path/to/binary")], env, ...)
 """
-
+import inspect
 import os
 import posixpath
+import sys
 
 if False:
     # Mypy needs these symbols imported, but since they only exist in python 3.5+,
@@ -124,6 +125,7 @@ class _Runfiles(object):
     def __init__(self, strategy):
         # type: (Union[_ManifestBased, _DirectoryBased]) -> None
         self._strategy = strategy
+        self._python_runfiles_root = _FindPythonRunfilesRoot()
 
     def Rlocation(self, path):
         # type: (str) -> Optional[str]
@@ -178,6 +180,78 @@ class _Runfiles(object):
           the values for these environment variables
         """
         return self._strategy.EnvVars()
+
+    def CurrentRepository(self, frame=1):
+        # type: (int) -> str
+        """Returns the canonical name of the caller's Bazel repository.
+
+        For example, this function returns '' (the empty string) when called
+        from the main repository and a string of the form
+        'rules_python~0.13.0` when called from code in the repository
+        corresponding to the rules_python Bazel module.
+
+        More information about the difference between canonical repository
+        names and the `@repo` part of labels is available at:
+        https://bazel.build/build/bzlmod#repository-names
+
+        NOTE: This function inspects the callstack to determine where in the
+        runfiles the caller is located to determine which repository it came
+        from. This may fail or produce incorrect results depending on who the
+        caller is, for example if it is not represented by a Python source
+        file. Use the `frame` argument to control the stack lookup.
+
+        Args:
+            frame: int; the stack frame to return the repository name for.
+            Defaults to 1, the caller of the CurrentRepository function.
+
+        Returns:
+            The canonical name of the Bazel repository containing the file
+            containing the frame-th caller of this function
+
+        Raises:
+            ValueError: if the caller cannot be determined or the caller's file
+            path is not contained in the Python runfiles tree
+        """
+        # pylint:disable=protected-access  # for sys._getframe
+        # pylint:disable=raise-missing-from  # we're still supporting Python 2
+        try:
+            caller_path = inspect.getfile(sys._getframe(frame))
+        except (TypeError, ValueError):
+            raise ValueError("failed to determine caller's file path")
+        caller_runfiles_path = os.path.relpath(caller_path, self._python_runfiles_root)
+        if caller_runfiles_path.startswith(".." + os.path.sep):
+            raise ValueError(
+                "{} does not lie under the runfiles root {}".format(
+                    caller_path, self._python_runfiles_root
+                )
+            )
+
+        caller_runfiles_directory = caller_runfiles_path[
+            : caller_runfiles_path.find(os.path.sep)
+        ]
+        # With Bzlmod, the runfiles directory of the main repository is always
+        # named "_main". Without Bzlmod, the value returned by this function is
+        # never used, so we just assume Bzlmod is enabled.
+        if caller_runfiles_directory == "_main":
+            # The canonical name of the main repository (also known as the
+            # workspace) is the empty string.
+            return ""
+        # For all other repositories, the name of the runfiles directory is the
+        # canonical name.
+        return caller_runfiles_directory
+
+
+def _FindPythonRunfilesRoot():
+    # type: () -> str
+    """Finds the root of the Python runfiles tree."""
+    root = __file__
+    # Walk up our own runfiles path to the root of the runfiles tree from which
+    # the current file is being run. This path coincides with what the Bazel
+    # Python stub sets up as sys.path[0]. Since that entry can be changed at
+    # runtime, we rederive it here.
+    for _ in range("rules_python/python/runfiles/runfiles.py".count("/") + 1):
+        root = os.path.dirname(root)
+    return root
 
 
 class _ManifestBased(object):
