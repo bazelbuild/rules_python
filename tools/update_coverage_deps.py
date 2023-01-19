@@ -42,7 +42,7 @@ class Dep:
         return "\n".join(
             [
                 "(",
-                f'    "{self.repo_name}",',
+                f'    "{self.python}",',
                 f'    "{self.url}",',
                 f'    "{self.sha256}",',
                 f'    "{self.platform}",',

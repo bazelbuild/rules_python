@@ -19,7 +19,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python/private:coverage_deps.bzl", "install_coverage_deps")
+load("//python/private:coverage_deps.bzl", "coverage_dep")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -470,9 +470,6 @@ def python_register_toolchains(
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
-    if not bzlmod and register_coverage_tool:
-        install_coverage_deps()
-
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
         if not sha256:
@@ -483,12 +480,20 @@ def python_register_toolchains(
         # allow passing in a tool version
         coverage_tool = None
         coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
-        if register_coverage_tool and coverage_tool == None and "windows" not in platform:
-            python_short_version = python_version.rpartition(".")[0]
-            coverage_tool = Label("@pypi__coverage_cp{python_version_nodot}_{platform}//:coverage".format(
-                python_version_nodot = python_short_version.replace(".", ""),
+        if register_coverage_tool and coverage_tool == None:
+            coverage_tool = coverage_dep(
+                name = "{name}_{platform}_coverage".format(
+                    name = name,
+                    platform = platform,
+                ),
+                python_version = python_version,
                 platform = platform,
-            ))
+                visibility = ["@@{name}_{platform}//:__subpackages__".format(
+                    name = name,
+                    platform = platform,
+                )],
+                install = not bzlmod,
+            )
 
         python_repository(
             name = "{name}_{platform}".format(
