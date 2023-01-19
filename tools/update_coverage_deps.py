@@ -11,6 +11,7 @@ import json
 import pathlib
 import sys
 import textwrap
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 from urllib import request
@@ -42,10 +43,8 @@ class Dep:
         return "\n".join(
             [
                 "(",
-                f'    "{self.python}",',
                 f'    "{self.url}",',
                 f'    "{self.sha256}",',
-                f'    "{self.platform}",',
                 ")",
             ]
         )
@@ -56,11 +55,18 @@ class Deps:
     deps: list[Dep]
 
     def __repr__(self):
-        inner = textwrap.indent(
-            ",\n".join([f"{repr(d)}" for d in self.deps]),
-            prefix="    ",
-        )
-        return "[\n{},\n]".format(inner)
+        deps = defaultdict(dict)
+        for d in self.deps:
+            deps[d.python][d.platform] = d
+
+        parts = []
+        for python, contents in deps.items():
+            inner = textwrap.indent(
+                "\n".join([f'"{platform}": {d},' for platform, d in contents.items()]),
+                prefix="    ",
+            )
+            parts.append('"{}": {{\n{}\n}},'.format(python, inner))
+        return "{{\n{}\n}}".format(textwrap.indent("\n".join(parts), prefix="    "))
 
 
 def _get_platforms(filename: str, name: str, version: str, python_version: str):
