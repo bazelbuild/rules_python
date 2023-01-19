@@ -325,7 +325,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
-        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None and "windows" not in rctx.os.name else "\"{}\"".format(rctx.attr.coverage_tool),
+        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None or "windows" in rctx.os.name else "\"{}\"".format(rctx.attr.coverage_tool),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
