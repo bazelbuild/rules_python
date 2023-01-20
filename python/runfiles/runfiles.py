@@ -126,9 +126,12 @@ class _Runfiles(object):
         # type: (Union[_ManifestBased, _DirectoryBased]) -> None
         self._strategy = strategy
         self._python_runfiles_root = _FindPythonRunfilesRoot()
+        self._repo_mapping = _ParseRepoMapping(
+            strategy.RlocationChecked("_repo_mapping")
+        )
 
-    def Rlocation(self, path):
-        # type: (str) -> Optional[str]
+    def Rlocation(self, path, source_repo=None):
+        # type: (str, Optional[str]) -> Optional[str]
         """Returns the runtime path of a runfile.
 
         Runfiles are data-dependencies of Bazel-built binaries and tests.
@@ -141,6 +144,13 @@ class _Runfiles(object):
 
         Args:
           path: string; runfiles-root-relative path of the runfile
+          source_repo: string; optional; the canonical name of the repository
+            whose repository mapping should be used to resolve apparent to
+            canonical repository names in `path`. If `None` (default), the
+            repository mapping of the repository containing the caller of this
+            method is used. Explicitly setting this parameter should only be
+            necessary for libraries that want to wrap the runfiles library. Use
+            `CurrentRepository` to obtain canonical repository names.
         Returns:
           the path to the runfile, which the caller should check for existence, or
           None if the method doesn't know about this runfile
@@ -165,7 +175,31 @@ class _Runfiles(object):
             raise ValueError('path is absolute without a drive letter: "%s"' % path)
         if os.path.isabs(path):
             return path
-        return self._strategy.RlocationChecked(path)
+
+        if source_repo is None and self._repo_mapping:
+            # Look up runfiles using the repository mapping of the caller of the
+            # current method. If the repo mapping is empty, determining this
+            # name is not necessary.
+            source_repo = self.CurrentRepository(frame=2)
+
+        # Split off the first path component, which contains the repository
+        # name (apparent or canonical).
+        target_repo, _, remainder = path.partition("/")
+        if not remainder or (source_repo, target_repo) not in self._repo_mapping:
+            # One of the following is the case:
+            # - not using Bzlmod, so the repository mapping is empty and
+            #   apparent and canonical repository names are the same
+            # - target_repo is already a canonical repository name and does not
+            #   have to be mapped.
+            # - path did not contain a slash and referred to a root symlink,
+            #   which also should not be mapped.
+            return self._strategy.RlocationChecked(path)
+
+        # target_repo is an apparent repository name. Look up the corresponding
+        # canonical repository name with respect to the current repository,
+        # identified by its canonical name.
+        target_canonical = self._repo_mapping[(source_repo, target_repo)]
+        return self._strategy.RlocationChecked(target_canonical + "/" + remainder)
 
     def EnvVars(self):
         # type: () -> Dict[str, str]
@@ -252,6 +286,31 @@ def _FindPythonRunfilesRoot():
     for _ in range("rules_python/python/runfiles/runfiles.py".count("/") + 1):
         root = os.path.dirname(root)
     return root
+
+
+def _ParseRepoMapping(repo_mapping_path):
+    # type: (Optional[str]) -> Dict[Tuple[str, str], str]
+    """Parses the repository mapping manifest."""
+    # If the repository mapping file can't be found, that is not an error: We
+    # might be running without Bzlmod enabled or there may not be any runfiles.
+    # In this case, just apply an empty repo mapping.
+    if not repo_mapping_path:
+        return {}
+    try:
+        with open(repo_mapping_path, "r") as f:
+            content = f.read()
+    except FileNotFoundError:
+        return {}
+
+    repo_mapping = {}
+    for line in content.split("\n"):
+        if not line:
+            # Empty line following the last line break
+            break
+        current_canonical, target_local, target_canonical = line.split(",")
+        repo_mapping[(current_canonical, target_local)] = target_canonical
+
+    return repo_mapping
 
 
 class _ManifestBased(object):
