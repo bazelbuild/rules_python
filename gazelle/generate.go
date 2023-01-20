@@ -69,10 +69,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	// this package or not.
 	hasPyBinary := false
 
-	// hasPyTestFile and hasPyTestTarget control whether a py_test target should
+	// hasPyTestEntryPointFile and hasPyTestEntryPointTarget control whether a py_test target should
 	// be generated for this package or not.
-	hasPyTestFile := false
-	hasPyTestTarget := false
+	hasPyTestEntryPointFile := false
+	hasPyTestEntryPointTarget := false
 	hasConftestFile := false
 
 	for _, f := range args.RegularFiles {
@@ -82,8 +82,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		ext := filepath.Ext(f)
 		if !hasPyBinary && f == pyBinaryEntrypointFilename {
 			hasPyBinary = true
-		} else if !hasPyTestFile && f == pyTestEntrypointFilename {
-			hasPyTestFile = true
+		} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
+			hasPyTestEntryPointFile = true
 		} else if f == conftestFilename {
 			hasConftestFile = true
 		} else if strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
@@ -95,10 +95,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	// If a __test__.py file was not found on disk, search for targets that are
 	// named __test__.
-	if !hasPyTestFile && args.File != nil {
+	if !hasPyTestEntryPointFile && args.File != nil {
 		for _, rule := range args.File.Rules {
 			if rule.Name() == pyTestEntrypointTargetname {
-				hasPyTestTarget = true
+				hasPyTestEntryPointTarget = true
 				break
 			}
 		}
@@ -184,13 +184,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	result.Gen = make([]*rule.Rule, 0)
 
 	collisionErrors := singlylinkedlist.New()
-
-	if !hasPyTestFile && !hasPyTestTarget {
-		it := pyTestFilenames.Iterator()
-		for it.Next() {
-			pyLibraryFilenames.Add(it.Value())
-		}
-	}
 
 	var pyLibrary *rule.Rule
 	if !pyLibraryFilenames.Empty() {
@@ -309,19 +302,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Imports = append(result.Imports, conftest.PrivateAttr(config.GazelleImportsKey))
 	}
 
-	if hasPyTestFile || hasPyTestTarget {
-		if hasPyTestFile {
-			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
-			// the file exists on disk.
-			pyTestFilenames.Add(pyTestEntrypointFilename)
-		}
+	var pyTestTargets []*targetBuilder
+	newPyTestTargetBuilder := func(pyTestFilenames *treeset.Set, pyTestTargetName string) *targetBuilder {
 		deps, err := parser.parse(pyTestFilenames)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
-
-		pyTestTargetName := cfg.RenderTestName(packageName)
-
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
@@ -338,13 +324,21 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 			}
 		}
-
-		pyTestTarget := newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel).
+		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel).
 			addSrcs(pyTestFilenames).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
+	}
+	if hasPyTestEntryPointFile || hasPyTestEntryPointTarget {
+		if hasPyTestEntryPointFile {
+			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
+			// the file exists on disk.
+			pyTestFilenames.Add(pyTestEntrypointFilename)
+		}
+		pyTestTargetName := cfg.RenderTestName(packageName)
+		pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
 
-		if hasPyTestTarget {
+		if hasPyTestEntryPointTarget {
 			entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
 			main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
 			pyTestTarget.
@@ -354,7 +348,17 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		} else {
 			pyTestTarget.setMain(pyTestEntrypointFilename)
 		}
+		pyTestTargets = append(pyTestTargets, pyTestTarget)
+	} else {
+		// Create one py_test target per file
+		pyTestFilenames.Each(func(index int, testFile interface{}) {
+			srcs := treeset.NewWith(godsutils.StringComparator, testFile)
+			pyTestTargetName := strings.TrimSuffix(filepath.Base(testFile.(string)), ".py")
+			pyTestTargets = append(pyTestTargets, newPyTestTargetBuilder(srcs, pyTestTargetName))
+		})
+	}
 
+	for _, pyTestTarget := range pyTestTargets {
 		if pyLibrary != nil {
 			pyTestTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(uuidKey).(string)})
 		}
