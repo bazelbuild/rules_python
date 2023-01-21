@@ -18,7 +18,7 @@ Typical Usage
 
 3.  Import the runfiles library.
 
-      import runfiles
+      import runfiles  # not "from runfiles import runfiles"
 
 4.  Create a Runfiles object and use rlocation to look up runfile paths:
 
@@ -38,8 +38,9 @@ Typical Usage
 
       r2 = runfiles.CreateDirectoryBased("path/to/foo.runfiles/")
 
-    If you want to start subprocesses that also need runfiles, you need to set
-    the right environment variables for them:
+    If you wnat to start subprocesses, and the subprocess can't automatically
+    find the correct runfiles directory, you can explicitly set the right
+    environment variables for them:
 
       import subprocess
       import runfiles
