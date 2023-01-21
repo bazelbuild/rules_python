@@ -17,6 +17,8 @@
 For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -32,9 +34,23 @@ load(
     "get_release_url",
 )
 
+def http_archive(**kwargs):
+    maybe(_http_archive, **kwargs)
+
 def py_repositories():
-    # buildifier: disable=print
-    print("py_repositories is a no-op and is deprecated. You can remove this from your WORKSPACE file")
+    """Runtime dependencies that users must install.
+
+    This function should be loaded and called in the user's WORKSPACE.
+    With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
+    """
+    http_archive(
+        name = "bazel_skylib",
+        sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+        ],
+    )
 
 ########
 # Remaining content of the file is only used to support toolchains.
