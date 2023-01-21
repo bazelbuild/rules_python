@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("//python:defs.bzl", "py_library")
+load("//python:packaging.bzl", "py_wheel")
 
 filegroup(
     name = "distribution",
@@ -22,6 +23,28 @@ filegroup(
 
 py_library(
     name = "runfiles",
-    srcs = ["runfiles.py"],
+    srcs = [
+        "__init__.py",
+        "runfiles.py",
+    ],
     visibility = ["//visibility:public"],
+)
+
+# This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh
+# We ought to have an automated integration test for it, too.
+# see https://github.com/bazelbuild/rules_python/issues/1002
+py_wheel(
+    name = "wheel",
+    # From https://pypi.org/classifiers/
+    classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: Apache Software License",
+    ],
+    description_file = "README.md",
+    distribution = "bazel_runfiles",
+    homepage = "https://github.com/bazelbuild/rules_python",
+    strip_path_prefixes = ["python"],
+    version = "{BUILD_EMBED_LABEL}",
+    visibility = ["//visibility:public"],
+    deps = [":runfiles"],
 )

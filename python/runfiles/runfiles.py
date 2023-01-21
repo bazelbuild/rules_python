@@ -14,49 +14,7 @@
 
 """Runfiles lookup library for Bazel-built Python binaries and tests.
 
-USAGE:
-
-1.  Depend on this runfiles library from your build rule:
-
-      py_binary(
-          name = "my_binary",
-          ...
-          deps = ["@rules_python//python/runfiles"],
-      )
-
-2.  Import the runfiles library.
-
-      from python.runfiles import runfiles
-
-3.  Create a Runfiles object and use rlocation to look up runfile paths:
-
-      r = runfiles.Create()
-      ...
-      with open(r.Rlocation("my_workspace/path/to/my/data.txt"), "r") as f:
-        contents = f.readlines()
-        ...
-
-    The code above creates a manifest- or directory-based implementations based
-    on the environment variables in os.environ. See `Create()` for more info.
-
-    If you want to explicitly create a manifest- or directory-based
-    implementations, you can do so as follows:
-
-      r1 = runfiles.CreateManifestBased("path/to/foo.runfiles_manifest")
-
-      r2 = runfiles.CreateDirectoryBased("path/to/foo.runfiles/")
-
-    If you want to start subprocesses that also need runfiles, you need to set
-    the right environment variables for them:
-
-      import subprocess
-      from bazel_tools.tools.python.runfiles import runfiles
-
-      r = runfiles.Create()
-      env = {}
-      ...
-      env.update(r.EnvVars())
-      p = subprocess.Popen([r.Rlocation("path/to/binary")], env, ...)
+See README.md for usage instructions.
 """
 import inspect
 import os

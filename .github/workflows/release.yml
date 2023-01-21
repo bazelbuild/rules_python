@@ -13,7 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Prepare workspace snippet
-        run: .github/workflows/workspace_snippet.sh ${{ env.GITHUB_REF_NAME }} > release_notes.txt
+        run: .github/workflows/workspace_snippet.sh > release_notes.txt
+      - name: Build wheel dist
+        run: bazel build --stamp --embed_label=${{ env.GITHUB_REF_NAME }} //python/runfiles:wheel
+      - name: Publish runfiles package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Note, the PYPI_API_TOKEN was added on
+          # https://github.com/bazelbuild/rules_python/settings/secrets/actions 
+          # and currently uses a token which authenticates as https://pypi.org/user/alexeagle/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: bazel-bin/python/runfiles
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
