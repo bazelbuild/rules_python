@@ -30,7 +30,9 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-# TODO(alexeagle): add some example which depends on this wheel to verify it can be used
+# This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh
+# We ought to have an automated integration test for it, too.
+# see https://github.com/bazelbuild/rules_python/issues/1002
 py_wheel(
     name = "wheel",
     # From https://pypi.org/classifiers/

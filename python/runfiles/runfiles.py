@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Runfiles lookup library for Bazel-built Python binaries and tests.
+
+See README.md for usage instructions.
 """
 
 import os
