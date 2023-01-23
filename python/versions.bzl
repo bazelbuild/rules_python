@@ -248,7 +248,7 @@ PLATFORMS = {
     ),
 }
 
-def get_release_url(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
+def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
     """Resolve the release URL for the requested interpreter version
 
     Args:
@@ -276,7 +276,15 @@ def get_release_url(platform, python_version, base_url = DEFAULT_RELEASE_BASE_UR
         build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
     )
     url = "/".join([base_url, release_filename])
-    return (release_filename, url, strip_prefix)
+
+    patches = tool_versions[python_version].get("patches", [])
+    if type(patches) == type({}):
+        if platform in patches.keys():
+            patches = patches[platform]
+        else:
+            patches = []
+
+    return (release_filename, url, strip_prefix, patches)
 
 def print_toolchains_checksums(name):
     native.genrule(
@@ -307,8 +315,8 @@ def _commands_for_version(python_version):
         "echo \"{python_version}: {platform}: $$(curl --location --fail {release_url_sha256} 2>/dev/null || curl --location --fail {release_url} 2>/dev/null | shasum -a 256 | awk '{{ print $$1 }}')\"".format(
             python_version = python_version,
             platform = platform,
-            release_url = get_release_url(platform, python_version)[1],
-            release_url_sha256 = get_release_url(platform, python_version)[1] + ".sha256",
+            release_url = get_release_info(platform, python_version)[1],
+            release_url_sha256 = get_release_info(platform, python_version)[1] + ".sha256",
         )
         for platform in TOOL_VERSIONS[python_version]["sha256"].keys()
     ])
