@@ -1,6 +1,6 @@
 ""
 
-load("//python:repositories.bzl", "is_standalone_interpreter")
+load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
@@ -124,7 +124,7 @@ def _get_toolchain_unix_cflags(rctx):
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
     _python_version = er.stdout
     include_path = "{}/include/python{}".format(
-        rctx.path(Label("@{}//:WORKSPACE".format(rctx.attr.python_interpreter_target.workspace_name))).dirname.realpath,
+        get_interpreter_dirname(rctx, rctx.attr.python_interpreter_target),
         _python_version,
     )
 
