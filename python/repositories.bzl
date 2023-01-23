@@ -31,7 +31,7 @@ load(
     "MINOR_MAPPING",
     "PLATFORMS",
     "TOOL_VERSIONS",
-    "get_release_url",
+    "get_release_info",
 )
 
 def http_archive(**kwargs):
@@ -141,6 +141,12 @@ def _python_repository_impl(rctx):
             sha256 = rctx.attr.sha256,
             stripPrefix = rctx.attr.strip_prefix,
         )
+
+    patches = rctx.attr.patches
+    if patches:
+        for patch in patches:
+            # Should take the strip as an attr, but this is fine for the moment
+            rctx.patch(patch, strip = 1)
 
     # Write distutils.cfg to the Python installation.
     if "windows" in rctx.os.name:
@@ -310,6 +316,10 @@ python_repository = repository_rule(
             doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
         ),
+        "patches": attr.label_list(
+            doc = "A list of patch files to apply to the unpacked interpreter",
+            mandatory = False,
+        ),
         "platform": attr.string(
             doc = "The platform name for the Python interpreter tarball.",
             mandatory = True,
@@ -389,7 +399,7 @@ def python_register_toolchains(
         if not sha256:
             continue
 
-        (release_filename, url, strip_prefix) = get_release_url(platform, python_version, base_url, tool_versions)
+        (release_filename, url, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
 
         python_repository(
             name = "{name}_{platform}".format(
@@ -397,6 +407,7 @@ def python_register_toolchains(
                 platform = platform,
             ),
             sha256 = sha256,
+            patches = patches,
             platform = platform,
             python_version = python_version,
             release_filename = release_filename,
