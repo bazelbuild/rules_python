@@ -109,7 +109,7 @@ stardoc(
     deps = [
         ":bazel_repo_tools",
         ":pip_install_bzl",
-        "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
+        "@bazel_skylib//lib:versions",
     ],
 )
 
@@ -122,7 +122,7 @@ stardoc(
         ":bazel_repo_tools",
         ":pip_install_bzl",
         ":requirements_parser_bzl",
-        "//third_party/github.com/bazelbuild/bazel-skylib/lib:versions",
+        "@bazel_skylib//lib:versions",
     ],
 )
 

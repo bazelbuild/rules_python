@@ -226,7 +226,7 @@ def _generate_build_file_contents(
             textwrap.dedent(
                 """\
         load("@rules_python//python:defs.bzl", "py_library", "py_binary")
-        load("@rules_python//third_party/github.com/bazelbuild/bazel-skylib/rules:copy_file.bzl", "copy_file")
+        load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
         package(default_visibility = ["//visibility:public"])
 
