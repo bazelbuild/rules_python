@@ -3,30 +3,28 @@
 # it evaluates, it outputs true/false for whether the module is part of the
 # standard library or not.
 
-import site
+import os
 import sys
-
-
-# Don't return any paths, all userland site-packages should be ignored.
-def __override_getusersitepackages__():
-    return ""
-
-
-site.getusersitepackages = __override_getusersitepackages__
+from contextlib import redirect_stdout
 
 
 def is_std_modules(module):
-    try:
-        __import__(module, globals(), locals(), [], 0)
-        return True
-    except Exception:
-        return False
+    # If for some reason a module (such as pygame, see https://github.com/pygame/pygame/issues/542)
+    # prints to stdout upon import,
+    # the output of this script should still be parseable by golang.
+    # Therefore, redirect stdout while running the import.
+    with redirect_stdout(os.devnull):
+        try:
+            __import__(module, globals(), locals(), [], 0)
+            return True
+        except Exception:
+            return False
 
 
 def main(stdin, stdout):
     for module in stdin:
         module = module.strip()
-        # Don't print the boolean directly as it is captilized in Python.
+        # Don't print the boolean directly as it is capitalized in Python.
         print(
             "true" if is_std_modules(module) else "false",
             end="\n",

@@ -37,8 +37,8 @@ func init() {
 	cmd := exec.CommandContext(ctx, stdModulesScriptRunfile)
 
 	cmd.Stderr = os.Stderr
-	cmd.Env = []string{}
-
+	// All userland site-packages should be ignored.
+	cmd.Env = []string{"PYTHONNOUSERSITE=1"}
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
