@@ -38,9 +38,9 @@ import (
 )
 
 const (
-	extensionDir      = "gazelle/"
-	testDataPath      = extensionDir + "testdata/"
-	gazelleBinaryName = "gazelle_python_binary"
+	extensionDir      = "gazelle" + string(os.PathSeparator) + "python" + string(os.PathSeparator)
+	testDataPath      = extensionDir + "testdata" + string(os.PathSeparator)
+	gazelleBinaryName = "gazelle_binary"
 )
 
 var gazellePath = mustFindGazelle()
@@ -55,7 +55,7 @@ func TestGazelleBinary(t *testing.T) {
 	for _, f := range runfiles {
 		if strings.HasPrefix(f.ShortPath, testDataPath) {
 			relativePath := strings.TrimPrefix(f.ShortPath, testDataPath)
-			parts := strings.SplitN(relativePath, "/", 2)
+			parts := strings.SplitN(relativePath, string(os.PathSeparator), 2)
 			if len(parts) < 2 {
 				// This file is not a part of a testcase since it must be in a dir that
 				// is the test case and then have a path inside of that.
@@ -82,7 +82,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		var config *testYAML
 		for _, f := range files {
 			path := f.Path
-			trim := testDataPath + name + "/"
+			trim := filepath.Join(testDataPath, name) + string(os.PathSeparator)
 			shortPath := strings.TrimPrefix(f.ShortPath, trim)
 			info, err := os.Stat(path)
 			if err != nil {
