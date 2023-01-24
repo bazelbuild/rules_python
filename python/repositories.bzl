@@ -246,6 +246,12 @@ filegroup(
     ),
 )
 
+cc_import(
+    name = "interface",
+    interface_library = "libs/python{python_version_nodot}.lib",
+    system_provided = True,
+)
+
 filegroup(
     name = "includes",
     srcs = glob(["include/**/*.h"]),
@@ -253,6 +259,10 @@ filegroup(
 
 cc_library(
     name = "python_headers",
+    deps = select({{
+        "@bazel_tools//src/conditions:windows": [":interface"],
+        "//conditions:default": None,
+    }}),
     hdrs = [":includes"],
     includes = [
         "include",
