@@ -60,16 +60,16 @@ certifi==2021.10.8 \
 
     # Options
     asserts.equals(env, ["--pre"], parse("--pre\n").options)
-    asserts.equals(env, ["--find-links /my/local/archives"], parse("--find-links /my/local/archives\n").options)
-    asserts.equals(env, ["--pre", "--find-links /my/local/archives"], parse("""\
+    asserts.equals(env, ["--find-links", "/my/local/archives"], parse("--find-links /my/local/archives\n").options)
+    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse("""\
 --pre
 --find-links /my/local/archives
 """).options)
-    asserts.equals(env, ["--pre", "--find-links /my/local/archives"], parse("""\
+    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse("""\
 --pre # Comment
 --find-links /my/local/archives
 """).options)
-    asserts.equals(env, struct(requirements = [("FooProject", "FooProject==1.0.0")], options = ["--pre", "--find-links /my/local/archives"]), parse("""\
+    asserts.equals(env, struct(requirements = [("FooProject", "FooProject==1.0.0")], options = ["--pre", "--find-links", "/my/local/archives"]), parse("""\
 --pre # Comment
 FooProject==1.0.0
 --find-links /my/local/archives

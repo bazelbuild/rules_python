@@ -96,6 +96,9 @@ def _handleParseDependency(input, buffer, result):
 def _handleParseOption(input, buffer, result):
     if input == "\n" and buffer.endswith("\\"):
         return (_STATE.ParseOption, buffer[0:-1])
+    elif input == " ":
+        result.options.append(buffer.rstrip("\n"))
+        return (_STATE.ParseOption, "")
     elif input == "\n" or input == EOF:
         result.options.append(buffer.rstrip("\n"))
         return (_STATE.ConsumeSpace, "")
