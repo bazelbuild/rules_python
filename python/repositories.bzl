@@ -196,8 +196,20 @@ def _python_repository_impl(rctx):
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
+    glob_include = []
+
+    if rctx.attr.ignore_root_user_error:
+        glob_include += [
+            "# These pycache files are created on first use of the associated python files.",
+            "# Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,",
+            "# the definition of this filegroup will change, and depending rules will get invalidated.",
+            "# See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them.",
+            "**/__pycache__/*.pyc",
+            "**/__pycache__/*.pyo",
+        ]
+
     if "windows" in platform:
-        glob_include = [
+        glob_include += [
             "*.exe",
             "*.dll",
             "bin/**",
@@ -210,7 +222,7 @@ def _python_repository_impl(rctx):
             "share/**",
         ]
     else:
-        glob_include = [
+        glob_include += [
             "bin/**",
             "extensions/**",
             "include/**",
