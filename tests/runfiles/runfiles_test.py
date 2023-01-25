@@ -208,9 +208,11 @@ class RunfilesTest(unittest.TestCase):
     def testManifestBasedRlocationWithRepoMappingFromMain(self):
         with _MockFile(
             contents=[
+                ",config.json,config.json~1.2.3",
                 ",my_module,_main",
                 ",my_protobuf,protobuf~3.19.2",
                 ",my_workspace,_main",
+                "protobuf~3.19.2,config.json,config.json~1.2.3",
                 "protobuf~3.19.2,protobuf,protobuf~3.19.2",
             ]
         ) as rm, _MockFile(
@@ -281,9 +283,11 @@ class RunfilesTest(unittest.TestCase):
     def testManifestBasedRlocationWithRepoMappingFromOtherRepo(self):
         with _MockFile(
             contents=[
+                ",config.json,config.json~1.2.3",
                 ",my_module,_main",
                 ",my_protobuf,protobuf~3.19.2",
                 ",my_workspace,_main",
+                "protobuf~3.19.2,config.json,config.json~1.2.3",
                 "protobuf~3.19.2,protobuf,protobuf~3.19.2",
             ]
         ) as rm, _MockFile(
@@ -374,9 +378,11 @@ class RunfilesTest(unittest.TestCase):
         with _MockFile(
             name="_repo_mapping",
             contents=[
+                "_,config.json,config.json~1.2.3",
                 ",my_module,_main",
                 ",my_protobuf,protobuf~3.19.2",
                 ",my_workspace,_main",
+                "protobuf~3.19.2,config.json,config.json~1.2.3",
                 "protobuf~3.19.2,protobuf,protobuf~3.19.2",
             ],
         ) as rm:
@@ -439,9 +445,11 @@ class RunfilesTest(unittest.TestCase):
         with _MockFile(
             name="_repo_mapping",
             contents=[
+                "_,config.json,config.json~1.2.3",
                 ",my_module,_main",
                 ",my_protobuf,protobuf~3.19.2",
                 ",my_workspace,_main",
+                "protobuf~3.19.2,config.json,config.json~1.2.3",
                 "protobuf~3.19.2,protobuf,protobuf~3.19.2",
             ],
         ) as rm:
