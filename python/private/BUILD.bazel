@@ -36,6 +36,8 @@ filegroup(
 # on Skylib.)
 exports_files(
     [
+        "py_package.bzl",
+        "py_wheel.bzl",
         "reexports.bzl",
         "stamp.bzl",
     ],
