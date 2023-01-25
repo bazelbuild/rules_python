@@ -1,22 +1,35 @@
-alias(
-    name = "gazelle",
-    actual = "//gazelle/python",
-    visibility = ["//visibility:public"],
-)
+load("@bazel_gazelle//:def.bzl", "gazelle")
 
-alias(
-    name = "gazelle_python_binary",
-    actual = "//gazelle/python:gazelle_binary",
-    visibility = ["//visibility:public"],
+# Gazelle configuration options.
+# See https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
+# gazelle:prefix github.com/bazelbuild/rules_python/gazelle
+# gazelle:exclude bazel-out
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle_update_repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%gazelle_deps",
+        "-prune",
+    ],
+    command = "update-repos",
 )
 
 filegroup(
     name = "distribution",
-    srcs = glob(["**"]) + [
-        "//gazelle/manifest:distribution",
-        "//gazelle/modules_mapping:distribution",
-        "//gazelle/python:distribution",
-        "//gazelle/pythonconfig:distribution",
+    srcs = [
+        ":BUILD.bazel",
+        ":README.md",
+        ":WORKSPACE",
+        ":def.bzl",
+        ":deps.bzl",
+        ":go.mod",
+        ":go.sum",
+        "//manifest:distribution",
+        "//modules_mapping:distribution",
+        "//python:distribution",
+        "//pythonconfig:distribution",
     ],
-    visibility = ["//:__pkg__"],
+    visibility = ["@rules_python//:__pkg__"],
 )

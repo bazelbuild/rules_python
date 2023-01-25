@@ -21,8 +21,9 @@ go_test(
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//gazelle/manifest/generate:distribution",
-        "//gazelle/manifest/test:distribution",
+        "//manifest/generate:distribution",
+        "//manifest/hasher:distribution",
+        "//manifest/test:distribution",
     ],
-    visibility = ["//gazelle:__pkg__"],
+    visibility = ["//:__pkg__"],
 )

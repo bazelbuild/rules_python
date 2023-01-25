@@ -40,7 +40,7 @@ register_toolchains(
 )
 \`\`\`
 
-## Using WORKSPACE:
+## Using WORKSPACE
 
 Paste this snippet into your \`WORKSPACE\` file:
 
@@ -57,5 +57,19 @@ http_archive(
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
+\`\`\`
+
+### Gazelle plugin
+
+Paste this snippet into your \`WORKSPACE\` file:
+
+\`\`\`starlark
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "rules_python_gazelle_plugin",
+    sha256 = "${SHA}",
+    strip_prefix = "${PREFIX}/gazelle",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/${TAG}.tar.gz",
+)
 \`\`\`
 EOF

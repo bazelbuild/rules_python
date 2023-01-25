@@ -1,0 +1,12 @@
+# Bazel directories
+/bazel-*
+/bazel-bin
+/bazel-genfiles
+/bazel-out
+/bazel-testlogs
+user.bazelrc
+
+# Go/Gazelle files
+# These otherwise match patterns above
+!go.mod
+!BUILD.out

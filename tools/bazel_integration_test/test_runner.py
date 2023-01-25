@@ -52,6 +52,10 @@ def main(conf_file):
                     "--override_repository=rules_python=%s/rules_python"
                     % os.environ["TEST_SRCDIR"]
                 )
+                bazel_args.append(
+                    "--override_repository=rules_python_gazelle_plugin=%s/rules_python_gazelle_plugin"
+                    % os.environ["TEST_SRCDIR"]
+                )
 
                 # TODO: --override_module isn't supported in the current BAZEL_VERSION (5.2.0)
                 # This condition and attribute can be removed when bazel is updated for

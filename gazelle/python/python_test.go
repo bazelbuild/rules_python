@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	extensionDir      = "gazelle" + string(os.PathSeparator) + "python" + string(os.PathSeparator)
+	extensionDir      = "python" + string(os.PathSeparator)
 	testDataPath      = extensionDir + "testdata" + string(os.PathSeparator)
 	gazelleBinaryName = "gazelle_binary"
 )

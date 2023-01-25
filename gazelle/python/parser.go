@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	parseScriptRunfile, err := bazel.Runfile("gazelle/python/parse")
+	parseScriptRunfile, err := bazel.Runfile("python/parse")
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)

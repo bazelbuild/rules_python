@@ -12,3 +12,9 @@ go_binary(
     embed = [":hasher_lib"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//manifest:__pkg__"],
+)

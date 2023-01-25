@@ -82,6 +82,22 @@ local_repository(
 #     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
 # )
 
+# We import the repository-local rules_python_gazelle_plugin version in order to
+# be able to test development changes to the plugin.
+local_repository(
+    name = "rules_python_gazelle_plugin",
+    path = "../../gazelle",
+)
+
+# When loading the gazelle plugin outside this repo, use the http_archive rule as follows:
+#
+#http_archive(
+#    name = "rules_python_gazelle_plugin",
+#    sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
+#    strip_prefix = "rules_python-0.16.1/gazelle",
+#    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
+#)
+
 # Next we load the toolchain from rules_python.
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
@@ -124,7 +140,7 @@ install_deps()
 
 # The rules_python gazelle extension has some third-party go dependencies
 # which we need to fetch in order to compile it.
-load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 # See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
 # This rule loads and compiles various go dependencies that running gazelle

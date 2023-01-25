@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
 load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
@@ -32,10 +31,10 @@ filegroup(
         "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
-        "//gazelle:distribution",
         "//python:distribution",
         "//python/pip_install:distribution",
         "//tools:distribution",
+        "@rules_python_gazelle_plugin//:distribution",
     ],
     visibility = [
         "//examples:__pkg__",
@@ -59,23 +58,6 @@ filegroup(
         "@bazel_tools//tools/python:utils.bzl",
     ],
     visibility = ["//visibility:public"],
-)
-
-# Gazelle configuration options.
-# See https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
-# gazelle:prefix github.com/bazelbuild/rules_python
-# gazelle:exclude bazel-out
-# gazelle:exclude examples/**
-gazelle(name = "gazelle")
-
-gazelle(
-    name = "gazelle_update_repos",
-    args = [
-        "-from_file=go.mod",
-        "-to_macro=gazelle/deps.bzl%gazelle_deps",
-        "-prune",
-    ],
-    command = "update-repos",
 )
 
 genrule(

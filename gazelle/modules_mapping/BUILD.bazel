@@ -9,5 +9,5 @@ py_binary(
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//gazelle:__pkg__"],
+    visibility = ["//:__pkg__"],
 )

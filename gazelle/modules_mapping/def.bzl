@@ -44,7 +44,7 @@ modules_mapping = rule(
         ),
         "_generator": attr.label(
             cfg = "exec",
-            default = "//gazelle/modules_mapping:generator",
+            default = "//modules_mapping:generator",
             executable = True,
         ),
     },
