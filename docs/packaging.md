@@ -1,6 +1,6 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-Rules for building wheels.
+Public API for for building wheels.
 
 <a id="py_package"></a>
 
@@ -13,7 +13,7 @@ py_package(<a href="#py_package-name">name</a>, <a href="#py_package-deps">deps<
 A rule to select all files in transitive dependencies of deps which
 belong to given set of Python packages.
 
-This rule is intended to be used as data dependency to py_wheel rule
+This rule is intended to be used as data dependency to py_wheel rule.
 
 
 **ATTRIBUTES**
@@ -35,7 +35,6 @@ py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-abi">abi</a>, <a 
          <a href="#py_wheel-distribution">distribution</a>, <a href="#py_wheel-entry_points">entry_points</a>, <a href="#py_wheel-extra_distinfo_files">extra_distinfo_files</a>, <a href="#py_wheel-extra_requires">extra_requires</a>, <a href="#py_wheel-homepage">homepage</a>, <a href="#py_wheel-license">license</a>,
          <a href="#py_wheel-platform">platform</a>, <a href="#py_wheel-python_requires">python_requires</a>, <a href="#py_wheel-python_tag">python_tag</a>, <a href="#py_wheel-requires">requires</a>, <a href="#py_wheel-stamp">stamp</a>, <a href="#py_wheel-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel-version">version</a>)
 </pre>
-
 
 A rule for building Python Wheels.
 

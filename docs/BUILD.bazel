@@ -81,6 +81,8 @@ bzl_library(
     name = "packaging_bzl",
     srcs = [
         "//python:packaging.bzl",
+        "//python/private:py_package.bzl",
+        "//python/private:py_wheel.bzl",
         "//python/private:stamp.bzl",
     ],
 )
