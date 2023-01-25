@@ -357,3 +357,15 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
         _other_attrs,
     ),
 )
+
+py_wheel = rule(
+    implementation = py_wheel_lib.implementation,
+    doc = """\
+Internal rule used by the [py_wheel macro](/docs/packaging.md#py_wheel).
+
+These intentionally have the same name to avoid sharp edges with Bazel macros.
+For example, a `bazel query` for a user's `py_wheel` macro expands to `py_wheel` targets,
+in the way they expect.
+""",
+    attrs = py_wheel_lib.attrs,
+)
