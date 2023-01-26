@@ -15,7 +15,7 @@ jobs:
       - name: Prepare workspace snippet
         run: .github/workflows/workspace_snippet.sh > release_notes.txt
       - name: Build wheel dist
-        run: bazel build --stamp --embed_label=${{ env.GITHUB_REF_NAME }} //python/runfiles:wheel.dist
+        run: bazel build --stamp --embed_label=${{ github.ref_name }} //python/runfiles:wheel.dist
       - name: Publish runfiles package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
