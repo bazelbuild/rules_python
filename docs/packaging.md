@@ -26,6 +26,32 @@ This rule is intended to be used as data dependency to py_wheel rule.
 | <a id="py_package-packages"></a>packages |  List of Python packages to include in the distribution. Sub-packages are automatically included.   | List of strings | optional | <code>[]</code> |
 
 
+<a id="py_wheel_dist"></a>
+
+## py_wheel_dist
+
+<pre>
+py_wheel_dist(<a href="#py_wheel_dist-name">name</a>, <a href="#py_wheel_dist-out">out</a>, <a href="#py_wheel_dist-wheel">wheel</a>)
+</pre>
+
+Prepare a dist/ folder, following Python's packaging standard practice.
+
+See https://packaging.python.org/en/latest/tutorials/packaging-projects/#generating-distribution-archives
+which recommends a dist/ folder containing the wheel file(s), source distributions, etc.
+
+This also has the advantage that stamping information is included in the wheel's filename.
+
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="py_wheel_dist-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="py_wheel_dist-out"></a>out |  name of the resulting directory   | String | required |  |
+| <a id="py_wheel_dist-wheel"></a>wheel |  a [py_wheel rule](/docs/packaging.md#py_wheel_rule)   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
+
+
 <a id="py_wheel_rule"></a>
 
 ## py_wheel_rule
@@ -68,7 +94,7 @@ in the way they expect.
 | <a id="py_wheel_rule-requires"></a>requires |  List of requirements for this package. See the section on [Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) for details and examples of the format of this argument.   | List of strings | optional | <code>[]</code> |
 | <a id="py_wheel_rule-stamp"></a>stamp |  Whether to encode build information into the wheel. Possible values:<br><br>- <code>stamp = 1</code>: Always stamp the build information into the wheel, even in [--nostamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) builds. This setting should be avoided, since it potentially kills remote caching for the target and any downstream actions that depend on it.<br><br>- <code>stamp = 0</code>: Always replace build information by constant values. This gives good build result caching.<br><br>- <code>stamp = -1</code>: Embedding of build information is controlled by the [--[no]stamp](https://docs.bazel.build/versions/main/user-manual.html#flag--stamp) flag.<br><br>Stamped targets are not rebuilt unless their dependencies change.   | Integer | optional | <code>-1</code> |
 | <a id="py_wheel_rule-strip_path_prefixes"></a>strip_path_prefixes |  path prefixes to strip from files added to the generated package   | List of strings | optional | <code>[]</code> |
-| <a id="py_wheel_rule-version"></a>version |  Version number of the package. Note that this attribute supports stamp format strings (eg. <code>1.2.3-{BUILD_TIMESTAMP}</code>) as well as 'make variables' (e.g. <code>1.2.3-$(VERSION)</code>).   | String | required |  |
+| <a id="py_wheel_rule-version"></a>version |  Version number of the package.<br><br>Note that this attribute supports stamp format strings as well as 'make variables'. For example:   - <code>version = "1.2.3-{BUILD_TIMESTAMP}"</code>   - <code>version = "{BUILD_EMBED_LABEL}"</code>   - <code>version = "$(VERSION)"</code><br><br>Note that Bazel's output filename cannot include the stamp information, as outputs must be known during the analysis phase and the stamp data is available only during the action execution.<br><br>The [<code>py_wheel</code>](/docs/packaging.md#py_wheel) macro produces a <code>.dist</code>-suffix target which creates a <code>dist/</code> folder containing the wheel with the stamped name, suitable for publishing.<br><br>See [<code>py_wheel_dist</code>](/docs/packaging.md#py_wheel_dist) for more info.   | String | required |  |
 
 
 <a id="PyWheelInfo"></a>

@@ -41,6 +41,7 @@ py_wheel(
         "License :: OSI Approved :: Apache Software License",
     ],
     description_file = "README.md",
+    dist_folder = "dist",
     distribution = "bazel_runfiles",
     homepage = "https://github.com/bazelbuild/rules_python",
     strip_path_prefixes = ["python"],

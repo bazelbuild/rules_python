@@ -31,6 +31,43 @@ This rule is intended to be used as data dependency to py_wheel rule.
     attrs = py_package_lib.attrs,
 )
 
+# Based on https://github.com/aspect-build/bazel-lib/tree/main/lib/private/copy_to_directory.bzl
+# Avoiding a bazelbuild -> aspect-build dependency :(
+def _py_wheel_dist_impl(ctx):
+    dir = ctx.actions.declare_directory(ctx.attr.out)
+    name_file = ctx.attr.wheel[PyWheelInfo].name_file
+    cmds = [
+        "mkdir -p \"%s\"" % dir.path,
+        """cp "{}" "{}/$(cat "{}")" """.format(ctx.files.wheel[0].path, dir.path, name_file.path),
+    ]
+    ctx.actions.run_shell(
+        inputs = ctx.files.wheel + [name_file],
+        outputs = [dir],
+        command = "\n".join(cmds),
+        mnemonic = "CopyToDirectory",
+        progress_message = "Copying files to directory",
+        use_default_shell_env = True,
+    )
+    return [
+        DefaultInfo(files = depset([dir])),
+    ]
+
+py_wheel_dist = rule(
+    doc = """\
+Prepare a dist/ folder, following Python's packaging standard practice.
+
+See https://packaging.python.org/en/latest/tutorials/packaging-projects/#generating-distribution-archives
+which recommends a dist/ folder containing the wheel file(s), source distributions, etc.
+
+This also has the advantage that stamping information is included in the wheel's filename.
+""",
+    implementation = _py_wheel_dist_impl,
+    attrs = {
+        "out": attr.string(doc = "name of the resulting directory", mandatory = True),
+        "wheel": attr.label(doc = "a [py_wheel rule](/docs/packaging.md#py_wheel_rule)", providers = [PyWheelInfo]),
+    },
+)
+
 def py_wheel(name, **kwargs):
     """Builds a Python Wheel.
 
@@ -80,15 +117,12 @@ def py_wheel(name, **kwargs):
         name:  A unique name for this target.
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """
-    _py_wheel(name = name, **kwargs)
+    py_wheel_dist(
+        name = "{}.dist".format(name),
+        wheel = name,
+        out = kwargs.pop("dist_folder", "{}_dist".format(name)),
+    )
 
-    # TODO(alexeagle): produce an executable target like this:
-    # py_publish_wheel(
-    #     name = "{}.publish".format(name),
-    #     wheel = name,
-    #     # Optional: override the label for a py_binary that runs twine
-    #     # https://twine.readthedocs.io/en/stable/
-    #     twine_bin = "//path/to:twine",
-    # )
+    _py_wheel(name = name, **kwargs)
 
 py_wheel_rule = _py_wheel
