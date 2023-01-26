@@ -48,8 +48,8 @@ This also has the advantage that stamping information is included in the wheel's
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="py_wheel_dist-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="py_wheel_dist-out"></a>out |  -   | String | optional | <code>"dist"</code> |
-| <a id="py_wheel_dist-wheel"></a>wheel |  -   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
+| <a id="py_wheel_dist-out"></a>out |  name of the resulting directory   | String | required |  |
+| <a id="py_wheel_dist-wheel"></a>wheel |  a [py_wheel rule](/docs/packaging.md#py_wheel_rule)   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 
 
 <a id="py_wheel_rule"></a>

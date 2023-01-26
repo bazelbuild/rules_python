@@ -63,8 +63,8 @@ This also has the advantage that stamping information is included in the wheel's
 """,
     implementation = _py_wheel_dist_impl,
     attrs = {
-        "out": attr.string(default = "dist"),
-        "wheel": attr.label(providers = [PyWheelInfo]),
+        "out": attr.string(doc = "name of the resulting directory", mandatory = True),
+        "wheel": attr.label(doc = "a [py_wheel rule](/docs/packaging.md#py_wheel_rule)", providers = [PyWheelInfo]),
     },
 )
 
@@ -117,11 +117,12 @@ def py_wheel(name, **kwargs):
         name:  A unique name for this target.
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """
-    _py_wheel(name = name, **kwargs)
-
     py_wheel_dist(
         name = "{}.dist".format(name),
         wheel = name,
+        out = kwargs.pop("dist_folder", "{}_dist".format(name)),
     )
+
+    _py_wheel(name = name, **kwargs)
 
 py_wheel_rule = _py_wheel
