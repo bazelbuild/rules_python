@@ -323,6 +323,7 @@ py_runtime_pair(
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
+        "patches": rctx.attr.patches,
         "platform": platform,
         "python_version": python_version,
         "release_filename": release_filename,
