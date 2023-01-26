@@ -67,3 +67,21 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 # This rule loads and compiles various go dependencies that running gazelle
 # for python requirements.
 _py_gazelle_deps()
+
+load("@python//3.11.1:defs.bzl", "interpreter")
+
+#####################
+# Install twine for our own runfiles wheel publishing
+# Eventually we might want to install twine automatically for users too, see:
+# See https://github.com/bazelbuild/rules_python/issues/1016
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "publish_deps",
+    python_interpreter_target = interpreter,
+    requirements_lock = "//python/runfiles:requirements.txt",
+)
+
+load("@publish_deps//:requirements.bzl", "install_deps")
+
+install_deps()
