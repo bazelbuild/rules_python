@@ -73,11 +73,23 @@ Stamped targets are not rebuilt unless their dependencies change.
     ),
     "version": attr.string(
         mandatory = True,
-        doc = (
-            "Version number of the package. Note that this attribute " +
-            "supports stamp format strings (eg. `1.2.3-{BUILD_TIMESTAMP}`) " +
-            "as well as 'make variables' (e.g. `1.2.3-$(VERSION)`)."
-        ),
+        doc = """\
+Version number of the package.
+
+Note that this attribute supports stamp format strings as well as 'make variables'.
+For example:
+  - `version = "1.2.3-{BUILD_TIMESTAMP}"`
+  - `version = "{BUILD_EMBED_LABEL}"`
+  - `version = "$(VERSION)"`
+
+Note that Bazel's output filename cannot include the stamp information, as outputs must be known
+during the analysis phase and the stamp data is available only during the action execution.
+
+The [`py_wheel`](/docs/packaging.md#py_wheel) macro produces a `.dist`-suffix target which creates a
+`dist/` folder containing the wheel with the stamped name, suitable for publishing.
+
+See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
+""",
     ),
     "_stamp_flag": attr.label(
         doc = "A setting used to determine whether or not the `--stamp` flag is enabled",
