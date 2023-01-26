@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//examples/wheel/private:wheel_utils.bzl", "directory_writer")
-load("//python:defs.bzl", "py_library", "py_test")
-load("//python:packaging.bzl", "py_package", "py_wheel")
-load("//python:versions.bzl", "gen_python_config_settings")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
+load("@rules_python//python:versions.bzl", "gen_python_config_settings")
+load("//private:wheel_utils.bzl", "directory_writer")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -25,11 +25,11 @@ py_library(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "//examples/wheel/lib:simple_module",
-        "//examples/wheel/lib:module_with_data",
+        "//lib:simple_module",
+        "//lib:module_with_data",
         # Example dependency which is not packaged in the wheel
         # due to "packages" filter on py_package rule.
-        "//tests/load_from_macro:foo",
+        "//other_lib:foo",
     ],
 )
 
@@ -55,8 +55,8 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.1",
     deps = [
-        "//examples/wheel/lib:module_with_data",
-        "//examples/wheel/lib:simple_module",
+        "//lib:module_with_data",
+        "//lib:simple_module",
     ],
 )
 
@@ -69,8 +69,8 @@ py_wheel(
     stamp = 1,
     version = "0.1.{BUILD_TIMESTAMP}",
     deps = [
-        "//examples/wheel/lib:module_with_data",
-        "//examples/wheel/lib:simple_module",
+        "//lib:module_with_data",
+        "//lib:simple_module",
     ],
 )
 
@@ -121,16 +121,16 @@ py_wheel(
         ],
     },
     extra_distinfo_files = {
-        "//examples/wheel:NOTICE": "NOTICE",
+        "//:NOTICE": "NOTICE",
         # Rename the file when packaging to show we can.
-        "//examples/wheel:README.md": "README",
+        "//:README.md": "README",
     },
-    homepage = "www.example.com",
+    homepage = "https://github.com/bazelbuild/rules_python",
     license = "Apache 2.0",
     python_tag = "py3",
     # Requirements embedded into the wheel metadata.
     requires = ["pytest"],
-    version = "0.0.1",
+    version = "{BUILD_EMBED_LABEL}",
     deps = [":example_pkg"],
 )
 
@@ -158,8 +158,8 @@ py_wheel(
     distribution = "example_custom_package_root_multi_prefix",
     python_tag = "py3",
     strip_path_prefixes = [
-        "examples/wheel/lib",
-        "examples/wheel",
+        "lib",
+        "",
     ],
     version = "0.0.1",
     deps = [
@@ -173,8 +173,8 @@ py_wheel(
     distribution = "example_custom_package_root_multi_prefix_reverse_order",
     python_tag = "py3",
     strip_path_prefixes = [
-        "examples/wheel",
-        "examples/wheel/lib",  # this is not effective, because the first prefix takes priority
+        "",
+        "/lib",  # this is not effective, because the first prefix takes priority
     ],
     version = "0.0.1",
     deps = [

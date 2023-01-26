@@ -11,22 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-load("//python:defs.bzl", "py_library")
-load(":tags.bzl", "TAGS")
-
-licenses(["notice"])
-
-py_library(
-    name = "foo",
-    srcs = ["foo.py"],
-    tags = TAGS,
-)
-
-genrule(
-    name = "test_current_py_toolchain",
-    srcs = [],
-    outs = ["out.txt"],
-    cmd = "$(PYTHON3) --version > $(location out.txt)",
-    toolchains = ["//python:current_py_toolchain"],
-)

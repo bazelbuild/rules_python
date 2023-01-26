@@ -36,7 +36,7 @@ directory_writer = rule(
         "_writer": attr.label(
             executable = True,
             cfg = "exec",
-            default = Label("//examples/wheel/private:directory_writer"),
+            default = Label("//private:directory_writer"),
         ),
     },
 )

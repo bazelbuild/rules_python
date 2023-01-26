@@ -1,0 +1,8 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "foo",
+    srcs = ["foo.py"],
+    # Allow a test to verify an "outside package" doesn't get included
+    visibility = ["//:__pkg__"],
+)

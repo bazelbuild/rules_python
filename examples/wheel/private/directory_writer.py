@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The action executable of the `@rules_python//examples/wheel/private:wheel_utils.bzl%directory_writer` rule."""
+"""The action executable of the `//private:wheel_utils.bzl%directory_writer` rule."""
 
 import argparse
 import json

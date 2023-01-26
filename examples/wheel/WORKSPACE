@@ -1,0 +1,14 @@
+workspace(name = "wheel_example")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
