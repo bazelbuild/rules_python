@@ -29,7 +29,7 @@ def _sanitized_label(
     whl_name: str, repo_prefix: str, label: str, bzlmod: bool = False
 ) -> str:
     if bzlmod:
-        return '"@{}//:{}_{}"'.format(
+        return '"@{}//{}:{}"'.format(
             repo_prefix[:-1],
             sanitise_name(whl_name, prefix=""),
             label,

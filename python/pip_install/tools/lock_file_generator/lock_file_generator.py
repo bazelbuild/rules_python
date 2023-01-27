@@ -165,22 +165,22 @@ def generate_parsed_requirements_contents(
 
         def requirement(name):
             if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{py_library_label}"
+                return "@@{repo}//" + _clean_name(name) + ":{py_library_label}"
             return "@{repo_prefix}" + _clean_name(name) + "//:{py_library_label}"
 
         def whl_requirement(name):
             if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{wheel_file_label}"
+                return "@@{repo}//" + _clean_name(name) + ":{wheel_file_label}"
             return "@{repo_prefix}" + _clean_name(name) + "//:{wheel_file_label}"
 
         def data_requirement(name):
             if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{data_label}"
+                return "@@{repo}//" + _clean_name(name) + ":{data_label}"
             return "@{repo_prefix}" + _clean_name(name) + "//:{data_label}"
 
         def dist_info_requirement(name):
             if _bzlmod:
-                return "@@{repo}//:" + _clean_name(name) + "_{dist_info_label}"
+                return "@@{repo}//" + _clean_name(name) + ":{dist_info_label}"
             return "@{repo_prefix}" + _clean_name(name) + "//:{dist_info_label}"
 
         def entry_point(pkg, script = None):
