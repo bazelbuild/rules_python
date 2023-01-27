@@ -29,9 +29,9 @@ whl_library_alias(<a href="#whl_library_alias-name">name</a>, <a href="#whl_libr
 ## compile_pip_requirements
 
 <pre>
-compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-py_binary">py_binary</a>, <a href="#compile_pip_requirements-py_test">py_test</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>, <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>,
-                         <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>, <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-visibility">visibility</a>,
-                         <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
+compile_pip_requirements(<a href="#compile_pip_requirements-name">name</a>, <a href="#compile_pip_requirements-extra_args">extra_args</a>, <a href="#compile_pip_requirements-extra_deps">extra_deps</a>, <a href="#compile_pip_requirements-py_binary">py_binary</a>, <a href="#compile_pip_requirements-py_test">py_test</a>, <a href="#compile_pip_requirements-requirements_in">requirements_in</a>,
+                         <a href="#compile_pip_requirements-requirements_txt">requirements_txt</a>, <a href="#compile_pip_requirements-requirements_darwin">requirements_darwin</a>, <a href="#compile_pip_requirements-requirements_linux">requirements_linux</a>,
+                         <a href="#compile_pip_requirements-requirements_windows">requirements_windows</a>, <a href="#compile_pip_requirements-visibility">visibility</a>, <a href="#compile_pip_requirements-tags">tags</a>, <a href="#compile_pip_requirements-kwargs">kwargs</a>)
 </pre>
 
 Generates targets for managing pip dependencies with pip-compile.
@@ -53,6 +53,7 @@ It also generates two targets for running pip-compile:
 | :------------- | :------------- | :------------- |
 | <a id="compile_pip_requirements-name"></a>name |  base name for generated targets, typically "requirements".   |  none |
 | <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile.   |  <code>[]</code> |
+| <a id="compile_pip_requirements-extra_deps"></a>extra_deps |  extra dependencies passed to pip-compile.   |  <code>[]</code> |
 | <a id="compile_pip_requirements-py_binary"></a>py_binary |  the py_binary rule to be used.   |  <code>&lt;function py_binary&gt;</code> |
 | <a id="compile_pip_requirements-py_test"></a>py_test |  the py_test rule to be used.   |  <code>&lt;function py_test&gt;</code> |
 | <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies.   |  <code>None</code> |
