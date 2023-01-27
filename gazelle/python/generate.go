@@ -12,13 +12,11 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
+	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
-	"github.com/google/uuid"
-
-	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 )
 
 const (
@@ -212,7 +210,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel).
-			setUUID(uuid.Must(uuid.NewUUID()).String()).
+			setUUID(label.New("", args.Rel, pyLibraryTargetName).String()).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
 			addModuleDependencies(deps).
@@ -289,7 +287,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel).
-			setUUID(uuid.Must(uuid.NewUUID()).String()).
+			setUUID(label.New("", args.Rel, conftestTargetname).String()).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
