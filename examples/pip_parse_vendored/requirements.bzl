@@ -21,22 +21,22 @@ def _clean_name(name):
 
 def requirement(name):
     if _bzlmod:
-        return "@@pip//:" + _clean_name(name) + "_pkg"
+        return "@@pip//" + _clean_name(name) + ":pkg"
     return "@pip_" + _clean_name(name) + "//:pkg"
 
 def whl_requirement(name):
     if _bzlmod:
-        return "@@pip//:" + _clean_name(name) + "_whl"
+        return "@@pip//" + _clean_name(name) + ":whl"
     return "@pip_" + _clean_name(name) + "//:whl"
 
 def data_requirement(name):
     if _bzlmod:
-        return "@@pip//:" + _clean_name(name) + "_data"
+        return "@@pip//" + _clean_name(name) + ":data"
     return "@pip_" + _clean_name(name) + "//:data"
 
 def dist_info_requirement(name):
     if _bzlmod:
-        return "@@pip//:" + _clean_name(name) + "_dist_info"
+        return "@@pip//" + _clean_name(name) + ":dist_info"
     return "@pip_" + _clean_name(name) + "//:dist_info"
 
 def entry_point(pkg, script = None):
