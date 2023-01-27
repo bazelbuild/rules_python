@@ -35,7 +35,6 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
-        "@com_github_google_uuid//:uuid",
         "@io_bazel_rules_go//go/tools/bazel:go_default_library",
     ],
 )
