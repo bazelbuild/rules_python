@@ -210,7 +210,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel).
-			setUUID(fmt.Sprintf("//%s:%s", args.Rel, pyLibraryTargetName)).
+			setUUID(label.New("", args.Rel, pyLibraryTargetName).String()).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
 			addModuleDependencies(deps).
@@ -287,7 +287,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel).
-			setUUID(fmt.Sprintf("//%s:%s", args.Rel, conftestTargetname)).
+			setUUID(label.New("", args.Rel, conftestTargetname).String()).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
