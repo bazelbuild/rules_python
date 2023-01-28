@@ -351,6 +351,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	for _, pyTestTarget := range pyTestTargets {
+		if conftest != nil {
+			pyTestTarget.addModuleDependency(module{Name: strings.TrimSuffix(conftestFilename, ".py")})
+		}
 		pyTest := pyTestTarget.build()
 
 		result.Gen = append(result.Gen, pyTest)

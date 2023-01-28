@@ -20,5 +20,8 @@ py_test(
     name = "simple_test_with_conftest_test",
     srcs = ["__test__.py"],
     main = "__test__.py",
-    deps = [":simple_test_with_conftest"],
+    deps = [
+        ":conftest",
+        ":simple_test_with_conftest",
+    ],
 )
