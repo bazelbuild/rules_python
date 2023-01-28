@@ -15,7 +15,7 @@ type targetBuilder struct {
 	name              string
 	pythonProjectRoot string
 	bzlPackage        string
-	uuid              string
+	id                string
 	srcs              *treeset.Set
 	siblingSrcs       *treeset.Set
 	deps              *treeset.Set
@@ -41,12 +41,12 @@ func newTargetBuilder(kind, name, pythonProjectRoot, bzlPackage string, siblingS
 	}
 }
 
-// setUUID sets the given UUID for the target. It's used to index the generated
+// setId sets the given id for the target. It's used to index the generated
 // target based on this value in addition to the other ways the targets can be
 // imported. py_{binary,test} targets in the same Bazel package can add a
-// virtual dependency to this UUID that gets resolved in the Resolver interface.
-func (t *targetBuilder) setUUID(uuid string) *targetBuilder {
-	t.uuid = uuid
+// virtual dependency to this id that gets resolved in the Resolver interface.
+func (t *targetBuilder) setId(id string) *targetBuilder {
+	t.id = id
 	return t
 }
 
@@ -124,8 +124,8 @@ func (t *targetBuilder) generateImportsAttribute() *targetBuilder {
 // build returns the assembled *rule.Rule for the target.
 func (t *targetBuilder) build() *rule.Rule {
 	r := rule.NewRule(t.kind, t.name)
-	if t.uuid != "" {
-		r.SetPrivateAttr(uuidKey, t.uuid)
+	if t.id != "" {
+		r.SetPrivateAttr(idKey, t.id)
 	}
 	if !t.srcs.Empty() {
 		r.SetAttr("srcs", t.srcs.Values())

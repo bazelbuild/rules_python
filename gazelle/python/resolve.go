@@ -25,10 +25,10 @@ const (
 	// resolvedDepsKey is the attribute key used to pass dependencies that don't
 	// need to be resolved by the dependency resolver in the Resolver step.
 	resolvedDepsKey = "_gazelle_python_resolved_deps"
-	// uuidKey is the attribute key used to uniquely identify a py_library
+	// idKey is the attribute key used to uniquely identify a py_library
 	// target that should be imported by a py_test or py_binary in the same
 	// Bazel package.
-	uuidKey = "_gazelle_python_library_uuid"
+	idKey = "_gazelle_python_library_id"
 )
 
 // Resolver satisfies the resolve.Resolver interface. It resolves dependencies
@@ -57,10 +57,10 @@ func (py *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 			provides = append(provides, provide)
 		}
 	}
-	if r.PrivateAttr(uuidKey) != nil {
+	if r.PrivateAttr(idKey) != nil {
 		provide := resolve.ImportSpec{
 			Lang: languageName,
-			Imp:  r.PrivateAttr(uuidKey).(string),
+			Imp:  r.PrivateAttr(idKey).(string),
 		}
 		provides = append(provides, provide)
 	}
