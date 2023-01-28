@@ -209,7 +209,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel).
+		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
 			setUUID(label.New("", args.Rel, pyLibraryTargetName).String()).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
@@ -246,7 +246,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel).
+		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
 			setMain(pyBinaryEntrypointFilename).
 			addVisibility(visibility).
 			addSrc(pyBinaryEntrypointFilename).
@@ -286,7 +286,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel).
+		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
 			setUUID(label.New("", args.Rel, conftestTargetname).String()).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
@@ -322,7 +322,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 			}
 		}
-		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel).
+		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
 			addSrcs(pyTestFilenames).
 			addModuleDependencies(deps).
 			generateImportsAttribute()

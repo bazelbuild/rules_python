@@ -17,6 +17,7 @@ type targetBuilder struct {
 	bzlPackage        string
 	uuid              string
 	srcs              *treeset.Set
+	siblingSrcs       *treeset.Set
 	deps              *treeset.Set
 	resolvedDeps      *treeset.Set
 	visibility        *treeset.Set
@@ -26,13 +27,14 @@ type targetBuilder struct {
 }
 
 // newTargetBuilder constructs a new targetBuilder.
-func newTargetBuilder(kind, name, pythonProjectRoot, bzlPackage string) *targetBuilder {
+func newTargetBuilder(kind, name, pythonProjectRoot, bzlPackage string, siblingSrcs *treeset.Set) *targetBuilder {
 	return &targetBuilder{
 		kind:              kind,
 		name:              name,
 		pythonProjectRoot: pythonProjectRoot,
 		bzlPackage:        bzlPackage,
 		srcs:              treeset.NewWith(godsutils.StringComparator),
+		siblingSrcs:       siblingSrcs,
 		deps:              treeset.NewWith(moduleComparator),
 		resolvedDeps:      treeset.NewWith(godsutils.StringComparator),
 		visibility:        treeset.NewWith(godsutils.StringComparator),
@@ -65,7 +67,9 @@ func (t *targetBuilder) addSrcs(srcs *treeset.Set) *targetBuilder {
 
 // addModuleDependency adds a single module dep to the target.
 func (t *targetBuilder) addModuleDependency(dep module) *targetBuilder {
-	t.deps.Add(dep)
+	if dep.Name+".py" == filepath.Base(dep.Filepath) || !t.siblingSrcs.Contains(dep.Name+".py") {
+		t.deps.Add(dep)
+	}
 	return t
 }
 
@@ -73,7 +77,7 @@ func (t *targetBuilder) addModuleDependency(dep module) *targetBuilder {
 func (t *targetBuilder) addModuleDependencies(deps *treeset.Set) *targetBuilder {
 	it := deps.Iterator()
 	for it.Next() {
-		t.deps.Add(it.Value().(module))
+		t.addModuleDependency(it.Value().(module))
 	}
 	return t
 }
