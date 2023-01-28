@@ -210,7 +210,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			setUUID(label.New("", args.Rel, pyLibraryTargetName).String()).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
 			addModuleDependencies(deps).
@@ -253,10 +252,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addModuleDependencies(deps).
 			generateImportsAttribute()
 
-		if pyLibrary != nil {
-			pyBinaryTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(uuidKey).(string)})
-		}
-
 		pyBinary := pyBinaryTarget.build()
 
 		result.Gen = append(result.Gen, pyBinary)
@@ -287,7 +282,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			setUUID(label.New("", args.Rel, conftestTargetname).String()).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
@@ -357,14 +351,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	for _, pyTestTarget := range pyTestTargets {
-		if pyLibrary != nil {
-			pyTestTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(uuidKey).(string)})
-		}
-
-		if conftest != nil {
-			pyTestTarget.addModuleDependency(module{Name: conftest.PrivateAttr(uuidKey).(string)})
-		}
-
 		pyTest := pyTestTarget.build()
 
 		result.Gen = append(result.Gen, pyTest)

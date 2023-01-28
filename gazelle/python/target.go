@@ -2,6 +2,7 @@ package python
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/rule"
@@ -15,7 +16,6 @@ type targetBuilder struct {
 	name              string
 	pythonProjectRoot string
 	bzlPackage        string
-	uuid              string
 	srcs              *treeset.Set
 	siblingSrcs       *treeset.Set
 	deps              *treeset.Set
@@ -41,15 +41,6 @@ func newTargetBuilder(kind, name, pythonProjectRoot, bzlPackage string, siblingS
 	}
 }
 
-// setUUID sets the given UUID for the target. It's used to index the generated
-// target based on this value in addition to the other ways the targets can be
-// imported. py_{binary,test} targets in the same Bazel package can add a
-// virtual dependency to this UUID that gets resolved in the Resolver interface.
-func (t *targetBuilder) setUUID(uuid string) *targetBuilder {
-	t.uuid = uuid
-	return t
-}
-
 // addSrc adds a single src to the target.
 func (t *targetBuilder) addSrc(src string) *targetBuilder {
 	t.srcs.Add(src)
@@ -67,9 +58,18 @@ func (t *targetBuilder) addSrcs(srcs *treeset.Set) *targetBuilder {
 
 // addModuleDependency adds a single module dep to the target.
 func (t *targetBuilder) addModuleDependency(dep module) *targetBuilder {
-	if dep.Name+".py" == filepath.Base(dep.Filepath) || !t.siblingSrcs.Contains(dep.Name+".py") {
-		t.deps.Add(dep)
+	fileName := dep.Name + ".py"
+	if t.siblingSrcs.Contains(fileName) && fileName != filepath.Base(dep.Filepath) {
+		if strings.HasPrefix(dep.Name, "test_") || strings.HasSuffix(dep.Name, "_test") {
+			// don't need to add deps when test files are importing each other, because they are in
+			// the same py_test target.
+			return t
+		}
+		// importing another module from the same package, converting to absolute imports to make
+		// dependency resolution easier
+		dep.Name = importSpecFromSrc(t.pythonProjectRoot, t.bzlPackage, fileName).Imp
 	}
+	t.deps.Add(dep)
 	return t
 }
 
@@ -124,9 +124,6 @@ func (t *targetBuilder) generateImportsAttribute() *targetBuilder {
 // build returns the assembled *rule.Rule for the target.
 func (t *targetBuilder) build() *rule.Rule {
 	r := rule.NewRule(t.kind, t.name)
-	if t.uuid != "" {
-		r.SetPrivateAttr(uuidKey, t.uuid)
-	}
 	if !t.srcs.Empty() {
 		r.SetAttr("srcs", t.srcs.Values())
 	}
