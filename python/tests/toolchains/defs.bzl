@@ -24,37 +24,34 @@ powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
 """
 
 def _acceptance_test_impl(ctx):
-    base = "/".join([ctx.attr.python_version])
-    workspace = ctx.actions.declare_file("/".join([base, "WORKSPACE"]))
+    workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
     ctx.actions.expand_template(
         template = ctx.file._workspace_tmpl,
         output = workspace,
-        substitutions = {
-            "%python_version%": ctx.attr.python_version,
-        },
+        substitutions = {"%python_version%": ctx.attr.python_version},
     )
 
-    build_bazel = ctx.actions.declare_file("/".join([base, "BUILD.bazel"]))
+    build_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "BUILD.bazel"]))
     ctx.actions.expand_template(
         template = ctx.file._build_bazel_tmpl,
         output = build_bazel,
         substitutions = {"%python_version%": ctx.attr.python_version},
     )
 
-    python_version_test = ctx.actions.declare_file("/".join([base, "python_version_test.py"]))
+    python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
     ctx.actions.symlink(
         target_file = ctx.file._python_version_test,
         output = python_version_test,
     )
 
-    run_acceptance_test_py = ctx.actions.declare_file("/".join([base, "run_acceptance_test.py"]))
+    run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
         template = ctx.file._run_acceptance_test_tmpl,
         output = run_acceptance_test_py,
         substitutions = {
             "%is_windows%": str(ctx.attr.is_windows),
             "%python_version%": ctx.attr.python_version,
-            "%test_location%": "/".join([ctx.attr.test_location, base]),
+            "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
         },
     )
 
@@ -168,7 +165,6 @@ def acceptance_tests():
         for platform, meta in PLATFORMS.items():
             if platform not in TOOL_VERSIONS[python_version]["sha256"]:
                 continue
-
             acceptance_test(
                 name = "python_{python_version}_{platform}_test".format(
                     python_version = python_version.replace(".", "_"),
