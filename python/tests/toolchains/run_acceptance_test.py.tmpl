@@ -47,13 +47,13 @@ class TestPythonVersion(unittest.TestCase):
             bazelrc.write(os.linesep.join(bazelrc_lines))
 
     def test_match_toolchain(self):
-        stream = os.popen("bazel run @python//:python3 -- --version")
+        stream = subprocess.check_output("bazel run @python//:python3 -- --version")
         output = stream.read().strip()
         self.assertEqual(output, "Python %python_version%")
 
         subprocess.run("bazel test //...", shell=True, check=True)
 
-        stream = os.popen("bazel info execution_root")
+        stream = subprocess.check_output("bazel info execution_root")
         exec_root = pathlib.Path(stream.read().strip())
         external = exec_root / "external"
         self.assertEqual([], list(external.glob("pypi__coverage_*")), "coverage toolchain should not be downloaded upon bazel test")
