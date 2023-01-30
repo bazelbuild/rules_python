@@ -295,8 +295,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	var pyTestTargets []*targetBuilder
-	newPyTestTargetBuilder := func(pyTestFilenames *treeset.Set, pyTestTargetName string) *targetBuilder {
-		deps, err := parser.parse(pyTestFilenames)
+	newPyTestTargetBuilder := func(srcs *treeset.Set, pyTestTargetName string) *targetBuilder {
+		deps, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -317,7 +317,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			addSrcs(pyTestFilenames).
+			addSrcs(srcs).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
 	}
