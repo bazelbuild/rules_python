@@ -30,6 +30,7 @@ def _python_impl(module_ctx):
                 bzlmod = True,
                 # Toolchain registration in bzlmod is done in MODULE file
                 register_toolchains = False,
+                register_coverage_tool = attr.configure_coverage_tool,
             )
 
 python = module_extension(
@@ -37,6 +38,10 @@ python = module_extension(
     tag_classes = {
         "toolchain": tag_class(
             attrs = {
+                "configure_coverage_tool": attr.bool(
+                    mandatory = False,
+                    doc = "Whether or not to configure the default coverage tool for the toolchains.",
+                ),
                 "name": attr.string(mandatory = True),
                 "python_version": attr.string(mandatory = True),
             },

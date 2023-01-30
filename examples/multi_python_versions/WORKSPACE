@@ -24,6 +24,7 @@ python_register_multi_toolchains(
         "3.10",
         "3.11",
     ],
+    register_coverage_tool = True,
 )
 
 load("@python//:pip.bzl", "multi_pip_parse")

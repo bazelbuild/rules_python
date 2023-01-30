@@ -436,7 +436,7 @@ def python_register_toolchains(
         distutils = None,
         distutils_content = None,
         register_toolchains = True,
-        register_coverage_tool = True,
+        register_coverage_tool = False,
         set_python_version_constraint = False,
         tool_versions = TOOL_VERSIONS,
         bzlmod = False,
