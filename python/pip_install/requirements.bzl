@@ -20,6 +20,7 @@ load("//python/pip_install:repositories.bzl", "requirement")
 def compile_pip_requirements(
         name,
         extra_args = [],
+        extra_deps = [],
         py_binary = _py_binary,
         py_test = _py_test,
         requirements_in = None,
@@ -44,6 +45,7 @@ def compile_pip_requirements(
     Args:
         name: base name for generated targets, typically "requirements".
         extra_args: passed to pip-compile.
+        extra_deps: extra dependencies passed to pip-compile.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
         requirements_in: file expressing desired dependencies.
@@ -97,7 +99,7 @@ def compile_pip_requirements(
         requirement("importlib_metadata"),
         requirement("zipp"),
         requirement("more_itertools"),
-    ]
+    ] + extra_deps
 
     attrs = {
         "args": args,
