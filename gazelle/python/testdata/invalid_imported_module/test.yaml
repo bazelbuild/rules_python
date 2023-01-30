@@ -1,8 +1,22 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ---
 expect:
   exit_code: 1
   stderr: |
-    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module": "grpc" at line 2 from "__init__.py" is an invalid dependency: possible solutions:
+    gazelle: ERROR: failed to validate dependencies for target "//:invalid_imported_module": "grpc" at line 16 from "__init__.py" is an invalid dependency: possible solutions:
     	1. Add it as a dependency in the requirements.txt file.
     	2. Instruct Gazelle to resolve to a known dependency using the gazelle:resolve directive.
     	3. Ignore it with a comment '# gazelle:ignore grpc' in the Python file.
