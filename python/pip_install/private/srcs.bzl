@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """A generated file containing all source files used for `@rules_python//python/pip_install:pip_repository.bzl` rules
 
 This file is auto-generated from the `@rules_python//python/pip_install/private:srcs_module.update` target. Please
