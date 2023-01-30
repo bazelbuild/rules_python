@@ -20,10 +20,6 @@ set -o errexit -o nounset -o pipefail
 # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 TAG=${GITHUB_REF_NAME}
 PREFIX="rules_python-${TAG}"
-# We generate our own .tar.gz file because the GitHub generated archives
-# may change in subtle ways, e.g. GitHub might change the compression
-# algorithm, which then changes the checksum, which then invalidates
-# people's http_archive configs.
 ARCHIVE="rules_python-$TAG.tar.gz"
 git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip > $ARCHIVE
 SHA=$(shasum -a 256 $ARCHIVE | awk '{print $1}')
