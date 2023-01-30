@@ -59,6 +59,9 @@ func (t *targetBuilder) addSrcs(srcs *treeset.Set) *targetBuilder {
 // addModuleDependency adds a single module dep to the target.
 func (t *targetBuilder) addModuleDependency(dep module) *targetBuilder {
 	fileName := dep.Name + ".py"
+	if dep.From != "" {
+		fileName = dep.From + ".py"
+	}
 	if t.siblingSrcs.Contains(fileName) && fileName != filepath.Base(dep.Filepath) {
 		if strings.HasPrefix(dep.Name, "test_") || strings.HasSuffix(dep.Name, "_test") {
 			// don't need to add deps when test files are importing each other, because they are in
