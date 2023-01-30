@@ -31,8 +31,8 @@ jobs:
         run: .github/workflows/workspace_snippet.sh
       - name: Release
         uses: softprops/action-gh-release@v1
-        fail_on_unmatched_files: true
         with:
+          fail_on_unmatched_files: true
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
           body_path: release_notes.txt
