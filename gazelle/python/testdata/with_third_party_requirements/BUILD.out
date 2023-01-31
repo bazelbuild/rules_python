@@ -20,5 +20,5 @@ py_binary(
     srcs = ["__main__.py"],
     main = "__main__.py",
     visibility = ["//:__subpackages__"],
-    deps = [":with_third_party_requirements"],
+    deps = ["@gazelle_python_test_baz//:pkg"],
 )
