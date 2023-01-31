@@ -1,3 +1,17 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 "Module extensions for use with bzlmod"
 
 load("@rules_python//python:pip.bzl", "pip_parse")
@@ -5,6 +19,7 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "use_isolated", "whl_library")
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
 
 def _python_impl(module_ctx):
     for mod in module_ctx.modules:
@@ -12,20 +27,32 @@ def _python_impl(module_ctx):
             python_register_toolchains(
                 name = attr.name,
                 python_version = attr.python_version,
+                bzlmod = True,
                 # Toolchain registration in bzlmod is done in MODULE file
                 register_toolchains = False,
+                register_coverage_tool = attr.configure_coverage_tool,
             )
 
 python = module_extension(
     implementation = _python_impl,
     tag_classes = {
-        "toolchain": tag_class(attrs = dict({"name": attr.string(mandatory = True), "python_version": attr.string(mandatory = True)})),
+        "toolchain": tag_class(
+            attrs = {
+                "configure_coverage_tool": attr.bool(
+                    mandatory = False,
+                    doc = "Whether or not to configure the default coverage tool for the toolchains.",
+                ),
+                "name": attr.string(mandatory = True),
+                "python_version": attr.string(mandatory = True),
+            },
+        ),
     },
 )
 
 # buildifier: disable=unused-variable
 def _internal_deps_impl(module_ctx):
     pip_install_dependencies()
+    install_coverage_deps()
 
 internal_deps = module_extension(
     implementation = _internal_deps_impl,
