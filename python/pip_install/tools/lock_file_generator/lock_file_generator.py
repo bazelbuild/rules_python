@@ -300,7 +300,7 @@ If set, it will take precedence over python_interpreter.",
         annotated_requirements.update(
             {
                 name: "@{}//:{}.annotation.json".format(
-                    args.repo_prefix.rstrip("_"), name
+                    args.repo, name
                 )
             }
         )
