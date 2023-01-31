@@ -26,11 +26,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Prepare workspace snippet
-        run: .github/workflows/workspace_snippet.sh > release_notes.txt
+      - name: Create release archive and notes
+        run: .github/workflows/create_archive_and_notes.sh
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
           body_path: release_notes.txt
+          fail_on_unmatched_files: true
+          files: rules_python-*.tar.gz

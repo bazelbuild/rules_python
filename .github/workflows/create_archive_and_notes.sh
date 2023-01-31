@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 set -o errexit -o nounset -o pipefail
 
 # Set by GH actions, see
 # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 TAG=${GITHUB_REF_NAME}
+# A prefix is added to better match the GitHub generated archives.
 PREFIX="rules_python-${TAG}"
-SHA=$(git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip | shasum -a 256 | awk '{print $1}')
+ARCHIVE="rules_python-$TAG.tar.gz"
+git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip > $ARCHIVE
+SHA=$(shasum -a 256 $ARCHIVE | awk '{print $1}')
 
-cat << EOF
+cat > release_notes.txt << EOF
 ## Using Bzlmod with Bazel 6
 
 Add to your \`MODULE.bazel\` file:
@@ -65,7 +67,7 @@ http_archive(
     name = "rules_python",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/${TAG}.tar.gz",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -83,7 +85,7 @@ http_archive(
     name = "rules_python_gazelle_plugin",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}/gazelle",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/${TAG}.tar.gz",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 \`\`\`
 EOF
