@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 set -o errexit -o nounset -o pipefail
 
 # Set by GH actions, see
