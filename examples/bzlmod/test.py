@@ -14,7 +14,7 @@
 
 import unittest
 
-from __init__ import main
+from lib import main
 
 
 class ExampleTest(unittest.TestCase):

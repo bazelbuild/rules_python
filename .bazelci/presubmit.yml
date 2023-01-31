@@ -34,6 +34,20 @@ buildifier:
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
+.coverage_targets_example_bzlmod: &coverage_targets_example_bzlmod
+  coverage_targets: ["//:test"]
+.coverage_targets_example_multi_python: &coverage_targets_example_multi_python
+  coverage_targets:
+    - //tests:my_lib_3_10_test
+    - //tests:my_lib_3_11_test
+    - //tests:my_lib_3_8_test
+    - //tests:my_lib_3_9_test
+    - //tests:my_lib_default_test
+    - //tests:version_3_10_test
+    - //tests:version_3_11_test
+    - //tests:version_3_8_test
+    - //tests:version_3_9_test
+    - //tests:version_default_test
 tasks:
   gazelle_extension:
     name: Test the Gazelle extension
@@ -89,42 +103,50 @@ tasks:
 
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
     name: bzlmod integration tests on Ubuntu
     working_directory: examples/bzlmod
     platform: ubuntu2004
   integration_test_bzlmod_debian:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
     name: bzlmod integration tests on Debian
     working_directory: examples/bzlmod
     platform: debian11
   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
     name: bzlmod integration tests on macOS
     working_directory: examples/bzlmod
     platform: macos
   integration_test_bzlmod_windows:
     <<: *reusable_build_test_all
+    # coverage is not supported on Windows
     name: bzlmod integration tests on Windows
     working_directory: examples/bzlmod
     platform: windows
 
   integration_test_multi_python_versions_ubuntu:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_multi_python
     name: multi_python_versions integration tests on Ubuntu
     working_directory: examples/multi_python_versions
     platform: ubuntu2004
   integration_test_multi_python_versions_debian:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_multi_python
     name: multi_python_versions integration tests on Debian
     working_directory: examples/multi_python_versions
     platform: debian11
   integration_test_multi_python_versions_macos:
     <<: *reusable_build_test_all
+    <<: *coverage_targets_example_multi_python
     name: multi_python_versions integration tests on macOS
     working_directory: examples/multi_python_versions
     platform: macos
   integration_test_multi_python_versions_windows:
     <<: *reusable_build_test_all
+    # coverage is not supported on Windows
     name: multi_python_versions integration tests on Windows
     working_directory: examples/multi_python_versions
     platform: windows

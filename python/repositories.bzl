@@ -19,6 +19,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:coverage_deps.bzl", "coverage_dep")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -295,9 +296,21 @@ cc_library(
 
 exports_files(["python", "{python_path}"])
 
+# Used to only download coverage toolchain when the coverage is collected by
+# bazel.
+config_setting(
+    name = "coverage_enabled",
+    values = {{"collect_code_coverage": "true"}},
+    visibility = ["//visibility:private"],
+)
+
 py_runtime(
     name = "py3_runtime",
     files = [":files"],
+    coverage_tool = select({{
+        ":coverage_enabled": {coverage_tool},
+        "//conditions:default": None,
+    }}),
     interpreter = "{python_path}",
     python_version = "PY3",
 )
@@ -312,6 +325,7 @@ py_runtime_pair(
         python_path = python_bin,
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
+        coverage_tool = rctx.attr.coverage_tool if rctx.attr.coverage_tool == None or "windows" in rctx.os.name else "\"{}\"".format(rctx.attr.coverage_tool),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -319,6 +333,7 @@ py_runtime_pair(
     rctx.file("BUILD.bazel", build_content)
 
     return {
+        "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
@@ -336,6 +351,28 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "coverage_tool": attr.label(
+            # Mirrors the definition at
+            # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
+            allow_files = False,
+            doc = """
+This is a target to use for collecting code coverage information from `py_binary`
+and `py_test` targets.
+
+If set, the target must either produce a single file or be an executable target.
+The path to the single file, or the executable if the target is executable,
+determines the entry point for the python coverage tool.  The target and its
+runfiles will be added to the runfiles when coverage is enabled.
+
+The entry point for the tool must be loadable by a Python interpreter (e.g. a
+`.py` or `.pyc` file).  It must accept the command line arguments
+of coverage.py (https://coverage.readthedocs.io), at least including
+the `run` and `lcov` subcommands.
+
+For more information see the official bazel docs
+(https://bazel.build/reference/be/python#py_runtime.coverage_tool).
+""",
+        ),
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
@@ -399,8 +436,10 @@ def python_register_toolchains(
         distutils = None,
         distutils_content = None,
         register_toolchains = True,
+        register_coverage_tool = False,
         set_python_version_constraint = False,
         tool_versions = TOOL_VERSIONS,
+        bzlmod = False,
         **kwargs):
     """Convenience macro for users which does typical setup.
 
@@ -417,9 +456,11 @@ def python_register_toolchains(
         distutils: see the distutils attribute in the python_repository repository rule.
         distutils_content: see the distutils_content attribute in the python_repository repository rule.
         register_toolchains: Whether or not to register the downloaded toolchains.
+        register_coverage_tool: Whether or not to register the downloaded coverage tool to the toolchains.
         set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
-        in python/versions.bzl will be used
+            in python/versions.bzl will be used.
+        bzlmod: Whether this rule is being run under a bzlmod module extension.
         **kwargs: passed to each python_repositories call.
     """
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
@@ -436,6 +477,24 @@ def python_register_toolchains(
 
         (release_filename, url, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
 
+        # allow passing in a tool version
+        coverage_tool = None
+        coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
+        if register_coverage_tool and coverage_tool == None:
+            coverage_tool = coverage_dep(
+                name = "{name}_{platform}_coverage".format(
+                    name = name,
+                    platform = platform,
+                ),
+                python_version = python_version,
+                platform = platform,
+                visibility = ["@@{name}_{platform}//:__subpackages__".format(
+                    name = name,
+                    platform = platform,
+                )],
+                install = not bzlmod,
+            )
+
         python_repository(
             name = "{name}_{platform}".format(
                 name = name,
@@ -450,6 +509,7 @@ def python_register_toolchains(
             distutils = distutils,
             distutils_content = distutils_content,
             strip_prefix = strip_prefix,
+            coverage_tool = coverage_tool,
             **kwargs
         )
         if register_toolchains:

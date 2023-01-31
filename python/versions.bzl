@@ -26,6 +26,21 @@ DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/
 # the hashes:
 #   bazel run //python/private:print_toolchains_checksums
 #
+# Note, to users looking at how to specify their tool versions, coverage_tool version for each
+# interpreter can be specified by:
+#   "3.8.10": {
+#       "url": "20210506/cpython-{python_version}-{platform}-pgo+lto-20210506T0943.tar.zst",
+#       "sha256": {
+#           "x86_64-apple-darwin": "8d06bec08db8cdd0f64f4f05ee892cf2fcbc58cfb1dd69da2caab78fac420238",
+#           "x86_64-unknown-linux-gnu": "aec8c4c53373b90be7e2131093caa26063be6d9d826f599c935c0e1042af3355",
+#       },
+#       "coverage_tool": {
+#           "x86_64-apple-darwin": "<label_for_darwin>"",
+#           "x86_64-unknown-linux-gnu": "<label_for_linux>"",
+#       },
+#       "strip_prefix": "python",
+#   },
+#
 # buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
     "3.8.10": {

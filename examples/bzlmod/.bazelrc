@@ -1,1 +1,3 @@
 common --experimental_enable_bzlmod
+
+coverage --java_runtime_version=remotejdk_11
