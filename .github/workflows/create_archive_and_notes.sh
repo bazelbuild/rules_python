@@ -19,6 +19,7 @@ set -o errexit -o nounset -o pipefail
 # Set by GH actions, see
 # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
 TAG=${GITHUB_REF_NAME}
+# A prefix is added to better match the GitHub generated archives.
 PREFIX="rules_python-${TAG}"
 ARCHIVE="rules_python-$TAG.tar.gz"
 git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip > $ARCHIVE
@@ -67,7 +68,7 @@ http_archive(
     name = "rules_python",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/${TAG}.tar.gz",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -85,7 +86,7 @@ http_archive(
     name = "rules_python_gazelle_plugin",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}/gazelle",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/${TAG}.tar.gz",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
 \`\`\`
 EOF
