@@ -198,13 +198,24 @@ def _python_repository_impl(rctx):
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
     glob_include = []
+    glob_exclude = [
+        "**/* *",  # Bazel does not support spaces in file names.
+        # Unused shared libraries. `python` executable and the `:libpython` target
+        # depend on `libpython{python_version}.so.1.0`.
+        "lib/libpython{python_version}.so",
+        # static libraries
+        "lib/**/*.a",
+        # tests for the standard libraries.
+        "lib/python{python_version}/**/test/**",
+        "lib/python{python_version}/**/tests/**",
+    ]
 
     if rctx.attr.ignore_root_user_error:
-        glob_include += [
-            "# These pycache files are created on first use of the associated python files.",
-            "# Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,",
-            "# the definition of this filegroup will change, and depending rules will get invalidated.",
-            "# See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them.",
+        glob_exclude += [
+            # These pycache files are created on first use of the associated python files.
+            # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
+            # the definition of this filegroup will change, and depending rules will get invalidated."
+            # See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
             "**/__pycache__/*.pyc",
             "**/__pycache__/*.pyo",
         ]
@@ -245,17 +256,7 @@ filegroup(
         include = {glob_include},
         # Platform-agnostic filegroup can't match on all patterns.
         allow_empty = True,
-        exclude = [
-            "**/* *", # Bazel does not support spaces in file names.
-            # Unused shared libraries. `python` executable and the `:libpython` target
-            # depend on `libpython{python_version}.so.1.0`.
-            "lib/libpython{python_version}.so",
-            # static libraries
-            "lib/**/*.a",
-            # tests for the standard libraries.
-            "lib/python{python_version}/**/test/**",
-            "lib/python{python_version}/**/tests/**",
-        ],
+        exclude = {glob_exclude},
     ),
 )
 
@@ -321,6 +322,7 @@ py_runtime_pair(
     py3_runtime = ":py3_runtime",
 )
 """.format(
+        glob_exclude = repr(glob_exclude),
         glob_include = repr(glob_include),
         python_path = python_bin,
         python_version = python_short_version,
