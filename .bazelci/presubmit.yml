@@ -273,3 +273,24 @@ tasks:
     name: pip_repository_entry_points integration tests on Windows
     working_directory: tests/pip_repository_entry_points
     platform: windows
+
+  integration_test_ignore_root_user_error_ubuntu:
+    <<: *reusable_build_test_all
+    name: ignore_root_user_error integration tests on Ubuntu
+    working_directory: tests/ignore_root_user_error
+    platform: ubuntu2004
+  integration_test_ignore_root_user_error_debian:
+    <<: *reusable_build_test_all
+    name: ignore_root_user_error integration tests on Debian
+    working_directory: tests/ignore_root_user_error
+    platform: debian11
+  integration_test_ignore_root_user_error_macos:
+    <<: *reusable_build_test_all
+    name: ignore_root_user_error integration tests on macOS
+    working_directory: tests/ignore_root_user_error
+    platform: macos
+  integration_test_ignore_root_user_error_windows:
+    <<: *reusable_build_test_all
+    name: ignore_root_user_error integration tests on Windows
+    working_directory: tests/ignore_root_user_error
+    platform: windows
