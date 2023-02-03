@@ -93,10 +93,6 @@ def _get_xcode_location_cflags(rctx):
     if not rctx.os.name.lower().startswith("mac os"):
         return []
 
-    # Only update the location when using a hermetic toolchain.
-    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
-        return []
-
     # Locate xcode-select
     xcode_select = rctx.which("xcode-select")
 
