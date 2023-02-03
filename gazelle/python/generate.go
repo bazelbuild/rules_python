@@ -76,6 +76,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	pyLibraryFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyTestFilenames := treeset.NewWith(godsutils.StringComparator)
+	pyFileNames := treeset.NewWith(godsutils.StringComparator)
 
 	// hasPyBinary controls whether a py_binary target should be generated for
 	// this package or not.
@@ -92,16 +93,19 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			continue
 		}
 		ext := filepath.Ext(f)
-		if !hasPyBinary && f == pyBinaryEntrypointFilename {
-			hasPyBinary = true
-		} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
-			hasPyTestEntryPointFile = true
-		} else if f == conftestFilename {
-			hasConftestFile = true
-		} else if strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
-			pyTestFilenames.Add(f)
-		} else if ext == ".py" {
-			pyLibraryFilenames.Add(f)
+		if ext == ".py" {
+			pyFileNames.Add(f)
+			if !hasPyBinary && f == pyBinaryEntrypointFilename {
+				hasPyBinary = true
+			} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
+				hasPyTestEntryPointFile = true
+			} else if f == conftestFilename {
+				hasConftestFile = true
+			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
+				pyTestFilenames.Add(f)
+			} else {
+				pyLibraryFilenames.Add(f)
+			}
 		}
 	}
 
@@ -223,7 +227,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
+		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
 			addModuleDependencies(deps).
@@ -259,7 +263,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
+		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			setMain(pyBinaryEntrypointFilename).
 			addVisibility(visibility).
 			addSrc(pyBinaryEntrypointFilename).
@@ -295,7 +299,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
+		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
@@ -330,7 +334,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 			}
 		}
-		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
+		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrcs(srcs).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
@@ -366,8 +370,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	for _, pyTestTarget := range pyTestTargets {
 		if conftest != nil {
-			conftestImport := importSpecFromSrc(pythonProjectRoot, args.Rel, conftestFilename).Imp
-			pyTestTarget.addModuleDependency(module{Name: conftestImport})
+			pyTestTarget.addModuleDependency(module{Name: strings.TrimSuffix(conftestFilename, ".py")})
 		}
 		pyTest := pyTestTarget.build()
 
