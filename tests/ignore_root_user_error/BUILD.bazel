@@ -1,0 +1,7 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "foo_test",
+    srcs = ["foo_test.py"],
+    visibility = ["//visibility:public"],
+)

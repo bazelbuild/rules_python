@@ -1,3 +1,17 @@
+// Copyright 2023 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package python
 
 import (
@@ -62,6 +76,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	pyLibraryFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyTestFilenames := treeset.NewWith(godsutils.StringComparator)
+	pyFileNames := treeset.NewWith(godsutils.StringComparator)
 
 	// hasPyBinary controls whether a py_binary target should be generated for
 	// this package or not.
@@ -78,16 +93,19 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			continue
 		}
 		ext := filepath.Ext(f)
-		if !hasPyBinary && f == pyBinaryEntrypointFilename {
-			hasPyBinary = true
-		} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
-			hasPyTestEntryPointFile = true
-		} else if f == conftestFilename {
-			hasConftestFile = true
-		} else if strings.HasSuffix(f, "_test.py") || (strings.HasPrefix(f, "test_") && ext == ".py") {
-			pyTestFilenames.Add(f)
-		} else if ext == ".py" {
-			pyLibraryFilenames.Add(f)
+		if ext == ".py" {
+			pyFileNames.Add(f)
+			if !hasPyBinary && f == pyBinaryEntrypointFilename {
+				hasPyBinary = true
+			} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
+				hasPyTestEntryPointFile = true
+			} else if f == conftestFilename {
+				hasConftestFile = true
+			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
+				pyTestFilenames.Add(f)
+			} else {
+				pyLibraryFilenames.Add(f)
+			}
 		}
 	}
 
@@ -209,8 +227,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			setId(label.New("", args.Rel, pyLibraryTargetName).String()).
+		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(pyLibraryFilenames).
 			addModuleDependencies(deps).
@@ -246,16 +263,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
+		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			setMain(pyBinaryEntrypointFilename).
 			addVisibility(visibility).
 			addSrc(pyBinaryEntrypointFilename).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
-
-		if pyLibrary != nil {
-			pyBinaryTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(idKey).(string)})
-		}
 
 		pyBinary := pyBinaryTarget.build()
 
@@ -286,8 +299,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			setId(label.New("", args.Rel, conftestTargetname).String()).
+		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
 			addVisibility(visibility).
@@ -301,8 +313,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	var pyTestTargets []*targetBuilder
-	newPyTestTargetBuilder := func(pyTestFilenames *treeset.Set, pyTestTargetName string) *targetBuilder {
-		deps, err := parser.parse(pyTestFilenames)
+	newPyTestTargetBuilder := func(srcs *treeset.Set, pyTestTargetName string) *targetBuilder {
+		deps, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -322,8 +334,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 			}
 		}
-		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyLibraryFilenames.Union(pyTestFilenames)).
-			addSrcs(pyTestFilenames).
+		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyFileNames).
+			addSrcs(srcs).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
 	}
@@ -357,14 +369,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	for _, pyTestTarget := range pyTestTargets {
-		if pyLibrary != nil {
-			pyTestTarget.addModuleDependency(module{Name: pyLibrary.PrivateAttr(idKey).(string)})
-		}
-
 		if conftest != nil {
-			pyTestTarget.addModuleDependency(module{Name: conftest.PrivateAttr(idKey).(string)})
+			pyTestTarget.addModuleDependency(module{Name: strings.TrimSuffix(conftestFilename, ".py")})
 		}
-
 		pyTest := pyTestTarget.build()
 
 		result.Gen = append(result.Gen, pyTest)

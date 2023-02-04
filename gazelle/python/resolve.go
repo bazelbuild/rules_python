@@ -1,3 +1,17 @@
+// Copyright 2023 The Bazel Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package python
 
 import (
@@ -25,10 +39,6 @@ const (
 	// resolvedDepsKey is the attribute key used to pass dependencies that don't
 	// need to be resolved by the dependency resolver in the Resolver step.
 	resolvedDepsKey = "_gazelle_python_resolved_deps"
-	// idKey is the attribute key used to uniquely identify a py_library
-	// target that should be imported by a py_test or py_binary in the same
-	// Bazel package.
-	idKey = "_gazelle_python_library_id"
 )
 
 // Resolver satisfies the resolve.Resolver interface. It resolves dependencies
@@ -56,13 +66,6 @@ func (py *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 			provide := importSpecFromSrc(pythonProjectRoot, f.Pkg, src)
 			provides = append(provides, provide)
 		}
-	}
-	if r.PrivateAttr(idKey) != nil {
-		provide := resolve.ImportSpec{
-			Lang: languageName,
-			Imp:  r.PrivateAttr(idKey).(string),
-		}
-		provides = append(provides, provide)
 	}
 	if len(provides) == 0 {
 		return nil

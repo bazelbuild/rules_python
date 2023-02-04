@@ -22,11 +22,14 @@ python_register_multi_toolchains(
         "3.8",
         "3.9",
         "3.10",
+        "3.11",
     ],
+    register_coverage_tool = True,
 )
 
 load("@python//:pip.bzl", "multi_pip_parse")
 load("@python//3.10:defs.bzl", interpreter_3_10 = "interpreter")
+load("@python//3.11:defs.bzl", interpreter_3_11 = "interpreter")
 load("@python//3.8:defs.bzl", interpreter_3_8 = "interpreter")
 load("@python//3.9:defs.bzl", interpreter_3_9 = "interpreter")
 
@@ -35,11 +38,13 @@ multi_pip_parse(
     default_version = default_python_version,
     python_interpreter_target = {
         "3.10": interpreter_3_10,
+        "3.11": interpreter_3_11,
         "3.8": interpreter_3_8,
         "3.9": interpreter_3_9,
     },
     requirements_lock = {
         "3.10": "//requirements:requirements_lock_3_10.txt",
+        "3.11": "//requirements:requirements_lock_3_11.txt",
         "3.8": "//requirements:requirements_lock_3_8.txt",
         "3.9": "//requirements:requirements_lock_3_9.txt",
     },

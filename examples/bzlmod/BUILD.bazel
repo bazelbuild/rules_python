@@ -12,7 +12,7 @@ compile_pip_requirements(
 
 py_library(
     name = "lib",
-    srcs = ["__init__.py"],
+    srcs = ["lib.py"],
     deps = [
         requirement("pylint"),
         requirement("tabulate"),

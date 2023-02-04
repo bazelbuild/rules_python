@@ -1,3 +1,17 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ""
 
 load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
@@ -77,10 +91,6 @@ def _get_xcode_location_cflags(rctx):
 
     # Only run on MacOS hosts
     if not rctx.os.name.lower().startswith("mac os"):
-        return []
-
-    # Only update the location when using a hermetic toolchain.
-    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
         return []
 
     # Locate xcode-select
