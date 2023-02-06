@@ -13,85 +13,66 @@
 // limitations under the License.
 
 /*
-test.go is a program that asserts the Gazelle YAML manifest is up-to-date in
+test.go is a unit test that asserts the Gazelle YAML manifest is up-to-date in
 regards to the requirements.txt.
 
 It re-hashes the requirements.txt and compares it to the recorded one in the
 existing generated Gazelle manifest.
 */
-package main
+package test
 
 import (
-	"flag"
-	"log"
 	"os"
 	"path/filepath"
+	"testing"
 
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
-func main() {
-	var manifestGeneratorHashPath string
-	var requirementsPath string
-	var manifestPath string
-	flag.StringVar(
-		&manifestGeneratorHashPath,
-		"manifest-generator-hash",
-		"",
-		"The file containing the hash for the source code of the manifest generator."+
-			"This is important to force manifest updates when the generator logic changes.")
-	flag.StringVar(
-		&requirementsPath,
-		"requirements",
-		"",
-		"The requirements.txt file.")
-	flag.StringVar(
-		&manifestPath,
-		"manifest",
-		"",
-		"The manifest YAML file.")
-	flag.Parse()
-
+func TestGazelleManifestIsUpdated(t *testing.T) {
+	requirementsPath := os.Getenv("_TEST_REQUIREMENTS")
 	if requirementsPath == "" {
-		log.Fatalln("ERROR: --requirements must be set")
+		t.Fatalf("_TEST_REQUIREMENTS must be set")
 	}
 
+	manifestPath := os.Getenv("_TEST_MANIFEST")
 	if manifestPath == "" {
-		log.Fatalln("ERROR: --manifest must be set")
+		t.Fatalf("_TEST_MANIFEST must be set")
 	}
 
 	manifestFile := new(manifest.File)
 	if err := manifestFile.Decode(manifestPath); err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		t.Fatalf("decoding manifest file: %v", err)
 	}
 
 	if manifestFile.Integrity == "" {
-		log.Fatalln("ERROR: failed to find the Gazelle manifest file integrity")
+		t.Fatal("failed to find the Gazelle manifest file integrity")
 	}
 
+	manifestGeneratorHashPath := os.Getenv("_TEST_MANIFEST_GENERATOR_HASH")
 	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		t.Fatalf("opening %q: %v", manifestGeneratorHashPath, err)
 	}
 	defer manifestGeneratorHash.Close()
 
 	requirements, err := os.Open(requirementsPath)
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		t.Fatalf("opening %q: %v", requirementsPath, err)
 	}
 	defer requirements.Close()
 
 	valid, err := manifestFile.VerifyIntegrity(manifestGeneratorHash, requirements)
 	if err != nil {
-		log.Fatalf("ERROR: %v\n", err)
+		t.Fatalf("verifying integrity: %v", err)
 	}
 	if !valid {
 		manifestRealpath, err := filepath.EvalSymlinks(manifestPath)
 		if err != nil {
-			log.Fatalf("ERROR: %v\n", err)
+			t.Fatalf("evaluating symlink %q: %v", manifestPath, err)
 		}
-		log.Fatalf(
-			"ERROR: %q is out-of-date. Follow the update instructions in that file to resolve this.\n",
+		t.Errorf(
+			"%q is out-of-date. Follow the update instructions in that file to resolve this",
 			manifestRealpath)
 	}
 }

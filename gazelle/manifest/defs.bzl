@@ -16,7 +16,7 @@
 for updating and testing the Gazelle manifest file.
 """
 
-load("@io_bazel_rules_go//go:def.bzl", "GoSource", "go_binary")
+load("@io_bazel_rules_go//go:def.bzl", "GoSource", "go_binary", "go_test")
 
 def gazelle_python_manifest(
         name,
@@ -81,31 +81,22 @@ def gazelle_python_manifest(
         tags = ["manual"],
     )
 
-    test_binary = "_{}_test_bin".format(name)
-
-    go_binary(
-        name = test_binary,
-        embed = [Label("//manifest/test:test_lib")],
-        visibility = ["//visibility:private"],
-    )
-
-    native.sh_test(
+    go_test(
         name = "{}.test".format(name),
-        srcs = [Label("//manifest/test:run.sh")],
+        srcs = [Label("//manifest/test:test.go")],
         data = [
-            ":{}".format(test_binary),
             manifest,
             requirements,
             manifest_generator_hash,
         ],
         env = {
-            "_TEST_BINARY": "$(rootpath :{})".format(test_binary),
             "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
             "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
             "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
         },
-        visibility = ["//visibility:private"],
-        timeout = "short",
+        rundir = ".",
+        deps = [Label("//manifest")],
+        size = "small",
     )
 
     native.filegroup(
