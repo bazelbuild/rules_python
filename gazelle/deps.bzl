@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"This file managed by `bazel run //:update_go_deps`"
+"This file managed by `bazel run //:gazelle_update_repos`"
 
 load("@bazel_gazelle//:deps.bzl", _go_repository = "go_repository")
 
@@ -148,12 +148,6 @@ def gazelle_deps():
         importpath = "github.com/google/go-cmp",
         sum = "h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=",
         version = "v0.5.9",
-    )
-    go_repository(
-        name = "com_github_google_uuid",
-        importpath = "github.com/google/uuid",
-        sum = "h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=",
-        version = "v1.3.0",
     )
     go_repository(
         name = "com_github_pelletier_go_toml",
