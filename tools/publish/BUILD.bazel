@@ -4,5 +4,5 @@ compile_pip_requirements(
     name = "requirements",
     requirements_windows = "requirements_windows.txt",
     # This fails on RBE and MacOS right now, and we don't need coverage there
-    tags = ["manual"],
+    # tags = ["manual"],
 )
