@@ -97,6 +97,8 @@ _coverage_deps = {
 }
 #END: managed by update_coverage_deps.py script
 
+_coverage_patch = Label("//python/private:coverage.patch")
+
 def coverage_dep(name, python_version, platform, visibility, install = True):
     """Register a singe coverage dependency based on the python version and platform.
 
@@ -149,6 +151,8 @@ filegroup(
     """.format(
             visibility = visibility,
         ),
+        patch_args = ["-p1"],
+        patches = [_coverage_patch],
         sha256 = sha256,
         type = "zip",
         urls = [url],

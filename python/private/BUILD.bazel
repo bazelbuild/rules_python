@@ -36,6 +36,7 @@ filegroup(
 # on Skylib.)
 exports_files(
     [
+        "coverage.patch",
         "py_package.bzl",
         "py_wheel.bzl",
         "reexports.bzl",

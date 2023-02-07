@@ -14,15 +14,9 @@
 
 "Set defaults for the pip-compile command to run it under Bazel"
 
-import sys
-
-# If we are running under coverage, we need to move the coverage package to the
-# end of the path so that it doesn't interfere with the pip-compile package.
-if "/coverage" == sys.path[0][-len("/coverage") :]:
-    sys.path.append(sys.path.pop(0))
-
 import os
 import re
+import sys
 from pathlib import Path
 from shutil import copyfile
 
