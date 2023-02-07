@@ -211,6 +211,31 @@ tasks:
   # We don't run pip_parse_vendored under Windows as the file checked in is
   # generated from a repository rule containing OS-specific rendered paths.
 
+  integration_test_py_proto_library_ubuntu:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_py_proto_library
+    name: py_proto_library integration tests on Ubuntu
+    working_directory: examples/py_proto_library
+    platform: ubuntu2004
+  integration_test_py_proto_library_debian:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_py_proto_library
+    name: py_proto_library integration tests on Debian
+    working_directory: examples/py_proto_library
+    platform: debian11
+  integration_test_py_proto_library_macos:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_py_proto_library
+    name: py_proto_library integration tests on macOS
+    working_directory: examples/py_proto_library
+    platform: macos
+  integration_test_py_proto_library_windows:
+    <<: *reusable_build_test_all
+    # coverage is not supported on Windows
+    name: py_proto_library integration tests on Windows
+    working_directory: examples/py_proto_library
+    platform: windows
+
   integration_test_pip_repository_annotations_ubuntu:
     <<: *reusable_build_test_all
     name: pip_repository_annotations integration tests on Ubuntu
