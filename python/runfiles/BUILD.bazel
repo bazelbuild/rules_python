@@ -57,7 +57,7 @@ py_binary(
     srcs = ["@publish_deps_twine//:rules_python_wheel_entry_point_twine.py"],
     args = [
         "upload",
-        "$(location :wheel.dist)/*",
+        "$(execpath :wheel.dist)/*",
     ],
     data = [":wheel.dist"],
     imports = ["."],
