@@ -2,6 +2,7 @@ load("//python:pip.bzl", "compile_pip_requirements")
 
 compile_pip_requirements(
     name = "requirements",
+    requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
     # This fails on RBE right now, and we don't need coverage there:
     # WARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None))

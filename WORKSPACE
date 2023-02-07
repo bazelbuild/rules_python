@@ -78,6 +78,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 pip_parse(
     name = "publish_deps",
     python_interpreter_target = interpreter,
+    requirements_darwin = "//tools/publish:requirements_darwin.txt",
     requirements_lock = "//tools/publish:requirements.txt",
     requirements_windows = "//tools/publish:requirements_windows.txt",
 )
