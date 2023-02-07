@@ -80,6 +80,7 @@ pip_parse(
     name = "publish_deps",
     python_interpreter_target = interpreter,
     requirements_lock = "//python/runfiles:requirements.txt",
+    requirements_windows = "//python/runfiles:requirements_windows.txt",
 )
 
 load("@publish_deps//:requirements.bzl", "install_deps")
