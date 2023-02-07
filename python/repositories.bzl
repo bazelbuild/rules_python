@@ -53,6 +53,7 @@ def py_repositories():
         ],
     )
 
+    # below are dependencies if you want to use py_proto_library
     http_archive(
         name = "rules_proto",
         sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
