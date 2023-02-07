@@ -69,9 +69,9 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 _py_gazelle_deps()
 
 #####################
-# Install twine for our own runfiles wheel publishing
+# Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
-# See https://github.com/bazelbuild/rules_python/issues/1016
+# https://github.com/bazelbuild/rules_python/issues/1016.
 load("@python//3.11.1:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
