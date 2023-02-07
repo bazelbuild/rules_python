@@ -1,1 +1,2 @@
 docs/*.md linguist-generated=true
+tools/publish/*.txt linguist-generated=true

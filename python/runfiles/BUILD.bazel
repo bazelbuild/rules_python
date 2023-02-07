@@ -14,14 +14,6 @@
 
 load("//python:defs.bzl", "py_binary", "py_library")
 load("//python:packaging.bzl", "py_wheel")
-load("//python:pip.bzl", "compile_pip_requirements")
-
-compile_pip_requirements(
-    name = "requirements",
-    requirements_windows = "requirements_windows.txt",
-    # This fails on RBE and MacOS right now, and we don't need coverage there
-    tags = ["manual"],
-)
 
 filegroup(
     name = "distribution",
