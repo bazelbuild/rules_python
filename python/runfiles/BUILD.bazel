@@ -52,12 +52,16 @@ py_wheel(
 )
 
 # TODO(alexeagle): carry forward #1015 to make this part of the py_wheel macro
+# Typical command-line to run this:
+# TWINE_USERNAME=__token__ TWINE_PASSWORD=pypi-*** \
+#    bazel run --stamp --embed_label=1.2.4 -- \
+#    //python/runfiles:wheel.publish --repository testpypi
 py_binary(
     name = "wheel.publish",
     srcs = ["@publish_deps_twine//:rules_python_wheel_entry_point_twine.py"],
     args = [
         "upload",
-        "$(execpath :wheel.dist)/*",
+        "$(rootpath :wheel.dist)/*",
     ],
     data = [":wheel.dist"],
     imports = ["."],
