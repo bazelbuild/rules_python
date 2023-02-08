@@ -22,7 +22,7 @@ from pathlib import Path
 
 from piptools.scripts.compile import cli
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 os.replace = shutil.copy
 
