@@ -18,7 +18,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from shutil import copyfile
+from shutil import copy
 
 from piptools.scripts.compile import cli
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         requirements_out = os.path.join(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
-        copyfile(requirements_txt, requirements_out)
+        copy(requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
