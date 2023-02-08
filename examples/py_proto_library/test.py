@@ -1,8 +1,6 @@
 import sys
 import unittest
 
-print(sys.path)
-
 import pricetag_pb2
 
 
@@ -12,7 +10,7 @@ class TestCase(unittest.TestCase):
             name="dollar",
             cost=5.00,
         )
-        self.assertTrue(got is not None)
+        self.assertIsNotNone(got)
 
 
 if __name__ == "__main__":
