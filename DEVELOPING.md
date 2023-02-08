@@ -21,4 +21,12 @@ those with only bug fixes and other minor changes bump the patch digit.
 #### After release creation in Github
 
 1. Ping @philwo to get the new release added to mirror.bazel.build. See [this comment on issue #400](https://github.com/bazelbuild/rules_python/issues/400#issuecomment-779159530) for more context.
-1. Announce the release in the #python channel in the Bazel slack (bazelbuild.slack.com). 
+1. Announce the release in the #python channel in the Bazel slack (bazelbuild.slack.com).
+
+## Secrets
+
+### PyPI user rules-python
+
+Part of the release process uploads packages to PyPI as the user `rules-python`.
+This account is managed by Google; contact rules-python-pyi@google.com if
+something needs to be done with the PyPI account.
