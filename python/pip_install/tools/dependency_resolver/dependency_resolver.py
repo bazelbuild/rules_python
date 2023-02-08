@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     r = runfiles.Create()
 
-    parse_str_none = lambda s: None if s == "None" else r.Rlocation(s)
+    parse_str_none = lambda s: None if s == "None" else r.Rlocation(os.path.normpath(s))
 
     requirements_in = sys.argv.pop(1)
     requirements_txt = sys.argv.pop(1)
