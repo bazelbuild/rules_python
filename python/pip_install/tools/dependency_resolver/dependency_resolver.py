@@ -22,8 +22,6 @@ from pathlib import Path
 
 from piptools.scripts.compile import cli
 
-from python.runfiles import runfiles
-
 os.replace = shutil.copy
 
 
@@ -66,9 +64,7 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    r = runfiles.Create()
-
-    parse_str_none = lambda s: None if s == "None" else r.Rlocation(os.path.normpath(s))
+    parse_str_none = lambda s: None if s == "None" else s
 
     requirements_in = sys.argv.pop(1)
     requirements_txt = sys.argv.pop(1)
