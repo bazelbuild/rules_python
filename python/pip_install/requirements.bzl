@@ -103,6 +103,8 @@ def compile_pip_requirements(
 
     tags = tags or []
     tags.append("requires-network")
+    tags.append("no-remote")
+    tags.append("no-sandbox")
     attrs = {
         "args": args,
         "data": data,
@@ -112,6 +114,8 @@ def compile_pip_requirements(
         "tags": tags,
         "visibility": visibility,
     }
+
+    deps.append(Label("//python/runfiles"))
 
     # cheap way to detect the bazel version
     _bazel_version_4_or_greater = "propeller_optimize" in dir(native)

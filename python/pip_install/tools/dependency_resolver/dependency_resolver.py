@@ -22,6 +22,8 @@ from shutil import copyfile
 
 from piptools.scripts.compile import cli
 
+from rules_python.python.runfiles import runfiles
+
 
 def _select_golden_requirements_file(
     requirements_txt, requirements_linux, requirements_darwin, requirements_windows
@@ -62,7 +64,9 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    parse_str_none = lambda s: None if s == "None" else s
+    r = runfiles.Create()
+
+    parse_str_none = lambda s: None if s == "None" else r.Rlocation(s)
 
     requirements_in = sys.argv.pop(1)
     requirements_txt = sys.argv.pop(1)
@@ -100,26 +104,6 @@ if __name__ == "__main__":
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
         copyfile(requirements_txt, requirements_out)
-
-    elif "BUILD_WORKSPACE_DIRECTORY" in os.environ:
-        # This value, populated when running under `bazel run`, is a path to the
-        # "root of the workspace where the build was run."
-        # This matches up with the values passed in via the macro using the 'rootpath' Make variable,
-        # which for source files provides a path "relative to your workspace root."
-        #
-        # Changing to the WORKSPACE root avoids 'file not found' errors when the `.update` target is run
-        # from different directories within the WORKSPACE.
-        os.chdir(os.environ["BUILD_WORKSPACE_DIRECTORY"])
-    else:
-        err_msg = (
-            "Expected to find BUILD_WORKSPACE_DIRECTORY (running under `bazel run`) or "
-            "TEST_TMPDIR (running under `bazel test`) in environment."
-        )
-        print(
-            err_msg,
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
