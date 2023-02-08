@@ -101,6 +101,8 @@ def compile_pip_requirements(
         requirement("more_itertools"),
     ] + extra_deps
 
+    tags = tags or []
+    tags.append("requires-network")
     attrs = {
         "args": args,
         "data": data,
