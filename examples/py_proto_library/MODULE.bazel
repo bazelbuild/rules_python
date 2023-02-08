@@ -4,7 +4,9 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "rules_python", version = "0.0.0")
+bazel_dep(name = "rules_python", version = "0.17.3")
+
+# The following local_path_override is only needed to run this example as part of our CI.
 local_path_override(
     module_name = "rules_python",
     path = "../..",
