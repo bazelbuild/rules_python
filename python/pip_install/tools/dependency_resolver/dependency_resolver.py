@@ -16,13 +16,15 @@
 
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
-from shutil import copy
 
 from piptools.scripts.compile import cli
 
 from rules_python.python.runfiles import runfiles
+
+os.replace = shutil.copy
 
 
 def _select_golden_requirements_file(
@@ -103,7 +105,7 @@ if __name__ == "__main__":
         requirements_out = os.path.join(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
-        copy(requirements_txt, requirements_out)
+        shutil.copy(requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
