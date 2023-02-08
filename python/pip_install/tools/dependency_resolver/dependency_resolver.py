@@ -22,6 +22,8 @@ from pathlib import Path
 
 from piptools.scripts.compile import cli
 
+# Replace the os.replace function with shutil.copy to work around os.replace not being able to
+# replace or move files across filesystems.
 os.replace = shutil.copy
 
 
