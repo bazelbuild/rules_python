@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,7 +32,6 @@ import (
 
 	"github.com/bazelbuild/bazel-gazelle/testtools"
 	"github.com/bazelbuild/rules_go/go/tools/bazel"
-	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/ghodss/yaml"
 )
 
@@ -161,31 +159,23 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 				t.Fatal(err)
 			}
 		}
-		errs := singlylinkedlist.New()
+
 		actualExitCode := cmd.ProcessState.ExitCode()
 		if config.Expect.ExitCode != actualExitCode {
-			errs.Add(fmt.Errorf("expected gazelle exit code: %d\ngot: %d",
-				config.Expect.ExitCode, actualExitCode,
-			))
+			t.Errorf("expected gazelle exit code: %d\ngot: %d",
+				config.Expect.ExitCode, actualExitCode)
 		}
 		actualStdout := stdout.String()
 		if strings.TrimSpace(config.Expect.Stdout) != strings.TrimSpace(actualStdout) {
-			errs.Add(fmt.Errorf("expected gazelle stdout: %s\ngot: %s",
-				config.Expect.Stdout, actualStdout,
-			))
+			t.Errorf("expected gazelle stdout: %s\ngot: %s",
+				config.Expect.Stdout, actualStdout)
 		}
 		actualStderr := stderr.String()
 		if strings.TrimSpace(config.Expect.Stderr) != strings.TrimSpace(actualStderr) {
-			errs.Add(fmt.Errorf("expected gazelle stderr: %s\ngot: %s",
-				config.Expect.Stderr, actualStderr,
-			))
+			t.Errorf("expected gazelle stderr: %s\ngot: %s",
+				config.Expect.Stderr, actualStderr)
 		}
-		if !errs.Empty() {
-			errsIt := errs.Iterator()
-			for errsIt.Next() {
-				err := errsIt.Value().(error)
-				t.Log(err)
-			}
+		if t.Failed() {
 			t.FailNow()
 		}
 

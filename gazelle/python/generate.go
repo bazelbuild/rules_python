@@ -161,13 +161,14 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				}
 				if filepath.Ext(path) == ".py" {
 					if cfg.CoarseGrainedGeneration() || !isEntrypointFile(path) {
-						f, _ := filepath.Rel(args.Dir, path)
+						srcPath, _ := filepath.Rel(args.Dir, path)
+						repoPath := filepath.Join(args.Rel, srcPath)
 						excludedPatterns := cfg.ExcludedPatterns()
 						if excludedPatterns != nil {
 							it := excludedPatterns.Iterator()
 							for it.Next() {
 								excludedPattern := it.Value().(string)
-								isExcluded, err := doublestar.Match(excludedPattern, f)
+								isExcluded, err := doublestar.Match(excludedPattern, repoPath)
 								if err != nil {
 									return err
 								}
@@ -178,9 +179,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						}
 						baseName := filepath.Base(path)
 						if strings.HasSuffix(baseName, "_test.py") || strings.HasPrefix(baseName, "test_") {
-							pyTestFilenames.Add(f)
+							pyTestFilenames.Add(srcPath)
 						} else {
-							pyLibraryFilenames.Add(f)
+							pyLibraryFilenames.Add(srcPath)
 						}
 					}
 				}
