@@ -90,7 +90,7 @@ if __name__ == "__main__":
     os.environ["LANG"] = "C.UTF-8"
 
     UPDATE = True
-    # Detect if we are running under `bazel test`
+    # Detect if we are running under `bazel test`.
     if "TEST_TMPDIR" in os.environ:
         UPDATE = False
         # pip-compile wants the cache files to be writeable, but if we point
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         # In theory this makes the test more hermetic as well.
         sys.argv.append("--cache-dir")
         sys.argv.append(os.environ["TEST_TMPDIR"])
-        # Make a copy for pip-compile to read and mutate
+        # Make a copy for pip-compile to read and mutate.
         requirements_out = os.path.join(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
