@@ -1,5 +1,7 @@
+load("@pip//:requirements.bzl", "requirement")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@rules_python//python:proto.bzl", "py_proto_library")
 
 py_proto_library(
@@ -18,5 +20,14 @@ py_test(
     main = "test.py",
     deps = [
         ":pricetag_proto_py_pb2",
+        # Add 'protobuf' dependency in the libraries consuming the py_proto_libraries.
+        requirement("protobuf"),
     ],
+)
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--resolver=backtracking"],
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements.txt",
 )
