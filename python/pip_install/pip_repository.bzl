@@ -303,6 +303,65 @@ alias(
 
     return build_content
 
+def _pip_repository_bzlmod_impl(rctx):
+    requirements_txt = locked_requirements_label(rctx, rctx.attr)
+    content = rctx.read(requirements_txt)
+    parsed_requirements_txt = parse_requirements(content)
+
+    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+
+    bzl_packages = sorted([name for name, _ in packages])
+
+    repo_name = rctx.attr.name.split("~")[-1]
+
+    build_contents = _BUILD_FILE_CONTENTS + _bzlmod_pkg_aliases(repo_name, bzl_packages)
+
+    rctx.file("BUILD.bazel", build_contents)
+    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_REQUIREMENTS%%": _format_repr_list([
+            "@{}//:{}_pkg".format(repo_name, p)
+            for p in bzl_packages
+        ]),
+        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
+            "@{}//:{}_whl".format(repo_name, p)
+            for p in bzl_packages
+        ]),
+        "%%NAME%%": rctx.attr.name,
+        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
+    })
+
+pip_repository_bzlmod_attrs = {
+    "requirements_darwin": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
+    ),
+    "requirements_linux": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Linux",
+    ),
+    "requirements_lock": attr.label(
+        allow_single_file = True,
+        doc = """
+A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
+of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
+wheels are fetched/built only for the targets specified by 'build/run/test'.
+""",
+    ),
+    "requirements_windows": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Windows",
+    ),
+    "_template": attr.label(
+        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
+    ),
+}
+
+pip_repository_bzlmod = repository_rule(
+    attrs = pip_repository_bzlmod_attrs,
+    doc = """A rule for bzlmod pip_repository creation. Intended for private use only.""",
+    implementation = _pip_repository_bzlmod_impl,
+)
+
 def _pip_repository_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)
     content = rctx.read(requirements_txt)
@@ -310,28 +369,7 @@ def _pip_repository_impl(rctx):
 
     packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
-    # Only use packages that are available to all
     bzl_packages = sorted([name for name, _ in packages])
-
-    if rctx.attr.bzlmod:
-        repo_name = rctx.attr.name.split("~")[-1]
-
-        build_contents = _BUILD_FILE_CONTENTS + _bzlmod_pkg_aliases(repo_name, bzl_packages)
-
-        rctx.file("BUILD.bazel", build_contents)
-        rctx.template("requirements.bzl", rctx.attr._template_bzlmod, substitutions = {
-            "%%ALL_REQUIREMENTS%%": _format_repr_list([
-                "@{}//:{}_pkg".format(repo_name, p)
-                for p in bzl_packages
-            ]),
-            "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-                "@{}//:{}_whl".format(repo_name, p)
-                for p in bzl_packages
-            ]),
-            "%%NAME%%": rctx.attr.name,
-            "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
-        })
-        return
 
     imports = [
         'load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")',
@@ -482,12 +520,6 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
-    "bzlmod": attr.bool(
-        default = False,
-        doc = """Whether this repository rule is invoked under bzlmod, in which case
-we do not create the install_deps() macro.
-""",
-    ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Mac OS",
@@ -510,9 +542,6 @@ wheels are fetched/built only for the targets specified by 'build/run/test'.
     ),
     "_template": attr.label(
         default = ":pip_repository_requirements.bzl.tmpl",
-    ),
-    "_template_bzlmod": attr.label(
-        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
     ),
 }
 

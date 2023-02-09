@@ -154,7 +154,6 @@ def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_
 
     pip_repository(
         name = name,
-        bzlmod = False,
         requirements_lock = reqs_to_use,
         **kwargs
     )

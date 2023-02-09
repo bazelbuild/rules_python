@@ -15,7 +15,7 @@
 "Module extensions for use with bzlmod"
 
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
-load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository", "pip_repository_attrs", "use_isolated", "whl_library")
+load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "pip_repository_bzlmod", "use_isolated", "whl_library")
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
@@ -75,11 +75,9 @@ def _pip_impl(module_ctx):
 
             # Create the repository where users load the `requirement` macro. Under bzlmod
             # this does not create the install_deps() macro.
-            pip_repository(
+            pip_repository_bzlmod(
                 name = attr.name,
                 requirements_lock = attr.requirements_lock,
-                bzlmod = True,
-                quiet = attr.quiet,
             )
 
             for name, requirement_line in requirements:
