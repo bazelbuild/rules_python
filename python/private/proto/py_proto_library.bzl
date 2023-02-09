@@ -142,6 +142,9 @@ def _py_proto_library_rule(ctx):
         ),
         PyInfo(
             transitive_sources = default_outputs,
+            imports = depset(
+                direct = ["com_google_protobuf/python"],
+            ),
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,
