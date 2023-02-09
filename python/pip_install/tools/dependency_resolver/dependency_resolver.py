@@ -45,19 +45,6 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
-def _fix_up_requirements_in_path(absolute_prefix, output_file):
-    """Fix up references to the input file inside of the generated requirements file.
-
-    We don't want fully resolved, absolute paths in the generated requirements file.
-    The paths could differ for every invocation. Replace them with a predictable path.
-    """
-    output_file = Path(output_file)
-    contents = output_file.read_text()
-    contents = contents.replace(absolute_prefix, "")
-    contents = re.sub(r"\\(?!(\n|\r\n))", "/", contents)
-    output_file.write_text(contents)
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print(
@@ -79,7 +66,6 @@ if __name__ == "__main__":
     # absolute prefixes in the locked requirements output file.
     requirements_in_path = Path(requirements_in)
     resolved_requirements_in = str(requirements_in_path.resolve())
-    absolute_prefix = resolved_requirements_in[: -len(str(requirements_in_path))]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -123,12 +109,7 @@ if __name__ == "__main__":
 
     if UPDATE:
         print("Updating " + requirements_txt)
-        try:
-            cli()
-        except SystemExit as e:
-            if e.code == 0:
-                _fix_up_requirements_in_path(absolute_prefix, requirements_txt)
-            raise
+        cli()
     else:
         # cli will exit(0) on success
         try:
@@ -146,7 +127,6 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                _fix_up_requirements_in_path(absolute_prefix, requirements_out)
                 golden_filename = _select_golden_requirements_file(
                     requirements_txt,
                     requirements_linux,
