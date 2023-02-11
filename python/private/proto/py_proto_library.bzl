@@ -24,7 +24,7 @@ _PyProtoInfo = provider(
     fields = {
         "imports": """
             (depset[str]) The field forwarding PyInfo.imports coming from
-            api_deps.""",
+            the proto language runtime dependency.""",
         "runfiles_from_proto_deps": """
             (depset[File]) Files from the transitive closure implicit proto
             dependencies""",
@@ -148,7 +148,7 @@ def _py_proto_library_rule(ctx):
         ),
         PyInfo(
             transitive_sources = default_outputs,
-            imports = depset(transitive = [d[_PyProtoInfo].imports for d in ctx.attr.deps]),
+            imports = depset(transitive = [info.imports for info in pyproto_infos]),
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,
