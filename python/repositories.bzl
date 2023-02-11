@@ -486,18 +486,20 @@ def python_register_toolchains(
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
-    bazel_major = int(native.bazel_version.split(".")[0])
-    if bazel_major < 6:
-        if register_coverage_tool:
-            # buildifier: disable=print
-            print((
-                "WARNING: ignoring register_coverage_tool=True when " +
-                "registering @{name}: Bazel 6+ required, got {version}"
-            ).format(
-                name = name,
-                version = native.bazel_version,
-            ))
-        register_coverage_tool = False
+    # When using unreleased Bazel versions, the version is an empty string
+    if native.bazel_version:
+        bazel_major = int(native.bazel_version.split(".")[0])
+        if bazel_major < 6:
+            if register_coverage_tool:
+                # buildifier: disable=print
+                print((
+                    "WARNING: ignoring register_coverage_tool=True when " +
+                    "registering @{name}: Bazel 6+ required, got {version}"
+                ).format(
+                    name = name,
+                    version = native.bazel_version,
+                ))
+            register_coverage_tool = False
 
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
