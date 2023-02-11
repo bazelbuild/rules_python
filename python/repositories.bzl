@@ -489,6 +489,7 @@ def python_register_toolchains(
     bazel_major = int(native.bazel_version.split(".")[0])
     if bazel_major < 6:
         if register_coverage_tool:
+            # buildifier: disable=print
             print((
                 "WARNING: ignoring register_coverage_tool=True when " +
                 "registering @{name}: Bazel 6+ required, got {version}"
