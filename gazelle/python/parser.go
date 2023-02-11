@@ -46,7 +46,7 @@ func init() {
 	}
 
 	ctx := context.Background()
-	ctx, parserCancel := context.WithTimeout(ctx, time.Minute*5)
+	ctx, parserCancel := context.WithTimeout(ctx, time.Minute*10)
 	cmd := exec.CommandContext(ctx, parseScriptRunfile)
 
 	cmd.Stderr = os.Stderr
