@@ -489,11 +489,13 @@ def python_register_toolchains(
     bazel_major = int(native.bazel_version.split(".")[0])
     if bazel_major < 6:
         if register_coverage_tool:
-            print(
-                ("WARNING: ignoring register_coverage_tool=True: this " +
-                 "Bazel version ({}) does not support toolchain-registered " +
-                 "coverage tools").format(native.bazel_version),
-            )
+            print((
+                "WARNING: ignoring register_coverage_tool=True when " +
+                "registering @{name}: Bazel 6+ required, got {version}"
+            ).format(
+                name = name,
+                version = native.bazel_version,
+            ))
         register_coverage_tool = False
 
     for platform in PLATFORMS.keys():
