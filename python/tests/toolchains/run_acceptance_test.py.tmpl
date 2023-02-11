@@ -37,7 +37,7 @@ class TestPythonVersion(unittest.TestCase):
         os.environ["XDG_CACHE_HOME"] = os.path.join(test_tmpdir, "xdg-cache-home")
 
         # Unset this so this works when called by Bazel's latest Bazel build
-        # pipeline. It sets the following combination, which interfer with each other:
+        # pipeline. It sets the following combination, which interfere with each other:
         # * --sandbox_tmpfs_path=/tmp
         # * --test_env=USE_BAZEL_VERSION
         # * USE_BAZEL_VERSION=/tmp/<something>
