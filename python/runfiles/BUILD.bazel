@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_binary", "py_library")
+load("//python:defs.bzl", "py_library")
 load("//python:packaging.bzl", "py_wheel")
 
 filegroup(
@@ -45,26 +45,9 @@ py_wheel(
     distribution = "bazel_runfiles",
     homepage = "https://github.com/bazelbuild/rules_python",
     strip_path_prefixes = ["python"],
+    twine = "@publish_deps_twine//:pkg",
     # this can be replaced by building with --stamp --embed_label=1.2.3
     version = "{BUILD_EMBED_LABEL}",
     visibility = ["//visibility:public"],
     deps = [":runfiles"],
-)
-
-# TODO(alexeagle): carry forward #1015 to make this part of the py_wheel macro
-# Typical command-line to run this:
-# TWINE_USERNAME=__token__ TWINE_PASSWORD=pypi-*** \
-#    bazel run --stamp --embed_label=1.2.4 -- \
-#    //python/runfiles:wheel.publish --repository testpypi
-py_binary(
-    name = "wheel.publish",
-    srcs = ["@publish_deps_twine//:rules_python_wheel_entry_point_twine.py"],
-    args = [
-        "upload",
-        "$(rootpath :wheel.dist)/*",
-    ],
-    data = [":wheel.dist"],
-    imports = ["."],
-    main = "@publish_deps_twine//:rules_python_wheel_entry_point_twine.py",
-    deps = ["@publish_deps_twine//:pkg"],
 )
