@@ -18,7 +18,9 @@ buildifier:
   # keep this argument in sync with .pre-commit-config.yaml
   warnings: "all"
 .minimum_supported_version: &minimum_supported_version
-  bazel: 4.2.1 # test minimum supported version of bazel
+  # For testing minimum supported version.
+  # NOTE: Keep in sync with //python/private:common.bzl
+  bazel: 4.2.3
 .minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
   bazel: 6.0.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
