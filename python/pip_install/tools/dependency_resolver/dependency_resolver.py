@@ -14,8 +14,8 @@
 
 "Set defaults for the pip-compile command to run it under Bazel"
 
+import atexit
 import os
-import re
 import shutil
 import sys
 from pathlib import Path
@@ -109,6 +109,16 @@ if __name__ == "__main__":
 
     if UPDATE:
         print("Updating " + requirements_txt)
+        if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
+            workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
+            requirements_txt_tree = os.path.join(workspace, requirements_txt)
+            # In most cases, requirements_txt will be a symlink to the real file in the source tree.
+            # If symlinks are not enabled (e.g. on Windows), then requirements_txt will be a copy,
+            # and we should copy the updated requirements back to the source tree.
+            if not os.path.samefile(requirements_txt, requirements_txt_tree):
+                atexit.register(
+                    lambda: shutil.copy(requirements_txt, requirements_txt_tree)
+                )
         cli()
     else:
         # cli will exit(0) on success
