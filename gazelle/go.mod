@@ -3,7 +3,7 @@ module github.com/bazelbuild/rules_python/gazelle
 go 1.19
 
 require (
-	github.com/bazelbuild/bazel-gazelle v0.27.0
+	github.com/bazelbuild/bazel-gazelle v0.29.0
 	github.com/bazelbuild/buildtools v0.0.0-20221004120235-7186f635531b
 	github.com/bazelbuild/rules_go v0.35.0
 	github.com/bmatcuk/doublestar v1.3.4
