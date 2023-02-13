@@ -2,4 +2,4 @@
 """
 
 # NOTE: Keep in sync with .bazelci/presubmit.yml
-MINIMUM_BAZEL_VERSION = "4.2.3"
+MINIMUM_BAZEL_VERSION = "5.4.0"
