@@ -289,21 +289,49 @@ tasks:
     name: compile_pip_requirements integration tests on Ubuntu
     working_directory: tests/compile_pip_requirements
     platform: ubuntu2004
+    shell_commands:
+    # Make a change to the locked requirements and then assert that //:requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:requirements.update"
+    - "git diff --exit-code"
   integration_test_compile_pip_requirements_debian:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on Debian
     working_directory: tests/compile_pip_requirements
     platform: debian11
+    shell_commands:
+    # Make a change to the locked requirements and then assert that //:requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:requirements.update"
+    - "git diff --exit-code"
   integration_test_compile_pip_requirements_macos:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on macOS
     working_directory: tests/compile_pip_requirements
     platform: macos
+    shell_commands:
+    # Make a change to the locked requirements and then assert that //:requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:requirements.update"
+    - "git diff --exit-code"
   integration_test_compile_pip_requirements_windows:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on Windows
     working_directory: tests/compile_pip_requirements
     platform: windows
+    shell_commands:
+    # Make a change to the locked requirements and then assert that //:requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:requirements.update"
+    - "git diff --exit-code"
 
   integration_test_pip_repository_entry_points_ubuntu:
     <<: *reusable_build_test_all

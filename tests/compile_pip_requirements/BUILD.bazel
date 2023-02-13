@@ -22,12 +22,13 @@ EOF
 compile_pip_requirements(
     name = "requirements",
     data = [
+        "requirements.in",
         "requirements_extra.in",
     ],
     extra_args = [
         "--allow-unsafe",
         "--resolver=backtracking",
     ],
-    requirements_in = "requirements.in",
+    requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
 )

@@ -14,13 +14,38 @@
 
 "Set defaults for the pip-compile command to run it under Bazel"
 
+import atexit
 import os
-import re
+import shutil
 import sys
 from pathlib import Path
-from shutil import copyfile
 
+import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
+
+# Replace the os.replace function with shutil.copy to work around os.replace not being able to
+# replace or move files across filesystems.
+os.replace = shutil.copy
+
+# Next, we override the annotation_style_split and annotation_style_line functions to replace the
+# backslashes in the paths with forward slashes. This is so that we can have the same requirements
+# file on Windows and Unix-like.
+original_annotation_style_split = piptools_writer.annotation_style_split
+original_annotation_style_line = piptools_writer.annotation_style_line
+
+
+def annotation_style_split(required_by) -> str:
+    required_by = set([v.replace("\\", "/") for v in required_by])
+    return original_annotation_style_split(required_by)
+
+
+def annotation_style_line(required_by) -> str:
+    required_by = set([v.replace("\\", "/") for v in required_by])
+    return original_annotation_style_line(required_by)
+
+
+piptools_writer.annotation_style_split = annotation_style_split
+piptools_writer.annotation_style_line = annotation_style_line
 
 
 def _select_golden_requirements_file(
@@ -39,19 +64,6 @@ def _select_golden_requirements_file(
         return requirements_windows
     else:
         return requirements_txt
-
-
-def _fix_up_requirements_in_path(absolute_prefix, output_file):
-    """Fix up references to the input file inside of the generated requirements file.
-
-    We don't want fully resolved, absolute paths in the generated requirements file.
-    The paths could differ for every invocation. Replace them with a predictable path.
-    """
-    output_file = Path(output_file)
-    contents = output_file.read_text()
-    contents = contents.replace(absolute_prefix, "")
-    contents = re.sub(r"\\(?!(\n|\r\n))", "/", contents)
-    output_file.write_text(contents)
 
 
 if __name__ == "__main__":
@@ -75,7 +87,6 @@ if __name__ == "__main__":
     # absolute prefixes in the locked requirements output file.
     requirements_in_path = Path(requirements_in)
     resolved_requirements_in = str(requirements_in_path.resolve())
-    absolute_prefix = resolved_requirements_in[: -len(str(requirements_in_path))]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -86,7 +97,7 @@ if __name__ == "__main__":
     os.environ["LANG"] = "C.UTF-8"
 
     UPDATE = True
-    # Detect if we are running under `bazel test`
+    # Detect if we are running under `bazel test`.
     if "TEST_TMPDIR" in os.environ:
         UPDATE = False
         # pip-compile wants the cache files to be writeable, but if we point
@@ -95,31 +106,13 @@ if __name__ == "__main__":
         # In theory this makes the test more hermetic as well.
         sys.argv.append("--cache-dir")
         sys.argv.append(os.environ["TEST_TMPDIR"])
-        # Make a copy for pip-compile to read and mutate
+        # Make a copy for pip-compile to read and mutate.
         requirements_out = os.path.join(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
-        copyfile(requirements_txt, requirements_out)
-
-    elif "BUILD_WORKSPACE_DIRECTORY" in os.environ:
-        # This value, populated when running under `bazel run`, is a path to the
-        # "root of the workspace where the build was run."
-        # This matches up with the values passed in via the macro using the 'rootpath' Make variable,
-        # which for source files provides a path "relative to your workspace root."
-        #
-        # Changing to the WORKSPACE root avoids 'file not found' errors when the `.update` target is run
-        # from different directories within the WORKSPACE.
-        os.chdir(os.environ["BUILD_WORKSPACE_DIRECTORY"])
-    else:
-        err_msg = (
-            "Expected to find BUILD_WORKSPACE_DIRECTORY (running under `bazel run`) or "
-            "TEST_TMPDIR (running under `bazel test`) in environment."
-        )
-        print(
-            err_msg,
-            file=sys.stderr,
-        )
-        sys.exit(1)
+        # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
+        # or shutil.copyfile, as they will fail with OSError: [Errno 18] Invalid cross-device link.
+        shutil.copy(requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
@@ -137,12 +130,17 @@ if __name__ == "__main__":
 
     if UPDATE:
         print("Updating " + requirements_txt)
-        try:
-            cli()
-        except SystemExit as e:
-            if e.code == 0:
-                _fix_up_requirements_in_path(absolute_prefix, requirements_txt)
-            raise
+        if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
+            workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
+            requirements_txt_tree = os.path.join(workspace, requirements_txt)
+            # In most cases, requirements_txt will be a symlink to the real file in the source tree.
+            # If symlinks are not enabled (e.g. on Windows), then requirements_txt will be a copy,
+            # and we should copy the updated requirements back to the source tree.
+            if not os.path.samefile(requirements_txt, requirements_txt_tree):
+                atexit.register(
+                    lambda: shutil.copy(requirements_txt, requirements_txt_tree)
+                )
+        cli()
     else:
         # cli will exit(0) on success
         try:
@@ -160,7 +158,6 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                _fix_up_requirements_in_path(absolute_prefix, requirements_out)
                 golden_filename = _select_golden_requirements_file(
                     requirements_txt,
                     requirements_linux,

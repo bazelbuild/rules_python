@@ -103,6 +103,8 @@ def compile_pip_requirements(
 
     tags = tags or []
     tags.append("requires-network")
+    tags.append("no-remote-exec")
+    tags.append("no-sandbox")
     attrs = {
         "args": args,
         "data": data,
