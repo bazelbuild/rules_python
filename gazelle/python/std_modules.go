@@ -47,7 +47,7 @@ func init() {
 	}
 
 	ctx := context.Background()
-	ctx, stdModulesCancel := context.WithTimeout(ctx, time.Minute*5)
+	ctx, stdModulesCancel := context.WithTimeout(ctx, time.Minute*10)
 	cmd := exec.CommandContext(ctx, stdModulesScriptRunfile)
 
 	cmd.Stderr = os.Stderr
