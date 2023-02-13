@@ -121,7 +121,7 @@ Information about a wheel produced by `py_wheel`
 ## py_wheel
 
 <pre>
-py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-kwargs">kwargs</a>)
+py_wheel(<a href="#py_wheel-name">name</a>, <a href="#py_wheel-twine">twine</a>, <a href="#py_wheel-kwargs">kwargs</a>)
 </pre>
 
 Builds a Python Wheel.
@@ -168,6 +168,31 @@ py_wheel(
 )
 ```
 
+To publish the wheel to Pypi, the twine package is required.
+rules_python doesn't provide twine itself, see https://github.com/bazelbuild/rules_python/issues/1016
+However you can install it with pip_parse, just like we do in the WORKSPACE file in rules_python.
+
+Once you've installed twine, you can pass its label to the `twine` attribute of this macro,
+to get a "[name].publish" target.
+
+Example:
+
+```python
+py_wheel(
+    name = "my_wheel",
+    twine = "@publish_deps_twine//:pkg",
+    ...
+)
+```
+
+Now you can run a command like the following, which publishes to https://test.pypi.org/
+
+```sh
+% TWINE_USERNAME=__token__ TWINE_PASSWORD=pypi-*** \
+    bazel run --stamp --embed_label=1.2.4 -- \
+    //path/to:my_wheel.publish --repository testpypi
+```
+
 
 **PARAMETERS**
 
@@ -175,6 +200,7 @@ py_wheel(
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="py_wheel-name"></a>name |  A unique name for this target.   |  none |
+| <a id="py_wheel-twine"></a>twine |  A label of the external location of the py_library target for twine   |  <code>None</code> |
 | <a id="py_wheel-kwargs"></a>kwargs |  other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)   |  none |
 
 

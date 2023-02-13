@@ -68,7 +68,7 @@ This also has the advantage that stamping information is included in the wheel's
     },
 )
 
-def py_wheel(name, **kwargs):
+def py_wheel(name, twine = None, **kwargs):
     """Builds a Python Wheel.
 
     Wheels are Python distribution format defined in https://www.python.org/dev/peps/pep-0427/.
@@ -113,16 +113,63 @@ def py_wheel(name, **kwargs):
     )
     ```
 
+    To publish the wheel to Pypi, the twine package is required.
+    rules_python doesn't provide twine itself, see https://github.com/bazelbuild/rules_python/issues/1016
+    However you can install it with pip_parse, just like we do in the WORKSPACE file in rules_python.
+
+    Once you've installed twine, you can pass its label to the `twine` attribute of this macro,
+    to get a "[name].publish" target.
+
+    Example:
+
+    ```python
+    py_wheel(
+        name = "my_wheel",
+        twine = "@publish_deps_twine//:pkg",
+        ...
+    )
+    ```
+
+    Now you can run a command like the following, which publishes to https://test.pypi.org/
+
+    ```sh
+    % TWINE_USERNAME=__token__ TWINE_PASSWORD=pypi-*** \\
+        bazel run --stamp --embed_label=1.2.4 -- \\
+        //path/to:my_wheel.publish --repository testpypi
+    ```
+
     Args:
         name:  A unique name for this target.
+        twine: A label of the external location of the py_library target for twine
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """
+    _dist_target = "{}.dist".format(name)
     py_wheel_dist(
-        name = "{}.dist".format(name),
+        name = _dist_target,
         wheel = name,
         out = kwargs.pop("dist_folder", "{}_dist".format(name)),
     )
 
     _py_wheel(name = name, **kwargs)
+
+    if twine:
+        if not twine.endswith(":pkg"):
+            fail("twine label should look like @my_twine_repo//:pkg")
+        twine_main = twine.replace(":pkg", ":rules_python_wheel_entry_point_twine.py")
+
+        # TODO: use py_binary from //python:defs.bzl after our stardoc setup is less brittle
+        # buildifier: disable=native-py
+        native.py_binary(
+            name = "{}.publish".format(name),
+            srcs = [twine_main],
+            args = [
+                "upload",
+                "$(rootpath :{})/*".format(_dist_target),
+            ],
+            data = [_dist_target],
+            imports = ["."],
+            main = twine_main,
+            deps = [twine],
+        )
 
 py_wheel_rule = _py_wheel
