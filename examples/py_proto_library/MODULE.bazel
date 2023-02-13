@@ -1,0 +1,28 @@
+module(
+    name = "rules_python_py_proto_library_example",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "rules_python", version = "0.17.3")
+
+# The following local_path_override is only needed to run this example as part of our CI.
+local_path_override(
+    module_name = "rules_python",
+    path = "../..",
+)
+
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+python.toolchain(
+    name = "python3_9",
+    configure_coverage_tool = True,
+    python_version = "3.9",
+)
+use_repo(python, "python3_9_toolchains")
+
+register_toolchains(
+    "@python3_9_toolchains//:all",
+)
+
+# We are using rules_proto to define rules_proto targets to be consumed by py_proto_library.
+bazel_dep(name = "rules_proto", version = "5.3.0-21.7")

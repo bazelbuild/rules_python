@@ -23,9 +23,8 @@ class TestPythonVersion(unittest.TestCase):
         os.chdir("%test_location%")
         rules_python_path = os.path.join(os.environ["TEST_SRCDIR"], "rules_python")
 
+        test_tmpdir = os.environ["TEST_TMPDIR"]
         if %is_windows%:
-            test_tmpdir = os.environ["TEST_TMPDIR"]
-
             home = os.path.join(test_tmpdir, "HOME")
             os.mkdir(home)
             os.environ["HOME"] = home
@@ -33,6 +32,16 @@ class TestPythonVersion(unittest.TestCase):
             local_app_data = os.path.join(test_tmpdir, "LocalAppData")
             os.mkdir(local_app_data)
             os.environ["LocalAppData"] = local_app_data
+
+        # Bazelisk requires a cache directory be set
+        os.environ["XDG_CACHE_HOME"] = os.path.join(test_tmpdir, "xdg-cache-home")
+
+        # Unset this so this works when called by Bazel's latest Bazel build
+        # pipeline. It sets the following combination, which interfere with each other:
+        # * --sandbox_tmpfs_path=/tmp
+        # * --test_env=USE_BAZEL_VERSION
+        # * USE_BAZEL_VERSION=/tmp/<something>
+        os.environ.pop("USE_BAZEL_VERSION", None)
 
         with open(".bazelrc", "w") as bazelrc:
             bazelrc.write(
@@ -47,8 +56,11 @@ class TestPythonVersion(unittest.TestCase):
             )
 
     def test_match_toolchain(self):
-        stream = os.popen("bazel run @python//:python3 -- --version")
-        output = stream.read().strip()
+        output = subprocess.check_output(
+          f"bazel run @python//:python3 -- --version",
+          shell = True, # Shell needed to look up via PATH
+          text=True,
+        ).strip()
         self.assertEqual(output, "Python %python_version%")
 
         subprocess.run("bazel test //...", shell=True, check=True)
