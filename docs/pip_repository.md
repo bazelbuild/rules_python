@@ -8,9 +8,10 @@
 
 <pre>
 pip_repository(<a href="#pip_repository-name">name</a>, <a href="#pip_repository-annotations">annotations</a>, <a href="#pip_repository-download_only">download_only</a>, <a href="#pip_repository-enable_implicit_namespace_pkgs">enable_implicit_namespace_pkgs</a>, <a href="#pip_repository-environment">environment</a>,
-               <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>, <a href="#pip_repository-python_interpreter">python_interpreter</a>,
-               <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>, <a href="#pip_repository-requirements_darwin">requirements_darwin</a>,
-               <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>, <a href="#pip_repository-timeout">timeout</a>)
+               <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-incompatible_generate_aliases">incompatible_generate_aliases</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>,
+               <a href="#pip_repository-python_interpreter">python_interpreter</a>, <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>,
+               <a href="#pip_repository-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>,
+               <a href="#pip_repository-timeout">timeout</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -64,6 +65,7 @@ py_binary(
 | <a id="pip_repository-enable_implicit_namespace_pkgs"></a>enable_implicit_namespace_pkgs |  If true, disables conversion of native namespace packages into pkg-util style namespace packages. When set all py_binary and py_test targets must specify either <code>legacy_create_init=False</code> or the global Bazel option <code>--incompatible_default_to_explicit_init_py</code> to prevent <code>__init__.py</code> being automatically generated in every directory.<br><br>This option is required to support some packages which cannot handle the conversion to pkg-util style.   | Boolean | optional | <code>False</code> |
 | <a id="pip_repository-environment"></a>environment |  Environment variables to set in the pip subprocess. Can be used to set common variables such as <code>http_proxy</code>, <code>https_proxy</code> and <code>no_proxy</code> Note that pip is run with "--isolated" on the CLI so <code>PIP_&lt;VAR&gt;_&lt;NAME&gt;</code> style env vars are ignored, but env vars that control requests and urllib3 can be passed.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional | <code>{}</code> |
 | <a id="pip_repository-extra_pip_args"></a>extra_pip_args |  Extra arguments to pass on to pip. Must not contain spaces.   | List of strings | optional | <code>[]</code> |
+| <a id="pip_repository-incompatible_generate_aliases"></a>incompatible_generate_aliases |  Allow generating aliases '@pip//&lt;pkg&gt;' -&gt; '@pip_&lt;pkg&gt;//:pkg'.   | Boolean | optional | <code>False</code> |
 | <a id="pip_repository-isolated"></a>isolated |  Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to the underlying pip command. Alternatively, the <code>RULES_PYTHON_PIP_ISOLATED</code> enviornment varaible can be used to control this flag.   | Boolean | optional | <code>True</code> |
 | <a id="pip_repository-pip_data_exclude"></a>pip_data_exclude |  Additional data exclusion parameters to add to the pip packages BUILD file.   | List of strings | optional | <code>[]</code> |
 | <a id="pip_repository-python_interpreter"></a>python_interpreter |  The python interpreter to use. This can either be an absolute path or the name of a binary found on the host's <code>PATH</code> environment variable. If no value is set <code>python3</code> is defaulted for Unix systems and <code>python.exe</code> for Windows.   | String | optional | <code>""</code> |
@@ -83,8 +85,8 @@ py_binary(
 ## pip_repository_bzlmod
 
 <pre>
-pip_repository_bzlmod(<a href="#pip_repository_bzlmod-name">name</a>, <a href="#pip_repository_bzlmod-repo_mapping">repo_mapping</a>, <a href="#pip_repository_bzlmod-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository_bzlmod-requirements_linux">requirements_linux</a>,
-                      <a href="#pip_repository_bzlmod-requirements_lock">requirements_lock</a>, <a href="#pip_repository_bzlmod-requirements_windows">requirements_windows</a>)
+pip_repository_bzlmod(<a href="#pip_repository_bzlmod-name">name</a>, <a href="#pip_repository_bzlmod-incompatible_generate_aliases">incompatible_generate_aliases</a>, <a href="#pip_repository_bzlmod-repo_mapping">repo_mapping</a>, <a href="#pip_repository_bzlmod-requirements_darwin">requirements_darwin</a>,
+                      <a href="#pip_repository_bzlmod-requirements_linux">requirements_linux</a>, <a href="#pip_repository_bzlmod-requirements_lock">requirements_lock</a>, <a href="#pip_repository_bzlmod-requirements_windows">requirements_windows</a>)
 </pre>
 
 A rule for bzlmod pip_repository creation. Intended for private use only.
@@ -95,6 +97,7 @@ A rule for bzlmod pip_repository creation. Intended for private use only.
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="pip_repository_bzlmod-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="pip_repository_bzlmod-incompatible_generate_aliases"></a>incompatible_generate_aliases |  Allow generating aliases in '@pip//:&lt;pkg&gt;' -&gt; '@pip_&lt;pkg&gt;//:pkg'. This replaces the aliases generated by the <code>bzlmod</code> tooling.   | Boolean | optional | <code>False</code> |
 | <a id="pip_repository_bzlmod-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 | <a id="pip_repository_bzlmod-requirements_darwin"></a>requirements_darwin |  Override the requirements_lock attribute when the host platform is Mac OS   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository_bzlmod-requirements_linux"></a>requirements_linux |  Override the requirements_lock attribute when the host platform is Linux   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |

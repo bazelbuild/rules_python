@@ -78,6 +78,7 @@ def _pip_impl(module_ctx):
             pip_repository_bzlmod(
                 name = attr.name,
                 requirements_lock = attr.requirements_lock,
+                incompatible_generate_aliases = attr.incompatible_generate_aliases,
             )
 
             for name, requirement_line in requirements:
