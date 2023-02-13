@@ -20,11 +20,32 @@ import shutil
 import sys
 from pathlib import Path
 
+import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
 # Replace the os.replace function with shutil.copy to work around os.replace not being able to
 # replace or move files across filesystems.
 os.replace = shutil.copy
+
+# Next, we override the annotation_style_split and annotation_style_line functions to replace the
+# backslashes in the paths with forward slashes. This is so that we can have the same requirements
+# file on Windows and Unix-like.
+original_annotation_style_split = piptools_writer.annotation_style_split
+original_annotation_style_line = piptools_writer.annotation_style_line
+
+
+def annotation_style_split(required_by) -> str:
+    required_by = set([v.replace("\\", "/") for v in required_by])
+    return original_annotation_style_split(required_by)
+
+
+def annotation_style_line(required_by) -> str:
+    required_by = set([v.replace("\\", "/") for v in required_by])
+    return original_annotation_style_line(required_by)
+
+
+piptools_writer.annotation_style_split = annotation_style_split
+piptools_writer.annotation_style_line = annotation_style_line
 
 
 def _select_golden_requirements_file(
