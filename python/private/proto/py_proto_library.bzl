@@ -22,6 +22,9 @@ ProtoLangToolchainInfo = proto_common.ProtoLangToolchainInfo
 _PyProtoInfo = provider(
     doc = "Encapsulates information needed by the Python proto rules.",
     fields = {
+        "imports": """
+            (depset[str]) The field forwarding PyInfo.imports coming from
+            the proto language runtime dependency.""",
         "runfiles_from_proto_deps": """
             (depset[File]) Files from the transitive closure implicit proto
             dependencies""",
@@ -95,6 +98,9 @@ def _py_proto_aspect_impl(target, ctx):
 
     return [
         _PyProtoInfo(
+            imports = depset(
+                transitive = [dep[PyInfo].imports for dep in api_deps],
+            ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
         ),
@@ -142,6 +148,7 @@ def _py_proto_library_rule(ctx):
         ),
         PyInfo(
             transitive_sources = default_outputs,
+            imports = depset(transitive = [info.imports for info in pyproto_infos]),
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,

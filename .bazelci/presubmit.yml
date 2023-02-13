@@ -31,6 +31,11 @@ buildifier:
     - "..."
   test_flags:
     - "--test_tag_filters=-integration-test"
+.common_bzlmod_flags: &common_bzlmod_flags
+  test_flags:
+    - "--experimental_enable_bzlmod"
+  build_flags:
+    - "--experimental_enable_bzlmod"
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
@@ -210,6 +215,53 @@ tasks:
     platform: macos
   # We don't run pip_parse_vendored under Windows as the file checked in is
   # generated from a repository rule containing OS-specific rendered paths.
+
+  integration_test_py_proto_library_ubuntu:
+    <<: *reusable_build_test_all
+    name: py_proto_library integration tests on Ubuntu
+    working_directory: examples/py_proto_library
+    platform: ubuntu2004
+  integration_test_py_proto_library_debian:
+    <<: *reusable_build_test_all
+    name: py_proto_library integration tests on Debian
+    working_directory: examples/py_proto_library
+    platform: debian11
+  integration_test_py_proto_library_macos:
+    <<: *reusable_build_test_all
+    name: py_proto_library integration tests on macOS
+    working_directory: examples/py_proto_library
+    platform: macos
+  integration_test_py_proto_library_windows:
+    <<: *reusable_build_test_all
+    name: py_proto_library integration tests on Windows
+    working_directory: examples/py_proto_library
+    platform: windows
+
+  # Check the same using bzlmod as well
+  integration_test_py_proto_library_bzlmod_ubuntu:
+    <<: *reusable_build_test_all
+    <<: *common_bzlmod_flags
+    name: py_proto_library bzlmod integration tests on Ubuntu
+    working_directory: examples/py_proto_library
+    platform: ubuntu2004
+  integration_test_py_proto_library_bzlmod_debian:
+    <<: *reusable_build_test_all
+    <<: *common_bzlmod_flags
+    name: py_proto_library bzlmod integration tests on Debian
+    working_directory: examples/py_proto_library
+    platform: debian11
+  integration_test_py_proto_library_bzlmod_macos:
+    <<: *reusable_build_test_all
+    <<: *common_bzlmod_flags
+    name: py_proto_library bzlmod integration tests on macOS
+    working_directory: examples/py_proto_library
+    platform: macos
+  integration_test_py_proto_library_bzlmod_windows:
+    <<: *reusable_build_test_all
+    <<: *common_bzlmod_flags
+    name: py_proto_library bzlmod integration tests on Windows
+    working_directory: examples/py_proto_library
+    platform: windows
 
   integration_test_pip_repository_annotations_ubuntu:
     <<: *reusable_build_test_all

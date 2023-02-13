@@ -84,18 +84,19 @@ _config = rule(
     attrs = _ATTRS,
 )
 
-def bazel_integration_test(name, override_bazel_version = None, bzlmod = False, **kwargs):
+def bazel_integration_test(name, override_bazel_version = None, bzlmod = False, dirname = None, **kwargs):
     """Wrapper macro to set default srcs and run a py_test with config
 
     Args:
         name: name of the resulting py_test
         override_bazel_version: bazel version to use in test
         bzlmod: whether the test uses bzlmod
+        dirname: the directory name of the test. Defaults to value of `name` after trimming the `_example` suffix.
         **kwargs: additional attributes like timeout and visibility
     """
 
     # By default, we assume sources for "pip_example" are in examples/pip/**/*
-    dirname = name[:-len("_example")]
+    dirname = dirname or name[:-len("_example")]
     native.filegroup(
         name = "_%s_sources" % name,
         srcs = native.glob(

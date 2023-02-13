@@ -3,10 +3,13 @@ bazel-runfiles library
 
 This is a Bazel Runfiles lookup library for Bazel-built Python binaries and tests.
 
+Learn about runfiles: read `Runfiles guide <https://bazel.build/extending/rules#runfiles>`_
+or watch `Fabian's BazelCon talk <https://www.youtube.com/watch?v=5NbgUMH1OGo>`_.
+
 Typical Usage
 -------------
 
-1.  Add the 'runfiles' dependency along with other third-party dependencies, for example in your
+1.  Add the 'bazel-runfiles' dependency along with other third-party dependencies, for example in your
     ``requirements.txt`` file.
 
 2.  Depend on this runfiles library from your build rule, like you would other third-party libraries::
@@ -14,7 +17,7 @@ Typical Usage
       py_binary(
           name = "my_binary",
           ...
-          deps = [requirement("runfiles")],
+          deps = [requirement("bazel-runfiles")],
       )
 
 3.  Import the runfiles library::

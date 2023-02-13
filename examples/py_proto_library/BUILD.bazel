@@ -1,0 +1,22 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+
+py_proto_library(
+    name = "pricetag_proto_py_pb2",
+    deps = [":pricetag_proto"],
+)
+
+proto_library(
+    name = "pricetag_proto",
+    srcs = ["pricetag.proto"],
+)
+
+py_test(
+    name = "pricetag_test",
+    srcs = ["test.py"],
+    main = "test.py",
+    deps = [
+        ":pricetag_proto_py_pb2",
+    ],
+)

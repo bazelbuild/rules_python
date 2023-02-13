@@ -103,7 +103,7 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 		case "exclude":
 			// We record the exclude directive for coarse-grained packages
 			// since we do manual tree traversal in this mode.
-			config.AddExcludedPattern(strings.TrimSpace(d.Value))
+			config.AddExcludedPattern(filepath.Join(rel, strings.TrimSpace(d.Value)))
 		case pythonconfig.PythonExtensionDirective:
 			switch d.Value {
 			case "enabled":
