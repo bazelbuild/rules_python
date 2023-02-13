@@ -73,6 +73,14 @@ tasks:
     build_targets: ["//..."]
     test_targets: ["//..."]
     working_directory: gazelle
+  gazelle_extension_bzlmod:
+    <<: *common_bzlmod_flags
+    name: Test the Gazelle extension under bzlmod
+    platform: ubuntu2004
+    build_targets: ["//..."]
+    test_targets: ["//..."]
+    working_directory: gazelle
+
   ubuntu_min:
     <<: *minimum_supported_version
     <<: *reusable_config
@@ -135,6 +143,32 @@ tasks:
   integration_test_build_file_generation_windows:
     <<: *reusable_build_test_all
     name: build_file_generation integration tests on Windows
+    working_directory: examples/build_file_generation
+    platform: windows
+
+  integration_test_build_file_generation_bzlmod_ubuntu:
+    <<: *minimum_supported_bzlmod_version
+    <<: *common_bzlmod_flags
+    <<: *reusable_build_test_all
+    name: build_file_generation_bzlmod integration tests on Ubuntu
+    working_directory: examples/build_file_generation
+    platform: ubuntu2004
+  integration_test_build_file_generation_bzlmod_debian:
+    <<: *common_bzlmod_flags
+    <<: *reusable_build_test_all
+    name: build_file_generation_bzlmod integration tests on Debian
+    working_directory: examples/build_file_generation
+    platform: debian11
+  integration_test_build_file_generation_bzlmod_macos:
+    <<: *common_bzlmod_flags
+    <<: *reusable_build_test_all
+    name: build_file_generation_bzlmod integration tests on macOS
+    working_directory: examples/build_file_generation
+    platform: macos
+  integration_test_build_file_generation_bzlmod_windows:
+    <<: *common_bzlmod_flags
+    <<: *reusable_build_test_all
+    name: build_file_generation_bzlmod integration tests on Windows
     working_directory: examples/build_file_generation
     platform: windows
 
