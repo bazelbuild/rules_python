@@ -41,6 +41,7 @@ exports_files(
         "py_wheel.bzl",
         "reexports.bzl",
         "stamp.bzl",
+        "util.bzl",
     ],
     visibility = ["//docs:__pkg__"],
 )
