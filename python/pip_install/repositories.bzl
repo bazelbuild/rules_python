@@ -17,7 +17,7 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python:versions.bzl", "MINIMUM_BAZEL_VERSION")
+load("//:version.bzl", "MINIMUM_BAZEL_VERSION")
 
 _RULE_DEPS = [
     (

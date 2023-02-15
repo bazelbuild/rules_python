@@ -15,9 +15,6 @@
 """The Python versions we use for the toolchains.
 """
 
-# NOTE: Keep in sync with .bazelci/presubmit.yml
-MINIMUM_BAZEL_VERSION = "5.4.0"
-
 # Values returned by https://bazel.build/rules/lib/repository_os.
 MACOS_NAME = "mac os"
 LINUX_NAME = "linux"
