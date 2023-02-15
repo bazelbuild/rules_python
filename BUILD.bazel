@@ -31,6 +31,7 @@ filegroup(
         "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
+        "version.bzl",
         "//python:distribution",
         "//python/pip_install:distribution",
         "//tools:distribution",
