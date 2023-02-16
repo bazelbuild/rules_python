@@ -20,6 +20,7 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 
 CPPFLAGS = "CPPFLAGS"
+LDFLAGS = "LDFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
@@ -110,7 +111,7 @@ def _get_xcode_location_cflags(rctx):
         "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
     ]
 
-def _get_toolchain_unix_cflags(rctx):
+def _get_toolchain_unix_cflags(rctx, c_compiler):
     """Gather cflags from a standalone toolchain for unix systems.
 
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -125,6 +126,25 @@ def _get_toolchain_unix_cflags(rctx):
     if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
         return []
 
+    include_paths = []
+
+    is_clang = False
+    if c_compiler:
+        err = rctx.execute([c_compiler, "-v"])
+        out = err.stderr.strip()
+        is_clang = "clang" in out.split("\n")[0]
+
+        if is_clang:
+            args = ["-E", "-Wp,-v", "-xc", "-"]
+        else:
+            args = ["-E", "-Wp,-v", "-xc++", "-"]
+        err = rctx.execute([c_compiler] + args)
+        out = err.stderr.strip()
+        parsed = [line.strip() for line in out.split("\n") if line.startswith(" ")]
+        if is_clang:
+            include_paths.append(parsed[0] + "/../../../../include/c++/v1")
+        include_paths += parsed
+
     er = rctx.execute([
         rctx.path(rctx.attr.python_interpreter_target).realpath,
         "-c",
@@ -132,13 +152,39 @@ def _get_toolchain_unix_cflags(rctx):
     ])
     if er.return_code != 0:
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
-    _python_version = er.stdout
-    include_path = "{}/include/python{}".format(
+    _python_version = er.stdout.strip()
+    include_paths.append("{}/include/python{}".format(
         get_interpreter_dirname(rctx, rctx.attr.python_interpreter_target),
         _python_version,
-    )
+    ))
 
-    return ["-isystem {}".format(include_path)]
+    include_flags = ["-isystem {}".format(include_path) for include_path in include_paths]
+
+    extra_flags = []
+    if is_clang:
+        extra_flags.append("-stdlib=libc++")
+
+    return include_flags + extra_flags
+
+def _get_toolchain_unix_ldflags(rctx):
+    """Gather ldflags from a standalone toolchain for unix systems.
+    """
+
+    # Only run on Unix systems
+    if not rctx.os.name.lower().startswith(("mac os", "linux")):
+        return []
+
+    library_paths = []
+
+    ld = rctx.which("ld")
+    if ld:
+        err = rctx.execute([ld, "--verbose"])
+        out = err.stdout.strip()
+        for line in out.split("\n"):
+            if "SEARCH_DIR" in line:
+                library_paths.extend([line.replace("SEARCH_DIR(\"=", "").replace("\");", "") for line in line.strip().split(" ")])
+
+    return ["-L{}".format(library_path) for library_path in library_paths]
 
 def use_isolated(ctx, attr):
     """Determine whether or not to pass the pip `--isolated` flag to the pip invocation.
@@ -214,15 +260,26 @@ def _create_repository_execution_environment(rctx):
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
 
+    c_compiler = rctx.which(rctx.os.environ.get("CC", "cc"))
+    cxx_compiler = rctx.which(rctx.os.environ.get("CXX", "c++"))
+
     # Gather any available CPPFLAGS values
     cppflags = []
     cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx, c_compiler))
+
+    ldflags = _get_toolchain_unix_ldflags(rctx)
 
     env = {
         "PYTHONPATH": _construct_pypath(rctx),
         CPPFLAGS: " ".join(cppflags),
+        LDFLAGS: " ".join(ldflags),
     }
+
+    if c_compiler:
+        env["CC"] = str(c_compiler)
+    if cxx_compiler:
+        env["CXX"] = str(cxx_compiler)
 
     return env
 
