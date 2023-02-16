@@ -84,6 +84,7 @@ bzl_library(
         "//python/private:py_package.bzl",
         "//python/private:py_wheel.bzl",
         "//python/private:stamp.bzl",
+        "//python/private:util.bzl",
     ],
 )
 

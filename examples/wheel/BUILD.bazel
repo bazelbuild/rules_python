@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("//examples/wheel/private:wheel_utils.bzl", "directory_writer")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
@@ -50,6 +51,7 @@ directory_writer(
 # Package just a specific py_libraries, without their dependencies
 py_wheel(
     name = "minimal_with_py_library",
+    testonly = True,  # Set this to verify the generated .dist target doesn't break things
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
     distribution = "example_minimal_library",
     python_tag = "py3",
@@ -58,6 +60,11 @@ py_wheel(
         "//examples/wheel/lib:module_with_data",
         "//examples/wheel/lib:simple_module",
     ],
+)
+
+build_test(
+    name = "dist_build_tests",
+    targets = [":minimal_with_py_library.dist"],
 )
 
 # Package just a specific py_libraries, without their dependencies

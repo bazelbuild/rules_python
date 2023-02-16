@@ -16,6 +16,7 @@
 
 load("//python/private:py_package.bzl", "py_package_lib")
 load("//python/private:py_wheel.bzl", _PyWheelInfo = "PyWheelInfo", _py_wheel = "py_wheel")
+load("//python/private:util.bzl", "copy_propagating_kwargs")
 
 # Re-export as public API
 PyWheelInfo = _PyWheelInfo
@@ -148,6 +149,7 @@ def py_wheel(name, twine = None, **kwargs):
         name = _dist_target,
         wheel = name,
         out = kwargs.pop("dist_folder", "{}_dist".format(name)),
+        **copy_propagating_kwargs(kwargs)
     )
 
     _py_wheel(name = name, **kwargs)
