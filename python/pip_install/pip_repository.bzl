@@ -257,110 +257,177 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-# Keep in sync with `_clean_name` in generated requirements.bzl
+# Keep in sync with `_clean_pkg_name` in generated bzlmod requirements.bzl
 def _clean_pkg_name(name):
     return name.replace("-", "_").replace(".", "_").lower()
 
-def _bzlmod_pkg_aliases(rctx, requirements_txt):
+def _bzlmod_pkg_aliases(repo_name, bzl_packages):
     """Create alias declarations for each python dependency.
 
-    The aliases should be appended to the pip_parse repo's BUILD.bazel file. These aliases
+    The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
     allow users to use requirement() without needed a corresponding `use_repo()` for each dep
     when using bzlmod.
 
     Args:
-        rctx: the repository context
-        requirements_txt: label to the requirements lock file
+        repo_name: the repository name of the parent that is visible to the users.
+        bzl_packages: the list of packages to setup.
     """
-    requirements = parse_requirements(rctx.read(requirements_txt)).requirements
-
     build_content = ""
-    for requirement in requirements:
+    for name in bzl_packages:
         build_content += """\
 
 alias(
     name = "{name}_pkg",
-    actual = "@{repo_prefix}{dep}//:pkg",
+    actual = "@{repo_name}_{dep}//:pkg",
 )
 
 alias(
     name = "{name}_whl",
-    actual = "@{repo_prefix}{dep}//:whl",
+    actual = "@{repo_name}_{dep}//:whl",
 )
 
 alias(
     name = "{name}_data",
-    actual = "@{repo_prefix}{dep}//:data",
+    actual = "@{repo_name}_{dep}//:data",
 )
 
 alias(
     name = "{name}_dist_info",
-    actual = "@{repo_prefix}{dep}//:dist_info",
+    actual = "@{repo_name}_{dep}//:dist_info",
 )
 """.format(
-            name = _clean_pkg_name(requirement[0]),
-            repo_prefix = rctx.attr.repo_prefix,
-            dep = _clean_pkg_name(requirement[0]),
+            name = name,
+            repo_name = repo_name,
+            dep = name,
         )
 
     return build_content
 
-def _pip_repository_impl(rctx):
-    python_interpreter = _resolve_python_interpreter(rctx)
-
-    # Write the annotations file to pass to the wheel maker
-    annotations = {package: json.decode(data) for (package, data) in rctx.attr.annotations.items()}
-    annotations_file = rctx.path("annotations.json")
-    rctx.file(annotations_file, json.encode_indent(annotations, indent = " " * 4))
-
+def _pip_repository_bzlmod_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    args = [
-        python_interpreter,
-        "-m",
-        "python.pip_install.tools.lock_file_generator.lock_file_generator",
-        "--requirements_lock",
-        rctx.path(requirements_txt),
-        "--requirements_lock_label",
-        str(requirements_txt),
-        # pass quiet and timeout args through to child repos.
-        "--quiet",
-        str(rctx.attr.quiet),
-        "--timeout",
-        str(rctx.attr.timeout),
-        "--annotations",
-        annotations_file,
-        "--bzlmod",
-        str(rctx.attr.bzlmod).lower(),
+    content = rctx.read(requirements_txt)
+    parsed_requirements_txt = parse_requirements(content)
+
+    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+
+    bzl_packages = sorted([name for name, _ in packages])
+
+    repo_name = rctx.attr.name.split("~")[-1]
+
+    build_contents = _BUILD_FILE_CONTENTS + _bzlmod_pkg_aliases(repo_name, bzl_packages)
+
+    rctx.file("BUILD.bazel", build_contents)
+    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_REQUIREMENTS%%": _format_repr_list([
+            "@{}//:{}_pkg".format(repo_name, p)
+            for p in bzl_packages
+        ]),
+        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
+            "@{}//:{}_whl".format(repo_name, p)
+            for p in bzl_packages
+        ]),
+        "%%NAME%%": rctx.attr.name,
+        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
+    })
+
+pip_repository_bzlmod_attrs = {
+    "requirements_darwin": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
+    ),
+    "requirements_linux": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Linux",
+    ),
+    "requirements_lock": attr.label(
+        allow_single_file = True,
+        doc = """
+A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
+of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
+wheels are fetched/built only for the targets specified by 'build/run/test'.
+""",
+    ),
+    "requirements_windows": attr.label(
+        allow_single_file = True,
+        doc = "Override the requirements_lock attribute when the host platform is Windows",
+    ),
+    "_template": attr.label(
+        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
+    ),
+}
+
+pip_repository_bzlmod = repository_rule(
+    attrs = pip_repository_bzlmod_attrs,
+    doc = """A rule for bzlmod pip_repository creation. Intended for private use only.""",
+    implementation = _pip_repository_bzlmod_impl,
+)
+
+def _pip_repository_impl(rctx):
+    requirements_txt = locked_requirements_label(rctx, rctx.attr)
+    content = rctx.read(requirements_txt)
+    parsed_requirements_txt = parse_requirements(content)
+
+    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+
+    bzl_packages = sorted([name for name, _ in packages])
+
+    imports = [
+        'load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")',
     ]
 
-    args += ["--python_interpreter", _get_python_interpreter_attr(rctx)]
+    annotations = {}
+    for pkg, annotation in rctx.attr.annotations.items():
+        filename = "{}.annotation.json".format(_clean_pkg_name(pkg))
+        rctx.file(filename, json.encode_indent(json.decode(annotation)))
+        annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
+
+    tokenized_options = []
+    for opt in parsed_requirements_txt.options:
+        for p in opt.split(" "):
+            tokenized_options.append(p)
+
+    options = tokenized_options + rctx.attr.extra_pip_args
+
+    config = {
+        "download_only": rctx.attr.download_only,
+        "enable_implicit_namespace_pkgs": rctx.attr.enable_implicit_namespace_pkgs,
+        "environment": rctx.attr.environment,
+        "extra_pip_args": options,
+        "isolated": use_isolated(rctx, rctx.attr),
+        "pip_data_exclude": rctx.attr.pip_data_exclude,
+        "python_interpreter": _get_python_interpreter_attr(rctx),
+        "quiet": rctx.attr.quiet,
+        "repo": rctx.attr.name,
+        "repo_prefix": "{}_".format(rctx.attr.name),
+        "timeout": rctx.attr.timeout,
+    }
+
     if rctx.attr.python_interpreter_target:
-        args += ["--python_interpreter_target", str(rctx.attr.python_interpreter_target)]
-    progress_message = "Parsing requirements to starlark"
+        config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
 
-    args += ["--repo", rctx.attr.name, "--repo-prefix", rctx.attr.repo_prefix]
-    args = _parse_optional_attrs(rctx, args)
-
-    rctx.report_progress(progress_message)
-
-    result = rctx.execute(
-        args,
-        # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = _create_repository_execution_environment(rctx),
-        timeout = rctx.attr.timeout,
-        quiet = rctx.attr.quiet,
-    )
-
-    if result.return_code:
-        fail("rules_python failed: %s (%s)" % (result.stdout, result.stderr))
-
-    # We need a BUILD file to load the generated requirements.bzl
-    build_contents = _BUILD_FILE_CONTENTS
-
-    if rctx.attr.bzlmod:
-        build_contents += _bzlmod_pkg_aliases(rctx, requirements_txt)
-
-    rctx.file("BUILD.bazel", build_contents + "\n# The requirements.bzl file was generated by running:\n# " + " ".join([str(a) for a in args]))
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
+    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_REQUIREMENTS%%": _format_repr_list([
+            "@{}_{}//:pkg".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
+        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
+            "@{}_{}//:whl".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
+        "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
+        "%%CONFIG%%": _format_dict(_repr_dict(config)),
+        "%%EXTRA_PIP_ARGS%%": json.encode(options),
+        "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%NAME%%": rctx.attr.name,
+        "%%PACKAGES%%": _format_repr_list(
+            [
+                ("{}_{}".format(rctx.attr.name, p), r)
+                for p, r in packages
+            ],
+        ),
+        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
+    })
 
     return
 
@@ -453,12 +520,6 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
-    "bzlmod": attr.bool(
-        default = False,
-        doc = """Whether this repository rule is invoked under bzlmod, in which case
-we do not create the install_deps() macro.
-""",
-    ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Mac OS",
@@ -478,6 +539,9 @@ wheels are fetched/built only for the targets specified by 'build/run/test'.
     "requirements_windows": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Windows",
+    ),
+    "_template": attr.label(
+        default = ":pip_repository_requirements.bzl.tmpl",
     ),
 }
 
@@ -625,3 +689,19 @@ def package_annotation(
         data_exclude_glob = data_exclude_glob,
         srcs_exclude_glob = srcs_exclude_glob,
     ))
+
+# pip_repository implementation
+
+def _format_list(items):
+    return "[{}]".format(", ".join(items))
+
+def _format_repr_list(strings):
+    return _format_list(
+        [repr(s) for s in strings],
+    )
+
+def _repr_dict(items):
+    return {k: repr(v) for k, v in items.items()}
+
+def _format_dict(items):
+    return "{{{}}}".format(", ".join(sorted(['"{}": {}'.format(k, v) for k, v in items.items()])))

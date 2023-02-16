@@ -14,9 +14,8 @@
 
 "Module extensions for use with bzlmod"
 
-load("@rules_python//python:pip.bzl", "pip_parse")
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
-load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "use_isolated", "whl_library")
+load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "pip_repository_bzlmod", "use_isolated", "whl_library")
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
@@ -68,7 +67,7 @@ def _pip_impl(module_ctx):
 
             # Parse the requirements file directly in starlark to get the information
             # needed for the whl_libary declarations below. This is needed to contain
-            # the pip_parse logic to a single module extension.
+            # the pip_repository logic to a single module extension.
             requirements_lock_content = module_ctx.read(requrements_lock)
             parse_result = parse_requirements(requirements_lock_content)
             requirements = parse_result.requirements
@@ -76,14 +75,9 @@ def _pip_impl(module_ctx):
 
             # Create the repository where users load the `requirement` macro. Under bzlmod
             # this does not create the install_deps() macro.
-            pip_parse(
+            pip_repository_bzlmod(
                 name = attr.name,
                 requirements_lock = attr.requirements_lock,
-                bzlmod = True,
-                timeout = attr.timeout,
-                python_interpreter = attr.python_interpreter,
-                python_interpreter_target = attr.python_interpreter_target,
-                quiet = attr.quiet,
             )
 
             for name, requirement_line in requirements:
@@ -114,7 +108,7 @@ def _pip_parse_ext_attrs():
         "name": attr.string(mandatory = True),
     }, **pip_repository_attrs)
 
-    # Like the pip_parse macro, we end up setting this manually so
+    # Like the pip_repository rule, we end up setting this manually so
     # don't allow users to override it.
     attrs.pop("repo_prefix")
 

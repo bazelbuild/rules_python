@@ -168,7 +168,7 @@ install_deps()
 ## pip_parse
 
 <pre>
-pip_parse(<a href="#pip_parse-requirements">requirements</a>, <a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-bzlmod">bzlmod</a>, <a href="#pip_parse-kwargs">kwargs</a>)
+pip_parse(<a href="#pip_parse-requirements">requirements</a>, <a href="#pip_parse-requirements_lock">requirements_lock</a>, <a href="#pip_parse-name">name</a>, <a href="#pip_parse-kwargs">kwargs</a>)
 </pre>
 
 Accepts a locked/compiled requirements file and installs the dependencies listed within.
@@ -264,7 +264,6 @@ See the example in rules_python/examples/pip_parse_vendored.
 | <a id="pip_parse-requirements"></a>requirements |  Deprecated. See requirements_lock.   |  <code>None</code> |
 | <a id="pip_parse-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'. Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code> attributes.   |  <code>None</code> |
 | <a id="pip_parse-name"></a>name |  The name of the generated repository. The generated repositories containing each requirement will be of the form <code>&lt;name&gt;_&lt;requirement-name&gt;</code>.   |  <code>"pip_parsed_deps"</code> |
-| <a id="pip_parse-bzlmod"></a>bzlmod |  Whether this rule is being run under a bzlmod module extension.   |  <code>False</code> |
 | <a id="pip_parse-kwargs"></a>kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
 
 
