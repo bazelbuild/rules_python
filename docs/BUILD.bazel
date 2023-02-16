@@ -67,6 +67,7 @@ bzl_library(
     ],
     deps = [
         ":defs",
+        "//:version.bzl",
     ],
 )
 

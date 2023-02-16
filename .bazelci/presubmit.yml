@@ -17,6 +17,12 @@ buildifier:
   version: latest
   # keep this argument in sync with .pre-commit-config.yaml
   warnings: "all"
+.minimum_supported_version: &minimum_supported_version
+  # For testing minimum supported version.
+  # NOTE: Keep in sync with //:version.bzl
+  bazel: 5.4.0
+.minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
+  bazel: 6.0.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -54,12 +60,24 @@ buildifier:
     - //tests:version_3_9_test
     - //tests:version_default_test
 tasks:
+  gazelle_extension_min:
+    <<: *minimum_supported_version
+    name: Test the Gazelle extension using minimum supported Bazel version
+    platform: ubuntu2004
+    build_targets: ["//..."]
+    test_targets: ["//..."]
+    working_directory: gazelle
   gazelle_extension:
     name: Test the Gazelle extension
     platform: ubuntu2004
     build_targets: ["//..."]
     test_targets: ["//..."]
     working_directory: gazelle
+  ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_config
+    name: Default test on Ubuntu using minimum supported Bazel version
+    platform: ubuntu2004
   ubuntu:
     <<: *reusable_config
     name: Default test on Ubuntu
@@ -78,6 +96,14 @@ tasks:
     platform: windows
     test_flags:
       - "--test_tag_filters=-integration-test,-fix-windows"
+
+  rbe_min:
+    <<: *minimum_supported_version
+    <<: *reusable_config
+    name: Test on RBE using minimum supported Bazel version
+    platform: rbe_ubuntu1604
+    test_flags:
+      - "--test_tag_filters=-integration-test,-acceptance-test"
   rbe:
     <<: *reusable_config
     name: Test on RBE
@@ -85,6 +111,12 @@ tasks:
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
 
+  integration_test_build_file_generation_ubuntu_minimum_supported:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: build_file_generation integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/build_file_generation
+    platform: ubuntu2004
   integration_test_build_file_generation_ubuntu:
     <<: *reusable_build_test_all
     name: build_file_generation integration tests on Ubuntu
@@ -106,6 +138,13 @@ tasks:
     working_directory: examples/build_file_generation
     platform: windows
 
+  integration_test_bzlmod_ubuntu_min:
+    <<: *minimum_supported_bzlmod_version
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
+    name: bzlmod integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/bzlmod
+    platform: ubuntu2004
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
@@ -131,6 +170,12 @@ tasks:
     working_directory: examples/bzlmod
     platform: windows
 
+  integration_test_multi_python_versions_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: multi_python_versions integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/multi_python_versions
+    platform: ubuntu2004
   integration_test_multi_python_versions_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_multi_python
@@ -156,6 +201,12 @@ tasks:
     working_directory: examples/multi_python_versions
     platform: windows
 
+  integration_test_pip_install_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: pip_install integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/pip_install
+    platform: ubuntu2004
   integration_test_pip_install_ubuntu:
     <<: *reusable_build_test_all
     name: pip_install integration tests on Ubuntu
@@ -177,6 +228,12 @@ tasks:
     working_directory: examples/pip_install
     platform: windows
 
+  integration_test_pip_parse_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: pip_parse integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/pip_parse
+    platform: ubuntu2004
   integration_test_pip_parse_ubuntu:
     <<: *reusable_build_test_all
     name: pip_parse integration tests on Ubuntu
@@ -198,6 +255,12 @@ tasks:
     working_directory: examples/pip_parse
     platform: windows
 
+  integration_test_pip_parse_vendored_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: pip_parse_vendored integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/pip_parse_vendored
+    platform: ubuntu2004
   integration_test_pip_parse_vendored_ubuntu:
     <<: *reusable_build_test_all
     name: pip_parse_vendored integration tests on Ubuntu
@@ -216,6 +279,12 @@ tasks:
   # We don't run pip_parse_vendored under Windows as the file checked in is
   # generated from a repository rule containing OS-specific rendered paths.
 
+  integration_test_py_proto_library_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: py_proto_library integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/py_proto_library
+    platform: ubuntu2004
   integration_test_py_proto_library_ubuntu:
     <<: *reusable_build_test_all
     name: py_proto_library integration tests on Ubuntu
@@ -238,6 +307,13 @@ tasks:
     platform: windows
 
   # Check the same using bzlmod as well
+  integration_test_py_proto_library_bzlmod_ubuntu_min:
+    <<: *minimum_supported_bzlmod_version
+    <<: *common_bzlmod_flags
+    <<: *reusable_build_test_all
+    name: py_proto_library bzlmod integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/py_proto_library
+    platform: ubuntu2004
   integration_test_py_proto_library_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *common_bzlmod_flags
@@ -263,6 +339,12 @@ tasks:
     working_directory: examples/py_proto_library
     platform: windows
 
+  integration_test_pip_repository_annotations_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: pip_repository_annotations integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: examples/pip_repository_annotations
+    platform: ubuntu2004
   integration_test_pip_repository_annotations_ubuntu:
     <<: *reusable_build_test_all
     name: pip_repository_annotations integration tests on Ubuntu
@@ -284,6 +366,12 @@ tasks:
     working_directory: examples/pip_repository_annotations
     platform: windows
 
+  integration_test_compile_pip_requirements_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: compile_pip_requirements integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: tests/compile_pip_requirements
+    platform: ubuntu2004
   integration_test_compile_pip_requirements_ubuntu:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on Ubuntu
@@ -333,6 +421,12 @@ tasks:
     - "bazel run //:requirements.update"
     - "git diff --exit-code"
 
+  integration_test_pip_repository_entry_points_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: pip_repository_entry_points integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: tests/pip_repository_entry_points
+    platform: ubuntu2004
   integration_test_pip_repository_entry_points_ubuntu:
     <<: *reusable_build_test_all
     name: pip_repository_entry_points integration tests on Ubuntu
@@ -354,6 +448,12 @@ tasks:
     working_directory: tests/pip_repository_entry_points
     platform: windows
 
+  integration_test_ignore_root_user_error_ubuntu_min:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: ignore_root_user_error integration tests on Ubuntu using minimum supported Bazel version
+    working_directory: tests/ignore_root_user_error
+    platform: ubuntu2004
   integration_test_ignore_root_user_error_ubuntu:
     <<: *reusable_build_test_all
     name: ignore_root_user_error integration tests on Ubuntu

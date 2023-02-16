@@ -19,14 +19,20 @@
 # in .bazelversion.
 BAZEL_VERSION = "6.0.0"
 
+# NOTE: Keep in sync with .bazelci/presubmit.yml
+# This is the minimum supported bazel version, that we have some tests for.
+MINIMUM_BAZEL_VERSION = "5.4.0"
+
 # Versions of Bazel which users should be able to use.
 # Ensures we don't break backwards-compatibility,
 # accidentally forcing users to update their LTS-supported bazel.
 # These are the versions used when testing nested workspaces with
 # bazel_integration_test.
 SUPPORTED_BAZEL_VERSIONS = [
-    # TODO: add LTS versions of bazel like 1.0.0, 2.0.0
     BAZEL_VERSION,
+    # TODO @aignas 2023-02-15: the integration tests currently support
+    # only a single element in this array.
+    #MINIMUM_BAZEL_VERSION,
 ]
 
 def bazel_version_to_binary_label(version):

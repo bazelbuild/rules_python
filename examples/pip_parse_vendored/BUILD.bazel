@@ -17,6 +17,9 @@ genrule(
         "cat $<",
         # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
         """sed -e '/^load.*/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
+        # Replace the bazel 6.0.0 specific comment with something that bazel 5.4.0 would produce.
+        # This enables this example to be run as a test under bazel 5.4.0.
+        """sed -e 's#@//#//#'""",
         """tr "'" '"' """,
         """sed 's#"@python39_.*//:bin/python3"#interpreter#' >$@""",
     ]),
