@@ -8,7 +8,7 @@ when configuring toolchains.
 
 ## Enabling `rules_python` coverage support
 
-Enabling the coverage support bundled with `rules_path` just requires setting an
+Enabling the coverage support bundled with `rules_python` just requires setting an
 argument when registerting toolchains.
 
 For Bzlmod:
