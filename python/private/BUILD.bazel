@@ -15,7 +15,7 @@
 load("//python:versions.bzl", "print_toolchains_checksums")
 load(":stamp.bzl", "stamp_build_setting")
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 filegroup(
     name = "distribution",
