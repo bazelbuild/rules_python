@@ -1,26 +1,29 @@
 package pythonconfig
 
 import (
-	"strings"
+	"reflect"
 	"testing"
 
 	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 )
 
-func TestDistributionSanitizingUpperCase(t *testing.T) {
-	distname := "DistWithUpperCase"
-	sanitized := pythonconfig.SanitizeDistribution(distname)
-
-	if sanitized != strings.ToLower(distname) {
-		t.Fatalf("Expected sanitized distribution name not to contain any upper case characters, got %s", sanitized)
+func TestDistributionSanitizing(t *testing.T) {
+	tests := map[string]struct {
+		input string
+		want  string
+	}{
+		"upper case": {input: "DistWithUpperCase", want: "distwithuppercase"},
+		"dashes":     {input: "dist-with-dashes", want: "dist_with_dashes"},
+		"dots":       {input: "dist.with.dots", want: "dist_with_dots"},
+		"mixed":      {input: "To-be.sanitized", want: "to_be_sanitized"},
 	}
-}
 
-func TestDistributionStripsUnallowedCharacters(t *testing.T) {
-	distname := "some-dist.with.bad-chars"
-	sanitized := pythonconfig.SanitizeDistribution(distname)
-
-	if strings.Contains(sanitized, "-") || strings.Contains(sanitized, "."){
-		t.Fatalf("Expected sanitized distribution name not to contain any unallowed charecters ('-', '.'), got %s", sanitized)
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := pythonconfig.SanitizeDistribution(tc.input)
+			if !reflect.DeepEqual(tc.want, got) {
+				t.Fatalf("expected %#v, got %#v", tc.want, got)
+			}
+		})
 	}
 }
