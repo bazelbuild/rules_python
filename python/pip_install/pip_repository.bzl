@@ -18,6 +18,7 @@ load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_inte
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:toolchains_repo.bzl", "get_host_platform", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -62,6 +63,32 @@ def _get_python_interpreter_attr(rctx):
     else:
         return "python3"
 
+def _resolve_python_interpreter_target(rctx):
+    """A helper function for getting the `python_interpreter_target` attribute or
+    a label from the python_interpreter_targets dictionary with `host_platform` as a dictionary.
+    If `python_interpreter_target` is not specified and `host_platform` key is not in the dictionary
+    then "default" key will be used.
+
+    Args:
+        rctx (repository_ctx): Handle to the rule repository context.
+
+    Returns:
+        Label: The python interpreter attribute value.
+    """
+    if rctx.attr.python_interpreter_target != None:
+        return rctx.attr.python_interpreter_target
+
+    host_platform = get_host_platform(*get_host_os_arch(rctx))
+    platform_target = rctx.attr.python_interpreter_targets.get(host_platform)
+    if platform_target != None:
+        return Label(platform_target)
+
+    default_target = rctx.attr.python_interpreter_targets.get("default")
+    if default_target != None:
+        return Label(default_target)
+
+    return None
+
 def _resolve_python_interpreter(rctx):
     """Helper function to find the python interpreter from the common attributes
 
@@ -70,10 +97,10 @@ def _resolve_python_interpreter(rctx):
     Returns: Python interpreter path.
     """
     python_interpreter = _get_python_interpreter_attr(rctx)
+    python_interpreter_target = _resolve_python_interpreter_target(rctx)
 
-    if rctx.attr.python_interpreter_target != None:
-        target = rctx.attr.python_interpreter_target
-        python_interpreter = rctx.path(target)
+    if python_interpreter_target != None:
+        python_interpreter = rctx.path(python_interpreter_target)
     elif "/" not in python_interpreter:
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
@@ -122,11 +149,12 @@ def _get_toolchain_unix_cflags(rctx):
         return []
 
     # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+    python_interpreter_target = _resolve_python_interpreter_target(rctx)
+    if not is_standalone_interpreter(rctx, python_interpreter_target):
         return []
 
     er = rctx.execute([
-        rctx.path(rctx.attr.python_interpreter_target).realpath,
+        rctx.path(python_interpreter_target).realpath,
         "-c",
         "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')",
     ])
@@ -134,7 +162,7 @@ def _get_toolchain_unix_cflags(rctx):
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
     _python_version = er.stdout
     include_path = "{}/include/python{}".format(
-        get_interpreter_dirname(rctx, rctx.attr.python_interpreter_target),
+        get_interpreter_dirname(rctx, python_interpreter_target),
         _python_version,
     )
 
@@ -402,8 +430,9 @@ def _pip_repository_impl(rctx):
         "timeout": rctx.attr.timeout,
     }
 
-    if rctx.attr.python_interpreter_target:
-        config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
+    python_interpreter_target = _resolve_python_interpreter_target(rctx)
+    if python_interpreter_target:
+        config["python_interpreter_target"] = str(python_interpreter_target)
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
@@ -492,6 +521,14 @@ of a binary found on the host's `PATH` environment variable. If no value is set
 If you are using a custom python interpreter built by another repository rule,
 use this attribute to specify its BUILD target. This allows pip_repository to invoke
 pip using the same interpreter as your toolchain. If set, takes precedence over
+python_interpreter.
+""",
+    ),
+    "python_interpreter_targets": attr.string_dict(
+        doc = """
+If you are using custom python interpreters built by another repository rule,
+use this attribute to specify its BUILD targets with platforms as keys . This allows pip_repository to invoke
+pip using the same interpreter as your host toolchain. If set, takes precedence over
 python_interpreter.
 """,
     ),

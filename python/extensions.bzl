@@ -89,6 +89,7 @@ def _pip_impl(module_ctx):
                     annotation = attr.annotations.get(name),
                     python_interpreter = attr.python_interpreter,
                     python_interpreter_target = attr.python_interpreter_target,
+                    python_interpreter_targets = attr.python_interpreter_targets,
                     quiet = attr.quiet,
                     timeout = attr.timeout,
                     isolated = use_isolated(module_ctx, attr),
