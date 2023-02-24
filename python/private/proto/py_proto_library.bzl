@@ -93,7 +93,8 @@ def _py_proto_aspect_impl(target, ctx):
     )
     transitive_sources = depset(
         direct = python_sources,
-        transitive = [dep.transitive_sources for dep in deps],
+        transitive = [dep.transitive_sources for dep in deps] +
+                     [dep[PyInfo].transitive_sources for dep in api_deps],
     )
 
     return [
