@@ -20,7 +20,7 @@ repos:
     rev: 6.0.0
     hooks:
       - id: buildifier
-        args: &args 
+        args: &args
           # Keep this argument in sync with .bazelci/presubmit.yaml
           - --warnings=all
       - id: buildifier-lint
@@ -30,14 +30,17 @@ repos:
     hooks:
       - id: isort
         name: isort (python)
-        args: 
+        args:
           - --profile
           - black
   - repo: https://github.com/psf/black
     rev: 22.8.0
     hooks:
       - id: black
-  - repo: .
-    rev: HEAD
+  - repo: local
     hooks:
       - id: addlicense
+        name: Add copyright headers
+        entry: addlicense.sh
+        types: [text]
+        language: script

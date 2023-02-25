@@ -1,5 +1,0 @@
-- id: addlicense
-  name: Add copyright headers
-  entry: addlicense.sh
-  language: script
-  verbose: true
