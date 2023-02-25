@@ -37,10 +37,8 @@ repos:
     rev: 22.8.0
     hooks:
       - id: black
-  - repo: local
+  - repo: https://github.com/google/addlicense
+    rev: TODO
     hooks:
       - id: addlicense
-        name: Add copyright headers
-        entry: addlicense.sh
-        types: [text]
-        language: script
+        args: [-v, -l, apache, -c, "The Bazel Authors. All rights reserved."]
