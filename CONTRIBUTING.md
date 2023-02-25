@@ -116,8 +116,8 @@ information on using pull requests.
 
 ### Commit messages
 
-Commit messages have some formatting rules enforced by commitizen and follow
-The general format is:
+Commit messages (upon merging) and PR messages should follow the [Conventional
+Commits](https://www.conventionalcommits.org/) style:
 
 ```
 type(scope)!: <summary>
@@ -130,7 +130,7 @@ BREAKING CHANGE: <summary>
 Where `(scope)` is optional, and `!` is only required if there is a breaking change.
 If a breaking change is introduced, then `BREAKING CHANGE:` is required.
 
-Common types:
+Common `type`s:
 
 * `build:` means it affects the building or development workflow.
 * `docs:` means only documentation is being added, updated, or fixed.
