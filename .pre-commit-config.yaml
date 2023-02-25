@@ -26,7 +26,7 @@ repos:
       - id: buildifier-lint
         args: *args
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         name: isort (python)
@@ -34,6 +34,6 @@ repos:
           - --profile
           - black
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 23.1.0
     hooks:
       - id: black
