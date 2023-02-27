@@ -39,6 +39,13 @@ def rules_python_internal_deps():
         ],
         sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
+    maybe(
+        http_archive,
+        name = "rules_testing",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.0.1/rules_testing-v0.0.1.tar.gz",
+        sha256 = "47db8fc9c3c1837491333cdcedebf267285479bd709a1ff0a47b19a324817def",
+        strip_prefix = "rules_testing-0.0.1",
+    )
 
     maybe(
         http_archive,
