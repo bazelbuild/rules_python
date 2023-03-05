@@ -55,48 +55,19 @@ gazelle_dependencies()
 
 # Remaining setup is for rules_python.
 
-# You do not want to use the following command when you are using a WORKSPACE file
-# that is outside of rules_python repository.
-# This command allows targets from a local directory to be bound.
-# Which allows bazel to use targets defined in base rules_python directory.
-# If you are using this example outside of the rules_python git repo,
-# use the http_archive command that is commented out below.
-# https://bazel.build/reference/be/workspace#local_repository
+# DON'T COPY_PASTE THIS.
+# Our example uses `local_repository` to point to the HEAD version of rules_python.
+# Users should instead use the installation instructions from the release they use.
+# See https://github.com/bazelbuild/rules_python/releases
 local_repository(
     name = "rules_python",
     path = "../..",
 )
 
-# When not using this example in the rules_python git repo you would load the python
-# ruleset using the following StarLark.
-# See https://github.com/bazelbuild/rules_python#getting-started for the latest
-# ruleset version.
-#
-# The following StarLark would replace the `local_repository` rule mentioned above.
-#
-# load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-# http_archive(
-#     name = "rules_python",
-#     sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
-#     strip_prefix = "rules_python-0.16.1",
-#     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
-# )
-
-# We import the repository-local rules_python_gazelle_plugin version in order to
-# be able to test development changes to the plugin.
 local_repository(
     name = "rules_python_gazelle_plugin",
     path = "../../gazelle",
 )
-
-# When loading the gazelle plugin outside this repo, use the http_archive rule as follows:
-#
-#http_archive(
-#    name = "rules_python_gazelle_plugin",
-#    sha256 = "497ca47374f48c8b067d786b512ac10a276211810f4a580178ee9b9ad139323a",
-#    strip_prefix = "rules_python-0.16.1/gazelle",
-#    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.16.1.tar.gz",
-#)
 
 # Next we load the toolchain from rules_python.
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
