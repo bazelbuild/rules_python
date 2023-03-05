@@ -10,6 +10,7 @@ go_library(
         "generate.go",
         "kinds.go",
         "language.go",
+        "lifecycle.go",
         "parser.go",
         "resolve.go",
         "std_modules.go",

@@ -15,19 +15,23 @@
 package python
 
 import (
+	"context"
 	"github.com/bazelbuild/bazel-gazelle/language"
 )
 
-// Python satisfies the language.Language interface. It is the Gazelle extension
-// for Python rules.
-type Python struct {
-	Configurer
-	Resolver
-	LifeCycleManager
+var _ language.FinishableLanguage = (*LifeCycleManager)(nil)
+
+type LifeCycleManager struct{}
+
+func (l *LifeCycleManager) Init(ctx context.Context) {
+	startParserProcess(ctx)
+	startStdModuleProcess(ctx)
 }
 
-// NewLanguage initializes a new Python that satisfies the language.Language
-// interface. This is the entrypoint for the extension initialization.
-func NewLanguage() language.Language {
-	return &Python{}
+func (l *LifeCycleManager) DoneGeneratingRules() {
+	shutdownParserProcess()
+}
+
+func (l *LifeCycleManager) DoneResolvingDeps() {
+	shutdownStdModuleProcess()
 }
