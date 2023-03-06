@@ -21,8 +21,8 @@ func TestDistributionSanitizing(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			got := pythonconfig.SanitizeDistribution(tc.input)
-			if !reflect.DeepEqual(tc.want, got) {
-				t.Fatalf("expected %#v, got %#v", tc.want, got)
+			if tc.want != got {
+				t.Fatalf("expected %q, got %q", tc.want, got)
 			}
 		})
 	}
