@@ -42,8 +42,8 @@ of some other compile_pip_requirements rule that references these requirements
 
 It also generates two targets for running pip-compile:
 
-- validate with `bazel test &lt;name&gt;_test`
-- update with   `bazel run &lt;name&gt;.update`
+- validate with `bazel test [name]_test`
+- update with   `bazel run [name].update`
 
 
 **PARAMETERS**
