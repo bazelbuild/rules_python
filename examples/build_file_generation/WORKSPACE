@@ -90,6 +90,8 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # You can instead check this `requirements.bzl` file into your repo.
 pip_parse(
     name = "pip",
+    # Generate user friendly alias labels for each dependency that we have.
+    incompatible_generate_aliases = True,
     # (Optional) You can provide a python_interpreter (path) or a python_interpreter_target (a Bazel target, that
     # acts as an executable). The latter can be anything that could be used as Python interpreter. E.g.:
     # 1. Python interpreter that you compile in the build file.

@@ -220,10 +220,16 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				}
 				sanitizedDistribution := strings.ToLower(distributionName)
 				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-				var lbl label.Label
+
+				if gazelleManifest.PipRepository != nil && gazelleManifest.PipRepository.UsePipRepositoryAliases {
+					// @<repository_name>//<distribution_name>
+					lbl := label.New(distributionRepositoryName, sanitizedDistribution, sanitizedDistribution)
+					return lbl.String(), true
+				}
+
 				// @<repository_name>_<distribution_name>//:pkg
 				distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
-				lbl = label.New(distributionRepositoryName, "", "pkg")
+				lbl := label.New(distributionRepositoryName, "", "pkg")
 				return lbl.String(), true
 			}
 		}
