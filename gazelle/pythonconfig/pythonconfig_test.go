@@ -1,7 +1,6 @@
 package pythonconfig
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
