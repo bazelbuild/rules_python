@@ -42,7 +42,11 @@ python = module_extension(
                     mandatory = False,
                     doc = "Whether or not to configure the default coverage tool for the toolchains.",
                 ),
-                "ignore_root_user_error": attr.bool(),
+                "ignore_root_user_error": attr.bool(
+                    default = False,
+                    doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
+                    mandatory = False,
+                ),
                 "name": attr.string(mandatory = True),
                 "python_version": attr.string(mandatory = True),
             },
