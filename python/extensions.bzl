@@ -30,6 +30,7 @@ def _python_impl(module_ctx):
                 # Toolchain registration in bzlmod is done in MODULE file
                 register_toolchains = False,
                 register_coverage_tool = attr.configure_coverage_tool,
+                ignore_root_user_error = attr.ignore_root_user_error,
             )
 
 python = module_extension(
@@ -41,6 +42,7 @@ python = module_extension(
                     mandatory = False,
                     doc = "Whether or not to configure the default coverage tool for the toolchains.",
                 ),
+                "ignore_root_user_error": attr.bool(),
                 "name": attr.string(mandatory = True),
                 "python_version": attr.string(mandatory = True),
             },
