@@ -54,3 +54,16 @@ directory_writer = rule(
         ),
     },
 )
+
+def _make_variable_tags_impl(ctx):  # buildifier: disable=unused-variable
+    vars = {}
+    vars["ABI"] = "cp38"
+    vars["PYTHON_TAG"] = "cp38"
+    vars["VERSION"] = "0.99.0"
+    return [platform_common.TemplateVariableInfo(vars)]
+
+make_variable_tags = rule(
+    attrs = {},
+    doc = """Make variable tags to pass to a py_wheel rule.""",
+    implementation = _make_variable_tags_impl,
+)
