@@ -30,6 +30,7 @@ def _python_impl(module_ctx):
                 # Toolchain registration in bzlmod is done in MODULE file
                 register_toolchains = False,
                 register_coverage_tool = attr.configure_coverage_tool,
+                ignore_root_user_error = attr.ignore_root_user_error,
             )
 
 python = module_extension(
@@ -43,6 +44,11 @@ python = module_extension(
                 ),
                 "name": attr.string(mandatory = True),
                 "python_version": attr.string(mandatory = True),
+                "ignore_root_user_error": attr.bool(
+                    default = False,
+                    doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
+                    mandatory = False,
+                ),
             },
         ),
     },
