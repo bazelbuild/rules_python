@@ -93,7 +93,7 @@ def _handleConsumeComment(input, buffer, result):
             result.requirements[-1] = (result.requirements[-1][0], buffer.rstrip(" \n"))
             return (_STATE.ConsumeSpace, "")
         elif len(buffer) > 0:
-            result.options.append(buffer.rstrip(" \n"))
+            result.options.extend(_maybeSplitCommandLineOption(buffer.rstrip(" \n")))
             return (_STATE.ConsumeSpace, "")
         return (_STATE.ConsumeSpace, "")
     return (_STATE.ConsumeComment, buffer)
@@ -110,11 +110,8 @@ def _handleParseDependency(input, buffer, result):
 def _handleParseOption(input, buffer, result):
     if input == "\n" and buffer.endswith("\\"):
         return (_STATE.ParseOption, buffer[0:-1])
-    elif input == " ":
-        result.options.append(buffer.rstrip("\n"))
-        return (_STATE.ParseOption, "")
     elif input == "\n" or input == EOF:
-        result.options.append(buffer.rstrip("\n"))
+        result.options.extend(_maybeSplitCommandLineOption(buffer.rstrip("\n")))
         return (_STATE.ConsumeSpace, "")
     elif input == "#":
         return (_STATE.ConsumeComment, buffer)
@@ -131,3 +128,11 @@ def _handleParseRequirement(input, buffer, result):
         return (_STATE.ConsumeComment, buffer)
 
     return (_STATE.ParseRequirement, buffer + input)
+
+def _maybeSplitCommandLineOption(option):
+    """Split an option into option name and value if the option can partitioned by a space"""
+    prefix, _, suffix = option.partition(" ")
+    if suffix and prefix.find("=") < 0:
+        return [prefix, suffix.strip(" ")]
+
+    return [option]
