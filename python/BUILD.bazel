@@ -53,6 +53,17 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "proto_bzl",
+    srcs = [
+        "proto.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//python/private/proto:py_proto_library_bzl",
+    ],
+)
+
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
 filegroup(
     name = "bzl",
