@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python:versions.bzl", "print_toolchains_checksums")
 load(":stamp.bzl", "stamp_build_setting")
 
@@ -24,10 +25,27 @@ filegroup(
 )
 
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
-# Using a filegroup rather than bzl_library to not give a transitive dependency on Skylib
 filegroup(
     name = "bzl",
     srcs = glob(["**/*.bzl"]),
+    visibility = ["//python:__pkg__"],
+)
+
+bzl_library(
+    name = "reexports_bzl",
+    srcs = ["reexports.bzl"],
+    visibility = ["//python:__pkg__"],
+    deps = [":bazel_tools_bzl"],
+)
+
+# @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
+bzl_library(
+    name = "bazel_tools_bzl",
+    srcs = [
+        "@bazel_tools//tools/python:srcs_version.bzl",
+        "@bazel_tools//tools/python:toolchain.bzl",
+        "@bazel_tools//tools/python:utils.bzl",
+    ],
     visibility = ["//python:__pkg__"],
 )
 
