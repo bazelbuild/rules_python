@@ -15,7 +15,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])
 
@@ -40,4 +40,7 @@ proto_lang_toolchain(
     command_line = "--python_out=%s",
     progress_message = "Generating Python proto_library %{label}",
     runtime = "@com_google_protobuf//:protobuf_python",
+    # NOTE: This isn't *actually* public. It's an implicit dependency of py_proto_library,
+    # so must be public so user usages of the rule can reference it.
+    visibility = ["//visibility:public"],
 )
