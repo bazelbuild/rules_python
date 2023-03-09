@@ -17,7 +17,7 @@ load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 filegroup(
     name = "distribution",
