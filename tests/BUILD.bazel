@@ -1,12 +1,31 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("//tools/bazel_integration_test:bazel_integration_test.bzl", "bazel_integration_test")
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 bazel_integration_test(
     name = "pip_repository_entry_points_example",
     timeout = "long",
     # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
     tags = ["fix-windows"],
+)
+
+build_test(
+    name = "bzl_libaries_build_test",
+    targets = [
+        # keep sorted
+        "//python:current_py_toolchain_bzl",
+        "//python:defs_bzl",
+        "//python:proto_bzl",
+        "//python:py_binary_bzl",
+        "//python:py_import_bzl",
+        "//python:py_info_bzl",
+        "//python:py_library_bzl",
+        "//python:py_runtime_bzl",
+        "//python:py_runtime_info_bzl",
+        "//python:py_runtime_pair_bzl",
+        "//python:py_test_bzl",
+    ],
 )

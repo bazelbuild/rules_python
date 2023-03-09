@@ -34,7 +34,10 @@ filegroup(
 bzl_library(
     name = "reexports_bzl",
     srcs = ["reexports.bzl"],
-    visibility = ["//python:__pkg__"],
+    visibility = [
+        "//docs:__pkg__",
+        "//python:__pkg__",
+    ],
     deps = [":bazel_tools_bzl"],
 )
 

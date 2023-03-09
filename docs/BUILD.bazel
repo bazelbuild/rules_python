@@ -56,7 +56,11 @@ bzl_library(
         "//python:defs.bzl",
         "//python/private:reexports.bzl",
     ],
-    deps = [":bazel_python_tools"],
+    deps = [
+        ":bazel_python_tools",
+        "//python:defs_bzl",
+        "//python/private:reexports_bzl",
+    ],
 )
 
 bzl_library(
