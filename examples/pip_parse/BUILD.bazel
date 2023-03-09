@@ -37,6 +37,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
+        "@pypi_pyqt5_qt5//:pkg",
         "@pypi_requests//:pkg",
     ],
 )
