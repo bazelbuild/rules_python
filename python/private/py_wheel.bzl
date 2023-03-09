@@ -207,12 +207,15 @@ def _input_file_to_arg(input_file):
     return "%s;%s" % (py_package_lib.path_inside_wheel(input_file), input_file.path)
 
 def _py_wheel_impl(ctx):
+    abi = _replace_make_variables(ctx.attr.abi, ctx)
+    python_tag = _replace_make_variables(ctx.attr.python_tag, ctx)
     version = _replace_make_variables(ctx.attr.version, ctx)
+
     outfile = ctx.actions.declare_file("-".join([
         _escape_filename_segment(ctx.attr.distribution),
         _escape_filename_segment(version),
-        _escape_filename_segment(ctx.attr.python_tag),
-        _escape_filename_segment(ctx.attr.abi),
+        _escape_filename_segment(python_tag),
+        _escape_filename_segment(abi),
         _escape_filename_segment(ctx.attr.platform),
     ]) + ".whl")
 
@@ -237,8 +240,8 @@ def _py_wheel_impl(ctx):
     args = ctx.actions.args()
     args.add("--name", ctx.attr.distribution)
     args.add("--version", version)
-    args.add("--python_tag", ctx.attr.python_tag)
-    args.add("--abi", ctx.attr.abi)
+    args.add("--python_tag", python_tag)
+    args.add("--abi", abi)
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile)
     args.add("--name_file", name_file)

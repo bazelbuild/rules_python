@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//examples/wheel/private:wheel_utils.bzl", "directory_writer")
+load("//examples/wheel/private:wheel_utils.bzl", "directory_writer", "make_variable_tags")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
 load("//python:versions.bzl", "gen_python_config_settings")
@@ -56,6 +56,29 @@ py_wheel(
     distribution = "example_minimal_library",
     python_tag = "py3",
     version = "0.0.1",
+    deps = [
+        "//examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
+    ],
+)
+
+# Populate a rule with "Make Variable" arguments for
+# abi, python_tag and version. You might want to do this
+# for the following use cases:
+#  - abi, python_tag: introspect a toolchain to map to appropriate cpython tags
+#  - version: populate given this or a dependent module's version
+make_variable_tags(
+    name = "make_variable_tags",
+)
+
+py_wheel(
+    name = "minimal_with_py_library_with_make_variables",
+    testonly = True,
+    abi = "$(ABI)",
+    distribution = "example_minimal_library",
+    python_tag = "$(PYTHON_TAG)",
+    toolchains = ["//examples/wheel:make_variable_tags"],
+    version = "$(VERSION)",
     deps = [
         "//examples/wheel/lib:module_with_data",
         "//examples/wheel/lib:simple_module",

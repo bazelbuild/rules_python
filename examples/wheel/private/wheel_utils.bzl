@@ -54,3 +54,20 @@ directory_writer = rule(
         ),
     },
 )
+
+def _make_variable_tags_impl(ctx):  # buildifier: disable=unused-variable
+    # This example is contrived. In a real usage, this rule would
+    # look at flags or dependencies to determine what values to use.
+    # If all you're doing is setting constant values, then you can simply
+    # set them in the py_wheel() call.
+    vars = {}
+    vars["ABI"] = "cp38"
+    vars["PYTHON_TAG"] = "cp38"
+    vars["VERSION"] = "0.99.0"
+    return [platform_common.TemplateVariableInfo(vars)]
+
+make_variable_tags = rule(
+    attrs = {},
+    doc = """Make variable tags to pass to a py_wheel rule.""",
+    implementation = _make_variable_tags_impl,
+)
