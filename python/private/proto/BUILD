@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -22,6 +23,16 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]),
     visibility = ["//python/private:__pkg__"],
+)
+
+bzl_library(
+    name = "py_proto_library_bzl",
+    srcs = ["py_proto_library.bzl"],
+    visibility = ["//python:__pkg__"],
+    deps = [
+        "//python:defs_bzl",
+        "@rules_proto//proto:defs",
+    ],
 )
 
 proto_lang_toolchain(
