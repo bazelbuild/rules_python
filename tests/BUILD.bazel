@@ -13,7 +13,7 @@ bazel_integration_test(
 )
 
 build_test(
-    name = "bzl_libaries_build_test",
+    name = "bzl_libraries_build_test",
     targets = [
         # keep sorted
         "//python:current_py_toolchain_bzl",
