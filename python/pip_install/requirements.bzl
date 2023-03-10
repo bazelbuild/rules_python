@@ -75,7 +75,7 @@ def compile_pip_requirements(
     # where it appears, which is to say, in @rules_python
     pip_compile = Label("//python/pip_install/tools/dependency_resolver:dependency_resolver.py")
 
-    loc = "$(rootpath {})"
+    loc = "$(rlocationpath {})"
 
     args = [
         loc.format(requirements_in),
@@ -99,6 +99,7 @@ def compile_pip_requirements(
         requirement("importlib_metadata"),
         requirement("zipp"),
         requirement("more_itertools"),
+        Label("//python/runfiles:runfiles"),
     ] + extra_deps
 
     tags = tags or []
