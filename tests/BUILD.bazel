@@ -20,6 +20,7 @@ build_test(
         "//python:defs_bzl",
         "//python:proto_bzl",
         "//python:py_binary_bzl",
+        "//python:py_cc_link_params_info_bzl",
         "//python:py_import_bzl",
         "//python:py_info_bzl",
         "//python:py_library_bzl",

@@ -80,6 +80,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "py_cc_link_params_info_bzl",
+    srcs = ["py_cc_link_params_info.bzl"],
+)
+
+bzl_library(
     name = "py_import_bzl",
     srcs = ["py_import.bzl"],
     deps = [":py_info_bzl"],
