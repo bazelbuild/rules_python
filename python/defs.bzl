@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""
-Core rules for building Python projects.
-"""
+"""Core rules for building Python projects."""
 
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
 load(

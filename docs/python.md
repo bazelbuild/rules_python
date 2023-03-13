@@ -1,8 +1,6 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-
 Core rules for building Python projects.
-
 
 <a id="current_py_toolchain"></a>
 
