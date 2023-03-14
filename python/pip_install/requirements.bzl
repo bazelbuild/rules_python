@@ -17,6 +17,8 @@
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 
+_DEFAULT_TAGS = ["no-sandbox", "no-remote-exec", "requires-network"]
+
 def compile_pip_requirements(
         name,
         extra_args = [],
@@ -29,7 +31,7 @@ def compile_pip_requirements(
         requirements_linux = None,
         requirements_windows = None,
         visibility = ["//visibility:private"],
-        tags = None,
+        tags = _DEFAULT_TAGS,
         **kwargs):
     """Generates targets for managing pip dependencies with pip-compile.
 
@@ -54,9 +56,10 @@ def compile_pip_requirements(
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
         requirements_windows: File of windows specific resolve output to check validate if requirement.in has changes.
         tags: tagging attribute common to all build rules, passed to both the _test and .update rules.
+              default: [{tags_default}]
         visibility: passed to both the _test and .update rules.
         **kwargs: other bazel attributes passed to the "_test" rule.
-    """
+    """.format(tags_default = ", ".join([repr(tag) for tag in _DEFAULT_TAGS]))
     requirements_in = name + ".in" if requirements_in == None else requirements_in
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
@@ -102,9 +105,6 @@ def compile_pip_requirements(
     ] + extra_deps
 
     tags = tags or []
-    tags.append("requires-network")
-    tags.append("no-remote-exec")
-    tags.append("no-sandbox")
     attrs = {
         "args": args,
         "data": data,
