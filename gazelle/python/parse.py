@@ -27,7 +27,7 @@ from tokenize import COMMENT, tokenize
 
 def parse_import_statements(content, filepath):
     modules = list()
-    tree = ast.parse(content)
+    tree = ast.parse(content, filename=filepath)
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for subnode in node.names:
