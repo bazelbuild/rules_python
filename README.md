@@ -46,7 +46,8 @@ rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53" # Latest @ 202
 
 http_archive(
     name = "rules_python",
-    sha256 = "3474c5815da4cb003ff22811a36a11894927eda1c2e64bf2dac63e914bfdf30f",
+    # Bazel will print the proper value to add here during the first build.
+    # sha256 = "FIXME",
     strip_prefix = "rules_python-{}".format(rules_python_version),
     url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
 )

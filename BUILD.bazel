@@ -16,7 +16,7 @@ load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 exports_files([
     "LICENSE",
@@ -31,6 +31,7 @@ filegroup(
         "WORKSPACE",
         "internal_deps.bzl",
         "internal_setup.bzl",
+        "version.bzl",
         "//python:distribution",
         "//python/pip_install:distribution",
         "//tools:distribution",

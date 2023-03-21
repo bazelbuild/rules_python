@@ -4,7 +4,6 @@ filegroup(
         "BUILD.bazel",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/lib:distribution",
-        "//python/pip_install/tools/lock_file_generator:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
         "//python/pip_install/private:distribution",
     ],
@@ -24,7 +23,6 @@ filegroup(
     srcs = [
         "//python/pip_install/tools/dependency_resolver:py_srcs",
         "//python/pip_install/tools/lib:py_srcs",
-        "//python/pip_install/tools/lock_file_generator:py_srcs",
         "//python/pip_install/tools/wheel_installer:py_srcs",
     ],
     visibility = ["//python/pip_install/private:__pkg__"],

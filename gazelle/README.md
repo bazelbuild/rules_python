@@ -14,23 +14,8 @@ Follow the instructions at https://github.com/bazelbuild/bazel-gazelle#running-g
 Next, we need to fetch the third-party Go libraries that the python extension
 depends on.
 
-Add this to your `WORKSPACE`:
-
-```starlark
-http_archive(
-    name = "rules_python_gazelle_plugin",
-    sha256 = "",
-    strip_prefix = "rules_python-0.17.0/gazelle",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.17.0.tar.gz",
-)
-
-# To compile the rules_python gazelle extension from source,
-# we must fetch some third-party go dependencies that it uses.
-
-load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
-
-_py_gazelle_deps()
-```
+See the installation `WORKSPACE` snippet on the Releases page:
+https://github.com/bazelbuild/rules_python/releases
 
 Next, we'll fetch metadata about your Python dependencies, so that gazelle can
 determine which package a given import statement comes from. This is provided

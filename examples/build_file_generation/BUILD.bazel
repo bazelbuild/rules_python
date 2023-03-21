@@ -43,6 +43,9 @@ gazelle_python_manifest(
     modules_mapping = ":modules_map",
     pip_repository_name = "pip",
     requirements = "//:requirements_lock.txt",
+    # NOTE: we can use this flag in order to make our setup compatible with
+    # bzlmod.
+    use_pip_repository_aliases = True,
 )
 
 # Our gazelle target points to the python gazelle binary.
@@ -65,7 +68,7 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//random_number_generator",
-        "@pip_flask//:pkg",
+        "@pip//flask",
     ],
 )
 

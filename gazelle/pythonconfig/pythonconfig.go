@@ -90,6 +90,14 @@ var defaultIgnoreFiles = map[string]struct{}{
 	"setup.py": {},
 }
 
+func SanitizeDistribution(distributionName string) string {
+	sanitizedDistribution := strings.ToLower(distributionName)
+	sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
+	sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, ".", "_")
+
+	return sanitizedDistribution
+}
+
 // Configs is an extension of map[string]*Config. It provides finding methods
 // on top of the mapping.
 type Configs map[string]*Config
@@ -218,12 +226,17 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				} else if gazelleManifest.PipRepository != nil {
 					distributionRepositoryName = gazelleManifest.PipRepository.Name
 				}
-				sanitizedDistribution := strings.ToLower(distributionName)
-				sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-				var lbl label.Label
+				sanitizedDistribution := SanitizeDistribution(distributionName)
+
+				if gazelleManifest.PipRepository != nil && gazelleManifest.PipRepository.UsePipRepositoryAliases {
+					// @<repository_name>//<distribution_name>
+					lbl := label.New(distributionRepositoryName, sanitizedDistribution, sanitizedDistribution)
+					return lbl.String(), true
+				}
+
 				// @<repository_name>_<distribution_name>//:pkg
 				distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
-				lbl = label.New(distributionRepositoryName, "", "pkg")
+				lbl := label.New(distributionRepositoryName, "", "pkg")
 				return lbl.String(), true
 			}
 		}

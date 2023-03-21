@@ -1,4 +1,5 @@
 load("@pip//:requirements.bzl", "requirement")
+load("@python3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -33,5 +34,12 @@ py_binary(
 py_test(
     name = "test",
     srcs = ["test.py"],
+    deps = [":lib"],
+)
+
+py_test_with_transition(
+    name = "test_with_transition",
+    srcs = ["test.py"],
+    main = "test.py",
     deps = [":lib"],
 )

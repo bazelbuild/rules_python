@@ -61,7 +61,6 @@ go_test(
     ] + glob(["testdata/**"]),
     deps = [
         "@bazel_gazelle//testtools:go_default_library",
-        "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_ghodss_yaml//:yaml",
         "@io_bazel_rules_go//go/tools/bazel:go_default_library",
     ],

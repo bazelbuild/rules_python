@@ -39,8 +39,8 @@ def compile_pip_requirements(
 
     It also generates two targets for running pip-compile:
 
-    - validate with `bazel test <name>_test`
-    - update with   `bazel run <name>.update`
+    - validate with `bazel test [name]_test`
+    - update with   `bazel run [name].update`
 
     Args:
         name: base name for generated targets, typically "requirements".

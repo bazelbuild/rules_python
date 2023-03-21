@@ -13,8 +13,6 @@ PIP_INSTALL_PY_SRCS = [
     "@rules_python//python/pip_install/tools/lib:annotation.py",
     "@rules_python//python/pip_install/tools/lib:arguments.py",
     "@rules_python//python/pip_install/tools/lib:bazel.py",
-    "@rules_python//python/pip_install/tools/lock_file_generator:__init__.py",
-    "@rules_python//python/pip_install/tools/lock_file_generator:lock_file_generator.py",
     "@rules_python//python/pip_install/tools/wheel_installer:namespace_pkgs.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel_installer.py",

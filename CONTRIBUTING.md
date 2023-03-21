@@ -114,6 +114,35 @@ information on using pull requests.
 
 [GitHub Help]: https://help.github.com/articles/about-pull-requests/
 
+### Commit messages
+
+Commit messages (upon merging) and PR messages should follow the [Conventional
+Commits](https://www.conventionalcommits.org/) style:
+
+```
+type(scope)!: <summary>
+
+<body>
+
+BREAKING CHANGE: <summary>
+```
+
+Where `(scope)` is optional, and `!` is only required if there is a breaking change.
+If a breaking change is introduced, then `BREAKING CHANGE:` is required.
+
+Common `type`s:
+
+* `build:` means it affects the building or development workflow.
+* `docs:` means only documentation is being added, updated, or fixed.
+* `feat:` means a user-visible feature is being added.
+* `fix:` means a user-visible behavior is being fixed.
+* `refactor:` means some sort of code cleanup that doesn't change user-visible behavior.
+* `revert:` means a prior change is being reverted in some way.
+* `test:` means only tests are being added.
+
+For the full details of types, see
+[Conventional Commits](https://www.conventionalcommits.org/).
+
 ## Generated files
 
 Some checked-in files are generated and need to be updated when a new PR is

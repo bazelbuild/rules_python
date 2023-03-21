@@ -87,5 +87,12 @@ http_archive(
     strip_prefix = "${PREFIX}/gazelle",
     url = "https://github.com/bazelbuild/rules_python/releases/download/${TAG}/rules_python-${TAG}.tar.gz",
 )
+
+# To compile the rules_python gazelle extension from source,
+# we must fetch some third-party go dependencies that it uses.
+
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+
+_py_gazelle_deps()
 \`\`\`
 EOF
