@@ -14,16 +14,13 @@
 """Core rules for building Python projects."""
 
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
-load(
-    "//python/private:reexports.bzl",
-    "internal_PyInfo",
-    "internal_PyRuntimeInfo",
-    _py_binary = "py_binary",
-    _py_library = "py_library",
-    _py_runtime = "py_runtime",
-    _py_runtime_pair = "py_runtime_pair",
-    _py_test = "py_test",
-)
+load("//python:py_binary.bzl", _py_binary = "py_binary")
+load("//python:py_info.bzl", internal_PyInfo = "PyInfo")
+load("//python:py_library.bzl", _py_library = "py_library")
+load("//python:py_runtime.bzl", _py_runtime = "py_runtime")
+load("//python:py_runtime_info.bzl", internal_PyRuntimeInfo = "PyRuntimeInfo")
+load("//python:py_runtime_pair.bzl", _py_runtime_pair = "py_runtime_pair")
+load("//python:py_test.bzl", _py_test = "py_test")
 load(":current_py_toolchain.bzl", _current_py_toolchain = "current_py_toolchain")
 load(":py_import.bzl", _py_import = "py_import")
 

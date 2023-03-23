@@ -41,6 +41,12 @@ bzl_library(
     deps = [":bazel_tools_bzl"],
 )
 
+bzl_library(
+    name = "util_bzl",
+    srcs = ["util.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
+
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
 bzl_library(
     name = "bazel_tools_bzl",

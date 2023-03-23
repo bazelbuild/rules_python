@@ -14,6 +14,18 @@
 
 """Public entry point for py_test."""
 
-load("//python/private:reexports.bzl", _py_test = "py_test")
+load("//python/private:util.bzl", "add_migration_tag")
 
-py_test = _py_test
+def py_test(**attrs):
+    """See the Bazel core [py_test](https://docs.bazel.build/versions/master/be/python.html#py_test) documentation.
+
+    Args:
+      **attrs: Rule attributes
+    """
+    if attrs.get("python_version") == "PY2":
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
+    if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
+        fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
+
+    # buildifier: disable=native-python
+    native.py_test(**add_migration_tag(attrs))
