@@ -29,3 +29,15 @@ def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
         if attr in from_kwargs and attr not in into_kwargs:
             into_kwargs[attr] = from_kwargs[attr]
     return into_kwargs
+
+# The implementation of the macros and tagging mechanism follows the example
+# set by rules_cc and rules_java.
+
+_MIGRATION_TAG = "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+
+def add_migration_tag(attrs):
+    if "tags" in attrs and attrs["tags"] != None:
+        attrs["tags"] = attrs["tags"] + [_MIGRATION_TAG]
+    else:
+        attrs["tags"] = [_MIGRATION_TAG]
+    return attrs
