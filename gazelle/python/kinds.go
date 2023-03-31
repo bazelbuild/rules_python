@@ -65,7 +65,7 @@ var pyKinds = map[string]rule.KindInfo{
 		},
 	},
 	pyTestKind: {
-		MatchAny: true,
+		MatchAny: false,
 		NonEmptyAttrs: map[string]bool{
 			"deps":       true,
 			"main":       true,
