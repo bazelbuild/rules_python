@@ -290,6 +290,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     if type(strip_prefix) == type({}):
         strip_prefix = strip_prefix[platform]
 
+    release_filename = None
     rendered_urls = []
     for u in url:
         release_filename = u.format(
@@ -301,6 +302,9 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
             rendered_urls.append(release_filename)
         else:
             rendered_urls.append("/".join([base_url, release_filename]))
+
+    if release_filename == None:
+        fail("release_filename should be set by now; were any download URLs given?")
 
     patches = tool_versions[python_version].get("patches", [])
     if type(patches) == type({}):
