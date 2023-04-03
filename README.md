@@ -51,6 +51,8 @@ To register a hermetic Python toolchain rather than rely on a system-installed i
 # and change the version number if needed in the line below.
 bazel_dep(name = "rules_python", version = "0.20.0")
 
+# You do not have to use pip for the toolchain, but most people
+# will use it for the dependency management.
 pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 
 pip.parse(
@@ -60,7 +62,7 @@ pip.parse(
 
 use_repo(pip, "pip")
 
-# (Optional) Register a specific python toolchain instead of using the host version
+# Register a specific python toolchain instead of using the host version
 python = use_extension("@rules_python//python:extensions.bzl", "python")
 
 use_repo(python, "python3_10_toolchains")
@@ -168,7 +170,7 @@ pip.parse(
     requirements_lock = "//:requirements_lock.txt",
 )
 
-use_repo(pip, "pip")
+use_repo(pip, "my_deps")
 ```
 
 #### Using a WORKSPACE file
