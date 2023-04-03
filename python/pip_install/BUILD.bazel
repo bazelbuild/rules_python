@@ -2,10 +2,10 @@ filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
+        "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/lib:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
-        "//python/pip_install/private:distribution",
     ],
     visibility = ["//:__pkg__"],
 )
