@@ -1,21 +1,48 @@
 # Python Gazelle plugin
 
+[Gazelle](https://github.com/bazelbuild/bazel-gazelle)
+is a build file generator for Bazel projects. It can create new BUILD.bazel files for a project that follows language conventions, and it can update existing build files to include new sources, dependencies, and options.
+
+Gazelle may be run by Bazel using the gazelle rule, or it may be installed and run as a command line tool.
+
 This directory contains a plugin for
 [Gazelle](https://github.com/bazelbuild/bazel-gazelle)
-that generates BUILD file content for Python code.
+that generates BUILD files content for Python code.
 
-It requires Go 1.16+ to compile.
+The following instructions are for when you use [bzlmod](https://docs.bazel.build/versions/5.0.0/bzlmod.html).
+Please refer to older documentation that includes instructions on how to use Gazelle
+without using bzlmod as your dependency manager.
 
-## Installation
+## Example
 
-First, you'll need to add Gazelle to your `WORKSPACE` file.
-Follow the instructions at https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
+We have an example of using Gazelle with Python located [here](https://github.com/bazelbuild/rules_python/tree/main/examples/build_file_generation).
 
-Next, we need to fetch the third-party Go libraries that the python extension
-depends on.
+## Adding Gazelle to your project
 
-See the installation `WORKSPACE` snippet on the Releases page:
-https://github.com/bazelbuild/rules_python/releases
+First, you'll need to add Gazelle to your `MODULES.bazel` file.
+Get the current version of Gazelle from there releases here:  https://github.com/bazelbuild/bazel-gazelle/releases/.
+
+
+See the installation `MODULE.bazel` snippet on the Releases page:
+https://github.com/bazelbuild/rules_python/releases in order to configure rules_python.
+
+You will also need to add the `bazel_dep` for configuration for `rules_python_gazelle_plugin`.
+
+Here is a snippet of a `MODULE.bazel` file.
+
+```starlark
+# The following stanza defines the dependency rules_python.
+bazel_dep(name = "rules_python", version = "0.20.0")
+
+# The following stanza defines the dependency rules_python.
+# For typical setups you set the version.
+bazel_dep(name = "rules_python_gazelle_plugin", version = "0.20.0")
+
+# The following stanza defines the dependency rules_python.
+bazel_dep(name = "gazelle", version = "0.30.0", repo_name = "bazel_gazelle")
+```
+You will also need to do the other usual configuration for `rules_python` in your
+`MODULE.bazel` file.
 
 Next, we'll fetch metadata about your Python dependencies, so that gazelle can
 determine which package a given import statement comes from. This is provided
@@ -157,11 +184,29 @@ Next, all source files are collected into the `srcs` of the `py_library`.
 Finally, the `import` statements in the source files are parsed, and
 dependencies are added to the `deps` attribute.
 
-### Tests
+### Unit Tests
 
-Python test files are those ending in `_test.py`.
+A `py_test` target is added to the BUILD file when gazelle encounters
+a file named `__test__.py`.
+Often, Python unit test files are named with the suffix `_test`.
+For example, if we had a folder that is a package named "foo" we could have a Python file named `foo_test.py` 
+and gazelle would create a `py_test` block for the file.
 
-A `py_test` target is added containing all test files as `srcs`.
+The following is an example of a `py_test` target that gazelle would add when
+it encounters a file named `__test__.py`.
+
+```starlark
+py_test(
+    name = "build_file_generation_test",
+    srcs = ["__test__.py"],
+    main = "__test__.py",
+    deps = [":build_file_generation"],
+)
+```
+
+You can control the naming convention for test targets by adding a gazelle directive named
+`# gazelle:python_test_naming_convention`.  See the instructions in the section above that 
+covers directives.
 
 ### Binaries
 
@@ -170,16 +215,18 @@ of a Python program.
 
 A `py_binary` target will be created, named `[package]_bin`.
 
-## Developing on the extension
+## Developer Notes
 
-Gazelle extensions are written in Go. Ours is a hybrid, which also spawns
-a Python interpreter as a subprocess to parse python files.
+Gazelle extensions are written in Go. This gazelle plugin is a hybrid, as it uses Go to execute a 
+Python interpreter as a subprocess to parse Python source files. 
+See the gazelle documentation https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.md 
+for more information on extending Gazelle.
 
-The Go dependencies are managed by the go.mod file.
-After changing that file, run `go mod tidy` to get a `go.sum` file,
-then run `bazel run //:update_go_deps` to convert that to the `gazelle/deps.bzl` file.
-The latter is loaded in our `/WORKSPACE` to define the external repos
-that we can load Go dependencies from.
+If you add new Go dependencies to the plugin source code, you need to "tidy" the go.mod file. 
+After changing that file, run `go mod tidy` or `bazel run @go_sdk//:bin/go -- mod tidy` 
+to update the go.mod and go.sum files. Then run `bazel run //:update_go_deps` to have gazelle 
+add the new dependenies to the deps.bzl file. The deps.bzl file is used as defined in our /WORKSPACE 
+to include the external repos Bazel loads Go dependencies from.
 
-Then after editing Go code, run `bazel run //:gazelle` to generate/update
-go_* rules in the BUILD.bazel files in our repo.
+Then after editing Go code, run `bazel run //:gazelle` to generate/update the rules in the 
+BUILD.bazel files in our repo.

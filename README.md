@@ -33,6 +33,47 @@ contribute](CONTRIBUTING.md) page for information on our development workflow.
 
 ## Getting started
 
+The next two sections cover using `rules_python` with bzlmod and
+the older way of configuring bazel with a `WORKSPACE` file.
+
+### Using bzlmod
+
+To import rules_python in your project, you first need to add it to your
+`MODULES.bazel` file, using the snippet provided in the
+[release you choose](https://github.com/bazelbuild/rules_python/releases).
+
+#### Toolchain registration with bzlmod
+
+To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `MODULES.bazel` file:
+
+```python
+# Find the latest version number here: https://github.com/bazelbuild/rules_python/releases
+# and change the version number if needed in the line below.
+bazel_dep(name = "rules_python", version = "0.20.0")
+
+# You do not have to use pip for the toolchain, but most people
+# will use it for the dependency management.
+pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+
+pip.parse(
+    name = "pip",
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+use_repo(pip, "pip")
+
+# Register a specific python toolchain instead of using the host version
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+
+use_repo(python, "python3_10_toolchains")
+
+register_toolchains(
+    "@python3_10_toolchains//:all",
+)
+```
+
+### Using a WORKSPACE file
+
 To import rules_python in your project, you first need to add it to your
 `WORKSPACE` file, using the snippet provided in the
 [release you choose](https://github.com/bazelbuild/rules_python/releases)
@@ -53,7 +94,7 @@ http_archive(
 )
 ```
 
-### Toolchain registration
+#### Toolchain registration
 
 To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
@@ -118,6 +159,22 @@ target in the appropriate wheel repo.
 
 ### Installing third_party packages
 
+#### Using bzlmod
+
+To add pip dependencies to your `MODULES.bazel` file, use the `pip.parse` extension, and call it to create the
+central external repo and individual wheel external repos.
+
+```python
+pip.parse(
+    name = "my_deps",
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+use_repo(pip, "my_deps")
+```
+
+#### Using a WORKSPACE file
+
 To add pip dependencies to your `WORKSPACE`, load the `pip_parse` function, and call it to create the
 central external repo and individual wheel external repos.
 
@@ -137,14 +194,15 @@ load("@my_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
+#### pip rules
+
 Note that since `pip_parse` is a repository rule and therefore executes pip at WORKSPACE-evaluation time, Bazel has no
 information about the Python toolchain and cannot enforce that the interpreter
 used to invoke pip matches the interpreter used to run `py_binary` targets. By
 default, `pip_parse` uses the system command `"python3"`. This can be overridden by passing the
 `python_interpreter` attribute or `python_interpreter_target` attribute to `pip_parse`.
 
-You can have multiple `pip_parse`s in the same workspace. This will create multiple external repos that have no relation to
-one another, and may result in downloading the same wheels multiple times.
+You can have multiple `pip_parse`s in the same workspace. This will create multiple external repos that have no relation to one another, and may result in downloading the same wheels multiple times.
 
 As with any repository rule, if you would like to ensure that `pip_parse` is
 re-executed in order to pick up a non-hermetic change to your environment (e.g.,
