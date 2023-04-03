@@ -119,33 +119,6 @@ tasks:
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
 
-  integration_test_build_file_generation_ubuntu_minimum_supported:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: build_file_generation integration tests on Ubuntu using minimum supported Bazel version
-    working_directory: examples/build_file_generation
-    platform: ubuntu2004
-  integration_test_build_file_generation_ubuntu:
-    <<: *reusable_build_test_all
-    name: build_file_generation integration tests on Ubuntu
-    working_directory: examples/build_file_generation
-    platform: ubuntu2004
-  integration_test_build_file_generation_debian:
-    <<: *reusable_build_test_all
-    name: build_file_generation integration tests on Debian
-    working_directory: examples/build_file_generation
-    platform: debian11
-  integration_test_build_file_generation_macos:
-    <<: *reusable_build_test_all
-    name: build_file_generation integration tests on macOS
-    working_directory: examples/build_file_generation
-    platform: macos
-  integration_test_build_file_generation_windows:
-    <<: *reusable_build_test_all
-    name: build_file_generation integration tests on Windows
-    working_directory: examples/build_file_generation
-    platform: windows
-
   integration_test_build_file_generation_bzlmod_ubuntu:
     <<: *minimum_supported_bzlmod_version
     <<: *common_bzlmod_flags

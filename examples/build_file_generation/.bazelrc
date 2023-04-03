@@ -1,3 +1,4 @@
+common --experimental_enable_bzlmod
 test --test_output=errors
 
 # Windows requires these for multi-python support:

@@ -10,6 +10,8 @@ load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
+# This stanza calls a rule that generates targets for managing pip dependencies
+# with pip-compile.
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
@@ -21,7 +23,6 @@ compile_pip_requirements(
 # This repository rule fetches the metadata for python packages we
 # depend on. That data is required for the gazelle_python_manifest
 # rule to update our manifest file.
-# To see what this rule does, try `bazel run @modules_map//:print`
 modules_mapping(
     name = "modules_map",
     exclude_patterns = [

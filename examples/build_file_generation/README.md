@@ -1,8 +1,8 @@
 # Build file generation with Gazelle
 
 This example shows a project that has Gazelle setup with the rules_python
-extension, so that targets like `py_library` and `py_binary` can be
-automatically created just by running
+extension, so that targets like `py_library`, `py_binary`, and `py_test` can be
+automatically created just by running:
 
 ```sh
 $ bazel run //:gazelle
@@ -18,3 +18,7 @@ added to the `py_library` target in the `BUILD` file.
 
 For more information on the behavior of the rules_python gazelle extension,
 see the README.md file in the /gazelle folder.
+
+This example only supports using bzlmod. You can find an older copy of this example 
+[here](https://github.com/bazelbuild/rules_python/tree/0.20.0/examples/build_file_generation)
+that supports not using bzlmod.
