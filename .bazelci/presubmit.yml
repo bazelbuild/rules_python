@@ -14,8 +14,9 @@
 
 ---
 buildifier:
-  version: latest
-  # keep this argument in sync with .pre-commit-config.yaml
+  # keep these arguments in sync with .pre-commit-config.yaml
+  # Use a specific version to avoid skew issues when new versions are released.
+  version: 6.0.0
   warnings: "all"
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
