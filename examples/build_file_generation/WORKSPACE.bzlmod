@@ -1,0 +1,2 @@
+# This file will be used when bzlmod is enabled, keep it empty
+# to ensure that all of the setup is done in MODULE.bazel
