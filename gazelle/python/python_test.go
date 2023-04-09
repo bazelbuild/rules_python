@@ -74,6 +74,7 @@ func TestGazelleBinary(t *testing.T) {
 
 func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
+		t.Parallel()
 		var inputs, goldens []testtools.FileSpec
 
 		var config *testYAML
@@ -132,8 +133,8 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		}
 
 		testdataDir, cleanup := testtools.CreateFiles(t, inputs)
-		defer cleanup()
-		defer func() {
+		t.Cleanup(cleanup)
+		t.Cleanup(func() {
 			if !t.Failed() {
 				return
 			}
@@ -145,14 +146,14 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 				t.Logf("%q exists", strings.TrimPrefix(path, testdataDir))
 				return nil
 			})
-		}()
+		})
 
 		workspaceRoot := filepath.Join(testdataDir, name)
 
 		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
+		t.Cleanup(cancel)
 		cmd := exec.CommandContext(ctx, gazellePath, args...)
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
