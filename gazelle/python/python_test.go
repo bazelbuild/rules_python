@@ -74,8 +74,7 @@ func TestGazelleBinary(t *testing.T) {
 
 func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
-		var inputs []testtools.FileSpec
-		var goldens []testtools.FileSpec
+		var inputs, goldens []testtools.FileSpec
 
 		var config *testYAML
 		for _, f := range files {
