@@ -23,7 +23,7 @@ python.toolchain(
 For WORKSPACE configuration:
 
 ```starlark
-register_python_toolchains(
+python_register_toolchains(
    register_coverage_tool = True,
 )
 ```
