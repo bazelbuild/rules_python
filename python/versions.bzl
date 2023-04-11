@@ -41,6 +41,8 @@ DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/
 #       "strip_prefix": "python",
 #   },
 #
+# It is possible to provide lists in "url".
+#
 # buildifier: disable=unsorted-dict-items
 TOOL_VERSIONS = {
     "3.8.10": {
@@ -281,19 +283,28 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     if type(url) == type({}):
         url = url[platform]
 
+    if type(url) != type([]):
+        url = [url]
+
     strip_prefix = tool_versions[python_version].get("strip_prefix", None)
     if type(strip_prefix) == type({}):
         strip_prefix = strip_prefix[platform]
 
-    release_filename = url.format(
-        platform = platform,
-        python_version = python_version,
-        build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
-    )
-    if "://" in release_filename:  # is absolute url?
-        url = release_filename
-    else:
-        url = "/".join([base_url, release_filename])
+    release_filename = None
+    rendered_urls = []
+    for u in url:
+        release_filename = u.format(
+            platform = platform,
+            python_version = python_version,
+            build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
+        )
+        if "://" in release_filename:  # is absolute url?
+            rendered_urls.append(release_filename)
+        else:
+            rendered_urls.append("/".join([base_url, release_filename]))
+
+    if release_filename == None:
+        fail("release_filename should be set by now; were any download URLs given?")
 
     patches = tool_versions[python_version].get("patches", [])
     if type(patches) == type({}):
@@ -302,7 +313,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         else:
             patches = []
 
-    return (release_filename, url, strip_prefix, patches)
+    return (release_filename, rendered_urls, strip_prefix, patches)
 
 def print_toolchains_checksums(name):
     native.genrule(
@@ -333,10 +344,11 @@ def _commands_for_version(python_version):
         "echo \"{python_version}: {platform}: $$(curl --location --fail {release_url_sha256} 2>/dev/null || curl --location --fail {release_url} 2>/dev/null | shasum -a 256 | awk '{{ print $$1 }}')\"".format(
             python_version = python_version,
             platform = platform,
-            release_url = get_release_info(platform, python_version)[1],
-            release_url_sha256 = get_release_info(platform, python_version)[1] + ".sha256",
+            release_url = release_url,
+            release_url_sha256 = release_url + ".sha256",
         )
         for platform in TOOL_VERSIONS[python_version]["sha256"].keys()
+        for release_url in get_release_info(platform, python_version)[1]
     ])
 
 def gen_python_config_settings(name = ""):

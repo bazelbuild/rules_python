@@ -99,12 +99,14 @@ def is_standalone_interpreter(rctx, python_interpreter_target):
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
+    if bool(rctx.attr.url) == bool(rctx.attr.urls):
+        fail("Exactly one of (url, urls) must be set.")
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
     python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
-    url = rctx.attr.url
+    url = rctx.attr.urls or [rctx.attr.url]
 
     if release_filename.endswith(".zst"):
         rctx.download(
@@ -428,8 +430,10 @@ For more information see the official bazel docs
             doc = "A directory prefix to strip from the extracted files.",
         ),
         "url": attr.string(
-            doc = "The URL of the interpreter to download",
-            mandatory = True,
+            doc = "The URL of the interpreter to download. Exactly one of url and urls must be set.",
+        ),
+        "urls": attr.string_list(
+            doc = "The URL of the interpreter to download. Exactly one of url and urls must be set.",
         ),
         "zstd_sha256": attr.string(
             default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
@@ -506,7 +510,7 @@ def python_register_toolchains(
         if not sha256:
             continue
 
-        (release_filename, url, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
+        (release_filename, urls, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
 
         # allow passing in a tool version
         coverage_tool = None
@@ -536,7 +540,7 @@ def python_register_toolchains(
             platform = platform,
             python_version = python_version,
             release_filename = release_filename,
-            url = url,
+            urls = urls,
             distutils = distutils,
             distutils_content = distutils_content,
             strip_prefix = strip_prefix,
