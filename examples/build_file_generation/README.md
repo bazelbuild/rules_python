@@ -5,7 +5,9 @@ extension, so that targets like `py_library` and `py_binary` can be
 automatically created just by running
 
 ```sh
-$ bazel run //:gazelle
+bazel run //:requirements.update
+bazel run //:gazelle_python_manifest.update
+bazel run //:gazelle
 ```
 
 As a demo, try creating a `__main__.py` file in this directory, then
