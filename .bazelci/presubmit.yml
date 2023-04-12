@@ -106,6 +106,33 @@ tasks:
     test_flags:
       - "--test_tag_filters=-integration-test,-fix-windows"
 
+  bzlmod_ubuntu:
+    <<: *reusable_config
+    <<: *common_bzlmod_flags
+    name: Default bzlmod test on Ubuntu
+    platform: ubuntu2004
+    test_targets: ["//python/tests/toolchains/..."]
+  bzlmod_debian:
+    <<: *reusable_config
+    <<: *common_bzlmod_flags
+    name: Default bzlmod test on Debian
+    platform: debian11
+    test_targets: ["//python/tests/toolchains/..."]
+  bzlmod_macos:
+    <<: *reusable_config
+    <<: *common_bzlmod_flags
+    name: Default bzlmod test on macOS
+    platform: macos
+    test_targets: ["//python/tests/toolchains/..."]
+  bzlmod_windows:
+    <<: *reusable_config
+    <<: *common_bzlmod_flags
+    name: Default bzlmod test on Windows
+    platform: windows
+    test_flags:
+      - "--test_tag_filters=-integration-test,-fix-windows"
+    test_targets: ["//python/tests/toolchains/..."]
+
   rbe_min:
     <<: *minimum_supported_version
     <<: *reusable_config

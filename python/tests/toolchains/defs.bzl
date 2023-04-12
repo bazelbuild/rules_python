@@ -25,11 +25,26 @@ powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
 
 def _acceptance_test_impl(ctx):
     workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
-    ctx.actions.expand_template(
-        template = ctx.file._workspace_tmpl,
-        output = workspace,
-        substitutions = {"%python_version%": ctx.attr.python_version},
-    )
+
+    # check if we are running bzlmod
+    bzlmod = str(Label("//:distribution")).startswith("@@")
+
+    if bzlmod:
+        # we are testing bzlmod then write out MODULE.bzl
+        module_bzl = ctx.actions.declare_file("/".join([ctx.attr.python_version, "MODULE.bzl"]))
+        ctx.actions.expand_template(
+            template = ctx.file._module_bzl_tmpl,
+            output = module_bzl,
+            substitutions = {"%python_version%": ctx.attr.python_version},
+        )
+        ctx.actions.write(workspace, "", is_executable = False)
+    else:
+        # write out the workspace file
+        ctx.actions.expand_template(
+            template = ctx.file._workspace_tmpl,
+            output = workspace,
+            substitutions = {"%python_version%": ctx.attr.python_version},
+        )
 
     build_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "BUILD.bazel"]))
     ctx.actions.expand_template(
@@ -140,6 +155,11 @@ _acceptance_test = rule(
             doc = "The WORKSPACE template.",
             allow_single_file = True,
             default = Label("//python/tests/toolchains/workspace_template:WORKSPACE.tmpl"),
+        ),
+        "_module_bzl_tmpl": attr.label(
+            doc = "The MODULE.bzl template for bzlmod.",
+            allow_single_file = True,
+            default = Label("//python/tests/toolchains/workspace_template:MODULE.bzl.tmpl"),
         ),
     },
     test = True,
