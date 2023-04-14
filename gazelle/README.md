@@ -93,7 +93,7 @@ Finally, you create a target that you'll invoke to run the Gazelle tool
 with the rules_python extension included. This typically goes in your root
 `/BUILD.bazel` file:
 
-```
+```starlark
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 
