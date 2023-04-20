@@ -358,8 +358,6 @@ def _pip_repository_bzlmod_impl(rctx):
 
     bzl_packages = sorted([name for name, _ in packages])
 
-    repo_name = rctx.attr.name.split("~")[-1]
-
     build_contents = _BUILD_FILE_CONTENTS
 
     if rctx.attr.incompatible_generate_aliases:
@@ -370,11 +368,11 @@ def _pip_repository_bzlmod_impl(rctx):
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}".format(repo_name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
+            "@@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@@{}_{}//:pkg".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:whl".format(repo_name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
+            "@@{}//{}:whl".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@@{}_{}//:whl".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
         "%%NAME%%": rctx.attr.name,
