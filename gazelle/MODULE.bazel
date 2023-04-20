@@ -1,6 +1,6 @@
 module(
     name = "rules_python_gazelle_plugin",
-    version = "0.0.0",
+    version = "0.21.0",
     compatibility_level = 1,
 )
 
