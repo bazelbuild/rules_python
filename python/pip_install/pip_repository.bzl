@@ -278,27 +278,27 @@ def _pkg_aliases(rctx, repo_name, bzl_packages):
 
 alias(
     name = "{name}",
-    actual = "@{repo_name}_{dep}//:pkg",
+    actual = "@@{repo_name}_{dep}//:pkg",
 )
 
 alias(
     name = "pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
+    actual = "@@{repo_name}_{dep}//:pkg",
 )
 
 alias(
     name = "whl",
-    actual = "@{repo_name}_{dep}//:whl",
+    actual = "@@{repo_name}_{dep}//:whl",
 )
 
 alias(
     name = "data",
-    actual = "@{repo_name}_{dep}//:data",
+    actual = "@@{repo_name}_{dep}//:data",
 )
 
 alias(
     name = "dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
+    actual = "@@{repo_name}_{dep}//:dist_info",
 )
 """.format(
             name = name,
@@ -324,22 +324,22 @@ def _bzlmod_pkg_aliases(repo_name, bzl_packages):
 
 alias(
     name = "{name}_pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
+    actual = "@@{repo_name}_{dep}//:pkg",
 )
 
 alias(
     name = "{name}_whl",
-    actual = "@{repo_name}_{dep}//:whl",
+    actual = "@@{repo_name}_{dep}//:whl",
 )
 
 alias(
     name = "{name}_data",
-    actual = "@{repo_name}_{dep}//:data",
+    actual = "@@{repo_name}_{dep}//:data",
 )
 
 alias(
     name = "{name}_dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
+    actual = "@@{repo_name}_{dep}//:dist_info",
 )
 """.format(
             name = name,
@@ -361,9 +361,9 @@ def _pip_repository_bzlmod_impl(rctx):
     build_contents = _BUILD_FILE_CONTENTS
 
     if rctx.attr.incompatible_generate_aliases:
-        _pkg_aliases(rctx, repo_name, bzl_packages)
+        _pkg_aliases(rctx, rctx.attr.name, bzl_packages)
     else:
-        build_contents += _bzlmod_pkg_aliases(repo_name, bzl_packages)
+        build_contents += _bzlmod_pkg_aliases(rctx.attr.name, bzl_packages)
 
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
