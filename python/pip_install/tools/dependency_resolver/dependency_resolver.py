@@ -23,6 +23,8 @@ from pathlib import Path
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
+from python.runfiles import runfiles
+
 # Replace the os.replace function with shutil.copy to work around os.replace not being able to
 # replace or move files across filesystems.
 os.replace = shutil.copy
@@ -66,6 +68,15 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
+def _locate(bazel_runfiles, file):
+    """Look up the file via Rlocation"""
+
+    if not file:
+        return file
+
+    return bazel_runfiles.Rlocation(file)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print(
@@ -75,6 +86,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     parse_str_none = lambda s: None if s == "None" else s
+    bazel_runfiles = runfiles.Create()
 
     requirements_in = sys.argv.pop(1)
     requirements_txt = sys.argv.pop(1)
@@ -83,10 +95,25 @@ if __name__ == "__main__":
     requirements_windows = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
-    # The requirements_in file could be generated, so we will need to remove the
-    # absolute prefixes in the locked requirements output file.
-    requirements_in_path = Path(requirements_in)
-    resolved_requirements_in = str(requirements_in_path.resolve())
+    resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
+    resolved_requirements_txt = _locate(bazel_runfiles, requirements_txt)
+
+    # Files in the runfiles directory has the following naming schema:
+    # Main repo: __main__/<path_to_file>
+    # External repo: <workspace name>/<path_to_file>
+    # We want to strip both __main__ and <workspace name> from the absolute prefix
+    # to keep the requirements lock file agnostic.
+    repository_prefix = requirements_txt[: requirements_txt.index("/") + 1]
+    absolute_path_prefix = resolved_requirements_txt[
+        : -(len(requirements_txt) - len(repository_prefix))
+    ]
+
+    # As requirements_in might contain references to generated files we want to
+    # use the runfiles file first. Thus, we need to compute the relative path
+    # from the execution root.
+    # Note: Windows cannot reference generated files without runfiles support enabled.
+    requirements_in_relative = requirements_in[len(repository_prefix) :]
+    requirements_txt_relative = requirements_txt[len(repository_prefix) :]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -112,7 +139,7 @@ if __name__ == "__main__":
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
         # or shutil.copyfile, as they will fail with OSError: [Errno 18] Invalid cross-device link.
-        shutil.copy(requirements_txt, requirements_out)
+        shutil.copy(resolved_requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
@@ -123,24 +150,33 @@ if __name__ == "__main__":
 
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
-    sys.argv.append(requirements_txt if UPDATE else requirements_out)
+    sys.argv.append(requirements_txt_relative if UPDATE else requirements_out)
     sys.argv.append(
-        requirements_in if requirements_in_path.exists() else resolved_requirements_in
+        requirements_in_relative
+        if Path(requirements_in_relative).exists()
+        else resolved_requirements_in
     )
+    print(sys.argv)
 
     if UPDATE:
-        print("Updating " + requirements_txt)
+        print("Updating " + requirements_txt_relative)
         if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
             workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
-            requirements_txt_tree = os.path.join(workspace, requirements_txt)
+            requirements_txt_tree = os.path.join(workspace, requirements_txt_relative)
             # In most cases, requirements_txt will be a symlink to the real file in the source tree.
             # If symlinks are not enabled (e.g. on Windows), then requirements_txt will be a copy,
             # and we should copy the updated requirements back to the source tree.
-            if not os.path.samefile(requirements_txt, requirements_txt_tree):
+            if not os.path.samefile(resolved_requirements_txt, requirements_txt_tree):
                 atexit.register(
-                    lambda: shutil.copy(requirements_txt, requirements_txt_tree)
+                    lambda: shutil.copy(
+                        resolved_requirements_txt, requirements_txt_tree
+                    )
                 )
         cli()
+        requirements_txt_relative_path = Path(requirements_txt_relative)
+        content = requirements_txt_relative_path.read_text()
+        content = content.replace(absolute_path_prefix, "")
+        requirements_txt_relative_path.write_text(content)
     else:
         # cli will exit(0) on success
         try:
@@ -153,7 +189,7 @@ if __name__ == "__main__":
                 print(
                     "pip-compile exited with code 2. This means that pip-compile found "
                     "incompatible requirements or could not find a version that matches "
-                    f"the install requirement in {requirements_in}.",
+                    f"the install requirement in {requirements_in_relative}.",
                     file=sys.stderr,
                 )
                 sys.exit(1)
@@ -164,8 +200,9 @@ if __name__ == "__main__":
                     requirements_darwin,
                     requirements_windows,
                 )
-                golden = open(golden_filename).readlines()
+                golden = open(_locate(bazel_runfiles, golden_filename)).readlines()
                 out = open(requirements_out).readlines()
+                out = [line.replace(absolute_path_prefix, "") for line in out]
                 if golden != out:
                     import difflib
 

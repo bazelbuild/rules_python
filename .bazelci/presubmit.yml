@@ -509,3 +509,41 @@ tasks:
     name: ignore_root_user_error integration tests on Windows
     working_directory: tests/ignore_root_user_error
     platform: windows
+
+  integration_compile_pip_requirements_test_from_external_repo_ubuntu_min:
+    <<: *minimum_supported_version
+    name: compile_pip_requirements test from external repo on Ubuntu using minimum supported Bazel version
+    working_directory: tests/compile_pip_requirements_test_from_external_workspace
+    platform: ubuntu2004
+    shell_commands:
+    # Assert that @external_repository//:requirements_test does the right thing.
+    - "bazel test @external_repository//..."
+  integration_compile_pip_requirements_test_from_external_repo_ubuntu:
+    name: compile_pip_requirements test from external repo on Ubuntu
+    working_directory: tests/compile_pip_requirements_test_from_external_workspace
+    platform: ubuntu2004
+    shell_commands:
+    # Assert that @external_repository//:requirements_test does the right thing.
+    - "bazel test @external_repository//..."
+  integration_compile_pip_requirements_test_from_external_repo_debian:
+    name: compile_pip_requirements test from external repo on Debian
+    working_directory: tests/compile_pip_requirements_test_from_external_workspace
+    platform: debian11
+    shell_commands:
+    # Assert that @external_repository//:requirements_test does the right thing.
+    - "bazel test @external_repository//..."
+  integration_compile_pip_requirements_test_from_external_repo_macos:
+    name: compile_pip_requirements test from external repo on macOS
+    working_directory: tests/compile_pip_requirements_test_from_external_workspace
+    platform: macos
+    shell_commands:
+    # Assert that @external_repository//:requirements_test does the right thing.
+    - "bazel test @external_repository//..."
+  integration_compile_pip_requirements_test_from_external_repo_windows:
+    name: compile_pip_requirements test from external repo on Windows
+    working_directory: tests/compile_pip_requirements_test_from_external_workspace
+    platform: windows
+    shell_commands:
+    # Assert that @external_repository//:requirements_test does the right thing.
+    - "bazel test @external_repository//..."
+

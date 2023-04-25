@@ -1,0 +1,36 @@
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+py_repositories()
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+local_repository(
+    name = "external_repository",
+    path = "../compile_pip_requirements",
+)
+
+pip_parse(
+    name = "pypi",
+    python_interpreter_target = interpreter,
+    requirements_lock = "@external_repository//:requirements_lock.txt",
+)
+
+load("@pypi//:requirements.bzl", "install_deps")
+
+# Initialize repositories for all packages in requirements_lock.txt.
+install_deps()
