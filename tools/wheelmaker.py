@@ -46,6 +46,8 @@ class WheelMaker(object):
         python_tag,
         abi,
         platform,
+        bin_dir,
+        strip_package_path,
         outfile=None,
         strip_path_prefixes=None,
     ):
@@ -55,6 +57,8 @@ class WheelMaker(object):
         self._python_tag = python_tag
         self._abi = abi
         self._platform = platform
+        self._bin_dir = bin_dir
+        self._strip_package_path = strip_package_path
         self._outfile = outfile
         self._strip_path_prefixes = (
             strip_path_prefixes if strip_path_prefixes is not None else []
@@ -123,6 +127,9 @@ class WheelMaker(object):
             # Don't manipulate names filenames in the .distinfo directory.
             if normalized_arcname.startswith(self._distinfo_dir):
                 return normalized_arcname
+            normalized_arcname = normalized_arcname[len(self._strip_package_path) + 1 :]
+            if normalized_arcname.startswith(self._bin_dir):
+                normalized_arcname = normalized_arcname[len(self._bin_dir) + 1 :]
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
                     return normalized_arcname[len(prefix) :]
@@ -271,6 +278,16 @@ def parse_args() -> argparse.Namespace:
     )
 
     output_group.add_argument(
+        "--bin_dir", type=str, help="Path to the binary directory under Bazel."
+    )
+
+    output_group.add_argument(
+        "--strip_package_path",
+        type=str,
+        help="Bazel package path to be stripped from input package files' path.",
+    )
+
+    output_group.add_argument(
         "--strip_path_prefix",
         type=str,
         action="append",
@@ -372,6 +389,8 @@ def main() -> None:
         python_tag=arguments.python_tag,
         abi=arguments.abi,
         platform=arguments.platform,
+        bin_dir=arguments.bin_dir,
+        strip_package_path=arguments.strip_package_path,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
     ) as maker:

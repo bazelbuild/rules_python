@@ -17,6 +17,62 @@
 load("//python/private:stamp.bzl", "is_stamping_enabled")
 load(":py_package.bzl", "py_package_lib")
 
+RequirementsInfo = provider(
+    "Information about all the requirements of a py_wheel.",
+    fields = {
+        "requirements": "The list of requirements.",
+    },
+)
+
+def _requirements_collector_impl(_, ctx):
+    """Aspect to collect third-party dependencies.
+
+    Args:
+        _: The bazel target the aspect is applied to.
+        ctx: The aspect context.
+    Returns: RequirementsInfo
+    """
+
+    requirement = None
+    if hasattr(ctx.rule.attr, "tags"):
+        pypi_name = None
+        pypi_version = None
+        for tag in ctx.rule.attr.tags:
+            if tag.startswith("pypi_name="):
+                pypi_name = tag[len("pypi_name="):]
+            elif tag.startswith("pypi_version="):
+                pypi_version = tag[len("pypi_version="):]
+
+        if pypi_name and pypi_version:
+            requirement = "{}=={}".format(pypi_name, pypi_version)
+
+    if hasattr(ctx.rule.attr, "deps"):
+        requirements = depset(
+            direct = [requirement] if requirement else [],
+            transitive = [
+                dep[RequirementsInfo].requirements
+                for dep in ctx.rule.attr.deps
+            ],
+        )
+    elif hasattr(ctx.rule.attr, "srcs"):
+        requirements = depset(
+            direct = [requirement] if requirement else [],
+            transitive = [
+                src[RequirementsInfo].requirements
+                for src in ctx.rule.attr.srcs
+            ],
+        )
+    else:
+        requirements = depset()
+
+    return [RequirementsInfo(requirements = requirements)]
+
+requirements_collector = aspect(
+    implementation = _requirements_collector_impl,
+    doc = "Aspect to collect third-party dependencies.",
+    attr_aspects = ["deps", "srcs"],
+)
+
 PyWheelInfo = provider(
     doc = "Information about a wheel produced by `py_wheel`",
     fields = {
@@ -221,9 +277,7 @@ def _py_wheel_impl(ctx):
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
-    inputs_to_package = depset(
-        direct = ctx.files.deps,
-    )
+    inputs_to_package = _inputs_to_package(ctx.actions, ctx.workspace_name, ctx.attr.deps)
 
     # Inputs to this rule which are not to be packaged.
     # Currently this is only the description file (if used).
@@ -245,6 +299,8 @@ def _py_wheel_impl(ctx):
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile)
     args.add("--name_file", name_file)
+    args.add("--strip_package_path", ctx.label.package)
+    args.add("--bin_dir", ctx.bin_dir.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
     # Pass workspace status files if stamping is enabled
@@ -275,7 +331,12 @@ def _py_wheel_impl(ctx):
 
     if ctx.attr.python_requires:
         metadata_contents.append("Requires-Python: %s" % ctx.attr.python_requires)
-    for requirement in ctx.attr.requires:
+    if ctx.attr.auto_add_requirements:
+        pip_dependencies = depset(ctx.attr.requires, transitive = [dep[RequirementsInfo].requirements for dep in ctx.attr.deps]).to_list()
+    else:
+        pip_dependencies = ctx.attr.requires
+
+    for requirement in pip_dependencies:
         metadata_contents.append("Requires-Dist: %s" % requirement)
 
     for option, option_requirements in sorted(ctx.attr.extra_requires.items()):
@@ -352,6 +413,24 @@ def _py_wheel_impl(ctx):
         ),
     ]
 
+def _inputs_to_package(actions, workspace_name, deps):
+    filtered = []
+    for dep in deps:
+        files = dep[PyInfo].transitive_sources
+        imports = [imports.replace("\\", "/") for imports in dep[PyInfo].imports.to_list()]
+        for file in files.to_list():
+            filepath = "{}/{}".format(workspace_name, file.path.replace("\\", "/"))
+            for imp in imports:
+                if filepath.startswith(imp):
+                    symlink_path = filepath[len(imp):]
+                    if symlink_path.startswith("/"):
+                        symlink_path = symlink_path[1:]
+                    symlink = actions.declare_directory(symlink_path) if file.is_directory else actions.declare_file(symlink_path)
+                    actions.symlink(output = symlink, target_file = file)
+                    filtered.append(symlink)
+                    break
+    return depset(filtered)
+
 def _concat_dicts(*dicts):
     result = {}
     for d in dicts:
@@ -362,7 +441,13 @@ py_wheel_lib = struct(
     implementation = _py_wheel_impl,
     attrs = _concat_dicts(
         {
+            "auto_add_requirements": attr.bool(
+                doc = "Automatically add requirements to the wheel.",
+                default = False,
+            ),
             "deps": attr.label_list(
+                aspects = [requirements_collector],
+                providers = [PyInfo],
                 doc = """\
 Targets to be included in the distribution.
 
