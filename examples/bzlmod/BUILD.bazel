@@ -1,8 +1,8 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@pip//:requirements.bzl", "all_requirements", "all_whl_requirements", "requirement")
 load("@python3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
 
 compile_pip_requirements(
     name = "requirements",
