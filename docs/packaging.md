@@ -7,7 +7,7 @@ Public API for for building wheels.
 ## py_package
 
 <pre>
-py_package(<a href="#py_package-name">name</a>, <a href="#py_package-deps">deps</a>, <a href="#py_package-packages">packages</a>)
+py_package(<a href="#py_package-name">name</a>, <a href="#py_package-deps">deps</a>, <a href="#py_package-exclude">exclude</a>, <a href="#py_package-packages">packages</a>)
 </pre>
 
 A rule to select all files in transitive dependencies of deps which
@@ -23,6 +23,7 @@ This rule is intended to be used as data dependency to py_wheel rule.
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="py_package-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="py_package-deps"></a>deps |  -   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
+| <a id="py_package-exclude"></a>exclude |  List of Python packages to exclude from the distribution. Sub-packages are automatically excluded.   | List of strings | optional | <code>[]</code> |
 | <a id="py_package-packages"></a>packages |  List of Python packages to include in the distribution. Sub-packages are automatically included.   | List of strings | optional | <code>[]</code> |
 
 
@@ -57,9 +58,10 @@ This also has the advantage that stamping information is included in the wheel's
 ## py_wheel_rule
 
 <pre>
-py_wheel_rule(<a href="#py_wheel_rule-name">name</a>, <a href="#py_wheel_rule-abi">abi</a>, <a href="#py_wheel_rule-author">author</a>, <a href="#py_wheel_rule-author_email">author_email</a>, <a href="#py_wheel_rule-classifiers">classifiers</a>, <a href="#py_wheel_rule-console_scripts">console_scripts</a>, <a href="#py_wheel_rule-deps">deps</a>, <a href="#py_wheel_rule-description_file">description_file</a>,
-              <a href="#py_wheel_rule-distribution">distribution</a>, <a href="#py_wheel_rule-entry_points">entry_points</a>, <a href="#py_wheel_rule-extra_distinfo_files">extra_distinfo_files</a>, <a href="#py_wheel_rule-extra_requires">extra_requires</a>, <a href="#py_wheel_rule-homepage">homepage</a>, <a href="#py_wheel_rule-license">license</a>,
-              <a href="#py_wheel_rule-platform">platform</a>, <a href="#py_wheel_rule-python_requires">python_requires</a>, <a href="#py_wheel_rule-python_tag">python_tag</a>, <a href="#py_wheel_rule-requires">requires</a>, <a href="#py_wheel_rule-stamp">stamp</a>, <a href="#py_wheel_rule-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel_rule-version">version</a>)
+py_wheel_rule(<a href="#py_wheel_rule-name">name</a>, <a href="#py_wheel_rule-abi">abi</a>, <a href="#py_wheel_rule-author">author</a>, <a href="#py_wheel_rule-author_email">author_email</a>, <a href="#py_wheel_rule-auto_add_requirements">auto_add_requirements</a>, <a href="#py_wheel_rule-classifiers">classifiers</a>, <a href="#py_wheel_rule-console_scripts">console_scripts</a>,
+              <a href="#py_wheel_rule-deps">deps</a>, <a href="#py_wheel_rule-description_file">description_file</a>, <a href="#py_wheel_rule-distribution">distribution</a>, <a href="#py_wheel_rule-entry_points">entry_points</a>, <a href="#py_wheel_rule-extra_distinfo_files">extra_distinfo_files</a>,
+              <a href="#py_wheel_rule-extra_requires">extra_requires</a>, <a href="#py_wheel_rule-homepage">homepage</a>, <a href="#py_wheel_rule-license">license</a>, <a href="#py_wheel_rule-platform">platform</a>, <a href="#py_wheel_rule-python_requires">python_requires</a>, <a href="#py_wheel_rule-python_tag">python_tag</a>, <a href="#py_wheel_rule-requires">requires</a>,
+              <a href="#py_wheel_rule-stamp">stamp</a>, <a href="#py_wheel_rule-strip_path_prefixes">strip_path_prefixes</a>, <a href="#py_wheel_rule-version">version</a>)
 </pre>
 
 Internal rule used by the [py_wheel macro](/docs/packaging.md#py_wheel).
@@ -78,6 +80,7 @@ in the way they expect.
 | <a id="py_wheel_rule-abi"></a>abi |  Python ABI tag. 'none' for pure-Python wheels.   | String | optional | <code>"none"</code> |
 | <a id="py_wheel_rule-author"></a>author |  A string specifying the author of the package.   | String | optional | <code>""</code> |
 | <a id="py_wheel_rule-author_email"></a>author_email |  A string specifying the email address of the package author.   | String | optional | <code>""</code> |
+| <a id="py_wheel_rule-auto_add_requirements"></a>auto_add_requirements |  Automatically add requirements to the wheel.   | Boolean | optional | <code>False</code> |
 | <a id="py_wheel_rule-classifiers"></a>classifiers |  A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers   | List of strings | optional | <code>[]</code> |
 | <a id="py_wheel_rule-console_scripts"></a>console_scripts |  Deprecated console_script entry points, e.g. <code>{'main': 'examples.wheel.main:main'}</code>.<br><br>Deprecated: prefer the <code>entry_points</code> attribute, which supports <code>console_scripts</code> as well as other entry points.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional | <code>{}</code> |
 | <a id="py_wheel_rule-deps"></a>deps |  Targets to be included in the distribution.<br><br>The targets to package are usually <code>py_library</code> rules or filesets (for packaging data files).<br><br>Note it's usually better to package <code>py_library</code> targets and use <code>entry_points</code> attribute to specify <code>console_scripts</code> than to package <code>py_binary</code> rules. <code>py_binary</code> targets would wrap a executable script that tries to locate <code>.runfiles</code> directory which is not packaged in the wheel.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
