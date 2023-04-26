@@ -366,8 +366,8 @@ Tag: cp38-abi3-{os_string}_{arch}
             self.assertEqual(
                 zf.namelist(),
                 [
-                    "examples/wheel/main.py",
                     "examples/wheel/someDir/foo.py",
+                    "examples/wheel/main.py",
                     "use_rule_with_dir_in_outs-0.0.1.dist-info/WHEEL",
                     "use_rule_with_dir_in_outs-0.0.1.dist-info/METADATA",
                     "use_rule_with_dir_in_outs-0.0.1.dist-info/RECORD",
@@ -394,7 +394,7 @@ Tag: cp38-abi3-{os_string}_{arch}
             version = None
             with zf.open(metadata_file) as fp:
                 for line in fp:
-                    if line.startswith(b'Version:'):
+                    if line.startswith(b"Version:"):
                         version = line.decode().split()[-1]
             self.assertIsNotNone(version)
             self.assertNotIn("{BUILD_TIMESTAMP}", version)
