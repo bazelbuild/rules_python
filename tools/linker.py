@@ -17,21 +17,32 @@ import os
 import shutil
 
 
-def create_hardlink(source, destination):
+def create_link(source, destination, fallback_copy=False):
     try:
         if os.path.isdir(source):
             os.makedirs(destination, exist_ok=True)
             shutil.copytree(
                 source,
                 destination,
-                copy_function=os.link,
+                copy_function=_copy if fallback_copy else _link,
                 symlinks=True,
                 dirs_exist_ok=True,
             )
         else:
-            os.link(source, destination, follow_symlinks=True)
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            (_copy if fallback_copy else _link)(source, destination)
     except OSError as e:
+        if not fallback_copy:
+            return create_link(source, destination, fallback_copy=True)
         print(f"Error creating link: {e}")
+
+
+def _link(source, destination):
+    os.link(source, destination, follow_symlinks=True)
+
+
+def _copy(source, destination):
+    shutil.copyfile(source, destination)
 
 
 if __name__ == "__main__":
@@ -47,4 +58,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    create_hardlink(args.source, args.destination)
+    create_link(args.source, args.destination)
