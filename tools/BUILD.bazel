@@ -17,6 +17,11 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
+py_binary(
+    name = "linker",
+    srcs = ["linker.py"],
+)
+
 # Implementation detail of py_wheel rule.
 py_binary(
     name = "wheelmaker",
@@ -27,6 +32,7 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
+        "linker.py",
         "wheelmaker.py",
     ],
     visibility = ["//:__pkg__"],

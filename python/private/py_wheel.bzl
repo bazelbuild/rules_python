@@ -277,8 +277,8 @@ def _py_wheel_impl(ctx):
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
-    symlinks_subdir = "symlinks"
-    inputs_to_package = _inputs_to_package(ctx.actions, ctx.workspace_name, ctx.attr.deps, symlinks_subdir)
+    links_subdir = "links"
+    inputs_to_package = _inputs_to_package(ctx.actions, ctx.workspace_name, ctx.attr.deps, links_subdir, ctx.executable._linker)
 
     # Inputs to this rule which are not to be packaged.
     # Currently this is only the description file (if used).
@@ -300,7 +300,7 @@ def _py_wheel_impl(ctx):
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile)
     args.add("--name_file", name_file)
-    args.add("--strip_package_path", ctx.label.package + "/" + symlinks_subdir)
+    args.add("--strip_package_path", ctx.label.package + "/" + links_subdir)
     args.add("--bin_dir", ctx.bin_dir.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
@@ -414,7 +414,7 @@ def _py_wheel_impl(ctx):
         ),
     ]
 
-def _inputs_to_package(actions, workspace_name, deps, symlinks_subdir):
+def _inputs_to_package(actions, workspace_name, deps, links_subdir, linker):
     filtered = []
     for dep in deps:
         files = dep[PyInfo].transitive_sources
@@ -423,13 +423,21 @@ def _inputs_to_package(actions, workspace_name, deps, symlinks_subdir):
             filepath = workspace_name + "/" + file.path.replace("\\", "/")
             for imp in imports:
                 if filepath.startswith(imp):
-                    symlink_path = filepath[len(imp):]
-                    if symlink_path.startswith("/"):
-                        symlink_path = symlink_path[1:]
-                    symlink_path = symlinks_subdir + "/" + symlink_path
-                    symlink = actions.declare_directory(symlink_path) if file.is_directory else actions.declare_file(symlink_path)
-                    actions.symlink(output = symlink, target_file = file)
-                    filtered.append(symlink)
+                    link_path = filepath[len(imp):]
+                    if link_path.startswith("/"):
+                        link_path = link_path[1:]
+                    link_path = links_subdir + "/" + link_path
+                    link = actions.declare_directory(link_path) if file.is_directory else actions.declare_file(link_path)
+                    args = actions.args()
+                    args.add("--source", file.path)
+                    args.add("--destination", link.path)
+                    actions.run(
+                        inputs = [file],
+                        outputs = [link],
+                        arguments = [args],
+                        executable = linker,
+                    )
+                    filtered.append(link)
                     break
     return depset(filtered)
 
@@ -460,6 +468,11 @@ Note it's usually better to package `py_library` targets and use
 `py_binary` rules. `py_binary` targets would wrap a executable script that
 tries to locate `.runfiles` directory which is not packaged in the wheel.
 """,
+            ),
+            "_linker": attr.label(
+                executable = True,
+                cfg = "exec",
+                default = "//tools:linker",
             ),
             "_wheelmaker": attr.label(
                 executable = True,
