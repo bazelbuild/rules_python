@@ -52,7 +52,6 @@ filegroup(
         "//python/pip_install:bzl",
         "//python:bzl",
         # Requires Bazel 0.29 onward for public visibility of these .bzl files.
-        "@bazel_tools//tools/python:private/defs.bzl",
         "@bazel_tools//tools/python:python_version.bzl",
         "@bazel_tools//tools/python:srcs_version.bzl",
         "@bazel_tools//tools/python:toolchain.bzl",
