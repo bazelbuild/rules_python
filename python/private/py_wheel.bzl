@@ -277,7 +277,8 @@ def _py_wheel_impl(ctx):
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
-    inputs_to_package = _inputs_to_package(ctx.actions, ctx.workspace_name, ctx.attr.deps)
+    symlinks_subdir = "symlinks"
+    inputs_to_package = _inputs_to_package(ctx.actions, ctx.workspace_name, ctx.attr.deps, symlinks_subdir)
 
     # Inputs to this rule which are not to be packaged.
     # Currently this is only the description file (if used).
@@ -299,7 +300,7 @@ def _py_wheel_impl(ctx):
     args.add("--platform", ctx.attr.platform)
     args.add("--out", outfile)
     args.add("--name_file", name_file)
-    args.add("--strip_package_path", ctx.label.package)
+    args.add("--strip_package_path", ctx.label.package + "/" + symlinks_subdir)
     args.add("--bin_dir", ctx.bin_dir.path)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
 
@@ -413,18 +414,19 @@ def _py_wheel_impl(ctx):
         ),
     ]
 
-def _inputs_to_package(actions, workspace_name, deps):
+def _inputs_to_package(actions, workspace_name, deps, symlinks_subdir):
     filtered = []
     for dep in deps:
         files = dep[PyInfo].transitive_sources
         imports = [imports.replace("\\", "/") for imports in dep[PyInfo].imports.to_list()]
         for file in files.to_list():
-            filepath = "{}/{}".format(workspace_name, file.path.replace("\\", "/"))
+            filepath = workspace_name + "/" + file.path.replace("\\", "/")
             for imp in imports:
                 if filepath.startswith(imp):
                     symlink_path = filepath[len(imp):]
                     if symlink_path.startswith("/"):
                         symlink_path = symlink_path[1:]
+                    symlink_path = symlinks_subdir + "/" + symlink_path
                     symlink = actions.declare_directory(symlink_path) if file.is_directory else actions.declare_file(symlink_path)
                     actions.symlink(output = symlink, target_file = file)
                     filtered.append(symlink)
