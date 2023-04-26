@@ -1,7 +1,8 @@
-load("@pip//:requirements.bzl", "requirement")
+load("@pip//:requirements.bzl", "requirement", "all_whl_requirements", "all_requirements")
 load("@python3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 
 compile_pip_requirements(
     name = "requirements",
@@ -42,4 +43,14 @@ py_test_with_transition(
     srcs = ["test.py"],
     main = "test.py",
     deps = [":lib"],
+)
+
+build_test(
+    name = "all_wheels",
+    targets = all_whl_requirements,
+)
+
+build_test(
+    name = "all_requirements",
+    targets = all_requirements,
 )

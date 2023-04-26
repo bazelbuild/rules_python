@@ -4,6 +4,8 @@ module(
     compatibility_level = 1,
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.4.1")
+
 bazel_dep(name = "rules_python", version = "0.0.0")
 local_path_override(
     module_name = "rules_python",
@@ -26,6 +28,8 @@ register_toolchains(
 pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 pip.parse(
     name = "pip",
+    # Intentionally set it false because the "true" case is already covered by examples/build_file_generation
+    incompatible_generate_aliases = False,
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
