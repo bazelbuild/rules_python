@@ -21,12 +21,14 @@ licenses(["notice"])  # Apache 2.0
 py_library(
     name = "simple_module",
     srcs = ["simple_module.py"],
+    imports = ["../../.."],
 )
 
 py_library(
     name = "module_with_data",
     srcs = ["module_with_data.py"],
     data = [":data.txt"],
+    imports = ["../../.."],
 )
 
 genrule(

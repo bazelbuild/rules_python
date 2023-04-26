@@ -25,6 +25,7 @@ licenses(["notice"])  # Apache 2.0
 py_library(
     name = "main",
     srcs = ["main.py"],
+    imports = ["../.."],
     deps = [
         "//examples/wheel/lib:simple_module",
         "//examples/wheel/lib:module_with_data",
@@ -40,6 +41,7 @@ py_library(
     data = [
         ":gen_dir",
     ],
+    imports = ["../.."],
 )
 
 directory_writer(
