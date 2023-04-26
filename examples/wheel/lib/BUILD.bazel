@@ -31,6 +31,23 @@ py_library(
     imports = ["../../.."],
 )
 
+py_library(
+    name = "module_with_pip_deps",
+    srcs = ["module_with_pip_deps.py"],
+    imports = ["../../.."],
+    target_compatible_with = select({
+        "@platforms//os:linux": ["@platforms//os:linux"],
+        "@platforms//os:macos": ["@platforms//os:macos"],
+        # TODO(f0rmiga): of course this fails on Windows because it has different dependencies.
+        # Once we build wheels in actions, this will become easier to manage.
+        "@platforms//os:windows": ["@platforms//os:none"],
+    }),
+    deps = [
+        "@examples_wheel_deps_django//:pkg",
+        "@examples_wheel_deps_urllib3//:pkg",
+    ],
+)
+
 genrule(
     name = "make_data",
     outs = ["data.txt"],

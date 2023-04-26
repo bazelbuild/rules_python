@@ -16,11 +16,23 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("//examples/wheel/private:wheel_utils.bzl", "directory_writer", "make_variable_tags")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
+load("//python:pip.bzl", "compile_pip_requirements")
 load("//python:versions.bzl", "gen_python_config_settings")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
+
+compile_pip_requirements(
+    name = "requirements",
+    target_compatible_with = select({
+        "@platforms//os:linux": ["@platforms//os:linux"],
+        "@platforms//os:macos": ["@platforms//os:macos"],
+        # TODO(f0rmiga): of course this fails on Windows because it has different dependencies.
+        # Once we build wheels in actions, this will become easier to manage.
+        "@platforms//os:windows": ["@platforms//os:none"],
+    }),
+)
 
 py_library(
     name = "main",
@@ -265,6 +277,21 @@ py_wheel(
     deps = [":example_pkg"],
 )
 
+py_package(
+    name = "with_auto_add_requirements_pkg",
+    packages = ["examples.wheel.lib"],
+    deps = ["//examples/wheel/lib:module_with_pip_deps"],
+)
+
+py_wheel(
+    name = "with_auto_add_requirements",
+    auto_add_requirements = True,
+    distribution = "my_pytest_wheel",
+    python_tag = "py3",
+    version = "0.0.1",
+    deps = [":with_auto_add_requirements_pkg"],
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -280,5 +307,10 @@ py_test(
         ":python_abi3_binary_wheel",
         ":python_requires_in_a_package",
         ":use_rule_with_dir_in_outs",
-    ],
+    ] + select({
+        "@platforms//os:windows": [],
+        "//conditions:default": [
+            ":with_auto_add_requirements",
+        ],
+    }),
 )

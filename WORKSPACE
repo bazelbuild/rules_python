@@ -83,6 +83,16 @@ pip_parse(
     requirements_windows = "//tools/publish:requirements_windows.txt",
 )
 
-load("@publish_deps//:requirements.bzl", "install_deps")
+load("@publish_deps//:requirements.bzl", publish_install_deps = "install_deps")
 
-install_deps()
+publish_install_deps()
+
+pip_parse(
+    name = "examples_wheel_deps",
+    python_interpreter_target = interpreter,
+    requirements_lock = "//examples/wheel:requirements.txt",
+)
+
+load("@examples_wheel_deps//:requirements.bzl", examples_wheel_install_deps = "install_deps")
+
+examples_wheel_install_deps()

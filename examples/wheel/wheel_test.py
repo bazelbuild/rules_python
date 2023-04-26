@@ -15,6 +15,7 @@
 import os
 import platform
 import subprocess
+import sys
 import unittest
 import zipfile
 
@@ -398,6 +399,34 @@ Tag: cp38-abi3-{os_string}_{arch}
                         version = line.decode().split()[-1]
             self.assertIsNotNone(version)
             self.assertNotIn("{BUILD_TIMESTAMP}", version)
+
+    def test_with_auto_add_requirements(self):
+        if sys.platform.startswith("win"):
+            self.skipTest("This test doesn't work on Windows")
+        filename = os.path.join(
+            os.environ["TEST_SRCDIR"],
+            "rules_python",
+            "examples",
+            "wheel",
+            "my_pytest_wheel-0.0.1-py3-none-any.whl",
+        )
+        with zipfile.ZipFile(filename) as zf:
+            metadata_file = None
+            for f in zf.namelist():
+                if os.path.basename(f) == "METADATA":
+                    metadata_file = f
+            self.assertIsNotNone(metadata_file)
+
+            requires = []
+            with zf.open(metadata_file) as fp:
+                for line in fp:
+                    if line.startswith(b"Requires-Dist:"):
+                        requires.append(line.decode().strip())
+            self.assertEqual(4, len(requires))
+            self.assertEqual("Requires-Dist: asgiref==3.6.0", requires[0])
+            self.assertEqual("Requires-Dist: sqlparse==0.4.4", requires[1])
+            self.assertEqual("Requires-Dist: django==4.2", requires[2])
+            self.assertEqual("Requires-Dist: urllib3==2.0.0", requires[3])
 
 
 if __name__ == "__main__":
