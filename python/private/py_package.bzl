@@ -31,36 +31,62 @@ def _path_inside_wheel(input_file):
     return short_path
 
 def _py_package_impl(ctx):
-    inputs = depset(
-        transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
-                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
-    )
-
     # TODO: '/' is wrong on windows, but the path separator is not available in starlark.
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
-    if not packages:
-        filtered_inputs = inputs
+    exclude = [p.replace(".", "/") for p in ctx.attr.exclude]
+    input_files = depset(transitive = [dep[PyInfo].transitive_sources for dep in ctx.attr.deps] + [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps])
+    imports = []
+    if not packages and not exclude:
+        filtered_inputs = input_files
+        imports = [dep[PyInfo].imports for dep in ctx.attr.deps]
     else:
         filtered_files = []
+        for dep in ctx.attr.deps:
+            add_imports = False
 
-        # TODO: flattening depset to list gives poor performance,
-        for input_file in inputs.to_list():
-            wheel_path = _path_inside_wheel(input_file)
-            for package in packages:
-                if wheel_path.startswith(package):
-                    filtered_files.append(input_file)
+            # TODO: flattening depset to list gives poor performance,
+            for input_file in input_files.to_list():
+                path_inside_wheel = _path_inside_wheel(input_file)
+                for package in packages:
+                    if path_inside_wheel.startswith(package) and not exclude:
+                        filtered_files.append(input_file)
+                        if path_inside_wheel.endswith(".py"):
+                            add_imports = True
+                    else:
+                        for excluded in exclude:
+                            if path_inside_wheel.startswith(package) and not path_inside_wheel.startswith(excluded):
+                                filtered_files.append(input_file)
+                                if path_inside_wheel.endswith(".py"):
+                                    add_imports = True
+            if add_imports:
+                imports.append(dep[PyInfo].imports)
         filtered_inputs = depset(direct = filtered_files)
 
-    return [DefaultInfo(
-        files = filtered_inputs,
-    )]
+    return [
+        DefaultInfo(
+            files = filtered_inputs,
+        ),
+        PyInfo(
+            transitive_sources = filtered_inputs,
+            imports = depset(transitive = imports),
+        ),
+    ]
 
 py_package_lib = struct(
     implementation = _py_package_impl,
     attrs = {
         "deps": attr.label_list(
             doc = "",
+            providers = [PyInfo],
+        ),
+        "exclude": attr.string_list(
+            mandatory = False,
+            default = [],
+            doc = """\
+List of Python packages to exclude from the distribution.
+Sub-packages are automatically excluded.
+""",
         ),
         "packages": attr.string_list(
             mandatory = False,
