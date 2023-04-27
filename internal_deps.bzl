@@ -42,9 +42,9 @@ def rules_python_internal_deps():
     maybe(
         http_archive,
         name = "rules_testing",
-        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.0.1/rules_testing-v0.0.1.tar.gz",
-        sha256 = "47db8fc9c3c1837491333cdcedebf267285479bd709a1ff0a47b19a324817def",
-        strip_prefix = "rules_testing-0.0.1",
+        sha256 = "0c2abee201f566a088c720e12bc1d968bc56e6a51b692d9c81b1fe861bdf2be2",
+        strip_prefix = "rules_testing-0.0.5",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.0.5/rules_testing-v0.0.5.tar.gz",
     )
 
     maybe(
