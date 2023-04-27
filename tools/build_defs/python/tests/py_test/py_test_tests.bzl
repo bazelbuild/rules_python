@@ -76,7 +76,7 @@ def _test_non_mac_doesnt_require_darwin_for_execution(name, config):
         config_settings = {
             "//command_line_option:cpu": "k8",
             "//command_line_option:crosstool_top": "@rules_python//tools/build_defs/python/tests:cc_toolchain_suite",
-            #"//command_line_option:platforms": "@rules_python//tools/build_defs/python/tests:linux",
+            "//command_line_option:platforms": "@rules_python//tools/build_defs/python/tests:linux",
         },
     )
 
