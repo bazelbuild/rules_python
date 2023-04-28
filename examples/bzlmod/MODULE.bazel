@@ -26,6 +26,9 @@ register_toolchains(
 pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 pip.parse(
     name = "pip",
+    # Generate user friendly alias labels for each dependency that we have and
+    # enable entry_point support
+    incompatible_generate_aliases = True,
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
