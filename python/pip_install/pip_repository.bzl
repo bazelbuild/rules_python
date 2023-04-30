@@ -367,6 +367,10 @@ def _pip_repository_bzlmod_impl(rctx):
     else:
         build_contents += _bzlmod_pkg_aliases(repo_name, bzl_packages)
 
+    macro_tmpl = "@@{name}//:{{}}_{{}}".format(name = rctx.attr.name)
+    if rctx.attr.incompatible_generate_aliases:
+        macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
+
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
@@ -377,8 +381,8 @@ def _pip_repository_bzlmod_impl(rctx):
             "@{}//{}:whl".format(repo_name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
-        "%%NAME%%": rctx.attr.name,
         "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
+        "%%TMPL%%": macro_tmpl,
     })
 
 pip_repository_bzlmod_attrs = {
