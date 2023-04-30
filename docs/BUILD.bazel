@@ -32,17 +32,6 @@ _DOCS = {
 # because they're only used for doc generation. This way, we avoid requiring
 # our users to depend on Skylib.
 
-# Requires Bazel 0.29 onward for public visibility of these .bzl files.
-bzl_library(
-    name = "bazel_python_tools",
-    srcs = [
-        "@bazel_tools//tools/python:private/defs.bzl",
-        "@bazel_tools//tools/python:srcs_version.bzl",
-        "@bazel_tools//tools/python:toolchain.bzl",
-        "@bazel_tools//tools/python:utils.bzl",
-    ],
-)
-
 bzl_library(
     name = "bazel_repo_tools",
     srcs = [
@@ -57,7 +46,7 @@ bzl_library(
         "//python/private:reexports.bzl",
     ],
     deps = [
-        ":bazel_python_tools",
+        ":bazel_repo_tools",
         "//python:defs_bzl",
         "//python/private:reexports_bzl",
     ],
