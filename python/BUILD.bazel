@@ -41,7 +41,7 @@ filegroup(
     visibility = ["//:__pkg__"],
 )
 
-# ========= bzl_library targets end =========
+# ========= bzl_library targets start =========
 
 bzl_library(
     name = "current_py_toolchain_bzl",
@@ -140,6 +140,7 @@ filegroup(
     name = "bzl",
     srcs = [
         "defs.bzl",
+        "extensions.bzl",
         "packaging.bzl",
         "pip.bzl",
         "repositories.bzl",

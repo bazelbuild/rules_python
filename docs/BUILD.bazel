@@ -22,6 +22,7 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 _DOCS = {
+    "extensions": "//docs:extensions-docs",
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
     "pip_repository": "//docs:pip-repository",
@@ -99,6 +100,17 @@ stardoc(
     input = "//python:defs.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [":defs"],
+)
+
+stardoc(
+    name = "extensions-docs",
+    out = "extensions.md_",
+    input = "//python:extensions.bzl",
+    target_compatible_with = _NOT_WINDOWS,
+    deps = [
+        ":pip_install_bzl",
+        "@bazel_skylib//lib:versions",
+    ],
 )
 
 stardoc(
