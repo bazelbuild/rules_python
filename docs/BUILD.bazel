@@ -80,6 +80,9 @@ bzl_library(
         "//python/private:stamp.bzl",
         "//python/private:util.bzl",
     ],
+    deps = [
+        "//python/private:util_bzl",
+    ],
 )
 
 # TODO: Stardoc does not guarantee consistent outputs accross platforms (Unix/Windows).
