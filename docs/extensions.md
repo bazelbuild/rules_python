@@ -2,7 +2,15 @@
 
 Module extensions for use with bzlmod.
 
-## pip_parse
+# python
+
+## python.toolchain
+
+TODO
+
+# pip
+
+## pip.parse
 
 You can use the `pip_parse` to access the generate entry_point targets as follows.
 First, ensure you use the `incompatible_generate_aliases=True` feature to re-export the
