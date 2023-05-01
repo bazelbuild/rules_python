@@ -367,6 +367,15 @@ def _pip_repository_bzlmod_impl(rctx):
     else:
         build_contents += _bzlmod_pkg_aliases(repo_name, bzl_packages)
 
+    # NOTE: we are using the canonical name with the double '@' in order to
+    # always uniquely identify a repository, as the labels are being passed as
+    # a string and the resolution of the label happens at the call-site of the
+    # `requirement`, et al. macros.
+    if rctx.attr.incompatible_generate_aliases:
+        macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
+    else:
+        macro_tmpl = "@@{name}//:{{}}_{{}}".format(name = rctx.attr.name)
+
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
@@ -377,7 +386,7 @@ def _pip_repository_bzlmod_impl(rctx):
             "@{}//{}:whl".format(repo_name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
-        "%%NAME%%": rctx.attr.name,
+        "%%MACRO_TMPL%%": macro_tmpl,
         "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
     })
 
