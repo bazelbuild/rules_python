@@ -299,7 +299,7 @@ def _generate_bin_bzl_contents(entrypoints: dict[str, str]) -> str:
     """
     struct_params = sorted(
         [
-            '    {attr} = Label("//:{target}"),'.format(attr=name, target=target)
+            '    {attr} = Label("//:{target}"),'.format(attr=attr, target=target)
             for attr, target in entrypoints.items()
         ]
     )
