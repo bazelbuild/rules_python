@@ -500,7 +500,6 @@ def _pip_repository_impl(rctx):
         ]),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
-        "%%ENTRYPOINT_REPO%%": "//{pkg}" if rctx.attr.incompatible_generate_aliases else "_{pkg}//",
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
         "%%IMPORTS%%": "\n".join(sorted(imports)),
         "%%NAME%%": rctx.attr.name,
