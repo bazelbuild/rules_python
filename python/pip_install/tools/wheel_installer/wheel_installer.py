@@ -290,7 +290,7 @@ def _generate_build_file_contents(
     )
 
 
-def _generate_bin_bzl_contents(entrypoints: dict[str, str]) -> str:
+def _generate_bin_bzl_contents(entrypoints: Dict[str, str]) -> str:
     """Generate the contents of bin.bzl for each package.
 
     The presence of the `bin.bzl` and the struct in it named `bin` becomes the API to
