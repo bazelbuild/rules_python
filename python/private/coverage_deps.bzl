@@ -153,6 +153,10 @@ filegroup(
         ),
         patch_args = ["-p1"],
         patches = [_coverage_patch],
+        patch_cmds = [
+            "mv coverage/html.py coverage/htmlx.py",
+            "sed -i'.py' -e 's/coverage.html/coverage.htmlx/g' coverage/control.py",
+        ],
         sha256 = sha256,
         type = "zip",
         urls = [url],
