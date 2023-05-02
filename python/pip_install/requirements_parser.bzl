@@ -116,7 +116,7 @@ def _handleParseOption(input, buffer, result):
     elif input == "\n" or input == EOF:
         result.options.append(buffer.rstrip("\n"))
         return (_STATE.ConsumeSpace, "")
-    elif input == "#":
+    elif input == "#" and (len(buffer) == 0 or buffer[-1].isspace()):
         return (_STATE.ConsumeComment, buffer)
 
     return (_STATE.ParseOption, buffer + input)
@@ -127,7 +127,7 @@ def _handleParseRequirement(input, buffer, result):
     elif input == "\n" or input == EOF:
         result.requirements[-1] = (result.requirements[-1][0], buffer.rstrip(" \n"))
         return (_STATE.ConsumeSpace, "")
-    elif input == "#":
+    elif input == "#" and (len(buffer) == 0 or buffer[-1].isspace()):
         return (_STATE.ConsumeComment, buffer)
 
     return (_STATE.ParseRequirement, buffer + input)
