@@ -44,7 +44,11 @@ bzl_library(
 bzl_library(
     name = "util_bzl",
     srcs = ["util.bzl"],
-    visibility = ["//python:__subpackages__"],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python:__subpackages__",
+    ],
+    deps = ["@bazel_skylib//lib:types"],
 )
 
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.

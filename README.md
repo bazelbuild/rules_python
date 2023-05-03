@@ -39,12 +39,12 @@ the older way of configuring bazel with a `WORKSPACE` file.
 ### Using bzlmod
 
 To import rules_python in your project, you first need to add it to your
-`MODULES.bazel` file, using the snippet provided in the
+`MODULE.bazel` file, using the snippet provided in the
 [release you choose](https://github.com/bazelbuild/rules_python/releases).
 
 #### Toolchain registration with bzlmod
 
-To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `MODULES.bazel` file:
+To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `MODULE.bazel` file:
 
 ```python
 # Find the latest version number here: https://github.com/bazelbuild/rules_python/releases
@@ -161,7 +161,7 @@ target in the appropriate wheel repo.
 
 #### Using bzlmod
 
-To add pip dependencies to your `MODULES.bazel` file, use the `pip.parse` extension, and call it to create the
+To add pip dependencies to your `MODULE.bazel` file, use the `pip.parse` extension, and call it to create the
 central external repo and individual wheel external repos.
 
 ```python

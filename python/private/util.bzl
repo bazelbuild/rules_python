@@ -1,5 +1,7 @@
 """Functionality shared by multiple pieces of code."""
 
+load("@bazel_skylib//lib:types.bzl", "types")
+
 def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
     """Copies args that must be compatible between two targets with a dependency relationship.
 
@@ -36,8 +38,23 @@ def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
 _MIGRATION_TAG = "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
 
 def add_migration_tag(attrs):
+    """Add a special tag to `attrs` to aid migration off native rles.
+
+    Args:
+        attrs: dict of keyword args. The `tags` key will be modified in-place.
+
+    Returns:
+        The same `attrs` object, but modified.
+    """
     if "tags" in attrs and attrs["tags"] != None:
-        attrs["tags"] = attrs["tags"] + [_MIGRATION_TAG]
+        tags = attrs["tags"]
+
+        # Preserve the input type: this allows a test verifying the underlying
+        # rule can accept the tuple for the tags argument.
+        if types.is_tuple(tags):
+            attrs["tags"] = tags + (_MIGRATION_TAG,)
+        else:
+            attrs["tags"] = tags + [_MIGRATION_TAG]
     else:
         attrs["tags"] = [_MIGRATION_TAG]
     return attrs
