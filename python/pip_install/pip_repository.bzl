@@ -536,7 +536,7 @@ can be passed.
     "isolated": attr.bool(
         doc = """\
 Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
-the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` enviornment varaible can be used
+the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` environment variable can be used
 to control this flag.
 """,
         default = True,
