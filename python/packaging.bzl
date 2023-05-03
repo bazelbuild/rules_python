@@ -172,6 +172,7 @@ def py_wheel(name, twine = None, **kwargs):
             imports = ["."],
             main = twine_main,
             deps = [twine],
+            visibility = kwargs.get("visibility"),
         )
 
 py_wheel_rule = _py_wheel
