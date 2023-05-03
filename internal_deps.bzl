@@ -20,6 +20,9 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
 
+    # This version is also used in python/tests/toolchains/workspace_template/WORKSPACE.tmpl
+    # and tests/ignore_root_user_error/WORKSPACE.
+    # If you update this dependency, please update the tests as well.
     maybe(
         http_archive,
         name = "bazel_skylib",
