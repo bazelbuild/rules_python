@@ -37,3 +37,11 @@ repos:
     rev: 23.1.0
     hooks:
       - id: black
+  - repo: local
+    hooks:
+      - id: update-deleted-packages
+        name: Update deleted packages
+        language: script
+        entry: ./tools/bazel_integration_test/update_deleted_packages.sh
+        files: ^((examples|tests)/*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc|tools/bazel_integration_test/update_deleted_packages.sh)$
+        pass_filenames: false
