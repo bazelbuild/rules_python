@@ -15,6 +15,13 @@
 
 # For integration tests, we want to be able to glob() up the sources inside a nested package
 # See explanation in .bazelrc
+#
+# This script ensures that we only delete subtrees that have something a file
+# signifying a new bazel workspace, whether it be bzlmod or classic. Generic
+# algorithm:
+#   1. Get all directories where a WORKSPACE or MODULE.bazel exists.
+#   2. For each of the directories, get all directories that contains a BUILD.bazel file.
+#   3. Sort and remove duplicates.
 
 set -euxo pipefail
 
@@ -23,5 +30,10 @@ cd $DIR
 
 # The sed -i.bak pattern is compatible between macos and linux
 sed -i.bak "/^[^#].*--deleted_packages/s#=.*#=$(\
-    find examples/*/* tests/*/* \( -name BUILD -or -name BUILD.bazel \) | xargs -n 1 dirname | paste -sd, -\
+    find examples/*/* tests/*/* \( -name WORKSPACE -or -name MODULE.bazel \) |
+        xargs -n 1 dirname |
+        xargs -n 1 -I{} find {} \( -name BUILD -or -name BUILD.bazel \) |
+        xargs -n 1 dirname |
+        sort -u |
+        paste -sd, -\
 )#" $DIR/.bazelrc && rm .bazelrc.bak
