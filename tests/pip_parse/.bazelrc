@@ -1,0 +1,7 @@
+# Bazel configuration flags
+
+build --enable_runfiles
+startup --windows_enable_symlinks
+
+# https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
+try-import %workspace%/user.bazelrc

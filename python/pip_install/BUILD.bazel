@@ -1,6 +1,9 @@
 filegroup(
     name = "distribution",
-    srcs = glob(["*.bzl"]) + [
+    srcs = glob([
+        "*.bzl",
+        "*.bzl.tmpl",
+    ]) + [
         "BUILD.bazel",
         "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",

@@ -1,0 +1,41 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@pypi_aliases//:requirements.bzl", "all_requirements", "all_whl_requirements", "data_requirement", "dist_info_requirement", "requirement", "whl_requirement")
+
+build_test(
+    name = "build_all_pkgs",
+    targets = all_requirements,
+)
+
+build_test(
+    name = "build_all_whls",
+    targets = all_whl_requirements,
+)
+
+_PACKAGES = [
+    "requests",
+    "s3cmd",
+    "yamllint",
+    "tabulate",
+    "pylint",
+    "python-dateutil",
+]
+
+build_test(
+    name = "build_pkgs",
+    targets = [requirement(p) for p in _PACKAGES],
+)
+
+build_test(
+    name = "build_whls",
+    targets = [whl_requirement(p) for p in _PACKAGES],
+)
+
+build_test(
+    name = "build_data",
+    targets = [data_requirement(p) for p in _PACKAGES],
+)
+
+build_test(
+    name = "build_dist_info",
+    targets = [dist_info_requirement(p) for p in _PACKAGES],
+)
