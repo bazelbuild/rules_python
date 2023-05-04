@@ -48,6 +48,8 @@ buildifier:
   test_targets: ["..."]
 .coverage_targets_example_bzlmod: &coverage_targets_example_bzlmod
   coverage_targets: ["//:test"]
+.coverage_targets_example_bzlmod_build_file_generation: &coverage_targets_example_bzlmod_build_file_generation
+  coverage_targets: ["//:bzlmod_build_file_generation_test"]
 .coverage_targets_example_multi_python: &coverage_targets_example_multi_python
   coverage_targets:
     - //tests:my_lib_3_10_test
@@ -177,6 +179,46 @@ tasks:
     # coverage is not supported on Windows
     name: bzlmod integration tests on Windows
     working_directory: examples/bzlmod
+    platform: windows
+
+  integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
+    <<: *minimum_supported_bzlmod_version
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod_build_file_generation
+    name: example bzlmod build file min bazel version integration test
+    working_directory: examples/bzlmod_build_file_generation
+    platform: ubuntu2004
+  integration_test_bzlmod_generation_build_files_ubuntu:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod_build_file_generation
+    name: example bzlmod build file integration test
+    working_directory: examples/bzlmod_build_file_generation
+    platform: ubuntu2004
+  integration_test_bzlmod_generation_build_files_ubuntu_run:
+    <<: *reusable_build_test_all
+    name: example bzlmod build file running gazelle and pip integration test
+    working_directory: examples/bzlmod_build_file_generation
+    platform: ubuntu2004
+    shell_commands:
+    - "bazel run //:gazelle_python_manifest.update"
+    - "bazel run //:gazelle -- update"
+  integration_test_bzlmod_build_file_generation_debian:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod_build_file_generation
+    name: example bzlmod build file integration test
+    working_directory: examples/bzlmod_build_file_generation
+    platform: debian11
+  integration_test_bzlmod_build_file_generation_macos:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod_build_file_generation
+    name: example bzlmod build file integration test
+    working_directory: examples/bzlmod_build_file_generation
+    platform: macos
+  integration_test_bzlmod_build_file_generation_windows:
+    <<: *reusable_build_test_all
+    # coverage is not supported on Windows
+    name: example bzlmod build file integration test
+    working_directory: examples/bzlmod_build_file_generation
     platform: windows
 
   integration_test_multi_python_versions_ubuntu_min:
