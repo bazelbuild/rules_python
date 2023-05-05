@@ -128,7 +128,7 @@ def _get_toolchain_unix_cflags(rctx):
     er = rctx.execute([
         rctx.path(rctx.attr.python_interpreter_target).realpath,
         "-c",
-        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')",
+        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
     ])
     if er.return_code != 0:
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
