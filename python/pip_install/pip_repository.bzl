@@ -540,7 +540,7 @@ can be passed.
     "isolated": attr.bool(
         doc = """\
 Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
-the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` enviornment varaible can be used
+the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` environment variable can be used
 to control this flag.
 """,
         default = True,
@@ -563,7 +563,7 @@ of a binary found on the host's `PATH` environment variable. If no value is set
 If you are using a custom python interpreter built by another repository rule,
 use this attribute to specify its BUILD target. This allows pip_repository to invoke
 pip using the same interpreter as your toolchain. If set, takes precedence over
-python_interpreter.
+python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:python".
 """,
     ),
     "quiet": attr.bool(
