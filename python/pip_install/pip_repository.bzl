@@ -383,7 +383,8 @@ def _pip_repository_bzlmod_impl(rctx):
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "whl") for p in bzl_packages
+            macro_tmpl.format(p, "whl")
+            for p in bzl_packages
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
