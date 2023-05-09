@@ -37,24 +37,25 @@ def _requirements_collector_impl(_, ctx):
     if pypi_name and pypi_version:
         requirement = "{}~={}".format(pypi_name, pypi_version)
 
+    requirements = depset()
+
     if hasattr(ctx.rule.attr, "deps"):
         requirements = depset(
             direct = [requirement] if requirement else [],
-            transitive = [
+            transitive = [requirements] + [
                 dep[RequirementsInfo].requirements
                 for dep in ctx.rule.attr.deps
             ],
         )
-    elif hasattr(ctx.rule.attr, "srcs"):
+    if hasattr(ctx.rule.attr, "srcs"):
         requirements = depset(
             direct = [requirement] if requirement else [],
-            transitive = [
+            transitive = [requirements] + [
                 src[RequirementsInfo].requirements
                 for src in ctx.rule.attr.srcs
+                if RequirementsInfo in src
             ],
         )
-    else:
-        requirements = depset()
 
     return [RequirementsInfo(requirements = requirements)]
 
