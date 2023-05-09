@@ -44,7 +44,7 @@ def _requirements_collector_impl(_, ctx):
                 pypi_version = tag[len("pypi_version="):]
 
         if pypi_name and pypi_version:
-            requirement = "{}=={}".format(pypi_name, pypi_version)
+            requirement = "{}~={}".format(pypi_name, pypi_version)
 
     if hasattr(ctx.rule.attr, "deps"):
         requirements = depset(
