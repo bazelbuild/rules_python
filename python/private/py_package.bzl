@@ -35,7 +35,9 @@ def _py_package_impl(ctx):
     # Fix this once ctx.configuration has directory separator information.
     packages = [p.replace(".", "/") for p in ctx.attr.packages]
     exclude = [p.replace(".", "/") for p in ctx.attr.exclude]
-    input_files = depset(transitive = [dep[PyInfo].transitive_sources for dep in ctx.attr.deps] + [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps])
+    transitive_sources = [dep[PyInfo].transitive_sources for dep in ctx.attr.deps]
+    runfiles = [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps]
+    input_files = depset(transitive = transitive_sources + runfiles)
     imports = []
     if not packages and not exclude:
         filtered_inputs = input_files
