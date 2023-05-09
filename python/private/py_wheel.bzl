@@ -25,18 +25,17 @@ RequirementsInfo = provider(
 )
 
 def _requirements_collector_impl(_, ctx):
-    requirement = None
-    if hasattr(ctx.rule.attr, "tags"):
-        pypi_name = None
-        pypi_version = None
-        for tag in ctx.rule.attr.tags:
-            if tag.startswith("pypi_name="):
-                pypi_name = tag[len("pypi_name="):]
-            elif tag.startswith("pypi_version="):
-                pypi_version = tag[len("pypi_version="):]
+    pypi_name = None
+    pypi_version = None
+    for tag in ctx.rule.attr.tags:
+        if tag.startswith("pypi_name="):
+            pypi_name = tag[len("pypi_name="):]
+        elif tag.startswith("pypi_version="):
+            pypi_version = tag[len("pypi_version="):]
 
-        if pypi_name and pypi_version:
-            requirement = "{}~={}".format(pypi_name, pypi_version)
+    requirement = None
+    if pypi_name and pypi_version:
+        requirement = "{}~={}".format(pypi_name, pypi_version)
 
     if hasattr(ctx.rule.attr, "deps"):
         requirements = depset(
