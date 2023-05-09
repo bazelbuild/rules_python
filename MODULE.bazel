@@ -46,3 +46,6 @@ use_repo(
     "pypi__coverage_cp39_x86_64-apple-darwin",
     "pypi__coverage_cp39_x86_64-unknown-linux-gnu",
 )
+
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+use_repo(python, "pythons_hub")
