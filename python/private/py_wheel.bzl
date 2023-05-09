@@ -25,14 +25,6 @@ RequirementsInfo = provider(
 )
 
 def _requirements_collector_impl(_, ctx):
-    """Aspect to collect third-party dependencies.
-
-    Args:
-        _: The bazel target the aspect is applied to.
-        ctx: The aspect context.
-    Returns: RequirementsInfo
-    """
-
     requirement = None
     if hasattr(ctx.rule.attr, "tags"):
         pypi_name = None
