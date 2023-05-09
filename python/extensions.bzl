@@ -24,15 +24,27 @@ load("@rules_python//python/private:toolchains_repo.bzl", "get_host_os_arch", "g
 def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         for toolchain_attr in mod.tags.toolchain:
-            python_register_toolchains(
-                name = toolchain_attr.name,
-                python_version = toolchain_attr.python_version,
-                bzlmod = True,
-                # Toolchain registration in bzlmod is done in MODULE file
-                register_toolchains = False,
-                register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                ignore_root_user_error = toolchain_attr.ignore_root_user_error,
-            )
+            if toolchain_attr.base_url:
+                python_register_toolchains(
+                    name = toolchain_attr.name,
+                    python_version = toolchain_attr.python_version,
+                    bzlmod = True,
+                    # Toolchain registration in bzlmod is done in MODULE file
+                    register_toolchains = False,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
+                    ignore_root_user_error = toolchain_attr.ignore_root_user_error,
+                    base_url = toolchain_attr.base_url,
+                )
+            else:
+                python_register_toolchains(
+                    name = toolchain_attr.name,
+                    python_version = toolchain_attr.python_version,
+                    bzlmod = True,
+                    # Toolchain registration in bzlmod is done in MODULE file
+                    register_toolchains = False,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
+                    ignore_root_user_error = toolchain_attr.ignore_root_user_error,
+                )
             host_hub_name = toolchain_attr.name + "_host_interpreter"
             _host_hub(
                 name = host_hub_name,
@@ -44,6 +56,14 @@ python = module_extension(
     tag_classes = {
         "toolchain": tag_class(
             attrs = {
+                "base_url": attr.string(
+                    mandatory = False,
+                    doc = """\
+The URL that is used to override rules_python DEFAULT_RELEASE_BASE_URL. This rule set downloads
+the different Python binaries from this website. Override this URL if you want to have rules_python
+download the hermetic versions of Python from a different website.
+""",
+                ),
                 "configure_coverage_tool": attr.bool(
                     mandatory = False,
                     doc = "Whether or not to configure the default coverage tool for the toolchains.",
