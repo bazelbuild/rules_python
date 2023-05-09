@@ -26,11 +26,10 @@ licenses(["notice"])  # Apache 2.0
 compile_pip_requirements(
     name = "requirements",
     target_compatible_with = select({
-        "@platforms//os:linux": ["@platforms//os:linux"],
-        "@platforms//os:macos": ["@platforms//os:macos"],
         # TODO(f0rmiga): of course this fails on Windows because it has different dependencies.
         # Once we build wheels in actions, this will become easier to manage.
-        "@platforms//os:windows": ["@platforms//os:none"],
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
     }),
 )
 
