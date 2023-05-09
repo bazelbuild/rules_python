@@ -422,11 +422,11 @@ Tag: cp38-abi3-{os_string}_{arch}
                 for line in fp:
                     if line.startswith(b"Requires-Dist:"):
                         requires.append(line.decode().strip())
-            self.assertEqual(4, len(requires))
             self.assertEqual("Requires-Dist: asgiref==3.6.0", requires[0])
             self.assertEqual("Requires-Dist: sqlparse==0.4.4", requires[1])
             self.assertEqual("Requires-Dist: django==4.2", requires[2])
             self.assertEqual("Requires-Dist: urllib3==2.0.0", requires[3])
+            self.assertEqual(4, len(requires))
 
 
 if __name__ == "__main__":
