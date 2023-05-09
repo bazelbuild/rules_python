@@ -18,19 +18,20 @@ import shutil
 
 
 def create_link(source, destination, fallback_copy=False):
+    copy_function = _copy if fallback_copy else _link
     try:
         if os.path.isdir(source):
             os.makedirs(destination, exist_ok=True)
             shutil.copytree(
                 source,
                 destination,
-                copy_function=_copy if fallback_copy else _link,
+                copy_function=copy_function,
                 symlinks=True,
                 dirs_exist_ok=True,
             )
         else:
             os.makedirs(os.path.dirname(destination), exist_ok=True)
-            (_copy if fallback_copy else _link)(source, destination)
+            copy_function(source, destination)
     except OSError as e:
         if not fallback_copy:
             return create_link(source, destination, fallback_copy=True)
