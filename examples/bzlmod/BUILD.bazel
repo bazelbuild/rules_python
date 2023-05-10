@@ -35,6 +35,7 @@ py_binary(
 py_test(
     name = "test",
     srcs = ["test.py"],
+    main = "test.py",
     deps = [":lib"],
 )
 

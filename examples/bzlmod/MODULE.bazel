@@ -24,11 +24,19 @@ register_toolchains(
     "@python3_9_toolchains//:all",
 )
 
+interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
+interpreter.install(
+    name = "interpreter_python3_9",
+    python_name = "python3_9",
+)
+use_repo(interpreter, "interpreter_python3_9")
+
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     name = "pip",
     # Intentionally set it false because the "true" case is already covered by examples/bzlmod_build_file_generation
     incompatible_generate_aliases = False,
+    python_interpreter_target = "@interpreter_python3_9//:python",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )

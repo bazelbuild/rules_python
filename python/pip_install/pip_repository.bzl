@@ -387,6 +387,7 @@ def _pip_repository_bzlmod_impl(rctx):
             for p in bzl_packages
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
+        "%%NAME%%": rctx.attr.name,
         "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
     })
 
