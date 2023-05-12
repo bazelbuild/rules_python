@@ -428,7 +428,7 @@ def _inputs_to_package(actions, workspace_name, deps, links_subdir, linker):
                         outputs = [link],
                         arguments = [args],
                         executable = linker,
-                        progress_message = "Linking {} to {}".format(file.path, link.path),
+                        progress_message = "Linking %{input} to %{output}",
                         mnemonic = "PyWheelLink",
                     )
                     filtered.append(link)
