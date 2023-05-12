@@ -39,17 +39,11 @@ def _py_package_impl(ctx):
         dep[PyInfo].transitive_sources
         for dep in ctx.attr.deps
     ]
+
+    # TODO(f0rmiga): the logic here is incomplete because symlinks, root_symlinks, and
+    # empty_filesnames aren't being accounted for.
     runfiles = [
         dep[DefaultInfo].default_runfiles.files
-        for dep in ctx.attr.deps
-    ] + [
-        dep[DefaultInfo].default_runfiles.symlinks
-        for dep in ctx.attr.deps
-    ] + [
-        dep[DefaultInfo].default_runfiles.root_symlinks
-        for dep in ctx.attr.deps
-    ] + [
-        dep[DefaultInfo].default_runfiles.empty_filenames
         for dep in ctx.attr.deps
     ]
     input_files = depset(transitive = transitive_sources + runfiles)
