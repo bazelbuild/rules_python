@@ -80,10 +80,10 @@ def _py_package_add_imports(dep, input_files, packages, exclude):
     """Returns the imports and filtered files for the given dep based on the packages and exclude list.
 
     Args:
-        dep: Dependency to add imports for.
-        input_files: List of input files.
-        packages: List of packages to include.
-        exclude: List of packages to exclude.
+        dep: Target, the dependency to add imports for.
+        input_files: List of input Files.
+        packages: List of strings, packages to include.
+        exclude: List of strings packages to exclude.
     """
     filtered_files = []
     add_imports = False
