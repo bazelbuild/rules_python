@@ -108,13 +108,7 @@ def _py_package_should_include_file(path_inside_wheel, package, exclude):
         package: Package name to include.
         exclude: List of packages to exclude.
     """
-    if path_inside_wheel.startswith(package):
-        if not exclude:
-            return True
-        for excluded in exclude:
-            if not path_inside_wheel.startswith(excluded):
-                return True
-    return False
+    return path_inside_wheel.startswith(package) and (not exclude or not path_inside_wheel.startswith(exclude))
 
 py_package_lib = struct(
     implementation = _py_package_impl,
