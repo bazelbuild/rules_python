@@ -73,8 +73,12 @@ def _pip_parse_ext_attrs():
     return attrs
 
 pip = module_extension(
+    doc = """\
+This extension is used to create a pip respository and create the various wheel libaries if
+provided in a requirements file.
+""",
     implementation = _pip_impl,
     tag_classes = {
         "parse": tag_class(attrs = _pip_parse_ext_attrs()),
     },
-) 
+)

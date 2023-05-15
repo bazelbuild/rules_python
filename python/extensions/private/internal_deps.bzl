@@ -17,8 +17,9 @@ def _internal_deps_impl(module_ctx):
     install_coverage_deps()
 
 internal_deps = module_extension(
+    doc = "This extension to register internal rules_python dependecies.",
     implementation = _internal_deps_impl,
     tag_classes = {
         "install": tag_class(attrs = dict()),
     },
-) 
+)

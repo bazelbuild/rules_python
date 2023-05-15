@@ -42,6 +42,7 @@ def _python_impl(module_ctx):
     )
 
 python = module_extension(
+    doc = "Bzlmod extension that is used to register a Python toolchain.",
     implementation = _python_impl,
     tag_classes = {
         "toolchain": tag_class(
@@ -60,4 +61,4 @@ python = module_extension(
             },
         ),
     },
-) 
+)
