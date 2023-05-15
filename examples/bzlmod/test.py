@@ -21,14 +21,29 @@ from lib import main
 
 
 class ExampleTest(unittest.TestCase):
-    def test_coverage(self):
-        for i, path in enumerate(sys.path[1:-2]):
-            paths = ",\n    ".join(sys.path)
+    def test_coverage_doesnt_shadow_stdlib(self):
+        # When we try to import the html module
+        import html as html_stdlib
 
+        try:
+            import coverage.html as html_coverage
+        except ImportError:
+            self.skipTest("not running under coverage, skipping")
+
+        self.assertNotEqual(
+            html_stdlib,
+            html_coverage,
+            "'html' import should not be shadowed by coverage",
+        )
+
+    def test_coverage_sys_path(self):
+        all_paths = ",\n    ".join(sys.path)
+
+        for i, path in enumerate(sys.path[1:-2]):
             self.assertFalse(
                 "/coverage" in path,
                 f"Expected {i + 2}th '{path}' to not contain 'coverage.py' paths, "
-                f"sys.path has {len(sys.path)} items:\n    {paths}",
+                f"sys.path has {len(sys.path)} items:\n    {all_paths}",
             )
 
         first_item, last_item = sys.path[0], sys.path[-1]
