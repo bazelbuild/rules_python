@@ -48,9 +48,6 @@ python = use_extension("@rules_python//python:extensions.bzl", "python")
 # We also use the same name for python.host_python_interpreter.
 PYTHON_NAME = "python3"
 
-# This is the name that is used for the host interpreter
-PYTHON_INTERPRETER = PYTHON_NAME + "_host_interpreter"
-
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
 python.toolchain(
@@ -66,37 +63,46 @@ python.toolchain(
 # into the scope of the current module.
 # All of the python3 repositories use the PYTHON_NAME as there prefix.  They
 # are not catenated for ease of reading.
-use_repo(python, PYTHON_NAME)
-use_repo(python, "python3_toolchains")
-use_repo(python, PYTHON_INTERPRETER)
+use_repo(python, PYTHON_NAME, "python3_toolchains")
 
-# Register an already-defined toolchain so that Bazel can use it during toolchain resolution.
+# Register an already-defined toolchain so that Bazel can use it during
+# toolchain resolution.
 register_toolchains(
     "@python3_toolchains//:all",
 )
 
-# Use the pip extension
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+# The interpreter extension discovers the platform specific Python binary.
+# It creates a symlink to the binary, and we pass the label to the following
+# pip.parse call.
+interpreter = use_extension("@rules_python//python:interpreter_extension.bzl", "interpreter")
+interpreter.install(
+    name = "interpreter_python3",
+    python_name = PYTHON_NAME,
+)
+use_repo(interpreter, "interpreter_python3")
 
-# Use the extension to call the `pip_repository` rule that invokes `pip`, with `incremental` set.
-# Accepts a locked/compiled requirements file and installs the dependencies listed within.
+# Use the extension, pip.parse, to call the `pip_repository` rule that invokes
+# `pip`, with `incremental` set. The pip call accepts a locked/compiled
+# requirements file and installs the dependencies listed within.
 # Those dependencies become available in a generated `requirements.bzl` file.
 # You can instead check this `requirements.bzl` file into your repo.
 # Because this project has different requirements for windows vs other
 # operating systems, we have requirements for each.
+pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 pip.parse(
     name = "pip",
     # When using gazelle you must use set the following flag
     # in order for the generation of gazelle dependency resolution.
     incompatible_generate_aliases = True,
-    # The interpreter attribute points to the interpreter to use for running
-    # pip commands to download the packages in the requirements file.
+    # The interpreter_target attribute points to the interpreter to
+    # use for running pip commands to download the packages in the
+    # requirements file.
     # As a best practice, we use the same interpreter as the toolchain
     # that was configured above; this ensures the same Python version
     # is used for both resolving dependencies and running tests/binaries.
     # If this isn't specified, then you'll get whatever is locally installed
     # on your system.
-    python_interpreter_target = "@" + PYTHON_INTERPRETER + "//:python",
+    python_interpreter_target = "@interpreter_python3//:python",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
