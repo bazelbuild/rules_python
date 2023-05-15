@@ -12,12 +12,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import pathlib
+import sys
 import unittest
 
 from lib import main
 
 
 class ExampleTest(unittest.TestCase):
+    def test_coverage(self):
+        for i, path in enumerate(sys.path[1:-2]):
+            paths = ",\n    ".join(sys.path)
+
+            self.assertFalse(
+                "/coverage" in path,
+                f"Expected {i + 2}th '{path}' to not contain 'coverage.py' paths, "
+                f"sys.path has {len(sys.path)} items:\n    {paths}",
+            )
+
+        first_item, last_item = sys.path[0], sys.path[-1]
+        self.assertFalse(
+            first_item.endswith("coverage"),
+            f"Expected the first item in sys.path '{first_item}' to not be related to coverage",
+        )
+        if os.environ.get("COVERAGE_MANIFEST"):
+            # we are running under the 'bazel coverage :test'
+            self.assertTrue(
+                "pypi__coverage_cp" in last_item,
+                f"Expected {last_item} to be related to coverage",
+            )
+            self.assertEqual(pathlib.Path(last_item).name, "coverage")
+        else:
+            self.assertFalse(
+                "coverage" in last_item, f"Expected coverage tooling to not be present"
+            )
+
     def test_main(self):
         self.assertEquals(
             """\
