@@ -17,6 +17,12 @@ manifest:
     click.testing: click
     click.types: click
     click.utils: click
+    colorama: colorama
+    colorama.ansi: colorama
+    colorama.ansitowin32: colorama
+    colorama.initialise: colorama
+    colorama.win32: colorama
+    colorama.winterm: colorama
     flask: Flask
     flask.app: Flask
     flask.blueprints: Flask
@@ -115,4 +121,4 @@ manifest:
   pip_repository:
     name: pip
     use_pip_repository_aliases: true
-integrity: 030d6d99b56c32d6577e616b617260d0a93588af791269162e43391a5a4fa576
+integrity: 5117d83eec9d2bdfbf64f4ed70dfe3ae4ac2169a8d1babc3a63fadc4ae98a7d4
