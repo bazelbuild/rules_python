@@ -12,71 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"Module extensions for use with bzlmod"
+"pip module extension for use with bzlmod"
 
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load("@rules_python//python/pip_install:pip_repository.bzl", "locked_requirements_label", "pip_repository_attrs", "pip_repository_bzlmod", "use_isolated", "whl_library")
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
-load("@rules_python//python/private:interpreter_hub.bzl", "hub_repo")
-
-def _python_impl(module_ctx):
-    toolchains = []
-    for mod in module_ctx.modules:
-        for toolchain_attr in mod.tags.toolchain:
-            python_register_toolchains(
-                name = toolchain_attr.name,
-                python_version = toolchain_attr.python_version,
-                bzlmod = True,
-                # Toolchain registration in bzlmod is done in MODULE file
-                register_toolchains = False,
-                register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                ignore_root_user_error = toolchain_attr.ignore_root_user_error,
-            )
-
-            # We collect all of the toolchain names to create
-            # the INTERPRETER_LABELS map.  This is used
-            # by interpreter_extensions.bzl
-            toolchains.append(toolchain_attr.name)
-
-    hub_repo(
-        name = "pythons_hub",
-        toolchains = toolchains,
-    )
-
-python = module_extension(
-    implementation = _python_impl,
-    tag_classes = {
-        "toolchain": tag_class(
-            attrs = {
-                "configure_coverage_tool": attr.bool(
-                    mandatory = False,
-                    doc = "Whether or not to configure the default coverage tool for the toolchains.",
-                ),
-                "ignore_root_user_error": attr.bool(
-                    default = False,
-                    doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
-                    mandatory = False,
-                ),
-                "name": attr.string(mandatory = True),
-                "python_version": attr.string(mandatory = True),
-            },
-        ),
-    },
-)
-
-# buildifier: disable=unused-variable
-def _internal_deps_impl(module_ctx):
-    pip_install_dependencies()
-    install_coverage_deps()
-
-internal_deps = module_extension(
-    implementation = _internal_deps_impl,
-    tag_classes = {
-        "install": tag_class(attrs = dict()),
-    },
-)
 
 def _pip_impl(module_ctx):
     for mod in module_ctx.modules:
@@ -134,6 +73,10 @@ def _pip_parse_ext_attrs():
     return attrs
 
 pip = module_extension(
+    doc = """\
+This extension is used to create a pip respository and create the various wheel libaries if
+provided in a requirements file.
+""",
     implementation = _pip_impl,
     tag_classes = {
         "parse": tag_class(attrs = _pip_parse_ext_attrs()),

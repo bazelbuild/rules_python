@@ -12,7 +12,7 @@ local_path_override(
     path = "../..",
 )
 
-python = use_extension("@rules_python//python:extensions.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     name = "python3_9",
     configure_coverage_tool = True,

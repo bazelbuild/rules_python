@@ -42,7 +42,7 @@ bazel_dep(name = "gazelle", version = "0.30.0", repo_name = "bazel_gazelle")
 
 # The following stanze returns a proxy object representing a module extension;
 # its methods can be invoked to create module extension tags.
-python = use_extension("@rules_python//python:extensions.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 # This name is passed into python.toolchain and it's use_repo statement.
 # We also use the same name for python.host_python_interpreter.
@@ -74,7 +74,7 @@ register_toolchains(
 # The interpreter extension discovers the platform specific Python binary.
 # It creates a symlink to the binary, and we pass the label to the following
 # pip.parse call.
-interpreter = use_extension("@rules_python//python:interpreter_extension.bzl", "interpreter")
+interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
 interpreter.install(
     name = "interpreter_python3",
     python_name = PYTHON_NAME,
@@ -88,7 +88,7 @@ use_repo(interpreter, "interpreter_python3")
 # You can instead check this `requirements.bzl` file into your repo.
 # Because this project has different requirements for windows vs other
 # operating systems, we have requirements for each.
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     name = "pip",
     # When using gazelle you must use set the following flag
