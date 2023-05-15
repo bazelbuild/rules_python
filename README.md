@@ -31,6 +31,13 @@ Bazel team, provides support for the code. However, this repository is part of
 the test suite used to vet new Bazel releases. See the [How to
 contribute](CONTRIBUTING.md) page for information on our development workflow.
 
+## `bzlmod` support
+
+- Status: Beta
+- Full Feature Parity: No
+
+See [Bzlmod support](BZLMOD_SUPPORT.md) for more details.
+
 ## Getting started
 
 The next two sections cover using `rules_python` with bzlmod and
