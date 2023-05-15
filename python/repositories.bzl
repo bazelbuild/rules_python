@@ -108,55 +108,11 @@ def _python_repository_impl(rctx):
     release_filename = rctx.attr.release_filename
     url = rctx.attr.urls or [rctx.attr.url]
 
-    if release_filename.endswith(".zst"):
-        rctx.download(
-            url = url,
-            sha256 = rctx.attr.sha256,
-            output = release_filename,
-        )
-        unzstd = rctx.which("unzstd")
-        if not unzstd:
-            url = rctx.attr.zstd_url.format(version = rctx.attr.zstd_version)
-            rctx.download_and_extract(
-                url = url,
-                sha256 = rctx.attr.zstd_sha256,
-            )
-            working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
-            make_result = rctx.execute(
-                ["make", "--jobs=4"],
-                timeout = 600,
-                quiet = True,
-                working_directory = working_directory,
-            )
-            if make_result.return_code:
-                fail_msg = (
-                    "Failed to compile 'zstd' from source for use in Python interpreter extraction. " +
-                    "'make' error message: {}".format(make_result.stderr)
-                )
-                fail(fail_msg)
-            zstd = "{working_directory}/zstd".format(working_directory = working_directory)
-            unzstd = "./unzstd"
-            rctx.symlink(zstd, unzstd)
-
-        exec_result = rctx.execute([
-            "tar",
-            "--extract",
-            "--strip-components=2",
-            "--use-compress-program={unzstd}".format(unzstd = unzstd),
-            "--file={}".format(release_filename),
-        ])
-        if exec_result.return_code:
-            fail_msg = (
-                "Failed to extract Python interpreter from '{}'. ".format(release_filename) +
-                "'tar' error message: {}".format(exec_result.stderr)
-            )
-            fail(fail_msg)
-    else:
-        rctx.download_and_extract(
-            url = url,
-            sha256 = rctx.attr.sha256,
-            stripPrefix = rctx.attr.strip_prefix,
-        )
+    rctx.download_and_extract(
+        url = url,
+        sha256 = rctx.attr.sha256,
+        stripPrefix = rctx.attr.strip_prefix,
+    )
 
     patches = rctx.attr.patches
     if patches:
