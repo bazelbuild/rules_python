@@ -46,7 +46,11 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 # This name is passed into python.toolchain and it's use_repo statement.
 # We also use the same name for python.host_python_interpreter.
-PYTHON_NAME = "python3"
+PYTHON_NAME = "python"
+
+PYTHON_TOOLCHAINS = PYTHON_NAME + "_toolchains"
+
+INTERPRETER_NAME = "interpreter"
 
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
@@ -56,6 +60,7 @@ python.toolchain(
     # example.
     name = PYTHON_NAME,
     configure_coverage_tool = True,
+    is_default = True,
     python_version = "3.9",
 )
 
@@ -63,12 +68,16 @@ python.toolchain(
 # into the scope of the current module.
 # All of the python3 repositories use the PYTHON_NAME as there prefix.  They
 # are not catenated for ease of reading.
-use_repo(python, PYTHON_NAME, "python3_toolchains")
+use_repo(
+    python,
+    PYTHON_NAME,
+    PYTHON_TOOLCHAINS,
+)
 
 # Register an already-defined toolchain so that Bazel can use it during
 # toolchain resolution.
 register_toolchains(
-    "@python3_toolchains//:all",
+    "@{}//:all".format(PYTHON_TOOLCHAINS),
 )
 
 # The interpreter extension discovers the platform specific Python binary.
@@ -76,10 +85,10 @@ register_toolchains(
 # pip.parse call.
 interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
 interpreter.install(
-    name = "interpreter_python3",
+    name = INTERPRETER_NAME,
     python_name = PYTHON_NAME,
 )
-use_repo(interpreter, "interpreter_python3")
+use_repo(interpreter, INTERPRETER_NAME)
 
 # Use the extension, pip.parse, to call the `pip_repository` rule that invokes
 # `pip`, with `incremental` set. The pip call accepts a locked/compiled
@@ -102,7 +111,7 @@ pip.parse(
     # is used for both resolving dependencies and running tests/binaries.
     # If this isn't specified, then you'll get whatever is locally installed
     # on your system.
-    python_interpreter_target = "@interpreter_python3//:python",
+    python_interpreter_target = "@{}//:python".format(INTERPRETER_NAME),
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )

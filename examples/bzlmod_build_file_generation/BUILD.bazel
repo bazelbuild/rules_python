@@ -7,7 +7,7 @@
 # requirements.
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@pip//:requirements.bzl", "all_whl_requirements")
-load("@python3//:defs.bzl", py_test_with_transition = "py_test")
+load("@python//:defs.bzl", py_test_with_transition = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
