@@ -34,6 +34,7 @@ def _pip_impl(module_ctx):
             # this does not create the install_deps() macro.
             pip_repository_bzlmod(
                 name = attr.name,
+                repo_name = attr.name,
                 requirements_lock = attr.requirements_lock,
                 incompatible_generate_aliases = attr.incompatible_generate_aliases,
             )
