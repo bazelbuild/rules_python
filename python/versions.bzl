@@ -142,13 +142,14 @@ TOOL_VERSIONS = {
         "strip_prefix": "python",
     },
     "3.9.16": {
-        "url": "20230116/cpython-{python_version}+20230116-{platform}-{build}.tar.gz",
+        "url": "20230507/cpython-{python_version}+20230507-{platform}-{build}.tar.gz",
         "sha256": {
-            "aarch64-apple-darwin": "d732d212d42315ac27c6da3e0b69636737a8d72086c980daf844344c010cab80",
-            "aarch64-unknown-linux-gnu": "1ba520c0db431c84305677f56eb9a4254f5097430ed443e92fc8617f8fba973d",
-            "x86_64-apple-darwin": "3948384af5e8d4ee7e5ccc648322b99c1c5cf4979954ed5e6b3382c69d6db71e",
-            "x86_64-pc-windows-msvc": "5274afd6b7ff2bddbd8306385ffb2336764b0e58535db968daeac656246f59a8",
-            "x86_64-unknown-linux-gnu": "7ba397787932393e65fc2fb9fcfabf54f2bb6751d5da2b45913cb25b2d493758",
+            "aarch64-apple-darwin": "c1de1d854717a6245f45262ef1bb17b09e2c587590e7e3f406593c143ff875bd",
+            "aarch64-unknown-linux-gnu": "f629b75ebfcafe9ceee2e796b7e4df5cf8dbd14f3c021afca078d159ab797acf",
+            "ppc64le-unknown-linux-gnu": "ff3ac35c58f67839aff9b5185a976abd3d1abbe61af02089f7105e876c1fe284",
+            "x86_64-apple-darwin": "3abc4d5fbbc80f5f848f280927ac5d13de8dc03aabb6ae65d8247cbb68e6f6bf",
+            "x86_64-pc-windows-msvc": "cdabb47204e96ce7ea31fbd0b5ed586114dd7d8f8eddf60a509a7f70b48a1c5e",
+            "x86_64-unknown-linux-gnu": "2b6e146234a4ef2a8946081fc3fbfffe0765b80b690425a49ebe40b47c33445b",
         },
         "strip_prefix": "python",
     },
@@ -207,6 +208,18 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.10.11": {
+        "url": "20230507/cpython-{python_version}+20230507-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "8348bc3c2311f94ec63751fb71bd0108174be1c4def002773cf519ee1506f96f",
+            "aarch64-unknown-linux-gnu": "c7573fdb00239f86b22ea0e8e926ca881d24fde5e5890851339911d76110bc35",
+            "ppc64le-unknown-linux-gnu": "73a9d4c89ed51be39dd2de4e235078281087283e9fdedef65bec02f503e906ee",
+            "x86_64-apple-darwin": "bd3fc6e4da6f4033ebf19d66704e73b0804c22641ddae10bbe347c48f82374ad",
+            "x86_64-pc-windows-msvc": "9c2d3604a06fcd422289df73015cd00e7271d90de28d2c910f0e2309a7f73a68",
+            "x86_64-unknown-linux-gnu": "c5bcaac91bc80bfc29cf510669ecad12d506035ecb3ad85ef213416d54aecd79",
+        },
+        "strip_prefix": "python",
+    },
     "3.11.1": {
         "url": "20230116/cpython-{python_version}+20230116-{platform}-{build}.tar.gz",
         "sha256": {
@@ -215,6 +228,18 @@ TOOL_VERSIONS = {
             "x86_64-apple-darwin": "20a4203d069dc9b710f70b09e7da2ce6f473d6b1110f9535fb6f4c469ed54733",
             "x86_64-pc-windows-msvc": "edc08979cb0666a597466176511529c049a6f0bba8adf70df441708f766de5bf",
             "x86_64-unknown-linux-gnu": "02a551fefab3750effd0e156c25446547c238688a32fabde2995c941c03a6423",
+        },
+        "strip_prefix": "python",
+    },
+    "3.11.3": {
+        "url": "20230507/cpython-{python_version}+20230507-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "09e412506a8d63edbb6901742b54da9aa7faf120b8dbdce56c57b303fc892c86",
+            "aarch64-unknown-linux-gnu": "8190accbbbbcf7620f1ff6d668e4dd090c639665d11188ce864b62554d40e5ab",
+            "ppc64le-unknown-linux-gnu": "767d24f3570b35fedb945f5ac66224c8983f2d556ab83c5cfaa5f3666e9c212c",
+            "x86_64-apple-darwin": "f710b8d60621308149c100d5175fec39274ed0b9c99645484fd93d1716ef4310",
+            "x86_64-pc-windows-msvc": "24741066da6f35a7ff67bee65ce82eae870d84e1181843e64a7076d1571e95af",
+            "x86_64-unknown-linux-gnu": "da50b87d1ec42b3cb577dfd22a3655e43a53150f4f98a4bfb40757c9d7839ab5",
         },
         "strip_prefix": "python",
     },
@@ -249,6 +274,17 @@ PLATFORMS = {
         # Matches the value returned from:
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
         arch = "aarch64",
+    ),
+    "ppc64le-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:ppc",
+        ],
+        os_name = LINUX_NAME,
+        # Note: this string differs between OSX and Linux
+        # Matches the value returned from:
+        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+        arch = "ppc64le",
     ),
     "x86_64-apple-darwin": struct(
         compatible_with = [
