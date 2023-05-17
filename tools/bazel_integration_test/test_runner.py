@@ -79,6 +79,7 @@ def main(conf_file):
                         "--override_module=rules_python=%s/rules_python"
                         % os.environ["TEST_SRCDIR"]
                     )
+                    bazel_args.append("--enable_bzlmod")
 
                 # Bazel's wrapper script needs this or you get
                 # 2020/07/13 21:58:11 could not get the user's cache directory: $HOME is not defined

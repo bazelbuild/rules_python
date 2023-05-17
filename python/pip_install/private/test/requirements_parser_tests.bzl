@@ -63,6 +63,9 @@ FooProject==1.0.0
 # Comment
 BarProject==2.0.0 #Comment
 """).requirements)
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49")], parse("""\
+requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49
+""").requirements)
 
     # Multiline
     asserts.equals(env, [("certifi", "certifi==2021.10.8     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569")], parse("""\
@@ -70,6 +73,11 @@ certifi==2021.10.8 \
     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872 \
     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569
     # via requests
+""").requirements)
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49     --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd")], parse("""\
+requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49 \
+    --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd
+    # via requirements.txt
 """).requirements)
 
     # Options

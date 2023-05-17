@@ -11,7 +11,7 @@ local_path_override(
     path = "../..",
 )
 
-python = use_extension("@rules_python//python:extensions.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     name = "python3_9",
     configure_coverage_tool = True,
@@ -24,7 +24,7 @@ register_toolchains(
     "@python3_9_toolchains//:all",
 )
 
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     name = "pip",
     # Intentionally set it false because the "true" case is already covered by examples/bzlmod_build_file_generation

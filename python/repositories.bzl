@@ -106,11 +106,11 @@ def _python_repository_impl(rctx):
     python_version = rctx.attr.python_version
     python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
-    url = rctx.attr.urls or [rctx.attr.url]
+    urls = rctx.attr.urls or [rctx.attr.url]
 
     if release_filename.endswith(".zst"):
         rctx.download(
-            url = url,
+            url = urls,
             sha256 = rctx.attr.sha256,
             output = release_filename,
         )
@@ -153,7 +153,7 @@ def _python_repository_impl(rctx):
             fail(fail_msg)
     else:
         rctx.download_and_extract(
-            url = url,
+            url = urls,
             sha256 = rctx.attr.sha256,
             stripPrefix = rctx.attr.strip_prefix,
         )
@@ -348,7 +348,7 @@ py_runtime_pair(
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 
-    return {
+    attrs = {
         "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
@@ -360,8 +360,14 @@ py_runtime_pair(
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
         "strip_prefix": rctx.attr.strip_prefix,
-        "url": url,
     }
+
+    if rctx.attr.url:
+        attrs["url"] = rctx.attr.url
+    else:
+        attrs["urls"] = urls
+
+    return attrs
 
 python_repository = repository_rule(
     _python_repository_impl,
