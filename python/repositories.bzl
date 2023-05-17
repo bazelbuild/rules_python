@@ -348,7 +348,7 @@ py_runtime_pair(
     rctx.file(STANDALONE_INTERPRETER_FILENAME, "# File intentionally left blank. Indicates that this is an interpreter repo created by rules_python.")
     rctx.file("BUILD.bazel", build_content)
 
-    return {
+    attrs = {
         "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
@@ -360,8 +360,14 @@ py_runtime_pair(
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
         "strip_prefix": rctx.attr.strip_prefix,
-        "url": urls,
     }
+
+    if rctx.attr.url:
+        attrs["url"] = rctx.attr.url
+    else:
+        attrs["urls"] = urls
+
+    return attrs
 
 python_repository = repository_rule(
     _python_repository_impl,
