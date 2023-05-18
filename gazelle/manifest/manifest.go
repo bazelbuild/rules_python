@@ -40,11 +40,12 @@ func NewFile(manifest *Manifest) *File {
 }
 
 // Encode encodes the manifest file to the given writer.
-func (f *File) Encode(w io.Writer, manifestGeneratorHashFile, requirements io.Reader) error {
-	integrityBytes, err := f.calculateIntegrity(manifestGeneratorHashFile, requirements)
+func (f *File) Encode(w io.Writer, manifestGeneratorHashFile io.Reader, requirements ...io.Reader) error {
+	integrityBytes, err := f.calculateIntegrity(manifestGeneratorHashFile, requirements...)
 	if err != nil {
 		return fmt.Errorf("failed to encode manifest file: %w", err)
 	}
+
 	f.Integrity = fmt.Sprintf("%x", integrityBytes)
 	encoder := yaml.NewEncoder(w)
 	defer encoder.Close()
@@ -69,7 +70,7 @@ func (f *File) VerifyIntegrity(manifestGeneratorHashFile, requirements io.Reader
 // mapping, plus the manifest structure in the manifest file. This integrity
 // calculation ensures the manifest files are kept up-to-date.
 func (f *File) calculateIntegrity(
-	manifestGeneratorHash, requirements io.Reader,
+	manifestGeneratorHash io.Reader, requirements ...io.Reader,
 ) ([]byte, error) {
 	hash := sha256.New()
 
@@ -86,8 +87,10 @@ func (f *File) calculateIntegrity(
 	}
 
 	// Sum the requirements.txt checksum bytes.
-	if _, err := io.Copy(hash, requirements); err != nil {
-		return nil, fmt.Errorf("failed to calculate integrity: %w", err)
+	for _, r := range(requirements) {
+		if _, err := io.Copy(hash, r); err != nil {
+			return nil, fmt.Errorf("failed to calculate integrity: %w", err)
+		}
 	}
 
 	return hash.Sum(nil), nil

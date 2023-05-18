@@ -50,7 +50,10 @@ gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
     pip_repository_name = "pip",
-    requirements = "//:requirements_lock.txt",
+    requirements_files = [
+        "//:requirements_lock.txt",
+        "//:requirements_windows.txt",
+    ],
     # NOTE: we can use this flag in order to make our setup compatible with
     # bzlmod.
     use_pip_repository_aliases = True,

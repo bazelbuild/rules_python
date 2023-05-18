@@ -20,8 +20,9 @@ load("@io_bazel_rules_go//go:def.bzl", "GoSource", "go_binary", "go_test")
 
 def gazelle_python_manifest(
         name,
-        requirements,
         modules_mapping,
+        requirements = None,
+        requirements_files = None,
         pip_repository_name = "",
         pip_deps_repository_name = "",
         manifest = ":gazelle_python.yaml",
@@ -31,6 +32,7 @@ def gazelle_python_manifest(
     Args:
         name: the name used as a base for the targets.
         requirements: the target for the requirements.txt file.
+        requirements_files: the list of requirements files to include in the hashing algorithm.
         pip_repository_name: the name of the pip_install or pip_repository target.
         use_pip_repository_aliases: boolean flag to enable using user-friendly
             python package aliases.
@@ -38,6 +40,12 @@ def gazelle_python_manifest(
         modules_mapping: the target for the generated modules_mapping.json file.
         manifest: the target for the Gazelle manifest file.
     """
+    if not requirements and not requirements_files:
+        fail("at least one of 'requirements' and 'requirements_files' must be defined")
+
+    if requirements and requirements_files:
+        fail("only one of 'requirements' and 'requirements_files' can be defined at a time")
+
     if pip_deps_repository_name != "":
         # buildifier: disable=print
         print("DEPRECATED pip_deps_repository_name in //{}:{}. Please use pip_repository_name instead.".format(
@@ -58,8 +66,6 @@ def gazelle_python_manifest(
     update_args = [
         "--manifest-generator-hash",
         "$(rootpath {})".format(manifest_generator_hash),
-        "--requirements",
-        "$(rootpath {})".format(requirements),
         "--pip-repository-name",
         pip_repository_name,
         "--modules-mapping",
@@ -69,6 +75,12 @@ def gazelle_python_manifest(
         "--update-target",
         update_target_label,
     ]
+
+    requirements_files = requirements_files or [requirements]
+
+    for requirements in sorted(requirements_files):
+        update_args.append("--requirements")
+        update_args.append("$(rootpath {})".format(requirements))
 
     if use_pip_repository_aliases:
         update_args += [
@@ -81,10 +93,9 @@ def gazelle_python_manifest(
         embed = [Label("//manifest/generate:generate_lib")],
         data = [
             manifest,
-            modules_mapping,
-            requirements,
             manifest_generator_hash,
-        ],
+            modules_mapping,
+        ] + requirements_files,
         args = update_args,
         visibility = ["//visibility:private"],
         tags = ["manual"],
@@ -95,13 +106,12 @@ def gazelle_python_manifest(
         srcs = [Label("//manifest/test:test.go")],
         data = [
             manifest,
-            requirements,
             manifest_generator_hash,
-        ],
+        ] + requirements_files,
         env = {
             "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
             "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
-            "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
+            "_TEST_REQUIREMENTS": "$(rootpaths {})".format(requirements_files),
         },
         rundir = ".",
         deps = [Label("//manifest")],

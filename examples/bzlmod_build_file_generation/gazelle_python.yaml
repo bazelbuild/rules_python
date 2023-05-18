@@ -232,6 +232,7 @@ manifest:
     isort.wrap: isort
     isort.wrap_modes: isort
     lazy_object_proxy: lazy_object_proxy
+    lazy_object_proxy.cext: lazy_object_proxy
     lazy_object_proxy.compat: lazy_object_proxy
     lazy_object_proxy.simple: lazy_object_proxy
     lazy_object_proxy.slots: lazy_object_proxy
@@ -587,4 +588,4 @@ manifest:
   pip_repository:
     name: pip
     use_pip_repository_aliases: true
-integrity: d979738b10adbbaff0884837e4414688990491c6c40f6a25d58b9bb564411477
+integrity: cee7684391c4a8a1ff219cd354deae61cdcdee70f2076789aabd5249f3c4eca9

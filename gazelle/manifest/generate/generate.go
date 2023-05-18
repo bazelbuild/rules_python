@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -37,10 +38,21 @@ func init() {
 	}
 }
 
+type arrayFlags []string
+
+func (i arrayFlags) String() string {
+    return fmt.Sprintf("%q", []string(i))
+}
+
+func (i *arrayFlags) Set(value string) error {
+    *i = append(*i, value)
+    return nil
+}
+
 func main() {
 	var (
 		manifestGeneratorHashPath string
-		requirementsPath          string
+		requirementsPaths         arrayFlags
 		pipRepositoryName         string
 		usePipRepositoryAliases   bool
 		modulesMappingPath        string
@@ -53,11 +65,10 @@ func main() {
 		"",
 		"The file containing the hash for the source code of the manifest generator."+
 			"This is important to force manifest updates when the generator logic changes.")
-	flag.StringVar(
-		&requirementsPath,
+	flag.Var(
+		&requirementsPaths,
 		"requirements",
-		"",
-		"The requirements.txt file.")
+		"The requirements.txt files. The argument can be supplied multiple times.")
 	flag.StringVar(
 		&pipRepositoryName,
 		"pip-repository-name",
@@ -85,7 +96,7 @@ func main() {
 		"The Bazel target to update the YAML manifest file.")
 	flag.Parse()
 
-	if requirementsPath == "" {
+	if len(requirementsPaths) == 0 {
 		log.Fatalln("ERROR: --requirements must be set")
 	}
 
@@ -120,7 +131,7 @@ func main() {
 		header,
 		manifestFile,
 		manifestGeneratorHashPath,
-		requirementsPath,
+		[]string(requirementsPaths),
 	); err != nil {
 		log.Fatalf("ERROR: %v\n", err)
 	}
@@ -159,7 +170,7 @@ func writeOutput(
 	header string,
 	manifestFile *manifest.File,
 	manifestGeneratorHashPath string,
-	requirementsPath string,
+	requirementsPaths []string,
 ) error {
 	stat, err := os.Stat(outputPath)
 	if err != nil {
@@ -182,13 +193,18 @@ func writeOutput(
 	}
 	defer manifestGeneratorHash.Close()
 
-	requirements, err := os.Open(requirementsPath)
-	if err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
-	}
-	defer requirements.Close()
+	var allRequirements []io.Reader
+	for _, requirementsPath := range(requirementsPaths) {
+		requirements, err := os.Open(requirementsPath)
+		if err != nil {
+			return fmt.Errorf("failed to open %q: %w", requirementsPath, err)
+		}
+		defer requirements.Close()
 
-	if err := manifestFile.Encode(outputFile, manifestGeneratorHash, requirements); err != nil {
+		allRequirements = append(allRequirements, requirements)
+	}
+
+	if err := manifestFile.Encode(outputFile, manifestGeneratorHash, allRequirements...); err != nil {
 		return fmt.Errorf("failed to write output: %w", err)
 	}
 

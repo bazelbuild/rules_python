@@ -115,4 +115,4 @@ manifest:
   pip_repository:
     name: pip
     use_pip_repository_aliases: true
-integrity: 030d6d99b56c32d6577e616b617260d0a93588af791269162e43391a5a4fa576
+integrity: 35d9c488d8dc6e6c8f315dd45e3c942e98ac5b28a2d29ba9430513290b0ea063
