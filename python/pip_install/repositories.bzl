@@ -61,8 +61,9 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl",
-        "7ccf472345f20d35bdc9d1841ff5f313260c2c33fe417f48c30ac46cccabf5be",
+        # Use a vendored pip which will retry HTTP 502s
+        "https://codeartifact-proxy.abnormal.dev/pip/22.1.2.post1+abnormal.03d64aee90f/pip-22.1.2.post1+abnormal.03d64aee90f-py3-none-any.whl",
+        "59791080b47583f47fc224132a28bc79f4b99e44b69993f0f298f2c816415b58",
     ),
     (
         "pypi__pip_tools",
