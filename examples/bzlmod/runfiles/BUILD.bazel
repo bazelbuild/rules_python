@@ -1,6 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_test")
 
-# gazelle:ignore
 py_test(
     name = "runfiles_test",
     srcs = ["runfiles_test.py"],

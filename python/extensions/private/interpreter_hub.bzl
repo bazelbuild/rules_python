@@ -19,8 +19,9 @@ load("//python/private:toolchains_repo.bzl", "get_host_os_arch", "get_host_platf
 
 _build_file_for_hub_template = """
 INTERPRETER_LABELS = {{
-{lines}
+{interpreter_labels}
 }}
+DEFAULT_TOOLCHAIN_NAME = "{default}"
 """
 
 _line_for_hub_template = """\
@@ -35,13 +36,19 @@ def _hub_repo_impl(rctx):
     is_windows = (os == WINDOWS_NAME)
     path = "python.exe" if is_windows else "bin/python3"
 
-    lines = "\n".join([_line_for_hub_template.format(
+    interpreter_labels = "\n".join([_line_for_hub_template.format(
         name = name,
         platform = platform,
         path = path,
     ) for name in rctx.attr.toolchains])
 
-    rctx.file("interpreters.bzl", _build_file_for_hub_template.format(lines = lines))
+    rctx.file(
+        "interpreters.bzl",
+        _build_file_for_hub_template.format(
+            interpreter_labels = interpreter_labels,
+            default = rctx.attr.default_toolchain,
+        ),
+    )
 
 hub_repo = repository_rule(
     doc = """\
@@ -50,6 +57,10 @@ and the labels to said interpreters. This map is used to by the interpreter hub 
 """,
     implementation = _hub_repo_impl,
     attrs = {
+        "default_toolchain": attr.string(
+            doc = "Name of the default toolchain",
+            mandatory = True,
+        ),
         "toolchains": attr.string_list(
             doc = "List of the base names the toolchain repo defines.",
             mandatory = True,

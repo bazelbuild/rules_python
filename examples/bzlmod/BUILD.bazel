@@ -1,9 +1,21 @@
+# Load various rules so that we can have bazel download
+# various rulesets and dependencies.
+# The `load` statement imports the symbol for the rule, in the defined
+# ruleset. When the symbol is loaded you can use the rule.
+
+# The names @pip and @python_39 are values that are repository
+# names. Those names are defined in the MODULES.bazel file.
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@pip//:requirements.bzl", "all_requirements", "all_whl_requirements", "requirement")
-load("@python3_9//:defs.bzl", py_test_with_transition = "py_test")
+load("@python_39//:defs.bzl", py_test_with_transition = "py_test")
+
+# This is not working yet till the toolchain hub registration is working
+# load("@python_310//:defs.bzl", py_binary_310 = "py_binary")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
+# This stanza calls a rule that generates targets for managing pip dependencies
+# with pip-compile.
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
@@ -12,6 +24,11 @@ compile_pip_requirements(
     requirements_windows = "requirements_windows.txt",
 )
 
+# The rules below are language specific rules defined in
+# rules_python. See
+# https://bazel.build/reference/be/python
+
+# see https://bazel.build/reference/be/python#py_library
 py_library(
     name = "lib",
     srcs = ["lib.py"],
@@ -22,6 +39,7 @@ py_library(
     ],
 )
 
+# see https://bazel.build/reference/be/python#py_binary
 py_binary(
     name = "bzlmod",
     srcs = ["__main__.py"],
@@ -32,6 +50,23 @@ py_binary(
     ],
 )
 
+# This is still WIP.  Not working till we have the toolchain
+# registration functioning.
+
+# This is used for testing mulitple versions of Python. This is
+# used only when you need to support multiple versions of Python
+# in the same project.
+# py_binary_310(
+#     name = "main_310",
+#     srcs = ["__main__.py"],
+#     main = "__main__.py",
+#     visibility = ["//:__subpackages__"],
+#     deps = [
+#         ":lib",
+#     ],
+# )
+
+# see https://bazel.build/reference/be/python#py_test
 py_test(
     name = "test",
     srcs = ["test.py"],
@@ -46,6 +81,11 @@ py_test_with_transition(
     deps = [":lib"],
 )
 
+# This example is also used for integration tests within
+# rules_python.  We are using
+# https://github.com/bazelbuild/bazel-skylib
+# to run some of the tests.
+# See: https://github.com/bazelbuild/bazel-skylib/blob/main/docs/build_test_doc.md
 build_test(
     name = "all_wheels",
     targets = all_whl_requirements,

@@ -463,7 +463,6 @@ def python_register_toolchains(
         register_coverage_tool = False,
         set_python_version_constraint = False,
         tool_versions = TOOL_VERSIONS,
-        bzlmod = False,
         **kwargs):
     """Convenience macro for users which does typical setup.
 
@@ -486,9 +485,15 @@ def python_register_toolchains(
         set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
             in python/versions.bzl will be used.
-        bzlmod: Whether this rule is being run under a bzlmod module extension.
         **kwargs: passed to each python_repositories call.
     """
+
+    # If we have @@ we have bzlmod
+    bzlmod = str(Label("//:unused")).startswith("@@")
+    if bzlmod:
+        # you cannot used native.register_toolchains when using bzlmod.
+        register_toolchains = False
+
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
 
     if python_version in MINOR_MAPPING:
