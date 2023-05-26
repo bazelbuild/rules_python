@@ -53,31 +53,38 @@ To import rules_python in your project, you first need to add it to your
 
 To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `MODULE.bazel` file:
 
-```python
+```starlark
 # Find the latest version number here: https://github.com/bazelbuild/rules_python/releases
 # and change the version number if needed in the line below.
-bazel_dep(name = "rules_python", version = "0.20.0")
+bazel_dep(name = "rules_python", version = "0.21.0")
 
-# You do not have to use pip for the toolchain, but most people
-# will use it for the dependency management.
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    name = "python",
+    configure_coverage_tool = True,
+    is_default = True,
+    python_version = "3.9",
+)
 
+interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
+interpreter.install(
+    name = "interpreter",
+    python_name = "python",
+)
+use_repo(interpreter, "interpreter")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     name = "pip",
+    incompatible_generate_aliases = True,
+    python_interpreter_target = "@interpreter//:python",
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
-
 use_repo(pip, "pip")
-
-# Register a specific python toolchain instead of using the host version
-python = use_extension("@rules_python//python:extensions.bzl", "python")
-
-use_repo(python, "python3_10_toolchains")
-
-register_toolchains(
-    "@python3_10_toolchains//:all",
-)
 ```
+
+For more documentation see the bzlmod examples under the [examples](examples) folder.
 
 ### Using a WORKSPACE file
 

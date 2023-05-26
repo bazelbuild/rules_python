@@ -564,16 +564,20 @@ def python_register_toolchains(
                 platform = platform,
             ))
 
+    toolchain_aliases(
+        name = name,
+        python_version = python_version,
+        user_repository_name = name,
+    )
+
+    # in bzlmod we write out our own toolchain repos
+    if bzlmod:
+        return
+
     toolchains_repo(
         name = toolchain_repo_name,
         python_version = python_version,
         set_python_version_constraint = set_python_version_constraint,
-        user_repository_name = name,
-    )
-
-    toolchain_aliases(
-        name = name,
-        python_version = python_version,
         user_repository_name = name,
     )
 
