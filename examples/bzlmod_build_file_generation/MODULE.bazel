@@ -77,10 +77,7 @@ use_repo(interpreter, INTERPRETER_NAME)
 # operating systems, we have requirements for each.
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    name = "pip",
-    # When using gazelle you must use set the following flag
-    # in order for the generation of gazelle dependency resolution.
-    incompatible_generate_aliases = True,
+    hub_name = "pip",
     # The interpreter_target attribute points to the interpreter to
     # use for running pip commands to download the packages in the
     # requirements file.
@@ -90,6 +87,7 @@ pip.parse(
     # If this isn't specified, then you'll get whatever is locally installed
     # on your system.
     python_interpreter_target = "@{}//:python".format(INTERPRETER_NAME),
+    python_version = "3.9",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )

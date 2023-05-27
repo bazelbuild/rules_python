@@ -150,6 +150,7 @@ def _python_impl(module_ctx):
     # the various toolchains.
     hub_repo(
         name = "pythons_hub",
+        default_python_version = default_toolchain.python_version,
         toolchain_prefixes = [
             _toolchain_prefix(index, toolchain.name)
             for index, toolchain in enumerate(toolchains)

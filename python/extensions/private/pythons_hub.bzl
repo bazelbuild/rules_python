@@ -65,6 +65,7 @@ _build_file_for_hub_template = """
 INTERPRETER_LABELS = {{
 {interpreter_labels}
 }}
+DEFAULT_PYTHON_VERSION = "{default_python_version}"
 """
 
 _line_for_hub_template = """\
@@ -103,6 +104,7 @@ def _hub_repo_impl(rctx):
         "interpreters.bzl",
         _build_file_for_hub_template.format(
             interpreter_labels = interpreter_labels,
+            default_python_version = rctx.attr.default_python_version,
         ),
         executable = False,
     )
@@ -115,6 +117,10 @@ This rule also writes out the various toolchains for the different Python versio
 """,
     implementation = _hub_repo_impl,
     attrs = {
+        "default_python_version": attr.string(
+            doc = "Default Python version for the build.",
+            mandatory = True,
+        ),
         "toolchain_prefixes": attr.string_list(
             doc = "List prefixed for the toolchains",
             mandatory = True,

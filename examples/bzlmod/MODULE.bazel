@@ -43,7 +43,7 @@ python.toolchain(
 
 # You only need to load this repositories if you are using muiltple Python versions.
 # See the tests folder for various examples.
-use_repo(python, PYTHON_NAME_39, "python_aliases")
+use_repo(python, PYTHON_NAME_39, PYTHON_NAME_310, "python_aliases")
 
 # The interpreter extension discovers the platform specific Python binary.
 # It creates a symlink to the binary, and we pass the label to the following
@@ -63,16 +63,24 @@ interpreter.install(
 use_repo(interpreter, INTERPRETER_NAME_39, INTERPRETER_NAME_310)
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
+# For each pip setup we call pip.parse.  We can pass in various options
+# but typically we are passing in a requirements and an interpreter.
+# If you provide the python_interpreter_target we attempt to determine
+# the python_version automatically. Otherwise include the python_version.
 pip.parse(
-    name = "pip",
-    # Intentionally set it false because the "true" case is already
-    # covered by examples/bzlmod_build_file_generation
-    incompatible_generate_aliases = False,
+    hub_name = "pip",
     python_interpreter_target = "@{}//:python".format(INTERPRETER_NAME_39),
-    requirements_lock = "//:requirements_lock.txt",
-    requirements_windows = "//:requirements_windows.txt",
+    requirements_lock = "//:requirements_lock_3_9.txt",
+    requirements_windows = "//:requirements_windows_3_9.txt",
 )
-use_repo(pip, "pip")
+pip.parse(
+    hub_name = "pip",
+    python_interpreter_target = "@{}//:python".format(INTERPRETER_NAME_310),
+    requirements_lock = "//:requirements_lock_3_10.txt",
+    requirements_windows = "//:requirements_windows_3_10.txt",
+)
+use_repo(pip, "pip", "pip_39")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(
