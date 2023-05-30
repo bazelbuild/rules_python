@@ -27,6 +27,11 @@ py_library(
         "__init__.py",
         "runfiles.py",
     ],
+    imports = [
+        # Add the repo root so `import python.runfiles.runfiles` works. This makes it agnostic
+        # to the --experimental_python_import_all_repositories setting.
+        "../..",
+    ],
     visibility = ["//visibility:public"],
 )
 
