@@ -7,7 +7,6 @@
 # requirements.
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@pip//:requirements.bzl", "all_whl_requirements")
-load("@python//:defs.bzl", py_test_with_transition = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
@@ -70,13 +69,6 @@ gazelle(
     name = "gazelle",
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
-)
-
-py_test_with_transition(
-    name = "test_with_transition",
-    srcs = ["__test__.py"],
-    main = "__test__.py",
-    deps = [":bzlmod_build_file_generation"],
 )
 
 # The following targets are created and maintained by gazelle

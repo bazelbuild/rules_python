@@ -14,8 +14,28 @@
 
 "Python toolchain module extensions for use with bzlmod"
 
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
-load("@rules_python//python/extensions/private:interpreter_hub.bzl", "hub_repo")
+load("//python:repositories.bzl", "python_register_toolchains")
+load("//python/extensions/private:pythons_hub.bzl", "hub_repo")
+load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
+
+# This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
+# targets using any of these toolchains due to the changed repository name.
+_MAX_NUM_TOOLCHAINS = 9999
+_TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
+
+def _toolchain_prefix(index, name):
+    """Prefixes the given name with the index, padded with zeros to ensure lexicographic sorting.
+
+    Examples:
+      _toolchain_prefix(   2, "foo") == "_0002_foo_"
+      _toolchain_prefix(2000, "foo") == "_2000_foo_"
+    """
+    return "_{}_{}_".format(_left_pad_zero(index, _TOOLCHAIN_INDEX_PAD_LENGTH), name)
+
+def _left_pad_zero(index, length):
+    if index < 0:
+        fail("index must be non-negative")
+    return ("0" * length + str(index))[-length:]
 
 # Printing a warning msg not debugging, so we have to disable
 # the buildifier check.
@@ -24,6 +44,8 @@ def _print_warn(msg):
     print("WARNING:", msg)
 
 def _python_register_toolchains(toolchain_attr, version_constraint):
+    """Calls python_register_toolchains and returns a struct used to collect the toolchains.
+    """
     python_register_toolchains(
         name = toolchain_attr.name,
         python_version = toolchain_attr.python_version,
@@ -31,24 +53,33 @@ def _python_register_toolchains(toolchain_attr, version_constraint):
         ignore_root_user_error = toolchain_attr.ignore_root_user_error,
         set_python_version_constraint = version_constraint,
     )
+    return struct(
+        python_version = toolchain_attr.python_version,
+        set_python_version_constraint = str(version_constraint),
+        name = toolchain_attr.name,
+    )
 
 def _python_impl(module_ctx):
-    # We collect all of the toolchain names to create
-    # the INTERPRETER_LABELS map.  This is used
-    # by interpreter_extensions.bzl via the hub_repo call below.
-    toolchain_names = []
+    # Use to store all of the toolchains
+    toolchains = []
 
-    # Used to store the default toolchain name so we can pass it to the hub
-    default_toolchain_name = None
+    # Used to check if toolchains already exist
+    toolchain_names = []
 
     # Used to store toolchains that are in sub modules.
     sub_toolchains_map = {}
+    default_toolchain = None
+    python_versions = {}
 
     for mod in module_ctx.modules:
         for toolchain_attr in mod.tags.toolchain:
             # If we are in the root module we always register the toolchain.
             # We wait to register the default toolchain till the end.
             if mod.is_root:
+                if toolchain_attr.name in toolchain_names:
+                    fail("""We found more than one toolchain that is named: {}.
+All toolchains must have an unique name.""".format(toolchain_attr.name))
+
                 toolchain_names.append(toolchain_attr.name)
 
                 # If we have the default version or we only have one toolchain
@@ -56,17 +87,27 @@ def _python_impl(module_ctx):
                 if toolchain_attr.is_default or len(mod.tags.toolchain) == 1:
                     # We have already found one default toolchain, and we can
                     # only have one.
-                    if default_toolchain_name != None:
+                    if default_toolchain != None:
                         fail("""We found more than one toolchain that is marked 
 as the default version.  Only set one toolchain with is_default set as 
 True. The toolchain is named: {}""".format(toolchain_attr.name))
 
-                    # We register the default toolchain.
-                    _python_register_toolchains(toolchain_attr, False)
-                    default_toolchain_name = toolchain_attr.name
-                else:
-                    #  Always register toolchains that are in the root module.
-                    _python_register_toolchains(toolchain_attr, version_constraint = True)
+                    # We store the default toolchain to have it
+                    # as the last toolchain added to toolchains
+                    default_toolchain = _python_register_toolchains(
+                        toolchain_attr,
+                        version_constraint = False,
+                    )
+                    python_versions[toolchain_attr.python_version] = toolchain_attr.name
+                    continue
+
+                toolchains.append(
+                    _python_register_toolchains(
+                        toolchain_attr,
+                        version_constraint = True,
+                    ),
+                )
+                python_versions[toolchain_attr.python_version] = toolchain_attr.name
             else:
                 # We add the toolchain to a map, and we later create the
                 # toolchain if the root module does not have a toolchain with
@@ -75,7 +116,7 @@ True. The toolchain is named: {}""".format(toolchain_attr.name))
                 sub_toolchains_map[toolchain_attr.name] = toolchain_attr
 
     # We did not find a default toolchain so we fail.
-    if default_toolchain_name == None:
+    if default_toolchain == None:
         fail("""Unable to find a default toolchain in the root module.  
 Please define a toolchain that has is_version set to True.""")
 
@@ -88,14 +129,39 @@ Please define a toolchain that has is_version set to True.""")
  module has a toolchain of the same name.""".format(toolchain_attr.name))
             continue
         toolchain_names.append(name)
-        _python_register_toolchains(toolchain_attr, True)
+        toolchains.append(
+            _python_register_toolchains(
+                toolchain_attr,
+                version_constraint = True,
+            ),
+        )
+        python_versions[toolchain_attr.python_version] = toolchain_attr.name
 
-    # Create the hub for the interpreters and the
-    # the default toolchain.
+    # The last toolchain in the BUILD file is set as the default
+    # toolchain. We need the default last.
+    toolchains.append(default_toolchain)
+
+    if len(toolchains) > _MAX_NUM_TOOLCHAINS:
+        fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
+
+    # Create the pythons_hub repo for the interpreter meta data and the
+    # the various toolchains.
     hub_repo(
         name = "pythons_hub",
-        toolchains = toolchain_names,
-        default_toolchain = default_toolchain_name,
+        toolchain_prefixes = [
+            _toolchain_prefix(index, toolchain.name)
+            for index, toolchain in enumerate(toolchains)
+        ],
+        toolchain_python_versions = [t.python_version for t in toolchains],
+        toolchain_set_python_version_constraints = [t.set_python_version_constraint for t in toolchains],
+        toolchain_user_repository_names = [t.name for t in toolchains],
+    )
+
+    # This is require in order to support multiple version py_test
+    # and py_binary
+    multi_toolchain_aliases(
+        name = "python_aliases",
+        python_versions = python_versions,
     )
 
 python = module_extension(
@@ -142,8 +208,14 @@ is set as the default toolchain.
                     mandatory = False,
                     doc = "Whether the toolchain is the default version",
                 ),
-                "name": attr.string(mandatory = True),
-                "python_version": attr.string(mandatory = True),
+                "name": attr.string(
+                    mandatory = True,
+                    doc = "Name of the toolchain",
+                ),
+                "python_version": attr.string(
+                    mandatory = True,
+                    doc = "The Python version that we are creating the toolchain for.",
+                ),
             },
         ),
     },

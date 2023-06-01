@@ -12,11 +12,7 @@ bazel_dep(name = "rules_python", version = "")
 # testing purposes.
 PYTHON_NAME_39 = "python_39"
 
-PYTHON_39_TOOLCHAINS = PYTHON_NAME_39 + "_toolchains"
-
 PYTHON_NAME_311 = "python_311"
-
-PYTHON_311_TOOLCHAINS = PYTHON_NAME_311 + "_toolchains"
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -42,16 +38,5 @@ python.toolchain(
 use_repo(
     python,
     PYTHON_NAME_39,
-    PYTHON_39_TOOLCHAINS,
     PYTHON_NAME_311,
-    PYTHON_311_TOOLCHAINS,
-)
-
-# This call registers the Python toolchains.
-# Note: there is work under way to move this code to within
-# rules_python, and the user won't have to make this call,
-# unless they are registering custom toolchains.
-register_toolchains(
-    "@{}//:all".format(PYTHON_39_TOOLCHAINS),
-    "@{}//:all".format(PYTHON_311_TOOLCHAINS),
 )

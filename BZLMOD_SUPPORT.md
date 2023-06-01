@@ -31,7 +31,7 @@ A second example, in [examples/bzlmod_build_file_generation](examples/bzlmod_bui
 
 This rule set does not have full feature partity with the older `WORKSPACE` type configuration:
 
-1. Multiple python versions are not yet supported, as demonstrated in [this](examples/multi_python_versions) example.
+1. Multiple pip extensions are not yet supported, as demonstrated in [this](examples/multi_python_versions) example.
 2. Gazelle does not support finding deps in sub-modules.  For instance we can have a dep like ` "@our_other_module//other_module/pkg:lib",` in a `py_test` definition.
 
 Check ["issues"](/bazelbuild/rules_python/issues) for an up to date list.

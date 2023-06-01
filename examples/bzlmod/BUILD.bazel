@@ -8,9 +8,6 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@pip//:requirements.bzl", "all_requirements", "all_whl_requirements", "requirement")
 load("@python_39//:defs.bzl", py_test_with_transition = "py_test")
-
-# This is not working yet till the toolchain hub registration is working
-# load("@python_310//:defs.bzl", py_binary_310 = "py_binary")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -49,22 +46,6 @@ py_binary(
         ":lib",
     ],
 )
-
-# This is still WIP.  Not working till we have the toolchain
-# registration functioning.
-
-# This is used for testing mulitple versions of Python. This is
-# used only when you need to support multiple versions of Python
-# in the same project.
-# py_binary_310(
-#     name = "main_310",
-#     srcs = ["__main__.py"],
-#     main = "__main__.py",
-#     visibility = ["//:__subpackages__"],
-#     deps = [
-#         ":lib",
-#     ],
-# )
 
 # see https://bazel.build/reference/be/python#py_test
 py_test(
