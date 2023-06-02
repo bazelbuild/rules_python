@@ -9,9 +9,9 @@
 <pre>
 pip_repository(<a href="#pip_repository-name">name</a>, <a href="#pip_repository-annotations">annotations</a>, <a href="#pip_repository-download_only">download_only</a>, <a href="#pip_repository-enable_implicit_namespace_pkgs">enable_implicit_namespace_pkgs</a>, <a href="#pip_repository-environment">environment</a>,
                <a href="#pip_repository-extra_pip_args">extra_pip_args</a>, <a href="#pip_repository-incompatible_generate_aliases">incompatible_generate_aliases</a>, <a href="#pip_repository-isolated">isolated</a>, <a href="#pip_repository-pip_data_exclude">pip_data_exclude</a>,
-               <a href="#pip_repository-python_interpreter">python_interpreter</a>, <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_prefix">repo_prefix</a>,
-               <a href="#pip_repository-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>, <a href="#pip_repository-requirements_windows">requirements_windows</a>,
-               <a href="#pip_repository-timeout">timeout</a>)
+               <a href="#pip_repository-python_interpreter">python_interpreter</a>, <a href="#pip_repository-python_interpreter_target">python_interpreter_target</a>, <a href="#pip_repository-quiet">quiet</a>, <a href="#pip_repository-repo_mapping">repo_mapping</a>, <a href="#pip_repository-repo_name">repo_name</a>,
+               <a href="#pip_repository-repo_prefix">repo_prefix</a>, <a href="#pip_repository-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository-requirements_linux">requirements_linux</a>, <a href="#pip_repository-requirements_lock">requirements_lock</a>,
+               <a href="#pip_repository-requirements_windows">requirements_windows</a>, <a href="#pip_repository-timeout">timeout</a>)
 </pre>
 
 A rule for importing `requirements.txt` dependencies into Bazel.
@@ -72,39 +72,13 @@ py_binary(
 | <a id="pip_repository-python_interpreter_target"></a>python_interpreter_target |  If you are using a custom python interpreter built by another repository rule, use this attribute to specify its BUILD target. This allows pip_repository to invoke pip using the same interpreter as your toolchain. If set, takes precedence over python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:python".   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository-quiet"></a>quiet |  If True, suppress printing stdout and stderr output to the terminal.   | Boolean | optional | <code>True</code> |
 | <a id="pip_repository-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
+| <a id="pip_repository-repo_name"></a>repo_name |  -   | String | optional | <code>""</code> |
 | <a id="pip_repository-repo_prefix"></a>repo_prefix |  Prefix for the generated packages will be of the form <code>@&lt;prefix&gt;&lt;sanitized-package-name&gt;//...</code>   | String | optional | <code>""</code> |
 | <a id="pip_repository-requirements_darwin"></a>requirements_darwin |  Override the requirements_lock attribute when the host platform is Mac OS   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository-requirements_linux"></a>requirements_linux |  Override the requirements_lock attribute when the host platform is Linux   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository-requirements_windows"></a>requirements_windows |  Override the requirements_lock attribute when the host platform is Windows   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 | <a id="pip_repository-timeout"></a>timeout |  Timeout (in seconds) on the rule's execution duration.   | Integer | optional | <code>600</code> |
-
-
-<a id="pip_repository_bzlmod"></a>
-
-## pip_repository_bzlmod
-
-<pre>
-pip_repository_bzlmod(<a href="#pip_repository_bzlmod-name">name</a>, <a href="#pip_repository_bzlmod-incompatible_generate_aliases">incompatible_generate_aliases</a>, <a href="#pip_repository_bzlmod-repo_mapping">repo_mapping</a>, <a href="#pip_repository_bzlmod-repo_name">repo_name</a>,
-                      <a href="#pip_repository_bzlmod-requirements_darwin">requirements_darwin</a>, <a href="#pip_repository_bzlmod-requirements_linux">requirements_linux</a>, <a href="#pip_repository_bzlmod-requirements_lock">requirements_lock</a>,
-                      <a href="#pip_repository_bzlmod-requirements_windows">requirements_windows</a>)
-</pre>
-
-A rule for bzlmod pip_repository creation. Intended for private use only.
-
-**ATTRIBUTES**
-
-
-| Name  | Description | Type | Mandatory | Default |
-| :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="pip_repository_bzlmod-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="pip_repository_bzlmod-incompatible_generate_aliases"></a>incompatible_generate_aliases |  Allow generating aliases in '@pip//:&lt;pkg&gt;' -&gt; '@pip_&lt;pkg&gt;//:pkg'. This replaces the aliases generated by the <code>bzlmod</code> tooling.   | Boolean | optional | <code>False</code> |
-| <a id="pip_repository_bzlmod-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
-| <a id="pip_repository_bzlmod-repo_name"></a>repo_name |  The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name   | String | required |  |
-| <a id="pip_repository_bzlmod-requirements_darwin"></a>requirements_darwin |  Override the requirements_lock attribute when the host platform is Mac OS   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
-| <a id="pip_repository_bzlmod-requirements_linux"></a>requirements_linux |  Override the requirements_lock attribute when the host platform is Linux   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
-| <a id="pip_repository_bzlmod-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
-| <a id="pip_repository_bzlmod-requirements_windows"></a>requirements_windows |  Override the requirements_lock attribute when the host platform is Windows   | <a href="https://bazel.build/concepts/labels">Label</a> | optional | <code>None</code> |
 
 
 <a id="whl_library"></a>
