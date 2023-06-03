@@ -60,82 +60,97 @@ def _python_register_toolchains(toolchain_attr, version_constraint):
     )
 
 def _python_impl(module_ctx):
-    # Use to store all of the toolchains
+    # The toolchain info structs to register, in the order to register them in.
     toolchains = []
 
-    # Used to check if toolchains already exist
-    toolchain_names = []
-
-    # Used to store toolchains that are in sub modules.
-    sub_toolchains_map = {}
+    # We store the default toolchain separately to ensure it is the last
+    # toolchain added to toolchains.
     default_toolchain = None
-    python_versions = {}
+
+    # Map of toolchain name to registering module
+    global_toolchain_names = {}
+
+    # Map of string Major.Minor to the toolchain name and module name
+    global_toolchain_versions = {}
 
     for mod in module_ctx.modules:
+        module_toolchain_names = []
+        module_toolchain_versions = []
+
         for toolchain_attr in mod.tags.toolchain:
-            # If we are in the root module we always register the toolchain.
-            # We wait to register the default toolchain till the end.
-            if mod.is_root:
-                if toolchain_attr.name in toolchain_names:
-                    fail("""We found more than one toolchain that is named: {}.
-All toolchains must have an unique name.""".format(toolchain_attr.name))
+            toolchain_name = toolchain_attr.name
 
-                toolchain_names.append(toolchain_attr.name)
+            # Duplicate names within a module indicate a misconfigured module.
+            if toolchain_name in module_toolchain_names:
+                _fail_duplicate_module_toolchain_name(mod.name, toolchain_name)
+            module_toolchain_names.append(toolchain_name)
 
-                # If we have the default version or we only have one toolchain
-                # in the root module we set the toolchain as the default toolchain.
-                if toolchain_attr.is_default or len(mod.tags.toolchain) == 1:
-                    # We have already found one default toolchain, and we can
-                    # only have one.
-                    if default_toolchain != None:
-                        fail("""We found more than one toolchain that is marked 
-as the default version.  Only set one toolchain with is_default set as 
-True. The toolchain is named: {}""".format(toolchain_attr.name))
-
-                    # We store the default toolchain to have it
-                    # as the last toolchain added to toolchains
-                    default_toolchain = _python_register_toolchains(
-                        toolchain_attr,
-                        version_constraint = False,
-                    )
-                    python_versions[toolchain_attr.python_version] = toolchain_attr.name
-                    continue
-
-                toolchains.append(
-                    _python_register_toolchains(
-                        toolchain_attr,
-                        version_constraint = True,
-                    ),
+            # Ignore name collisions in the global scope because there isn't
+            # much else that can be done. Modules don't know and can't control
+            # what other modules do, so the first in the dependency graph wins.
+            if toolchain_name in global_toolchain_names:
+                _warn_duplicate_global_toolchain_name(
+                    toolchain_name,
+                    first_module = global_toolchain_names[toolchain_name],
+                    second_module = mod.name,
                 )
-                python_versions[toolchain_attr.python_version] = toolchain_attr.name
+                continue
+            global_toolchain_names[toolchain_name] = mod.name
+
+            # Duplicate versions within a module indicate a misconfigured module.
+            toolchain_version = toolchain_attr.python_version
+            if toolchain_version in module_toolchain_versions:
+                _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
+            module_toolchain_versions.append(toolchain_version)
+
+            # Ignore version collisions in the global scope because there isn't
+            # much else that can be done. Modules don't know and can't control
+            # what other modules do, so the first in the dependency graph wins.
+            if toolchain_version in global_toolchain_versions:
+                _warn_duplicate_global_toolchain_version(
+                    toolchain_version,
+                    first = global_toolchain_versions[toolchain_version],
+                    second_toolchain_name = toolchain_name,
+                    second_module_name = mod.name,
+                )
+                continue
+            global_toolchain_versions[toolchain_version] = struct(
+                toolchain_name = toolchain_name,
+                module_name = mod.name,
+            )
+
+            # Only the root module is allowed to set the default toolchain
+            # to prevent submodules from clobbering each other.
+            # A single toolchain in the root module is treated as the default
+            # because it's unambigiuous.
+            if mod.is_root:
+                is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
             else:
-                # We add the toolchain to a map, and we later create the
-                # toolchain if the root module does not have a toolchain with
-                # the same name.  We have to loop through all of the modules to
-                # ensure that we get a full list of the root toolchains.
-                sub_toolchains_map[toolchain_attr.name] = toolchain_attr
+                is_default = False
 
-    # We did not find a default toolchain so we fail.
-    if default_toolchain == None:
-        fail("""Unable to find a default toolchain in the root module.  
-Please define a toolchain that has is_version set to True.""")
+            # We have already found one default toolchain, and we can only have
+            # one.
+            if is_default and default_toolchain != None:
+                _fail_multiple_default_toolchains(
+                    first = default_toolchain.name,
+                    second = toolchain_name,
+                )
 
-    # Create the toolchains in the submodule(s).
-    for name, toolchain_attr in sub_toolchains_map.items():
-        # We cannot have a toolchain in a sub module that has the same name of
-        # a toolchain in the root module. This will cause name clashing.
-        if name in toolchain_names:
-            _print_warn("""Not creating the toolchain from sub module, with the name {}. The root
- module has a toolchain of the same name.""".format(toolchain_attr.name))
-            continue
-        toolchain_names.append(name)
-        toolchains.append(
-            _python_register_toolchains(
+            toolchain_info = _python_register_toolchains(
                 toolchain_attr,
-                version_constraint = True,
-            ),
-        )
-        python_versions[toolchain_attr.python_version] = toolchain_attr.name
+                version_constraint = not is_default,
+            )
+
+            if is_default:
+                default_toolchain = toolchain_info
+            else:
+                toolchains.append(toolchain_info)
+
+    # A default toolchain is required so that the non-version-specific rules
+    # are able to match a toolchain.
+    if default_toolchain == None:
+        fail("No default toolchain found: exactly one toolchain must have " +
+             "is_default=True set")
 
     # The last toolchain in the BUILD file is set as the default
     # toolchain. We need the default last.
@@ -161,8 +176,56 @@ Please define a toolchain that has is_version set to True.""")
     # and py_binary
     multi_toolchain_aliases(
         name = "python_aliases",
-        python_versions = python_versions,
+        python_versions = {
+            version: entry.toolchain_name
+            for version, entry in global_toolchain_versions.items()
+        },
     )
+
+def _fail_duplicate_module_toolchain_name(module_name, toolchain_name):
+    fail(("Duplicate module toolchain name: module '{module}' attempted " +
+          "to use the name '{toolchain}' multiple times in itself").format(
+        toolchain = toolchain_name,
+        module = module_name,
+    ))
+
+def _warn_duplicate_global_toolchain_name(name, first_module, second_module):
+    _print_warn((
+        "Ignoring toolchain '{name}' from module '{second_module}': " +
+        "Toolchain with the same name from module '{first_module}' has precedence"
+    ).format(
+        name = name,
+        first_module = first_module,
+        second_module = second_module,
+    ))
+
+def _fail_duplicate_module_toolchain_version(version, module):
+    fail(("Duplicate module toolchain version: module '{module}' attempted " +
+          "to use version '{version}' multiple times in itself").format(
+        version = version,
+        module = module,
+    ))
+
+def _warn_duplicate_global_toolchain_version(version, first, second_toolchain_name, second_module_name):
+    _print_warn((
+        "Ignoring toolchain '{second_toolchain}' from module '{second_module}': " +
+        "Toolchain '{first_toolchain}' from module '{first_module}' " +
+        "already registered Python version {version} and has precedence"
+    ).format(
+        first_toolchain = first.toolchain_name,
+        first_module = first.module_name,
+        second_module = second_module_name,
+        second_toolchain = second_toolchain_name,
+        version = version,
+    ))
+
+def _fail_multiple_default_toolchains(first, second):
+    fail(("Multiple default toolchains: only one toolchain " +
+          "can have is_default=True. First default " +
+          "was toolchain '{first}'. Second was '{second}'").format(
+        first = first,
+        second = second,
+    ))
 
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
@@ -184,15 +247,15 @@ Toolchains in Sub Modules
 It will create a toolchain that is in a sub module, if the toolchain
 of the same name does not exist in the root module.  The extension stops name
 clashing between toolchains in the root module and toolchains in sub modules.
-You cannot configure more than one toolchain as the default toolchain.  
+You cannot configure more than one toolchain as the default toolchain.
 
 Toolchain set as the default version
 
-This extension will not create a toolchain that exists in a sub module, 
+This extension will not create a toolchain that exists in a sub module,
 if the sub module toolchain is marked as the default version. If you have
 more than one toolchain in your root module, you need to set one of the
-toolchains as the default version.  If there is only one toolchain it 
-is set as the default toolchain.  
+toolchains as the default version.  If there is only one toolchain it
+is set as the default toolchain.
 """,
             attrs = {
                 "configure_coverage_tool": attr.bool(
