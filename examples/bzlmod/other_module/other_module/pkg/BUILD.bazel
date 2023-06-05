@@ -1,4 +1,4 @@
-load("@python_311//:defs.bzl", py_binary_311 = "py_binary")
+load("@python_3_11//:defs.bzl", py_binary_311 = "py_binary")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
