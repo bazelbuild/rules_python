@@ -40,20 +40,6 @@ pip.parse(
 )
 
 use_repo(pip, "pip")
-
-# (Optional) Register a specific python toolchain instead of using the host version
-python = use_extension("@rules_python//python:extensions.bzl", "python")
-
-python.toolchain(
-    name = "python3_9",
-    python_version = "3.9",
-)
-
-use_repo(python, "python3_9_toolchains")
-
-register_toolchains(
-    "@python3_9_toolchains//:all",
-)
 \`\`\`
 
 ## Using WORKSPACE

@@ -51,6 +51,15 @@ use_repo(
 # We need to do another use_extension call to expose the "pythons_hub"
 # repo.
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+# The default toolchain to use if nobody configures a toolchain.
+# NOTE: This is not a stable version. It is provided for convenience, but will
+# change frequently to track the most recent Python version.
+# NOTE: The root module can override this.
+python.toolchain(
+    is_default = True,
+    python_version = "3.11",
+)
 use_repo(python, "pythons_hub")
 
 # This call registers the Python toolchains.
