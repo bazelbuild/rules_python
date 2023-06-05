@@ -12,7 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-fixedReleaser:
-  login: f0rmiga
-  email: thulio@aspect.dev
-moduleRoots: [".", "gazelle"]
+bcr_test_module:
+  module_path: "../examples/build_file_generation"
+  matrix:
+    platform: ["debian11", "macos", "ubuntu2004", "windows"]
+  tasks:
+    run_tests:
+      name: "Run test module"
+      platform: ${{ platform }}
+      build_targets:
+        - "//..."
+        - ":modules_map"
+      test_targets:
+        - "//..."
