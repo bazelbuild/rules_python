@@ -30,6 +30,18 @@ class ExampleTest(unittest.TestCase):
         except ImportError:
             self.skipTest("not running under coverage, skipping")
 
+        self.assertEqual(
+            "html",
+            f"{html_stdlib.__name__}",
+            "'html' from stdlib was not loaded correctly",
+        )
+
+        self.assertEqual(
+            "coverage.html",
+            f"{html_coverage.__name__}",
+            "'coverage.html' was not loaded correctly",
+        )
+
         self.assertNotEqual(
             html_stdlib,
             html_coverage,
