@@ -10,9 +10,9 @@ bazel_dep(name = "rules_python", version = "")
 # a submodule.  This code only exists to test that
 # we support doing this. This code is only for rules_python
 # testing purposes.
-PYTHON_NAME_39 = "python_39"
+PYTHON_NAME_39 = "python_3_9"
 
-PYTHON_NAME_311 = "python_311"
+PYTHON_NAME_311 = "python_3_11"
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(

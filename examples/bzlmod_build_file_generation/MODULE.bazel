@@ -46,14 +46,13 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 # This name is passed into python.toolchain and it's use_repo statement.
 # We also use the same name for python.host_python_interpreter.
-PYTHON_NAME = "python"
+PYTHON_NAME = "python_3_9"
 
 INTERPRETER_NAME = "interpreter"
 
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
 python.toolchain(
-    name = PYTHON_NAME,
     configure_coverage_tool = True,
     is_default = True,
     python_version = "3.9",

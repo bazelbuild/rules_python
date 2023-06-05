@@ -6,3 +6,5 @@ bazel-rules_python
 bazel-bin
 bazel-out
 bazel-testlogs
+examples/bzlmod/bazel-bzlmod
+examples/bzlmod_build_file_generation/bazel-bzlmod_build_file_generation
