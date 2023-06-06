@@ -66,7 +66,7 @@ class ExampleTest(unittest.TestCase):
         if os.environ.get("COVERAGE_MANIFEST"):
             # we are running under the 'bazel coverage :test'
             self.assertTrue(
-                "pypi__coverage_cp" in last_item,
+                "_coverage" in last_item,
                 f"Expected {last_item} to be related to coverage",
             )
             self.assertEqual(pathlib.Path(last_item).name, "coverage")
