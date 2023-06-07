@@ -219,6 +219,12 @@ if the sub module toolchain is marked as the default version. If you have
 more than one toolchain in your root module, you need to set one of the
 toolchains as the default version.  If there is only one toolchain it
 is set as the default toolchain.
+
+Toolchain repository name
+
+A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
+`python_3_10`. The `major` and `minor` components are
+`major` and `minor` are the Python version from the `python_version` attribute.
 """,
             attrs = {
                 "configure_coverage_tool": attr.bool(
@@ -236,7 +242,7 @@ is set as the default toolchain.
                 ),
                 "python_version": attr.string(
                     mandatory = True,
-                    doc = "The Python version that we are creating the toolchain for.",
+                    doc = "The Python version, in `major.minor` format, e.g "3.12", to create a toolchain for.",
                 ),
             },
         ),
