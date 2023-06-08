@@ -17,11 +17,6 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load(
-    "//python:versions.bzl",
-    "MINOR_MAPPING",
-    "PLATFORMS",
-)
 
 # Update with './tools/update_coverage_deps.py <version>'
 #START: managed by update_coverage_deps.py script
@@ -150,25 +145,3 @@ filegroup(
     )
 
     return "@{name}//:coverage".format(name = name)
-
-def install_coverage_deps():
-    """Register the dependency for the coverage dep.
-
-    This is only used under bzlmod.
-    """
-
-    for python_version in MINOR_MAPPING.values():
-        for platform in PLATFORMS.keys():
-            if "windows" in platform:
-                continue
-
-            coverage_dep(
-                name = "pypi__coverage_cp{version_no_dot}_{platform}".format(
-                    version_no_dot = python_version.rpartition(".")[0].replace(".", ""),
-                    platform = platform,
-                ),
-                python_version = python_version,
-                platform = platform,
-                visibility = ["//visibility:public"],
-                install = True,
-            )
