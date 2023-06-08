@@ -53,7 +53,7 @@ def _interpreter_repo_impl(rctx):
 
     actual_interpreter_label = INTERPRETER_LABELS.get(rctx.attr.python_name)
     if actual_interpreter_label == None:
-        fail("Unable to find interpreter with name {}".format(rctx.attr.python_name))
+        fail("Unable to find interpreter with name '{}'".format(rctx.attr.python_name))
 
     rctx.symlink(actual_interpreter_label, "python")
 

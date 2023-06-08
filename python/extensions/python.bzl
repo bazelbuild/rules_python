@@ -43,11 +43,11 @@ def _left_pad_zero(index, length):
 def _print_warn(msg):
     print("WARNING:", msg)
 
-def _python_register_toolchains(toolchain_attr, version_constraint):
+def _python_register_toolchains(name, toolchain_attr, version_constraint):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
-        name = toolchain_attr.name,
+        name = name,
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
         ignore_root_user_error = toolchain_attr.ignore_root_user_error,
@@ -56,7 +56,7 @@ def _python_register_toolchains(toolchain_attr, version_constraint):
     return struct(
         python_version = toolchain_attr.python_version,
         set_python_version_constraint = str(version_constraint),
-        name = toolchain_attr.name,
+        name = name,
     )
 
 def _python_impl(module_ctx):
@@ -67,38 +67,17 @@ def _python_impl(module_ctx):
     # toolchain added to toolchains.
     default_toolchain = None
 
-    # Map of toolchain name to registering module
-    global_toolchain_names = {}
-
     # Map of string Major.Minor to the toolchain name and module name
     global_toolchain_versions = {}
 
     for mod in module_ctx.modules:
-        module_toolchain_names = []
         module_toolchain_versions = []
 
         for toolchain_attr in mod.tags.toolchain:
-            toolchain_name = toolchain_attr.name
-
-            # Duplicate names within a module indicate a misconfigured module.
-            if toolchain_name in module_toolchain_names:
-                _fail_duplicate_module_toolchain_name(mod.name, toolchain_name)
-            module_toolchain_names.append(toolchain_name)
-
-            # Ignore name collisions in the global scope because there isn't
-            # much else that can be done. Modules don't know and can't control
-            # what other modules do, so the first in the dependency graph wins.
-            if toolchain_name in global_toolchain_names:
-                _warn_duplicate_global_toolchain_name(
-                    toolchain_name,
-                    first_module = global_toolchain_names[toolchain_name],
-                    second_module = mod.name,
-                )
-                continue
-            global_toolchain_names[toolchain_name] = mod.name
+            toolchain_version = toolchain_attr.python_version
+            toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
             # Duplicate versions within a module indicate a misconfigured module.
-            toolchain_version = toolchain_attr.python_version
             if toolchain_version in module_toolchain_versions:
                 _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
             module_toolchain_versions.append(toolchain_version)
@@ -137,6 +116,7 @@ def _python_impl(module_ctx):
                 )
 
             toolchain_info = _python_register_toolchains(
+                toolchain_name,
                 toolchain_attr,
                 version_constraint = not is_default,
             )
@@ -181,23 +161,6 @@ def _python_impl(module_ctx):
             for version, entry in global_toolchain_versions.items()
         },
     )
-
-def _fail_duplicate_module_toolchain_name(module_name, toolchain_name):
-    fail(("Duplicate module toolchain name: module '{module}' attempted " +
-          "to use the name '{toolchain}' multiple times in itself").format(
-        toolchain = toolchain_name,
-        module = module_name,
-    ))
-
-def _warn_duplicate_global_toolchain_name(name, first_module, second_module):
-    _print_warn((
-        "Ignoring toolchain '{name}' from module '{second_module}': " +
-        "Toolchain with the same name from module '{first_module}' has precedence"
-    ).format(
-        name = name,
-        first_module = first_module,
-        second_module = second_module,
-    ))
 
 def _fail_duplicate_module_toolchain_version(version, module):
     fail(("Duplicate module toolchain version: module '{module}' attempted " +
@@ -256,6 +219,12 @@ if the sub module toolchain is marked as the default version. If you have
 more than one toolchain in your root module, you need to set one of the
 toolchains as the default version.  If there is only one toolchain it
 is set as the default toolchain.
+
+Toolchain repository name
+
+A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
+`python_3_10`. The `major` and `minor` components are
+`major` and `minor` are the Python version from the `python_version` attribute.
 """,
             attrs = {
                 "configure_coverage_tool": attr.bool(
@@ -271,13 +240,9 @@ is set as the default toolchain.
                     mandatory = False,
                     doc = "Whether the toolchain is the default version",
                 ),
-                "name": attr.string(
-                    mandatory = True,
-                    doc = "Name of the toolchain",
-                ),
                 "python_version": attr.string(
                     mandatory = True,
-                    doc = "The Python version that we are creating the toolchain for.",
+                    doc = "The Python version, in `major.minor` format, e.g '3.12', to create a toolchain for.",
                 ),
             },
         ),
