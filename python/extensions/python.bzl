@@ -242,7 +242,7 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
                 "python_version": attr.string(
                     mandatory = True,
-                    doc = "The Python version, in `major.minor` format, e.g "3.12", to create a toolchain for.",
+                    doc = "The Python version, in `major.minor` format, e.g '3.12', to create a toolchain for.",
                 ),
             },
         ),
