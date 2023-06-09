@@ -32,3 +32,33 @@ compile_pip_requirements(
     requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
 )
+
+genrule(
+    name = "generate_os_specific_requirements_in",
+    srcs = [],
+    outs = ["requirements_os_specific.in"],
+    cmd = """
+cat > $@ <<EOF
+pip==22.3.0 ; sys_platform == "linux"
+pip==22.2.2 ; sys_platform == "darwin"
+pip==22.2.1 ; sys_platform == "win32"
+EOF
+""",
+)
+
+compile_pip_requirements(
+    name = "os_specific_requirements",
+    data = [
+        "requirements_extra.in",
+        "requirements_os_specific.in",
+    ],
+    extra_args = [
+        "--allow-unsafe",
+        "--resolver=backtracking",
+    ],
+    requirements_darwin = "requirements_lock_darwin.txt",
+    requirements_in = "requirements_os_specific.in",
+    requirements_linux = "requirements_lock_linux.txt",
+    requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_lock_windows.txt",
+)
