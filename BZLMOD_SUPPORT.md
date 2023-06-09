@@ -55,6 +55,7 @@ register the builtin Bazel Python toolchain by doing
 **IMPORTANT: this should only be done in a root module, and may intefere with
 the toolchains rules_python registers**.
 
-NOTE: Regardless of your toolchain, `rules_python` still relies on a local
-Python being available to bootstrap the program before handing over execution to
-the toolchain Python.
+NOTE: Regardless of your toolchain, due to
+[#691](https://github.com/bazelbuild/rules_python/issues/691), `rules_python`
+still relies on a local Python being available to bootstrap the program before
+handing over execution to the toolchain Python.
