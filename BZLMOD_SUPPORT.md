@@ -41,12 +41,12 @@ Check ["issues"](/bazelbuild/rules_python/issues) for an up to date list.
 ### Default toolchain is not the local system Python
 
 Under bzlmod, the default toolchain is no longer based on the locally installed
-system toolchain. Instead, a recent Python version using the pre-built,
+system Python. Instead, a recent Python version using the pre-built,
 standalone runtimes are used.
 
-If you need to use the local system python, then it's suggested that you
-setup and configure your own toolchain and register it. Note that using the
-local system's Python is not advised because will vary between users and
+If you need the local system Python to be your toolchain, then it's suggested
+that you setup and configure your own toolchain and register it. Note that using
+the local system's Python is not advised because will vary between users and
 platforms.
 
 If you want to use the same toolchain as what WORKSPACE used, then manually
@@ -54,3 +54,7 @@ register the builtin Bazel Python toolchain by doing
 `register_toolchains("@bazel_tools//tools/python:autodetecting_toolchain")`.
 **IMPORTANT: this should only be done in a root module, and may intefere with
 the toolchains rules_python registers**.
+
+NOTE: Regardless of your toolchain, `rules_python` still relies on a local
+Python being available to bootstrap the program before handing over execution to
+the toolchain Python.
