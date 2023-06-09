@@ -167,12 +167,12 @@ Root-Is-Purelib: {}
             wheel_contents += "Tag: %s\n" % tag
         self.add_string(self.distinfo_path("WHEEL"), wheel_contents)
 
-    def add_metadata(self, metadata, description, version):
+    def add_metadata(self, metadata, name, description, version):
         """Write METADATA file to the distribution."""
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
-        metadata += "Version: " + version
-        metadata += "\n\n"
+        metadata = re.sub("^Name: .*$", "Name: %s" % name, metadata, flags=re.MULTILINE)
+        metadata += "Version: %s\n\n" % version
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
@@ -207,18 +207,18 @@ def get_files_to_package(input_files):
     return files
 
 
-def resolve_version_stamp(
-    version: str, volatile_status_stamp: Path, stable_status_stamp: Path
+def resolve_argument_stamp(
+    argument: str, volatile_status_stamp: Path, stable_status_stamp: Path
 ) -> str:
-    """Resolve workspace status stamps format strings found in the version string
+    """Resolve workspace status stamps format strings found in the argument string
 
     Args:
-        version (str): The raw version represenation for the wheel (may include stamp variables)
+        argument (str): The raw argument represenation for the wheel (may include stamp variables)
         volatile_status_stamp (Path): The path to a volatile workspace status file
         stable_status_stamp (Path): The path to a stable workspace status file
 
     Returns:
-        str: A resolved version string
+        str: A resolved argument string
     """
     lines = (
         volatile_status_stamp.read_text().splitlines()
@@ -229,9 +229,9 @@ def resolve_version_stamp(
             continue
         key, value = line.split(" ", maxsplit=1)
         stamp = "{" + key + "}"
-        version = version.replace(stamp, value)
+        argument = argument.replace(stamp, value)
 
-    return version
+    return argument
 
 
 def parse_args() -> argparse.Namespace:
@@ -357,7 +357,16 @@ def main() -> None:
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
     if arguments.volatile_status_file and arguments.stable_status_file:
-        version = resolve_version_stamp(
+        name = resolve_argument_stamp(
+            arguments.name,
+            arguments.volatile_status_file,
+            arguments.stable_status_file,
+        )
+    else:
+        name = arguments.name
+
+    if arguments.volatile_status_file and arguments.stable_status_file:
+        version = resolve_argument_stamp(
             arguments.version,
             arguments.volatile_status_file,
             arguments.stable_status_file,
@@ -366,7 +375,7 @@ def main() -> None:
         version = arguments.version
 
     with WheelMaker(
-        name=arguments.name,
+        name=name,
         version=version,
         build_tag=arguments.build_tag,
         python_tag=arguments.python_tag,
@@ -398,7 +407,9 @@ def main() -> None:
             with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
-        maker.add_metadata(metadata=metadata, description=description, version=version)
+        maker.add_metadata(
+            metadata=metadata, name=name, description=description, version=version
+        )
 
         if arguments.entry_points_file:
             maker.add_file(
