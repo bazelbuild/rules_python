@@ -40,6 +40,12 @@ Name of the distribution.
 
 This should match the project name onm PyPI. It's also the name that is used to
 refer to the package in other packages' dependencies.
+
+Workspace status keys are expanded using `{NAME}` format, for example:
+ - `distribution = "package.{CLASSIFIER}"`
+ - `distribution = "{DISTRIBUTION}"`
+
+For the available keys, see https://bazel.build/docs/user-manual#workspace-status
 """,
     ),
     "platform": attr.string(
