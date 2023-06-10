@@ -17,6 +17,12 @@
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 
+def _generate_log_select(pip_installation_report, loc):
+    result = {}
+    for config, report_label in pip_installation_report.items():
+        result[config] = [loc.format(report_label)]
+    return select(result)
+
 def compile_pip_requirements(
         name,
         extra_args = [],
@@ -28,6 +34,7 @@ def compile_pip_requirements(
         requirements_darwin = None,
         requirements_linux = None,
         requirements_windows = None,
+        pip_installation_report = None,
         visibility = ["//visibility:private"],
         tags = None,
         **kwargs):
@@ -73,6 +80,8 @@ def compile_pip_requirements(
     )
 
     data = [name, requirements_in, requirements_txt] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    if pip_installation_report:
+        data += _generate_log_select(pip_installation_report, "{}")
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -87,6 +96,7 @@ def compile_pip_requirements(
         loc.format(requirements_linux) if requirements_linux else "None",
         loc.format(requirements_darwin) if requirements_darwin else "None",
         loc.format(requirements_windows) if requirements_windows else "None",
+    ] + (_generate_log_select(pip_installation_report, loc) if pip_installation_report else "None") + [
         "//%s:%s.update" % (native.package_name(), name),
     ] + extra_args
 
@@ -126,6 +136,8 @@ def compile_pip_requirements(
     if _bazel_version_4_or_greater:
         attrs["env"] = kwargs.pop("env", {})
 
+    # TODO(phil): Add a target_compatible_with here for all the configs not
+    # mentioned in pip_installation_report.
     py_binary(
         name = name + ".update",
         **attrs

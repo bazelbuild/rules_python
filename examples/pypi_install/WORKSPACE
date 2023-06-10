@@ -1,0 +1,35 @@
+workspace(name = "rules_python_pip_parse_example")
+
+local_repository(
+    name = "rules_python",
+    path = "../..",
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+py_repositories()
+
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
+python_register_toolchains(
+    name = "python39",
+    python_version = "3.9",
+)
+
+load("@python39//:defs.bzl", "interpreter")
+#load("@rules_python//python:pip.bzl", "pypi_install")
+#
+#pypi_install(
+#    name = "pypi_install",
+#    pip_installation_report = {
+#        "@//:x86_64_linux": "//:pip_install_report_x86_64_linux.json",
+#    },
+#)
+#
+#load("@pypi_install//:packages.bzl", "load_pypi_packages")
+#
+#load_pypi_packages(
+#    name = "pypi",
+#)

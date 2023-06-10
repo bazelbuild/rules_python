@@ -44,6 +44,11 @@ bazel_integration_test(
 )
 
 bazel_integration_test(
+    name = "pypi_install_example",
+    timeout = "long",
+)
+
+bazel_integration_test(
     name = "pip_repository_annotations_example",
     timeout = "long",
 )

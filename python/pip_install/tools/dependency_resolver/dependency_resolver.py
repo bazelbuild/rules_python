@@ -20,6 +20,8 @@ import shutil
 import sys
 from pathlib import Path
 
+import pip
+
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
@@ -93,6 +95,7 @@ if __name__ == "__main__":
     requirements_linux = parse_str_none(sys.argv.pop(1))
     requirements_darwin = parse_str_none(sys.argv.pop(1))
     requirements_windows = parse_str_none(sys.argv.pop(1))
+    pip_installation_report = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
@@ -114,6 +117,8 @@ if __name__ == "__main__":
     # Note: Windows cannot reference generated files without runfiles support enabled.
     requirements_in_relative = requirements_in[len(repository_prefix) :]
     requirements_txt_relative = requirements_txt[len(repository_prefix) :]
+    if pip_installation_report:
+        pip_installation_report_relative = pip_installation_report[len(repository_prefix) :]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -151,6 +156,9 @@ if __name__ == "__main__":
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt_relative if UPDATE else requirements_out)
+    if pip_installation_report:
+        sys.argv.append("--pip-args")
+        sys.argv.append(f"--report={pip_installation_report_relative}")
     sys.argv.append(
         requirements_in_relative
         if Path(requirements_in_relative).exists()
