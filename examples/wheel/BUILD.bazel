@@ -94,7 +94,7 @@ build_test(
 py_wheel(
     name = "minimal_with_py_library_with_stamp",
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
-    distribution = "example_minimal_library",
+    distribution = "example_minimal_library{BUILD_USER}",
     python_tag = "py3",
     stamp = 1,
     version = "0.1.{BUILD_TIMESTAMP}",
