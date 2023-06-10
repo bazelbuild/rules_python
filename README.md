@@ -78,7 +78,7 @@ python.toolchain(
 
 NOTE: bzlmod support is still experimental; APIs subject to change.
 
-To use dependencies from PyPi, the `pip.parse()` extension is used to
+To use dependencies from PyPI, the `pip.parse()` extension is used to
 convert a requirements file into Bazel dependencies.
 
 ```starlark
