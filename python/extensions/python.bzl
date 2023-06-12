@@ -98,12 +98,20 @@ def _python_impl(module_ctx):
                 module_name = mod.name,
             )
 
-            # Only the root module is allowed to set the default toolchain
-            # to prevent submodules from clobbering each other.
-            # A single toolchain in the root module is treated as the default
-            # because it's unambigiuous.
+            # Only the root module and rules_python are allowed to specify the default
+            # toolchain for a couple reasons:
+            # * It prevents submodules from specifying different defaults and only
+            #   one of them winning.
+            # * rules_python needs to set a soft default in case the root module doesn't,
+            #   e.g. if the root module doesn't use Python itself.
+            # * The root module is allowed to override the rules_python default.
             if mod.is_root:
+                # A single toolchain is treated as the default because it's unambiguous.
                 is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
+            elif mod.name == "rules_python" and not default_toolchain:
+                # We don't do the len() check because we want the default that rules_python
+                # sets to be clearly visible.
+                is_default = toolchain_attr.is_default
             else:
                 is_default = False
 
@@ -129,8 +137,7 @@ def _python_impl(module_ctx):
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
     if default_toolchain == None:
-        fail("No default toolchain found: exactly one toolchain must have " +
-             "is_default=True set")
+        fail("No default Python toolchain configured. Is rules_python missing `is_default=True`?")
 
     # The last toolchain in the BUILD file is set as the default
     # toolchain. We need the default last.

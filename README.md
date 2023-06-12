@@ -45,31 +45,52 @@ the older way of configuring bazel with a `WORKSPACE` file.
 
 ### Using bzlmod
 
+NOTE: bzlmod support is still experimental; APIs subject to change.
+
 To import rules_python in your project, you first need to add it to your
 `MODULE.bazel` file, using the snippet provided in the
 [release you choose](https://github.com/bazelbuild/rules_python/releases).
 
+Once the dependency is added, a Python toolchain will be automatically
+registered and you'll be able to create runnable programs and tests.
+
+
 #### Toolchain registration with bzlmod
 
-To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `MODULE.bazel` file:
+NOTE: bzlmod support is still experimental; APIs subject to change.
+
+A default toolchain is automatically configured for by depending on
+`rules_python`. Note, however, the version used tracks the most recent Python
+release and will change often.
+
+If you want to register specific Python versions, then use
+`python.toolchain()` for each version you need:
 
 ```starlark
-# Find the latest version number here: https://github.com/bazelbuild/rules_python/releases
-# and change the version number if needed in the line below.
-bazel_dep(name = "rules_python", version = "0.21.0")
+python = use_extension("@rules_python//python:extensions.bzl", "python")
 
+python.toolchain(
+    python_version = "3.9",
+)
+```
+
+### Using pip with bzlmod
+
+NOTE: bzlmod support is still experimental; APIs subject to change.
+
+To use dependencies from PyPI, the `pip.parse()` extension is used to
+convert a requirements file into Bazel dependencies.
+
+```starlark
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
-    name = "python",
-    configure_coverage_tool = True,
-    is_default = True,
     python_version = "3.9",
 )
 
 interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
 interpreter.install(
     name = "interpreter",
-    python_name = "python",
+    python_name = "python_3_9",
 )
 use_repo(interpreter, "interpreter")
 
