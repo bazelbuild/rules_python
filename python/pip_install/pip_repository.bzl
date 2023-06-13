@@ -15,9 +15,11 @@
 ""
 
 load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
+load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -72,8 +74,16 @@ def _resolve_python_interpreter(rctx):
     python_interpreter = _get_python_interpreter_attr(rctx)
 
     if rctx.attr.python_interpreter_target != None:
-        target = rctx.attr.python_interpreter_target
-        python_interpreter = rctx.path(target)
+        python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
+
+        # If we have @@ we have bzlmod so we need to hand Windows differently.
+        if str(Label("//:unused")).startswith("@@"):
+            (os, _) = get_host_os_arch(rctx)
+
+            # If we have Windows the symlink will not work directly and we need
+            # to resolve the realpath.
+            if os == WINDOWS_NAME:
+                python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
@@ -670,7 +680,6 @@ py_binary(
 
 def _whl_library_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
-
     args = [
         python_interpreter,
         "-m",
@@ -699,7 +708,7 @@ def _whl_library_impl(rctx):
     )
 
     if result.return_code:
-        fail("whl_library %s failed: %s (%s)" % (rctx.attr.name, result.stdout, result.stderr))
+        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     return
 
