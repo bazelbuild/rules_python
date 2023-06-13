@@ -219,6 +219,7 @@ def _python_repository_impl(rctx):
             # the definition of this filegroup will change, and depending rules will get invalidated."
             # See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
             "**/__pycache__/*.pyc",
+            "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
             "**/__pycache__/*.pyo",
         ]
 
