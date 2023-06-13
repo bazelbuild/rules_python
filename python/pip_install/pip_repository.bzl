@@ -80,8 +80,8 @@ def _resolve_python_interpreter(rctx):
         if str(Label("//:unused")).startswith("@@"):
             (os, _) = get_host_os_arch(rctx)
 
-            # If we have Windows the symlink will not work directly and we need
-            # to resolve the realpath.
+            # On Windows, the symlink doesn't work because Windows attempts to find
+            # Python DLLs where the symlink is, not where the symlink points.
             if os == WINDOWS_NAME:
                 python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
