@@ -226,6 +226,7 @@ def _generate_build_file_contents(
                 "**/* *",
                 "**/*.py",
                 "**/*.pyc",
+                "**/*.pyc.*", # During pyc creation, temp files named *.pyc.NNNN are created
                 # RECORD is known to contain sha256 checksums of files which might include the checksums
                 # of generated files produced when wheels are installed. The file is ignored to avoid
                 # Bazel caching issues.

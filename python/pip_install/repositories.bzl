@@ -106,6 +106,7 @@ py_library(
         # to avoid non-determinism following pip install's behavior.
         "**/*.py",
         "**/*.pyc",
+        "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
         "**/* *",
         "**/*.dist-info/RECORD",
         "BUILD",
