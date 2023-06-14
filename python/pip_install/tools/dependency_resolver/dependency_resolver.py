@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 import pip
+import pip._internal.cli.main
 
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
@@ -77,6 +78,22 @@ def _locate(bazel_runfiles, file):
         return file
 
     return bazel_runfiles.Rlocation(file)
+
+
+def run_pip(requirements_in, requirements_txt, pip_installation_report):
+    sys.argv = [
+        "pip",
+        "install",
+        "--ignore-installed",
+        "--dry-run",
+        "--quiet",
+        "--report",
+        pip_installation_report,
+        "--requirement",
+        requirements_in,
+    ]
+
+    return pip._internal.cli.main.main()
 
 
 if __name__ == "__main__":
@@ -152,6 +169,13 @@ if __name__ == "__main__":
 
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
+
+    if pip_installation_report:
+        sys.exit(run_pip(requirements_in_relative
+                       if Path(requirements_in_relative).exists()
+                       else resolved_requirements_in,
+                       requirements_txt_relative,
+                       pip_installation_report_relative))
 
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")

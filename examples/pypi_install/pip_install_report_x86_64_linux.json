@@ -1,1 +1,303 @@
-{}
+{
+  "version": "0",
+  "pip_version": "22.3.1",
+  "install": [
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/70/8e/0e2d847013cb52cd35b38c009bb167a1a26b2ce6cd6965bf26b47bc0bf44/requests-2.31.0-py3-none-any.whl",
+        "archive_info": {
+          "hash": "sha256=58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"
+        }
+      },
+      "is_direct": false,
+      "requested": true,
+      "metadata": {
+        "metadata_version": "2.1",
+        "name": "requests",
+        "version": "2.31.0",
+        "platform": [
+          "UNKNOWN"
+        ],
+        "summary": "Python HTTP for Humans.",
+        "description_content_type": "text/markdown",
+        "home_page": "https://requests.readthedocs.io",
+        "author": "Kenneth Reitz",
+        "author_email": "me@kennethreitz.org",
+        "license": "Apache 2.0",
+        "classifier": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Web Environment",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: Apache Software License",
+          "Natural Language :: English",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: Software Development :: Libraries"
+        ],
+        "requires_dist": [
+          "charset-normalizer (<4,>=2)",
+          "idna (<4,>=2.5)",
+          "urllib3 (<3,>=1.21.1)",
+          "certifi (>=2017.4.17)",
+          "PySocks (!=1.5.7,>=1.5.6) ; extra == 'socks'",
+          "chardet (<6,>=3.0.2) ; extra == 'use_chardet_on_py3'"
+        ],
+        "requires_python": ">=3.7",
+        "project_url": [
+          "Documentation, https://requests.readthedocs.io",
+          "Source, https://github.com/psf/requests"
+        ],
+        "provides_extra": [
+          "security",
+          "socks",
+          "use_chardet_on_py3"
+        ],
+        "description": "# Requests\n\n**Requests** is a simple, yet elegant, HTTP library.\n\n```python\n>>> import requests\n>>> r = requests.get('https://httpbin.org/basic-auth/user/pass', auth=('user', 'pass'))\n>>> r.status_code\n200\n>>> r.headers['content-type']\n'application/json; charset=utf8'\n>>> r.encoding\n'utf-8'\n>>> r.text\n'{\"authenticated\": true, ...'\n>>> r.json()\n{'authenticated': True, ...}\n```\n\nRequests allows you to send HTTP/1.1 requests extremely easily. There’s no need to manually add query strings to your URLs, or to form-encode your `PUT` & `POST` data — but nowadays, just use the `json` method!\n\nRequests is one of the most downloaded Python packages today, pulling in around `30M downloads / week`— according to GitHub, Requests is currently [depended upon](https://github.com/psf/requests/network/dependents?package_id=UGFja2FnZS01NzA4OTExNg%3D%3D) by `1,000,000+` repositories. You may certainly put your trust in this code.\n\n[![Downloads](https://pepy.tech/badge/requests/month)](https://pepy.tech/project/requests)\n[![Supported Versions](https://img.shields.io/pypi/pyversions/requests.svg)](https://pypi.org/project/requests)\n[![Contributors](https://img.shields.io/github/contributors/psf/requests.svg)](https://github.com/psf/requests/graphs/contributors)\n\n## Installing Requests and Supported Versions\n\nRequests is available on PyPI:\n\n```console\n$ python -m pip install requests\n```\n\nRequests officially supports Python 3.7+.\n\n## Supported Features & Best–Practices\n\nRequests is ready for the demands of building robust and reliable HTTP–speaking applications, for the needs of today.\n\n- Keep-Alive & Connection Pooling\n- International Domains and URLs\n- Sessions with Cookie Persistence\n- Browser-style TLS/SSL Verification\n- Basic & Digest Authentication\n- Familiar `dict`–like Cookies\n- Automatic Content Decompression and Decoding\n- Multi-part File Uploads\n- SOCKS Proxy Support\n- Connection Timeouts\n- Streaming Downloads\n- Automatic honoring of `.netrc`\n- Chunked HTTP Requests\n\n## API Reference and User Guide available on [Read the Docs](https://requests.readthedocs.io)\n\n[![Read the Docs](https://raw.githubusercontent.com/psf/requests/main/ext/ss.png)](https://requests.readthedocs.io)\n\n## Cloning the repository\n\nWhen cloning the Requests repository, you may need to add the `-c\nfetch.fsck.badTimezone=ignore` flag to avoid an error about a bad commit (see\n[this issue](https://github.com/psf/requests/issues/2690) for more background):\n\n```shell\ngit clone -c fetch.fsck.badTimezone=ignore https://github.com/psf/requests.git\n```\n\nYou can also apply this setting to your global Git config:\n\n```shell\ngit config --global fetch.fsck.badTimezone ignore\n```\n\n---\n\n[![Kenneth Reitz](https://raw.githubusercontent.com/psf/requests/main/ext/kr.png)](https://kennethreitz.org) [![Python Software Foundation](https://raw.githubusercontent.com/psf/requests/main/ext/psf.png)](https://www.python.org/psf)\n\n\n"
+      }
+    },
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/9d/19/59961b522e6757f0c9097e4493fa906031b95b3ebe9360b2c3083561a6b4/certifi-2023.5.7-py3-none-any.whl",
+        "archive_info": {
+          "hash": "sha256=c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716"
+        }
+      },
+      "is_direct": false,
+      "requested": false,
+      "metadata": {
+        "metadata_version": "2.1",
+        "name": "certifi",
+        "version": "2023.5.7",
+        "platform": [
+          "UNKNOWN"
+        ],
+        "summary": "Python package for providing Mozilla's CA Bundle.",
+        "home_page": "https://github.com/certifi/python-certifi",
+        "author": "Kenneth Reitz",
+        "author_email": "me@kennethreitz.com",
+        "license": "MPL-2.0",
+        "classifier": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+          "Natural Language :: English",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11"
+        ],
+        "requires_python": ">=3.6",
+        "project_url": [
+          "Source, https://github.com/certifi/python-certifi"
+        ],
+        "description": "Certifi: Python SSL Certificates\n================================\n\nCertifi provides Mozilla's carefully curated collection of Root Certificates for\nvalidating the trustworthiness of SSL certificates while verifying the identity\nof TLS hosts. It has been extracted from the `Requests`_ project.\n\nInstallation\n------------\n\n``certifi`` is available on PyPI. Simply install it with ``pip``::\n\n    $ pip install certifi\n\nUsage\n-----\n\nTo reference the installed certificate authority (CA) bundle, you can use the\nbuilt-in function::\n\n    >>> import certifi\n\n    >>> certifi.where()\n    '/usr/local/lib/python3.7/site-packages/certifi/cacert.pem'\n\nOr from the command line::\n\n    $ python -m certifi\n    /usr/local/lib/python3.7/site-packages/certifi/cacert.pem\n\nEnjoy!\n\n.. _`Requests`: https://requests.readthedocs.io/en/master/\n\nAddition/Removal of Certificates\n--------------------------------\n\nCertifi does not support any addition/removal or other modification of the\nCA trust store content. This project is intended to provide a reliable and\nhighly portable root of trust to python deployments. Look to upstream projects\nfor methods to use alternate trust.\n\n\n"
+      }
+    },
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/33/97/9967fb2d364a9da38557e4af323abcd58cc05bdd8f77e9fd5ae4882772cc/charset_normalizer-3.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "archive_info": {
+          "hash": "sha256=21fa558996782fc226b529fdd2ed7866c2c6ec91cee82735c98a197fae39f706"
+        }
+      },
+      "is_direct": false,
+      "requested": false,
+      "metadata": {
+        "metadata_version": "2.1",
+        "name": "charset-normalizer",
+        "version": "3.1.0",
+        "summary": "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet.",
+        "description_content_type": "text/markdown",
+        "keywords": [
+          "encoding",
+          "charset",
+          "charset-detector",
+          "detector",
+          "normalization",
+          "unicode",
+          "chardet",
+          "detect"
+        ],
+        "home_page": "https://github.com/Ousret/charset_normalizer",
+        "author": "Ahmed TAHRI",
+        "author_email": "ahmed.tahri@cloudnursery.dev",
+        "license": "MIT",
+        "classifier": [
+          "Development Status :: 5 - Production/Stable",
+          "License :: OSI Approved :: MIT License",
+          "Intended Audience :: Developers",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Text Processing :: Linguistic",
+          "Topic :: Utilities",
+          "Typing :: Typed"
+        ],
+        "requires_python": ">=3.7.0",
+        "project_url": [
+          "Bug Reports, https://github.com/Ousret/charset_normalizer/issues",
+          "Documentation, https://charset-normalizer.readthedocs.io/en/latest"
+        ],
+        "provides_extra": [
+          "unicode_backport"
+        ],
+        "description": "<h1 align=\"center\">Charset Detection, for Everyone 👋 <a href=\"https://twitter.com/intent/tweet?text=The%20Real%20First%20Universal%20Charset%20%26%20Language%20Detector&url=https://www.github.com/Ousret/charset_normalizer&hashtags=python,encoding,chardet,developers\"><img src=\"https://img.shields.io/twitter/url/http/shields.io.svg?style=social\"/></a></h1>\n\n<p align=\"center\">\n  <sup>The Real First Universal Charset Detector</sup><br>\n  <a href=\"https://pypi.org/project/charset-normalizer\">\n    <img src=\"https://img.shields.io/pypi/pyversions/charset_normalizer.svg?orange=blue\" />\n  </a>\n  <a href=\"https://codecov.io/gh/Ousret/charset_normalizer\">\n      <img src=\"https://codecov.io/gh/Ousret/charset_normalizer/branch/master/graph/badge.svg\" />\n  </a>\n  <a href=\"https://pepy.tech/project/charset-normalizer/\">\n    <img alt=\"Download Count Total\" src=\"https://pepy.tech/badge/charset-normalizer/month\" />\n  </a>\n</p>\n\n> A library that helps you read text from an unknown charset encoding.<br /> Motivated by `chardet`,\n> I'm trying to resolve the issue by taking a new approach.\n> All IANA character set names for which the Python core library provides codecs are supported.\n\n<p align=\"center\">\n  >>>>> <a href=\"https://charsetnormalizerweb.ousret.now.sh\" target=\"_blank\">👉 Try Me Online Now, Then Adopt Me 👈 </a> <<<<<\n</p>\n\nThis project offers you an alternative to **Universal Charset Encoding Detector**, also known as **Chardet**.\n\n| Feature                                          | [Chardet](https://github.com/chardet/chardet) |                                           Charset Normalizer                                           | [cChardet](https://github.com/PyYoshi/cChardet) |\n|--------------------------------------------------|:---------------------------------------------:|:------------------------------------------------------------------------------------------------------:|:-----------------------------------------------:|\n| `Fast`                                           |                     ❌<br>                     |                                                 ✅<br>                                                  |                     ✅ <br>                      |\n| `Universal**`                                    |                       ❌                       |                                                   ✅                                                    |                        ❌                        |\n| `Reliable` **without** distinguishable standards |                       ❌                       |                                                   ✅                                                    |                        ✅                        |\n| `Reliable` **with** distinguishable standards    |                       ✅                       |                                                   ✅                                                    |                        ✅                        |\n| `License`                                        |           LGPL-2.1<br>_restrictive_           |                                                  MIT                                                   |            MPL-1.1<br>_restrictive_             |\n| `Native Python`                                  |                       ✅                       |                                                   ✅                                                    |                        ❌                        |\n| `Detect spoken language`                         |                       ❌                       |                                                   ✅                                                    |                       N/A                       |\n| `UnicodeDecodeError Safety`                      |                       ❌                       |                                                   ✅                                                    |                        ❌                        |\n| `Whl Size`                                       |                   193.6 kB                    |                                                39.5 kB                                                 |                     ~200 kB                     |\n| `Supported Encoding`                             |                      33                       | :tada: [90](https://charset-normalizer.readthedocs.io/en/latest/user/support.html#supported-encodings) |                       40                        |\n\n<p align=\"center\">\n<img src=\"https://i.imgflip.com/373iay.gif\" alt=\"Reading Normalized Text\" width=\"226\"/><img src=\"https://media.tenor.com/images/c0180f70732a18b4965448d33adba3d0/tenor.gif\" alt=\"Cat Reading Text\" width=\"200\"/>\n\n*\\*\\* : They are clearly using specific code for a specific encoding even if covering most of used one*<br> \nDid you got there because of the logs? See [https://charset-normalizer.readthedocs.io/en/latest/user/miscellaneous.html](https://charset-normalizer.readthedocs.io/en/latest/user/miscellaneous.html)\n\n## ⭐ Your support\n\n*Fork, test-it, star-it, submit your ideas! We do listen.*\n  \n## ⚡ Performance\n\nThis package offer better performance than its counterpart Chardet. Here are some numbers.\n\n| Package                                       | Accuracy | Mean per file (ms) | File per sec (est) |\n|-----------------------------------------------|:--------:|:------------------:|:------------------:|\n| [chardet](https://github.com/chardet/chardet) |   86 %   |       200 ms       |     5 file/sec     |\n| charset-normalizer                            | **98 %** |     **10 ms**      |    100 file/sec    |\n\n| Package                                       | 99th percentile | 95th percentile | 50th percentile |\n|-----------------------------------------------|:---------------:|:---------------:|:---------------:|\n| [chardet](https://github.com/chardet/chardet) |     1200 ms     |     287 ms      |      23 ms      |\n| charset-normalizer                            |     100 ms      |      50 ms      |      5 ms       |\n\nChardet's performance on larger file (1MB+) are very poor. Expect huge difference on large payload.\n\n> Stats are generated using 400+ files using default parameters. More details on used files, see GHA workflows.\n> And yes, these results might change at any time. The dataset can be updated to include more files.\n> The actual delays heavily depends on your CPU capabilities. The factors should remain the same.\n> Keep in mind that the stats are generous and that Chardet accuracy vs our is measured using Chardet initial capability\n> (eg. Supported Encoding) Challenge-them if you want.\n\n## ✨ Installation\n\nUsing PyPi for latest stable\n```sh\npip install charset-normalizer -U\n```\n\n## 🚀 Basic Usage\n\n### CLI\nThis package comes with a CLI.\n\n```\nusage: normalizer [-h] [-v] [-a] [-n] [-m] [-r] [-f] [-t THRESHOLD]\n                  file [file ...]\n\nThe Real First Universal Charset Detector. Discover originating encoding used\non text file. Normalize text to unicode.\n\npositional arguments:\n  files                 File(s) to be analysed\n\noptional arguments:\n  -h, --help            show this help message and exit\n  -v, --verbose         Display complementary information about file if any.\n                        Stdout will contain logs about the detection process.\n  -a, --with-alternative\n                        Output complementary possibilities if any. Top-level\n                        JSON WILL be a list.\n  -n, --normalize       Permit to normalize input file. If not set, program\n                        does not write anything.\n  -m, --minimal         Only output the charset detected to STDOUT. Disabling\n                        JSON output.\n  -r, --replace         Replace file when trying to normalize it instead of\n                        creating a new one.\n  -f, --force           Replace file without asking if you are sure, use this\n                        flag with caution.\n  -t THRESHOLD, --threshold THRESHOLD\n                        Define a custom maximum amount of chaos allowed in\n                        decoded content. 0. <= chaos <= 1.\n  --version             Show version information and exit.\n```\n\n```bash\nnormalizer ./data/sample.1.fr.srt\n```\n\n:tada: Since version 1.4.0 the CLI produce easily usable stdout result in JSON format.\n\n```json\n{\n    \"path\": \"/home/default/projects/charset_normalizer/data/sample.1.fr.srt\",\n    \"encoding\": \"cp1252\",\n    \"encoding_aliases\": [\n        \"1252\",\n        \"windows_1252\"\n    ],\n    \"alternative_encodings\": [\n        \"cp1254\",\n        \"cp1256\",\n        \"cp1258\",\n        \"iso8859_14\",\n        \"iso8859_15\",\n        \"iso8859_16\",\n        \"iso8859_3\",\n        \"iso8859_9\",\n        \"latin_1\",\n        \"mbcs\"\n    ],\n    \"language\": \"French\",\n    \"alphabets\": [\n        \"Basic Latin\",\n        \"Latin-1 Supplement\"\n    ],\n    \"has_sig_or_bom\": false,\n    \"chaos\": 0.149,\n    \"coherence\": 97.152,\n    \"unicode_path\": null,\n    \"is_preferred\": true\n}\n```\n\n### Python\n*Just print out normalized text*\n```python\nfrom charset_normalizer import from_path\n\nresults = from_path('./my_subtitle.srt')\n\nprint(str(results.best()))\n```\n\n*Upgrade your code without effort*\n```python\nfrom charset_normalizer import detect\n```\n\nThe above code will behave the same as **chardet**. We ensure that we offer the best (reasonable) BC result possible.\n\nSee the docs for advanced usage : [readthedocs.io](https://charset-normalizer.readthedocs.io/en/latest/)\n\n## 😇 Why\n\nWhen I started using Chardet, I noticed that it was not suited to my expectations, and I wanted to propose a\nreliable alternative using a completely different method. Also! I never back down on a good challenge!\n\nI **don't care** about the **originating charset** encoding, because **two different tables** can\nproduce **two identical rendered string.**\nWhat I want is to get readable text, the best I can. \n\nIn a way, **I'm brute forcing text decoding.** How cool is that ? 😎\n\nDon't confuse package **ftfy** with charset-normalizer or chardet. ftfy goal is to repair unicode string whereas charset-normalizer to convert raw file in unknown encoding to unicode.\n\n## 🍰 How\n\n  - Discard all charset encoding table that could not fit the binary content.\n  - Measure noise, or the mess once opened (by chunks) with a corresponding charset encoding.\n  - Extract matches with the lowest mess detected.\n  - Additionally, we measure coherence / probe for a language.\n\n**Wait a minute**, what is noise/mess and coherence according to **YOU ?**\n\n*Noise :* I opened hundred of text files, **written by humans**, with the wrong encoding table. **I observed**, then\n**I established** some ground rules about **what is obvious** when **it seems like** a mess.\n I know that my interpretation of what is noise is probably incomplete, feel free to contribute in order to\n improve or rewrite it.\n\n*Coherence :* For each language there is on earth, we have computed ranked letter appearance occurrences (the best we can). So I thought\nthat intel is worth something here. So I use those records against decoded text to check if I can detect intelligent design.\n\n## ⚡ Known limitations\n\n  - Language detection is unreliable when text contains two or more languages sharing identical letters. (eg. HTML (english tags) + Turkish content (Sharing Latin characters))\n  - Every charset detector heavily depends on sufficient content. In common cases, do not bother run detection on very tiny content.\n\n## ⚠️ About Python EOLs\n\n**If you are running:**\n\n- Python >=2.7,<3.5: Unsupported\n- Python 3.5: charset-normalizer < 2.1\n- Python 3.6: charset-normalizer < 3.1\n\nUpgrade your Python interpreter as soon as possible.\n\n## 👤 Contributing\n\nContributions, issues and feature requests are very much welcome.<br />\nFeel free to check [issues page](https://github.com/ousret/charset_normalizer/issues) if you want to contribute.\n\n## 📝 License\n\nCopyright © [Ahmed TAHRI @Ousret](https://github.com/Ousret).<br />\nThis project is [MIT](https://github.com/Ousret/charset_normalizer/blob/master/LICENSE) licensed.\n\nCharacters frequencies used in this project © 2012 [Denny Vrandečić](http://simia.net/letters/)\n\n## 💼 For Enterprise\n\nProfessional support for charset-normalizer is available as part of the [Tidelift\nSubscription][1].  Tidelift gives software development teams a single source for\npurchasing and maintaining their software, with professional grade assurances\nfrom the experts who know it best, while seamlessly integrating with existing\ntools.\n\n[1]: https://tidelift.com/subscription/pkg/pypi-charset-normalizer?utm_source=pypi-charset-normalizer&utm_medium=readme\n\n# Changelog\nAll notable changes to charset-normalizer will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).\n\n## [3.1.0](https://github.com/Ousret/charset_normalizer/compare/3.0.1...3.1.0) (2023-03-06)\n\n### Added\n- Argument `should_rename_legacy` for legacy function `detect` and disregard any new arguments without errors (PR #262)\n\n### Removed\n- Support for Python 3.6 (PR #260)\n\n### Changed\n- Optional speedup provided by mypy/c 1.0.1\n\n## [3.0.1](https://github.com/Ousret/charset_normalizer/compare/3.0.0...3.0.1) (2022-11-18)\n\n### Fixed\n- Multi-bytes cutter/chunk generator did not always cut correctly (PR #233)\n\n### Changed\n- Speedup provided by mypy/c 0.990 on Python >= 3.7\n\n## [3.0.0](https://github.com/Ousret/charset_normalizer/compare/2.1.1...3.0.0) (2022-10-20)\n\n### Added\n- Extend the capability of explain=True when cp_isolation contains at most two entries (min one), will log in details of the Mess-detector results\n- Support for alternative language frequency set in charset_normalizer.assets.FREQUENCIES\n- Add parameter `language_threshold` in `from_bytes`, `from_path` and `from_fp` to adjust the minimum expected coherence ratio\n- `normalizer --version` now specify if current version provide extra speedup (meaning mypyc compilation whl)\n\n### Changed\n- Build with static metadata using 'build' frontend\n- Make the language detection stricter\n- Optional: Module `md.py` can be compiled using Mypyc to provide an extra speedup up to 4x faster than v2.1\n\n### Fixed\n- CLI with opt --normalize fail when using full path for files\n- TooManyAccentuatedPlugin induce false positive on the mess detection when too few alpha character have been fed to it\n- Sphinx warnings when generating the documentation\n\n### Removed\n- Coherence detector no longer return 'Simple English' instead return 'English'\n- Coherence detector no longer return 'Classical Chinese' instead return 'Chinese'\n- Breaking: Method `first()` and `best()` from CharsetMatch\n- UTF-7 will no longer appear as \"detected\" without a recognized SIG/mark (is unreliable/conflict with ASCII)\n- Breaking: Class aliases CharsetDetector, CharsetDoctor, CharsetNormalizerMatch and CharsetNormalizerMatches\n- Breaking: Top-level function `normalize`\n- Breaking: Properties `chaos_secondary_pass`, `coherence_non_latin` and `w_counter` from CharsetMatch\n- Support for the backport `unicodedata2`\n\n## [3.0.0rc1](https://github.com/Ousret/charset_normalizer/compare/3.0.0b2...3.0.0rc1) (2022-10-18)\n\n### Added\n- Extend the capability of explain=True when cp_isolation contains at most two entries (min one), will log in details of the Mess-detector results\n- Support for alternative language frequency set in charset_normalizer.assets.FREQUENCIES\n- Add parameter `language_threshold` in `from_bytes`, `from_path` and `from_fp` to adjust the minimum expected coherence ratio\n\n### Changed\n- Build with static metadata using 'build' frontend\n- Make the language detection stricter\n\n### Fixed\n- CLI with opt --normalize fail when using full path for files\n- TooManyAccentuatedPlugin induce false positive on the mess detection when too few alpha character have been fed to it\n\n### Removed\n- Coherence detector no longer return 'Simple English' instead return 'English'\n- Coherence detector no longer return 'Classical Chinese' instead return 'Chinese'\n\n## [3.0.0b2](https://github.com/Ousret/charset_normalizer/compare/3.0.0b1...3.0.0b2) (2022-08-21)\n\n### Added\n- `normalizer --version` now specify if current version provide extra speedup (meaning mypyc compilation whl)\n\n### Removed\n- Breaking: Method `first()` and `best()` from CharsetMatch\n- UTF-7 will no longer appear as \"detected\" without a recognized SIG/mark (is unreliable/conflict with ASCII)\n\n### Fixed\n- Sphinx warnings when generating the documentation\n\n## [3.0.0b1](https://github.com/Ousret/charset_normalizer/compare/2.1.0...3.0.0b1) (2022-08-15)\n\n### Changed\n- Optional: Module `md.py` can be compiled using Mypyc to provide an extra speedup up to 4x faster than v2.1\n\n### Removed\n- Breaking: Class aliases CharsetDetector, CharsetDoctor, CharsetNormalizerMatch and CharsetNormalizerMatches\n- Breaking: Top-level function `normalize`\n- Breaking: Properties `chaos_secondary_pass`, `coherence_non_latin` and `w_counter` from CharsetMatch\n- Support for the backport `unicodedata2`\n\n## [2.1.1](https://github.com/Ousret/charset_normalizer/compare/2.1.0...2.1.1) (2022-08-19)\n\n### Deprecated\n- Function `normalize` scheduled for removal in 3.0\n\n### Changed\n- Removed useless call to decode in fn is_unprintable (#206)\n\n### Fixed\n- Third-party library (i18n xgettext) crashing not recognizing utf_8 (PEP 263) with underscore from [@aleksandernovikov](https://github.com/aleksandernovikov) (#204)\n\n## [2.1.0](https://github.com/Ousret/charset_normalizer/compare/2.0.12...2.1.0) (2022-06-19)\n\n### Added\n- Output the Unicode table version when running the CLI with `--version` (PR #194)\n\n### Changed\n- Re-use decoded buffer for single byte character sets from [@nijel](https://github.com/nijel) (PR #175)\n- Fixing some performance bottlenecks from [@deedy5](https://github.com/deedy5) (PR #183)\n\n### Fixed\n- Workaround potential bug in cpython with Zero Width No-Break Space located in Arabic Presentation Forms-B, Unicode 1.1 not acknowledged as space (PR #175)\n- CLI default threshold aligned with the API threshold from [@oleksandr-kuzmenko](https://github.com/oleksandr-kuzmenko) (PR #181)\n\n### Removed\n- Support for Python 3.5 (PR #192)\n\n### Deprecated\n- Use of backport unicodedata from `unicodedata2` as Python is quickly catching up, scheduled for removal in 3.0 (PR #194)\n\n## [2.0.12](https://github.com/Ousret/charset_normalizer/compare/2.0.11...2.0.12) (2022-02-12)\n\n### Fixed\n- ASCII miss-detection on rare cases (PR #170) \n\n## [2.0.11](https://github.com/Ousret/charset_normalizer/compare/2.0.10...2.0.11) (2022-01-30)\n\n### Added\n- Explicit support for Python 3.11 (PR #164)\n\n### Changed\n- The logging behavior have been completely reviewed, now using only TRACE and DEBUG levels (PR #163 #165)\n\n## [2.0.10](https://github.com/Ousret/charset_normalizer/compare/2.0.9...2.0.10) (2022-01-04)\n\n### Fixed\n- Fallback match entries might lead to UnicodeDecodeError for large bytes sequence (PR #154)\n\n### Changed\n- Skipping the language-detection (CD) on ASCII (PR #155)\n\n## [2.0.9](https://github.com/Ousret/charset_normalizer/compare/2.0.8...2.0.9) (2021-12-03)\n\n### Changed\n- Moderating the logging impact (since 2.0.8) for specific environments (PR #147)\n\n### Fixed\n- Wrong logging level applied when setting kwarg `explain` to True (PR #146)\n\n## [2.0.8](https://github.com/Ousret/charset_normalizer/compare/2.0.7...2.0.8) (2021-11-24)\n### Changed\n- Improvement over Vietnamese detection (PR #126)\n- MD improvement on trailing data and long foreign (non-pure latin) data (PR #124)\n- Efficiency improvements in cd/alphabet_languages from [@adbar](https://github.com/adbar) (PR #122)\n- call sum() without an intermediary list following PEP 289 recommendations from [@adbar](https://github.com/adbar) (PR #129)\n- Code style as refactored by Sourcery-AI (PR #131) \n- Minor adjustment on the MD around european words (PR #133)\n- Remove and replace SRTs from assets / tests (PR #139)\n- Initialize the library logger with a `NullHandler` by default from [@nmaynes](https://github.com/nmaynes) (PR #135)\n- Setting kwarg `explain` to True will add provisionally (bounded to function lifespan) a specific stream handler (PR #135)\n\n### Fixed\n- Fix large (misleading) sequence giving UnicodeDecodeError (PR #137)\n- Avoid using too insignificant chunk (PR #137)\n\n### Added\n- Add and expose function `set_logging_handler` to configure a specific StreamHandler from [@nmaynes](https://github.com/nmaynes) (PR #135)\n- Add `CHANGELOG.md` entries, format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) (PR #141)\n\n## [2.0.7](https://github.com/Ousret/charset_normalizer/compare/2.0.6...2.0.7) (2021-10-11)\n### Added\n- Add support for Kazakh (Cyrillic) language detection (PR #109)\n\n### Changed\n- Further, improve inferring the language from a given single-byte code page (PR #112)\n- Vainly trying to leverage PEP263 when PEP3120 is not supported (PR #116)\n- Refactoring for potential performance improvements in loops from [@adbar](https://github.com/adbar) (PR #113)\n- Various detection improvement (MD+CD) (PR #117)\n\n### Removed\n- Remove redundant logging entry about detected language(s) (PR #115)\n\n### Fixed\n- Fix a minor inconsistency between Python 3.5 and other versions regarding language detection (PR #117 #102)\n\n## [2.0.6](https://github.com/Ousret/charset_normalizer/compare/2.0.5...2.0.6) (2021-09-18)\n### Fixed\n- Unforeseen regression with the loss of the backward-compatibility with some older minor of Python 3.5.x (PR #100)\n- Fix CLI crash when using --minimal output in certain cases (PR #103)\n\n### Changed\n- Minor improvement to the detection efficiency (less than 1%) (PR #106 #101)\n\n## [2.0.5](https://github.com/Ousret/charset_normalizer/compare/2.0.4...2.0.5) (2021-09-14)\n### Changed\n- The project now comply with: flake8, mypy, isort and black to ensure a better overall quality (PR #81)\n- The BC-support with v1.x was improved, the old staticmethods are restored (PR #82)\n- The Unicode detection is slightly improved (PR #93)\n- Add syntax sugar \\_\\_bool\\_\\_ for results CharsetMatches list-container (PR #91)\n\n### Removed\n- The project no longer raise warning on tiny content given for detection, will be simply logged as warning instead (PR #92)\n\n### Fixed\n- In some rare case, the chunks extractor could cut in the middle of a multi-byte character and could mislead the mess detection (PR #95)\n- Some rare 'space' characters could trip up the UnprintablePlugin/Mess detection (PR #96)\n- The MANIFEST.in was not exhaustive (PR #78)\n\n## [2.0.4](https://github.com/Ousret/charset_normalizer/compare/2.0.3...2.0.4) (2021-07-30)\n### Fixed\n- The CLI no longer raise an unexpected exception when no encoding has been found (PR #70)\n- Fix accessing the 'alphabets' property when the payload contains surrogate characters (PR #68)\n- The logger could mislead (explain=True) on detected languages and the impact of one MBCS match (PR #72)\n- Submatch factoring could be wrong in rare edge cases (PR #72)\n- Multiple files given to the CLI were ignored when publishing results to STDOUT. (After the first path) (PR #72)\n- Fix line endings from CRLF to LF for certain project files (PR #67)\n\n### Changed\n- Adjust the MD to lower the sensitivity, thus improving the global detection reliability (PR #69 #76)\n- Allow fallback on specified encoding if any (PR #71)\n\n## [2.0.3](https://github.com/Ousret/charset_normalizer/compare/2.0.2...2.0.3) (2021-07-16)\n### Changed\n- Part of the detection mechanism has been improved to be less sensitive, resulting in more accurate detection results. Especially ASCII. (PR #63)\n- According to the community wishes, the detection will fall back on ASCII or UTF-8 in a last-resort case. (PR #64)\n\n## [2.0.2](https://github.com/Ousret/charset_normalizer/compare/2.0.1...2.0.2) (2021-07-15)\n### Fixed\n- Empty/Too small JSON payload miss-detection fixed. Report from [@tseaver](https://github.com/tseaver) (PR #59) \n\n### Changed\n- Don't inject unicodedata2 into sys.modules from [@akx](https://github.com/akx) (PR #57)\n\n## [2.0.1](https://github.com/Ousret/charset_normalizer/compare/2.0.0...2.0.1) (2021-07-13)\n### Fixed\n- Make it work where there isn't a filesystem available, dropping assets frequencies.json. Report from [@sethmlarson](https://github.com/sethmlarson). (PR #55)\n- Using explain=False permanently disable the verbose output in the current runtime (PR #47)\n- One log entry (language target preemptive) was not show in logs when using explain=True (PR #47)\n- Fix undesired exception (ValueError) on getitem of instance CharsetMatches (PR #52)\n\n### Changed\n- Public function normalize default args values were not aligned with from_bytes (PR #53)\n\n### Added\n- You may now use charset aliases in cp_isolation and cp_exclusion arguments (PR #47)\n\n## [2.0.0](https://github.com/Ousret/charset_normalizer/compare/1.4.1...2.0.0) (2021-07-02)\n### Changed\n- 4x to 5 times faster than the previous 1.4.0 release. At least 2x faster than Chardet.\n- Accent has been made on UTF-8 detection, should perform rather instantaneous.\n- The backward compatibility with Chardet has been greatly improved. The legacy detect function returns an identical charset name whenever possible.\n- The detection mechanism has been slightly improved, now Turkish content is detected correctly (most of the time)\n- The program has been rewritten to ease the readability and maintainability. (+Using static typing)+\n- utf_7 detection has been reinstated.\n\n### Removed\n- This package no longer require anything when used with Python 3.5 (Dropped cached_property)\n- Removed support for these languages: Catalan, Esperanto, Kazakh, Baque, Volapük, Azeri, Galician, Nynorsk, Macedonian, and Serbocroatian.\n- The exception hook on UnicodeDecodeError has been removed.\n\n### Deprecated\n- Methods coherence_non_latin, w_counter, chaos_secondary_pass of the class CharsetMatch are now deprecated and scheduled for removal in v3.0\n\n### Fixed\n- The CLI output used the relative path of the file(s). Should be absolute.\n\n## [1.4.1](https://github.com/Ousret/charset_normalizer/compare/1.4.0...1.4.1) (2021-05-28)\n### Fixed\n- Logger configuration/usage no longer conflict with others (PR #44)\n\n## [1.4.0](https://github.com/Ousret/charset_normalizer/compare/1.3.9...1.4.0) (2021-05-21)\n### Removed\n- Using standard logging instead of using the package loguru.\n- Dropping nose test framework in favor of the maintained pytest.\n- Choose to not use dragonmapper package to help with gibberish Chinese/CJK text.\n- Require cached_property only for Python 3.5 due to constraint. Dropping for every other interpreter version.\n- Stop support for UTF-7 that does not contain a SIG.\n- Dropping PrettyTable, replaced with pure JSON output in CLI.\n\n### Fixed\n- BOM marker in a CharsetNormalizerMatch instance could be False in rare cases even if obviously present. Due to the sub-match factoring process.\n- Not searching properly for the BOM when trying utf32/16 parent codec.\n\n### Changed\n- Improving the package final size by compressing frequencies.json.\n- Huge improvement over the larges payload.\n\n### Added\n- CLI now produces JSON consumable output.\n- Return ASCII if given sequences fit. Given reasonable confidence.\n\n## [1.3.9](https://github.com/Ousret/charset_normalizer/compare/1.3.8...1.3.9) (2021-05-13)\n\n### Fixed\n- In some very rare cases, you may end up getting encode/decode errors due to a bad bytes payload (PR #40)\n\n## [1.3.8](https://github.com/Ousret/charset_normalizer/compare/1.3.7...1.3.8) (2021-05-12)\n\n### Fixed\n- Empty given payload for detection may cause an exception if trying to access the `alphabets` property. (PR #39)\n\n## [1.3.7](https://github.com/Ousret/charset_normalizer/compare/1.3.6...1.3.7) (2021-05-12)\n\n### Fixed\n- The legacy detect function should return UTF-8-SIG if sig is present in the payload. (PR #38)\n\n## [1.3.6](https://github.com/Ousret/charset_normalizer/compare/1.3.5...1.3.6) (2021-02-09)\n\n### Changed\n- Amend the previous release to allow prettytable 2.0 (PR #35)\n\n## [1.3.5](https://github.com/Ousret/charset_normalizer/compare/1.3.4...1.3.5) (2021-02-08)\n\n### Fixed\n- Fix error while using the package with a python pre-release interpreter (PR #33)\n\n### Changed\n- Dependencies refactoring, constraints revised.\n\n### Added\n- Add python 3.9 and 3.10 to the supported interpreters\n\nMIT License\n\nCopyright (c) 2019 TAHRI Ahmed R.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+      }
+    },
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
+        "archive_info": {
+          "hash": "sha256=90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"
+        }
+      },
+      "is_direct": false,
+      "requested": false,
+      "metadata": {
+        "metadata_version": "2.1",
+        "name": "idna",
+        "version": "3.4",
+        "summary": "Internationalized Domain Names in Applications (IDNA)",
+        "description_content_type": "text/x-rst",
+        "author_email": "Kim Davies <kim@cynosure.com.au>",
+        "classifier": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Intended Audience :: System Administrators",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet :: Name Service (DNS)",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Utilities"
+        ],
+        "requires_python": ">=3.5",
+        "project_url": [
+          "Changelog, https://github.com/kjd/idna/blob/master/HISTORY.rst",
+          "Issue tracker, https://github.com/kjd/idna/issues",
+          "Source, https://github.com/kjd/idna"
+        ],
+        "description": "Internationalized Domain Names in Applications (IDNA)\n=====================================================\n\nSupport for the Internationalized Domain Names in\nApplications (IDNA) protocol as specified in `RFC 5891\n<https://tools.ietf.org/html/rfc5891>`_. This is the latest version of\nthe protocol and is sometimes referred to as “IDNA 2008”.\n\nThis library also provides support for Unicode Technical\nStandard 46, `Unicode IDNA Compatibility Processing\n<https://unicode.org/reports/tr46/>`_.\n\nThis acts as a suitable replacement for the “encodings.idna”\nmodule that comes with the Python standard library, but which\nonly supports the older superseded IDNA specification (`RFC 3490\n<https://tools.ietf.org/html/rfc3490>`_).\n\nBasic functions are simply executed:\n\n.. code-block:: pycon\n\n    >>> import idna\n    >>> idna.encode('ドメイン.テスト')\n    b'xn--eckwd4c7c.xn--zckzah'\n    >>> print(idna.decode('xn--eckwd4c7c.xn--zckzah'))\n    ドメイン.テスト\n\n\nInstallation\n------------\n\nThis package is available for installation from PyPI:\n\n.. code-block:: bash\n\n    $ python3 -m pip install idna\n\n\nUsage\n-----\n\nFor typical usage, the ``encode`` and ``decode`` functions will take a\ndomain name argument and perform a conversion to A-labels or U-labels\nrespectively.\n\n.. code-block:: pycon\n\n    >>> import idna\n    >>> idna.encode('ドメイン.テスト')\n    b'xn--eckwd4c7c.xn--zckzah'\n    >>> print(idna.decode('xn--eckwd4c7c.xn--zckzah'))\n    ドメイン.テスト\n\nYou may use the codec encoding and decoding methods using the\n``idna.codec`` module:\n\n.. code-block:: pycon\n\n    >>> import idna.codec\n    >>> print('домен.испытание'.encode('idna'))\n    b'xn--d1acufc.xn--80akhbyknj4f'\n    >>> print(b'xn--d1acufc.xn--80akhbyknj4f'.decode('idna'))\n    домен.испытание\n\nConversions can be applied at a per-label basis using the ``ulabel`` or\n``alabel`` functions if necessary:\n\n.. code-block:: pycon\n\n    >>> idna.alabel('测试')\n    b'xn--0zwm56d'\n\nCompatibility Mapping (UTS #46)\n+++++++++++++++++++++++++++++++\n\nAs described in `RFC 5895 <https://tools.ietf.org/html/rfc5895>`_, the\nIDNA specification does not normalize input from different potential\nways a user may input a domain name. This functionality, known as\na “mapping”, is considered by the specification to be a local\nuser-interface issue distinct from IDNA conversion functionality.\n\nThis library provides one such mapping, that was developed by the\nUnicode Consortium. Known as `Unicode IDNA Compatibility Processing\n<https://unicode.org/reports/tr46/>`_, it provides for both a regular\nmapping for typical applications, as well as a transitional mapping to\nhelp migrate from older IDNA 2003 applications.\n\nFor example, “Königsgäßchen” is not a permissible label as *LATIN\nCAPITAL LETTER K* is not allowed (nor are capital letters in general).\nUTS 46 will convert this into lower case prior to applying the IDNA\nconversion.\n\n.. code-block:: pycon\n\n    >>> import idna\n    >>> idna.encode('Königsgäßchen')\n    ...\n    idna.core.InvalidCodepoint: Codepoint U+004B at position 1 of 'Königsgäßchen' not allowed\n    >>> idna.encode('Königsgäßchen', uts46=True)\n    b'xn--knigsgchen-b4a3dun'\n    >>> print(idna.decode('xn--knigsgchen-b4a3dun'))\n    königsgäßchen\n\nTransitional processing provides conversions to help transition from\nthe older 2003 standard to the current standard. For example, in the\noriginal IDNA specification, the *LATIN SMALL LETTER SHARP S* (ß) was\nconverted into two *LATIN SMALL LETTER S* (ss), whereas in the current\nIDNA specification this conversion is not performed.\n\n.. code-block:: pycon\n\n    >>> idna.encode('Königsgäßchen', uts46=True, transitional=True)\n    'xn--knigsgsschen-lcb0w'\n\nImplementors should use transitional processing with caution, only in\nrare cases where conversion from legacy labels to current labels must be\nperformed (i.e. IDNA implementations that pre-date 2008). For typical\napplications that just need to convert labels, transitional processing\nis unlikely to be beneficial and could produce unexpected incompatible\nresults.\n\n``encodings.idna`` Compatibility\n++++++++++++++++++++++++++++++++\n\nFunction calls from the Python built-in ``encodings.idna`` module are\nmapped to their IDNA 2008 equivalents using the ``idna.compat`` module.\nSimply substitute the ``import`` clause in your code to refer to the new\nmodule name.\n\nExceptions\n----------\n\nAll errors raised during the conversion following the specification\nshould raise an exception derived from the ``idna.IDNAError`` base\nclass.\n\nMore specific exceptions that may be generated as ``idna.IDNABidiError``\nwhen the error reflects an illegal combination of left-to-right and\nright-to-left characters in a label; ``idna.InvalidCodepoint`` when\na specific codepoint is an illegal character in an IDN label (i.e.\nINVALID); and ``idna.InvalidCodepointContext`` when the codepoint is\nillegal based on its positional context (i.e. it is CONTEXTO or CONTEXTJ\nbut the contextual requirements are not satisfied.)\n\nBuilding and Diagnostics\n------------------------\n\nThe IDNA and UTS 46 functionality relies upon pre-calculated lookup\ntables for performance. These tables are derived from computing against\neligibility criteria in the respective standards. These tables are\ncomputed using the command-line script ``tools/idna-data``.\n\nThis tool will fetch relevant codepoint data from the Unicode repository\nand perform the required calculations to identify eligibility. There are\nthree main modes:\n\n* ``idna-data make-libdata``. Generates ``idnadata.py`` and\n  ``uts46data.py``, the pre-calculated lookup tables using for IDNA and\n  UTS 46 conversions. Implementors who wish to track this library against\n  a different Unicode version may use this tool to manually generate a\n  different version of the ``idnadata.py`` and ``uts46data.py`` files.\n\n* ``idna-data make-table``. Generate a table of the IDNA disposition\n  (e.g. PVALID, CONTEXTJ, CONTEXTO) in the format found in Appendix\n  B.1 of RFC 5892 and the pre-computed tables published by `IANA\n  <https://www.iana.org/>`_.\n\n* ``idna-data U+0061``. Prints debugging output on the various\n  properties associated with an individual Unicode codepoint (in this\n  case, U+0061), that are used to assess the IDNA and UTS 46 status of a\n  codepoint. This is helpful in debugging or analysis.\n\nThe tool accepts a number of arguments, described using ``idna-data\n-h``. Most notably, the ``--version`` argument allows the specification\nof the version of Unicode to use in computing the table data. For\nexample, ``idna-data --version 9.0.0 make-libdata`` will generate\nlibrary data against Unicode 9.0.0.\n\n\nAdditional Notes\n----------------\n\n* **Packages**. The latest tagged release version is published in the\n  `Python Package Index <https://pypi.org/project/idna/>`_.\n\n* **Version support**. This library supports Python 3.5 and higher.\n  As this library serves as a low-level toolkit for a variety of\n  applications, many of which strive for broad compatibility with older\n  Python versions, there is no rush to remove older intepreter support.\n  Removing support for older versions should be well justified in that the\n  maintenance burden has become too high.\n\n* **Python 2**. Python 2 is supported by version 2.x of this library.\n  While active development of the version 2.x series has ended, notable\n  issues being corrected may be backported to 2.x. Use \"idna<3\" in your\n  requirements file if you need this library for a Python 2 application.\n\n* **Testing**. The library has a test suite based on each rule of the\n  IDNA specification, as well as tests that are provided as part of the\n  Unicode Technical Standard 46, `Unicode IDNA Compatibility Processing\n  <https://unicode.org/reports/tr46/>`_.\n\n* **Emoji**. It is an occasional request to support emoji domains in\n  this library. Encoding of symbols like emoji is expressly prohibited by\n  the technical standard IDNA 2008 and emoji domains are broadly phased\n  out across the domain industry due to associated security risks. For\n  now, applications that wish need to support these non-compliant labels\n  may wish to consider trying the encode/decode operation in this library\n  first, and then falling back to using `encodings.idna`. See `the Github\n  project <https://github.com/kjd/idna/issues/18>`_ for more discussion.\n\n"
+      }
+    },
+    {
+      "download_info": {
+        "url": "https://files.pythonhosted.org/packages/8a/03/ad9306a50d05c166e3456fe810f33cee2b8b2a7a6818ec5d4908c4ec6b36/urllib3-2.0.3-py3-none-any.whl",
+        "archive_info": {
+          "hash": "sha256=48e7fafa40319d358848e1bc6809b208340fafe2096f1725d05d67443d0483d1"
+        }
+      },
+      "is_direct": false,
+      "requested": false,
+      "metadata": {
+        "metadata_version": "2.1",
+        "name": "urllib3",
+        "version": "2.0.3",
+        "summary": "HTTP library with thread-safe connection pooling, file post, and more.",
+        "description_content_type": "text/markdown",
+        "keywords": [
+          "filepost",
+          "http",
+          "httplib",
+          "https",
+          "pooling",
+          "ssl",
+          "threadsafe",
+          "urllib"
+        ],
+        "author_email": "Andrey Petrov <andrey.petrov@shazow.net>",
+        "maintainer_email": "Seth Michael Larson <sethmichaellarson@gmail.com>, Quentin Pradet <quentin@pradet.me>",
+        "classifier": [
+          "Environment :: Web Environment",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: Software Development :: Libraries"
+        ],
+        "requires_dist": [
+          "brotli>=1.0.9; platform_python_implementation == 'CPython' and extra == 'brotli'",
+          "brotlicffi>=0.8.0; platform_python_implementation != 'CPython' and extra == 'brotli'",
+          "certifi; extra == 'secure'",
+          "cryptography>=1.9; extra == 'secure'",
+          "idna>=2.0.0; extra == 'secure'",
+          "pyopenssl>=17.1.0; extra == 'secure'",
+          "urllib3-secure-extra; extra == 'secure'",
+          "pysocks!=1.5.7,<2.0,>=1.5.6; extra == 'socks'",
+          "zstandard>=0.18.0; extra == 'zstd'"
+        ],
+        "requires_python": ">=3.7",
+        "project_url": [
+          "Changelog, https://github.com/urllib3/urllib3/blob/main/CHANGES.rst",
+          "Documentation, https://urllib3.readthedocs.io",
+          "Code, https://github.com/urllib3/urllib3",
+          "Issue tracker, https://github.com/urllib3/urllib3/issues"
+        ],
+        "provides_extra": [
+          "brotli",
+          "secure",
+          "socks",
+          "zstd"
+        ],
+        "description": "<h1 align=\"center\">\n\n![urllib3](https://github.com/urllib3/urllib3/raw/main/docs/_static/banner_github.svg)\n\n</h1>\n\n<p align=\"center\">\n  <a href=\"https://pypi.org/project/urllib3\"><img alt=\"PyPI Version\" src=\"https://img.shields.io/pypi/v/urllib3.svg?maxAge=86400\" /></a>\n  <a href=\"https://pypi.org/project/urllib3\"><img alt=\"Python Versions\" src=\"https://img.shields.io/pypi/pyversions/urllib3.svg?maxAge=86400\" /></a>\n  <a href=\"https://discord.gg/urllib3\"><img alt=\"Join our Discord\" src=\"https://img.shields.io/discord/756342717725933608?color=%237289da&label=discord\" /></a>\n  <a href=\"https://github.com/urllib3/urllib3/actions?query=workflow%3ACI\"><img alt=\"Coverage Status\" src=\"https://img.shields.io/badge/coverage-100%25-success\" /></a>\n  <a href=\"https://github.com/urllib3/urllib3/actions?query=workflow%3ACI\"><img alt=\"Build Status on GitHub\" src=\"https://github.com/urllib3/urllib3/workflows/CI/badge.svg\" /></a>\n  <a href=\"https://urllib3.readthedocs.io\"><img alt=\"Documentation Status\" src=\"https://readthedocs.org/projects/urllib3/badge/?version=latest\" /></a><br>\n  <a href=\"https://deps.dev/pypi/urllib3\"><img alt=\"OpenSSF Scorecard\" src=\"https://api.securityscorecards.dev/projects/github.com/urllib3/urllib3/badge\" /></a>\n  <a href=\"https://slsa.dev\"><img alt=\"SLSA 3\" src=\"https://slsa.dev/images/gh-badge-level3.svg\" /></a>\n  <a href=\"https://bestpractices.coreinfrastructure.org/projects/6227\"><img alt=\"CII Best Practices\" src=\"https://bestpractices.coreinfrastructure.org/projects/6227/badge\" /></a>\n</p>\n\nurllib3 is a powerful, *user-friendly* HTTP client for Python. Much of the\nPython ecosystem already uses urllib3 and you should too.\nurllib3 brings many critical features that are missing from the Python\nstandard libraries:\n\n- Thread safety.\n- Connection pooling.\n- Client-side SSL/TLS verification.\n- File uploads with multipart encoding.\n- Helpers for retrying requests and dealing with HTTP redirects.\n- Support for gzip, deflate, brotli, and zstd encoding.\n- Proxy support for HTTP and SOCKS.\n- 100% test coverage.\n\nurllib3 is powerful and easy to use:\n\n```python3\n>>> import urllib3\n>>> resp = urllib3.request(\"GET\", \"http://httpbin.org/robots.txt\")\n>>> resp.status\n200\n>>> resp.data\nb\"User-agent: *\\nDisallow: /deny\\n\"\n```\n\n## Installing\n\nurllib3 can be installed with [pip](https://pip.pypa.io):\n\n```bash\n$ python -m pip install urllib3\n```\n\nAlternatively, you can grab the latest source code from [GitHub](https://github.com/urllib3/urllib3):\n\n```bash\n$ git clone https://github.com/urllib3/urllib3.git\n$ cd urllib3\n$ pip install .\n```\n\n\n## Documentation\n\nurllib3 has usage and reference documentation at [urllib3.readthedocs.io](https://urllib3.readthedocs.io).\n\n\n## Community\n\nurllib3 has a [community Discord channel](https://discord.gg/urllib3) for asking questions and\ncollaborating with other contributors. Drop by and say hello 👋\n\n\n## Contributing\n\nurllib3 happily accepts contributions. Please see our\n[contributing documentation](https://urllib3.readthedocs.io/en/latest/contributing.html)\nfor some tips on getting started.\n\n\n## Security Disclosures\n\nTo report a security vulnerability, please use the\n[Tidelift security contact](https://tidelift.com/security).\nTidelift will coordinate the fix and disclosure with maintainers.\n\n\n## Maintainers\n\n- [@sethmlarson](https://github.com/sethmlarson) (Seth M. Larson)\n- [@pquentin](https://github.com/pquentin) (Quentin Pradet)\n- [@theacodes](https://github.com/theacodes) (Thea Flowers)\n- [@haikuginger](https://github.com/haikuginger) (Jess Shapiro)\n- [@lukasa](https://github.com/lukasa) (Cory Benfield)\n- [@sigmavirus24](https://github.com/sigmavirus24) (Ian Stapleton Cordasco)\n- [@shazow](https://github.com/shazow) (Andrey Petrov)\n\n👋\n\n\n## Sponsorship\n\nIf your company benefits from this library, please consider [sponsoring its\ndevelopment](https://urllib3.readthedocs.io/en/latest/sponsors.html).\n\n\n## For Enterprise\n\nProfessional support for urllib3 is available as part of the [Tidelift\nSubscription][1].  Tidelift gives software development teams a single source for\npurchasing and maintaining their software, with professional grade assurances\nfrom the experts who know it best, while seamlessly integrating with existing\ntools.\n\n[1]: https://tidelift.com/subscription/pkg/pypi-urllib3?utm_source=pypi-urllib3&utm_medium=referral&utm_campaign=readme\n"
+      }
+    }
+  ],
+  "environment": {
+    "implementation_name": "cpython",
+    "implementation_version": "3.9.16",
+    "os_name": "posix",
+    "platform_machine": "x86_64",
+    "platform_release": "5.10.0-21-amd64",
+    "platform_system": "Linux",
+    "platform_version": "#1 SMP Debian 5.10.162-1 (2023-01-21)",
+    "python_full_version": "3.9.16",
+    "platform_python_implementation": "CPython",
+    "python_version": "3.9",
+    "sys_platform": "linux"
+  }
+}
