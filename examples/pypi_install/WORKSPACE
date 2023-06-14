@@ -28,8 +28,8 @@ pypi_install(
     },
 )
 
-#load("@pypi_install//:packages.bzl", "load_pypi_packages")
-#
-#load_pypi_packages(
-#    name = "pypi",
-#)
+load("@pypi_install//:packages.bzl", "load_pypi_packages")
+
+load_pypi_packages(
+    name = "pypi",
+)
