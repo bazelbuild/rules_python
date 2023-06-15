@@ -120,7 +120,6 @@ Root-Is-Purelib: true
 Tag: py3-none-any
 """,
             )
-            print("XXX:", metadata_contents)
             self.assertEqual(
                 metadata_contents,
                 b"""\
