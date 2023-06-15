@@ -50,7 +50,7 @@ def _py_wheel_dist_impl(ctx):
         use_default_shell_env = True,
     )
     return [
-        DefaultInfo(files = depset([dir])),
+        DefaultInfo(files = depset([dir]), runfiles = ctx.runfiles([dir])),
     ]
 
 py_wheel_dist = rule(
@@ -69,7 +69,7 @@ This also has the advantage that stamping information is included in the wheel's
     },
 )
 
-def py_wheel(name, twine = None, **kwargs):
+def py_wheel(name, twine = None, publish_args = [], **kwargs):
     """Builds a Python Wheel.
 
     Wheels are Python distribution format defined in https://www.python.org/dev/peps/pep-0427/.
@@ -142,6 +142,9 @@ def py_wheel(name, twine = None, **kwargs):
     Args:
         name:  A unique name for this target.
         twine: A label of the external location of the py_library target for twine
+        publish_args: arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"].
+            These are subject to make var expansion, as with the `args` attribute.
+            Note that you can also pass additional args to the bazel run command as in the example above.
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """
     _dist_target = "{}.dist".format(name)
@@ -158,21 +161,22 @@ def py_wheel(name, twine = None, **kwargs):
         if not twine.endswith(":pkg"):
             fail("twine label should look like @my_twine_repo//:pkg")
         twine_main = twine.replace(":pkg", ":rules_python_wheel_entry_point_twine.py")
+        twine_args = ["upload"]
+        twine_args.extend(publish_args)
+        twine_args.append("$(rootpath :{})/*".format(_dist_target))
 
         # TODO: use py_binary from //python:defs.bzl after our stardoc setup is less brittle
         # buildifier: disable=native-py
         native.py_binary(
             name = "{}.publish".format(name),
             srcs = [twine_main],
-            args = [
-                "upload",
-                "$(rootpath :{})/*".format(_dist_target),
-            ],
+            args = twine_args,
             data = [_dist_target],
             imports = ["."],
             main = twine_main,
             deps = [twine],
             visibility = kwargs.get("visibility"),
+            **copy_propagating_kwargs(kwargs)
         )
 
 py_wheel_rule = _py_wheel
