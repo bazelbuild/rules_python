@@ -44,12 +44,6 @@ bazel_dep(name = "gazelle", version = "0.30.0", repo_name = "bazel_gazelle")
 # its methods can be invoked to create module extension tags.
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
-# This name is passed into python.toolchain and it's use_repo statement.
-# We also use the same name for python.host_python_interpreter.
-PYTHON_NAME = "python_3_9"
-
-INTERPRETER_NAME = "interpreter"
-
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
 python.toolchain(
@@ -57,16 +51,6 @@ python.toolchain(
     is_default = True,
     python_version = "3.9",
 )
-
-# The interpreter extension discovers the platform specific Python binary.
-# It creates a symlink to the binary, and we pass the label to the following
-# pip.parse call.
-interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
-interpreter.install(
-    name = INTERPRETER_NAME,
-    python_name = PYTHON_NAME,
-)
-use_repo(interpreter, INTERPRETER_NAME)
 
 # Use the extension, pip.parse, to call the `pip_repository` rule that invokes
 # `pip`, with `incremental` set. The pip call accepts a locked/compiled
@@ -77,10 +61,7 @@ use_repo(interpreter, INTERPRETER_NAME)
 # operating systems, we have requirements for each.
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    name = "pip",
-    # When using gazelle you must use set the following flag
-    # in order for the generation of gazelle dependency resolution.
-    incompatible_generate_aliases = True,
+    hub_name = "pip",
     # The interpreter_target attribute points to the interpreter to
     # use for running pip commands to download the packages in the
     # requirements file.
@@ -89,7 +70,7 @@ pip.parse(
     # is used for both resolving dependencies and running tests/binaries.
     # If this isn't specified, then you'll get whatever is locally installed
     # on your system.
-    python_interpreter_target = "@{}//:python".format(INTERPRETER_NAME),
+    python_version = "3.9",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )

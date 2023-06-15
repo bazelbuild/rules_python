@@ -96,8 +96,7 @@ use_repo(interpreter, "interpreter")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    name = "pip",
-    incompatible_generate_aliases = True,
+    hub_name = "pip",
     python_interpreter_target = "@interpreter//:python",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
@@ -201,7 +200,7 @@ central external repo and individual wheel external repos.
 
 ```python
 pip.parse(
-    name = "my_deps",
+    hub_name = "my_deps",
     requirements_lock = "//:requirements_lock.txt",
 )
 

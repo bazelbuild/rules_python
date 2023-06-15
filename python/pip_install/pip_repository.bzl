@@ -317,47 +317,55 @@ alias(
         )
         rctx.file("{}/BUILD.bazel".format(name), build_content)
 
-def _bzlmod_pkg_aliases(repo_name, bzl_packages):
-    """Create alias declarations for each python dependency.
+def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
+    repo_name = rctx.attr.repo_name
+    build_contents = _BUILD_FILE_CONTENTS
+    _pkg_aliases(rctx, repo_name, bzl_packages)
 
-    The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
-    allow users to use requirement() without needed a corresponding `use_repo()` for each dep
-    when using bzlmod.
+    # NOTE: we are using the canonical name with the double '@' in order to
+    # always uniquely identify a repository, as the labels are being passed as
+    # a string and the resolution of the label happens at the call-site of the
+    # `requirement`, et al. macros.
+    macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    Args:
-        repo_name: the repository name of the parent that is visible to the users.
-        bzl_packages: the list of packages to setup.
-    """
-    build_content = ""
-    for name in bzl_packages:
-        build_content += """\
+    rctx.file("BUILD.bazel", build_contents)
+    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, p)
+            for p in bzl_packages
+        ]),
+        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, "whl")
+            for p in bzl_packages
+        ]),
+        "%%MACRO_TMPL%%": macro_tmpl,
+        "%%NAME%%": rctx.attr.name,
+        "%%REQUIREMENTS_LOCK%%": requirements,
+    })
 
-alias(
-    name = "{name}_pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
+def _pip_hub_repository_bzlmod_impl(rctx):
+    bzl_packages = rctx.attr.whl_library_alias_names
+    _create_pip_repository_bzlmod(rctx, bzl_packages, "")
+
+pip_hub_repository_bzlmod_attrs = {
+    "repo_name": attr.string(
+        mandatory = True,
+        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
+    ),
+    "whl_library_alias_names": attr.string_list(
+        mandatory = True,
+        doc = "The list of whl alias that we use to build aliases and the whl names",
+    ),
+    "_template": attr.label(
+        default = ":pip_hub_repository_requirements_bzlmod.bzl.tmpl",
+    ),
+}
+
+pip_hub_repository_bzlmod = repository_rule(
+    attrs = pip_hub_repository_bzlmod_attrs,
+    doc = """A rule for bzlmod mulitple pip repository creation. Intended for private use only.""",
+    implementation = _pip_hub_repository_bzlmod_impl,
 )
-
-alias(
-    name = "{name}_whl",
-    actual = "@{repo_name}_{dep}//:whl",
-)
-
-alias(
-    name = "{name}_data",
-    actual = "@{repo_name}_{dep}//:data",
-)
-
-alias(
-    name = "{name}_dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
-)
-""".format(
-            name = name,
-            repo_name = repo_name,
-            dep = name,
-        )
-
-    return build_content
 
 def _pip_repository_bzlmod_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)
@@ -367,45 +375,9 @@ def _pip_repository_bzlmod_impl(rctx):
     packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
-
-    repo_name = rctx.attr.repo_name
-
-    build_contents = _BUILD_FILE_CONTENTS
-
-    if rctx.attr.incompatible_generate_aliases:
-        _pkg_aliases(rctx, repo_name, bzl_packages)
-    else:
-        build_contents += _bzlmod_pkg_aliases(repo_name, bzl_packages)
-
-    # NOTE: we are using the canonical name with the double '@' in order to
-    # always uniquely identify a repository, as the labels are being passed as
-    # a string and the resolution of the label happens at the call-site of the
-    # `requirement`, et al. macros.
-    if rctx.attr.incompatible_generate_aliases:
-        macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
-    else:
-        macro_tmpl = "@@{name}//:{{}}_{{}}".format(name = rctx.attr.name)
-
-    rctx.file("BUILD.bazel", build_contents)
-    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
-        "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, p) if rctx.attr.incompatible_generate_aliases else macro_tmpl.format(p, "pkg")
-            for p in bzl_packages
-        ]),
-        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "whl")
-            for p in bzl_packages
-        ]),
-        "%%MACRO_TMPL%%": macro_tmpl,
-        "%%NAME%%": rctx.attr.name,
-        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
-    })
+    _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
 
 pip_repository_bzlmod_attrs = {
-    "incompatible_generate_aliases": attr.bool(
-        default = False,
-        doc = "Allow generating aliases in '@pip//:<pkg>' -> '@pip_<pkg>//:pkg'. This replaces the aliases generated by the `bzlmod` tooling.",
-    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name",
