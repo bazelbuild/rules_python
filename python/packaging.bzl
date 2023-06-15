@@ -142,7 +142,8 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
     Args:
         name:  A unique name for this target.
         twine: A label of the external location of the py_library target for twine
-        publish_args: arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"]
+        publish_args: arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"].
+            These are subject to make var expansion, as with the `args` attribute.
             Note that you can also pass additional args to the bazel run command as in the example above.
         **kwargs: other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)
     """

@@ -201,7 +201,7 @@ Now you can run a command like the following, which publishes to https://test.py
 | :------------- | :------------- | :------------- |
 | <a id="py_wheel-name"></a>name |  A unique name for this target.   |  none |
 | <a id="py_wheel-twine"></a>twine |  A label of the external location of the py_library target for twine   |  <code>None</code> |
-| <a id="py_wheel-publish_args"></a>publish_args |  arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"] Note that you can also pass additional args to the bazel run command as in the example above.   |  <code>[]</code> |
+| <a id="py_wheel-publish_args"></a>publish_args |  arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"]. These are subject to make var expansion, as with the <code>args</code> attribute. Note that you can also pass additional args to the bazel run command as in the example above.   |  <code>[]</code> |
 | <a id="py_wheel-kwargs"></a>kwargs |  other named parameters passed to the underlying [py_wheel rule](#py_wheel_rule)   |  none |
 
 
