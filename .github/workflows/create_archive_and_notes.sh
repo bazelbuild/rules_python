@@ -31,14 +31,20 @@ Add to your \`MODULE.bazel\` file:
 
 \`\`\`starlark
 bazel_dep(name = "rules_python", version = "${TAG}")
+python = use_extension("@rules_python//python:extensions.bzl", "python")
+
+python.toolchain(
+    python_version = "3.10",
+)
+use_repo(python, "python_3_10", "python_aliases")
 
 pip = use_extension("@rules_python//python:extensions.bzl", "pip")
-
 pip.parse(
-    name = "pip",
-    requirements_lock = "//:requirements_lock.txt",
+    hub_name = "pip",
+    python_version = "3.10",
+    requirements_lock = "//:requirements_lock_3_10.txt",
+    requirements_windows = "//:requirements_windows_3_10.txt",
 )
-
 use_repo(pip, "pip")
 \`\`\`
 

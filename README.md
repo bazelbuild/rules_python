@@ -72,6 +72,7 @@ python = use_extension("@rules_python//python:extensions.bzl", "python")
 python.toolchain(
     python_version = "3.9",
 )
+use_repo(python, "python_3_9", "python_aliases")
 ```
 
 ### Using pip with bzlmod
@@ -82,24 +83,12 @@ To use dependencies from PyPI, the `pip.parse()` extension is used to
 convert a requirements file into Bazel dependencies.
 
 ```starlark
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    python_version = "3.9",
-)
-
-interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
-interpreter.install(
-    name = "interpreter",
-    python_name = "python_3_9",
-)
-use_repo(interpreter, "interpreter")
-
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+# Use the above python.toolchain call and add the following pip call.
 pip.parse(
     hub_name = "pip",
-    python_interpreter_target = "@interpreter//:python",
-    requirements_lock = "//:requirements_lock.txt",
-    requirements_windows = "//:requirements_windows.txt",
+    python_version = "3.9",
+    requirements_lock = "//:requirements_lock_3_9.txt",
+    requirements_windows = "//:requirements_windows_3_9.txt",
 )
 use_repo(pip, "pip")
 ```
@@ -198,12 +187,13 @@ target in the appropriate wheel repo.
 To add pip dependencies to your `MODULE.bazel` file, use the `pip.parse` extension, and call it to create the
 central external repo and individual wheel external repos.
 
-```python
+```starlark
 pip.parse(
     hub_name = "my_deps",
-    requirements_lock = "//:requirements_lock.txt",
+    python_version = "3.9",
+    requirements_lock = "//:requirements_lock_3_9.txt",
+    requirements_windows = "//:requirements_windows_3_9.txt",
 )
-
 use_repo(pip, "my_deps")
 ```
 
