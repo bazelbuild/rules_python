@@ -155,12 +155,12 @@ _other_attrs = {
     "classifiers": attr.string_list(
         doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
     ),
+    "description_content_type": attr.string(
+        doc = "The type of contents in description_file. See https://packaging.python.org/en/latest/specifications/core-metadata/#description-content-type",
+    ),
     "description_file": attr.label(
         doc = "A file containing text describing the package.",
         allow_single_file = True,
-    ),
-    "description_content_type": attr.string(
-        doc = "The type of contents in description_file. See https://packaging.python.org/en/latest/specifications/core-metadata/#description-content-type",
     ),
     "extra_distinfo_files": attr.label_keyed_string_dict(
         doc = "Extra files to add to distinfo directory in the archive.",
