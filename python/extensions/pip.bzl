@@ -14,9 +14,8 @@
 
 "pip module extension for use with bzlmod"
 
-load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION")
+load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load("@rules_python//python:pip.bzl", "whl_library_alias")
-load("@rules_python//python:versions.bzl", "MINOR_MAPPING")
 load(
     "@rules_python//python/pip_install:pip_repository.bzl",
     "locked_requirements_label",
@@ -27,15 +26,23 @@ load(
     "whl_library",
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load(
-    "@rules_python//python/private:toolchains_repo.bzl",
-    "get_host_os_arch",
-    "get_host_platform",
-)
 
-def _create_pip(module_ctx, pip_attr, python_version, whl_map):
+def _create_pip(module_ctx, pip_attr, whl_map):
+    python_interpreter_target = pip_attr.python_interpreter_target
+
+    # if we do not have the python_interpreter set in the attributes
+    # we programtically find it.
+    if python_interpreter_target == None:
+        python_name = "python_{}".format(pip_attr.python_version.replace(".", "_"))
+        if python_name not in INTERPRETER_LABELS.keys():
+            fail("""
+Unable to find '{}' in the list of interpreters please update your pip.parse call with the correct python name
+""".format(pip_attr.python_name))
+
+        python_interpreter_target = INTERPRETER_LABELS[python_name]
+
     hub_name = pip_attr.hub_name
-    pip_name = hub_name + "_{}".format(python_version.replace(".", ""))
+    pip_name = hub_name + "_{}".format(pip_attr.python_version.replace(".", ""))
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -69,7 +76,7 @@ def _create_pip(module_ctx, pip_attr, python_version, whl_map):
             repo_prefix = pip_name + "_",
             annotation = pip_attr.annotations.get(whl_name),
             python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = pip_attr.python_interpreter_target,
+            python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
             timeout = pip_attr.timeout,
             isolated = use_isolated(module_ctx, pip_attr),
@@ -83,7 +90,7 @@ def _create_pip(module_ctx, pip_attr, python_version, whl_map):
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
 
-        whl_map[hub_name][whl_name][python_version] = pip_name + "_"
+        whl_map[hub_name][whl_name][pip_attr.python_version] = pip_name + "_"
 
 def _pip_impl(module_ctx):
     """Implmentation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
@@ -96,13 +103,13 @@ def _pip_impl(module_ctx):
 
     pip.parse(
         hub_name = "pip",
-        python_interpreter_target = "@interpreter_39//:python",
+        python_version = 3.9,
         requirements_lock = "//:requirements_lock_3_9.txt",
         requirements_windows = "//:requirements_windows_3_9.txt",
     )
     pip.parse(
         hub_name = "pip",
-        python_interpreter_target = "@interpreter_310//:python",
+        python_version = 3.10,
         requirements_lock = "//:requirements_lock_3_10.txt",
         requirements_windows = "//:requirements_windows_3_10.txt",
     )
@@ -119,7 +126,7 @@ def _pip_impl(module_ctx):
     These definitions create two different pip spoke repositories that are
     related to the hub "pip".
     One spoke uses Python 3.9 and the other uses Python 3.10. This code automatically
-    determines the Python version when an interpreter target is provided.
+    determines the Python version and the interpreter.
     Both of these pip spokes contain requirements files that includes websocket
     and its dependencies.
 
@@ -129,7 +136,7 @@ def _pip_impl(module_ctx):
     - @@rules_python~override~pip~pip_310
 
     The different spoke names are a combination of the hub_name and the Python version.
-    In the future we may remove this repository, but we do not support endpoints
+    In the future we may remove this repository, but we do not support entry points.
     yet, and that functionality exists in these repos.
 
     We also need repositories for the wheels that the different pip spokes contain.
@@ -178,45 +185,6 @@ def _pip_impl(module_ctx):
 
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
-            # We can automatically dertermine the Python version of an
-            # interpreter, because of the standard naming that we use when
-            # downloading Python binaries.
-            python_version = ""
-            if pip_attr.python_version == "" and pip_attr.python_interpreter_target != "":
-                # python_version and the interpreter are set so we can match
-                # the Python version
-                (os, arch) = get_host_os_arch(module_ctx)
-                platform = get_host_platform(os, arch)
-
-                # We get the full name of the label, and this resolves symlinks
-                python_binary_path = module_ctx.path(pip_attr.python_interpreter_target).realpath
-                python_binary_path = str(python_binary_path)
-
-                # Iterate through the different Python versions supported and
-                # match on the correct directory structure.
-                for version in MINOR_MAPPING.keys():
-                    # This will create a value like
-                    # _3_10_x86_64-unknown-linux-gnu
-                    python_platform_version = "_{version}_{platform}".format(
-                        version = version.replace(".", "_"),
-                        platform = platform,
-                    )
-
-                    # We then looking where _3_10_x86_64-unknown-linux-gnu
-                    # exists in a repo name like rules_python~override~python~python_3_10_x86_64-unknown-linux-gnu
-                    # If we run into problems with the automatic matching a
-                    # user can override this logic by setting
-                    # pip_attr.python_version.
-                    if python_platform_version in python_binary_path:
-                        python_version = version
-                        break
-
-            if python_version == "" and pip_attr.python_version != "":
-                python_version = pip_attr.python_version
-
-            if python_version == "":
-                fail("Unable to automaticly determine the Python version, please set the python_version attribute.")
-
             if pip_attr.hub_name in pip_hub_map:
                 # We cannot have two hubs with the same name in different
                 # modules.
@@ -224,24 +192,24 @@ def _pip_impl(module_ctx):
                     fail("""Unable to create pip with the hub_name '{}', same hub name 
                         in a different module found.""".format(pip_attr.hub_name))
 
-                if python_version in pip_hub_map[pip_attr.hub_name].python_versions:
+                if pip_attr.python_version in pip_hub_map[pip_attr.hub_name].python_versions:
                     fail(
                         """Unable to create pip with the hub_name '{}', same hub name 
-                        using the same Python version '{}' found in module '{}'.""".format(
+                        using the same Python repo name '{}' found in module '{}'.""".format(
                             pip_attr.hub_name,
-                            python_version,
+                            pip_attr.python_version,
                             mod.name,
                         ),
                     )
                 else:
-                    pip_hub_map[pip_attr.hub_name].python_versions.append(python_version)
+                    pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
             else:
                 pip_hub_map[pip_attr.hub_name] = struct(
                     module_name = mod.name,
                     python_versions = [pip_attr.python_version],
                 )
 
-            _create_pip(module_ctx, pip_attr, python_version, hub_whl_map)
+            _create_pip(module_ctx, pip_attr, hub_whl_map)
 
     for hub_name, whl_map in hub_whl_map.items():
         for whl_name, version_map in whl_map.items():
@@ -284,10 +252,9 @@ create spokes for specific Python versions.
 """,
         ),
         "python_version": attr.string(
-            mandatory = False,
+            mandatory = True,
             doc = """
-The Python version for the pip spoke. If you are using non custom toolchains and provide the interpreter
-this value is optional.
+The Python version for the pip spoke. 
 """,
         ),
     }, **pip_repository_attrs)
