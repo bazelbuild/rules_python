@@ -159,6 +159,9 @@ _other_attrs = {
         doc = "A file containing text describing the package.",
         allow_single_file = True,
     ),
+    "description_content_type": attr.string(
+        doc = "The type of contents in description_file. See https://packaging.python.org/en/latest/specifications/core-metadata/#description-content-type",
+    ),
     "extra_distinfo_files": attr.label_keyed_string_dict(
         doc = "Extra files to add to distinfo directory in the archive.",
         allow_files = True,
@@ -275,6 +278,8 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Home-page: %s" % ctx.attr.homepage)
     if ctx.attr.license:
         metadata_contents.append("License: %s" % ctx.attr.license)
+    if ctx.attr.description_content_type:
+        metadata_contents.append("Description-Content-Type: %s" % ctx.attr.description_content_type)
 
     for c in ctx.attr.classifiers:
         metadata_contents.append("Classifier: %s" % c)

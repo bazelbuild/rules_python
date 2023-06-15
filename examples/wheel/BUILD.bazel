@@ -141,6 +141,7 @@ py_wheel(
         "customized_wheel": "examples.wheel.main:main",
     },
     description_file = "README.md",
+    description_content_type = "text/markdown",
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
     distribution = "example_customized",
     entry_points = {

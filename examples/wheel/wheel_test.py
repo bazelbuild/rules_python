@@ -99,7 +99,7 @@ class WheelTest(unittest.TestCase):
                 record_contents,
                 # The entries are guaranteed to be sorted.
                 b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=YUnzQ9gTMXspIBURe90Ct3aL_CCn8fwC3SiZe6MMTs8,372
+example_customized-0.0.1.dist-info/METADATA,sha256=aljrVBPlCkyemnrkcTr6DJRaNOqCd2CFrryZF67Nh8Y,412
 example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
 example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
 example_customized-0.0.1.dist-info/RECORD,,
@@ -120,6 +120,7 @@ Root-Is-Purelib: true
 Tag: py3-none-any
 """,
             )
+            print("XXX:", metadata_contents)
             self.assertEqual(
                 metadata_contents,
                 b"""\
@@ -129,6 +130,7 @@ Author: Example Author with non-ascii characters: \xc5\xbc\xc3\xb3\xc5\x82w
 Author-email: example@example.com
 Home-page: www.example.com
 License: Apache 2.0
+Description-Content-Type: text/markdown
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
