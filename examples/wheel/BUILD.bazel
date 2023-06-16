@@ -140,7 +140,6 @@ py_wheel(
     console_scripts = {
         "customized_wheel": "examples.wheel.main:main",
     },
-    description_content_type = "text/markdown",
     description_file = "README.md",
     # Package data. We're building "example_customized-0.0.1-py3-none-any.whl"
     distribution = "example_customized",
@@ -161,6 +160,7 @@ py_wheel(
     python_tag = "py3",
     # Requirements embedded into the wheel metadata.
     requires = ["pytest"],
+    summary = "A one-line summary of this test package",
     version = "0.0.1",
     deps = [":example_pkg"],
 )
