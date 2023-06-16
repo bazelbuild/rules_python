@@ -176,6 +176,10 @@ _other_attrs = {
         doc = "A string specifying the license of the package.",
         default = "",
     ),
+    "project_urls": attr.string_dict(
+        doc = ("A string dict specifying additional browsable URLs for the project and corresponding labels. " +
+               'e.g `{{"Bug Tracker": "http://bitbucket.org/tarek/distribute/issues/"}}`'),
+    ),
     "python_requires": attr.string(
         doc = (
             "Python versions required by this distribution, e.g. '>=3.5,<3.7'"
@@ -300,6 +304,9 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Description-Content-Type: %s" % description_file_type)
     if ctx.attr.summary:
         metadata_contents.append("Summary: %s" % ctx.attr.summary)
+
+    for label, url in sorted(ctx.attr.project_urls.items()):
+        metadata_contents.append("Project-URL: %s, %s" % (label, url))
 
     for c in ctx.attr.classifiers:
         metadata_contents.append("Classifier: %s" % c)
