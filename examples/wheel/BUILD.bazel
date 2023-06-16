@@ -160,6 +160,7 @@ py_wheel(
     python_tag = "py3",
     # Requirements embedded into the wheel metadata.
     requires = ["pytest"],
+    summary = "A one-line summary of this test package",
     version = "0.0.1",
     deps = [":example_pkg"],
 )
