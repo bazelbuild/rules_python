@@ -293,13 +293,10 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Description-Content-Type: %s" % ctx.attr.description_content_type)
     elif ctx.attr.description_file:
         # infer the content type from description file extension.
-        description_file_type = _DEFAULT_DESCRIPTION_FILE_TYPE
-        description_files = ctx.attr.description_file.files.to_list()
-        if len(description_files) == 1:
-            description_file_type = _DESCRIPTION_FILE_EXTENSION_TO_TYPE.get(
-                description_files[0].extension,
-                _DEFAULT_DESCRIPTION_FILE_TYPE,
-            )
+        description_file_type = _DESCRIPTION_FILE_EXTENSION_TO_TYPE.get(
+            ctx.file.description_file.extension,
+            _DEFAULT_DESCRIPTION_FILE_TYPE,
+        )
         metadata_contents.append("Description-Content-Type: %s" % description_file_type)
     if ctx.attr.summary:
         metadata_contents.append("Summary: %s" % ctx.attr.summary)
