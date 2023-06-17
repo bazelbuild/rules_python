@@ -278,6 +278,7 @@ def _py_wheel_impl(ctx):
     # Note: Description file and version are not embedded into metadata.txt yet,
     # it will be done later by wheelmaker script.
     metadata_file = ctx.actions.declare_file(ctx.attr.name + ".metadata.txt")
+    print("mf = ", metadata_file)
     metadata_contents = ["Metadata-Version: 2.1"]
     metadata_contents.append("Name: %s" % ctx.attr.distribution)
 
