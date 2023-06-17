@@ -177,7 +177,8 @@ _other_attrs = {
         default = "",
     ),
     "project_urls": attr.string_dict(
-        doc = ("A string dict specifying additional browsable URLs for the project and corresponding labels. " +
+        doc = ("A string dict specifying additional browsable URLs for the project and corresponding labels, " +
+               "where label is the key and url is the value. " +
                'e.g `{{"Bug Tracker": "http://bitbucket.org/tarek/distribute/issues/"}}`'),
     ),
     "python_requires": attr.string(
@@ -195,6 +196,7 @@ _other_attrs = {
     ),
 }
 
+_PROJECT_URL_LABEL_LENGTH_LIMIT = 32
 _DESCRIPTION_FILE_EXTENSION_TO_TYPE = {
     "md": "text/markdown",
     "rst": "text/x-rst",
@@ -306,6 +308,8 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Summary: %s" % ctx.attr.summary)
 
     for label, url in sorted(ctx.attr.project_urls.items()):
+        if len(label) > _PROJECT_URL_LABEL_LENGTH_LIMIT:
+            fail("`label` {} in `project_urls` is too long. It is limited to {} characters.".format(len(label), _PROJECT_URL_LABEL_LENGTH_LIMIT))
         metadata_contents.append("Project-URL: %s, %s" % (label, url))
 
     for c in ctx.attr.classifiers:
