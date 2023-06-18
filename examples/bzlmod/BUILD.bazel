@@ -87,3 +87,23 @@ build_test(
     name = "all_requirements",
     targets = all_requirements,
 )
+
+exports_files(
+    glob(["data/**"]),
+    visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "pip_parse_annotations_test",
+    srcs = ["pip_repository_annotations_test.py"],
+    env = {
+        "REQUESTS_PKG_DIR": "pip_39_requests",
+        "WHEEL_PKG_DIR": "pip_39_wheel",
+    },
+    main = "pip_repository_annotations_test.py",
+    deps = [
+        "@pip//requests:pkg",
+        "@pip//wheel:pkg",
+        "@rules_python//python/runfiles",
+    ],
+)
