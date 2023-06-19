@@ -49,17 +49,6 @@ whl_modifications = module_extension(
     tag_classes = {
         "create": tag_class(
             attrs = {
-                "hub_name": attr.string(
-                    doc = """\
-Name of the whl modification, hub we use this name to set the modifications for
-pip.parse. If you have different pip hubs you can use a different name,
-otherwise it is best practice to just use one.""",
-                    mandatory = True,
-                ),
-                "whl_name": attr.string(
-                    doc = "The whl name that the modifications are used for",
-                    mandatory = True,
-                ),
                 "additive_build_content": attr.string(
                     doc = "(str, optional): Raw text to add to the generated `BUILD` file of a package.",
                 ),
@@ -89,10 +78,21 @@ the generated `py_library` target.""",
 (list, optional): A list of exclude glob patterns to add as `data` to
 the generated `py_library` target.""",
                 ),
+                "hub_name": attr.string(
+                    doc = """\
+Name of the whl modification, hub we use this name to set the modifications for
+pip.parse. If you have different pip hubs you can use a different name,
+otherwise it is best practice to just use one.""",
+                    mandatory = True,
+                ),
                 "srcs_exclude_glob": attr.string_list(
                     doc = """\
 (list, optional): A list of labels to add as `srcs` to the generated
 `py_library` target.""",
+                ),
+                "whl_name": attr.string(
+                    doc = "The whl name that the modifications are used for",
+                    mandatory = True,
                 ),
             },
         ),

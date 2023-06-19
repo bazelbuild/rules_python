@@ -86,8 +86,8 @@ pip.parse(
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
     whl_modifications = {
-        "@whl_mods_hub//:wheel.json": "wheel",
         "@whl_mods_hub//:requests.json": "requests",
+        "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
 pip.parse(
@@ -96,8 +96,8 @@ pip.parse(
     requirements_lock = "//:requirements_lock_3_10.txt",
     requirements_windows = "//:requirements_windows_3_10.txt",
     whl_modifications = {
-        "@whl_mods_hub//:wheel.json": "wheel",
         "@whl_mods_hub//:requests.json": "requests",
+        "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
 
