@@ -27,6 +27,53 @@ load(
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 
+def _whl_mods_impl(mctx):
+    """Implmentation of a class tag that creates JSON files used to modify the creation of different wheels.
+"""
+    whl_mods_dict = {}
+    for mod in mctx.modules:
+        for whl_mod_attr in mod.tags.whl_mods:
+            if whl_mod_attr.hub_name not in whl_mods_dict.keys():
+                whl_mods_dict[whl_mod_attr.hub_name] = {whl_mod_attr.whl_name: whl_mod_attr}
+            elif whl_mod_attr.whl_name in whl_mods_dict[whl_mod_attr.hub_name].keys():
+                # We cannot have the same wheel name in the same hub, as we
+                # will create the same JSON file name.
+                fail("""\
+Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
+                    whl_mod_attr.whl_name,
+                    whl_mod_attr.hub_name,
+                ))
+            else:
+                whl_mods_dict[whl_mod_attr.hub_name][whl_mod_attr.whl_name] = whl_mod_attr
+
+    for hub_name, whl_maps in whl_mods_dict.items():
+        whl_mods = {}
+
+        # create a struct that we can pass to the _whl_mods_repo rule
+        # to create the different JSON files.
+        for whl_name, mods in whl_maps.items():
+            build_content = mods.additive_build_content
+            if mods.additive_build_content_file != None and mods.additive_build_content != "":
+                fail("""\
+You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
+""")
+            elif mods.additive_build_content_file != None:
+                build_content = mctx.read(mods.additive_build_content_file)
+
+            whl_mods[whl_name] = json.encode(struct(
+                additive_build_content = build_content,
+                copy_files = mods.copy_files,
+                copy_executables = mods.copy_executables,
+                data = mods.data,
+                data_exclude_glob = mods.data_exclude_glob,
+                srcs_exclude_glob = mods.srcs_exclude_glob,
+            ))
+
+        _whl_mods_repo(
+            name = hub_name,
+            whl_mods = whl_mods,
+        )
+
 def _create_pip(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
@@ -177,10 +224,17 @@ def _pip_impl(module_ctx):
     This implementation reuses elements of non-bzlmod code and also reuses the first implementation
     of pip bzlmod, but adds the capability to have multiple pip.parse calls.
 
+    This implmentation also handles the creation of whl_modification JSON files that are used
+    during the creation of wheel libraries.  These JSON files used via the annotations argument
+    when calling wheel_installer.py.
+
     Args:
         module_ctx: module contents
 
     """
+
+    # Build all of the wheel modifications if the tag class is called.
+    _whl_mods_impl(module_ctx)
 
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
@@ -283,17 +337,115 @@ extension.
 
     return attrs
 
+def _mod_tag_attrs():
+    attrs = {
+        "additive_build_content": attr.string(
+            doc = "(str, optional): Raw text to add to the generated `BUILD` file of a package.",
+        ),
+        "additive_build_content_file": attr.label(
+            doc = """\
+(label, optional): path to a BUILD file to add to the generated
+`BUILD` file of a package. You cannot use both additive_build_content and additive_build_content_file
+arguments at the same time.""",
+        ),
+        "copy_executables": attr.string_dict(
+            doc = """\
+(dict, optional): A mapping of `src` and `out` files for
+[@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as
+executable.""",
+        ),
+        "copy_files": attr.string_dict(
+            doc = """\
+(dict, optional): A mapping of `src` and `out` files for 
+[@bazel_skylib//rules:copy_file.bzl][cf]""",
+        ),
+        "data": attr.string_list(
+            doc = """\
+(list, optional): A list of labels to add as `data` dependencies to
+the generated `py_library` target.""",
+        ),
+        "data_exclude_glob": attr.string_list(
+            doc = """\
+(list, optional): A list of exclude glob patterns to add as `data` to
+the generated `py_library` target.""",
+        ),
+        "hub_name": attr.string(
+            doc = """\
+Name of the whl modification, hub we use this name to set the modifications for
+pip.parse. If you have different pip hubs you can use a different name,
+otherwise it is best practice to just use one.""",
+            mandatory = True,
+        ),
+        "srcs_exclude_glob": attr.string_list(
+            doc = """\
+(list, optional): A list of labels to add as `srcs` to the generated
+`py_library` target.""",
+        ),
+        "whl_name": attr.string(
+            doc = "The whl name that the modifications are used for.",
+            mandatory = True,
+        ),
+    }
+    return attrs
+
 pip = module_extension(
     doc = """\
-This extension is used to create a pip hub and all of the spokes that are part of that hub.
+pip.parse:
+This tag class is used to create a pip hub and all of the spokes that are part of that hub.
 We can have multiple different hubs, but we cannot have hubs that have the same name in
 different modules.  Each hub needs one or more spokes.  A spoke contains a specific version
 of Python, and the requirement(s) files that are unquie to that Python version.
 In order to add more spokes you call this extension mulitiple times using the same hub
 name.
+
+pip.whl_mods:
+This tag class is used to create different wheel modification JSON files.  These files
+contain directives that are used by the wheel_installer.py during the creation of 
+wheels.
 """,
     implementation = _pip_impl,
     tag_classes = {
-        "parse": tag_class(attrs = _pip_parse_ext_attrs()),
+        "parse": tag_class(
+            attrs = _pip_parse_ext_attrs(),
+            doc = """\
+This tag class is used to create a pip hub and all of the spokes that are part of that hub.
+This tag class reuses the pip attributes that are found in 
+@rules_python//python/pip_install:pip_repository.bzl
+""",
+        ),
+        "whl_mods": tag_class(
+            attrs = _mod_tag_attrs(),
+            doc = """\
+This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
+JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
+create different modifications based on the type of attribute. Previously to bzlmod these
+JSON files where referred to as annotations, and were renamed to whl_modifications in this
+extension.
+""",
+        ),
+    },
+)
+
+def _whl_mods_repo_impl(rctx):
+    rctx.file("BUILD.bazel", """\
+exports_files(
+    glob(["*.json"]),
+    visibility = ["//visibility:public"],
+)
+""")
+
+    for whl_name, mods in rctx.attr.whl_mods.items():
+        rctx.file("{}.json".format(whl_name), mods)
+
+_whl_mods_repo = repository_rule(
+    doc = """\
+This rule creates json files based on the whl_mods attribute. 
+""",
+    implementation = _whl_mods_repo_impl,
+    attrs = {
+        "whl_mods": attr.string_dict(
+            mandatory = True,
+            doc = "JSON endcoded string that is provided to wheel_builder.py",
+        ),
     },
 )

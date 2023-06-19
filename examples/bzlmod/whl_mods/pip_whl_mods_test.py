@@ -24,8 +24,11 @@ from pathlib import Path
 from python.runfiles import runfiles
 
 
-class PipRepositoryAnnotationsTest(unittest.TestCase):
+class PipWhlModsTest(unittest.TestCase):
     maxDiff = None
+
+    def package_path(self) -> str:
+        return "rules_python~override~pip~"
 
     def wheel_pkg_dir(self) -> str:
         env = os.environ.get("WHEEL_PKG_DIR")
@@ -35,12 +38,13 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
     def test_build_content_and_data(self):
         r = runfiles.Create()
         rpath = r.Rlocation(
-                "rules_python~override~pip~{}/generated_file.txt".format(
+                "{}{}/generated_file.txt".format(
+                    self.package_path(), 
                     self.wheel_pkg_dir(),
                     ),
                 )
         generated_file = Path(rpath)
-        self.assertTrue(generated_file.exists(), msg = "{}".format(rpath))
+        self.assertTrue(generated_file.exists())
 
         content = generated_file.read_text().rstrip()
         self.assertEqual(content, "Hello world from build content file")
@@ -48,8 +52,9 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
     def test_copy_files(self):
         r = runfiles.Create()
         rpath = r.Rlocation(
-                "rules_python~override~pip~{}/copied_content/file.txt".format(
-                    self.wheel_pkg_dir()
+                "{}{}/copied_content/file.txt".format(
+                    self.package_path(), 
+                    self.wheel_pkg_dir(),
                     )
                 )
         copied_file = Path(rpath)
@@ -61,13 +66,14 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
     def test_copy_executables(self):
         r = runfiles.Create()
         rpath = r.Rlocation(
-                "rules_python~override~pip~{}/copied_content/executable{}".format(
+                "{}{}/copied_content/executable{}".format(
+                    self.package_path(), 
                     self.wheel_pkg_dir(),
                     ".exe" if platform.system() == "windows" else ".py",
                     )
                 )
         executable = Path(rpath)
-        self.assertTrue(executable.exists(), msg = "{}".format(rpath))
+        self.assertTrue(executable.exists())
 
         proc = subprocess.run(
             [sys.executable, str(executable)],
@@ -82,7 +88,8 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         current_wheel_version = "0.40.0"
 
         r = runfiles.Create()
-        dist_info_dir = "rules_python~override~pip~{}/site-packages/wheel-{}.dist-info".format(
+        dist_info_dir = "{}{}/site-packages/wheel-{}.dist-info".format(
+                self.package_path(), 
                 self.wheel_pkg_dir(),
                 current_wheel_version,
                 )
@@ -94,15 +101,8 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         # However, `WHEEL` was explicitly excluded, so it should be missing
         wheel_path = r.Rlocation("{}/WHEEL".format(dist_info_dir))
 
-        # Because windows does not have `--enable_runfiles` on by default, the
-        # `runfiles.Rlocation` results will be different on this platform vs
-        # unix platforms. See `@rules_python//python/runfiles` for more details.
-        if platform.system() == "Windows":
-            self.assertIsNotNone(metadata_path)
-            self.assertIsNone(wheel_path)
-        else:
-            self.assertTrue(Path(metadata_path).exists(), msg = "{}".format(metadata_path))
-            self.assertFalse(Path(wheel_path).exists())
+        self.assertTrue(Path(metadata_path).exists())
+        self.assertFalse(Path(wheel_path).exists())
 
     def requests_pkg_dir(self) -> str:
         env = os.environ.get("REQUESTS_PKG_DIR")
@@ -114,7 +114,8 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         # specified, in this case requests[security].
         r = runfiles.Create()
         rpath = r.Rlocation(
-                "rules_python~override~pip~{}/generated_file.txt".format(
+                "{}{}/generated_file.txt".format(
+                    self.package_path(), 
                     self.requests_pkg_dir(),
                     ),
                 )
