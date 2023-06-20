@@ -52,8 +52,8 @@ def _test_mac_requires_darwin_for_execution(name, config):
         config_settings = {
             "//command_line_option:cpu": "darwin_x86_64",
             "//command_line_option:crosstool_top": _FAKE_CC_TOOLCHAIN,
-            "//command_line_option:platforms": [_PLATFORM_MAC],
             "//command_line_option:extra_toolchains": _FAKE_CC_TOOLCHAINS,
+            "//command_line_option:platforms": [_PLATFORM_MAC],
         },
     )
 
@@ -84,8 +84,8 @@ def _test_non_mac_doesnt_require_darwin_for_execution(name, config):
         config_settings = {
             "//command_line_option:cpu": "k8",
             "//command_line_option:crosstool_top": _FAKE_CC_TOOLCHAIN,
-            "//command_line_option:platforms": [_PLATFORM_LINUX],
             "//command_line_option:extra_toolchains": _FAKE_CC_TOOLCHAINS,
+            "//command_line_option:platforms": [_PLATFORM_LINUX],
         },
     )
 
