@@ -290,6 +290,9 @@ def parse_args() -> argparse.Namespace:
         "--description_file", help="Path to the file with package description"
     )
     wheel_group.add_argument(
+        "--description_content_type", help="Content type of the package description"
+    )
+    wheel_group.add_argument(
         "--entry_points_file",
         help="Path to a correctly-formatted entry_points.txt file",
     )

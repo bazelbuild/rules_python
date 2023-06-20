@@ -155,6 +155,11 @@ _other_attrs = {
     "classifiers": attr.string_list(
         doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
     ),
+    "description_content_type": attr.string(
+        doc = ("The type of contents in description_file. " +
+               "If not provided, the type will be inferred from the extension of description_file. " +
+               "Also see https://packaging.python.org/en/latest/specifications/core-metadata/#description-content-type"),
+    ),
     "description_file": attr.label(
         doc = "A file containing text describing the package.",
         allow_single_file = True,
@@ -171,6 +176,11 @@ _other_attrs = {
         doc = "A string specifying the license of the package.",
         default = "",
     ),
+    "project_urls": attr.string_dict(
+        doc = ("A string dict specifying additional browsable URLs for the project and corresponding labels, " +
+               "where label is the key and url is the value. " +
+               'e.g `{{"Bug Tracker": "http://bitbucket.org/tarek/distribute/issues/"}}`'),
+    ),
     "python_requires": attr.string(
         doc = (
             "Python versions required by this distribution, e.g. '>=3.5,<3.7'"
@@ -181,7 +191,17 @@ _other_attrs = {
         default = [],
         doc = "path prefixes to strip from files added to the generated package",
     ),
+    "summary": attr.string(
+        doc = "A one-line summary of what the distribution does",
+    ),
 }
+
+_PROJECT_URL_LABEL_LENGTH_LIMIT = 32
+_DESCRIPTION_FILE_EXTENSION_TO_TYPE = {
+    "md": "text/markdown",
+    "rst": "text/x-rst",
+}
+_DEFAULT_DESCRIPTION_FILE_TYPE = "text/plain"
 
 def _escape_filename_segment(segment):
     """Escape a segment of the wheel filename.
@@ -275,6 +295,22 @@ def _py_wheel_impl(ctx):
         metadata_contents.append("Home-page: %s" % ctx.attr.homepage)
     if ctx.attr.license:
         metadata_contents.append("License: %s" % ctx.attr.license)
+    if ctx.attr.description_content_type:
+        metadata_contents.append("Description-Content-Type: %s" % ctx.attr.description_content_type)
+    elif ctx.attr.description_file:
+        # infer the content type from description file extension.
+        description_file_type = _DESCRIPTION_FILE_EXTENSION_TO_TYPE.get(
+            ctx.file.description_file.extension,
+            _DEFAULT_DESCRIPTION_FILE_TYPE,
+        )
+        metadata_contents.append("Description-Content-Type: %s" % description_file_type)
+    if ctx.attr.summary:
+        metadata_contents.append("Summary: %s" % ctx.attr.summary)
+
+    for label, url in sorted(ctx.attr.project_urls.items()):
+        if len(label) > _PROJECT_URL_LABEL_LENGTH_LIMIT:
+            fail("`label` {} in `project_urls` is too long. It is limited to {} characters.".format(len(label), _PROJECT_URL_LABEL_LENGTH_LIMIT))
+        metadata_contents.append("Project-URL: %s, %s" % (label, url))
 
     for c in ctx.attr.classifiers:
         metadata_contents.append("Classifier: %s" % c)

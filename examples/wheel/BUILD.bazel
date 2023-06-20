@@ -157,9 +157,14 @@ py_wheel(
     },
     homepage = "www.example.com",
     license = "Apache 2.0",
+    project_urls = {
+        "Bug Tracker": "www.example.com/issues",
+        "Documentation": "www.example.com/docs",
+    },
     python_tag = "py3",
     # Requirements embedded into the wheel metadata.
     requires = ["pytest"],
+    summary = "A one-line summary of this test package",
     version = "0.0.1",
     deps = [":example_pkg"],
 )
