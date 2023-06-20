@@ -53,6 +53,13 @@ cc_toolchain(
     toolchain_identifier = "mac-toolchain",
 )
 
+toolchain(
+    name = "mac_toolchain_definition",
+    target_compatible_with = ["@platforms//os:macos"],
+    toolchain = ":mac_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
 fake_cc_toolchain_config(
     name = "mac_toolchain_config",
     target_cpu = "darwin_x86_64",
@@ -70,6 +77,13 @@ cc_toolchain(
     supports_param_files = 0,
     toolchain_config = ":linux_toolchain_config",
     toolchain_identifier = "linux-toolchain",
+)
+
+toolchain(
+    name = "linux_toolchain_definition",
+    target_compatible_with = ["@platforms//os:linux"],
+    toolchain = ":linux_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 fake_cc_toolchain_config(
