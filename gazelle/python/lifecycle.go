@@ -19,11 +19,11 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/language"
 )
 
-var _ language.FinishableLanguage = (*LifeCycleManager)(nil)
+type LifeCycleManager struct {
+	language.BaseLifecycleManager
+}
 
-type LifeCycleManager struct{}
-
-func (l *LifeCycleManager) Init(ctx context.Context) {
+func (l *LifeCycleManager) Before(ctx context.Context) {
 	startParserProcess(ctx)
 	startStdModuleProcess(ctx)
 }
@@ -32,6 +32,6 @@ func (l *LifeCycleManager) DoneGeneratingRules() {
 	shutdownParserProcess()
 }
 
-func (l *LifeCycleManager) DoneResolvingDeps() {
+func (l *LifeCycleManager) AfterResolvingDeps(ctx context.Context) {
 	shutdownStdModuleProcess()
 }
