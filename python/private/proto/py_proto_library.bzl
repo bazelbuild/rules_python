@@ -75,6 +75,7 @@ def _py_proto_aspect_impl(target, ctx):
             name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
         )
 
+        # Handles multiple repository and virtual import cases
         proto_root = proto_info.proto_source_root
         if proto_root.startswith(ctx.bin_dir.path):
             plugin_output = proto_root
