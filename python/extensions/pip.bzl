@@ -230,8 +230,8 @@ def _pip_impl(module_ctx):
             if DEFAULT_PYTHON_VERSION not in version_map:
                 fail((
                     "Default python version '{version}' missing in pip " +
-                    "hub '{hub}': update your pip.parse() call to include " +
-                    "version {version}"
+                    "hub '{hub}': update your pip.parse() calls so that " +
+                    'includes `python_version = "{version}"`'
                 ).format(
                     version = DEFAULT_PYTHON_VERSION,
                     hub = hub_name,
@@ -263,16 +263,23 @@ def _pip_parse_ext_attrs():
         "hub_name": attr.string(
             mandatory = True,
             doc = """
-The repo name pip dependencies will be made available within.
+The name of the repo pip dependencies will be accessible from.
 
-This name must be unique between modules, but should be the same within
-a module. Unless your module is guaranteed to always be the root module, it's
-highly recommended to include your module name in the hub name. Repo mapping,
-`use_repo(..., pip="my_modules_pip_deps")`, can be used for shorter local names
-within your module.
+This name must be unique between modules; unless your module is guaranteed to
+always be the root module, it's highly recommended to include your module name
+in the hub name. Repo mapping, `use_repo(..., pip="my_modules_pip_deps")`, can
+be used for shorter local names within your module.
 
-Multiple `pip.parse()` calls are grouped under this name to provide support
-for multiple Python versions.
+Within a module, the same `hub_name` can be specified to group different Python
+versions of pip dependencies under one repository name. This allows using a
+Python version-agnostic name when referring to pip dependencies; the
+correct version will be automatically selected.
+
+Typically, a module will only have a single hub of pip dependencies, but this
+is not required. Each hub is a separate resolution of pip dependencies. This
+means if different programs need different versions of some library, separate
+hubs can be created, and each program can use its respective hub's targets.
+Targets from different hubs should not be used together.
 """,
         ),
         "python_version": attr.string(
