@@ -14,7 +14,6 @@
 """Test for py_wheel."""
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
-load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:packaging.bzl", "py_wheel")
 
