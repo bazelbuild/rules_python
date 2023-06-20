@@ -27,21 +27,25 @@ load(
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 
-def _create_pip(module_ctx, pip_attr, whl_map):
+def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
     # we programtically find it.
+    hub_name = pip_attr.hub_name
     if python_interpreter_target == None:
         python_name = "python_{}".format(pip_attr.python_version.replace(".", "_"))
         if python_name not in INTERPRETER_LABELS.keys():
-            fail("""
-Unable to find '{}' in the list of interpreters please update your pip.parse call with the correct python name
-""".format(pip_attr.python_name))
-
+            fail((
+                "Unable to find interpreter for pip hub '{hub_name}' for " +
+                "python_version={version}: Make sure a corresponding " +
+                '`python.toolchain(python_version="{version}")` call exists'
+            ).format(
+                hub_name = hub_name,
+                version = pip_attr.python_version,
+            ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    hub_name = pip_attr.hub_name
     pip_name = hub_name + "_{}".format(pip_attr.python_version.replace(".", ""))
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
@@ -93,10 +97,10 @@ Unable to find '{}' in the list of interpreters please update your pip.parse cal
         whl_map[hub_name][whl_name][pip_attr.python_version] = pip_name + "_"
 
 def _pip_impl(module_ctx):
-    """Implmentation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
+    """Implementation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
 
-    This implmentation iterates through all of the "pip.parse" calls and creates
-    different pip hubs repositories based on the "hub_name".  Each of the
+    This implmentation iterates through all of the `pip.parse` calls and creates
+    different pip hub repositories based on the "hub_name".  Each of the
     pip calls create spoke repos that uses a specific Python interpreter.
 
     In a MODULES.bazel file we have:
@@ -115,13 +119,13 @@ def _pip_impl(module_ctx):
     )
 
 
-    For instance we have a hub with the name of "pip".
+    For instance, we have a hub with the name of "pip".
     A repository named the following is created. It is actually called last when
     all of the pip spokes are collected.
 
     - @@rules_python~override~pip~pip
 
-    As show in the example code above we have the following.
+    As shown in the example code above we have the following.
     Two different pip.parse statements exist in MODULE.bazel provide the hub_name "pip".
     These definitions create two different pip spoke repositories that are
     related to the hub "pip".
@@ -185,22 +189,32 @@ def _pip_impl(module_ctx):
 
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
-            if pip_attr.hub_name in pip_hub_map:
+            hub_name = pip_attr.hub_name
+            if hub_name in pip_hub_map:
                 # We cannot have two hubs with the same name in different
                 # modules.
-                if pip_hub_map[pip_attr.hub_name].module_name != mod.name:
-                    fail("""Unable to create pip with the hub_name '{}', same hub name 
-                        in a different module found.""".format(pip_attr.hub_name))
+                if pip_hub_map[hub_name].module_name != mod.name:
+                    fail((
+                        "Duplicate cross-module pip hub named '{hub}': pip hub " +
+                        "names must be unique across modules. First defined " +
+                        "by module '{first_module}', second attempted by " +
+                        "module '{second_module}'"
+                    ).format(
+                        hub = hub_name,
+                        first_module = pip_hub_map[hub_name].module_name,
+                        second_module = mod.name,
+                    ))
 
-                if pip_attr.python_version in pip_hub_map[pip_attr.hub_name].python_versions:
-                    fail(
-                        """Unable to create pip with the hub_name '{}', same hub name 
-                        using the same Python repo name '{}' found in module '{}'.""".format(
-                            pip_attr.hub_name,
-                            pip_attr.python_version,
-                            mod.name,
-                        ),
-                    )
+                if pip_attr.python_version in pip_hub_map[hub_name].python_versions:
+                    fail((
+                        "Duplicate pip python version '{version}' for hub " +
+                        "'{hub}' in module '{module}': the Python versions " +
+                        "used for a hub must be unique"
+                    ).format(
+                        hub = hub_name,
+                        module = mod.name,
+                        version = pip_attr.python_version,
+                    ))
                 else:
                     pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
             else:
@@ -209,17 +223,19 @@ def _pip_impl(module_ctx):
                     python_versions = [pip_attr.python_version],
                 )
 
-            _create_pip(module_ctx, pip_attr, hub_whl_map)
+            _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, hub_whl_map)
 
     for hub_name, whl_map in hub_whl_map.items():
         for whl_name, version_map in whl_map.items():
             if DEFAULT_PYTHON_VERSION not in version_map:
-                fail(
-                    """
-Unable to find the default python version in the version map, please update your requirements files
-to include Python '{}'.
-""".format(DEFAULT_PYTHON_VERSION),
-                )
+                fail((
+                    "Default python version '{version}' missing in pip " +
+                    "hub '{hub}': update your pip.parse() calls so that " +
+                    'includes `python_version = "{version}"`'
+                ).format(
+                    version = DEFAULT_PYTHON_VERSION,
+                    hub = hub_name,
+                ))
 
             # Create the alias repositories which contains different select
             # statements  These select statements point to the different pip
@@ -247,14 +263,34 @@ def _pip_parse_ext_attrs():
         "hub_name": attr.string(
             mandatory = True,
             doc = """
-The unique hub name.  Mulitple pip.parse calls that contain the same hub name, 
-create spokes for specific Python versions.                                
+The name of the repo pip dependencies will be accessible from.
+
+This name must be unique between modules; unless your module is guaranteed to
+always be the root module, it's highly recommended to include your module name
+in the hub name. Repo mapping, `use_repo(..., pip="my_modules_pip_deps")`, can
+be used for shorter local names within your module.
+
+Within a module, the same `hub_name` can be specified to group different Python
+versions of pip dependencies under one repository name. This allows using a
+Python version-agnostic name when referring to pip dependencies; the
+correct version will be automatically selected.
+
+Typically, a module will only have a single hub of pip dependencies, but this
+is not required. Each hub is a separate resolution of pip dependencies. This
+means if different programs need different versions of some library, separate
+hubs can be created, and each program can use its respective hub's targets.
+Targets from different hubs should not be used together.
 """,
         ),
         "python_version": attr.string(
             mandatory = True,
             doc = """
-The Python version for the pip spoke. 
+The Python version to use for resolving the pip dependencies. If not specified,
+then the default Python version (as set by the root module or rules_python)
+will be used.
+
+The version specified here must have a corresponding `python.toolchain()`
+configured.
 """,
         ),
     }, **pip_repository_attrs)
@@ -270,12 +306,16 @@ The Python version for the pip spoke.
 
 pip = module_extension(
     doc = """\
-This extension is used to create a pip hub and all of the spokes that are part of that hub.
-We can have multiple different hubs, but we cannot have hubs that have the same name in
-different modules.  Each hub needs one or more spokes.  A spoke contains a specific version
-of Python, and the requirement(s) files that are unquie to that Python version.
-In order to add more spokes you call this extension mulitiple times using the same hub
-name.
+This extension is used to make dependencies from pip available.
+
+To use, call `pip.parse()` and specify `hub_name` and your requirements file.
+Dependencies will be downloaded and made available in a repo named after the
+`hub_name` argument.
+
+Each `pip.parse()` call configures a particular Python version. Multiple calls
+can be made to configure different Python versions, and will be grouped by
+the `hub_name` argument. This allows the same logical name, e.g. `@pip//numpy`
+to automatically resolve to different, Python version-specific, libraries.
 """,
     implementation = _pip_impl,
     tag_classes = {
