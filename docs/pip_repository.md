@@ -10,7 +10,7 @@
 pip_hub_repository_bzlmod(<a href="#pip_hub_repository_bzlmod-name">name</a>, <a href="#pip_hub_repository_bzlmod-repo_mapping">repo_mapping</a>, <a href="#pip_hub_repository_bzlmod-repo_name">repo_name</a>, <a href="#pip_hub_repository_bzlmod-whl_library_alias_names">whl_library_alias_names</a>)
 </pre>
 
-A rule for bzlmod mulitple pip repository creation. Intended for private use only.
+A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.
 
 **ATTRIBUTES**
 

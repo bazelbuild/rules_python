@@ -34,7 +34,7 @@ python.toolchain(
 # You only need to load this repositories if you are using multiple Python versions.
 # See the tests folder for various examples on using multiple Python versions.
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
-# rules based on the python_versions.
+# rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_aliases")
 
 # This extension allows a user to create modifications to how rules_python
@@ -48,22 +48,26 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
 # Call whl_mods.create for the requests package.
 pip.whl_mods(
-    additive_build_content_file = "//whl_mods:whl_mod_build_content_file.bzl.tmpl",
+    # we are using the appended_build_content.BUILD file
+    # to add content to the request wheel BUILD file.
+    additive_build_content_file = "//whl_mods:appended_build_content.BUILD",
     data = [":generated_file"],
     hub_name = "whl_mods_hub",
     whl_name = "requests",
 )
 
-# Call whl_mods.create for the wheel package.
-pip.whl_mods(
-    additive_build_content = """\
+ADDITIVE_BUILD_CONTENT = """\
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 write_file(
     name = "generated_file",
     out = "generated_file.txt",
     content = ["Hello world from build content file"],
 )
-""",
+"""
+
+# Call whl_mods.create for the wheel package.
+pip.whl_mods(
+    additive_build_content = ADDITIVE_BUILD_CONTENT,
     copy_executables = {
         "@@//whl_mods:data/copy_executable.py": "copied_content/executable.py",
     },
@@ -77,11 +81,12 @@ write_file(
 )
 use_repo(pip, "whl_mods_hub")
 
-# For each pip setup we call pip.parse.  We can pass in various options
-# but typically we are passing in a requirements and an interpreter.
-# If you provide the python_version we will attempt to determine
-# the interpreter target automatically. Otherwise use python_interpreter_target
-# to override the lookup.
+# To fetch pip dependencies, use pip.parse. We can pass in various options,
+# but typically we pass requirements and the Python version. The Python
+# version must have been configured by a corresponding `python.toolchain()`
+# call.
+# Alternatively, `python_interpreter_target` can be used to directly specify
+# the Python interpreter to run to resolve dependencies.
 pip.parse(
     hub_name = "pip",
     python_version = "3.9",
@@ -109,7 +114,8 @@ pip.parse(
     },
 )
 
-# we use the pip_39 repo because entry points are not yet supported.
+# NOTE: The pip_39 repo is only used because the plain `@pip` repo doesn't
+# yet support entry points; see https://github.com/bazelbuild/rules_python/issues/1262
 use_repo(pip, "pip", "pip_39")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")

@@ -363,7 +363,7 @@ pip_hub_repository_bzlmod_attrs = {
 
 pip_hub_repository_bzlmod = repository_rule(
     attrs = pip_hub_repository_bzlmod_attrs,
-    doc = """A rule for bzlmod mulitple pip repository creation. Intended for private use only.""",
+    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _pip_hub_repository_bzlmod_impl,
 )
 
