@@ -83,6 +83,15 @@ toolchain(
     toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
     toolchain_type = "@bazel_tools//tools/python:toolchain_type",
 )
+
+toolchain(
+    name = "{prefix}{platform}_py_cc_toolchain",
+    target_compatible_with = {compatible_with},
+    target_settings = {target_settings},
+    toolchain = "@{user_repository_name}_{platform}//:py_cc_toolchain",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+
+)
 """.format(
             compatible_with = meta.compatible_with,
             platform = platform,
