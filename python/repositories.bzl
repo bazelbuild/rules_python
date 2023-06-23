@@ -374,10 +374,9 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
-        "coverage_tool": attr.label(
+        "coverage_tool": attr.string(
             # Mirrors the definition at
             # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
-            allow_files = False,
             doc = """
 This is a target to use for collecting code coverage information from `py_binary`
 and `py_test` targets.
@@ -391,6 +390,9 @@ The entry point for the tool must be loadable by a Python interpreter (e.g. a
 `.py` or `.pyc` file).  It must accept the command line arguments
 of coverage.py (https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
+
+The target is accepted as a string by the python_repository and evaluated within
+the context of the toolchain repository.
 
 For more information see the official bazel docs
 (https://bazel.build/reference/be/python#py_runtime.coverage_tool).
@@ -535,11 +537,10 @@ def python_register_toolchains(
                 ),
                 python_version = python_version,
                 platform = platform,
-                visibility = ["@@{name}_{platform}//:__subpackages__".format(
+                visibility = ["@{name}_{platform}//:__subpackages__".format(
                     name = name,
                     platform = platform,
                 )],
-                install = not bzlmod,
             )
 
         python_repository(
