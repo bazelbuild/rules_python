@@ -204,12 +204,12 @@ def _python_repository_impl(rctx):
         "**/* *",  # Bazel does not support spaces in file names.
         # Unused shared libraries. `python` executable and the `:libpython` target
         # depend on `libpython{python_version}.so.1.0`.
-        "lib/libpython{python_version}.so",
+        "lib/libpython{python_version}.so".format(python_version = python_short_version),
         # static libraries
         "lib/**/*.a",
         # tests for the standard libraries.
-        "lib/python{python_version}/**/test/**",
-        "lib/python{python_version}/**/tests/**",
+        "lib/python{python_version}/**/test/**".format(python_version = python_short_version),
+        "lib/python{python_version}/**/tests/**".format(python_version = python_short_version),
     ]
 
     if rctx.attr.ignore_root_user_error:
