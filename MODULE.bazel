@@ -1,7 +1,7 @@
 module(
     name = "rules_python",
     version = "0.0.0",
-    compatibility_level = 1,
+    compatibility_level = 2,
 )
 
 bazel_dep(name = "platforms", version = "0.0.4")
