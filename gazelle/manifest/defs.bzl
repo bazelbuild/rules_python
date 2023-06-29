@@ -25,7 +25,8 @@ def gazelle_python_manifest(
         pip_repository_name = "",
         pip_deps_repository_name = "",
         manifest = ":gazelle_python.yaml",
-        use_pip_repository_aliases = False):
+        use_pip_repository_aliases = False,
+        **kwargs):
     """A macro for defining the updating and testing targets for the Gazelle manifest file.
 
     Args:
@@ -37,6 +38,7 @@ def gazelle_python_manifest(
         pip_deps_repository_name: deprecated - the old pip_install target name.
         modules_mapping: the target for the generated modules_mapping.json file.
         manifest: the target for the Gazelle manifest file.
+        **kwargs: other bazel attributes passed to the ".test" rule.
     """
     if pip_deps_repository_name != "":
         # buildifier: disable=print
@@ -90,6 +92,14 @@ def gazelle_python_manifest(
         tags = ["manual"],
     )
 
+    attrs = {
+        "env": {
+            "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
+            "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
+            "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
+        },
+        "size": "small",
+    }
     go_test(
         name = "{}.test".format(name),
         srcs = [Label("//manifest/test:test.go")],
@@ -98,14 +108,10 @@ def gazelle_python_manifest(
             requirements,
             manifest_generator_hash,
         ],
-        env = {
-            "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
-            "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
-            "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
-        },
         rundir = ".",
         deps = [Label("//manifest")],
-        size = "small",
+        # kwargs could contain test-specific attributes like size or timeout
+        **dict(attrs, **kwargs)
     )
 
     native.filegroup(
