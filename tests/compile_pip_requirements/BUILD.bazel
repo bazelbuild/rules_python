@@ -48,7 +48,6 @@ compile_pip_requirements(
     requirements_txt = "requirements_nohashes_lock.txt",
 )
 
-
 genrule(
     name = "generate_os_specific_requirements_in",
     srcs = [],
