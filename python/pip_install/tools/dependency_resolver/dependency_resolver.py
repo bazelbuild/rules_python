@@ -153,7 +153,6 @@ if __name__ == "__main__":
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_file_relative if UPDATE else requirements_out)
     sys.argv.append(

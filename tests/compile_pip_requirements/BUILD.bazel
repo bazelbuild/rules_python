@@ -33,6 +33,22 @@ compile_pip_requirements(
     requirements_txt = "requirements_lock.txt",
 )
 
+compile_pip_requirements(
+    name = "requirements_nohashes",
+    data = [
+        "requirements.in",
+        "requirements_extra.in",
+    ],
+    extra_args = [
+        "--allow-unsafe",
+        "--resolver=backtracking",
+    ],
+    generate_hashes = False,
+    requirements_in = "requirements.txt",
+    requirements_txt = "requirements_nohashes_lock.txt",
+)
+
+
 genrule(
     name = "generate_os_specific_requirements_in",
     srcs = [],
