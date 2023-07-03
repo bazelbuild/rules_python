@@ -338,6 +338,10 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
             macro_tmpl.format(p, "whl")
             for p in bzl_packages
         ]),
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, "data")
+            for p in bzl_packages
+        ]),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%REQUIREMENTS_LOCK%%": requirements,
@@ -467,6 +471,10 @@ def _pip_repository_impl(rctx):
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
             "@{}//{}:whl".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
