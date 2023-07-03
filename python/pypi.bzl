@@ -37,7 +37,7 @@ _pypi_install = repository_rule(
     },
 )
 
-def load_pypi_packages_internal(intermediate, name, **kwargs):
+def load_pypi_packages_internal(intermediate, **kwargs):
     # Only download a wheel/tarball once. We do this by tracking which SHA sums
     # we've downloaded already.
     sha_indexed_infos = {}
@@ -49,6 +49,45 @@ def load_pypi_packages_internal(intermediate, name, **kwargs):
                 # TODO(phil): What do we need to track here? Can we switch to a
                 # set()?
                 sha_indexed_infos[info["sha256"]] = True
+
+def _generate_package_aliases_internal_impl(repository_ctx):
+    bzl_intermediate = repository_ctx.read(repository_ctx.path(repository_ctx.attr.intermediate))
+    if not bzl_intermediate.startswith("INTERMEDIATE = "):
+        fail("Expected intermediate.bzl to start with 'INTERMEDIATE = '. Did the implementation get out of sync?")
+    intermediate = json.decode(bzl_intermediate[len("INTERMEDIATE = "):])
+
+    for package in intermediate:
+        lines = [
+            """load("{}", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate),
+            """load("@rules_python//python:pypi.bzl", _generate_package_alias="generate_package_alias")""",
+            """_generate_package_alias(INTERMEDIATE)""",
+        ]
+        repository_ctx.file("{}/BUILD".format(package), "\n".join(lines), executable=False)
+
+_generate_package_aliases_internal = repository_rule(
+    implementation = _generate_package_aliases_internal_impl,
+    attrs = {
+        "intermediate": attr.label(
+            allow_single_file = True,
+        ),
+    },
+)
+
+def generate_package_aliases_internal(**kwargs):
+    _generate_package_aliases_internal(**kwargs)
+
+
+def generate_package_alias(intermediate):
+    package = native.package_name()
+    if package not in intermediate:
+        fail("Failed to find {} in the intermediate file. Something went wrong internally.")
+
+    info_per_config = intermediate[package]
+    actual_select = {}
+    for config, info in info_per_config.items():
+        repo_name = _generate_repo_name_for_download(package, info)
+        # TODO(phil): Point at the py_library, not the http_file.
+        actual_select[config] = "@{}//:library".format(repo_name)
 
 
 def _generate_repo_name_for_download(package, info):

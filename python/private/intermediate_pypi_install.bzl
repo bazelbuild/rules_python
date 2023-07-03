@@ -20,10 +20,13 @@ def combine_intermediate_files(repository_ctx, installation_reports):
 
 def generate_pypi_package_load(repository_ctx):
     lines = [
-        """load("@rules_python//python:pypi.bzl", _load_pypi_packages_internal="load_pypi_packages_internal")""",
+        """load("@rules_python//python:pypi.bzl",""",
+        """    _load_pypi_packages_internal="load_pypi_packages_internal",""",
+        """    _generate_package_aliases="generate_package_aliases_internal",""",
+        """)""",
         """load("@{}//:intermediate.bzl", "INTERMEDIATE")""".format(repository_ctx.name),
-        """def load_pypi_packages(**kwargs):""",
+        """def load_pypi_packages(name, **kwargs):""",
         """    _load_pypi_packages_internal(INTERMEDIATE, **kwargs)""",
+        """    _generate_package_aliases(name=name, intermediate="@{}//:intermediate.bzl", **kwargs)""".format(repository_ctx.name),
     ]
     repository_ctx.file("packages.bzl", "\n".join(lines), executable=False)
-
