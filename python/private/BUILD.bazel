@@ -81,3 +81,11 @@ exports_files(
 stamp_build_setting(name = "stamp")
 
 print_toolchains_checksums(name = "print_toolchains_checksums")
+
+py_binary(
+    name = "wheel_installer",
+    srcs = ["wheel_installer.py"],
+    deps = [
+        "@pypi__installer//:lib",
+    ],
+)

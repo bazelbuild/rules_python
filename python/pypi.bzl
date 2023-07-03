@@ -4,6 +4,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def pypi_install(pip_installation_report = None, **kwargs):
+    pip_install_dependencies()
+
     pip_installation_report_swapped = {}
     for config_setting, report in pip_installation_report.items():
         pip_installation_report_swapped[report] = config_setting
