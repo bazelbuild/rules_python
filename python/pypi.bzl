@@ -1,5 +1,5 @@
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
-load("//python/private:intermediate_pypi_install.bzl", "convert_installation_reports_to_intermediate", "generate_pypi_package_load")
+load("//python/private:intermediate_pypi_install.bzl", "combine_intermediate_files", "generate_pypi_package_load")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
@@ -15,7 +15,7 @@ def _pypi_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", """\
 """, executable = False)
     if repository_ctx.attr.pip_installation_report:
-        intermediate = convert_installation_reports_to_intermediate(
+        intermediate = combine_intermediate_files(
                 repository_ctx,
                 repository_ctx.attr.pip_installation_report)
     else:

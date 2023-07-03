@@ -1,22 +1,22 @@
-def convert_installation_reports_to_intermediate(repository_ctx, installation_reports):
-    intermediate = {}
+def combine_intermediate_files(repository_ctx, installation_reports):
+    combined = {}
 
-    for report_label, config_setting in installation_reports.items():
-        report = json.decode(repository_ctx.read(report_label))
-        for install in report["install"]:
-            download_info = install["download_info"]
-            metadata = install["metadata"]
-            name = metadata["name"]
+    for intermediate_label, config_setting in installation_reports.items():
+        intermediate = json.decode(repository_ctx.read(intermediate_label))
+        for package in intermediate:
+            config_settings = intermediate[package].keys()
+            if len(config_settings) != 1:
+                fail("Expected 1 config setting for package %s in %s, but got %d." \
+                        % (package, intermediate_label, len(config_settings)))
+            config_setting = config_settings[0]
 
-            info = intermediate.setdefault(name, {}).setdefault(config_setting, {})
-            info["url"] = download_info["url"]
-            hash = download_info["archive_info"].get("hash", "")
-            if hash and hash.startswith("sha256="):
-                info["sha256"] = hash.split("=", 1)[1]
-            else:
-                fail("unknown integrity check: " + str(download_info["archive_info"]))
+            info = combined.setdefault(package, {})
+            if config_setting in info:
+                fail("Two intermediate files have the same config setting for package %s in %s." \
+                        % (package, intermediate_label))
+            info[config_setting] = intermediate[package][config_setting]
 
-    return intermediate
+    return combined
 
 def generate_pypi_package_load(repository_ctx):
     lines = [
