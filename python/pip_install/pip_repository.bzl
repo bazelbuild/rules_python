@@ -330,16 +330,16 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
 
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, "data")
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, p)
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "whl")
-            for p in bzl_packages
-        ]),
-        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "data")
             for p in bzl_packages
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
@@ -465,16 +465,16 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             "@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
             "@{}//{}:whl".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
-            for p in bzl_packages
-        ]),
-        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
             for p in bzl_packages
         ]),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
