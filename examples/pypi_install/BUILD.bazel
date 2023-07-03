@@ -26,9 +26,11 @@ compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.in",
-    requirements_txt = "requirements_lock.txt",
-    pip_installation_report = {
-        ":x86_64_linux": "pip_install_report_x86_64_linux.json",
+    requirements_txt = {
+        ":x86_64_linux": "requirements_lock_x86_64_linux.txt",
+    },
+    intermediate_file = {
+        ":x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
 )
 

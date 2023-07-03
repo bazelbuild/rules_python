@@ -21,15 +21,15 @@ python_register_toolchains(
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pypi.bzl", "pypi_install")
 
-pypi_install(
-    name = "pypi_install",
-    pip_installation_report = {
-        "@//:x86_64_linux": "//:pip_install_report_x86_64_linux.json",
-    },
-)
-
-load("@pypi_install//:packages.bzl", "load_pypi_packages")
-
-load_pypi_packages(
-    name = "pypi",
-)
+#pypi_install(
+#    name = "pypi_install",
+#    pip_installation_report = {
+#        "@//:x86_64_linux": "//:intermediate_file_x86_64_linux.json",
+#    },
+#)
+#
+#load("@pypi_install//:packages.bzl", "load_pypi_packages")
+#
+#load_pypi_packages(
+#    name = "pypi",
+#)

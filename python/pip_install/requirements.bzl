@@ -14,14 +14,21 @@
 
 """Rules to verify and update pip-compile locked requirements.txt"""
 
+load("@bazel_skylib//lib:types.bzl", "types")
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
 
-def _generate_log_select(pip_installation_report, loc):
+def _generate_loc_select(config_to_filepath_dict, loc):
     result = {}
-    for config, report_label in pip_installation_report.items():
-        result[config] = [loc.format(report_label)]
+    for config, label in config_to_filepath_dict.items():
+        result[config] = [loc.format(label)]
     return select(result)
+
+def _generate_data_select(config_to_filepath_dict):
+    return select({k: [v] for k, v in config_to_filepath_dict.items()})
+
+def _generate_config_select(config_to_filepath_dict):
+    return select({k: [k] for k in config_to_filepath_dict})
 
 def compile_pip_requirements(
         name,
@@ -34,7 +41,7 @@ def compile_pip_requirements(
         requirements_darwin = None,
         requirements_linux = None,
         requirements_windows = None,
-        pip_installation_report = None,
+        intermediate_file = None,
         visibility = ["//visibility:private"],
         tags = None,
         **kwargs):
@@ -70,18 +77,23 @@ def compile_pip_requirements(
     requirements_in = name + ".in" if requirements_in == None else requirements_in
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
+    if types.is_dict(requirements_txt):
+        requirements_txt_data = _generate_data_select(requirements_txt)
+    else:
+        requirements_txt_data = [requirements_txt]
+
     # "Default" target produced by this macro
     # Allow a compile_pip_requirements rule to include another one in the data
     # for a requirements file that does `-r ../other/requirements.txt`
     native.filegroup(
         name = name,
-        srcs = kwargs.pop("data", []) + [requirements_txt],
+        srcs = kwargs.pop("data", []) + requirements_txt_data,
         visibility = visibility,
     )
 
-    data = [name, requirements_in, requirements_txt] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
-    if pip_installation_report:
-        data += _generate_log_select(pip_installation_report, "{}")
+    data = [name, requirements_in] + requirements_txt_data + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    if intermediate_file:
+        data += _generate_loc_select(intermediate_file, "{}")
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -91,12 +103,13 @@ def compile_pip_requirements(
 
     args = [
         loc.format(requirements_in),
-        loc.format(requirements_txt),
+    ] + (_generate_loc_select(requirements_txt, loc) if types.is_dict(requirements_txt) else [loc.format(requirements_txt)]) + [
         # String None is a placeholder for argv ordering.
         loc.format(requirements_linux) if requirements_linux else "None",
         loc.format(requirements_darwin) if requirements_darwin else "None",
         loc.format(requirements_windows) if requirements_windows else "None",
-    ] + (_generate_log_select(pip_installation_report, loc) if pip_installation_report else "None") + [
+    ] + (_generate_loc_select(intermediate_file, loc) if intermediate_file else ["None"]) + (
+            _generate_config_select(intermediate_file) if intermediate_file else ["None"]) + [
         "//%s:%s.update" % (native.package_name(), name),
     ] + extra_args
 
@@ -137,7 +150,7 @@ def compile_pip_requirements(
         attrs["env"] = kwargs.pop("env", {})
 
     # TODO(phil): Add a target_compatible_with here for all the configs not
-    # mentioned in pip_installation_report.
+    # mentioned in intermediate_file.
     py_binary(
         name = name + ".update",
         **attrs

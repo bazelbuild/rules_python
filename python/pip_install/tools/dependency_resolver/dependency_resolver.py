@@ -15,9 +15,11 @@
 "Set defaults for the pip-compile command to run it under Bazel"
 
 import atexit
+import json
 import os
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import pip
@@ -80,20 +82,57 @@ def _locate(bazel_runfiles, file):
     return bazel_runfiles.Rlocation(file)
 
 
-def run_pip(requirements_in, requirements_txt, pip_installation_report):
-    sys.argv = [
-        "pip",
-        "install",
-        "--ignore-installed",
-        "--dry-run",
-        "--quiet",
-        "--report",
-        pip_installation_report,
-        "--requirement",
-        requirements_in,
-    ]
+def _post_process_installation_report(
+        config_setting: str,
+        raw_installation_report: Path,
+        intermediate_file: Path):
 
-    return pip._internal.cli.main.main()
+    with raw_installation_report.open() as file:
+        report = json.load(file)
+
+    intermediate = {}
+
+    for install in report["install"]:
+        download_info = install["download_info"]
+        metadata = install["metadata"]
+        name = metadata["name"]
+
+        info = intermediate.setdefault(name, {}).setdefault(config_setting, {})
+        info["url"] = download_info["url"]
+        hash = download_info["archive_info"].get("hash", "")
+        if hash and hash.startswith("sha256="):
+            info["sha256"] = hash.split("=", 1)[1]
+        else:
+            raise ValueError("unknown integrity check: " + str(download_info["archive_info"]))
+
+    with intermediate_file.open("w") as file:
+        json.dump(intermediate, file, indent=4)
+        file.write("\n")
+
+
+def run_pip(config_setting, requirements_in, intermediate_file):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        raw_installation_report = Path(temp_dir) / "installation_report.json"
+        sys.argv = [
+            "pip",
+            "install",
+            "--ignore-installed",
+            "--dry-run",
+            "--quiet",
+            "--report",
+            str(raw_installation_report),
+            "--requirement",
+            str(requirements_in),
+        ]
+
+        result = pip._internal.cli.main.main()
+        if result != 0:
+            return result
+
+        _post_process_installation_report(
+            config_setting,
+            raw_installation_report,
+            intermediate_file)
 
 
 if __name__ == "__main__":
@@ -112,7 +151,8 @@ if __name__ == "__main__":
     requirements_linux = parse_str_none(sys.argv.pop(1))
     requirements_darwin = parse_str_none(sys.argv.pop(1))
     requirements_windows = parse_str_none(sys.argv.pop(1))
-    pip_installation_report = parse_str_none(sys.argv.pop(1))
+    intermediate_file = parse_str_none(sys.argv.pop(1))
+    config_setting = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
@@ -134,8 +174,8 @@ if __name__ == "__main__":
     # Note: Windows cannot reference generated files without runfiles support enabled.
     requirements_in_relative = requirements_in[len(repository_prefix) :]
     requirements_txt_relative = requirements_txt[len(repository_prefix) :]
-    if pip_installation_report:
-        pip_installation_report_relative = pip_installation_report[len(repository_prefix) :]
+    if intermediate_file:
+        pip_installation_report_relative = intermediate_file[len(repository_prefix) :]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -145,6 +185,7 @@ if __name__ == "__main__":
     os.environ["LC_ALL"] = "C.UTF-8"
     os.environ["LANG"] = "C.UTF-8"
 
+    print("Maybe updating!!!!")
     UPDATE = True
     # Detect if we are running under `bazel test`.
     if "TEST_TMPDIR" in os.environ:
@@ -170,25 +211,14 @@ if __name__ == "__main__":
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    if pip_installation_report:
-        sys.exit(run_pip(requirements_in_relative
-                       if Path(requirements_in_relative).exists()
-                       else resolved_requirements_in,
-                       requirements_txt_relative,
-                       pip_installation_report_relative))
-
     sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
     sys.argv.append(requirements_txt_relative if UPDATE else requirements_out)
-    if pip_installation_report:
-        sys.argv.append("--pip-args")
-        sys.argv.append(f"--report={pip_installation_report_relative}")
     sys.argv.append(
         requirements_in_relative
         if Path(requirements_in_relative).exists()
         else resolved_requirements_in
     )
-    print(sys.argv)
 
     if UPDATE:
         print("Updating " + requirements_txt_relative)
@@ -204,11 +234,25 @@ if __name__ == "__main__":
                         resolved_requirements_txt, requirements_txt_tree
                     )
                 )
-        cli()
+        try:
+            cli()
+        except SystemExit as e:
+            if e.code != 0:
+                raise
         requirements_txt_relative_path = Path(requirements_txt_relative)
         content = requirements_txt_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
         requirements_txt_relative_path.write_text(content)
+
+        if intermediate_file:
+            print("Generating an intermediate file.")
+            # Feed the output of pip-compile into the installation report
+            # generation.
+            sys.exit(run_pip(config_setting, requirements_txt_relative_path,
+                           Path(pip_installation_report_relative)))
+        else:
+            print("Not generating an intermediate file!!!")
+
     else:
         # cli will exit(0) on success
         try:
