@@ -97,10 +97,11 @@ def generate_package_alias(intermediate):
         target_compatible_with_select[config] = []
 
     native.alias(
-        name = "package",
+        name = package,
         actual = select(actual_select),
         # TODO(phil): Validate that this works in bazel 5. Do we care?
         target_compatible_with = select(target_compatible_with_select),
+        visibility = ["//visibility:public"],
     )
 
 
@@ -131,11 +132,12 @@ def _generate_py_library(package, info):
 
 def _wheel_library_impl(repository_ctx):
     lines = [
-        """load("//python/private:wheel_library.bzl", "pycross_wheel_library")""",
+        """load("@rules_python//python/private:wheel_library.bzl", "pycross_wheel_library")""",
         """pycross_wheel_library(""",
         """    name = "library",""",
         """    wheel = "@{}//file",""".format(repository_ctx.attr.wheel_repo_name),
         """    enable_implicit_namespace_pkgs = True,""",
+        """    visibility = ["//visibility:public"],""",
         # TODO(phil): Add deps here.
         """)""",
     ]

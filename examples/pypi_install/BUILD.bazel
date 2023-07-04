@@ -11,7 +11,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        #"@pypi//requests",
+        "@pypi//requests",
     ],
 )
 
@@ -27,10 +27,10 @@ compile_pip_requirements(
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.in",
     requirements_txt = {
-        ":x86_64_linux": "requirements_lock_x86_64_linux.txt",
+        "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },
     intermediate_file = {
-        ":x86_64_linux": "intermediate_file_x86_64_linux.json",
+        "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
 )
 

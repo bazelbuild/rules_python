@@ -88,4 +88,5 @@ py_binary(
     deps = [
         "@pypi__installer//:lib",
     ],
+    visibility = ["//visibility:public"],
 )

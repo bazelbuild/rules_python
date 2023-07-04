@@ -8,6 +8,7 @@ at commit 91e10c1f62926e8e9821897e252e359f797ff989.
 import argparse
 import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
