@@ -50,6 +50,10 @@ def load_pypi_packages_internal(intermediate, **kwargs):
                 # set()?
                 sha_indexed_infos[info["sha256"]] = True
 
+                # TODO(phil): Can we add target_compatible_with information
+                # here?
+                _generate_py_library(package, info)
+
 def _generate_package_aliases_internal_impl(repository_ctx):
     bzl_intermediate = repository_ctx.read(repository_ctx.path(repository_ctx.attr.intermediate))
     if not bzl_intermediate.startswith("INTERMEDIATE = "):
@@ -84,15 +88,29 @@ def generate_package_alias(intermediate):
 
     info_per_config = intermediate[package]
     actual_select = {}
+    target_compatible_with_select = {
+        "//conditions:default": ["@platforms//:incompatible"],
+    }
     for config, info in info_per_config.items():
-        repo_name = _generate_repo_name_for_download(package, info)
-        # TODO(phil): Point at the py_library, not the http_file.
+        repo_name = _generate_repo_name_for_extracted_wheel(package, info)
         actual_select[config] = "@{}//:library".format(repo_name)
+        target_compatible_with_select[config] = []
+
+    native.alias(
+        name = "package",
+        actual = select(actual_select),
+        # TODO(phil): Validate that this works in bazel 5. Do we care?
+        target_compatible_with = select(target_compatible_with_select),
+    )
 
 
 def _generate_repo_name_for_download(package, info):
     # TODO(phil): Can we make it more human readable by avoiding the checksum?
-    return "pypi_extracted_download_{}_{}".format(package, info["sha256"])
+    return "pypi_download_{}_{}".format(package, info["sha256"])
+
+def _generate_repo_name_for_extracted_wheel(package, info):
+    # TODO(phil): Can we make it more human readable by avoiding the checksum?
+    return "pypi_extracted_wheel_{}_{}".format(package, info["sha256"])
 
 
 def _generate_http_file(package, info):
@@ -104,3 +122,28 @@ def _generate_http_file(package, info):
         sha256 = info["sha256"],
         downloaded_file_path = paths.basename(info["url"]),
     )
+
+def _generate_py_library(package, info):
+    _wheel_library(
+        name = _generate_repo_name_for_extracted_wheel(package, info),
+        wheel_repo_name = _generate_repo_name_for_download(package, info),
+    )
+
+def _wheel_library_impl(repository_ctx):
+    lines = [
+        """load("//python/private:wheel_library.bzl", "pycross_wheel_library")""",
+        """pycross_wheel_library(""",
+        """    name = "library",""",
+        """    wheel = "@{}//file",""".format(repository_ctx.attr.wheel_repo_name),
+        """    enable_implicit_namespace_pkgs = True,""",
+        # TODO(phil): Add deps here.
+        """)""",
+    ]
+    repository_ctx.file("BUILD", "\n".join(lines), executable=False)
+
+_wheel_library = repository_rule(
+    implementation = _wheel_library_impl,
+    attrs = {
+        "wheel_repo_name": attr.string(),
+    },
+)
