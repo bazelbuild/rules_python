@@ -45,9 +45,9 @@ py_cc_toolchain = rule(
         ),
     },
     doc = """\
-A toolchain for a Python runtime's C information (e.g. headers)
+A toolchain for a Python runtime's C/C++ information (e.g. headers)
 
-This rule carries information about the C side of a Python runtime, e.g.
+This rule carries information about the C/C++ side of a Python runtime, e.g.
 headers, shared libraries, etc.
 """,
 )

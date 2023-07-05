@@ -37,6 +37,7 @@ def _test_current_toolchain_headers(name):
     )
 
 def _test_current_toolchain_headers_impl(env, target):
+    # Check that the forwarded CcInfo looks vaguely correct.
     compilation_context = env.expect.that_target(target).provider(
         CcInfo,
         factory = cc_info_subject,
@@ -54,6 +55,7 @@ def _test_current_toolchain_headers_impl(env, target):
         matching.str_matches("*/fake_include"),
     ])
 
+    # Check that the forward DefaultInfo looks correct
     env.expect.that_target(target).runfiles().contains_predicate(
         matching.str_matches("*/cc/data.txt"),
     )

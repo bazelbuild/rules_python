@@ -25,10 +25,17 @@ current_py_cc_headers = rule(
     doc = """\
 Provides the currently active Python toolchain's C headers.
 
-This is basically a wrapper around the underlying `cc_library()` for the
+This is a wrapper around the underlying `cc_library()` for the
 C headers for the consuming target's currently active Python toolchain.
 
 To use, simply depend on this target where you would have wanted the
-toolchain's underlying `:python_headers` target.
+toolchain's underlying `:python_headers` target:
+
+```starlark
+cc_library(
+    name = "foo",
+    deps = ["@rules_python//python/cc:current_py_cc_headers"]
+)
+```
 """,
 )

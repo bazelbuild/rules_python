@@ -14,9 +14,11 @@
 """PyCcToolchainInfo testing subject."""
 
 # TODO: Load this through truth.bzl#subjects when made available
+# https://github.com/bazelbuild/rules_testing/issues/54
 load("@rules_testing//lib/private:dict_subject.bzl", "DictSubject")  # buildifier: disable=bzl-visibility
 
 # TODO: Load this through truth.bzl#subjects when made available
+# https://github.com/bazelbuild/rules_testing/issues/54
 load("@rules_testing//lib/private:str_subject.bzl", "StrSubject")  # buildifier: disable=bzl-visibility
 load(":struct_subject.bzl", "struct_subject")
 
