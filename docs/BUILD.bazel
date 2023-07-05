@@ -25,9 +25,9 @@ _DOCS = {
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
     "pip_repository": "//docs:pip-repository",
-    "python": "//docs:core-docs",
     "py_cc_toolchain": "//docs:py_cc_toolchain-docs",
     "py_cc_toolchain_info": "//docs:py_cc_toolchain_info-docs",
+    "python": "//docs:core-docs",
 }
 
 # We define these bzl_library targets here rather than in the //python package
