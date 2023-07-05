@@ -26,6 +26,8 @@ _DOCS = {
     "pip": "//docs:pip-docs",
     "pip_repository": "//docs:pip-repository",
     "python": "//docs:core-docs",
+    "py_cc_toolchain": "//docs:py_cc_toolchain-docs",
+    "py_cc_toolchain_info": "//docs:py_cc_toolchain_info-docs",
 }
 
 # We define these bzl_library targets here rather than in the //python package
@@ -132,6 +134,25 @@ stardoc(
     input = "//python:packaging.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [":packaging_bzl"],
+)
+
+stardoc(
+    name = "py_cc_toolchain-docs",
+    out = "py_cc_toolchain.md_",
+    # NOTE: The public file isn't used as the input because it would document
+    # the macro, which doesn't have the attribute documentation. The macro
+    # doesn't do anything interesting to users, so bypass it to avoid having to
+    # copy/paste all the rule's doc in the macro.
+    input = "//python/private:py_cc_toolchain_rule.bzl",
+    target_compatible_with = _NOT_WINDOWS,
+    deps = ["//python/private:py_cc_toolchain_bzl"],
+)
+
+stardoc(
+    name = "py_cc_toolchain_info-docs",
+    out = "py_cc_toolchain_info.md_",
+    input = "//python/cc:py_cc_toolchain_info.bzl",
+    deps = ["//python/cc:py_cc_toolchain_info_bzl"],
 )
 
 [

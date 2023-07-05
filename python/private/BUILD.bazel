@@ -57,7 +57,10 @@ bzl_library(
         "py_cc_toolchain_macro.bzl",
         "py_cc_toolchain_rule.bzl",
     ],
-    visibility = ["//python/cc:__pkg__"],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python/cc:__pkg__",
+    ],
     deps = [
         ":py_cc_toolchain_info_bzl",
         ":util_bzl",
@@ -92,6 +95,7 @@ exports_files(
         "reexports.bzl",
         "stamp.bzl",
         "util.bzl",
+        "py_cc_toolchain_rule.bzl",
     ],
     visibility = ["//docs:__pkg__"],
 )
