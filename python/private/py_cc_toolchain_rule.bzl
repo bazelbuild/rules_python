@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of py_cc_toolchain rule."""
+"""Implementation of py_cc_toolchain rule.
+
+NOTE: This is a beta-quality feature. APIs subject to change until
+https://github.com/bazelbuild/rules_python/issues/824 is considered done.
+"""
 
 load(":py_cc_toolchain_info.bzl", "PyCcToolchainInfo")
 

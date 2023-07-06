@@ -1,6 +1,10 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
-Public entry point for PyCcToolchainInfo.
+Provider for C/C++ information about the Python runtime.
+
+NOTE: This is a beta-quality feature. APIs subject to change until
+https://github.com/bazelbuild/rules_python/issues/824 is considered done.
+
 
 <a id="PyCcToolchainInfo"></a>
 

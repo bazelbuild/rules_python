@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Public entry point for PyCcToolchainInfo."""
+"""Provider for C/C++ information about the Python runtime.
+
+NOTE: This is a beta-quality feature. APIs subject to change until
+https://github.com/bazelbuild/rules_python/issues/824 is considered done.
+"""
 
 load("//python/private:py_cc_toolchain_info.bzl", _PyCcToolchainInfo = "PyCcToolchainInfo")
 
