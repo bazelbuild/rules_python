@@ -24,8 +24,8 @@ load("//tools/build_defs/python/tests:util.bzl", pt_util = "util")
 
 # Explicit Label() calls are required so that it resolves in @rules_python context instead of
 # @rules_testing context.
-_FAKE_CC_TOOLCHAIN = Label("//tools/build_defs/python/tests:cc_toolchain_suite")
-_FAKE_CC_TOOLCHAINS = [str(Label("//tools/build_defs/python/tests:all"))]
+_FAKE_CC_TOOLCHAIN = Label("//tests/cc:cc_toolchain_suite")
+_FAKE_CC_TOOLCHAINS = [str(Label("//tests/cc:all"))]
 _PLATFORM_MAC = Label("//tools/build_defs/python/tests:mac")
 _PLATFORM_LINUX = Label("//tools/build_defs/python/tests:linux")
 
