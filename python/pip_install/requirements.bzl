@@ -117,6 +117,7 @@ def compile_pip_requirements(
         requirement("build"),
         requirement("click"),
         requirement("colorama"),
+        requirement("packaging"),
         requirement("pep517"),
         requirement("pip"),
         requirement("pip_tools"),

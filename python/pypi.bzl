@@ -128,15 +128,18 @@ def _generate_py_library(package, info):
     _wheel_library(
         name = _generate_repo_name_for_extracted_wheel(package, info),
         wheel_repo_name = _generate_repo_name_for_download(package, info),
+        deps = info["deps"],
     )
 
 def _wheel_library_impl(repository_ctx):
+    deps = ['"{dep}"' % dep for dep in deps]
     lines = [
         """load("@rules_python//python/private:wheel_library.bzl", "pycross_wheel_library")""",
         """pycross_wheel_library(""",
         """    name = "library",""",
         """    wheel = "@{}//file",""".format(repository_ctx.attr.wheel_repo_name),
         """    enable_implicit_namespace_pkgs = True,""",
+        """    deps = [{}],""".format(deps),
         """    visibility = ["//visibility:public"],""",
         # TODO(phil): Add deps here.
         """)""",
@@ -147,5 +150,6 @@ _wheel_library = repository_rule(
     implementation = _wheel_library_impl,
     attrs = {
         "wheel_repo_name": attr.string(),
+        "deps": attr.string_list(),
     },
 )

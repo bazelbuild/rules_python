@@ -24,6 +24,7 @@ from pathlib import Path
 
 import pip
 import pip._internal.cli.main
+from packaging.requirements import Requirement
 
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
@@ -90,6 +91,10 @@ def _post_process_installation_report(
     with raw_installation_report.open() as file:
         report = json.load(file)
 
+    json.dump(report, sys.stdout, indent=4)
+
+    environment = report["environment"]
+
     intermediate = {}
 
     for install in report["install"]:
@@ -104,6 +109,20 @@ def _post_process_installation_report(
             info["sha256"] = hash.split("=", 1)[1]
         else:
             raise ValueError("unknown integrity check: " + str(download_info["archive_info"]))
+
+
+        extras = install.get("_rules_python_extras", [])
+
+        deps = []
+        for raw_requirement in metadata.get("requires_dist", []):
+            requirement = Requirement(raw_requirement)
+            if requirement.extras and requirement.extras not in extras:
+                continue
+            if requirement.marker and not requirement.marker.evaluate(environment):
+                continue
+            deps.append(requirement.name)
+
+        info["deps"] = sorted(deps)
 
     with intermediate_file.open("w") as file:
         json.dump(intermediate, file, indent=4)
