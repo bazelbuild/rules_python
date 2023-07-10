@@ -19,6 +19,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
 load(
     "//python/private:toolchains_repo.bzl",
@@ -498,9 +499,7 @@ def python_register_toolchains(
         **kwargs: passed to each python_repositories call.
     """
 
-    # If we have @@ we have bzlmod
-    bzlmod = str(Label("//:unused")).startswith("@@")
-    if bzlmod:
+    if BZLMOD_ENABLED:
         # you cannot used native.register_toolchains when using bzlmod.
         register_toolchains = False
 
@@ -580,7 +579,7 @@ def python_register_toolchains(
     )
 
     # in bzlmod we write out our own toolchain repos
-    if bzlmod:
+    if BZLMOD_ENABLED:
         return
 
     toolchains_repo(

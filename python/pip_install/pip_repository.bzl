@@ -19,6 +19,7 @@ load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
@@ -76,8 +77,7 @@ def _resolve_python_interpreter(rctx):
     if rctx.attr.python_interpreter_target != None:
         python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
 
-        # If we have @@ we have bzlmod so we need to hand Windows differently.
-        if str(Label("//:unused")).startswith("@@"):
+        if BZLMOD_ENABLED:
             (os, _) = get_host_os_arch(rctx)
 
             # On Windows, the symlink doesn't work because Windows attempts to find
