@@ -1,3 +1,6 @@
+--extra-index-url https://pypi.python.org/simple/
+
+wheel
 websockets
 requests~=2.25.1
 s3cmd~=2.1.0
