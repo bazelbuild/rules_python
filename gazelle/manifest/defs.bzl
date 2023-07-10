@@ -30,7 +30,9 @@ def gazelle_python_manifest(
 
     Args:
         name: the name used as a base for the targets.
-        requirements: the target for the requirements.txt file.
+        requirements: the target for the requirements.txt file or a list of
+            requirements files that will be concatenated before passing on to
+            the manifest generator.
         pip_repository_name: the name of the pip_install or pip_repository target.
         use_pip_repository_aliases: boolean flag to enable using user-friendly
             python package aliases.
@@ -54,6 +56,16 @@ def gazelle_python_manifest(
     update_target_label = "//{}:{}".format(native.package_name(), update_target)
 
     manifest_generator_hash = Label("//manifest/generate:generate_lib_sources_hash")
+
+    if type(requirements) == "list":
+        native.genrule(
+            name = name + "_requirements_gen",
+            srcs = sorted(requirements),
+            outs = [name + "_requirements.txt"],
+            cmd_bash = "cat $(SRCS) > $@",
+            cmd_bat = "type $(SRCS) > $@",
+        )
+        requirements = name + "_requirements_gen"
 
     update_args = [
         "--manifest-generator-hash",
