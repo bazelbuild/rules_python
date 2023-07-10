@@ -37,7 +37,7 @@ _pypi_install = repository_rule(
     },
 )
 
-def load_pypi_packages_internal(intermediate, **kwargs):
+def load_pypi_packages_internal(intermediate, alias_repo_name, **kwargs):
     # Only download a wheel/tarball once. We do this by tracking which SHA sums
     # we've downloaded already.
     sha_indexed_infos = {}
@@ -52,7 +52,7 @@ def load_pypi_packages_internal(intermediate, **kwargs):
 
                 # TODO(phil): Can we add target_compatible_with information
                 # here?
-                _generate_py_library(package, info)
+                _generate_py_library(package, alias_repo_name, info)
 
 def _generate_package_aliases_internal_impl(repository_ctx):
     bzl_intermediate = repository_ctx.read(repository_ctx.path(repository_ctx.attr.intermediate))
@@ -124,22 +124,23 @@ def _generate_http_file(package, info):
         downloaded_file_path = paths.basename(info["url"]),
     )
 
-def _generate_py_library(package, info):
+def _generate_py_library(package, alias_repo_name, info):
     _wheel_library(
         name = _generate_repo_name_for_extracted_wheel(package, info),
+        alias_repo_name = alias_repo_name,
         wheel_repo_name = _generate_repo_name_for_download(package, info),
         deps = info["deps"],
     )
 
 def _wheel_library_impl(repository_ctx):
-    deps = ['"{dep}"' % dep for dep in deps]
+    deps = ['"@{}//{}"'.format(repository_ctx.attr.alias_repo_name, dep) for dep in repository_ctx.attr.deps]
     lines = [
         """load("@rules_python//python/private:wheel_library.bzl", "pycross_wheel_library")""",
         """pycross_wheel_library(""",
         """    name = "library",""",
         """    wheel = "@{}//file",""".format(repository_ctx.attr.wheel_repo_name),
         """    enable_implicit_namespace_pkgs = True,""",
-        """    deps = [{}],""".format(deps),
+        """    deps = [{}],""".format(",".join(deps)),
         """    visibility = ["//visibility:public"],""",
         # TODO(phil): Add deps here.
         """)""",
@@ -149,6 +150,7 @@ def _wheel_library_impl(repository_ctx):
 _wheel_library = repository_rule(
     implementation = _wheel_library_impl,
     attrs = {
+        "alias_repo_name": attr.string(),
         "wheel_repo_name": attr.string(),
         "deps": attr.string_list(),
     },
