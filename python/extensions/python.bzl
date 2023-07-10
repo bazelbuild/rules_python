@@ -163,7 +163,7 @@ def _python_impl(module_ctx):
     # This is require in order to support multiple version py_test
     # and py_binary
     multi_toolchain_aliases(
-        name = "python_aliases",
+        name = "python_versions",
         python_versions = {
             version: entry.toolchain_name
             for version, entry in global_toolchain_versions.items()

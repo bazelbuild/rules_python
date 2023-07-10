@@ -35,7 +35,7 @@ python.toolchain(
 # See the tests folder for various examples on using multiple Python versions.
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
 # rules based on the `python_version` arg values.
-use_repo(python, "python_3_10", "python_3_9", "python_aliases")
+use_repo(python, "python_3_10", "python_3_9", "python_versions")
 
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
