@@ -9,12 +9,10 @@
 "Python toolchain module extension for internal rule use"
 
 load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
-load("@rules_python//python/private:coverage_deps.bzl", "install_coverage_deps")
 
 # buildifier: disable=unused-variable
 def _internal_deps_impl(module_ctx):
     pip_install_dependencies()
-    install_coverage_deps()
 
 internal_deps = module_extension(
     doc = "This extension to register internal rules_python dependecies.",

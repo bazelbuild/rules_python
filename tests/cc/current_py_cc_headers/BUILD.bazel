@@ -12,16 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-platform(
-    name = "mac",
-    constraint_values = [
-        "@platforms//os:macos",
-    ],
-)
+load(":current_py_cc_headers_tests.bzl", "current_py_cc_headers_test_suite")
 
-platform(
-    name = "linux",
-    constraint_values = [
-        "@platforms//os:linux",
-    ],
-)
+current_py_cc_headers_test_suite(name = "current_py_cc_headers_tests")

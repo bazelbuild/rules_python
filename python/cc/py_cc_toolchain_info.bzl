@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-platform(
-    name = "mac",
-    constraint_values = [
-        "@platforms//os:macos",
-    ],
-)
+"""Provider for C/C++ information about the Python runtime.
 
-platform(
-    name = "linux",
-    constraint_values = [
-        "@platforms//os:linux",
-    ],
-)
+NOTE: This is a beta-quality feature. APIs subject to change until
+https://github.com/bazelbuild/rules_python/issues/824 is considered done.
+"""
+
+load("//python/private:py_cc_toolchain_info.bzl", _PyCcToolchainInfo = "PyCcToolchainInfo")
+
+PyCcToolchainInfo = _PyCcToolchainInfo
