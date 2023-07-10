@@ -84,6 +84,11 @@ build_test(
 )
 
 build_test(
+    name = "all_data_requirements",
+    targets = all_data_requirements,
+)
+
+build_test(
     name = "all_requirements",
     targets = all_requirements,
 )
