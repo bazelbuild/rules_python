@@ -16,6 +16,7 @@
 load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load(":versions.bzl", "MINOR_MAPPING")
 
 compile_pip_requirements = _compile_pip_requirements
@@ -286,7 +287,7 @@ def _whl_library_render_alias_target(
         wheel_name):
     # The template below adds one @, but under bzlmod, the name
     # is canonical, so we have to add a second @.
-    if str(Label("//:unused")).startswith("@@"):
+    if BZLMOD_ENABLED:
         rules_python = "@" + rules_python
     alias = ["""\
 alias(
