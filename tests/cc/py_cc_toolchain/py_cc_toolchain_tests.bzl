@@ -44,15 +44,10 @@ def _py_cc_toolchain_test_impl(env, target):
     )
     toolchain.python_version().equals("3.999")
 
-    toolchain_headers = toolchain.headers()
-    toolchain_headers.providers_map().keys().contains_exactly(["CcInfo", "DefaultInfo"])
+    headers_providers = toolchain.headers().providers_map()
+    headers_providers.keys().contains_exactly(["CcInfo", "DefaultInfo"])
 
-    cc_info = cc_info_subject(
-        # TODO: Use DictSubject.get once available,
-        # https://github.com/bazelbuild/rules_testing/issues/51
-        toolchain_headers.actual.providers_map["CcInfo"],
-        meta = env.expect.meta.derive(expr = "cc_info"),
-    )
+    cc_info = headers_providers.get("CcInfo", factory = cc_info_subject)
 
     compilation_context = cc_info.compilation_context()
     compilation_context.direct_headers().contains_exactly([
@@ -68,8 +63,11 @@ def _py_cc_toolchain_test_impl(env, target):
         matching.str_matches("*/fake_include"),
     ])
 
+    # TODO: Once subjects.default_info is available, do
+    # default_info = headers_providers.get("DefaultInfo", factory=subjects.default_info)
+    # https://github.com/bazelbuild/rules_python/issues/1297
     default_info = default_info_subject(
-        toolchain_headers.actual.providers_map["DefaultInfo"],
+        headers_providers.get("DefaultInfo", factory = lambda v, meta: v),
         meta = env.expect.meta.derive(expr = "default_info"),
     )
     default_info.runfiles().contains_predicate(
