@@ -70,6 +70,7 @@ manifest:
     astroid.brain.brain_qt: astroid
     astroid.brain.brain_random: astroid
     astroid.brain.brain_re: astroid
+    astroid.brain.brain_regex: astroid
     astroid.brain.brain_responses: astroid
     astroid.brain.brain_scipy_signal: astroid
     astroid.brain.brain_signal: astroid
@@ -85,6 +86,7 @@ manifest:
     astroid.brain.helpers: astroid
     astroid.builder: astroid
     astroid.const: astroid
+    astroid.constraint: astroid
     astroid.context: astroid
     astroid.decorators: astroid
     astroid.exceptions: astroid
@@ -248,8 +250,6 @@ manifest:
     pathspec.patterns: pathspec
     pathspec.patterns.gitwildmatch: pathspec
     pathspec.util: pathspec
-    pkg_resources: setuptools
-    pkg_resources.extern: setuptools
     platformdirs: platformdirs
     platformdirs.android: platformdirs
     platformdirs.api: platformdirs
@@ -433,60 +433,6 @@ manifest:
     requests.status_codes: requests
     requests.structures: requests
     requests.utils: requests
-    setuptools: setuptools
-    setuptools.archive_util: setuptools
-    setuptools.build_meta: setuptools
-    setuptools.command: setuptools
-    setuptools.command.alias: setuptools
-    setuptools.command.bdist_egg: setuptools
-    setuptools.command.bdist_rpm: setuptools
-    setuptools.command.build: setuptools
-    setuptools.command.build_clib: setuptools
-    setuptools.command.build_ext: setuptools
-    setuptools.command.build_py: setuptools
-    setuptools.command.develop: setuptools
-    setuptools.command.dist_info: setuptools
-    setuptools.command.easy_install: setuptools
-    setuptools.command.editable_wheel: setuptools
-    setuptools.command.egg_info: setuptools
-    setuptools.command.install: setuptools
-    setuptools.command.install_egg_info: setuptools
-    setuptools.command.install_lib: setuptools
-    setuptools.command.install_scripts: setuptools
-    setuptools.command.py36compat: setuptools
-    setuptools.command.register: setuptools
-    setuptools.command.rotate: setuptools
-    setuptools.command.saveopts: setuptools
-    setuptools.command.sdist: setuptools
-    setuptools.command.setopt: setuptools
-    setuptools.command.test: setuptools
-    setuptools.command.upload: setuptools
-    setuptools.command.upload_docs: setuptools
-    setuptools.config: setuptools
-    setuptools.config.expand: setuptools
-    setuptools.config.pyprojecttoml: setuptools
-    setuptools.config.setupcfg: setuptools
-    setuptools.dep_util: setuptools
-    setuptools.depends: setuptools
-    setuptools.discovery: setuptools
-    setuptools.dist: setuptools
-    setuptools.errors: setuptools
-    setuptools.extension: setuptools
-    setuptools.extern: setuptools
-    setuptools.glob: setuptools
-    setuptools.installer: setuptools
-    setuptools.launch: setuptools
-    setuptools.logging: setuptools
-    setuptools.monkey: setuptools
-    setuptools.msvc: setuptools
-    setuptools.namespaces: setuptools
-    setuptools.package_index: setuptools
-    setuptools.py34compat: setuptools
-    setuptools.sandbox: setuptools
-    setuptools.unicode_utils: setuptools
-    setuptools.version: setuptools
-    setuptools.wheel: setuptools
-    setuptools.windows_support: setuptools
     six: six
     tabulate: tabulate
     tabulate.version: tabulate
@@ -517,6 +463,7 @@ manifest:
     urllib3.packages: urllib3
     urllib3.packages.backports: urllib3
     urllib3.packages.backports.makefile: urllib3
+    urllib3.packages.backports.weakref_finalize: urllib3
     urllib3.packages.six: urllib3
     urllib3.poolmanager: urllib3
     urllib3.request: urllib3
@@ -562,6 +509,7 @@ manifest:
     yamllint.linter: yamllint
     yamllint.parser: yamllint
     yamllint.rules: yamllint
+    yamllint.rules.anchors: yamllint
     yamllint.rules.braces: yamllint
     yamllint.rules.brackets: yamllint
     yamllint.rules.colons: yamllint
@@ -588,4 +536,4 @@ manifest:
   pip_repository:
     name: pip
     use_pip_repository_aliases: true
-integrity: cee7684391c4a8a1ff219cd354deae61cdcdee70f2076789aabd5249f3c4eca9
+integrity: 02f99a79f85c0ee5a24145c76dac72521cb4186dcc34df0b422a41756d049647

@@ -5,6 +5,8 @@
 
 manifest:
   modules_mapping:
+    blinker: blinker
+    blinker.base: blinker
     click: click
     click.core: click
     click.decorators: click
@@ -72,6 +74,16 @@ manifest:
     markupsafe: MarkupSafe
     werkzeug: Werkzeug
     werkzeug.datastructures: Werkzeug
+    werkzeug.datastructures.accept: Werkzeug
+    werkzeug.datastructures.auth: Werkzeug
+    werkzeug.datastructures.cache_control: Werkzeug
+    werkzeug.datastructures.csp: Werkzeug
+    werkzeug.datastructures.etag: Werkzeug
+    werkzeug.datastructures.file_storage: Werkzeug
+    werkzeug.datastructures.headers: Werkzeug
+    werkzeug.datastructures.mixins: Werkzeug
+    werkzeug.datastructures.range: Werkzeug
+    werkzeug.datastructures.structures: Werkzeug
     werkzeug.debug: Werkzeug
     werkzeug.debug.console: Werkzeug
     werkzeug.debug.repr: Werkzeug
@@ -115,4 +127,4 @@ manifest:
   pip_repository:
     name: pip
     use_pip_repository_aliases: true
-integrity: 030d6d99b56c32d6577e616b617260d0a93588af791269162e43391a5a4fa576
+integrity: e214390dc33847699e1e3d967a503f9b8a565fd65e7aec240e2b52097a9e8d1e
