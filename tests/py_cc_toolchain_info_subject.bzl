@@ -13,14 +13,7 @@
 # limitations under the License.
 """PyCcToolchainInfo testing subject."""
 
-# TODO: Load this through truth.bzl#subjects when made available
-# https://github.com/bazelbuild/rules_testing/issues/54
-load("@rules_testing//lib/private:dict_subject.bzl", "DictSubject")  # buildifier: disable=bzl-visibility
-
-# TODO: Load this through truth.bzl#subjects when made available
-# https://github.com/bazelbuild/rules_testing/issues/54
-load("@rules_testing//lib/private:str_subject.bzl", "StrSubject")  # buildifier: disable=bzl-visibility
-load(":struct_subject.bzl", "struct_subject")
+load("@rules_testing//lib:truth.bzl", "subjects")
 
 def _py_cc_toolchain_info_subject_new(info, *, meta):
     # buildifier: disable=uninitialized
@@ -33,14 +26,16 @@ def _py_cc_toolchain_info_subject_new(info, *, meta):
     return public
 
 def _py_cc_toolchain_info_subject_headers(self):
-    return struct_subject(
+    return subjects.struct(
         self.actual.headers,
         meta = self.meta.derive("headers()"),
-        providers_map = DictSubject.new,
+        attrs = dict(
+            providers_map = subjects.dict,
+        ),
     )
 
 def _py_cc_toolchain_info_subject_python_version(self):
-    return StrSubject.new(
+    return subjects.str(
         self.actual.python_version,
         meta = self.meta.derive("python_version()"),
     )
