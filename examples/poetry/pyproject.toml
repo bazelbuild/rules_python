@@ -1,0 +1,10 @@
+[tool.poetry]
+name = "poetry-demo"
+version = "0.1.0"
+description = ""
+authors = ["Alex Eagle <alex@aspect.dev>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+pendulum = "^2.1"
+python = "^3.10"
