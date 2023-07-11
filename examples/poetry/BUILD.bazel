@@ -1,0 +1,53 @@
+load("@aspect_bazel_lib//lib:copy_to_bin.bzl", "copy_to_bin")
+load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_file")
+load("@pypi//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+# METHOD 1 (see README.md)
+# run `poetry export` as an action and write_source_files back to src
+# BUT how to get the ones for other platforms updated??
+#
+copy_to_bin(
+    name = "copy_poetry_inputs",
+    srcs = [
+        "poetry.lock",
+        "pyproject.toml",
+    ],
+)
+
+run_binary(
+    name = "poetry_export",
+    srcs = [":copy_poetry_inputs"],
+    outs = ["requirements.txt"],
+    args = [
+        "export",
+        "--directory",
+        "$(RULEDIR)",
+        "--output",
+        "$(location requirements.txt)",
+    ],
+    tool = "@poetry_poetry//:bin",
+)
+
+[
+    write_source_file(
+        name = "vendor_{}_requirements".format(os),
+        in_file = ":requirements.txt",
+        out_file = "requirements_{}.txt".format(os),
+        target_compatible_with = ["@platforms//os:" + os],
+    )
+    for os in [
+        "macos",
+        "linux",
+        "windows",
+    ]
+]
+
+# Prove that it worked
+
+py_binary(
+    name = "main",
+    srcs = ["main.py"],
+    deps = [requirement("pendulum")],
+)

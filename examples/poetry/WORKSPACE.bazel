@@ -4,6 +4,13 @@ local_repository(
     name = "rules_python",
     path = "../..",
 )
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "aspect_bazel_lib",
+    sha256 = "e3151d87910f69cf1fc88755392d7c878034a69d6499b287bcfc00b1cf9bb415",
+    strip_prefix = "bazel-lib-1.32.1",
+    url = "https://github.com/aspect-build/bazel-lib/releases/download/v1.32.1/bazel-lib-v1.32.1.tar.gz",
+)
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 
@@ -27,22 +34,32 @@ _poetry_install_deps(
     python_interpreter_target = interpreter,
 )
 
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-# TODO:
+# METHOD 1 (see README.md)
+
+# load("@rules_python//poetry:defs.bzl", "poetry_export")
+#
 # poetry_export(
 #    name = "poetry_deps",
-#    lockfile=poetry.lock
-#)
-
-# load("@rules_python//python:pip.bzl", "pip_parse")
+#    lockfile = "//:poetry.lock",
+# )
+#
 # pip_parse(
-#     name = "pip",
-#     requirements_txt = "@poetry_deps//:requirements.txt",
+#     name = "pypi",
+#     requirements_lock = "@poetry_deps//:requirements.txt",
 # )
 
-# OR MAYBE syntax sugar, as pip parse could parse more formats?
+# METHOD 2 (see README.md)
 
-# pip_parse(
-#   name = "pip",
-#   poetry_lock = "poetry.lock",
-# )
+pip_parse(
+    name = "pypi",
+    requirements_darwin = "//:requirements_macos.txt",
+    requirements_linux = "//:requirements_linux.txt",
+    requirements_lock = "//:requirements_linux.txt",
+    requirements_windows = "//:requirements_windows.txt",
+)
+
+load("@pypi//:requirements.bzl", "install_deps")
+
+install_deps(python_interpreter_target = interpreter)

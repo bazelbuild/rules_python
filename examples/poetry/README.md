@@ -35,4 +35,7 @@ This is typically checked into version control, as shown in this folder.
 
 To illustrate the translation, you can `bazel run @poetry_poetry//:bin export` to write a `requirements.txt` file to stdout. This is what we do internally.
 
-TODO: write a `poetry_export` repository rule around it?
+TODO: figure out the workflow:
+
+1. vendor the requirements.txt files into the repo, nice because it avoids work in a repo rule, but reintroduces the problem of having to write the macos file on macos, etc. We want it to be based on the host platform automatically?
+2. write a `poetry_export` repository rule around it, but how to execute a py_binary from a repo rule? See /poetry/defs.bzl
