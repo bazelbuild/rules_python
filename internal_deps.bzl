@@ -42,12 +42,23 @@ def rules_python_internal_deps():
         ],
         sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
+
     maybe(
         http_archive,
         name = "rules_testing",
         sha256 = "8df0a8eb21739ea4b0a03f5dc79e68e245a45c076cfab404b940cc205cb62162",
         strip_prefix = "rules_testing-0.4.0",
         url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.4.0/rules_testing-v0.4.0.tar.gz",
+    )
+
+    maybe(
+        http_archive,
+        name = "rules_license",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
+            "https://github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
+        ],
+        sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
     )
 
     maybe(
