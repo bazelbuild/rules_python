@@ -27,12 +27,14 @@ SHA=$(shasum -a 256 $ARCHIVE | awk '{print $1}')
 cat > release_notes.txt << EOF
 ## Using Bzlmod with Bazel 6
 
+**NOTE: bzlmod support is still beta. APIs subject to change.**
+
 Add to your \`MODULE.bazel\` file:
 
 \`\`\`starlark
 bazel_dep(name = "rules_python", version = "${TAG}")
 
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
 pip.parse(
     name = "pip",
