@@ -354,6 +354,7 @@ def _extract_wheel(
         data = []
         data_exclude = pip_data_exclude
         srcs_exclude = []
+        filtered_deps = sanitised_dependencies
         if annotation:
             for src, dest in annotation.copy_files.items():
                 data.append(dest)
@@ -366,12 +367,15 @@ def _extract_wheel(
             data.extend(annotation.data)
             data_exclude.extend(annotation.data_exclude_glob)
             srcs_exclude.extend(annotation.srcs_exclude_glob)
+            filtered_deps = [
+                '"%s"' % dep for dep in sanitised_dependencies if dep not in annotation.excluded_deps
+            ]
             if annotation.additive_build_content:
                 additional_content.append(annotation.additive_build_content)
 
         contents = _generate_build_file_contents(
             name=bazel.PY_LIBRARY_LABEL,
-            dependencies=sanitised_dependencies,
+            dependencies=filtered_deps,
             whl_file_deps=sanitised_wheel_file_dependencies,
             data_exclude=data_exclude,
             data=data,
