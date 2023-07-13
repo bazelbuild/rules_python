@@ -87,17 +87,10 @@ python.toolchain(
     python_version = "3.9",
 )
 
-interpreter = use_extension("@rules_python//python/extensions:interpreter.bzl", "interpreter")
-interpreter.install(
-    name = "interpreter",
-    python_name = "python_3_9",
-)
-use_repo(interpreter, "interpreter")
-
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "pip",
-    python_interpreter_target = "@interpreter//:python",
+    python_version = "3.9",
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
