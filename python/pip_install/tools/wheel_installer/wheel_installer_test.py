@@ -109,6 +109,13 @@ class TestRequirementExtrasParsing(unittest.TestCase):
 
 
 class BazelTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmpdir = Path(os.environ["TEST_TMPDIR"]) / "tmpdir"
+        self.tmpdir.mkdir()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
     def test_generate_entry_point_contents(self):
         got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
         want = """#!/usr/bin/env python3
@@ -132,7 +139,7 @@ if __name__ == "__main__":
         self.assertEqual(got, want)
 
     @unittest.mock.patch(
-        "python.pip_install.tools.wheel_installer._extract_wheels.wheel.Wheel"
+        "python.pip_install.tools.wheel_installer.wheel.Wheel"
     )
     def test_extract_wheel(self, MockWheel):
         """Validates that extract_wheel generates the expected BUILD file.
