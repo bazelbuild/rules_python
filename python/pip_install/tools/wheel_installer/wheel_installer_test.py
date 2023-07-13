@@ -22,7 +22,6 @@ from typing import Dict, List, Tuple
 
 from python.pip_install.tools.wheel_installer import wheel_installer
 from python.pip_install.tools.lib import annotation
-from python.pip_install.tools import wheel_installer
 
 
 class MockWheelInstance:
@@ -143,7 +142,7 @@ if __name__ == "__main__":
             name="test-wheel",
             version="1.2.3",
             path="path/to/test-wheel.whl",
-            dependencies=["a", "b"],
+            dependencies=["a", "b", "//a/dep/of:some_kind"],
             entry_points={
                 "test_bin_entry": ("test_wheel.entry", "main"),
             },
@@ -165,7 +164,7 @@ if __name__ == "__main__":
                     "data": ["//some/extra:data"],
                     "data_exclude_glob": ["foo/bad.data.*"],
                     "srcs_exclude_glob": ["foo/bad.srcs.*"],
-                    "deps": ["//a/dep/of:some_kind"],
+                    "excluded_deps": ["//a/dep/of:some_kind"],
                 }
             ),
         )
@@ -182,7 +181,6 @@ if __name__ == "__main__":
                     data=["//some/extra:data", "<glob()>"],
                     imports=["site-packages"],
                     deps=[
-                        "//a/dep/of:some_kind",
                         "@repo_prefix_a//:pkg",
                         "@repo_prefix_b//:pkg",
                     ],
