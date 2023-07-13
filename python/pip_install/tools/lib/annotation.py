@@ -33,6 +33,7 @@ class Annotation(OrderedDict):
             "data",
             "data_exclude_glob",
             "srcs_exclude_glob",
+            "excluded_deps",
         ):
             if field not in content:
                 missing.append(field)
@@ -74,6 +75,10 @@ class Annotation(OrderedDict):
     @property
     def srcs_exclude_glob(self) -> List[str]:
         return self["srcs_exclude_glob"]
+
+    @property
+    def excluded_deps(self) -> List[str]:
+        return self["excluded_deps"]
 
 
 class AnnotationsMap:
