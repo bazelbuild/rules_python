@@ -354,7 +354,7 @@ def _extract_wheel(
         data = []
         data_exclude = pip_data_exclude
         srcs_exclude = []
-        deps = sanitised_dependencies
+        filtered_deps = sanitised_dependencies
         if annotation:
             for src, dest in annotation.copy_files.items():
                 data.append(dest)
@@ -368,7 +368,7 @@ def _extract_wheel(
             data_exclude.extend(annotation.data_exclude_glob)
             srcs_exclude.extend(annotation.srcs_exclude_glob)
             filtered_deps = [
-                '"%s"' % dep for dep in deps if dep not in annotation.excluded_deps
+                '"%s"' % dep for dep in sanitised_dependencies if dep not in annotation.excluded_deps
             ]
             if annotation.additive_build_content:
                 additional_content.append(annotation.additive_build_content)
