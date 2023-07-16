@@ -1,4 +1,4 @@
-load("@pip_39//:requirements.bzl", "entry_point")
+load("@pip//:requirements.bzl", "entry_point")
 load("@rules_python//python:defs.bzl", "py_test")
 
 alias(
