@@ -15,6 +15,7 @@ internal_deps = use_extension("@rules_python//python/extensions/private:internal
 internal_deps.install()
 use_repo(
     internal_deps,
+    # Generated with //tools:print_pip_deps.sh
     "pypi__build",
     "pypi__click",
     "pypi__colorama",
