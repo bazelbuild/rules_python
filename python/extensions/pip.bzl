@@ -27,6 +27,7 @@ load(
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:version_label.bzl", "version_label")
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -84,7 +85,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     # we programtically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None:
-        python_name = "python_{}".format(pip_attr.python_version.replace(".", "_"))
+        python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
         if python_name not in INTERPRETER_LABELS.keys():
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
@@ -96,7 +97,10 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    pip_name = hub_name + "_{}".format(pip_attr.python_version.replace(".", ""))
+    pip_name = "{}_{}".format(
+        hub_name,
+        version_label(pip_attr.python_version),
+    )
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
