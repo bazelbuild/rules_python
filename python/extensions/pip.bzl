@@ -26,6 +26,7 @@ load(
     "whl_library",
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:normalize_name.bzl", "normalize_name")
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -130,7 +131,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
         # would need to guess what name we modified the whl name
         # to.
         annotation = whl_modifications.get(whl_name)
-        whl_name = _sanitize_name(whl_name)
+        whl_name = normalize_name(whl_name)
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
@@ -317,10 +318,6 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             whl_library_alias_names = whl_map.keys(),
         )
-
-# Keep in sync with python/pip_install/tools/bazel.py
-def _sanitize_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
 
 def _pip_parse_ext_attrs():
     attrs = dict({
