@@ -21,6 +21,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
+load("//python/private:full_version.bzl", "full_version")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -30,7 +31,6 @@ load(
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
-    "MINOR_MAPPING",
     "PLATFORMS",
     "TOOL_VERSIONS",
     "get_release_info",
@@ -505,8 +505,7 @@ def python_register_toolchains(
 
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
 
-    if python_version in MINOR_MAPPING:
-        python_version = MINOR_MAPPING[python_version]
+    python_version = full_version(python_version)
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
