@@ -2,25 +2,17 @@
 #
 # A script to manage internal dependencies
 
-internal_deps=(
-    build==0.9
-    click==8.0.1
-    colorama
-    importlib_metadata==1.4.0
-    installer
-    more_itertools==8.13.0
-    packaging==22.0
-    pep517
-    pip==22.3.1
-    pip_tools==6.12.1
-    setuptools==60.10
-    tomli
-    wheel==0.38.4
-    zipp==1.0.0
+pip_args=(
+    install
+    --quiet
+    --dry-run
+    --ignore-installed
+    --report -
+    -r "$(dirname "$0")"/../python/pip_install/tools/requirements.txt
 )
 echo "Copy the following to //python/pip_install/requirements.bzl"
 echo "    # Generated with //tools:$(basename $0)"
-report=$(python -m pip install --quiet --dry-run --ignore-installed --report - ${internal_deps[@]})
+report=$(python -m pip "${pip_args[@]}")
 
 echo "$report" |
     jq --indent 4 '
