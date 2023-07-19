@@ -8,8 +8,8 @@ Before running through the release it's good to run the build and the tests loca
 also test-drive the commit in an existing Bazel workspace to sanity check functionality.
 
 #### Steps
-1. (Optional) bump the internal dependencies using the script `./tools/print_pip_deps.sh`.
-1. (Optional) bump the coverage dependencies using the script `./tools/update_coverage_deps.py`
+1. (Optional) modify the `./python/pip_install/tools/requirements.txt` file and run `./tools/update_pip_deps.sh` script.
+1. (Optional) bump the coverage dependencies using the script `./tools/update_coverage_deps.py <VERSION>`.
 1. [Determine the next semantic version number](#determining-semantic-version)
 1. Create a tag and push, e.g. `git tag 0.5.0 upstream/main && git push upstream --tags`
    NOTE: Pushing the tag will trigger release automation.

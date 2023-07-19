@@ -2,16 +2,18 @@
 #
 # A script to manage internal dependencies
 
+readonly ROOT="$(dirname "$0")"/..
+readonly START="# START: maintained by //tools/update_pip_deps.sh"
+readonly END="# END: maintained by //tools/update_pip_deps.sh"
+
 pip_args=(
     install
     --quiet
     --dry-run
     --ignore-installed
     --report -
-    -r "$(dirname "$0")"/../python/pip_install/tools/requirements.txt
+    -r "$ROOT/python/pip_install/tools/requirements.txt"
 )
-echo "Copy the following to //python/pip_install/requirements.bzl"
-echo "    # Generated with //tools:$(basename $0)"
 report=$(python -m pip "${pip_args[@]}")
 
 echo "$report" |
@@ -29,17 +31,22 @@ echo "$report" |
         -e 's/\[/(/g' \
         -e 's/\]/),/g' \
         -e 's/^/    /g' \
-        -e 's/"$/",/g'
+        -e 's/"$/",/g' |
+    python "$ROOT"/tools/update_file.py \
+        --start="$START" \
+        --end="$END" \
+        "$ROOT"/python/pip_install/repositories.bzl \
+        "$@"
 
-echo ""
-echo "====================================="
-echo "  Copy the following to MODULE.bazel"
-echo "====================================="
-echo "    # Generated with //tools:$(basename $0)"
 echo "$report" |
     jq --indent 4 '[.install[]|"pypi__" + (.metadata.name | sub("[._-]+"; "_"))] | sort' |
     sed \
         -e 's/\[//g' \
         -e 's/\]//g' \
         -e 's/"$/",/g' |
-    awk NF
+    awk NF |
+    python "$ROOT/tools/update_file.py" \
+        --start="$START" \
+        --end="$END" \
+        "$ROOT"/MODULE.bazel \
+        "$@"

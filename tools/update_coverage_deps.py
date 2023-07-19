@@ -30,6 +30,8 @@ from dataclasses import dataclass
 from typing import Any
 from urllib import request
 
+from update_file import update_file
+
 # This should be kept in sync with //python:versions.bzl
 _supported_platforms = {
     # Windows is unsupported right now
@@ -110,64 +112,6 @@ def _map(
     )
 
 
-def _writelines(path: pathlib.Path, lines: list[str]):
-    with open(path, "w") as f:
-        f.writelines(lines)
-
-
-def _difflines(path: pathlib.Path, lines: list[str]):
-    with open(path) as f:
-        input = f.readlines()
-
-    rules_python = pathlib.Path(__file__).parent.parent
-    p = path.relative_to(rules_python)
-
-    print(f"Diff of the changes that would be made to '{p}':")
-    for line in difflib.unified_diff(
-        input,
-        lines,
-        fromfile=f"a/{p}",
-        tofile=f"b/{p}",
-    ):
-        print(line, end="")
-
-    # Add an empty line at the end of the diff
-    print()
-
-
-def _update_file(
-    path: pathlib.Path,
-    snippet: str,
-    start_marker: str,
-    end_marker: str,
-    dry_run: bool = True,
-):
-    with open(path) as f:
-        input = f.readlines()
-
-    out = []
-    skip = False
-    for line in input:
-        if skip:
-            if not line.startswith(end_marker):
-                continue
-
-            skip = False
-
-        out.append(line)
-
-        if not line.startswith(start_marker):
-            continue
-
-        skip = True
-        out.extend([f"{line}\n" for line in snippet.splitlines()])
-
-    if dry_run:
-        _difflines(path, out)
-    else:
-        _writelines(path, out)
-
-
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(
@@ -233,7 +177,7 @@ def main():
     rules_python = pathlib.Path(__file__).parent.parent
 
     # Update the coverage_deps, which are used to register deps
-    _update_file(
+    update_file(
         path=rules_python / "python" / "private" / "coverage_deps.bzl",
         snippet=f"_coverage_deps = {repr(Deps(urls))}\n",
         start_marker="#START: managed by update_coverage_deps.py script",
