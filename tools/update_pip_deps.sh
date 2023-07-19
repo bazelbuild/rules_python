@@ -15,6 +15,8 @@
 
 # A script to manage internal pip dependencies
 
+set -euxo pipefail
+
 readonly ROOT="$(dirname "$0")"/..
 readonly START="# START: maintained by //tools/update_pip_deps.sh"
 readonly END="# END: maintained by //tools/update_pip_deps.sh"
