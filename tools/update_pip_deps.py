@@ -82,8 +82,8 @@ def _generate_report(requirements_txt: pathlib.Path) -> dict:
 def _get_deps(report: dict) -> list[Dep]:
     deps = []
     for dep in report["install"]:
-        deps.append(
-            Dep(
+        try:
+            dep = Dep(
                 name="pypi__"
                 + re.sub(
                     "[._-]+",
@@ -91,9 +91,14 @@ def _get_deps(report: dict) -> list[Dep]:
                     dep["metadata"]["name"],
                 ),
                 url=dep["download_info"]["url"],
-                sha256=dep["download_info"]["archive_info"]["hashes"]["sha256"],
+                sha256=dep["download_info"]["archive_info"]["hash"][len("sha256=") :],
             )
-        )
+        except:
+            debug_dep = textwrap.indent(json.dumps(dep, indent=4), " " * 4)
+            print(f"Could not parse the response from 'pip':\n{debug_dep}")
+            raise
+
+        deps.append(dep)
 
     return sorted(deps, key=lambda dep: dep.name)
 
