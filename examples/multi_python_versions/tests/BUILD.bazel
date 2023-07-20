@@ -1,13 +1,22 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
 load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
 load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
+copy_file(
+    name = "copy_version",
+    src = "version.py",
+    out = "version_default.py",
+    is_executable = True,
+)
+
+# NOTE: We are testing that the `main` is an optional param as per official
+# docs https://bazel.build/reference/be/python#py_binary.main
 py_binary(
     name = "version_default",
-    srcs = ["version.py"],
-    main = "version.py",
+    srcs = ["version_default.py"],
 )
 
 py_binary_3_8(
@@ -69,11 +78,17 @@ py_test_3_11(
     deps = ["//libs/my_lib"],
 )
 
+copy_file(
+    name = "copy_version_test",
+    src = "version_test.py",
+    out = "version_default_test.py",
+    is_executable = True,
+)
+
 py_test(
     name = "version_default_test",
-    srcs = ["version_test.py"],
+    srcs = ["version_default_test.py"],
     env = {"VERSION_CHECK": "3.9"},  # The default defined in the WORKSPACE.
-    main = "version_test.py",
 )
 
 py_test_3_8(
