@@ -43,7 +43,7 @@ def normalize_name(name):
     """normalize a PyPI package name and return a valid bazel label.
 
     Args:
-        name: the PyPI package name.
+        name: str, the PyPI package name.
 
     Returns:
         a normalized name as a string.
