@@ -259,12 +259,13 @@ py_wheel(
 
 py_wheel(
     name = "filename_escaping",
-    # Per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
-    # runs of non-alphanumeric, non-digit symbols should be replaced with a single underscore.
-    # Unicode non-ascii letters should *not* be replaced with underscore.
-    distribution = "file~~name-escaping",
+    # Per https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+    # runs of "-", "_" and "." should be replaced with a single underscore.
+    # Unicode non-ascii letters aren't allowed according to
+    # https://packaging.python.org/en/latest/specifications/name-normalization/.
+    distribution = "File--Name-Escaping",
     python_tag = "py3",
-    version = "0.0.1-r7",
+    version = "v0.0.1.RC1+ubuntu-r7",
     deps = [":example_pkg"],
 )
 

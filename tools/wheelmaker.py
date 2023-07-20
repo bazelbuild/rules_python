@@ -22,6 +22,8 @@ import sys
 import zipfile
 from pathlib import Path
 
+import packaging.version
+
 
 def commonpath(path1, path2):
     ret = []
@@ -32,9 +34,20 @@ def commonpath(path1, path2):
     return os.path.sep.join(ret)
 
 
-def escape_filename_segment(segment):
-    """Escapes a filename segment per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode"""
-    return re.sub(r"[^\w\d.]+", "_", segment, re.UNICODE)
+def normalize_package_name(name):
+    """Normalize a package name according to the Python Packaging User Guide.
+
+    See https://packaging.python.org/en/latest/specifications/name-normalization/
+    """
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def escape_filename_distribution_name(name):
+    """Escape the distribution name component of a filename.
+
+    See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+    """
+    return normalize_package_name(name).replace("-", "_")
 
 
 class WheelMaker(object):
@@ -50,7 +63,7 @@ class WheelMaker(object):
         strip_path_prefixes=None,
     ):
         self._name = name
-        self._version = version
+        self._version = str(packaging.version.Version(version))
         self._build_tag = build_tag
         self._python_tag = python_tag
         self._abi = abi
@@ -61,9 +74,9 @@ class WheelMaker(object):
         )
 
         self._distinfo_dir = (
-            escape_filename_segment(self._name)
+            escape_filename_distribution_name(self._name)
             + "-"
-            + escape_filename_segment(self._version)
+            + self._version
             + ".dist-info/"
         )
         self._zipfile = None
@@ -81,7 +94,10 @@ class WheelMaker(object):
         self._zipfile = None
 
     def wheelname(self) -> str:
-        components = [self._name, self._version]
+        components = [
+            escape_filename_distribution_name(self._name),
+            self._version,
+        ]
         if self._build_tag:
             components.append(self._build_tag)
         components += [self._python_tag, self._abi, self._platform]
@@ -172,7 +188,7 @@ Root-Is-Purelib: {}
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
         metadata = re.sub("^Name: .*$", "Name: %s" % name, metadata, flags=re.MULTILINE)
-        metadata += "Version: %s\n\n" % version
+        metadata += "Version: %s\n\n" % str(packaging.version.Version(version))
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"

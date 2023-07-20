@@ -159,7 +159,7 @@ second = second.main:s""",
             "rules_python",
             "examples",
             "wheel",
-            "file_name_escaping-0.0.1_r7-py3-none-any.whl",
+            "file_name_escaping-0.0.1rc1+ubuntu.r7-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
             self.assertEqual(
@@ -172,20 +172,20 @@ second = second.main:s""",
                     # PEP calls for replacing only in the archive filename.
                     # Alas setuptools also escapes in the dist-info directory
                     # name, so let's be compatible.
-                    "file_name_escaping-0.0.1_r7.dist-info/WHEEL",
-                    "file_name_escaping-0.0.1_r7.dist-info/METADATA",
-                    "file_name_escaping-0.0.1_r7.dist-info/RECORD",
+                    "file_name_escaping-0.0.1rc1+ubuntu.r7.dist-info/WHEEL",
+                    "file_name_escaping-0.0.1rc1+ubuntu.r7.dist-info/METADATA",
+                    "file_name_escaping-0.0.1rc1+ubuntu.r7.dist-info/RECORD",
                 ],
             )
             metadata_contents = zf.read(
-                "file_name_escaping-0.0.1_r7.dist-info/METADATA"
+                "file_name_escaping-0.0.1rc1+ubuntu.r7.dist-info/METADATA"
             )
             self.assertEqual(
                 metadata_contents,
                 b"""\
 Metadata-Version: 2.1
-Name: file~~name-escaping
-Version: 0.0.1-r7
+Name: File--Name-Escaping
+Version: 0.0.1rc1+ubuntu.r7
 
 UNKNOWN
 """,
@@ -384,7 +384,7 @@ Tag: cp38-abi3-{os_string}_{arch}
             "rules_python",
             "examples",
             "wheel",
-            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
+            "example_minimal_library{build_user}-0.1.{BUILD_TIMESTAMP}-py3-none-any.whl",
         )
 
         with zipfile.ZipFile(filename) as zf:
