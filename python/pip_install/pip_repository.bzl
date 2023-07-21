@@ -20,6 +20,7 @@ load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
@@ -267,10 +268,6 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-# Keep in sync with `_clean_pkg_name` in generated bzlmod requirements.bzl
-def _clean_pkg_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
 def _pkg_aliases(rctx, repo_name, bzl_packages):
     """Create alias declarations for each python dependency.
 
@@ -376,7 +373,7 @@ def _pip_repository_bzlmod_impl(rctx):
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
     _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
@@ -422,7 +419,7 @@ def _pip_repository_impl(rctx):
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
 
@@ -432,7 +429,7 @@ def _pip_repository_impl(rctx):
 
     annotations = {}
     for pkg, annotation in rctx.attr.annotations.items():
-        filename = "{}.annotation.json".format(_clean_pkg_name(pkg))
+        filename = "{}.annotation.json".format(normalize_name(pkg))
         rctx.file(filename, json.encode_indent(json.decode(annotation)))
         annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
 
