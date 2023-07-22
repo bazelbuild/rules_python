@@ -104,11 +104,13 @@ class TestWhlFilegroup(unittest.TestCase):
             self.wheel_name,
         ]
         self.assertEqual(
-            want_files,
-            [
-                str(p.relative_to(self.wheel_dir))
-                for p in Path(self.wheel_dir).glob("*")
-            ],
+            sorted(want_files),
+            sorted(
+                [
+                    str(p.relative_to(self.wheel_dir))
+                    for p in Path(self.wheel_dir).glob("*")
+                ]
+            ),
         )
         with open("{}/metadata.json".format(self.wheel_dir)) as metadata_file:
             metadata_file_content = json.load(metadata_file)
