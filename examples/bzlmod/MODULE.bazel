@@ -94,6 +94,9 @@ use_repo(pip, "whl_mods_hub")
 # Because we do not have a python_version defined here
 # pip.parse uses the python toolchain that is set as default.
 pip.parse(
+    entry_points = {
+        "yamllint": ["yamllint"],
+    },
     hub_name = "pip",
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
@@ -106,6 +109,9 @@ pip.parse(
     },
 )
 pip.parse(
+    entry_points = {
+        "yamllint": ["yamllint"],
+    },
     hub_name = "pip",
     python_version = "3.10",
     requirements_lock = "//:requirements_lock_3_10.txt",

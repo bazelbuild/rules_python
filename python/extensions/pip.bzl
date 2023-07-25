@@ -111,7 +111,10 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
     if hub_name not in whl_map:
-        whl_map[hub_name] = {}
+        whl_map[hub_name] = struct(
+            wheels = {},
+            entry_points = {},
+        )
 
     whl_modifications = {}
     if pip_attr.whl_modifications != None:
@@ -143,10 +146,20 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
             environment = pip_attr.environment,
         )
 
-        if whl_name not in whl_map[hub_name]:
-            whl_map[hub_name][whl_name] = []
+        if whl_name not in whl_map[hub_name].wheels:
+            whl_map[hub_name].wheels[whl_name] = []
 
-        whl_map[hub_name][whl_name].append(full_version(pip_attr.python_version))
+        whl_map[hub_name].wheels[whl_name].append(full_version(pip_attr.python_version))
+
+        for whl_name, scripts in pip_attr.entry_points.items():
+            if whl_name not in whl_map[hub_name].entry_points:
+                whl_map[hub_name].entry_points[whl_name] = {}
+
+            for script in scripts:
+                if script not in whl_map[hub_name].entry_points[whl_name]:
+                    whl_map[hub_name].entry_points[whl_name][script] = []
+
+                whl_map[hub_name].entry_points[whl_name][script].append(full_version(pip_attr.python_version))
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
@@ -288,12 +301,19 @@ def _pip_impl(module_ctx):
         pip_hub_repository(
             name = hub_name,
             repo_name = hub_name,
-            whl_map = whl_map,
+            whl_map = whl_map.wheels,
+            whl_entry_points = {
+                whl_name: json.encode(values)
+                for whl_name, values in whl_map.entry_points.items()
+            },
             default_version = full_version(DEFAULT_PYTHON_VERSION),
         )
 
 def _pip_parse_ext_attrs():
     attrs = dict({
+        "entry_points": attr.string_list_dict(
+            doc = "TODO",
+        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """

@@ -37,9 +37,9 @@ def _render_alias(
         repo_name,
         dep,
         target,
-        default_version,
         versions,
-        rules_python):
+        rules_python,
+        default_version = None):
     """Render an alias for common targets
 
     If the versions is passed, then the `rules_python` must be passed as well and
@@ -71,13 +71,14 @@ def _render_alias(
         )
         selects[condition] = actual
 
-    default_actual = "@{repo_name}_{version}_{dep}//:{target}".format(
-        repo_name = repo_name,
-        version = version_label(default_version),
-        dep = dep,
-        target = target,
-    )
-    selects["//conditions:default"] = default_actual
+    if default_version:
+        default_actual = "@{repo_name}_{version}_{dep}//:{target}".format(
+            repo_name = repo_name,
+            version = version_label(default_version),
+            dep = dep,
+            target = target,
+        )
+        selects["//conditions:default"] = default_actual
 
     return _SELECT.format(
         name = name,
@@ -89,22 +90,21 @@ def _render_alias(
         ),
     )
 
-def _render_entry_points(repo_name, dep):
-    return """\
-load("@{repo_name}_{dep}//:entry_points.bzl", "entry_points")
-
-[
-    alias(
-        name = script,
-        actual = "@{repo_name}_{dep}//:" + target,
-        visibility = ["//visibility:public"],
-    )
-    for script, target in entry_points.items()
-]
-""".format(
-        repo_name = repo_name,
-        dep = dep,
-    )
+def _render_entry_points(repo_name, dep, entry_points, default_version = None, rules_python = None, prefix = "rules_python_wheel_entry_point_"):
+    return "\n\n".join([
+        """package(default_visibility = ["//visibility:public"])""",
+    ] + [
+        _render_alias(
+            name = normalize_name(script),
+            repo_name = repo_name,
+            dep = dep,
+            target = prefix + normalize_name(script),
+            versions = versions,
+            default_version = default_version,
+            rules_python = rules_python,
+        )
+        for script, versions in entry_points.items()
+    ])
 
 def _render_common_aliases(repo_name, name, versions = None, default_version = None, rules_python = None):
     return "\n\n".join([
@@ -131,7 +131,14 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
         for target in ["pkg", "whl", "data", "dist_info"]
     ])
 
-def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_python = None, default_version = None):
+def render_pkg_aliases(
+        *,
+        repo_name,
+        bzl_packages = None,
+        whl_map = None,
+        whl_entry_points = None,
+        rules_python = None,
+        default_version = None):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -155,8 +162,14 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
     contents = {}
     for name in bzl_packages:
         versions = None
+        entry_points = None
+
         if whl_map != None:
             versions = whl_map[name]
+
+        if whl_entry_points != None:
+            entry_points = whl_entry_points.get(name, {})
+
         name = normalize_name(name)
 
         filename = "{}/BUILD.bazel".format(name)
@@ -168,22 +181,15 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
             default_version = default_version,
         ).strip()
 
-        if versions == None:
-            # NOTE: this code would be normally executed in the non-bzlmod
-            # scenario, where we are requesting friendly aliases to be
-            # generated. In that case, we will not be creating aliases for
-            # entry_points to leave the behaviour unchanged from previous
-            # rules_python versions.
-            continue
-
-        # NOTE @aignas 2023-07-07: we are not creating aliases using a select
-        # and the version specific aliases because we would need to fetch the
-        # package for all versions in order to construct the said select.
-        for version in versions:
-            filename = "{}/bin_py{}/BUILD.bazel".format(name, version_label(version))
+        if entry_points:
+            # Generate aliases where we have the select statement
+            filename = "{}/bin/BUILD.bazel".format(name)
             contents[filename] = _render_entry_points(
-                repo_name = "{}_{}".format(repo_name, version_label(version)),
+                repo_name = repo_name,
                 dep = name,
+                rules_python = rules_python,
+                default_version = default_version,
+                entry_points = entry_points,
             ).strip()
 
     return contents

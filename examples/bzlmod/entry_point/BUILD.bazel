@@ -1,9 +1,8 @@
-load("@pip//:requirements.bzl", "entry_point")
 load("@rules_python//python:defs.bzl", "py_test")
 
 alias(
     name = "yamllint",
-    actual = entry_point("yamllint"),
+    actual = "@pip//yamllint/bin:yamllint",
 )
 
 py_test(

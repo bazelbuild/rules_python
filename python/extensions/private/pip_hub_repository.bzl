@@ -35,6 +35,10 @@ def _impl(rctx):
     aliases = render_pkg_aliases(
         repo_name = repo_name,
         whl_map = rctx.attr.whl_map,
+        whl_entry_points = {
+            whl_name: json.decode(values)
+            for whl_name, values in rctx.attr.whl_entry_points.items()
+        },
         default_version = rctx.attr.default_version,
         rules_python = rctx.attr._template.workspace_name,
     )
@@ -83,6 +87,10 @@ setting.""",
         "repo_name": attr.string(
             mandatory = True,
             doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
+        ),
+        "whl_entry_points": attr.string_dict(
+            mandatory = False,
+            doc = "The entry points that we will create aliases for.",
         ),
         "whl_map": attr.string_list_dict(
             mandatory = True,
