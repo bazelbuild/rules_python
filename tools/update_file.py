@@ -56,6 +56,16 @@ def update_file(
     end_marker: str,
     dry_run: bool = True,
 ):
+    """update a file on disk to replace text in a file between two markers.
+
+    Args:
+        path: pathlib.Path, the path to the file to be modified.
+        snippet: str, the snippet of code to insert between the markers.
+        start_marker: str, the text that marks the start of the region to be replaced.
+        end_markr: str, the text that marks the end of the region to be replaced.
+        dry_run: bool, if set to True, then the file will not be written and instead we are going to print a diff to
+            stdout.
+    """
     with open(path) as f:
         input = f.readlines()
 
@@ -83,6 +93,7 @@ def update_file(
 
 
 def main():
+    """The main function that parses args from sys.argv and calls updates a file."""
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(
         "path",
