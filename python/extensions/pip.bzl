@@ -348,16 +348,14 @@ Targets from different hubs should not be used together.
 """,
         ),
         "python_version": attr.string(
-            default = DEFAULT_PYTHON_VERSION,
+            mandatory = True,
             doc = """
 The Python version to use for resolving the pip dependencies. If not specified,
 then the default Python version (as set by the root module or rules_python)
 will be used.
 
 The version specified here must have a corresponding `python.toolchain()`
-configured. This attribute defaults to the version of the toolchain
-that is set as the default Python version.  Or if only one toolchain
-is used, this attribute defaults to that version of Python.
+configured.
 """,
         ),
         "whl_modifications": attr.label_keyed_string_dict(

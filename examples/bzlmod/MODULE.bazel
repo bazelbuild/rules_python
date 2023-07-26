@@ -11,10 +11,6 @@ local_path_override(
     path = "../..",
 )
 
-# Setting python.toolchain is optional as rules_python
-# sets a toolchain for you, using the latest supported version
-# of Python.  We do recomend that you set a version here.
-
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -91,10 +87,9 @@ use_repo(pip, "whl_mods_hub")
 # call.
 # Alternatively, `python_interpreter_target` can be used to directly specify
 # the Python interpreter to run to resolve dependencies.
-# Because we do not have a python_version defined here
-# pip.parse uses the python toolchain that is set as default.
 pip.parse(
     hub_name = "pip",
+    python_version = "3.9",
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
     # These modifications were created above and we
