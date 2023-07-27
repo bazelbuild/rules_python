@@ -33,25 +33,32 @@ def _render_alias(name, actual):
         ")",
     ])
 
-def _render_select(selects, *, no_match_error = None):
-    dict_str = "\n".join([
+def _render_dict(d):
+    return "\n".join([
         "{",
         _indent("\n".join([
             "{}: {},".format(repr(k), repr(v))
-            for k, v in selects.items()
+            for k, v in d.items()
         ])),
         "}",
     ])
 
+def _render_select(selects, *, no_match_error = None):
+    dict_str = _render_dict(selects) + ","
+
     if no_match_error:
         args = "\n".join([
             "",
-            _indent(dict_str + ","),
+            _indent(dict_str),
             _indent("no_match_error = {},".format(repr(no_match_error))),
             "",
         ])
     else:
-        args = dict_str
+        args = "\n".join([
+            "",
+            _indent(dict_str),
+            "",
+        ])
 
     return "select({})".format(args)
 

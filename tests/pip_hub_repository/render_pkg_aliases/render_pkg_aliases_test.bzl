@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"render_pkg_aliases tests"
+"""render_pkg_aliases tests"""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")  # buildifier: disable=bzl-visibility
@@ -92,34 +92,42 @@ alias(
 
 alias(
     name = "pkg",
-    actual = select({
-        "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:pkg",
-        "//conditions:default": "@pypi_32_bar_baz//:pkg",
-    }),
+    actual = select(
+        {
+            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:pkg",
+            "//conditions:default": "@pypi_32_bar_baz//:pkg",
+        },
+    ),
 )
 
 alias(
     name = "whl",
-    actual = select({
-        "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:whl",
-        "//conditions:default": "@pypi_32_bar_baz//:whl",
-    }),
+    actual = select(
+        {
+            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:whl",
+            "//conditions:default": "@pypi_32_bar_baz//:whl",
+        },
+    ),
 )
 
 alias(
     name = "data",
-    actual = select({
-        "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:data",
-        "//conditions:default": "@pypi_32_bar_baz//:data",
-    }),
+    actual = select(
+        {
+            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:data",
+            "//conditions:default": "@pypi_32_bar_baz//:data",
+        },
+    ),
 )
 
 alias(
     name = "dist_info",
-    actual = select({
-        "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:dist_info",
-        "//conditions:default": "@pypi_32_bar_baz//:dist_info",
-    }),
+    actual = select(
+        {
+            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:dist_info",
+            "//conditions:default": "@pypi_32_bar_baz//:dist_info",
+        },
+    ),
 )""",
     }
 
