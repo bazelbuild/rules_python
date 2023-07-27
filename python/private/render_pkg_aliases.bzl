@@ -17,50 +17,8 @@
 This is used in bzlmod and non-bzlmod setups."""
 
 load("//python/private:normalize_name.bzl", "normalize_name")
+load(":text_util.bzl", "render")
 load(":version_label.bzl", "version_label")
-
-def _indent(text, indent = " " * 4):
-    if "\n" not in text:
-        return indent + text
-
-    return "\n".join([indent + line for line in text.splitlines()])
-
-def _render_alias(name, actual):
-    return "\n".join([
-        "alias(",
-        _indent("name = \"{}\",".format(name)),
-        _indent("actual = {},".format(actual)),
-        ")",
-    ])
-
-def _render_dict(d):
-    return "\n".join([
-        "{",
-        _indent("\n".join([
-            "{}: {},".format(repr(k), repr(v))
-            for k, v in d.items()
-        ])),
-        "}",
-    ])
-
-def _render_select(selects, *, no_match_error = None):
-    dict_str = _render_dict(selects) + ","
-
-    if no_match_error:
-        args = "\n".join([
-            "",
-            _indent(dict_str),
-            _indent("no_match_error = {},".format(repr(no_match_error))),
-            "",
-        ])
-    else:
-        args = "\n".join([
-            "",
-            _indent(dict_str),
-            "",
-        ])
-
-    return "select({})".format(args)
 
 def _render_whl_library_alias(
         *,
@@ -78,7 +36,7 @@ def _render_whl_library_alias(
     generated.
     """
     if versions == None:
-        return _render_alias(
+        return render.alias(
             name = name,
             actual = repr("@{repo_name}_{dep}//:{target}".format(
                 repo_name = repo_name,
@@ -118,9 +76,9 @@ def _render_whl_library_alias(
             ",".join(versions),
         )
 
-    return _render_alias(
+    return render.alias(
         name = name,
-        actual = _render_select(
+        actual = render.select(
             selects,
             no_match_error = no_match_error,
         ),
@@ -129,7 +87,7 @@ def _render_whl_library_alias(
 def _render_common_aliases(repo_name, name, versions = None, default_version = None, rules_python = None):
     return "\n\n".join([
         """package(default_visibility = ["//visibility:public"])""",
-        _render_alias(
+        render.alias(
             name = name,
             actual = repr(":pkg"),
         ),
