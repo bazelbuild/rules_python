@@ -6,7 +6,6 @@ py_library(
         "__init__.py",
         "bar.py",
     ],
-    imports = [".."],
     visibility = ["//:__subpackages__"],
     deps = ["//one"],
 )
