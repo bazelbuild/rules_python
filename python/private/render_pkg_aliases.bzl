@@ -20,6 +20,27 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
 load(":version_label.bzl", "version_label")
 
+_NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
+_NO_MATCH_ERROR = \"\"\"\\
+No matching wheel for current configuration's Python version.
+
+The current build configuration's Python version doesn't match any of the Python
+versions available for this wheel. This wheel supports the following Python versions:
+{supported_versions}
+
+As matched by the `@{rules_python}//python/config_settings:is_python_<version>`
+configuration settings.
+
+To determine the current configuration's Python version, run:
+    `bazel config <config id>` (shown further below)
+and look for
+    {rules_python}//python/config_settings:python_version
+
+If the value is missing, then the "default" Python version is being used,
+which has a "null" version value and will not match version constraints.
+\"\"\"\
+"""
+
 def _render_whl_library_alias(
         *,
         name,
@@ -72,9 +93,7 @@ def _render_whl_library_alias(
         )
         selects["//conditions:default"] = default_actual
     else:
-        no_match_error = "PyPI package is only available for versions: {}".format(
-            ",".join(versions),
-        )
+        no_match_error = "_NO_MATCH_ERROR"
 
     return render.alias(
         name = name,
@@ -85,24 +104,41 @@ def _render_whl_library_alias(
     )
 
 def _render_common_aliases(repo_name, name, versions = None, default_version = None, rules_python = None):
-    return "\n\n".join([
+    lines = [
         """package(default_visibility = ["//visibility:public"])""",
+    ]
+
+    if versions:
+        versions = sorted(versions)
+
+    if versions and not default_version:
+        lines.append(_NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
+            supported_versions = render.indent("\n".join(versions)),
+            rules_python = rules_python,
+        ))
+
+    lines.append(
         render.alias(
             name = name,
             actual = repr(":pkg"),
         ),
-    ] + [
-        _render_whl_library_alias(
-            name = target,
-            repo_name = repo_name,
-            dep = name,
-            target = target,
-            versions = versions,
-            default_version = default_version,
-            rules_python = rules_python,
-        )
-        for target in ["pkg", "whl", "data", "dist_info"]
-    ])
+    )
+    lines.extend(
+        [
+            _render_whl_library_alias(
+                name = target,
+                repo_name = repo_name,
+                dep = name,
+                target = target,
+                versions = versions,
+                default_version = default_version,
+                rules_python = rules_python,
+            )
+            for target in ["pkg", "whl", "data", "dist_info"]
+        ],
+    )
+
+    return "\n\n".join(lines)
 
 def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_python = None, default_version = None):
     """Create alias declarations for each PyPI package.

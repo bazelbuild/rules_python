@@ -45,7 +45,7 @@ def _render_select(selects, *, no_match_error = None):
         args = "\n".join([
             "",
             _indent(dict_str),
-            _indent("no_match_error = {},".format(repr(no_match_error))),
+            _indent("no_match_error = {},".format(no_match_error)),
             "",
         ])
     else:
