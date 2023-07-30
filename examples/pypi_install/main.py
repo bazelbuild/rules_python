@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
+import cognitojwt
 import requests
 
 
-def version():
-    return requests.__version__
+def main(argv):
+    print(f"cognitojwt version: {requests.__version__}")
+    print(f"requests version: {requests.__version__}")
 
-print(version())
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
