@@ -271,7 +271,7 @@ if __name__ == "__main__":
             print("Generating an intermediate file.")
             # Feed the output of pip-compile into the installation report
             # generation.
-            sys.exit(run_pip(config_setting, requirements_txt_relative_path,
+            sys.exit(run_pip(config_setting, requirements_file_relative_path,
                            Path(pip_installation_report_relative)))
         else:
             print("Not generating an intermediate file!!!")
