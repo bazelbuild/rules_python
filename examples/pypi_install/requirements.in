@@ -1,1 +1,5 @@
+# Dependency which specifies at least one extra in its dependencies.
+cognitojwt
+
+# Common dependency whose functionality is easy to validate.
 requests
