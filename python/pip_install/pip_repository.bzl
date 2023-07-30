@@ -15,9 +15,13 @@
 ""
 
 load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
+load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -72,8 +76,15 @@ def _resolve_python_interpreter(rctx):
     python_interpreter = _get_python_interpreter_attr(rctx)
 
     if rctx.attr.python_interpreter_target != None:
-        target = rctx.attr.python_interpreter_target
-        python_interpreter = rctx.path(target)
+        python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
+
+        if BZLMOD_ENABLED:
+            (os, _) = get_host_os_arch(rctx)
+
+            # On Windows, the symlink doesn't work because Windows attempts to find
+            # Python DLLs where the symlink is, not where the symlink points.
+            if os == WINDOWS_NAME:
+                python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
@@ -257,10 +268,6 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-# Keep in sync with `_clean_pkg_name` in generated bzlmod requirements.bzl
-def _clean_pkg_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
 def _pkg_aliases(rctx, repo_name, bzl_packages):
     """Create alias declarations for each python dependency.
 
@@ -307,79 +314,25 @@ alias(
         )
         rctx.file("{}/BUILD.bazel".format(name), build_content)
 
-def _bzlmod_pkg_aliases(repo_name, bzl_packages):
-    """Create alias declarations for each python dependency.
-
-    The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
-    allow users to use requirement() without needed a corresponding `use_repo()` for each dep
-    when using bzlmod.
-
-    Args:
-        repo_name: the repository name of the parent that is visible to the users.
-        bzl_packages: the list of packages to setup.
-    """
-    build_content = ""
-    for name in bzl_packages:
-        build_content += """\
-
-alias(
-    name = "{name}_pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
-)
-
-alias(
-    name = "{name}_whl",
-    actual = "@{repo_name}_{dep}//:whl",
-)
-
-alias(
-    name = "{name}_data",
-    actual = "@{repo_name}_{dep}//:data",
-)
-
-alias(
-    name = "{name}_dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
-)
-""".format(
-            name = name,
-            repo_name = repo_name,
-            dep = name,
-        )
-
-    return build_content
-
-def _pip_repository_bzlmod_impl(rctx):
-    requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    content = rctx.read(requirements_txt)
-    parsed_requirements_txt = parse_requirements(content)
-
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
-
-    bzl_packages = sorted([name for name, _ in packages])
-
+def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
     repo_name = rctx.attr.repo_name
-
     build_contents = _BUILD_FILE_CONTENTS
-
-    if rctx.attr.incompatible_generate_aliases:
-        _pkg_aliases(rctx, repo_name, bzl_packages)
-    else:
-        build_contents += _bzlmod_pkg_aliases(repo_name, bzl_packages)
+    _pkg_aliases(rctx, repo_name, bzl_packages)
 
     # NOTE: we are using the canonical name with the double '@' in order to
     # always uniquely identify a repository, as the labels are being passed as
     # a string and the resolution of the label happens at the call-site of the
     # `requirement`, et al. macros.
-    if rctx.attr.incompatible_generate_aliases:
-        macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
-    else:
-        macro_tmpl = "@@{name}//:{{}}_{{}}".format(name = rctx.attr.name)
+    macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, "data")
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, p) if rctx.attr.incompatible_generate_aliases else macro_tmpl.format(p, "pkg")
+            macro_tmpl.format(p, p)
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
@@ -388,14 +341,44 @@ def _pip_repository_bzlmod_impl(rctx):
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
-        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
+        "%%REQUIREMENTS_LOCK%%": requirements,
     })
 
-pip_repository_bzlmod_attrs = {
-    "incompatible_generate_aliases": attr.bool(
-        default = False,
-        doc = "Allow generating aliases in '@pip//:<pkg>' -> '@pip_<pkg>//:pkg'. This replaces the aliases generated by the `bzlmod` tooling.",
+def _pip_hub_repository_bzlmod_impl(rctx):
+    bzl_packages = rctx.attr.whl_library_alias_names
+    _create_pip_repository_bzlmod(rctx, bzl_packages, "")
+
+pip_hub_repository_bzlmod_attrs = {
+    "repo_name": attr.string(
+        mandatory = True,
+        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
+    "whl_library_alias_names": attr.string_list(
+        mandatory = True,
+        doc = "The list of whl alias that we use to build aliases and the whl names",
+    ),
+    "_template": attr.label(
+        default = ":pip_hub_repository_requirements_bzlmod.bzl.tmpl",
+    ),
+}
+
+pip_hub_repository_bzlmod = repository_rule(
+    attrs = pip_hub_repository_bzlmod_attrs,
+    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
+    implementation = _pip_hub_repository_bzlmod_impl,
+)
+
+def _pip_repository_bzlmod_impl(rctx):
+    requirements_txt = locked_requirements_label(rctx, rctx.attr)
+    content = rctx.read(requirements_txt)
+    parsed_requirements_txt = parse_requirements(content)
+
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+
+    bzl_packages = sorted([name for name, _ in packages])
+    _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
+
+pip_repository_bzlmod_attrs = {
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name",
@@ -436,7 +419,7 @@ def _pip_repository_impl(rctx):
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
 
@@ -446,7 +429,7 @@ def _pip_repository_impl(rctx):
 
     annotations = {}
     for pkg, annotation in rctx.attr.annotations.items():
-        filename = "{}.annotation.json".format(_clean_pkg_name(pkg))
+        filename = "{}.annotation.json".format(normalize_name(pkg))
         rctx.file(filename, json.encode_indent(json.decode(annotation)))
         annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
 
@@ -479,6 +462,10 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             "@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
             for p in bzl_packages
@@ -670,7 +657,6 @@ py_binary(
 
 def _whl_library_impl(rctx):
     python_interpreter = _resolve_python_interpreter(rctx)
-
     args = [
         python_interpreter,
         "-m",
@@ -699,7 +685,7 @@ def _whl_library_impl(rctx):
     )
 
     if result.return_code:
-        fail("whl_library %s failed: %s (%s)" % (rctx.attr.name, result.stdout, result.stderr))
+        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     return
 

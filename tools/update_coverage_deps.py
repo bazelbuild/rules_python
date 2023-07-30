@@ -241,16 +241,6 @@ def main():
         dry_run=args.dry_run,
     )
 
-    # Update the MODULE.bazel, which needs to expose the dependencies to the toolchain
-    # repositories
-    _update_file(
-        path=rules_python / "MODULE.bazel",
-        snippet="".join(sorted([f'    "{u.repo_name}",\n' for u in urls])),
-        start_marker="    # coverage_deps managed by running",
-        end_marker=")",
-        dry_run=args.dry_run,
-    )
-
     return
 
 

@@ -174,27 +174,32 @@ if __name__ == "__main__":
     config_setting = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
+    requirements_file = _select_golden_requirements_file(
+        requirements_txt=requirements_txt, requirements_linux=requirements_linux,
+        requirements_darwin=requirements_darwin, requirements_windows=requirements_windows
+    )
+
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
-    resolved_requirements_txt = _locate(bazel_runfiles, requirements_txt)
+    resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
     # Main repo: __main__/<path_to_file>
     # External repo: <workspace name>/<path_to_file>
     # We want to strip both __main__ and <workspace name> from the absolute prefix
     # to keep the requirements lock file agnostic.
-    repository_prefix = requirements_txt[: requirements_txt.index("/") + 1]
-    absolute_path_prefix = resolved_requirements_txt[
-        : -(len(requirements_txt) - len(repository_prefix))
+    repository_prefix = requirements_file[: requirements_file.index("/") + 1]
+    absolute_path_prefix = resolved_requirements_file[
+        : -(len(requirements_file) - len(repository_prefix))
     ]
 
     # As requirements_in might contain references to generated files we want to
     # use the runfiles file first. Thus, we need to compute the relative path
     # from the execution root.
     # Note: Windows cannot reference generated files without runfiles support enabled.
-    requirements_in_relative = requirements_in[len(repository_prefix) :]
-    requirements_txt_relative = requirements_txt[len(repository_prefix) :]
+    requirements_in_relative = requirements_in[len(repository_prefix):]
+    requirements_file_relative = requirements_file[len(repository_prefix):]
     if intermediate_file:
-        pip_installation_report_relative = intermediate_file[len(repository_prefix) :]
+        pip_installation_report_relative = intermediate_file[len(repository_prefix):]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -217,11 +222,11 @@ if __name__ == "__main__":
         sys.argv.append(os.environ["TEST_TMPDIR"])
         # Make a copy for pip-compile to read and mutate.
         requirements_out = os.path.join(
-            os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
+            os.environ["TEST_TMPDIR"], os.path.basename(requirements_file) + ".out"
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
         # or shutil.copyfile, as they will fail with OSError: [Errno 18] Invalid cross-device link.
-        shutil.copy(resolved_requirements_txt, requirements_out)
+        shutil.copy(resolved_requirements_file, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
@@ -230,9 +235,8 @@ if __name__ == "__main__":
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    sys.argv.append("--generate-hashes")
     sys.argv.append("--output-file")
-    sys.argv.append(requirements_txt_relative if UPDATE else requirements_out)
+    sys.argv.append(requirements_file_relative if UPDATE else requirements_out)
     sys.argv.append(
         requirements_in_relative
         if Path(requirements_in_relative).exists()
@@ -240,17 +244,17 @@ if __name__ == "__main__":
     )
 
     if UPDATE:
-        print("Updating " + requirements_txt_relative)
+        print("Updating " + requirements_file_relative)
         if "BUILD_WORKSPACE_DIRECTORY" in os.environ:
             workspace = os.environ["BUILD_WORKSPACE_DIRECTORY"]
-            requirements_txt_tree = os.path.join(workspace, requirements_txt_relative)
-            # In most cases, requirements_txt will be a symlink to the real file in the source tree.
-            # If symlinks are not enabled (e.g. on Windows), then requirements_txt will be a copy,
+            requirements_file_tree = os.path.join(workspace, requirements_file_relative)
+            # In most cases, requirements_file will be a symlink to the real file in the source tree.
+            # If symlinks are not enabled (e.g. on Windows), then requirements_file will be a copy,
             # and we should copy the updated requirements back to the source tree.
-            if not os.path.samefile(resolved_requirements_txt, requirements_txt_tree):
+            if not os.path.samefile(resolved_requirements_file, requirements_file_tree):
                 atexit.register(
                     lambda: shutil.copy(
-                        resolved_requirements_txt, requirements_txt_tree
+                        resolved_requirements_file, requirements_file_tree
                     )
                 )
         try:
@@ -258,10 +262,10 @@ if __name__ == "__main__":
         except SystemExit as e:
             if e.code != 0:
                 raise
-        requirements_txt_relative_path = Path(requirements_txt_relative)
-        content = requirements_txt_relative_path.read_text()
+        requirements_file_relative_path = Path(requirements_file_relative)
+        content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
-        requirements_txt_relative_path.write_text(content)
+        requirements_file_relative_path.write_text(content)
 
         if intermediate_file:
             print("Generating an intermediate file.")
@@ -272,10 +276,11 @@ if __name__ == "__main__":
         else:
             print("Not generating an intermediate file!!!")
 
+        requirements_file_relative_path.write_text(content)
     else:
         # cli will exit(0) on success
         try:
-            print("Checking " + requirements_txt)
+            print("Checking " + requirements_file)
             cli()
             print("cli() should exit", file=sys.stderr)
             sys.exit(1)
@@ -289,13 +294,7 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                golden_filename = _select_golden_requirements_file(
-                    requirements_txt,
-                    requirements_linux,
-                    requirements_darwin,
-                    requirements_windows,
-                )
-                golden = open(_locate(bazel_runfiles, golden_filename)).readlines()
+                golden = open(_locate(bazel_runfiles, requirements_file)).readlines()
                 out = open(requirements_out).readlines()
                 out = [line.replace(absolute_path_prefix, "") for line in out]
                 if golden != out:

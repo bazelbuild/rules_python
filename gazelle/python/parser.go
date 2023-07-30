@@ -25,7 +25,6 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/bazelbuild/rules_go/go/tools/bazel"
 	"github.com/emirpasic/gods/sets/treeset"
@@ -33,20 +32,18 @@ import (
 )
 
 var (
-	parserStdin  io.Writer
+	parserStdin  io.WriteCloser
 	parserStdout io.Reader
 	parserMutex  sync.Mutex
 )
 
-func init() {
+func startParserProcess(ctx context.Context) {
 	parseScriptRunfile, err := bazel.Runfile("python/parse")
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
-	ctx, parserCancel := context.WithTimeout(ctx, time.Minute*10)
 	cmd := exec.CommandContext(ctx, parseScriptRunfile)
 
 	cmd.Stderr = os.Stderr
@@ -71,12 +68,17 @@ func init() {
 	}
 
 	go func() {
-		defer parserCancel()
 		if err := cmd.Wait(); err != nil {
 			log.Printf("failed to wait for parser: %v\n", err)
 			os.Exit(1)
 		}
 	}()
+}
+
+func shutdownParserProcess() {
+	if err := parserStdin.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
+	}
 }
 
 // python3Parser implements a parser for Python files that extracts the modules

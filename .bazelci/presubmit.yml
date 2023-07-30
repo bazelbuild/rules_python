@@ -113,8 +113,19 @@ tasks:
     <<: *reusable_config
     name: Test on RBE using minimum supported Bazel version
     platform: rbe_ubuntu1604
+    build_flags:
+      # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
+      # which prevents cc toolchain autodetection from working correctly
+      # on Bazel 5.4 and earlier. To workaround this, manually specify the
+      # build kite cc toolchain.
+      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
+      # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
+      # which prevents cc toolchain autodetection from working correctly
+      # on Bazel 5.4 and earlier. To workaround this, manually specify the
+      # build kite cc toolchain.
+      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
   rbe:
     <<: *reusable_config
     name: Test on RBE
@@ -435,6 +446,12 @@ tasks:
     - "! git diff --exit-code"
     - "bazel run //:requirements.update"
     - "git diff --exit-code"
+    # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock_linux.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:os_specific_requirements.update"
+    - "git diff --exit-code"
   integration_test_compile_pip_requirements_debian:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on Debian
@@ -446,6 +463,12 @@ tasks:
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
     - "bazel run //:requirements.update"
+    - "git diff --exit-code"
+    # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock_linux.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
   integration_test_compile_pip_requirements_macos:
     <<: *reusable_build_test_all
@@ -459,6 +482,12 @@ tasks:
     - "! git diff --exit-code"
     - "bazel run //:requirements.update"
     - "git diff --exit-code"
+    # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock_darwin.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:os_specific_requirements.update"
+    - "git diff --exit-code"
   integration_test_compile_pip_requirements_windows:
     <<: *reusable_build_test_all
     name: compile_pip_requirements integration tests on Windows
@@ -470,6 +499,12 @@ tasks:
     - "echo '' > requirements_lock.txt"
     - "! git diff --exit-code"
     - "bazel run //:requirements.update"
+    - "git diff --exit-code"
+    # Make a change to the locked requirements and then assert that //:os_specific_requirements.update does the
+    # right thing.
+    - "echo '' > requirements_lock_windows.txt"
+    - "! git diff --exit-code"
+    - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
 
   integration_test_pip_repository_entry_points_ubuntu_min:

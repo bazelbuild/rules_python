@@ -17,11 +17,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load(
-    "//python:versions.bzl",
-    "MINOR_MAPPING",
-    "PLATFORMS",
-)
+load("//python/private:version_label.bzl", "version_label")
 
 # Update with './tools/update_coverage_deps.py <version>'
 #START: managed by update_coverage_deps.py script
@@ -103,7 +99,7 @@ _coverage_deps = {
 
 _coverage_patch = Label("//python/private:coverage.patch")
 
-def coverage_dep(name, python_version, platform, visibility, install = True):
+def coverage_dep(name, python_version, platform, visibility):
     """Register a singe coverage dependency based on the python version and platform.
 
     Args:
@@ -111,8 +107,6 @@ def coverage_dep(name, python_version, platform, visibility, install = True):
         python_version: The full python version.
         platform: The platform, which can be found in //python:versions.bzl PLATFORMS dict.
         visibility: The visibility of the coverage tool.
-        install: should we install the dependency with a given name or generate the label
-            of the bzlmod dependency fallback, which is hard-coded in MODULE.bazel?
 
     Returns:
         The label of the coverage tool if the platform is supported, otherwise - None.
@@ -123,24 +117,12 @@ def coverage_dep(name, python_version, platform, visibility, install = True):
         # for now as it is not actionable.
         return None
 
-    python_short_version = python_version.rpartition(".")[0]
-    abi = python_short_version.replace("3.", "cp3")
+    abi = "cp" + version_label(python_version)
     url, sha256 = _coverage_deps.get(abi, {}).get(platform, (None, ""))
 
     if url == None:
         # Some wheels are not present for some builds, so let's silently ignore those.
         return None
-
-    if not install:
-        # FIXME @aignas 2023-01-19: right now we use globally installed coverage
-        # which has visibility set to public, but is hidden due to repo remapping.
-        #
-        # The name of the toolchain is not known when registering the coverage tooling,
-        # so we use this as a workaround for now.
-        return Label("@pypi__coverage_{abi}_{platform}//:coverage".format(
-            abi = abi,
-            platform = platform,
-        ))
 
     maybe(
         http_archive,
@@ -162,26 +144,4 @@ filegroup(
         urls = [url],
     )
 
-    return Label("@@{name}//:coverage".format(name = name))
-
-def install_coverage_deps():
-    """Register the dependency for the coverage dep.
-
-    This is only used under bzlmod.
-    """
-
-    for python_version in MINOR_MAPPING.values():
-        for platform in PLATFORMS.keys():
-            if "windows" in platform:
-                continue
-
-            coverage_dep(
-                name = "pypi__coverage_cp{version_no_dot}_{platform}".format(
-                    version_no_dot = python_version.rpartition(".")[0].replace(".", ""),
-                    platform = platform,
-                ),
-                python_version = python_version,
-                platform = platform,
-                visibility = ["//visibility:public"],
-                install = True,
-            )
+    return "@{name}//:coverage".format(name = name)

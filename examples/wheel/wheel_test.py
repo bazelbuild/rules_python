@@ -99,7 +99,7 @@ class WheelTest(unittest.TestCase):
                 record_contents,
                 # The entries are guaranteed to be sorted.
                 b"""\
-example_customized-0.0.1.dist-info/METADATA,sha256=YUnzQ9gTMXspIBURe90Ct3aL_CCn8fwC3SiZe6MMTs8,372
+example_customized-0.0.1.dist-info/METADATA,sha256=QYQcDJFQSIqan8eiXqL67bqsUfgEAwf2hoK_Lgi1S-0,559
 example_customized-0.0.1.dist-info/NOTICE,sha256=Xpdw-FXET1IRgZ_wTkx1YQfo1-alET0FVf6V1LXO4js,76
 example_customized-0.0.1.dist-info/README,sha256=WmOFwZ3Jga1bHG3JiGRsUheb4UbLffUxyTdHczS27-o,40
 example_customized-0.0.1.dist-info/RECORD,,
@@ -129,6 +129,10 @@ Author: Example Author with non-ascii characters: \xc5\xbc\xc3\xb3\xc5\x82w
 Author-email: example@example.com
 Home-page: www.example.com
 License: Apache 2.0
+Description-Content-Type: text/markdown
+Summary: A one-line summary of this test package
+Project-URL: Bug Tracker, www.example.com/issues
+Project-URL: Documentation, www.example.com/docs
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Intended Audience :: Developers
 Requires-Dist: pytest
@@ -374,30 +378,36 @@ Tag: cp38-abi3-{os_string}_{arch}
                 ],
             )
 
-    def test_rule_sets_stamped_version_in_wheel_metadata(self):
+    def test_rule_expands_workspace_status_keys_in_wheel_metadata(self):
         filename = os.path.join(
             os.environ["TEST_SRCDIR"],
             "rules_python",
             "examples",
             "wheel",
-            "example_minimal_library-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
+            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
         )
 
         with zipfile.ZipFile(filename) as zf:
             metadata_file = None
             for f in zf.namelist():
                 self.assertNotIn("_BUILD_TIMESTAMP_", f)
+                self.assertNotIn("_BUILD_USER_", f)
                 if os.path.basename(f) == "METADATA":
                     metadata_file = f
             self.assertIsNotNone(metadata_file)
 
             version = None
+            name = None
             with zf.open(metadata_file) as fp:
                 for line in fp:
-                    if line.startswith(b'Version:'):
+                    if line.startswith(b"Version:"):
                         version = line.decode().split()[-1]
+                    if line.startswith(b"Name:"):
+                        name = line.decode().split()[-1]
             self.assertIsNotNone(version)
+            self.assertIsNotNone(name)
             self.assertNotIn("{BUILD_TIMESTAMP}", version)
+            self.assertNotIn("{BUILD_USER}", name)
 
 
 if __name__ == "__main__":

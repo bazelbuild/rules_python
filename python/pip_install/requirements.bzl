@@ -34,6 +34,7 @@ def compile_pip_requirements(
         name,
         extra_args = [],
         extra_deps = [],
+        generate_hashes = True,
         py_binary = _py_binary,
         py_test = _py_test,
         requirements_in = None,
@@ -63,6 +64,7 @@ def compile_pip_requirements(
         name: base name for generated targets, typically "requirements".
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
+        generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
         requirements_in: file expressing desired dependencies.
@@ -111,7 +113,7 @@ def compile_pip_requirements(
     ] + (_generate_loc_select(intermediate_file, loc) if intermediate_file else ["None"]) + (
             _generate_config_select(intermediate_file) if intermediate_file else ["None"]) + [
         "//%s:%s.update" % (native.package_name(), name),
-    ] + extra_args
+    ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
 
     deps = [
         requirement("build"),

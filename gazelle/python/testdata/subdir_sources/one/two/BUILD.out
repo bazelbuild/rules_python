@@ -6,7 +6,6 @@ py_library(
         "__init__.py",
         "three.py",
     ],
-    imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = ["//foo"],
 )

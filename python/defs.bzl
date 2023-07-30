@@ -24,6 +24,8 @@ load("//python:py_test.bzl", _py_test = "py_test")
 load(":current_py_toolchain.bzl", _current_py_toolchain = "current_py_toolchain")
 load(":py_import.bzl", _py_import = "py_import")
 
+# Patching placeholder: end of loads
+
 # Exports of native-defined providers.
 
 PyInfo = internal_PyInfo

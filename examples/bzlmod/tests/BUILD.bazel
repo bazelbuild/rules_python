@@ -1,6 +1,6 @@
-load("@python_aliases//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
-load("@python_aliases//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
-load("@python_aliases//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
+load("@python_versions//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
+load("@python_versions//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
+load("@python_versions//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 
 py_binary(
@@ -31,33 +31,26 @@ py_binary_3_11(
 # tests will not work  until we can support
 # multiple pips with bzlmod.
 
-#py_test(
-#    name = "my_lib_default_test",
-#    srcs = ["my_lib_test.py"],
-#    main = "my_lib_test.py",
-#    deps = ["//libs/my_lib"],
-#)
+py_test(
+    name = "my_lib_default_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
 
-#py_test_3_9(
-#    name = "my_lib_3_9_test",
-#    srcs = ["my_lib_test.py"],
-#    main = "my_lib_test.py",
-#    deps = ["//libs/my_lib"],
-#)
+py_test_3_9(
+    name = "my_lib_3_9_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
 
-#py_test_3_10(
-#    name = "my_lib_3_10_test",
-#    srcs = ["my_lib_test.py"],
-#    main = "my_lib_test.py",
-#    deps = ["//libs/my_lib"],
-#)
-
-#py_test_3_11(
-#    name = "my_lib_3_11_test",
-#    srcs = ["my_lib_test.py"],
-#    main = "my_lib_test.py",
-#    deps = ["//libs/my_lib"],
-#)
+py_test_3_10(
+    name = "my_lib_3_10_test",
+    srcs = ["my_lib_test.py"],
+    main = "my_lib_test.py",
+    deps = ["//libs/my_lib"],
+)
 
 py_test(
     name = "version_default_test",
