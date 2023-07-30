@@ -21,10 +21,12 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from typing import Mapping
 
 import pip
 import pip._internal.cli.main
 from packaging.requirements import Requirement
+from packaging.markers import Marker
 
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
@@ -83,6 +85,12 @@ def _locate(bazel_runfiles, file):
     return bazel_runfiles.Rlocation(file)
 
 
+def _evaluate_marker(marker: Marker, environment: Mapping[str, str], extra: str):
+    environment_copy = environment.copy()
+    environment_copy["extra"] = extra
+    return marker.evaluate(environment_copy)
+
+
 def _post_process_installation_report(
         config_setting: str,
         raw_installation_report: Path,
@@ -91,7 +99,7 @@ def _post_process_installation_report(
     with raw_installation_report.open() as file:
         report = json.load(file)
 
-    json.dump(report, sys.stdout, indent=4)
+    #json.dump(report, sys.stdout, indent=4)
 
     environment = report["environment"]
 
@@ -110,16 +118,20 @@ def _post_process_installation_report(
         else:
             raise ValueError("unknown integrity check: " + str(download_info["archive_info"]))
 
-
-        extras = install.get("_rules_python_extras", [])
+        extras = install.get("requested_extras", []) + [""]
 
         deps = []
         for raw_requirement in metadata.get("requires_dist", []):
             requirement = Requirement(raw_requirement)
-            if requirement.extras and requirement.extras not in extras:
-                continue
-            if requirement.marker and not requirement.marker.evaluate(environment):
-                continue
+            # TODO(phil): Is there a way to evaluate against all requested
+            # extras at once?
+            if requirement.marker:
+                if not any(_evaluate_marker(requirement.marker, environment, extra) for extra in extras):
+                    continue
+            # TODO(phil): Look at requirement.extras and pull in that
+            # dependency's extra variant. This requires us to expose libraries
+            # with those extra variants. For now just pull in the library
+            # assuming that it provides all requested extras.
             deps.append(requirement.name)
 
         info["deps"] = sorted(deps)
@@ -209,7 +221,6 @@ if __name__ == "__main__":
     os.environ["LC_ALL"] = "C.UTF-8"
     os.environ["LANG"] = "C.UTF-8"
 
-    print("Maybe updating!!!!")
     UPDATE = True
     # Detect if we are running under `bazel test`.
     if "TEST_TMPDIR" in os.environ:
@@ -274,15 +285,13 @@ if __name__ == "__main__":
             sys.exit(run_pip(config_setting, requirements_file_relative_path,
                            Path(pip_installation_report_relative)))
         else:
-            print("Not generating an intermediate file!!!")
+            print("Not generating an intermediate file.")
 
         requirements_file_relative_path.write_text(content)
     else:
         # cli will exit(0) on success
         try:
-            print("Checking " + requirements_file)
             cli()
-            print("cli() should exit", file=sys.stderr)
             sys.exit(1)
         except SystemExit as e:
             if e.code == 2:

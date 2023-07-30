@@ -26,7 +26,9 @@
         "@//:x86_64_linux": {
             "url": "https://files.pythonhosted.org/packages/a5/69/97faafdc4f1900fa1b525cedae0f98aa30b0bb086d076f8d66c68a18b1b2/cognitojwt-1.4.1-py3-none-any.whl",
             "sha256": "8ee189f82289d140dc750c91e8772436b64b94d071507ace42efc22c525f42ce",
-            "deps": []
+            "deps": [
+                "python-jose"
+            ]
         }
     },
     "cryptography": {
@@ -73,6 +75,7 @@
             "url": "https://files.pythonhosted.org/packages/bd/2d/e94b2f7bab6773c70efc70a61d66e312e1febccd9e0db6b9e0adf58cbad1/python_jose-3.3.0-py2.py3-none-any.whl",
             "sha256": "9b1376b023f8b298536eedd47ae1089bcdb848f1535ab30555cd92002d78923a",
             "deps": [
+                "cryptography",
                 "ecdsa",
                 "pyasn1",
                 "rsa"
