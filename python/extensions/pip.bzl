@@ -350,9 +350,10 @@ Targets from different hubs should not be used together.
         "python_version": attr.string(
             mandatory = True,
             doc = """
-The Python version to use for resolving the pip dependencies. If not specified,
-then the default Python version (as set by the root module or rules_python)
-will be used.
+The Python version to use for resolving the pip dependencies, in Major.Minor
+format (e.g. "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
+If not specified, then the default Python version (as set by the root module or
+rules_python) will be used.
 
 The version specified here must have a corresponding `python.toolchain()`
 configured.
