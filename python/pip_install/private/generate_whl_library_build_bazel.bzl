@@ -69,6 +69,8 @@ py_library(
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude={srcs_exclude},
+        # Empty sources are allowed to support wheels that don't have any
+        # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = {data} + glob(
@@ -102,9 +104,6 @@ def generate_whl_library_build_bazel(
 
     Returns:
         A complete BUILD file as a string
-
-    We allow for empty Python sources as for Wheels containing only compiled C code
-    there may be no Python sources whatsoever (e.g. packages written in Cython: like `pymssql`).
     """
 
     additional_content = []
