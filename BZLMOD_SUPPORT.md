@@ -1,6 +1,6 @@
 # Bzlmod support
 
-## `rule_python` `bzlmod` support
+## `rules_python` `bzlmod` support
 
 - Status: Beta
 - Full Feature Parity: No

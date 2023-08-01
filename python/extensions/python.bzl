@@ -163,7 +163,7 @@ def _python_impl(module_ctx):
     # This is require in order to support multiple version py_test
     # and py_binary
     multi_toolchain_aliases(
-        name = "python_aliases",
+        name = "python_versions",
         python_versions = {
             version: entry.toolchain_name
             for version, entry in global_toolchain_versions.items()
@@ -250,7 +250,9 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
                 "python_version": attr.string(
                     mandatory = True,
-                    doc = "The Python version, in `major.minor` format, e.g '3.12', to create a toolchain for.",
+                    doc = "The Python version, in `major.minor` format, e.g " +
+                          "'3.12', to create a toolchain for. Patch level " +
+                          "granularity (e.g. '3.12.1') is not supported.",
                 ),
             },
         ),

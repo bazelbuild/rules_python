@@ -26,6 +26,57 @@ load(
     "whl_library",
 )
 load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:version_label.bzl", "version_label")
+
+def _whl_mods_impl(mctx):
+    """Implementation of the pip.whl_mods tag class.
+
+    This creates the JSON files used to modify the creation of different wheels.
+"""
+    whl_mods_dict = {}
+    for mod in mctx.modules:
+        for whl_mod_attr in mod.tags.whl_mods:
+            if whl_mod_attr.hub_name not in whl_mods_dict.keys():
+                whl_mods_dict[whl_mod_attr.hub_name] = {whl_mod_attr.whl_name: whl_mod_attr}
+            elif whl_mod_attr.whl_name in whl_mods_dict[whl_mod_attr.hub_name].keys():
+                # We cannot have the same wheel name in the same hub, as we
+                # will create the same JSON file name.
+                fail("""\
+Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
+                    whl_mod_attr.whl_name,
+                    whl_mod_attr.hub_name,
+                ))
+            else:
+                whl_mods_dict[whl_mod_attr.hub_name][whl_mod_attr.whl_name] = whl_mod_attr
+
+    for hub_name, whl_maps in whl_mods_dict.items():
+        whl_mods = {}
+
+        # create a struct that we can pass to the _whl_mods_repo rule
+        # to create the different JSON files.
+        for whl_name, mods in whl_maps.items():
+            build_content = mods.additive_build_content
+            if mods.additive_build_content_file != None and mods.additive_build_content != "":
+                fail("""\
+You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
+""")
+            elif mods.additive_build_content_file != None:
+                build_content = mctx.read(mods.additive_build_content_file)
+
+            whl_mods[whl_name] = json.encode(struct(
+                additive_build_content = build_content,
+                copy_files = mods.copy_files,
+                copy_executables = mods.copy_executables,
+                data = mods.data,
+                data_exclude_glob = mods.data_exclude_glob,
+                srcs_exclude_glob = mods.srcs_exclude_glob,
+            ))
+
+        _whl_mods_repo(
+            name = hub_name,
+            whl_mods = whl_mods,
+        )
 
 def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
@@ -34,7 +85,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     # we programtically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None:
-        python_name = "python_{}".format(pip_attr.python_version.replace(".", "_"))
+        python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
         if python_name not in INTERPRETER_LABELS.keys():
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
@@ -46,7 +97,10 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    pip_name = hub_name + "_{}".format(pip_attr.python_version.replace(".", ""))
+    pip_name = "{}_{}".format(
+        hub_name,
+        version_label(pip_attr.python_version),
+    )
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -70,15 +124,24 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
 
+    whl_modifications = {}
+    if pip_attr.whl_modifications != None:
+        for mod, whl_name in pip_attr.whl_modifications.items():
+            whl_modifications[whl_name] = mod
+
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
-        whl_name = _sanitize_name(whl_name)
+        # We are not using the "sanitized name" because the user
+        # would need to guess what name we modified the whl name
+        # to.
+        annotation = whl_modifications.get(whl_name)
+        whl_name = normalize_name(whl_name)
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
-            annotation = pip_attr.annotations.get(whl_name),
+            annotation = annotation,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
@@ -117,7 +180,6 @@ def _pip_impl(module_ctx):
         requirements_lock = "//:requirements_lock_3_10.txt",
         requirements_windows = "//:requirements_windows_3_10.txt",
     )
-
 
     For instance, we have a hub with the name of "pip".
     A repository named the following is created. It is actually called last when
@@ -173,10 +235,17 @@ def _pip_impl(module_ctx):
     This implementation reuses elements of non-bzlmod code and also reuses the first implementation
     of pip bzlmod, but adds the capability to have multiple pip.parse calls.
 
+    This implementation also handles the creation of whl_modification JSON files that are used
+    during the creation of wheel libraries.  These JSON files used via the annotations argument
+    when calling wheel_installer.py.
+
     Args:
         module_ctx: module contents
 
     """
+
+    # Build all of the wheel modifications if the tag class is called.
+    _whl_mods_impl(module_ctx)
 
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
@@ -227,15 +296,10 @@ def _pip_impl(module_ctx):
 
     for hub_name, whl_map in hub_whl_map.items():
         for whl_name, version_map in whl_map.items():
-            if DEFAULT_PYTHON_VERSION not in version_map:
-                fail((
-                    "Default python version '{version}' missing in pip " +
-                    "hub '{hub}': update your pip.parse() calls so that " +
-                    'includes `python_version = "{version}"`'
-                ).format(
-                    version = DEFAULT_PYTHON_VERSION,
-                    hub = hub_name,
-                ))
+            if DEFAULT_PYTHON_VERSION in version_map:
+                whl_default_version = DEFAULT_PYTHON_VERSION
+            else:
+                whl_default_version = None
 
             # Create the alias repositories which contains different select
             # statements  These select statements point to the different pip
@@ -243,7 +307,7 @@ def _pip_impl(module_ctx):
             whl_library_alias(
                 name = hub_name + "_" + whl_name,
                 wheel_name = whl_name,
-                default_version = DEFAULT_PYTHON_VERSION,
+                default_version = whl_default_version,
                 version_map = version_map,
             )
 
@@ -253,10 +317,6 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             whl_library_alias_names = whl_map.keys(),
         )
-
-# Keep in sync with python/pip_install/tools/bazel.py
-def _sanitize_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
 
 def _pip_parse_ext_attrs():
     attrs = dict({
@@ -285,12 +345,20 @@ Targets from different hubs should not be used together.
         "python_version": attr.string(
             mandatory = True,
             doc = """
-The Python version to use for resolving the pip dependencies. If not specified,
-then the default Python version (as set by the root module or rules_python)
-will be used.
+The Python version to use for resolving the pip dependencies, in Major.Minor
+format (e.g. "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
+If not specified, then the default Python version (as set by the root module or
+rules_python) will be used.
 
 The version specified here must have a corresponding `python.toolchain()`
 configured.
+""",
+        ),
+        "whl_modifications": attr.label_keyed_string_dict(
+            mandatory = False,
+            doc = """\
+A dict of labels to wheel names that is typically generated by the whl_modifications.
+The labels are JSON config files describing the modifications.
 """,
         ),
     }, **pip_repository_attrs)
@@ -304,10 +372,67 @@ configured.
 
     return attrs
 
+def _whl_mod_attrs():
+    attrs = {
+        "additive_build_content": attr.string(
+            doc = "(str, optional): Raw text to add to the generated `BUILD` file of a package.",
+        ),
+        "additive_build_content_file": attr.label(
+            doc = """\
+(label, optional): path to a BUILD file to add to the generated
+`BUILD` file of a package. You cannot use both additive_build_content and additive_build_content_file
+arguments at the same time.""",
+        ),
+        "copy_executables": attr.string_dict(
+            doc = """\
+(dict, optional): A mapping of `src` and `out` files for
+[@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as
+executable.""",
+        ),
+        "copy_files": attr.string_dict(
+            doc = """\
+(dict, optional): A mapping of `src` and `out` files for
+[@bazel_skylib//rules:copy_file.bzl][cf]""",
+        ),
+        "data": attr.string_list(
+            doc = """\
+(list, optional): A list of labels to add as `data` dependencies to
+the generated `py_library` target.""",
+        ),
+        "data_exclude_glob": attr.string_list(
+            doc = """\
+(list, optional): A list of exclude glob patterns to add as `data` to
+the generated `py_library` target.""",
+        ),
+        "hub_name": attr.string(
+            doc = """\
+Name of the whl modification, hub we use this name to set the modifications for
+pip.parse. If you have different pip hubs you can use a different name,
+otherwise it is best practice to just use one.
+
+You cannot have the same `hub_name` in different modules.  You can reuse the same
+name in the same module for different wheels that you put in the same hub, but you
+cannot have a child module that uses the same `hub_name`.
+""",
+            mandatory = True,
+        ),
+        "srcs_exclude_glob": attr.string_list(
+            doc = """\
+(list, optional): A list of labels to add as `srcs` to the generated
+`py_library` target.""",
+        ),
+        "whl_name": attr.string(
+            doc = "The whl name that the modifications are used for.",
+            mandatory = True,
+        ),
+    }
+    return attrs
+
 pip = module_extension(
     doc = """\
 This extension is used to make dependencies from pip available.
 
+pip.parse:
 To use, call `pip.parse()` and specify `hub_name` and your requirements file.
 Dependencies will be downloaded and made available in a repo named after the
 `hub_name` argument.
@@ -316,9 +441,51 @@ Each `pip.parse()` call configures a particular Python version. Multiple calls
 can be made to configure different Python versions, and will be grouped by
 the `hub_name` argument. This allows the same logical name, e.g. `@pip//numpy`
 to automatically resolve to different, Python version-specific, libraries.
+
+pip.whl_mods:
+This tag class is used to help create JSON files to describe modifications to
+the BUILD files for wheels.
 """,
     implementation = _pip_impl,
     tag_classes = {
-        "parse": tag_class(attrs = _pip_parse_ext_attrs()),
+        "parse": tag_class(
+            attrs = _pip_parse_ext_attrs(),
+            doc = """\
+This tag class is used to create a pip hub and all of the spokes that are part of that hub.
+This tag class reuses most of the pip attributes that are found in
+@rules_python//python/pip_install:pip_repository.bzl.
+The exceptions are it does not use the args 'repo_prefix',
+and 'incompatible_generate_aliases'.  We set the repository prefix
+for the user and the alias arg is always True in bzlmod.
+""",
+        ),
+        "whl_mods": tag_class(
+            attrs = _whl_mod_attrs(),
+            doc = """\
+This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
+JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
+create different modifications based on the type of attribute. Previously to bzlmod these
+JSON files where referred to as annotations, and were renamed to whl_modifications in this
+extension.
+""",
+        ),
+    },
+)
+
+def _whl_mods_repo_impl(rctx):
+    rctx.file("BUILD.bazel", "")
+    for whl_name, mods in rctx.attr.whl_mods.items():
+        rctx.file("{}.json".format(whl_name), mods)
+
+_whl_mods_repo = repository_rule(
+    doc = """\
+This rule creates json files based on the whl_mods attribute.
+""",
+    implementation = _whl_mods_repo_impl,
+    attrs = {
+        "whl_mods": attr.string_dict(
+            mandatory = True,
+            doc = "JSON endcoded string that is provided to wheel_builder.py",
+        ),
     },
 )

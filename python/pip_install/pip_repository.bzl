@@ -19,6 +19,8 @@ load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
@@ -76,8 +78,7 @@ def _resolve_python_interpreter(rctx):
     if rctx.attr.python_interpreter_target != None:
         python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
 
-        # If we have @@ we have bzlmod so we need to hand Windows differently.
-        if str(Label("//:unused")).startswith("@@"):
+        if BZLMOD_ENABLED:
             (os, _) = get_host_os_arch(rctx)
 
             # On Windows, the symlink doesn't work because Windows attempts to find
@@ -267,10 +268,6 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-# Keep in sync with `_clean_pkg_name` in generated bzlmod requirements.bzl
-def _clean_pkg_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
 def _pkg_aliases(rctx, repo_name, bzl_packages):
     """Create alias declarations for each python dependency.
 
@@ -330,6 +327,10 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
 
     rctx.file("BUILD.bazel", build_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            macro_tmpl.format(p, "data")
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, p)
             for p in bzl_packages
@@ -372,7 +373,7 @@ def _pip_repository_bzlmod_impl(rctx):
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
     _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
@@ -418,7 +419,7 @@ def _pip_repository_impl(rctx):
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
 
@@ -428,7 +429,7 @@ def _pip_repository_impl(rctx):
 
     annotations = {}
     for pkg, annotation in rctx.attr.annotations.items():
-        filename = "{}.annotation.json".format(_clean_pkg_name(pkg))
+        filename = "{}.annotation.json".format(normalize_name(pkg))
         rctx.file(filename, json.encode_indent(json.decode(annotation)))
         annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
 
@@ -461,6 +462,10 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
+            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
+            for p in bzl_packages
+        ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             "@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
             for p in bzl_packages
