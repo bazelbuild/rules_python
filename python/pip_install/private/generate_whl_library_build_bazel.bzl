@@ -219,6 +219,6 @@ def _generate_entry_point_rule(*, name, script, pkg):
     """
     return _ENTRY_POINT_RULE_TEMPLATE.format(
         name = name,
-        src = str(script).replace("\\", "/"),
+        src = script.replace("\\", "/"),
         pkg = pkg,
     )
