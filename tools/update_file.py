@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,48 +89,3 @@ def update_file(
         _difflines(path, out)
     else:
         _writelines(path, out)
-
-
-def main():
-    """The main function that parses args from sys.argv and calls updates a file."""
-    parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument(
-        "path",
-        metavar="PATH",
-        type=pathlib.Path,
-        help="The path of the file to modify",
-    )
-    parser.add_argument(
-        "--start",
-        type=str,
-        required=True,
-        help="Start marker for text replacement",
-    )
-    parser.add_argument(
-        "--end",
-        type=str,
-        required=True,
-        help="End marker for text replacement",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Wether to write to files",
-    )
-    args = parser.parse_args()
-
-    snippet = sys.stdin.read()
-
-    assert args.path.exists()
-
-    update_file(
-        path=args.path.resolve(),
-        snippet=snippet,
-        start_marker=args.start,
-        end_marker=args.end,
-        dry_run=args.dry_run,
-    )
-
-
-if __name__ == "__main__":
-    main()
