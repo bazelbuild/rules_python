@@ -18,8 +18,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-# Update with './tools/update_coverage_deps.py <version>'
-#START: managed by update_coverage_deps.py script
+# START: maintained by 'bazel run //tools/private:update_coverage_deps'
 _coverage_deps = {
     "cp310": {
         "aarch64-apple-darwin": (
@@ -94,7 +93,7 @@ _coverage_deps = {
         ),
     },
 }
-#END: managed by update_coverage_deps.py script
+# END: maintained by 'bazel run //tools/private:update_coverage_deps'
 
 _coverage_patch = Label("//python/private:coverage.patch")
 

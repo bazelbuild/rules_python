@@ -22,6 +22,7 @@ We are not running this with 'bazel run' to keep the dependencies minimal
 import argparse
 import difflib
 import json
+import os
 import pathlib
 import sys
 import textwrap
@@ -30,7 +31,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib import request
 
-from update_file import update_file
+from tools.private.update_file import path_from_runfiles, update_file
 
 # This should be kept in sync with //python:versions.bzl
 _supported_platforms = {
@@ -137,6 +138,12 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Wether to write to files",
     )
+    parser.add_argument(
+        "--update-file",
+        type=path_from_runfiles,
+        default=os.environ.get("UPDATE_FILE"),
+        help="The path for the file to be updated, defaults to the value taken from UPDATE_FILE",
+    )
     return parser.parse_args()
 
 
@@ -174,14 +181,12 @@ def main():
 
     urls.sort(key=lambda x: f"{x.python}_{x.platform}")
 
-    rules_python = pathlib.Path(__file__).parent.parent
-
     # Update the coverage_deps, which are used to register deps
     update_file(
-        path=rules_python / "python" / "private" / "coverage_deps.bzl",
+        path=args.update_file,
         snippet=f"_coverage_deps = {repr(Deps(urls))}\n",
-        start_marker="#START: managed by update_coverage_deps.py script",
-        end_marker="#END: managed by update_coverage_deps.py script",
+        start_marker="# START: maintained by 'bazel run //tools/private:update_pip_deps'",
+        end_marker="# END: maintained by 'bazel run //tools/private:update_pip_deps'",
         dry_run=args.dry_run,
     )
 

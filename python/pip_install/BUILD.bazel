@@ -11,6 +11,18 @@ filegroup(
 )
 
 filegroup(
+    name = "repositories",
+    srcs = ["repositories.bzl"],
+    visibility = ["//tools/private:__pkg__"],
+)
+
+filegroup(
+    name = "requirements_txt",
+    srcs = ["tools/requirements.txt"],
+    visibility = ["//tools/private:__pkg__"],
+)
+
+filegroup(
     name = "bzl",
     srcs = glob(["*.bzl"]) + [
         "//python/pip_install/private:bzl_srcs",

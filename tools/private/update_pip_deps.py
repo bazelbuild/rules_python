@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -27,7 +28,8 @@ import textwrap
 from dataclasses import dataclass
 
 from pip._internal.cli.main import main as pip_main
-from update_file import update_file
+
+from tools.private.update_file import path_from_runfiles, update_file
 
 
 @dataclass
@@ -42,23 +44,23 @@ def _dep_snippet(deps: list[Dep]) -> str:
     for dep in deps:
         lines.extend(
             [
-                "(",
-                f'    "{dep.name}",',
-                f'    "{dep.url}",',
-                f'    "{dep.sha256}",',
-                "),",
+                "(\n",
+                f'    "{dep.name}",\n',
+                f'    "{dep.url}",\n',
+                f'    "{dep.sha256}",\n',
+                "),\n",
             ]
         )
 
-    return textwrap.indent("\n".join(lines), " " * 4)
+    return textwrap.indent("".join(lines), " " * 4)
 
 
 def _module_snippet(deps: list[Dep]) -> str:
     lines = []
     for dep in deps:
-        lines.append(f'"{dep.name}",')
+        lines.append(f'"{dep.name}",\n')
 
-    return textwrap.indent("\n".join(lines), " " * 4)
+    return textwrap.indent("".join(lines), " " * 4)
 
 
 def _generate_report(requirements_txt: pathlib.Path) -> dict:
@@ -104,19 +106,17 @@ def _get_deps(report: dict) -> list[Dep]:
 
 
 def main():
-    root = pathlib.Path(__file__).parent.parent
-
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(
         "--start",
         type=str,
-        default="# START: maintained by //tools/update_pip_deps.sh",
+        default="# START: maintained by 'bazel run //tools/private:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
         "--end",
         type=str,
-        default="# END: maintained by //tools/update_pip_deps.sh",
+        default="# END: maintained by 'bazel run //tools/private:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
@@ -126,21 +126,21 @@ def main():
     )
     parser.add_argument(
         "--requirements-txt",
-        type=pathlib.Path,
-        default=root / "python" / "pip_install" / "tools" / "requirements.txt",
-        help="The requirements.txt path for the pip_install tools",
+        type=path_from_runfiles,
+        default=os.environ.get("REQUIREMENTS_TXT"),
+        help="The requirements.txt path for the pip_install tools, defaults to the value taken from REQUIREMENTS_TXT",
     )
     parser.add_argument(
         "--module-bazel",
-        type=pathlib.Path,
-        default=root / "MODULE.bazel",
-        help="The MODULE.bazel path",
+        type=path_from_runfiles,
+        default=os.environ.get("MODULE_BAZEL"),
+        help="The path for the file to be updated, defaults to the value taken from MODULE_BAZEL",
     )
     parser.add_argument(
         "--repositories-bzl",
-        type=pathlib.Path,
-        default=root / "python" / "pip_install" / "repositories.bzl",
-        help="The repositories.bzl path",
+        type=path_from_runfiles,
+        default=os.environ.get("REPOSITORIES_BZL"),
+        help="The path for the file to be updated, defaults to the value taken from REPOSITORIES_BZL",
     )
     args = parser.parse_args()
 

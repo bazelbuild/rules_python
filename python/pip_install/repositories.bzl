@@ -20,7 +20,7 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//:version.bzl", "MINIMUM_BAZEL_VERSION")
 
 _RULE_DEPS = [
-    # START: maintained by //tools/update_pip_deps.sh
+    # START: maintained by 'bazel run //tools/private:update_pip_deps'
     (
         "pypi__build",
         "https://files.pythonhosted.org/packages/03/97/f58c723ff036a8d8b4d3115377c0a37ed05c1f68dd9a0d66dab5e82c5c1c/build-0.9.0-py3-none-any.whl",
@@ -91,7 +91,7 @@ _RULE_DEPS = [
         "https://files.pythonhosted.org/packages/f4/50/cc72c5bcd48f6e98219fc4a88a5227e9e28b81637a99c49feba1d51f4d50/zipp-1.0.0-py2.py3-none-any.whl",
         "8dda78f06bd1674bd8720df8a50bb47b6e1233c503a4eed8e7810686bde37656",
     ),
-    # END: maintained by //tools/update_pip_deps.sh
+    # END: maintained by 'bazel run //tools/private:update_pip_deps'
 ]
 
 _GENERIC_WHEEL = """\
