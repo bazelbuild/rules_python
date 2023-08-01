@@ -20,13 +20,12 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
 load(":version_label.bzl", "version_label")
 
-_NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
-_NO_MATCH_ERROR = \"\"\"\\
+NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
 
 The current build configuration's Python version doesn't match any of the Python
 versions available for this wheel. This wheel supports the following Python versions:
-{supported_versions}
+    {supported_versions}
 
 As matched by the `@{rules_python}//python/config_settings:is_python_<version>`
 configuration settings.
@@ -38,7 +37,6 @@ and look for
 
 If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
-\"\"\"\
 """
 
 def _render_whl_library_alias(
@@ -112,9 +110,13 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
         versions = sorted(versions)
 
     if versions and not default_version:
-        lines.append(_NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
-            supported_versions = render.indent("\n".join(versions)),
+        error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
+            supported_versions = ", ".join(versions),
             rules_python = rules_python,
+        )
+
+        lines.append("_NO_MATCH_ERROR = \"\"\"\\\n{error_msg}\"\"\"".format(
+            error_msg = error_msg,
         ))
 
     lines.append(

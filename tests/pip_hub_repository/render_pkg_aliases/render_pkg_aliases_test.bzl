@@ -154,8 +154,7 @@ No matching wheel for current configuration's Python version.
 
 The current build configuration's Python version doesn't match any of the Python
 versions available for this wheel. This wheel supports the following Python versions:
-    3.1.3
-    3.2.3
+    3.1.3, 3.2.3
 
 As matched by the `@rules_python//python/config_settings:is_python_<version>`
 configuration settings.
