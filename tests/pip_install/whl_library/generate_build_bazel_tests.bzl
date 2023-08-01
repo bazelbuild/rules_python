@@ -47,6 +47,8 @@ py_library(
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
+        # Empty sources are allowed to support wheels that don't have any
+        # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
@@ -100,6 +102,8 @@ py_library(
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=["srcs_exclude_all"],
+        # Empty sources are allowed to support wheels that don't have any
+        # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = ["file_dest", "exec_dest"] + glob(
@@ -176,6 +180,8 @@ py_library(
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
+        # Empty sources are allowed to support wheels that don't have any
+        # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
