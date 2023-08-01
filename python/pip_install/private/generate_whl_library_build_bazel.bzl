@@ -117,9 +117,9 @@ def generate_whl_library_build_bazel(
     for entry_point, entry_point_script_name in entry_points.items():
         additional_content.append(
             _generate_entry_point_rule(
-                "{}_{}".format(_WHEEL_ENTRY_POINT_PREFIX, entry_point),
-                entry_point_script_name,
-                ":" + _PY_LIBRARY_LABEL,
+                name = "{}_{}".format(_WHEEL_ENTRY_POINT_PREFIX, entry_point),
+                script = entry_point_script_name,
+                pkg = ":" + _PY_LIBRARY_LABEL,
             ),
         )
 
@@ -202,7 +202,7 @@ def _generate_copy_commands(src, dest, is_executable = False):
         is_executable = is_executable,
     )
 
-def _generate_entry_point_rule(name, script, pkg):
+def _generate_entry_point_rule(*, name, script, pkg):
     """Generate a Bazel `py_binary` rule for an entry point script.
 
     Note that the script is used to determine the name of the target. The name of
