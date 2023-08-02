@@ -18,6 +18,7 @@ load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_inte
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
@@ -26,6 +27,8 @@ load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 CPPFLAGS = "CPPFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+
+_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -663,16 +666,7 @@ def _whl_library_impl(rctx):
         "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
-        "--repo",
-        rctx.attr.repo,
-        "--repo-prefix",
-        rctx.attr.repo_prefix,
     ]
-    if rctx.attr.annotation:
-        args.extend([
-            "--annotation",
-            rctx.path(rctx.attr.annotation),
-        ])
 
     args = _parse_optional_attrs(rctx, args)
 
@@ -687,7 +681,71 @@ def _whl_library_impl(rctx):
     if result.return_code:
         fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
+    metadata = json.decode(rctx.read("metadata.json"))
+    rctx.delete("metadata.json")
+
+    entry_points = {}
+    for item in metadata["entry_points"]:
+        name = item["name"]
+        module = item["module"]
+        attribute = item["attribute"]
+
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] + "_py" if name.endswith(".py") else name
+        entry_point_target_name = (
+            _WHEEL_ENTRY_POINT_PREFIX + "_" + entry_point_without_py
+        )
+        entry_point_script_name = entry_point_target_name + ".py"
+
+        rctx.file(
+            entry_point_script_name,
+            _generate_entry_point_contents(module, attribute),
+        )
+        entry_points[entry_point_without_py] = entry_point_script_name
+
+    build_file_contents = generate_whl_library_build_bazel(
+        repo_prefix = rctx.attr.repo_prefix,
+        dependencies = metadata["deps"],
+        data_exclude = rctx.attr.pip_data_exclude,
+        tags = [
+            "pypi_name=" + metadata["name"],
+            "pypi_version=" + metadata["version"],
+        ],
+        entry_points = entry_points,
+        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
     return
+
+def _generate_entry_point_contents(
+        module,
+        attribute,
+        shebang = "#!/usr/bin/env python3"):
+    """Generate the contents of an entry point script.
+
+    Args:
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    contents = """\
+{shebang}
+import sys
+from {module} import {attribute}
+if __name__ == "__main__":
+    sys.exit({attribute}())
+""".format(
+        shebang = shebang,
+        module = module,
+        attribute = attribute,
+    )
+    return contents
 
 whl_library_attrs = {
     "annotation": attr.label(

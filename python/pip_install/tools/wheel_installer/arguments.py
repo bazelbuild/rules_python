@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import json
-from argparse import ArgumentParser
+from typing import Any
 
 
-def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
+def parser(**kwargs: Any) -> argparse.ArgumentParser:
+    """Create a parser for the wheel_installer tool."""
+    parser = argparse.ArgumentParser(
+        **kwargs,
+    )
     parser.add_argument(
-        "--repo",
+        "--requirement",
         action="store",
         required=True,
-        help="The external repo name to install dependencies. In the format '@{REPO_NAME}'",
+        help="A single PEP508 requirement specifier string.",
     )
     parser.add_argument(
         "--isolated",
@@ -47,11 +52,6 @@ def parse_common_args(parser: ArgumentParser) -> ArgumentParser:
         "--environment",
         action="store",
         help="Extra environment variables to set on the pip environment.",
-    )
-    parser.add_argument(
-        "--repo-prefix",
-        required=True,
-        help="Prefix to prepend to packages",
     )
     parser.add_argument(
         "--download_only",
