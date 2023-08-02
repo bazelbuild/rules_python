@@ -29,7 +29,8 @@ from dataclasses import dataclass
 
 from pip._internal.cli.main import main as pip_main
 
-from tools.private.update_file import path_from_runfiles, update_file
+from tools.private.update_deps.args import path_from_runfiles
+from tools.private.update_deps.update_file import update_file
 
 
 @dataclass

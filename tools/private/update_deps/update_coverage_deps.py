@@ -31,7 +31,8 @@ from dataclasses import dataclass
 from typing import Any
 from urllib import request
 
-from tools.private.update_file import path_from_runfiles, update_file
+from tools.private.update_deps.args import path_from_runfiles
+from tools.private.update_deps.update_file import update_file
 
 # This should be kept in sync with //python:versions.bzl
 _supported_platforms = {
@@ -185,8 +186,8 @@ def main():
     update_file(
         path=args.update_file,
         snippet=f"_coverage_deps = {repr(Deps(urls))}\n",
-        start_marker="# START: maintained by 'bazel run //tools/private:update_pip_deps'",
-        end_marker="# END: maintained by 'bazel run //tools/private:update_pip_deps'",
+        start_marker="# START: maintained by 'bazel run //tools/private:update_coverage_deps'",
+        end_marker="# END: maintained by 'bazel run //tools/private:update_coverage_deps'",
         dry_run=args.dry_run,
     )
 

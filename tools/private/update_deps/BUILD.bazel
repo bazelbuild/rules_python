@@ -13,16 +13,21 @@
 # limitations under the License.
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
+load("//python:py_test.bzl", "py_test")
 
 licenses(["notice"])
 
 py_library(
+    name = "args",
+    srcs = ["args.py"],
+    imports = ["../../.."],
+    deps = ["//python/runfiles"],
+)
+
+py_library(
     name = "update_file",
     srcs = ["update_file.py"],
-    imports = ["../.."],
-    deps = [
-        "//python/runfiles",
-    ],
+    imports = ["../../.."],
 )
 
 py_binary(
@@ -34,8 +39,9 @@ py_binary(
     env = {
         "UPDATE_FILE": "$(rlocationpath //python/private:coverage_deps)",
     },
-    imports = ["../.."],
+    imports = ["../../.."],
     deps = [
+        ":args",
         ":update_file",
     ],
 )
@@ -53,7 +59,17 @@ py_binary(
         "REPOSITORIES_BZL": "$(rlocationpath //python/pip_install:repositories)",
         "REQUIREMENTS_TXT": "$(rlocationpath //python/pip_install:requirements_txt)",
     },
-    imports = ["../.."],
+    imports = ["../../.."],
+    deps = [
+        ":args",
+        ":update_file",
+    ],
+)
+
+py_test(
+    name = "update_file_test",
+    srcs = ["update_file_test.py"],
+    imports = ["../../.."],
     deps = [
         ":update_file",
     ],
