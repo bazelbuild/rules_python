@@ -14,7 +14,7 @@
 
 import unittest
 
-from tools.private.update_file import replace_snippet, unified_diff
+from tools.private.update_deps.update_file import replace_snippet, unified_diff
 
 
 class TestReplaceSnippet(unittest.TestCase):

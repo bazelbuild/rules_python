@@ -1,5 +1,16 @@
 # For Developers
 
+## Updating internal dependencies
+
+1. Modify the `./python/pip_install/tools/requirements.txt` file and run:
+   ```
+   bazel run //tools/private/update_deps:update_pip_deps
+   ```
+1. Bump the coverage dependencies using the script using:
+   ```
+   bazel run //tools/private/update_deps:update_coverage_deps <VERSION>
+   ```
+
 ## Releasing
 
 Start from a clean checkout at `main`.
@@ -8,16 +19,6 @@ Before running through the release it's good to run the build and the tests loca
 also test-drive the commit in an existing Bazel workspace to sanity check functionality.
 
 #### Steps
-1. (Optional) modify the `./python/pip_install/tools/requirements.txt` file and run `./tools/update_pip_deps.sh` script:
-   1. Using system python:
-   ```bash
-   ./tools/update_pip_deps.py
-   ```
-   1. Using bazel toolchain:
-   ```bash
-   bazel run --enable_bzlmod @python_3_10_9//:python3 -- ./tools/update_pip_deps.py
-   ```
-1. (Optional) bump the coverage dependencies using the script `./tools/update_coverage_deps.py <VERSION>`.
 1. [Determine the next semantic version number](#determining-semantic-version)
 1. Create a tag and push, e.g. `git tag 0.5.0 upstream/main && git push upstream --tags`
    NOTE: Pushing the tag will trigger release automation.

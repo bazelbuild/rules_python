@@ -45,7 +45,7 @@ def replace_snippet(
     start_marker: str,
     end_marker: str,
 ) -> str:
-    """update a file on disk to replace text in a file between two markers.
+    """Update a file on disk to replace text in a file between two markers.
 
     Args:
         path: pathlib.Path, the path to the file to be modified.
