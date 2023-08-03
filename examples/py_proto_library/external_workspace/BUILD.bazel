@@ -1,9 +1,18 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:proto.bzl", "py_proto_library")
 
+# this package simulates usage of py_proto_library in an external repo
+# the definitions are mostly the same as the main build file but will be under @external_workspace//
+
 proto_library(
     name = "external_pricetag_proto",
     srcs = ["external_pricetag.proto"],
+)
+
+py_proto_library(
+    name = "external_pricetag_proto_py_pb2",
+    visibility = ["//visibility:public"],
+    deps = [":external_pricetag_proto"],
 )
 
 proto_library(
@@ -14,13 +23,7 @@ proto_library(
 )
 
 py_proto_library(
-    name = "external_pricetag_proto_py_pb2",
-    deps = [":external_pricetag_proto"],
-    visibility = ["//visibility:public"],
-)
-
-py_proto_library(
     name = "external_pricetag_with_prefix_proto_py_pb2",
-    deps = [":external_pricetag_with_prefix_proto"],
     visibility = ["//visibility:public"],
+    deps = [":external_pricetag_with_prefix_proto"],
 )

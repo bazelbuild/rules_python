@@ -35,16 +35,16 @@ def _filter_provider(provider, *attrs):
 
 def _get_import_path(ctx, proto_info):
     """
-    Attempts to resolve the import path
+    Resolve the import path for the generated code in the current proto_library
 
     This can get fairly convoluted if import prefixing/stripping is used.
 
     Reference from cc_proto_library which needs to do similar stuff (_get_strip_include_prefix mainly):
-    https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/cc/cc_proto_library.bzl
+    https://github.com/bazelbuild/bazel/blob/c747ae7aab077227099409f2f0774b485d42eaa4/src/main/starlark/builtins_bzl/common/cc/cc_proto_library.bzl#L62
     """
     proto_root = proto_info.proto_source_root
     if proto_root == "." or proto_root == ctx.label.workspace_root:
-        return ""
+        return []
 
     if proto_root.startswith(ctx.bin_dir.path):
         proto_root = paths.relativize(proto_root, ctx.bin_dir.path)
@@ -57,18 +57,18 @@ def _get_import_path(ctx, proto_info):
     workspace_name = ctx.label.workspace_name if ctx.label.workspace_name else ctx.workspace_name
     proto_root = paths.join(workspace_name, proto_root)
 
-    return proto_root
+    return [proto_root]
 
 def _get_proto_output(ctx, proto_info):
     """Get the output directory for the generated sources to match what proto_common.declare_generated_files creates."""
     proto_root = proto_info.proto_source_root
+
+    if proto_root == ".":
+        genfiles_path = ctx.genfiles_dir.path
     if proto_root.startswith(ctx.genfiles_dir.path):
         genfiles_path = proto_root
     else:
         genfiles_path = ctx.genfiles_dir.path + "/" + proto_root
-
-    if proto_root == ".":
-        genfiles_path = ctx.genfiles_dir.path
 
     return genfiles_path
 
@@ -135,16 +135,10 @@ def _py_proto_aspect_impl(target, ctx):
         transitive = [dep.transitive_sources for dep in deps],
     )
 
-    # if we do any fancy stripping or prefixing we need to resolve an import path
-    imports = []
-    import_path = _get_import_path(ctx, proto_info)
-    if import_path:
-        imports.append(import_path)
-
     return [
         _PyProtoInfo(
             imports = depset(
-                direct = imports,
+                direct = _get_import_path(ctx, proto_info),
                 transitive = [dep.imports for dep in deps],
             ),
             transitive_sources = transitive_sources,

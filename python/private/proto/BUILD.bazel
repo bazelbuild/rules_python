@@ -37,6 +37,9 @@ bzl_library(
 
 proto_lang_toolchain(
     name = "python_toolchain",
+    # proto_common will generate extraneous pb2 files for the built-in proto files unless we blacklist them here
+    # these proto files already have implementation in the runtime which we are implicitly adding as a dependency
+    # to all py_proto_libraries
     blacklisted_protos = [
         "@com_google_protobuf//:any_proto",
         "@com_google_protobuf//:api_proto",

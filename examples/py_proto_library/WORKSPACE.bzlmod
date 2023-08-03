@@ -1,3 +1,4 @@
+# this is used to simulate py_proto_libraries in an external workspace
 local_repository(
     name = "external_workspace",
     path = "external_workspace",

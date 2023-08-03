@@ -7,21 +7,9 @@ proto_library(
     srcs = ["pricetag.proto"],
 )
 
-proto_library(
-    name = "pricetag_with_prefix_proto",
-    srcs = ["tostrip/pricetag_with_prefix.proto"],
-    import_prefix = "prefixed",
-    strip_import_prefix = "tostrip",
-)
-
 py_proto_library(
     name = "pricetag_proto_py_pb2",
     deps = [":pricetag_proto"],
-)
-
-py_proto_library(
-    name = "pricetag_with_prefix_proto_py_pb2",
-    deps = [":pricetag_with_prefix_proto"],
 )
 
 py_test(
@@ -33,6 +21,21 @@ py_test(
     ],
 )
 
+# if you use import_prefix or strip_import_prefix on a proto_library the resulting python module path will be altered
+# without stripping "tostrip" our module path would have been tostrip.pricetag_with_prefix_pb2
+# after stripping, the prefix is added, resulting in the path being prefixed.pricetag_with_prefix_pb2
+proto_library(
+    name = "pricetag_with_prefix_proto",
+    srcs = ["tostrip/pricetag_with_prefix.proto"],
+    import_prefix = "prefixed",
+    strip_import_prefix = "tostrip",
+)
+
+py_proto_library(
+    name = "pricetag_with_prefix_proto_py_pb2",
+    deps = [":pricetag_with_prefix_proto"],
+)
+
 py_test(
     name = "pricetag_with_prefix_test",
     srcs = ["test_with_prefix.py"],
@@ -42,6 +45,8 @@ py_test(
     ],
 )
 
+# see external_workspace/BUILD.bazel for the definitions of the dependencies in these tests
+# when consuming py_proto_libraries in different workspaces, the external worksapce name is the first element of the import path
 py_test(
     name = "external_test",
     srcs = ["external_test.py"],
@@ -51,6 +56,7 @@ py_test(
     ],
 )
 
+# note that for stripped or prefixed proto_libraries in external worksaces, you do not need the external workspace name
 py_test(
     name = "external_with_prefix_test",
     srcs = ["external_with_prefix_test.py"],
