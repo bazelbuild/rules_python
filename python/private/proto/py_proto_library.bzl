@@ -229,9 +229,6 @@ proto_library(
 )
 ```""",
     attrs = {
-        "_proto_toolchain": attr.label(
-            default = ":python_toolchain",
-        ),
         "deps": attr.label_list(
             doc = """
               The list of `proto_library` rules to generate Python libraries for.
@@ -240,6 +237,9 @@ proto_library(
               It can be any target providing `ProtoInfo`.""",
             providers = [ProtoInfo],
             aspects = [_py_proto_aspect],
+        ),
+        "_proto_toolchain": attr.label(
+            default = ":python_toolchain",
         ),
     },
     provides = [PyInfo],
