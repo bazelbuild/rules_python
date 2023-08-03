@@ -37,7 +37,10 @@ def _get_import_path(ctx, proto_info):
     """
     Attempts to resolve the import path
 
-    This can get fairly convoluted if import prefixing/stripping is used
+    This can get fairly convoluted if import prefixing/stripping is used.
+
+    Reference from cc_proto_library which needs to do similar stuff (_get_strip_include_prefix mainly):
+    https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/cc/cc_proto_library.bzl
     """
     proto_root = proto_info.proto_source_root
     if proto_root == "." or proto_root == ctx.label.workspace_root:
