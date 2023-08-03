@@ -135,6 +135,7 @@ def _py_proto_aspect_impl(target, ctx):
         transitive = [dep.transitive_sources for dep in deps],
     )
 
+    # if we do any fancy stripping or prefixing we need to resolve an import path
     imports = []
     import_path = _get_import_path(ctx, proto_info)
     if import_path:
@@ -178,23 +179,21 @@ def _py_proto_library_rule(ctx):
         transitive = [info.transitive_sources for info in pyproto_infos],
     )
 
-    runtime_deps = [ctx.attr._proto_toolchain[ProtoLangToolchainInfo].runtime]
+    py_protobuf_runtime = ctx.attr._proto_toolchain[ProtoLangToolchainInfo].runtime
 
     return [
         DefaultInfo(
             files = default_outputs,
             default_runfiles = ctx.runfiles(transitive_files = depset(
-                transitive =
-                    [default_outputs] +
-                    [dep[DefaultInfo].default_runfiles.files for dep in runtime_deps],
-            )),
+                transitive = [default_outputs],
+            )).merge(py_protobuf_runtime[DefaultInfo].default_runfiles),
         ),
         OutputGroupInfo(
             default = depset(),
         ),
         PyInfo(
             transitive_sources = default_outputs,
-            imports = depset(transitive = [dep[PyInfo].imports for dep in runtime_deps] + [info.imports for info in pyproto_infos]),
+            imports = depset(transitive = [py_protobuf_runtime[PyInfo].imports] + [info.imports for info in pyproto_infos]),
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,
