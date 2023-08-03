@@ -22,6 +22,7 @@ We are not running this with 'bazel run' to keep the dependencies minimal
 import argparse
 import difflib
 import json
+import os
 import pathlib
 import sys
 import textwrap
@@ -29,6 +30,9 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 from urllib import request
+
+from tools.private.update_deps.args import path_from_runfiles
+from tools.private.update_deps.update_file import update_file
 
 # This should be kept in sync with //python:versions.bzl
 _supported_platforms = {
@@ -110,64 +114,6 @@ def _map(
     )
 
 
-def _writelines(path: pathlib.Path, lines: list[str]):
-    with open(path, "w") as f:
-        f.writelines(lines)
-
-
-def _difflines(path: pathlib.Path, lines: list[str]):
-    with open(path) as f:
-        input = f.readlines()
-
-    rules_python = pathlib.Path(__file__).parent.parent
-    p = path.relative_to(rules_python)
-
-    print(f"Diff of the changes that would be made to '{p}':")
-    for line in difflib.unified_diff(
-        input,
-        lines,
-        fromfile=f"a/{p}",
-        tofile=f"b/{p}",
-    ):
-        print(line, end="")
-
-    # Add an empty line at the end of the diff
-    print()
-
-
-def _update_file(
-    path: pathlib.Path,
-    snippet: str,
-    start_marker: str,
-    end_marker: str,
-    dry_run: bool = True,
-):
-    with open(path) as f:
-        input = f.readlines()
-
-    out = []
-    skip = False
-    for line in input:
-        if skip:
-            if not line.startswith(end_marker):
-                continue
-
-            skip = False
-
-        out.append(line)
-
-        if not line.startswith(start_marker):
-            continue
-
-        skip = True
-        out.extend([f"{line}\n" for line in snippet.splitlines()])
-
-    if dry_run:
-        _difflines(path, out)
-    else:
-        _writelines(path, out)
-
-
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(
@@ -192,6 +138,12 @@ def _parse_args() -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Wether to write to files",
+    )
+    parser.add_argument(
+        "--update-file",
+        type=path_from_runfiles,
+        default=os.environ.get("UPDATE_FILE"),
+        help="The path for the file to be updated, defaults to the value taken from UPDATE_FILE",
     )
     return parser.parse_args()
 
@@ -230,14 +182,12 @@ def main():
 
     urls.sort(key=lambda x: f"{x.python}_{x.platform}")
 
-    rules_python = pathlib.Path(__file__).parent.parent
-
     # Update the coverage_deps, which are used to register deps
-    _update_file(
-        path=rules_python / "python" / "private" / "coverage_deps.bzl",
+    update_file(
+        path=args.update_file,
         snippet=f"_coverage_deps = {repr(Deps(urls))}\n",
-        start_marker="#START: managed by update_coverage_deps.py script",
-        end_marker="#END: managed by update_coverage_deps.py script",
+        start_marker="# START: maintained by 'bazel run //tools/private:update_coverage_deps'",
+        end_marker="# END: maintained by 'bazel run //tools/private:update_coverage_deps'",
         dry_run=args.dry_run,
     )
 
