@@ -1,0 +1,4 @@
+local_repository(
+    name = "external_workspace",
+    path = "external_workspace",
+)
