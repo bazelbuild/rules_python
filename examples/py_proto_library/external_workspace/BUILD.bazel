@@ -1,0 +1,26 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+
+proto_library(
+    name = "external_pricetag_proto",
+    srcs = ["external_pricetag.proto"],
+)
+
+proto_library(
+    name = "external_pricetag_with_prefix_proto",
+    srcs = ["tostrip/external_pricetag.proto"],
+    import_prefix = "external_prefixed",
+    strip_import_prefix = "tostrip",
+)
+
+py_proto_library(
+    name = "external_pricetag_proto_py_pb2",
+    deps = [":external_pricetag_proto"],
+    visibility = ["//visibility:public"],
+)
+
+py_proto_library(
+    name = "external_pricetag_with_prefix_proto_py_pb2",
+    deps = [":external_pricetag_with_prefix_proto"],
+    visibility = ["//visibility:public"],
+)

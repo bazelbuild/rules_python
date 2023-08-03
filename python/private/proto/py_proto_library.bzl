@@ -14,6 +14,7 @@
 
 """The implementation of the `py_proto_library` rule and its aspect."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load("//python:defs.bzl", "PyInfo")
 
@@ -25,15 +26,48 @@ _PyProtoInfo = provider(
         "imports": """
             (depset[str]) The field forwarding PyInfo.imports coming from
             the proto language runtime dependency.""",
-        "runfiles_from_proto_deps": """
-            (depset[File]) Files from the transitive closure implicit proto
-            dependencies""",
         "transitive_sources": """(depset[File]) The Python sources.""",
     },
 )
 
 def _filter_provider(provider, *attrs):
     return [dep[provider] for attr in attrs for dep in attr if provider in dep]
+
+def _get_import_path(ctx, proto_info):
+    """
+    Attempts to resolve the import path
+
+    This can get fairly convoluted if import prefixing/stripping is used
+    """
+    proto_root = proto_info.proto_source_root
+    if proto_root == "." or proto_root == ctx.label.workspace_root:
+        return ""
+
+    if proto_root.startswith(ctx.bin_dir.path):
+        proto_root = paths.relativize(proto_root, ctx.bin_dir.path)
+    elif proto_root.startswith(ctx.genfiles_dir.path):
+        proto_root = paths.relativize(proto_root, ctx.genfiles_dir.path)
+
+    if proto_root.startswith(ctx.label.workspace_root):
+        proto_root = paths.relativize(proto_root, ctx.label.workspace_root)
+
+    workspace_name = ctx.label.workspace_name if ctx.label.workspace_name else ctx.workspace_name
+    proto_root = paths.join(workspace_name, proto_root)
+
+    return proto_root
+
+def _get_proto_output(ctx, proto_info):
+    """Get the output directory for the generated sources to match what proto_common.declare_generated_files creates."""
+    proto_root = proto_info.proto_source_root
+    if proto_root.startswith(ctx.genfiles_dir.path):
+        genfiles_path = proto_root
+    else:
+        genfiles_path = ctx.genfiles_dir.path + "/" + proto_root
+
+    if proto_root == ".":
+        genfiles_path = ctx.genfiles_dir.path
+
+    return genfiles_path
 
 def _py_proto_aspect_impl(target, ctx):
     """Generates and compiles Python code for a proto_library.
@@ -62,12 +96,18 @@ def _py_proto_aspect_impl(target, ctx):
             ))
 
     proto_lang_toolchain_info = ctx.attr._aspect_proto_toolchain[ProtoLangToolchainInfo]
-    api_deps = [proto_lang_toolchain_info.runtime]
 
     generated_sources = []
     proto_info = target[ProtoInfo]
-    if proto_info.direct_sources:
-        # Generate py files
+
+    # if proto_common.experimental_should_generate_code exists we should use it to filter out well known proto from generation
+    # this is a best effort attempt, without it this rule will regenerate well known proto files
+    should_generate_code = True
+    experimental_should_generate_code_fun = getattr(proto_common, "experimental_should_generate_code", None)
+    if experimental_should_generate_code_fun:
+        should_generate_code = experimental_should_generate_code_fun(proto_info, proto_lang_toolchain_info, "py_proto_library", ctx.label)
+
+    if proto_info.direct_sources and should_generate_code:
         generated_sources = proto_common.declare_generated_files(
             actions = ctx.actions,
             proto_info = proto_info,
@@ -75,43 +115,34 @@ def _py_proto_aspect_impl(target, ctx):
             name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
         )
 
-        # Handles multiple repository and virtual import cases
-        proto_root = proto_info.proto_source_root
-        if proto_root.startswith(ctx.bin_dir.path):
-            plugin_output = proto_root
-        else:
-            plugin_output = ctx.bin_dir.path + "/" + proto_root
-
-        if plugin_output == ".":
-            plugin_output = ctx.bin_dir.path
-
         proto_common.compile(
             actions = ctx.actions,
             proto_info = proto_info,
             proto_lang_toolchain_info = proto_lang_toolchain_info,
             generated_files = generated_sources,
-            plugin_output = plugin_output,
+            plugin_output = _get_proto_output(ctx, proto_info),
         )
 
     # Generated sources == Python sources
     python_sources = generated_sources
 
     deps = _filter_provider(_PyProtoInfo, getattr(_proto_library, "deps", []))
-    runfiles_from_proto_deps = depset(
-        transitive = [dep[DefaultInfo].default_runfiles.files for dep in api_deps] +
-                     [dep.runfiles_from_proto_deps for dep in deps],
-    )
     transitive_sources = depset(
         direct = python_sources,
         transitive = [dep.transitive_sources for dep in deps],
     )
 
+    imports = []
+    import_path = _get_import_path(ctx, proto_info)
+    if import_path:
+        imports.append(import_path)
+
     return [
         _PyProtoInfo(
             imports = depset(
-                transitive = [dep[PyInfo].imports for dep in api_deps],
+                direct = imports,
+                transitive = [dep.imports for dep in deps],
             ),
-            runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
         ),
     ]
@@ -144,13 +175,15 @@ def _py_proto_library_rule(ctx):
         transitive = [info.transitive_sources for info in pyproto_infos],
     )
 
+    runtime_deps = [ctx.attr._proto_toolchain[ProtoLangToolchainInfo].runtime]
+
     return [
         DefaultInfo(
             files = default_outputs,
             default_runfiles = ctx.runfiles(transitive_files = depset(
                 transitive =
                     [default_outputs] +
-                    [info.runfiles_from_proto_deps for info in pyproto_infos],
+                    [dep[DefaultInfo].default_runfiles.files for dep in runtime_deps],
             )),
         ),
         OutputGroupInfo(
@@ -158,7 +191,7 @@ def _py_proto_library_rule(ctx):
         ),
         PyInfo(
             transitive_sources = default_outputs,
-            imports = depset(transitive = [info.imports for info in pyproto_infos]),
+            imports = depset(transitive = [dep[PyInfo].imports for dep in runtime_deps] + [info.imports for info in pyproto_infos]),
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,
@@ -194,6 +227,9 @@ proto_library(
 )
 ```""",
     attrs = {
+        "_proto_toolchain": attr.label(
+            default = ":python_toolchain",
+        ),
         "deps": attr.label_list(
             doc = """
               The list of `proto_library` rules to generate Python libraries for.

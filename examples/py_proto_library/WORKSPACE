@@ -6,6 +6,11 @@ local_repository(
     path = "../..",
 )
 
+local_repository(
+    name = "external_workspace",
+    path = "external_workspace",
+)
+
 # When not using this example in the rules_python git repo you would load the python
 # rules using http_archive(), as documented in the release notes.
 

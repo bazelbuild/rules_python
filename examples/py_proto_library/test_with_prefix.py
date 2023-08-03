@@ -1,11 +1,10 @@
-import sys
 import unittest
+import prefixed.pricetag_with_prefix_pb2
 
-import pricetag_pb2
 
 class TestCase(unittest.TestCase):
     def test_pricetag(self):
-        got = pricetag_pb2.PriceTag(
+        got = prefixed.pricetag_with_prefix_pb2.PriceTag(
             name="dollar",
             cost=5.00,
         )

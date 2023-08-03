@@ -2,14 +2,26 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_python//python:proto.bzl", "py_proto_library")
 
+proto_library(
+    name = "pricetag_proto",
+    srcs = ["pricetag.proto"],
+)
+
+proto_library(
+    name = "pricetag_with_prefix_proto",
+    srcs = ["tostrip/pricetag_with_prefix.proto"],
+    import_prefix = "prefixed",
+    strip_import_prefix = "tostrip",
+)
+
 py_proto_library(
     name = "pricetag_proto_py_pb2",
     deps = [":pricetag_proto"],
 )
 
-proto_library(
-    name = "pricetag_proto",
-    srcs = ["pricetag.proto"],
+py_proto_library(
+    name = "pricetag_with_prefix_proto_py_pb2",
+    deps = [":pricetag_with_prefix_proto"],
 )
 
 py_test(
@@ -18,5 +30,32 @@ py_test(
     main = "test.py",
     deps = [
         ":pricetag_proto_py_pb2",
+    ],
+)
+
+py_test(
+    name = "pricetag_with_prefix_test",
+    srcs = ["test_with_prefix.py"],
+    main = "test_with_prefix.py",
+    deps = [
+        ":pricetag_with_prefix_proto_py_pb2",
+    ],
+)
+
+py_test(
+    name = "external_test",
+    srcs = ["external_test.py"],
+    main = "external_test.py",
+    deps = [
+        "@external_workspace//:external_pricetag_proto_py_pb2",
+    ],
+)
+
+py_test(
+    name = "external_with_prefix_test",
+    srcs = ["external_with_prefix_test.py"],
+    main = "external_with_prefix_test.py",
+    deps = [
+        "@external_workspace//:external_pricetag_with_prefix_proto_py_pb2",
     ],
 )
