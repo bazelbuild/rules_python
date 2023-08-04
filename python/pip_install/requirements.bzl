@@ -96,14 +96,15 @@ def compile_pip_requirements(
         requirement("build"),
         requirement("click"),
         requirement("colorama"),
+        requirement("importlib_metadata"),
+        requirement("more_itertools"),
         requirement("pep517"),
         requirement("pip"),
         requirement("pip_tools"),
+        requirement("pyproject_hooks"),
         requirement("setuptools"),
         requirement("tomli"),
-        requirement("importlib_metadata"),
         requirement("zipp"),
-        requirement("more_itertools"),
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 
