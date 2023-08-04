@@ -17,29 +17,11 @@ load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annot
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
 load(":versions.bzl", "MINOR_MAPPING")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
-
-_NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
-No matching wheel for current configuration's Python version.
-
-The current build configuration's Python version doesn't match any of the Python
-versions available for this wheel. This wheel supports the following Python versions:
-    {supported_versions}
-
-As matched by the `@{rules_python}//python/config_settings:is_python_<version>`
-configuration settings.
-
-To determine the current configuration's Python version, run:
-    `bazel config <config id>` (shown further below)
-and look for
-    {rules_python}//python/config_settings:python_version
-
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-"""
 
 def pip_install(requirements = None, name = "pip", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
@@ -335,7 +317,7 @@ alias(
     if not default_repo_prefix:
         supported_versions = sorted([python_version for python_version, _ in version_map])
         alias.append('    no_match_error="""{}""",'.format(
-            _NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
+            NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
                 supported_versions = ", ".join(supported_versions),
                 rules_python = rules_python,
             ),
