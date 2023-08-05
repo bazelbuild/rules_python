@@ -88,6 +88,11 @@ pylint==2.15.10 \
     --hash=sha256:9df0d07e8948a1c3ffa3b6e2d7e6e63d9fb457c5da5b961ed63106594780cc7e \
     --hash=sha256:b3dc5ef7d33858f297ac0d06cc73862f01e4f2e74025ec3eff347ce0bc60baf5
     # via -r requirements.in
+    #   pylint-print
+pylint-print==1.0.1 \
+    --hash=sha256:30aa207e9718ebf4ceb47fb87012092e6d8743aab932aa07aa14a73e750ad3d0 \
+    --hash=sha256:a2b2599e7887b93e551db2624c523c1e6e9e58c3be8416cd98d41e4427e2669b
+    # via -r requirements.in
 python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
