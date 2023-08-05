@@ -51,7 +51,7 @@ load("//python:py_binary.bzl", "py_binary")
 
 _tool = Label("//python/pip_install/tools/entry_point_generator")
 
-def entry_point(*, name, pkg, script = None, deps = None, main = None, **kwargs):
+def entry_point(*, name, pkg, script = None, deps = None, **kwargs):
     """Generate an entry_point for a given package
 
     Args:
@@ -61,11 +61,9 @@ def entry_point(*, name, pkg, script = None, deps = None, main = None, **kwargs)
             generated. Mandatory if there are more than 1 console_script in the
             package.
         deps: The extra dependencies to add to the py_binary rule.
-        main: The file to be written by the templating engine. Defaults to
-            `rules_python_entry_point_{name}.py`.
         **kwargs: Extra parameters forwarded to py_binary.
     """
-    main = main or "rules_python_entry_point_{}.py".format(name)
+    main = "rules_python_entry_point_{}.py".format(name)
 
     # TODO @aignas 2023-08-05: Ideally this could be implemented as a rule that is using
     # the Python toolchain, but this should be functional and establish the API.
@@ -92,6 +90,7 @@ def entry_point(*, name, pkg, script = None, deps = None, main = None, **kwargs)
 
     # This may come via transitions, so ensure that we are not using it at all.
     _ = kwargs.pop("srcs", None)  # buildifier: disable=unused-variable
+    _ = kwargs.pop("main", None)  # buildifier: disable=unused-variable
 
     py_binary(
         name = name,
