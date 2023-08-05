@@ -59,6 +59,9 @@ def entry_point(*, name, pkg, script = None, deps = None, main = None, **kwargs)
     if deps:
         entry_point_deps.extend(deps)
 
+    # This may come via transitions, so ensure that we are not using it at all.
+    _ = kwargs.pop("srcs", None)  # buildifier: disable=unused-variable
+
     py_binary(
         name = name,
         srcs = [main],
