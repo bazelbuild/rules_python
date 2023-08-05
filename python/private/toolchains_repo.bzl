@@ -256,18 +256,18 @@ def _multi_toolchain_aliases_impl(rctx):
 load(
     "@{repository_name}//:defs.bzl",
     _compile_pip_requirements = "compile_pip_requirements",
-    _entry_point = "entry_point",
     _host_platform = "host_platform",
     _interpreter = "interpreter",
     _py_binary = "py_binary",
+    _py_entry_point_binary = "py_entry_point_binary",
     _py_test = "py_test",
 )
 
 compile_pip_requirements = _compile_pip_requirements
 host_platform = _host_platform
 interpreter = _interpreter
-entry_point = _entry_point
 py_binary = _py_binary
+py_entry_point_binary = _py_entry_point_binary
 py_test = _py_test
 """.format(
             repository_name = repository_name,
