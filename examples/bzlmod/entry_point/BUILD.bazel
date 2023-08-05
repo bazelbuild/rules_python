@@ -5,7 +5,7 @@ load("@rules_python//python:py_entry_point_binary.bzl", "entry_point")
 # We can specifically request the entry_point to be running with Python 3.9.
 entry_point_3_9(
     name = "yamllint",
-    pkg = "@pip//yamllint",
+    pkg = "@pip//yamllint:pkg",
     # yamllint does not have any other scripts except 'yamllint' so the
     # user does not have to specify which console script we should chose from
     # the package.

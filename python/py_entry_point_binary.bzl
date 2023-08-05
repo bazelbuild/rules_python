@@ -64,6 +64,9 @@ def entry_point(*, name, pkg, script = None, deps = None, **kwargs):
         **kwargs: Extra parameters forwarded to py_binary.
     """
     main = "rules_python_entry_point_{}.py".format(name)
+    pkg_label = Label(pkg)
+    if pkg_label.name != "pkg" and not script:
+        script = pkg_label.name
 
     # TODO @aignas 2023-08-05: Ideally this could be implemented as a rule that is using
     # the Python toolchain, but this should be functional and establish the API.
