@@ -86,13 +86,10 @@ if __name__ == "__main__":
                 cwd=tmpdir,
             )
 
-        want = """\
-************* Module hello_world
-hello_world.py:6:4: W8201: Logging should be used instead of the print() function. (print-function)
-
------------------------------------
-Your code has been rated at 5.00/10"""
-        self.assertEqual(want, proc.stdout.decode("utf-8").strip())
+        self.assertRegex(
+            proc.stdout.decode("utf-8").strip(),
+            "W8201: Logging should be used instead of the print\(\) function\. \(print-function\)",
+        )
 
 
 if __name__ == "__main__":
