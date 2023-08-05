@@ -51,17 +51,19 @@ load("//python:py_binary.bzl", "py_binary")
 
 _tool = Label("//python/pip_install/tools/entry_point_generator")
 
-def entry_point(*, name, pkg, script = None, deps = None, **kwargs):
+def entry_point(*, name, pkg, script = None, deps = None, binary_rule = py_binary, **kwargs):
     """Generate an entry_point for a given package
 
     Args:
-        name: The name of the resultant py_binary target.
+        name: The name of the resultant binary_rule target.
         pkg: The package for which to generate the script.
         script: The console script that the entry_point is going to be
             generated. Mandatory if there are more than 1 console_script in the
             package.
-        deps: The extra dependencies to add to the py_binary rule.
-        **kwargs: Extra parameters forwarded to py_binary.
+        binary_rule: The binary rule to call to create the entry_point binary.
+            Defaults to py_binary.
+        deps: The extra dependencies to add to the binary_rule rule.
+        **kwargs: Extra parameters forwarded to binary_rule.
     """
     main = "rules_python_entry_point_{}.py".format(name)
     pkg_label = Label(pkg)
@@ -95,7 +97,7 @@ def entry_point(*, name, pkg, script = None, deps = None, **kwargs):
     _ = kwargs.pop("srcs", None)  # buildifier: disable=unused-variable
     _ = kwargs.pop("main", None)  # buildifier: disable=unused-variable
 
-    py_binary(
+    binary_rule(
         name = name,
         srcs = [main],
         main = main,
