@@ -3,6 +3,37 @@
 
 A macro to generate an entry_point from reading the 'console_scripts'.
 
+We can specifically request the entry_point to be running with e.g. Python 3.9:
+```starlark
+load("@python_versions//3.9:defs.bzl", "entry_point")
+
+entry_point(
+    name = "yamllint",
+    pkg = "@pip//yamllint",
+    # yamllint does not have any other scripts except 'yamllint' so the
+    # user does not have to specify which console script we should chose from
+    # the package.
+)
+```
+
+Or just use the default version:
+```starlark
+load("@rules_python//python:entry_point.bzl", "entry_point")
+
+entry_point(
+    name = "pylint",
+    pkg = "@pip//pylint",
+    # Because `pylint` has multiple console_scripts available, we have to
+    # specify which we want
+    script = "pylint",
+    deps = [
+        # One can add extra dependencies to the entry point.
+        # This specifically allows us to add plugins to pylint.
+        "@pip//pylint_print",
+    ],
+)
+```
+
 
 <a id="entry_point"></a>
 
