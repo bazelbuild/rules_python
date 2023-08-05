@@ -35,6 +35,22 @@ def dist_info_requirement(name):
 def entry_point(pkg, script = None):
     if not script:
         script = pkg
+
+    # buildifier: disable=print
+    print("""
+DEPRECATED: please replace this instance of entry_point with the following:
+
+```
+load("@python39//:defs.bzl", "interpreter")
+load("@rules_python//python:entry_point.bzl", "entry_point")
+
+entry_point(
+    name = "{pkg}",
+    pkg = "@pip_{pkg}//:pkg",
+    script = "{script}",
+)
+```
+""".format(pkg = _clean_name(pkg), script = script))
     return "@pip_" + _clean_name(pkg) + "//:rules_python_wheel_entry_point_" + script
 
 def _get_annotation(requirement):

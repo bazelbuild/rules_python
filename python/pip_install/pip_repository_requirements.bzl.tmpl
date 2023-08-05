@@ -32,10 +32,10 @@ def dist_info_requirement(name):
     return "@%%NAME%%_" + _clean_name(name) + "//:dist_info"
 
 def entry_point(pkg, script = None):
-
     if not script:
         script = pkg
 
+    # buildifier: disable=print
     print("""
 DEPRECATED: please replace this instance of entry_point with the following:
 
