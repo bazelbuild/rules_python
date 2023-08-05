@@ -51,7 +51,7 @@ load("//python:py_binary.bzl", "py_binary")
 
 _tool = Label("//python/pip_install/tools/entry_point_generator")
 
-def entry_point(*, name, pkg, script = None, deps = None, binary_rule = py_binary, **kwargs):
+def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule = py_binary, **kwargs):
     """Generate an entry_point for a given package
 
     Args:

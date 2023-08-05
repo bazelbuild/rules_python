@@ -226,7 +226,12 @@ def py_binary(name, python_version, **kwargs):
     return _py_rule(_py_binary, _transition_py_binary, name, python_version, **kwargs)
 
 def py_entry_point_binary(name, python_version, **kwargs):
-    return _py_rule(_py_entry_point_binary, _transition_py_binary, name, python_version, **kwargs)
+    return _py_entry_point_binary(
+        name = name,
+        python_version = python_version,
+        binary_rule = py_binary,
+        **kwargs
+    )
 
 def py_test(name, python_version, **kwargs):
     return _py_rule(_py_test, _transition_py_test, name, python_version, **kwargs)
