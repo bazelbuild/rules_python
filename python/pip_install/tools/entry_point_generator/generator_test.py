@@ -128,7 +128,7 @@ class RunTest(unittest.TestCase):
         # script to ever generate entry points for scripts within the main workspace,
         # but that is fine, we can create a separate generator or a boolean flag for
         # that.
-        if sys.path[0].endswith(".runfiles"):
+        if ".runfiles" not in sys.path[0]:
             sys.path = sys.path[1:]
 
         from foo.bar import baz
@@ -175,7 +175,7 @@ class RunTest(unittest.TestCase):
         # script to ever generate entry points for scripts within the main workspace,
         # but that is fine, we can create a separate generator or a boolean flag for
         # that.
-        if sys.path[0].endswith(".runfiles"):
+        if ".runfiles" not in sys.path[0]:
             sys.path = sys.path[1:]
 
         from foo.baz import Bar
