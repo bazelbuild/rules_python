@@ -22,6 +22,9 @@ from python.pip_install.tools.entry_point_generator.generator import run
 
 
 class RunTest(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
     def test_no_entry_point(self):
         with self.assertRaises(RuntimeError) as cm:
             run(
@@ -131,7 +134,11 @@ class RunTest(unittest.TestCase):
         if ".runfiles" not in sys.path[0]:
             sys.path = sys.path[1:]
 
-        from foo.bar import baz
+        try:
+            from foo.bar import baz
+        except ImportError:
+            entries = "\\n".join(sys.path)
+            print(f"sys.path is:\\n{entries}")
 
         if __name__ == "__main__":
             sys.exit(baz())
@@ -178,7 +185,11 @@ class RunTest(unittest.TestCase):
         if ".runfiles" not in sys.path[0]:
             sys.path = sys.path[1:]
 
-        from foo.baz import Bar
+        try:
+            from foo.baz import Bar
+        except ImportError:
+            entries = "\\n".join(sys.path)
+            print(f"sys.path is:\\n{entries}")
 
         if __name__ == "__main__":
             sys.exit(Bar.baz())

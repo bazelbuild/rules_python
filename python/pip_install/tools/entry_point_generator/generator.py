@@ -36,7 +36,11 @@ import sys
 if ".runfiles" not in sys.path[0]:
     sys.path = sys.path[1:]
 
-from {module} import {attr}
+try:
+    from {module} import {attr}
+except ImportError:
+    entries = "\\n".join(sys.path)
+    print(f"sys.path is:\\n{{entries}}")
 
 if __name__ == "__main__":
     sys.exit({entry_point}())
