@@ -185,8 +185,11 @@ alias(name = "pip",             actual = select({{":" + item: "@{py_repository}_
 load(
     "{rules_python}//python/config_settings:transition.bzl",
     _py_binary = "py_binary",
-    _py_entry_point_binary = "py_entry_point_binary",
     _py_test = "py_test",
+)
+load(
+    "{rules_python}//python:py_entry_point_binary.bzl",
+    _py_entry_point_binary = "py_entry_point_binary",
 )
 load("{rules_python}//python:pip.bzl", _compile_pip_requirements = "compile_pip_requirements")
 
@@ -203,7 +206,7 @@ def py_binary(name, **kwargs):
 def py_entry_point_binary(name, **kwargs):
     return _py_entry_point_binary(
         name = name,
-        python_version = "{python_version}",
+        binary_rule = py_binary,
         **kwargs
     )
 

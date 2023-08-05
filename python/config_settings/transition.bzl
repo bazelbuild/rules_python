@@ -18,7 +18,6 @@ them to the desired target platform.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
-load("//python:py_entry_point_binary.bzl", _py_entry_point_binary = "py_entry_point_binary")
 load("//python:py_test.bzl", _py_test = "py_test")
 load("//python/config_settings/private:py_args.bzl", "py_args")
 
@@ -224,14 +223,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
 
 def py_binary(name, python_version, **kwargs):
     return _py_rule(_py_binary, _transition_py_binary, name, python_version, **kwargs)
-
-def py_entry_point_binary(name, python_version, **kwargs):
-    return _py_entry_point_binary(
-        name = name,
-        python_version = python_version,
-        binary_rule = py_binary,
-        **kwargs
-    )
 
 def py_test(name, python_version, **kwargs):
     return _py_rule(_py_test, _transition_py_test, name, python_version, **kwargs)

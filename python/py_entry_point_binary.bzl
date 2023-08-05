@@ -61,7 +61,7 @@ def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule 
             generated. Mandatory if there are more than 1 console_script in the
             package.
         binary_rule: The binary rule to call to create the entry_point binary.
-            Defaults to py_binary.
+            Defaults to @rules_python//python:py_binary.bzl#py_binary.
         deps: The extra dependencies to add to the binary_rule rule.
         **kwargs: Extra parameters forwarded to binary_rule.
     """
