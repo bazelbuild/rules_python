@@ -87,7 +87,8 @@ platformdirs==3.5.1 \
 pylint==2.15.10 \
     --hash=sha256:9df0d07e8948a1c3ffa3b6e2d7e6e63d9fb457c5da5b961ed63106594780cc7e \
     --hash=sha256:b3dc5ef7d33858f297ac0d06cc73862f01e4f2e74025ec3eff347ce0bc60baf5
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
     #   pylint-print
 pylint-print==1.0.1 \
     --hash=sha256:30aa207e9718ebf4ceb47fb87012092e6d8743aab932aa07aa14a73e750ad3d0 \
