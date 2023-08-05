@@ -1,18 +1,35 @@
-load("@pip_39//:requirements.bzl", "entry_point")
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:entry_point.bzl", "entry_point")
 
-alias(
+entry_point(
     name = "yamllint",
-    actual = entry_point("yamllint"),
+    pkg = "@pip//yamllint",
+    # yamllint does not have any other scripts except 'yamllint' so the
+    # user does not have to specify which console script we should chose from
+    # the package.
+)
+
+entry_point(
+    name = "pylint",
+    pkg = "@pip//pylint",
+    # Because `pylint` has multiple console_scripts available, we have to
+    # specify which we want
+    script = "pylint",
+    deps = [
+        # One can add extra dependencies to the entry point.
+        "@pip//pylint_print",
+    ],
 )
 
 py_test(
     name = "entry_point_test",
     srcs = ["test_entry_point.py"],
     data = [
+        ":pylint",
         ":yamllint",
     ],
     env = {
+        "PYLINT_ENTRY_POINT": "$(rlocationpath :pylint)",
         "YAMLLINT_ENTRY_POINT": "$(rlocationpath :yamllint)",
     },
     main = "test_entry_point.py",

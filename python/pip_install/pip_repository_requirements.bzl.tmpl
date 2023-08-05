@@ -32,8 +32,23 @@ def dist_info_requirement(name):
     return "@%%NAME%%_" + _clean_name(name) + "//:dist_info"
 
 def entry_point(pkg, script = None):
+
     if not script:
         script = pkg
+
+    print("""
+DEPRECATED: please replace this instance of entry_point with the following:
+
+```
+load("@rules_python//python:entry_point.bzl", "entry_point")
+
+entry_point(
+    name = "{pkg}",
+    pkg = "@%%NAME%%_{pkg}//:pkg",
+    script = "{script}",
+)
+```
+""".format(pkg = _clean_name(pkg), script = script))
     return "@%%NAME%%_" + _clean_name(pkg) + "//:rules_python_wheel_entry_point_" + script
 
 def _get_annotation(requirement):

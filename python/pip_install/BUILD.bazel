@@ -4,6 +4,7 @@ filegroup(
         "BUILD.bazel",
         "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",
+        "//python/pip_install/tools/entry_point_generator:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
     ],
     visibility = ["//:__pkg__"],

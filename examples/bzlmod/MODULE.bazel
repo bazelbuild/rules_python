@@ -113,10 +113,7 @@ pip.parse(
         "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
-
-# NOTE: The pip_39 repo is only used because the plain `@pip` repo doesn't
-# yet support entry points; see https://github.com/bazelbuild/rules_python/issues/1262
-use_repo(pip, "pip", "pip_39")
+use_repo(pip, "pip")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(
