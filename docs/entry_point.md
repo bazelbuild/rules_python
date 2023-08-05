@@ -18,7 +18,7 @@ entry_point(
 
 Or just use the default version:
 ```starlark
-load("@rules_python//python:entry_point.bzl", "entry_point")
+load("@rules_python//python:py_entry_point_binary.bzl", "entry_point")
 
 entry_point(
     name = "pylint",

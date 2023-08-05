@@ -89,10 +89,10 @@ bzl_library(
 )
 
 bzl_library(
-    name = "entry_point_bzl",
+    name = "py_entry_point_binary.bzl",
     srcs = [
-        "//python:entry_point.bzl",
         "//python:py_binary.bzl",
+        "//python:py_entry_point_binary.bzl",
         "//python/private:util_bzl",
     ],
 )
@@ -141,10 +141,10 @@ stardoc(
 stardoc(
     name = "entry-point",
     out = "entry_point.md_",
-    input = "//python:entry_point.bzl",
+    input = "//python:py_entry_point_binary.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [
-        ":entry_point_bzl",
+        ":py_entry_point_binary.bzl",
     ],
 )
 

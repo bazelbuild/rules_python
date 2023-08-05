@@ -17,8 +17,8 @@ them to the desired target platform.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//python:entry_point.bzl", _entry_point = "entry_point")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
+load("//python:py_entry_point_binary.bzl", _entry_point = "entry_point")
 load("//python:py_test.bzl", _py_test = "py_test")
 load("//python/config_settings/private:py_args.bzl", "py_args")
 

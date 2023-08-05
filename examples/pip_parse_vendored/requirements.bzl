@@ -42,7 +42,7 @@ DEPRECATED: please replace this instance of entry_point with the following:
 
 ```
 load("@python39//:defs.bzl", "interpreter")
-load("@rules_python//python:entry_point.bzl", "entry_point")
+load("@rules_python//python:py_entry_point_binary.bzl", "entry_point")
 
 entry_point(
     name = "{pkg}",
