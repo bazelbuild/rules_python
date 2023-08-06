@@ -141,7 +141,8 @@ def _post_process_installation_report(
         file.write("\n")
 
 
-def run_pip(config_setting, requirements_in, intermediate_file):
+def _generate_intermediate_file(config_setting, requirements_in, intermediate_file):
+    """Generates an intermediate file from the installation report."""
     with tempfile.TemporaryDirectory() as temp_dir:
         raw_installation_report = Path(temp_dir) / "installation_report.json"
         sys.argv = [
@@ -282,7 +283,7 @@ if __name__ == "__main__":
             print("Generating an intermediate file.")
             # Feed the output of pip-compile into the installation report
             # generation.
-            sys.exit(run_pip(config_setting, requirements_file_relative_path,
+            sys.exit(_generate_intermediate_file(config_setting, requirements_file_relative_path,
                            Path(pip_installation_report_relative)))
         else:
             print("Not generating an intermediate file.")

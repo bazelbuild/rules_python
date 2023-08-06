@@ -19,7 +19,8 @@ import main
 
 class ExampleTest(unittest.TestCase):
     def test_main(self):
-        self.assertEqual("2.25.1", main.version())
+        self.assertEqual("1.4.1", main.cognitojwt_version())
+        self.assertEqual("2.31.0", main.requests_version())
 
 
 if __name__ == "__main__":

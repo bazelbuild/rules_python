@@ -14,13 +14,19 @@
 
 import sys
 
-import cognitojwt
+import pkg_resources
 import requests
 
 
+def cognitojwt_version() -> str:
+    return pkg_resources.require("cognitojwt")[0].version
+
+def requests_version() -> str:
+    return requests.__version__
+
 def main(argv):
-    print(f"cognitojwt version: {requests.__version__}")
-    print(f"requests version: {requests.__version__}")
+    print(f"cognitojwt version: {cognitojwt_version()}")
+    print(f"requests version: {requests_version()}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
