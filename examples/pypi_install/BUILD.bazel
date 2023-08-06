@@ -22,7 +22,8 @@ compile_pip_requirements(
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.in",
     # Pass in a select-like value that lets the macro decide what to do with
-    # the file.
+    # the file. Having these values as dictionaries allows us to do some
+    # validation before the underlying targets get instantiated.
     requirements_txt = {
         "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },

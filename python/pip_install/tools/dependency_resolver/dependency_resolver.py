@@ -86,6 +86,14 @@ def _locate(bazel_runfiles, file):
 
 
 def _evaluate_marker(marker: Marker, environment: Mapping[str, str], extra: str):
+    """Evaluates a requirements marker found in the metadata.
+
+    https://packaging.pypa.io/en/stable/markers.html
+
+    Since there doesn't seem to be a packaging-provided helper to evaluate
+    against multiple extras, call this function once for each extra. Call it at
+    least once with `extra` set to the empty string.
+    """
     environment_copy = environment.copy()
     environment_copy["extra"] = extra
     return marker.evaluate(environment_copy)
@@ -95,11 +103,13 @@ def _post_process_installation_report(
         config_setting: str,
         raw_installation_report: Path,
         intermediate_file: Path):
+    """Processes an installation report into an intermediate file.
 
+    See the docs on installation reports for more information:
+    https://pip.pypa.io/en/stable/reference/installation-report/
+    """
     with raw_installation_report.open() as file:
         report = json.load(file)
-
-    #json.dump(report, sys.stdout, indent=4)
 
     environment = report["environment"]
 
@@ -110,6 +120,7 @@ def _post_process_installation_report(
         metadata = install["metadata"]
         name = metadata["name"]
 
+        # Extract the basic information about the hosted file (URL and sha256).
         info = intermediate.setdefault(name, {}).setdefault(config_setting, {})
         info["url"] = download_info["url"]
         hash = download_info["archive_info"].get("hash", "")
@@ -120,6 +131,7 @@ def _post_process_installation_report(
 
         extras = install.get("requested_extras", []) + [""]
 
+        # Extract the dependency information.
         deps = []
         for raw_requirement in metadata.get("requires_dist", []):
             requirement = Requirement(raw_requirement)
@@ -142,7 +154,7 @@ def _post_process_installation_report(
 
 
 def _generate_intermediate_file(config_setting, requirements_in, intermediate_file):
-    """Generates an intermediate file from the installation report."""
+    """Generates an installation report and then converts it into an intermediate file."""
     with tempfile.TemporaryDirectory() as temp_dir:
         raw_installation_report = Path(temp_dir) / "installation_report.json"
         sys.argv = [
@@ -287,12 +299,12 @@ if __name__ == "__main__":
                            Path(pip_installation_report_relative)))
         else:
             print("Not generating an intermediate file.")
-
-        requirements_file_relative_path.write_text(content)
     else:
         # cli will exit(0) on success
         try:
+            print("Checking " + requirements_file)
             cli()
+            print("cli() should exit", file=sys.stderr)
             sys.exit(1)
         except SystemExit as e:
             if e.code == 2:
