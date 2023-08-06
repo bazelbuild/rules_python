@@ -1,9 +1,3 @@
-#load(
-#    "@pypi//:requirements.bzl",
-#    "data_requirement",
-#    "dist_info_requirement",
-#    "entry_point",
-#)
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
@@ -27,6 +21,8 @@ compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
     requirements_in = "requirements.in",
+    # Pass in a select-like value that lets the macro decide what to do with
+    # the file.
     requirements_txt = {
         "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },

@@ -14,6 +14,7 @@
 
 """Rules to verify and update pip-compile locked requirements.txt"""
 
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:types.bzl", "types")
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
@@ -29,6 +30,10 @@ def _generate_data_select(config_to_filepath_dict):
 
 def _generate_config_select(config_to_filepath_dict):
     return select({k: [k] for k in config_to_filepath_dict})
+
+def _validate_keys_match(description, dict1, dict2):
+    if not sets.is_equal(sets.make(dict1.keys()), sets.make(dict2.keys())):
+        fail("The keys of {} must match.".format(description))
 
 def compile_pip_requirements(
         name,
@@ -96,6 +101,7 @@ def compile_pip_requirements(
     data = [name, requirements_in] + requirements_txt_data + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
     if intermediate_file:
         data += _generate_loc_select(intermediate_file, "{}")
+        _validate_keys_match("requirements_txt and intermediate_file", intermediate_file, requirements_txt)
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -145,6 +151,15 @@ def compile_pip_requirements(
         "visibility": visibility,
     }
 
+    # If we are generating data into an intermediate file, then we mark the
+    # update target as only compatible with the platforms for which an
+    # intermediate file is specified. This should hopefully prevent confusing
+    # runtime errors.
+    if intermediate_file:
+        compatible = {config: [] for config in intermediate_file}
+        compatible["//conditions:default"] = ["@platforms//:incompatible"]
+        attrs["target_compatible_with"] = select(compatible)
+
     # cheap way to detect the bazel version
     _bazel_version_4_or_greater = "propeller_optimize" in dir(native)
 
@@ -152,8 +167,6 @@ def compile_pip_requirements(
     if _bazel_version_4_or_greater:
         attrs["env"] = kwargs.pop("env", {})
 
-    # TODO(phil): Add a target_compatible_with here for all the configs not
-    # mentioned in intermediate_file.
     py_binary(
         name = name + ".update",
         **attrs
