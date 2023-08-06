@@ -18,14 +18,18 @@ load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_inte
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 
 CPPFLAGS = "CPPFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+
+_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -268,56 +272,12 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-def _pkg_aliases(rctx, repo_name, bzl_packages):
-    """Create alias declarations for each python dependency.
-
-    The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
-    allow users to use requirement() without needed a corresponding `use_repo()` for each dep
-    when using bzlmod.
-
-    Args:
-        rctx: the repository context.
-        repo_name: the repository name of the parent that is visible to the users.
-        bzl_packages: the list of packages to setup.
-    """
-    for name in bzl_packages:
-        build_content = """package(default_visibility = ["//visibility:public"])
-
-alias(
-    name = "{name}",
-    actual = "@{repo_name}_{dep}//:pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
-)
-
-alias(
-    name = "whl",
-    actual = "@{repo_name}_{dep}//:whl",
-)
-
-alias(
-    name = "data",
-    actual = "@{repo_name}_{dep}//:data",
-)
-
-alias(
-    name = "dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
-)
-""".format(
-            name = name,
-            repo_name = repo_name,
-            dep = name,
-        )
-        rctx.file("{}/BUILD.bazel".format(name), build_content)
-
 def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
     repo_name = rctx.attr.repo_name
     build_contents = _BUILD_FILE_CONTENTS
-    _pkg_aliases(rctx, repo_name, bzl_packages)
+    aliases = render_pkg_aliases(repo_name = repo_name, bzl_packages = bzl_packages)
+    for path, contents in aliases.items():
+        rctx.file(path, contents)
 
     # NOTE: we are using the canonical name with the double '@' in order to
     # always uniquely identify a repository, as the labels are being passed as
@@ -458,7 +418,9 @@ def _pip_repository_impl(rctx):
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
 
     if rctx.attr.incompatible_generate_aliases:
-        _pkg_aliases(rctx, rctx.attr.name, bzl_packages)
+        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+        for path, contents in aliases.items():
+            rctx.file(path, contents)
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
@@ -663,16 +625,7 @@ def _whl_library_impl(rctx):
         "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
-        "--repo",
-        rctx.attr.repo,
-        "--repo-prefix",
-        rctx.attr.repo_prefix,
     ]
-    if rctx.attr.annotation:
-        args.extend([
-            "--annotation",
-            rctx.path(rctx.attr.annotation),
-        ])
 
     args = _parse_optional_attrs(rctx, args)
 
@@ -687,7 +640,71 @@ def _whl_library_impl(rctx):
     if result.return_code:
         fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
+    metadata = json.decode(rctx.read("metadata.json"))
+    rctx.delete("metadata.json")
+
+    entry_points = {}
+    for item in metadata["entry_points"]:
+        name = item["name"]
+        module = item["module"]
+        attribute = item["attribute"]
+
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] + "_py" if name.endswith(".py") else name
+        entry_point_target_name = (
+            _WHEEL_ENTRY_POINT_PREFIX + "_" + entry_point_without_py
+        )
+        entry_point_script_name = entry_point_target_name + ".py"
+
+        rctx.file(
+            entry_point_script_name,
+            _generate_entry_point_contents(module, attribute),
+        )
+        entry_points[entry_point_without_py] = entry_point_script_name
+
+    build_file_contents = generate_whl_library_build_bazel(
+        repo_prefix = rctx.attr.repo_prefix,
+        dependencies = metadata["deps"],
+        data_exclude = rctx.attr.pip_data_exclude,
+        tags = [
+            "pypi_name=" + metadata["name"],
+            "pypi_version=" + metadata["version"],
+        ],
+        entry_points = entry_points,
+        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
     return
+
+def _generate_entry_point_contents(
+        module,
+        attribute,
+        shebang = "#!/usr/bin/env python3"):
+    """Generate the contents of an entry point script.
+
+    Args:
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    contents = """\
+{shebang}
+import sys
+from {module} import {attribute}
+if __name__ == "__main__":
+    sys.exit({attribute}())
+""".format(
+        shebang = shebang,
+        module = module,
+        attribute = attribute,
+    )
+    return contents
 
 whl_library_attrs = {
     "annotation": attr.label(
