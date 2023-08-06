@@ -22,12 +22,12 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 _DOCS = {
-    "entry_point": "//docs:entry-point",
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
     "pip_repository": "//docs:pip-repository",
     "py_cc_toolchain": "//docs:py_cc_toolchain-docs",
     "py_cc_toolchain_info": "//docs:py_cc_toolchain_info-docs",
+    "py_entry_point_binary": "//docs:py-entry-point-binary",
     "python": "//docs:core-docs",
 }
 
@@ -139,8 +139,8 @@ stardoc(
 )
 
 stardoc(
-    name = "entry-point",
-    out = "entry_point.md_",
+    name = "py-entry-point-binary",
+    out = "py_entry_point_binary.md_",
     input = "//python:py_entry_point_binary.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [
