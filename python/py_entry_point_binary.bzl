@@ -49,7 +49,46 @@ entry_point(
 
 load("//python:py_binary.bzl", "py_binary")
 
-_tool = Label("//python/pip_install/tools/entry_point_generator")
+def _impl(ctx):
+    args = ctx.actions.args()
+    args.add("--script", ctx.attr.script)
+    args.add("--out", ctx.outputs.out)
+    args.add_all(ctx.files.dist_info)
+
+    ctx.actions.run(
+        inputs = ctx.files.dist_info,
+        outputs = [ctx.outputs.out],
+        arguments = [args],
+        executable = ctx.executable._tool,
+    )
+
+    return [DefaultInfo(
+        files = depset([ctx.outputs.out]),
+    )]
+
+_gen_entry_point = rule(
+    _impl,
+    attrs = {
+        "dist_info": attr.label(
+            doc = "The dist-info files for the package.",
+            mandatory = True,
+        ),
+        "out": attr.output(
+            doc = "Output file location.",
+            mandatory = True,
+        ),
+        "script": attr.string(
+            doc = "The script to create the entry_point script for.",
+            default = "",
+        ),
+        "_tool": attr.label(
+            default = "//python/pip_install/tools/entry_point_generator",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+    doc = "Builds an entry_point script from an entry_points.txt file.",
+)
 
 def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule = py_binary, **kwargs):
     """Generate an entry_point for a given package
@@ -67,23 +106,12 @@ def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule 
     """
     main = "rules_python_entry_point_{}.py".format(name)
 
-    # TODO @aignas 2023-08-05: Ideally this could be implemented as a rule that is using
-    # the Python toolchain, but this should be functional and establish the API.
-    native.genrule(
+    _gen_entry_point(
         name = name + "_gen",
-        cmd = "$(location {tool}) {args} $(SRCS) --out $@".format(
-            tool = _tool,
-            args = "--script=" + script if script else "",
-        ),
-        # NOTE @aignas 2023-08-05: This should work with
-        # `incompatible_generate_aliases` and without.
-        srcs = [
-            pkg.replace(":pkg", "") + ":dist_info",
-        ],
-        outs = [main],
-        tools = [_tool],
-        executable = True,
-        visibility = ["//visibility:private"],
+        # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
+        dist_info = pkg.replace(":pkg", "") + ":dist_info",
+        out = main,
+        script = script,
     )
 
     entry_point_deps = [pkg]
