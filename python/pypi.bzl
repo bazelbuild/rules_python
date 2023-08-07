@@ -1,5 +1,5 @@
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
-load("//python/private:intermediate_pypi_install.bzl", "combine_intermediate_files", "generate_pypi_package_load")
+load("//python/private:pypi.bzl", "combine_intermediate_files", "generate_pypi_package_load")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
