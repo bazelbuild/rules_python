@@ -40,6 +40,7 @@ try:
     from {module} import {attr}
 except ImportError:
     entries = "\\n".join(sys.path)
+    print("Printing sys.path entries for easier debugging:")
     print(f"sys.path is:\\n{{entries}}")
 
 if __name__ == "__main__":
@@ -58,7 +59,7 @@ class EntryPointsParser(configparser.ConfigParser):
 
 def run(
     *,
-    dist_info_files: list[pathlib.Path],
+    entry_points: pathlib.Path,
     out: pathlib.Path,
     script: str,
     shebang: str,
@@ -66,23 +67,11 @@ def run(
     """Run the generator
 
     Args:
-        dist_info_files: All of the files within the dist-info.
+        entry_points: The entry_points.txt file to be parsed.
         out: The output file.
         script: The script entry in the entry_points.txt file.
         shebang: The shebang to use for the script.
     """
-    entry_points = None
-    for f in dist_info_files:
-        if f.name == _ENTRY_POINTS_TXT:
-            entry_points = f
-            break
-
-    if entry_points is None:
-        raise RuntimeError(
-            f"The package does not provide any {_ENTRY_POINTS_TXT} file in it's dist-info"
-        )
-        return 1
-
     config = EntryPointsParser()
     config.read(entry_points)
     try:
@@ -121,32 +110,35 @@ def run(
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--out",
-        type=pathlib.Path,
-        required=True,
-        help="The output file.",
-    )
-    parser.add_argument(
         "--shebang",
         default="#!/usr/bin/env python3",
-        help="The shebang to use for the output script.",
+        help="The shebang to use for the output script. Defaults to '%(default)s'.",
     )
     parser.add_argument(
         "--script",
         help="The script to generate the entry_point template for.",
     )
     parser.add_argument(
-        "dist_info_files",
-        metavar="DISTINFO FILES",
+        "entry_points",
+        metavar="ENTRY_POINTS_TXT",
         type=pathlib.Path,
-        nargs="+",
-        help="All of the files within dist-info of a PyPI wheel",
+        help="The entry_points.txt within the dist-info of a PyPI wheel",
+    )
+    parser.add_argument(
+        "out",
+        type=pathlib.Path,
+        metavar="OUT",
+        help="The output file.",
     )
     args = parser.parse_args()
 
     return run(
-        dist_info_files=args.dist_info_files,
+        entry_points=args.entry_points,
         out=args.out,
         script=args.script,
         shebang=args.shebang,
     )
+
+
+if __name__ == "__main__":
+    main()

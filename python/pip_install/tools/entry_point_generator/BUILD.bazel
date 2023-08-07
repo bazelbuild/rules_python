@@ -12,17 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 load("//python:py_test.bzl", "py_test")
 
-py_binary(
-    name = "entry_point_generator",
-    srcs = ["__main__.py"],
-    imports = ["../../../.."],
-    main = "__main__.py",
+exports_files(
+    ["generator.py"],
     visibility = ["//visibility:public"],
-    deps = [":generator"],
 )
 
 py_library(

@@ -25,20 +25,6 @@ class RunTest(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
-    def test_no_entry_point(self):
-        with self.assertRaises(RuntimeError) as cm:
-            run(
-                dist_info_files=[pathlib.Path(__file__)],
-                out=pathlib.Path(__file__),
-                script=None,
-                shebang="#!/dev/null",
-            )
-
-        self.assertEqual(
-            "The package does not provide any entry_points.txt file in it's dist-info",
-            cm.exception.args[0],
-        )
-
     def test_no_console_scripts_error(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = pathlib.Path(tmpdir)
@@ -56,7 +42,7 @@ class RunTest(unittest.TestCase):
 
             with self.assertRaises(RuntimeError) as cm:
                 run(
-                    dist_info_files=[entry_points],
+                    entry_points=entry_points,
                     out=pathlib.Path(__file__),
                     script=None,
                     shebang="#!/dev/null",
@@ -85,7 +71,7 @@ class RunTest(unittest.TestCase):
 
             with self.assertRaises(RuntimeError) as cm:
                 run(
-                    dist_info_files=[entry_points],
+                    entry_points=entry_points,
                     out=pathlib.Path(__file__),
                     script=None,
                     shebang="#!/dev/null",
@@ -113,7 +99,7 @@ class RunTest(unittest.TestCase):
             out = tmpdir / "out.py"
 
             run(
-                dist_info_files=[entry_points],
+                entry_points=entry_points,
                 out=out,
                 script=None,
                 shebang="#!/dev/null",
@@ -138,6 +124,7 @@ class RunTest(unittest.TestCase):
             from foo.bar import baz
         except ImportError:
             entries = "\\n".join(sys.path)
+            print("Printing sys.path entries for easier debugging:")
             print(f"sys.path is:\\n{entries}")
 
         if __name__ == "__main__":
@@ -164,7 +151,7 @@ class RunTest(unittest.TestCase):
             out = tmpdir / "out.py"
 
             run(
-                dist_info_files=[entry_points],
+                entry_points=entry_points,
                 out=out,
                 script="bar",
                 shebang="#!/dev/null",
@@ -189,6 +176,7 @@ class RunTest(unittest.TestCase):
             from foo.baz import Bar
         except ImportError:
             entries = "\\n".join(sys.path)
+            print("Printing sys.path entries for easier debugging:")
             print(f"sys.path is:\\n{entries}")
 
         if __name__ == "__main__":

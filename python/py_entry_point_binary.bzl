@@ -48,47 +48,7 @@ entry_point(
 """
 
 load("//python:py_binary.bzl", "py_binary")
-
-def _impl(ctx):
-    args = ctx.actions.args()
-    args.add("--script", ctx.attr.script)
-    args.add("--out", ctx.outputs.out)
-    args.add_all(ctx.files.dist_info)
-
-    ctx.actions.run(
-        inputs = ctx.files.dist_info,
-        outputs = [ctx.outputs.out],
-        arguments = [args],
-        executable = ctx.executable._tool,
-    )
-
-    return [DefaultInfo(
-        files = depset([ctx.outputs.out]),
-    )]
-
-_gen_entry_point = rule(
-    _impl,
-    attrs = {
-        "dist_info": attr.label(
-            doc = "The dist-info files for the package.",
-            mandatory = True,
-        ),
-        "out": attr.output(
-            doc = "Output file location.",
-            mandatory = True,
-        ),
-        "script": attr.string(
-            doc = "The script to create the entry_point script for.",
-            default = "",
-        ),
-        "_tool": attr.label(
-            default = "//python/pip_install/tools/entry_point_generator",
-            executable = True,
-            cfg = "exec",
-        ),
-    },
-    doc = "Builds an entry_point script from an entry_points.txt file.",
-)
+load("//python/private:py_entry_point_gen.bzl", "py_entry_point_gen")
 
 def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule = py_binary, **kwargs):
     """Generate an entry_point for a given package
@@ -106,21 +66,22 @@ def py_entry_point_binary(*, name, pkg, script = None, deps = None, binary_rule 
     """
     main = "rules_python_entry_point_{}.py".format(name)
 
-    _gen_entry_point(
+    # This may come via transitions, so ensure that we are not using it at all.
+    _ = kwargs.pop("srcs", None)  # buildifier: disable=unused-variable
+    _ = kwargs.pop("main", None)  # buildifier: disable=unused-variable
+
+    py_entry_point_gen(
         name = name + "_gen",
         # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
         dist_info = pkg.replace(":pkg", "") + ":dist_info",
         out = main,
         script = script,
+        visibility = ["//visibility:private"],
     )
 
     entry_point_deps = [pkg]
     if deps:
         entry_point_deps.extend(deps)
-
-    # This may come via transitions, so ensure that we are not using it at all.
-    _ = kwargs.pop("srcs", None)  # buildifier: disable=unused-variable
-    _ = kwargs.pop("main", None)  # buildifier: disable=unused-variable
 
     binary_rule(
         name = name,
