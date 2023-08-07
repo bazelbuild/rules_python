@@ -30,6 +30,7 @@ load(
     "PLATFORMS",
     "WINDOWS_NAME",
 )
+load(":which.bzl", "which_with_fail")
 
 def get_repository_name(repository_workspace):
     dummy_label = "//:_"
@@ -325,7 +326,7 @@ def get_host_os_arch(rctx):
         os_name = WINDOWS_NAME
     else:
         # This is not ideal, but bazel doesn't directly expose arch.
-        arch = rctx.execute(["uname", "-m"]).stdout.strip()
+        arch = rctx.execute([which_with_fail("uname", rctx), "-m"]).stdout.strip()
 
         # Normalize the os_name.
         if "mac" in os_name.lower():
