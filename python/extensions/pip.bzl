@@ -15,9 +15,9 @@
 "pip module extension for use with bzlmod"
 
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
-load("@rules_python//python:pip.bzl", "whl_library_alias")
+load("//python:pip.bzl", "whl_library_alias")
 load(
-    "@rules_python//python/pip_install:pip_repository.bzl",
+    "//python/pip_install:pip_repository.bzl",
     "locked_requirements_label",
     "pip_hub_repository_bzlmod",
     "pip_repository_attrs",
@@ -25,7 +25,7 @@ load(
     "use_isolated",
     "whl_library",
 )
-load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:version_label.bzl", "version_label")
 
