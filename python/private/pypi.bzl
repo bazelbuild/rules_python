@@ -150,11 +150,10 @@ def _wheel_library_impl(repository_ctx):
     deps = ["@{}//{}".format(repository_ctx.attr.alias_repo_name, dep) for dep in repository_ctx.attr.deps]
     lines = [
         """load("@rules_python//python/private:pypi.bzl", "wrapped_py_wheel_library")""",
-        """wrapped_py_wheel_library(""",
-        """    name = "library",""",
-        """    wheel_repo_name = "{}",""".format(repository_ctx.attr.wheel_repo_name),
-        """    deps = {},""".format(json.encode(deps)),
-        """)""",
+        """wrapped_py_wheel_library(name="library", wheel_repo_name="{}", deps={})""".format(
+            repository_ctx.attr.wheel_repo_name,
+            json.encode(deps),
+        ),
     ]
     repository_ctx.file("BUILD", "\n".join(lines), executable=False)
 
