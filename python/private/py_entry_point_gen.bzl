@@ -16,6 +16,12 @@
 A private rule to generate an entry_point python file to be used in a py_binary.
 
 Right now it only supports console_scripts via the entry_points.txt file in the dist-info.
+
+
+NOTE @aignas 2023-08-07: This cannot be in pure starlark, because we need to
+read a file and then create a `.py` file based on the contents of that file,
+which cannot be done in pure starlark according to
+https://github.com/bazelbuild/bazel/issues/14744
 """
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
@@ -78,10 +84,5 @@ py_entry_point_gen = rule(
     toolchains = [_TOOLCHAIN_TYPE],
     doc = """\
 Builds an entry_point script from an entry_points.txt file.
-
-NOTE @aignas 2023-08-07: This cannot be in pure starlark, because we need to
-read a file and then create a `.py` file based on the contents of that file,
-which cannot be done in pure starlark according to
-https://github.com/bazelbuild/bazel/issues/14744
 """,
 )
