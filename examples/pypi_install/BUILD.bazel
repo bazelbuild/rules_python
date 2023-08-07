@@ -30,6 +30,13 @@ compile_pip_requirements(
     intermediate_file = {
         "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
+    # TODO(phil): Add an attribute that accepts a binary. That binary will let
+    # users modify the intermediate file. Then they can:
+    # - Inject dependencies.
+    # - Remove dependencies.
+    # - Drop whole packages (is there such a use case?).
+    # - Add patches (support needed).
+    # - Override/create aliases (support needed).
 )
 
 config_setting(

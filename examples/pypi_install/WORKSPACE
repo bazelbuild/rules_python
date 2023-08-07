@@ -23,6 +23,8 @@ load("@rules_python//python:pypi.bzl", "pypi_install")
 
 pypi_install(
     name = "pypi_install",
+    # Use fully resolved labels so that they're not accidentally interpreted as
+    # repo-relative.
     pip_installation_report = {
         "@//:x86_64_linux": "//:intermediate_file_x86_64_linux.json",
     },
