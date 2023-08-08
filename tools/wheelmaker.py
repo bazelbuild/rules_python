@@ -50,6 +50,40 @@ def escape_filename_distribution_name(name):
     return normalize_package_name(name).replace("-", "_")
 
 
+def normalize_pep440(version):
+    """Normalize version according to PEP 440, with fallback for placeholders.
+
+    If there's a placeholder in braces, such as {BUILD_TIMESTAMP},
+    replace it with 0. Such placeholders can be used with stamping, in
+    which case they would have been resolved already by now; if they
+    haven't, we're doing an unstamped build, but we still need to
+    produce a valid version. If such replacements are made, the
+    original version string, sanitized to dot-separated alphanumerics,
+    is appended as a local version segment, so you understand what
+    placeholder was involved.
+
+    If that still doesn't produce a valid version, use version 0 and
+    append the original version string, sanitized to dot-separated
+    alphanumerics, as a local version segment.
+
+    """
+
+    try:
+        return str(packaging.version.Version(version))
+    except packaging.version.InvalidVersion:
+        pass
+
+    sanitized = re.sub(r'[^a-z0-9]+', '.', version.lower()).strip('.')
+    substituted = re.sub(r'\{\w+\}', '0', version)
+    delimiter = '.' if '+' in substituted else '+'
+    try:
+        return str(
+            packaging.version.Version(f'{substituted}{delimiter}{sanitized}')
+        )
+    except packaging.version.InvalidVersion:
+        return str(packaging.version.Version(f'0+{sanitized}'))
+
+
 class WheelMaker(object):
     def __init__(
         self,
@@ -63,7 +97,7 @@ class WheelMaker(object):
         strip_path_prefixes=None,
     ):
         self._name = name
-        self._version = str(packaging.version.Version(version))
+        self._version = normalize_pep440(version)
         self._build_tag = build_tag
         self._python_tag = python_tag
         self._abi = abi
@@ -188,7 +222,7 @@ Root-Is-Purelib: {}
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
         metadata = re.sub("^Name: .*$", "Name: %s" % name, metadata, flags=re.MULTILINE)
-        metadata += "Version: %s\n\n" % str(packaging.version.Version(version))
+        metadata += "Version: %s\n\n" % normalize_pep440(version)
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
