@@ -28,5 +28,5 @@ def which_with_fail(binary_name, rctx):
     """
     binary = rctx.which(binary_name)
     if binary == None:
-        fail(_binary_not_found_msg.format(binary_name = binary_name)
+        fail(_binary_not_found_msg.format(binary_name = binary_name))
     return binary
