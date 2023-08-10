@@ -188,8 +188,8 @@ load(
     _py_test = "py_test",
 )
 load(
-    "{rules_python}//python:py_entry_point_binary.bzl",
-    _py_entry_point_binary = "py_entry_point_binary",
+    "{rules_python}//python/entry_point:py_console_script_binary.bzl",
+    _py_console_script_binary = "py_console_script_binary",
 )
 load("{rules_python}//python:pip.bzl", _compile_pip_requirements = "compile_pip_requirements")
 
@@ -203,8 +203,8 @@ def py_binary(name, **kwargs):
         **kwargs
     )
 
-def py_entry_point_binary(name, **kwargs):
-    return _py_entry_point_binary(
+def py_console_script_binary(name, **kwargs):
+    return _py_console_script_binary(
         name = name,
         binary_rule = py_binary,
         **kwargs
@@ -262,7 +262,7 @@ load(
     _host_platform = "host_platform",
     _interpreter = "interpreter",
     _py_binary = "py_binary",
-    _py_entry_point_binary = "py_entry_point_binary",
+    _py_console_script_binary = "py_console_script_binary",
     _py_test = "py_test",
 )
 
@@ -270,7 +270,7 @@ compile_pip_requirements = _compile_pip_requirements
 host_platform = _host_platform
 interpreter = _interpreter
 py_binary = _py_binary
-py_entry_point_binary = _py_entry_point_binary
+py_console_script_binary = _py_console_script_binary
 py_test = _py_test
 """.format(
             repository_name = repository_name,
