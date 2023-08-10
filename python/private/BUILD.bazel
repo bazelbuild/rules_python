@@ -24,6 +24,12 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
+filegroup(
+    name = "coverage_deps",
+    srcs = ["coverage_deps.bzl"],
+    visibility = ["//tools/private/update_deps:__pkg__"],
+)
+
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
 filegroup(
     name = "bzl",

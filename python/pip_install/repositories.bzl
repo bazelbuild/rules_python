@@ -20,6 +20,7 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//:version.bzl", "MINIMUM_BAZEL_VERSION")
 
 _RULE_DEPS = [
+    # START: maintained by 'bazel run //tools/private:update_pip_deps'
     (
         "pypi__build",
         "https://files.pythonhosted.org/packages/03/97/f58c723ff036a8d8b4d3115377c0a37ed05c1f68dd9a0d66dab5e82c5c1c/build-0.9.0-py3-none-any.whl",
@@ -36,9 +37,19 @@ _RULE_DEPS = [
         "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
     ),
     (
+        "pypi__importlib_metadata",
+        "https://files.pythonhosted.org/packages/d7/31/74dcb59a601b95fce3b0334e8fc9db758f78e43075f22aeb3677dfb19f4c/importlib_metadata-1.4.0-py2.py3-none-any.whl",
+        "bdd9b7c397c273bcc9a11d6629a38487cd07154fa255a467bf704cd2c258e359",
+    ),
+    (
         "pypi__installer",
         "https://files.pythonhosted.org/packages/e5/ca/1172b6638d52f2d6caa2dd262ec4c811ba59eee96d54a7701930726bce18/installer-0.7.0-py3-none-any.whl",
         "05d1933f0a5ba7d8d6296bb6d5018e7c94fa473ceb10cf198a92ccea19c27b53",
+    ),
+    (
+        "pypi__more_itertools",
+        "https://files.pythonhosted.org/packages/bd/3f/c4b3dbd315e248f84c388bd4a72b131a29f123ecacc37ffb2b3834546e42/more_itertools-8.13.0-py3-none-any.whl",
+        "c5122bffc5f104d37c1626b8615b511f3427aa5389b94d61e5ef8236bfbc3ddb",
     ),
     (
         "pypi__packaging",
@@ -76,20 +87,11 @@ _RULE_DEPS = [
         "b60533f3f5d530e971d6737ca6d58681ee434818fab630c83a734bb10c083ce8",
     ),
     (
-        "pypi__importlib_metadata",
-        "https://files.pythonhosted.org/packages/d7/31/74dcb59a601b95fce3b0334e8fc9db758f78e43075f22aeb3677dfb19f4c/importlib_metadata-1.4.0-py2.py3-none-any.whl",
-        "bdd9b7c397c273bcc9a11d6629a38487cd07154fa255a467bf704cd2c258e359",
-    ),
-    (
         "pypi__zipp",
         "https://files.pythonhosted.org/packages/f4/50/cc72c5bcd48f6e98219fc4a88a5227e9e28b81637a99c49feba1d51f4d50/zipp-1.0.0-py2.py3-none-any.whl",
         "8dda78f06bd1674bd8720df8a50bb47b6e1233c503a4eed8e7810686bde37656",
     ),
-    (
-        "pypi__more_itertools",
-        "https://files.pythonhosted.org/packages/bd/3f/c4b3dbd315e248f84c388bd4a72b131a29f123ecacc37ffb2b3834546e42/more_itertools-8.13.0-py3-none-any.whl",
-        "c5122bffc5f104d37c1626b8615b511f3427aa5389b94d61e5ef8236bfbc3ddb",
-    ),
+    # END: maintained by 'bazel run //tools/private:update_pip_deps'
 ]
 
 _GENERIC_WHEEL = """\

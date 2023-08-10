@@ -1,5 +1,16 @@
 # For Developers
 
+## Updating internal dependencies
+
+1. Modify the `./python/pip_install/tools/requirements.txt` file and run:
+   ```
+   bazel run //tools/private/update_deps:update_pip_deps
+   ```
+1. Bump the coverage dependencies using the script using:
+   ```
+   bazel run //tools/private/update_deps:update_coverage_deps <VERSION>
+   ```
+
 ## Releasing
 
 Start from a clean checkout at `main`.

@@ -8,7 +8,7 @@
 
 "Python toolchain module extension for internal rule use"
 
-load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 
 # buildifier: disable=unused-variable
 def _internal_deps_impl(module_ctx):
