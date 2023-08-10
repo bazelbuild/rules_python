@@ -42,7 +42,7 @@ def _impl(ctx):
 
     args = ctx.actions.args()
     args.add(ctx.file._tool)
-    args.add("--script", ctx.attr.script)
+    args.add("--console-script", ctx.attr.console_script)
     args.add(entry_points_txt)
     args.add(ctx.outputs.out)
 
@@ -64,6 +64,10 @@ def _impl(ctx):
 py_entry_point_gen = rule(
     _impl,
     attrs = {
+        "console_script": attr.string(
+            doc = "The name of the console_script to create the .py file for.",
+            default = "",
+        ),
         "dist_info": attr.label(
             doc = "The dist-info files for the package.",
             mandatory = True,
@@ -72,12 +76,8 @@ py_entry_point_gen = rule(
             doc = "Output file location.",
             mandatory = True,
         ),
-        "script": attr.string(
-            doc = "The name of the script to create the entry_point file for.",
-            default = "",
-        ),
         "_tool": attr.label(
-            default = "//python/pip_install/tools/entry_point_generator:generator.py",
+            default = "//python/entry_point:generator.py",
             allow_single_file = [".py"],
         ),
     },

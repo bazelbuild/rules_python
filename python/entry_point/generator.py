@@ -61,7 +61,7 @@ def run(
     *,
     entry_points: pathlib.Path,
     out: pathlib.Path,
-    script: str,
+    console_script: str,
     shebang: str,
 ):
     """Run the generator
@@ -69,8 +69,8 @@ def run(
     Args:
         entry_points: The entry_points.txt file to be parsed.
         out: The output file.
-        script: The script entry in the entry_points.txt file.
-        shebang: The shebang to use for the script.
+        console_script: The console_script entry in the entry_points.txt file.
+        shebang: The shebang to use for the console_script.
     """
     config = EntryPointsParser()
     config.read(entry_points)
@@ -82,16 +82,16 @@ def run(
         )
         return 1
 
-    if len(console_scripts) > 1 and not script:
+    if len(console_scripts) > 1 and not console_script:
         available = ", ".join(console_scripts.keys())
         raise RuntimeError(
             f"Please select one of the following console scripts: {available}"
         )
         return 1
-    elif not script:
-        script = list(console_scripts.keys())[0]
+    elif not console_script:
+        console_script = list(console_scripts.keys())[0]
 
-    entry_point = console_scripts[script]
+    entry_point = console_scripts[console_script]
 
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
@@ -112,11 +112,11 @@ def main():
     parser.add_argument(
         "--shebang",
         default="#!/usr/bin/env python3",
-        help="The shebang to use for the output script. Defaults to '%(default)s'.",
+        help="The shebang to use for the output console_script. Defaults to '%(default)s'.",
     )
     parser.add_argument(
-        "--script",
-        help="The script to generate the entry_point template for.",
+        "--console-script",
+        help="The console_script to generate the entry_point template for.",
     )
     parser.add_argument(
         "entry_points",
@@ -135,7 +135,7 @@ def main():
     return run(
         entry_points=args.entry_points,
         out=args.out,
-        script=args.script,
+        console_script=args.console_script,
         shebang=args.shebang,
     )
 

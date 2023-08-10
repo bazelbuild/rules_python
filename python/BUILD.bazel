@@ -36,6 +36,7 @@ filegroup(
         "//python/cc:distribution",
         "//python/config_settings:distribution",
         "//python/constraints:distribution",
+        "//python/entry_point:distribution",
         "//python/private:distribution",
         "//python/runfiles:distribution",
     ],

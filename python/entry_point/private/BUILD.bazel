@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Re-export
-"""
-
-load("//python/entry_point:py_console_script_binary.bzl", "py_console_script_binary")
-
-py_entry_point_binary = py_console_script_binary
+filegroup(
+    name = "distribution",
+    srcs = glob(["*"]),
+    visibility = ["//python/entry_point:__pkg__"],
+)
