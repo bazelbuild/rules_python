@@ -14,7 +14,7 @@
 
 """Wrapper for repository which call"""
 
-_binary_not_found_msg = "Unable to find the binary '{binary_name}'.  Please update your PATH to include {binary_name}."
+_binary_not_found_msg = "Unable to find the binary '{binary_name}'.  Please update your PATH to include '{binary_name}'."
 
 def which_with_fail(binary_name, rctx):
     """Tests to see if a binary exists, and otherwise fails with a message.
