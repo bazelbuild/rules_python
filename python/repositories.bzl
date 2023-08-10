@@ -27,6 +27,7 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
+load("//python/private:which.bzl", "which_with_fail")
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -123,8 +124,9 @@ def _python_repository_impl(rctx):
                 sha256 = rctx.attr.zstd_sha256,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
+
             make_result = rctx.execute(
-                ["make", "--jobs=4"],
+                [which_with_fail("make", rctx), "--jobs=4"],
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
@@ -140,7 +142,7 @@ def _python_repository_impl(rctx):
             rctx.symlink(zstd, unzstd)
 
         exec_result = rctx.execute([
-            "tar",
+            which_with_fail("tar", rctx),
             "--extract",
             "--strip-components=2",
             "--use-compress-program={unzstd}".format(unzstd = unzstd),
@@ -179,15 +181,16 @@ def _python_repository_impl(rctx):
     if not rctx.attr.ignore_root_user_error:
         if "windows" not in rctx.os.name:
             lib_dir = "lib" if "windows" not in platform else "Lib"
-            exec_result = rctx.execute(["chmod", "-R", "ugo-w", lib_dir])
+
+            exec_result = rctx.execute([which_with_fail("chmod", rctx), "-R", "ugo-w", lib_dir])
             if exec_result.return_code != 0:
                 fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
                     exec_result.stderr,
                 )
                 fail(fail_msg)
-            exec_result = rctx.execute(["touch", "{}/.test".format(lib_dir)])
+            exec_result = rctx.execute([which_with_fail("touch", rctx), "{}/.test".format(lib_dir)])
             if exec_result.return_code == 0:
-                exec_result = rctx.execute(["id", "-u"])
+                exec_result = rctx.execute([which_with_fail("id", rctx), "-u"])
                 if exec_result.return_code != 0:
                     fail("Could not determine current user ID. 'id -u' error msg: {}".format(
                         exec_result.stderr,

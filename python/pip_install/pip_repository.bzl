@@ -24,6 +24,7 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
+load("//python/private:which.bzl", "which_with_fail")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -108,10 +109,7 @@ def _get_xcode_location_cflags(rctx):
     if not rctx.os.name.lower().startswith("mac os"):
         return []
 
-    # Locate xcode-select
-    xcode_select = rctx.which("xcode-select")
-
-    xcode_sdk_location = rctx.execute([xcode_select, "--print-path"])
+    xcode_sdk_location = rctx.execute([which_with_fail("xcode-select", rctx), "--print-path"])
     if xcode_sdk_location.return_code != 0:
         return []
 

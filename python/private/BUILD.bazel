@@ -58,6 +58,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "which_bzl",
+    srcs = ["which.bzl"],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python:__subpackages__",
+    ],
+)
+
+bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = [
         "py_cc_toolchain_macro.bzl",
