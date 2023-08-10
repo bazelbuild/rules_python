@@ -27,6 +27,6 @@ def which_with_fail(binary_name, rctx):
         rctx.Path for the binary.
     """
     binary = rctx.which(binary_name)
-    return binary if binary != None else fail(
-        _binary_not_found_msg.format(binary_name = binary_name),
-    )
+    if binary == None:
+        fail(_binary_not_found_msg.format(binary_name = binary_name)
+    return binary
