@@ -27,14 +27,14 @@ exports_files(
 py_library(
     name = "generator",
     srcs = ["generator.py"],
-    imports = ["../../../.."],
+    imports = ["../.."],
     visibility = ["//visibility:private"],
 )
 
 py_test(
     name = "generator_test",
     srcs = ["generator_test.py"],
-    imports = ["../../../.."],
+    imports = ["../.."],
     main = "generator_test.py",
     visibility = ["//visibility:private"],
     deps = [":generator"],

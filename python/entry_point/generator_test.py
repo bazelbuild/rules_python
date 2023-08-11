@@ -18,7 +18,7 @@ import tempfile
 import textwrap
 import unittest
 
-from python.pip_install.tools.entry_point_generator.generator import run
+from python.entry_point.generator import run
 
 
 class RunTest(unittest.TestCase):
@@ -44,7 +44,7 @@ class RunTest(unittest.TestCase):
                 run(
                     entry_points=entry_points,
                     out=pathlib.Path(__file__),
-                    script=None,
+                    console_script=None,
                     shebang="#!/dev/null",
                 )
 
@@ -73,7 +73,7 @@ class RunTest(unittest.TestCase):
                 run(
                     entry_points=entry_points,
                     out=pathlib.Path(__file__),
-                    script=None,
+                    console_script=None,
                     shebang="#!/dev/null",
                 )
 
@@ -101,7 +101,7 @@ class RunTest(unittest.TestCase):
             run(
                 entry_points=entry_points,
                 out=out,
-                script=None,
+                console_script=None,
                 shebang="#!/dev/null",
             )
 
@@ -153,7 +153,7 @@ class RunTest(unittest.TestCase):
             run(
                 entry_points=entry_points,
                 out=out,
-                script="bar",
+                console_script="bar",
                 shebang="#!/dev/null",
             )
 
