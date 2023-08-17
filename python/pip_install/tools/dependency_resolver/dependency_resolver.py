@@ -144,6 +144,7 @@ if __name__ == "__main__":
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
         # as it will fail with OSError: [Errno 18] Invalid cross-device link.
+        os.makedirs(os.path.dirname(requirements_out), exist_ok=True)
         shutil.copyfile(requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
