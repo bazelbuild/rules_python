@@ -111,8 +111,8 @@ if __name__ == "__main__":
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_txt) + ".out"
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
-        # or shutil.copyfile, as they will fail with OSError: [Errno 18] Invalid cross-device link.
-        shutil.copy(requirements_txt, requirements_out)
+        # as it will fail with OSError: [Errno 18] Invalid cross-device link.
+        shutil.copyfile(requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
