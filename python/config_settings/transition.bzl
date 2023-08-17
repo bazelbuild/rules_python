@@ -18,6 +18,7 @@ them to the desired target platform.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
+load("//python/config_settings/private:py_args.bzl", "py_args")
 
 def _transition_python_version_impl(_, attr):
     return {"//python/config_settings:python_version": str(attr.python_version)}
@@ -138,11 +139,13 @@ _transition_py_test = rule(
 )
 
 def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
-    args = kwargs.pop("args", None)
-    data = kwargs.pop("data", None)
-    env = kwargs.pop("env", None)
-    srcs = kwargs.pop("srcs", None)
-    deps = kwargs.pop("deps", None)
+    pyargs = py_args(name, kwargs)
+    args = pyargs["args"]
+    data = pyargs["data"]
+    env = pyargs["env"]
+    srcs = pyargs["srcs"]
+    deps = pyargs["deps"]
+    main = pyargs["main"]
 
     # Attributes common to all build rules.
     # https://bazel.build/reference/be/common-definitions#common-attributes
@@ -197,6 +200,7 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
         deps = deps,
         env = env,
         srcs = srcs,
+        main = main,
         tags = ["manual"] + (tags if tags else []),
         visibility = ["//visibility:private"],
         **dicts.add(common_attrs, kwargs)

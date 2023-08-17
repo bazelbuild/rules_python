@@ -15,7 +15,7 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
-load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
 load("//tools/build_defs/python/tests:py_info_subject.bzl", "py_info_subject")
 load("//tools/build_defs/python/tests:util.bzl", pt_util = "util")
@@ -98,6 +98,27 @@ def _test_data_sets_uses_shared_library_impl(env, target):
     ).uses_shared_libraries().equals(True)
 
 _tests.append(_test_data_sets_uses_shared_library)
+
+def _test_tags_can_be_tuple(name, config):
+    # We don't use a helper because we want to ensure that value passed is
+    # a tuple.
+    config.base_test_rule(
+        name = name + "_subject",
+        tags = ("one", "two") + tuple(PREVENT_IMPLICIT_BUILDING_TAGS),
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_tags_can_be_tuple_impl,
+    )
+
+def _test_tags_can_be_tuple_impl(env, target):
+    env.expect.that_target(target).tags().contains_at_least([
+        "one",
+        "two",
+    ])
+
+_tests.append(_test_tags_can_be_tuple)
 
 def create_base_tests(config):
     return pt_util.create_tests(_tests, config = config)

@@ -25,19 +25,18 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/bazelbuild/rules_go/go/tools/bazel"
 )
 
 var (
-	stdModulesStdin  io.Writer
+	stdModulesStdin  io.WriteCloser
 	stdModulesStdout io.Reader
 	stdModulesMutex  sync.Mutex
 	stdModulesSeen   map[string]struct{}
 )
 
-func init() {
+func startStdModuleProcess(ctx context.Context) {
 	stdModulesSeen = make(map[string]struct{})
 
 	stdModulesScriptRunfile, err := bazel.Runfile("python/std_modules")
@@ -46,8 +45,6 @@ func init() {
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
-	ctx, stdModulesCancel := context.WithTimeout(ctx, time.Minute*10)
 	cmd := exec.CommandContext(ctx, stdModulesScriptRunfile)
 
 	cmd.Stderr = os.Stderr
@@ -73,12 +70,17 @@ func init() {
 	}
 
 	go func() {
-		defer stdModulesCancel()
 		if err := cmd.Wait(); err != nil {
 			log.Printf("failed to wait for std_modules: %v\n", err)
 			os.Exit(1)
 		}
 	}()
+}
+
+func shutdownStdModuleProcess() {
+	if err := stdModulesStdin.Close(); err != nil {
+		fmt.Fprintf(os.Stderr, "error closing std module: %v", err)
+	}
 }
 
 func isStdModule(m module) (bool, error) {

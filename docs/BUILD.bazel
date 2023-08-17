@@ -25,23 +25,14 @@ _DOCS = {
     "packaging": "//docs:packaging-docs",
     "pip": "//docs:pip-docs",
     "pip_repository": "//docs:pip-repository",
+    "py_cc_toolchain": "//docs:py_cc_toolchain-docs",
+    "py_cc_toolchain_info": "//docs:py_cc_toolchain_info-docs",
     "python": "//docs:core-docs",
 }
 
 # We define these bzl_library targets here rather than in the //python package
 # because they're only used for doc generation. This way, we avoid requiring
 # our users to depend on Skylib.
-
-# Requires Bazel 0.29 onward for public visibility of these .bzl files.
-bzl_library(
-    name = "bazel_python_tools",
-    srcs = [
-        "@bazel_tools//tools/python:private/defs.bzl",
-        "@bazel_tools//tools/python:srcs_version.bzl",
-        "@bazel_tools//tools/python:toolchain.bzl",
-        "@bazel_tools//tools/python:utils.bzl",
-    ],
-)
 
 bzl_library(
     name = "bazel_repo_tools",
@@ -57,7 +48,7 @@ bzl_library(
         "//python/private:reexports.bzl",
     ],
     deps = [
-        ":bazel_python_tools",
+        ":bazel_repo_tools",
         "//python:defs_bzl",
         "//python/private:reexports_bzl",
     ],
@@ -90,6 +81,9 @@ bzl_library(
         "//python/private:py_wheel.bzl",
         "//python/private:stamp.bzl",
         "//python/private:util.bzl",
+    ],
+    deps = [
+        "//python/private:util_bzl",
     ],
 )
 
@@ -140,6 +134,25 @@ stardoc(
     input = "//python:packaging.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [":packaging_bzl"],
+)
+
+stardoc(
+    name = "py_cc_toolchain-docs",
+    out = "py_cc_toolchain.md_",
+    # NOTE: The public file isn't used as the input because it would document
+    # the macro, which doesn't have the attribute documentation. The macro
+    # doesn't do anything interesting to users, so bypass it to avoid having to
+    # copy/paste all the rule's doc in the macro.
+    input = "//python/private:py_cc_toolchain_rule.bzl",
+    target_compatible_with = _NOT_WINDOWS,
+    deps = ["//python/private:py_cc_toolchain_bzl"],
+)
+
+stardoc(
+    name = "py_cc_toolchain_info-docs",
+    out = "py_cc_toolchain_info.md_",
+    input = "//python/cc:py_cc_toolchain_info.bzl",
+    deps = ["//python/cc:py_cc_toolchain_info_bzl"],
 )
 
 [

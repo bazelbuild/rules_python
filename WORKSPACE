@@ -72,7 +72,7 @@ _py_gazelle_deps()
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
 # https://github.com/bazelbuild/rules_python/issues/1016.
-load("@python//3.11.1:defs.bzl", "interpreter")
+load("@python//3.11.4:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(

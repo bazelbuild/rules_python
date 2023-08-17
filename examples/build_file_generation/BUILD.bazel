@@ -42,6 +42,8 @@ gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
     pip_repository_name = "pip",
+    # NOTE: We can pass a list just like in `bzlmod_build_file_generation` example
+    # but we keep a single target here for regression testing.
     requirements = "//:requirements_lock.txt",
     # NOTE: we can use this flag in order to make our setup compatible with
     # bzlmod.

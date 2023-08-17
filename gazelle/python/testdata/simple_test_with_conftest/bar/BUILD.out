@@ -6,7 +6,6 @@ py_library(
         "__init__.py",
         "bar.py",
     ],
-    imports = [".."],
     visibility = ["//:__subpackages__"],
 )
 
@@ -14,14 +13,12 @@ py_library(
     name = "conftest",
     testonly = True,
     srcs = ["conftest.py"],
-    imports = [".."],
     visibility = ["//:__subpackages__"],
 )
 
 py_test(
     name = "bar_test",
     srcs = ["__test__.py"],
-    imports = [".."],
     main = "__test__.py",
     deps = [
         ":bar",

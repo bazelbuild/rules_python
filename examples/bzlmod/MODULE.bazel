@@ -4,32 +4,119 @@ module(
     compatibility_level = 1,
 )
 
+bazel_dep(name = "bazel_skylib", version = "1.4.1")
 bazel_dep(name = "rules_python", version = "0.0.0")
 local_path_override(
     module_name = "rules_python",
     path = "../..",
 )
 
-python = use_extension("@rules_python//python:extensions.bzl", "python")
+# We next initialize the python toolchain using the extension.
+# You can set different Python versions in this block.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
-    name = "python3_9",
     configure_coverage_tool = True,
+    # Only set when you have mulitple toolchain versions.
+    is_default = True,
     python_version = "3.9",
 )
-use_repo(python, "python3_9")
-use_repo(python, "python3_9_toolchains")
 
-register_toolchains(
-    "@python3_9_toolchains//:all",
+# We are also using a second version of Python in this project.
+# Typically you will only need a single version of Python, but
+# If you need a different vesion we support more than one.
+# Note: we do not supporting using multiple pip extensions, this is
+# work in progress.
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.10",
 )
 
-pip = use_extension("@rules_python//python:extensions.bzl", "pip")
+# You only need to load this repositories if you are using multiple Python versions.
+# See the tests folder for various examples on using multiple Python versions.
+# The names "python_3_9" and "python_3_10" are autmatically created by the repo
+# rules based on the `python_version` arg values.
+use_repo(python, "python_3_10", "python_3_9", "python_versions")
+
+# This extension allows a user to create modifications to how rules_python
+# creates different wheel repositories.  Different attributes allow the user
+# to modify the BUILD file, and copy files.
+# See @rules_python//python/extensions:whl_mods.bzl attributes for more information
+# on each of the attributes.
+# You are able to set a hub name, so that you can have different modifications of the same
+# wheel in different pip hubs.
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
+# Call whl_mods.create for the requests package.
+pip.whl_mods(
+    # we are using the appended_build_content.BUILD file
+    # to add content to the request wheel BUILD file.
+    additive_build_content_file = "//whl_mods:appended_build_content.BUILD",
+    data = [":generated_file"],
+    hub_name = "whl_mods_hub",
+    whl_name = "requests",
+)
+
+ADDITIVE_BUILD_CONTENT = """\
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+write_file(
+    name = "generated_file",
+    out = "generated_file.txt",
+    content = ["Hello world from build content file"],
+)
+"""
+
+# Call whl_mods.create for the wheel package.
+pip.whl_mods(
+    additive_build_content = ADDITIVE_BUILD_CONTENT,
+    copy_executables = {
+        "@@//whl_mods:data/copy_executable.py": "copied_content/executable.py",
+    },
+    copy_files = {
+        "@@//whl_mods:data/copy_file.txt": "copied_content/file.txt",
+    },
+    data = [":generated_file"],
+    data_exclude_glob = ["site-packages/*.dist-info/WHEEL"],
+    hub_name = "whl_mods_hub",
+    whl_name = "wheel",
+)
+use_repo(pip, "whl_mods_hub")
+
+# To fetch pip dependencies, use pip.parse. We can pass in various options,
+# but typically we pass requirements and the Python version. The Python
+# version must have been configured by a corresponding `python.toolchain()`
+# call.
+# Alternatively, `python_interpreter_target` can be used to directly specify
+# the Python interpreter to run to resolve dependencies.
 pip.parse(
-    name = "pip",
-    requirements_lock = "//:requirements_lock.txt",
-    requirements_windows = "//:requirements_windows.txt",
+    hub_name = "pip",
+    python_version = "3.9",
+    requirements_lock = "//:requirements_lock_3_9.txt",
+    requirements_windows = "//:requirements_windows_3_9.txt",
+    # These modifications were created above and we
+    # are providing pip.parse with the label of the mod
+    # and the name of the wheel.
+    whl_modifications = {
+        "@whl_mods_hub//:requests.json": "requests",
+        "@whl_mods_hub//:wheel.json": "wheel",
+    },
 )
-use_repo(pip, "pip")
+pip.parse(
+    hub_name = "pip",
+    python_version = "3.10",
+    requirements_lock = "//:requirements_lock_3_10.txt",
+    requirements_windows = "//:requirements_windows_3_10.txt",
+    # These modifications were created above and we
+    # are providing pip.parse with the label of the mod
+    # and the name of the wheel.
+    whl_modifications = {
+        "@whl_mods_hub//:requests.json": "requests",
+        "@whl_mods_hub//:wheel.json": "wheel",
+    },
+)
+
+# NOTE: The pip_39 repo is only used because the plain `@pip` repo doesn't
+# yet support entry points; see https://github.com/bazelbuild/rules_python/issues/1262
+use_repo(pip, "pip", "pip_39")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(

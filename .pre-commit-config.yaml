@@ -17,7 +17,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/keith/pre-commit-buildifier
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: buildifier
         args: &args 
@@ -37,3 +37,11 @@ repos:
     rev: 23.1.0
     hooks:
       - id: black
+  - repo: local
+    hooks:
+      - id: update-deleted-packages
+        name: Update deleted packages
+        language: script
+        entry: ./tools/bazel_integration_test/update_deleted_packages.sh
+        files: ^((examples|tests)/*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc|tools/bazel_integration_test/update_deleted_packages.sh)$
+        pass_filenames: false

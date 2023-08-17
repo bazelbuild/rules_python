@@ -8,6 +8,5 @@ py_library(
         "module4.py",
         "subpackage1/module5.py",
     ],
-    imports = [".."],
     visibility = ["//:__subpackages__"],
 )

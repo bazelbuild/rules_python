@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_toolchain_suite")
-load(":fake_cc_toolchain_config.bzl", "fake_cc_toolchain_config")
-
 platform(
     name = "mac",
     constraint_values = [
@@ -27,53 +24,4 @@ platform(
     constraint_values = [
         "@platforms//os:linux",
     ],
-)
-
-cc_toolchain_suite(
-    name = "cc_toolchain_suite",
-    tags = ["manual"],
-    toolchains = {
-        "darwin_x86_64": ":mac_toolchain",
-        "k8": ":linux_toolchain",
-    },
-)
-
-filegroup(name = "empty")
-
-cc_toolchain(
-    name = "mac_toolchain",
-    all_files = ":empty",
-    compiler_files = ":empty",
-    dwp_files = ":empty",
-    linker_files = ":empty",
-    objcopy_files = ":empty",
-    strip_files = ":empty",
-    supports_param_files = 0,
-    toolchain_config = ":mac_toolchain_config",
-    toolchain_identifier = "mac-toolchain",
-)
-
-fake_cc_toolchain_config(
-    name = "mac_toolchain_config",
-    target_cpu = "darwin_x86_64",
-    toolchain_identifier = "mac-toolchain",
-)
-
-cc_toolchain(
-    name = "linux_toolchain",
-    all_files = ":empty",
-    compiler_files = ":empty",
-    dwp_files = ":empty",
-    linker_files = ":empty",
-    objcopy_files = ":empty",
-    strip_files = ":empty",
-    supports_param_files = 0,
-    toolchain_config = ":linux_toolchain_config",
-    toolchain_identifier = "linux-toolchain",
-)
-
-fake_cc_toolchain_config(
-    name = "linux_toolchain_config",
-    target_cpu = "k8",
-    toolchain_identifier = "linux-toolchain",
 )

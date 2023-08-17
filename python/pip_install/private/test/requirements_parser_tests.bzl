@@ -63,6 +63,9 @@ FooProject==1.0.0
 # Comment
 BarProject==2.0.0 #Comment
 """).requirements)
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49")], parse("""\
+requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49
+""").requirements)
 
     # Multiline
     asserts.equals(env, [("certifi", "certifi==2021.10.8     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569")], parse("""\
@@ -70,6 +73,11 @@ certifi==2021.10.8 \
     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872 \
     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569
     # via requests
+""").requirements)
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49     --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd")], parse("""\
+requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49 \
+    --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd
+    # via requirements.txt
 """).requirements)
 
     # Options
@@ -177,11 +185,11 @@ pyyaml==6.0 \
 requests==2.25.1 \
     --hash=sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804 \
     --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e
-    # via -r ./requirements.in
+    # via -r requirements.in
 s3cmd==2.1.0 \
     --hash=sha256:49cd23d516b17974b22b611a95ce4d93fe326feaa07320bd1d234fed68cbccfa \
     --hash=sha256:966b0a494a916fc3b4324de38f089c86c70ee90e8e1cae6d59102103a4c0cc03
-    # via -r ./requirements.in
+    # via -r requirements.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
@@ -192,7 +200,7 @@ urllib3==1.26.7 \
     # via requests
 yamllint==1.26.3 \
     --hash=sha256:3934dcde484374596d6b52d8db412929a169f6d9e52e20f9ade5bf3523d9b96e
-    # via -r ./requirements.in
+    # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 setuptools==59.6.0 \

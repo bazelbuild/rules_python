@@ -74,8 +74,8 @@ func TestGazelleBinary(t *testing.T) {
 
 func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
-		var inputs []testtools.FileSpec
-		var goldens []testtools.FileSpec
+		t.Parallel()
+		var inputs, goldens []testtools.FileSpec
 
 		var config *testYAML
 		for _, f := range files {
@@ -111,43 +111,49 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 					Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".in")),
 					Content: string(content),
 				})
-			} else if strings.HasSuffix(shortPath, ".out") {
+				continue
+			}
+
+			if strings.HasSuffix(shortPath, ".out") {
 				goldens = append(goldens, testtools.FileSpec{
 					Path:    filepath.Join(name, strings.TrimSuffix(shortPath, ".out")),
 					Content: string(content),
 				})
-			} else {
-				inputs = append(inputs, testtools.FileSpec{
-					Path:    filepath.Join(name, shortPath),
-					Content: string(content),
-				})
-				goldens = append(goldens, testtools.FileSpec{
-					Path:    filepath.Join(name, shortPath),
-					Content: string(content),
-				})
+				continue
 			}
+
+			inputs = append(inputs, testtools.FileSpec{
+				Path:    filepath.Join(name, shortPath),
+				Content: string(content),
+			})
+			goldens = append(goldens, testtools.FileSpec{
+				Path:    filepath.Join(name, shortPath),
+				Content: string(content),
+			})
 		}
 
 		testdataDir, cleanup := testtools.CreateFiles(t, inputs)
-		defer cleanup()
-		defer func() {
-			if t.Failed() {
-				filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
-					if err != nil {
-						return err
-					}
-					t.Logf("%q exists", strings.TrimPrefix(path, testdataDir))
-					return nil
-				})
+		t.Cleanup(cleanup)
+		t.Cleanup(func() {
+			if !t.Failed() {
+				return
 			}
-		}()
+
+			filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				t.Logf("%q exists", strings.TrimPrefix(path, testdataDir))
+				return nil
+			})
+		})
 
 		workspaceRoot := filepath.Join(testdataDir, name)
 
 		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
+		t.Cleanup(cancel)
 		cmd := exec.CommandContext(ctx, gazellePath, args...)
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout

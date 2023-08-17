@@ -1,0 +1,11 @@
+# Normally these are ignored, but if you're using a custom
+# build of Bazel with a custom --output_user_root value, Bazel
+# tries to follow the symlinks of the other builds and finds
+# the WORKSPACE, BUILD, etc files and tries to build them.
+bazel-rules_python
+bazel-bin
+bazel-out
+bazel-testlogs
+examples/bzlmod/bazel-bzlmod
+examples/bzlmod_build_file_generation/bazel-bzlmod_build_file_generation
+examples/py_proto_library/bazel-py_proto_library

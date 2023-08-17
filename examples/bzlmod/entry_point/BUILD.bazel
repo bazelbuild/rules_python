@@ -1,0 +1,20 @@
+load("@pip_39//:requirements.bzl", "entry_point")
+load("@rules_python//python:defs.bzl", "py_test")
+
+alias(
+    name = "yamllint",
+    actual = entry_point("yamllint"),
+)
+
+py_test(
+    name = "entry_point_test",
+    srcs = ["test_entry_point.py"],
+    data = [
+        ":yamllint",
+    ],
+    env = {
+        "YAMLLINT_ENTRY_POINT": "$(rlocationpath :yamllint)",
+    },
+    main = "test_entry_point.py",
+    deps = ["@rules_python//python/runfiles"],
+)

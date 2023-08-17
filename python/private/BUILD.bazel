@@ -24,6 +24,12 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
+filegroup(
+    name = "coverage_deps",
+    srcs = ["coverage_deps.bzl"],
+    visibility = ["//tools/private/update_deps:__pkg__"],
+)
+
 # Filegroup of bzl files that can be used by downstream rules for documentation generation
 filegroup(
     name = "bzl",
@@ -39,6 +45,47 @@ bzl_library(
         "//python:__pkg__",
     ],
     deps = [":bazel_tools_bzl"],
+)
+
+bzl_library(
+    name = "util_bzl",
+    srcs = ["util.bzl"],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python:__subpackages__",
+    ],
+    deps = ["@bazel_skylib//lib:types"],
+)
+
+bzl_library(
+    name = "which_bzl",
+    srcs = ["which.bzl"],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python:__subpackages__",
+    ],
+)
+
+bzl_library(
+    name = "py_cc_toolchain_bzl",
+    srcs = [
+        "py_cc_toolchain_macro.bzl",
+        "py_cc_toolchain_rule.bzl",
+    ],
+    visibility = [
+        "//docs:__subpackages__",
+        "//python/cc:__pkg__",
+    ],
+    deps = [
+        ":py_cc_toolchain_info_bzl",
+        ":util_bzl",
+    ],
+)
+
+bzl_library(
+    name = "py_cc_toolchain_info_bzl",
+    srcs = ["py_cc_toolchain_info.bzl"],
+    visibility = ["//python/cc:__pkg__"],
 )
 
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
@@ -63,6 +110,7 @@ exports_files(
         "reexports.bzl",
         "stamp.bzl",
         "util.bzl",
+        "py_cc_toolchain_rule.bzl",
     ],
     visibility = ["//docs:__pkg__"],
 )

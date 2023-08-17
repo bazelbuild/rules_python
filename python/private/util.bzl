@@ -1,4 +1,20 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Functionality shared by multiple pieces of code."""
+
+load("@bazel_skylib//lib:types.bzl", "types")
 
 def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
     """Copies args that must be compatible between two targets with a dependency relationship.
@@ -29,3 +45,41 @@ def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
         if attr in from_kwargs and attr not in into_kwargs:
             into_kwargs[attr] = from_kwargs[attr]
     return into_kwargs
+
+# The implementation of the macros and tagging mechanism follows the example
+# set by rules_cc and rules_java.
+
+_MIGRATION_TAG = "__PYTHON_RULES_MIGRATION_DO_NOT_USE_WILL_BREAK__"
+
+def add_migration_tag(attrs):
+    """Add a special tag to `attrs` to aid migration off native rles.
+
+    Args:
+        attrs: dict of keyword args. The `tags` key will be modified in-place.
+
+    Returns:
+        The same `attrs` object, but modified.
+    """
+    add_tag(attrs, _MIGRATION_TAG)
+    return attrs
+
+def add_tag(attrs, tag):
+    """Adds `tag` to `attrs["tags"]`.
+
+    Args:
+        attrs: dict of keyword args. It is modified in place.
+        tag: str, the tag to add.
+    """
+    if "tags" in attrs and attrs["tags"] != None:
+        tags = attrs["tags"]
+
+        # Preserve the input type: this allows a test verifying the underlying
+        # rule can accept the tuple for the tags argument.
+        if types.is_tuple(tags):
+            attrs["tags"] = tags + (tag,)
+        else:
+            # List concatenation is necessary because the original value
+            # may be a frozen list.
+            attrs["tags"] = tags + [tag]
+    else:
+        attrs["tags"] = [tag]
