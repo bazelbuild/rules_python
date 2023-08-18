@@ -101,6 +101,7 @@ if __name__ == "__main__":
     )
 
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
+    resolved_requirements_txt = _locate(bazel_runfiles, requirements_txt)
     resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
@@ -144,8 +145,7 @@ if __name__ == "__main__":
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
         # as it will fail with OSError: [Errno 18] Invalid cross-device link.
-        os.makedirs(os.path.dirname(requirements_out), exist_ok=True)
-        shutil.copyfile(requirements_txt, requirements_out)
+        shutil.copyfile(resolved_requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
