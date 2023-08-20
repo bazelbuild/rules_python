@@ -51,9 +51,6 @@ load("@python_versions//3.9:defs.bzl", "py_console_script_binary")
 py_console_script_binary(
     name = "yamllint",
     pkg = "@pip//yamllint",
-    # yamllint does not have any other scripts except 'yamllint' so the
-    # user does not have to specify which console script we should chose from
-    # the package.
 )
 ```
 
