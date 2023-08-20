@@ -25,7 +25,6 @@ import textwrap
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
 _TEMPLATE = """\
-{shebang}
 import sys
 # Drop the first entry in the sys.path, because it will point to our workspace
 # where we are generating the entry_point script and it seems that some package
@@ -62,7 +61,6 @@ def run(
     entry_points: pathlib.Path,
     out: pathlib.Path,
     console_script: str,
-    shebang: str,
 ):
     """Run the generator
 
@@ -70,7 +68,6 @@ def run(
         entry_points: The entry_points.txt file to be parsed.
         out: The output file.
         console_script: The console_script entry in the entry_points.txt file.
-        shebang: The shebang to use for the console_script.
     """
     config = EntryPointsParser()
     config.read(entry_points)
@@ -99,7 +96,6 @@ def run(
     with open(out, "w") as f:
         f.write(
             _TEMPLATE.format(
-                shebang=shebang,
                 module=module,
                 attr=attr,
                 entry_point=entry_point,
@@ -109,11 +105,6 @@ def run(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--shebang",
-        default="#!/usr/bin/env python3",
-        help="The shebang to use for the output console_script. Defaults to '%(default)s'.",
-    )
     parser.add_argument(
         "--console-script",
         help="The console_script to generate the entry_point template for.",
@@ -136,7 +127,6 @@ def main():
         entry_points=args.entry_points,
         out=args.out,
         console_script=args.console_script,
-        shebang=args.shebang,
     )
 
 

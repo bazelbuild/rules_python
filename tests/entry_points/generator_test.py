@@ -45,7 +45,6 @@ class RunTest(unittest.TestCase):
                     entry_points=entry_points,
                     out=pathlib.Path(__file__),
                     console_script=None,
-                    shebang="#!/dev/null",
                 )
 
         self.assertEqual(
@@ -74,7 +73,6 @@ class RunTest(unittest.TestCase):
                     entry_points=entry_points,
                     out=pathlib.Path(__file__),
                     console_script=None,
-                    shebang="#!/dev/null",
                 )
 
         self.assertEqual(
@@ -102,14 +100,12 @@ class RunTest(unittest.TestCase):
                 entry_points=entry_points,
                 out=out,
                 console_script=None,
-                shebang="#!/dev/null",
             )
 
             got = out.read_text()
 
         want = textwrap.dedent(
             """\
-        #!/dev/null
         import sys
         # Drop the first entry in the sys.path, because it will point to our workspace
         # where we are generating the entry_point script and it seems that some package
@@ -154,14 +150,12 @@ class RunTest(unittest.TestCase):
                 entry_points=entry_points,
                 out=out,
                 console_script="bar",
-                shebang="#!/dev/null",
             )
 
             got = out.read_text()
 
         want = textwrap.dedent(
             """\
-        #!/dev/null
         import sys
         # Drop the first entry in the sys.path, because it will point to our workspace
         # where we are generating the entry_point script and it seems that some package
