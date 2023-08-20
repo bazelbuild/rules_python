@@ -138,8 +138,10 @@ class RunTest(unittest.TestCase):
         want = textwrap.dedent(
             """\
         import sys
-        # FIXME @aignas 2023-08-21: it seems that `pylint` is failing when running via
-        # `bazel run` but at least the tests on Linux are passing correctly.
+
+        # See @rules_python//python/private:py_console_script_gen.py for explanation
+        if ".runfiles" not in sys.path[0]:
+            sys.path = sys.path[1:]
 
         try:
             from foo.bar import baz
