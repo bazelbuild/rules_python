@@ -92,6 +92,9 @@ def run(
 
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
+    # TODO: handle extra in entry_point generation
+    # See https://github.com/bazelbuild/rules_python/issues/1383
+    # See https://packaging.python.org/en/latest/specifications/entry-points/
 
     with open(out, "w") as f:
         f.write(
