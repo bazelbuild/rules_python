@@ -35,25 +35,20 @@ def _get_entry_points_txt(dist_info):
     fail("{} does not contain {}".format(dist_info, _ENTRY_POINTS_TXT))
 
 def _impl(ctx):
-    runtime = ctx.toolchains["//python:toolchain_type"].py3_runtime
-    python = runtime.interpreter or runtime.interpreter_path
-
     entry_points_txt = _get_entry_points_txt(ctx.attr.dist_info)
 
     args = ctx.actions.args()
-    args.add(ctx.file._tool)
     args.add("--console-script", ctx.attr.console_script)
     args.add(entry_points_txt)
     args.add(ctx.outputs.out)
 
     ctx.actions.run(
         inputs = [
-            ctx.file._tool,
             entry_points_txt,
         ],
         outputs = [ctx.outputs.out],
         arguments = [args],
-        executable = python,
+        executable = ctx.executable._tool,
         toolchain = _TOOLCHAIN_TYPE,
     )
 
@@ -77,11 +72,11 @@ py_entry_point_gen = rule(
             mandatory = True,
         ),
         "_tool": attr.label(
-            default = "//python/entry_point:generator.py",
-            allow_single_file = [".py"],
+            default = "//python/entry_point:generator_bin",
+            executable = True,
+            cfg = "exec",
         ),
     },
-    toolchains = [_TOOLCHAIN_TYPE],
     doc = """\
 Builds an entry_point script from an entry_points.txt file.
 """,

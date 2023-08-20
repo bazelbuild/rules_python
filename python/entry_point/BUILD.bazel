@@ -13,14 +13,23 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 
 exports_files(
     [
         "py_console_script_binary.bzl",
-        "generator.py",
     ],
     visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "generator_bin",
+    srcs = ["generator.py"],
+    main = "generator.py",
+    visibility = [
+        "//visibility:public",
+    ],
 )
 
 py_library(
@@ -35,7 +44,7 @@ py_library(
 bzl_library(
     name = "py_console_script_binary_bzl",
     srcs = [":py_console_script_binary.bzl"],
-    visibility = ["//docs:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//python:py_binary_bzl",
         "//python/entry_point/private:py_entry_point_gen.bzl",
