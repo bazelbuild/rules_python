@@ -14,7 +14,6 @@
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python:py_library.bzl", "py_library")
-load("//python:py_test.bzl", "py_test")
 
 exports_files(
     [
@@ -28,16 +27,9 @@ py_library(
     name = "generator",
     srcs = ["generator.py"],
     imports = ["../.."],
-    visibility = ["//visibility:private"],
-)
-
-py_test(
-    name = "generator_test",
-    srcs = ["generator_test.py"],
-    imports = ["../.."],
-    main = "generator_test.py",
-    visibility = ["//visibility:private"],
-    deps = [":generator"],
+    visibility = [
+        "//tests/entry_points:__pkg__",
+    ],
 )
 
 bzl_library(
@@ -52,10 +44,10 @@ bzl_library(
 
 filegroup(
     name = "distribution",
-    srcs = glob(
-        ["*"],
-        exclude = ["*_test.py"],
-    ) + [
+    srcs = glob([
+        "*.py",
+        "*.bzl",
+    ]) + [
         "//python/entry_point/private:distribution",
     ],
     visibility = ["//python:__subpackages__"],
