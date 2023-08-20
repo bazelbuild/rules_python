@@ -57,8 +57,9 @@ py_console_script_gen = rule(
     _py_console_script_gen_impl,
     attrs = {
         "console_script": attr.string(
-            doc = "The name of the console_script to create the .py file for.",
+            doc = "The name of the console_script to create the .py file for. Optional if there is only a single entry-point available.",
             default = "",
+            mandatory = False,
         ),
         "dist_info": attr.label(
             doc = "The dist-info files for the package.",
