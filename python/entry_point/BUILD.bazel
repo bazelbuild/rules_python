@@ -20,7 +20,7 @@ exports_files(
     [
         "py_console_script_binary.bzl",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//docs:__subpackages__"],
 )
 
 py_binary(
