@@ -22,6 +22,11 @@ from python.runfiles import runfiles
 
 
 class ExampleTest(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        self.maxDiff = None
+
+        super().__init__(*args, **kwargs)
+
     def test_yamllint_entry_point(self):
         rlocation_path = os.environ.get("YAMLLINT_ENTRY_POINT")
         assert (
@@ -83,9 +88,17 @@ if __name__ == "__main__":
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                env={
+                    # otherwise it may try to create ${HOME}/.cache/pylint
+                    "PYLINTHOME": os.environ["TMPDIR"],
+                },
                 cwd=tmpdir,
             )
 
+        self.assertEqual(
+            "",
+            proc.stderr.decode("utf-8").strip(),
+        )
         self.assertRegex(
             proc.stdout.decode("utf-8").strip(),
             "W8201: Logging should be used instead of the print\(\) function\. \(print-function\)",

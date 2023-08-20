@@ -25,12 +25,11 @@ import textwrap
 _ENTRY_POINTS_TXT = "entry_points.txt"
 _TEMPLATE = """\
 import sys
-# Drop the first entry in the sys.path, because it will point to our workspace
-# where we are generating the entry_point script and it seems that some package
-# break due to this reason (e.g. pylint). This means that we should not use this
-# script to ever generate entry points for scripts within the main workspace,
-# but that is fine, we can create a separate generator or a boolean flag for
-# that.
+# When running the `py_console_script_binary` executable target via `bazel run`
+# we start getting inconsistent behaviour with how it works accessing it via
+# rlocationpath as in bzlmod examples. It seems that not all of the PyPI
+# packages are affected by this, but without the following workaround, pylint
+# seems to be not working.
 if ".runfiles" not in sys.path[0]:
     sys.path = sys.path[1:]
 
@@ -38,8 +37,8 @@ try:
     from {module} import {attr}
 except ImportError:
     entries = "\\n".join(sys.path)
-    print("Printing sys.path entries for easier debugging:")
-    print(f"sys.path is:\\n{{entries}}")
+    print("Printing sys.path entries for easier debugging:", file=sys.stderr)
+    print(f"sys.path is:\\n{{entries}}", file=sys.stderr)
     raise
 
 if __name__ == "__main__":
