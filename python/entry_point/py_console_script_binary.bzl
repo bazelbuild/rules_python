@@ -65,10 +65,8 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
     """
     main = "rules_python_entry_point_{}.py".format(name)
 
-    # This may come via transitions, so ensure that we are not using it at all.
     if kwargs.pop("srcs", None):
         fail("passing 'srcs' attribute to py_console_script_binary is unsupported")
-    _ = kwargs.pop("main", None)  # buildifier: disable=unused-variable
 
     py_entry_point_gen(
         name = name + "_gen",
