@@ -19,12 +19,38 @@ Implementation for the macro to generate an console_script py_binary from readin
 load("//python:py_binary.bzl", "py_binary")
 load(":py_console_script_gen.bzl", "py_console_script_gen")
 
-def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binary, **kwargs):
+def _dist_info(pkg):
+    """Return the first candidate for the dist_info target label.
+
+    We cannot do `Label(pkg)` here because the string will be evaluated within
+    the context of the rules_python repo_mapping and it will fail because
+    rules_python does not know anything about the hub repos that the user has
+    available.
+
+    NOTE: Works with `incompatible_generate_aliases` and without by assuming the
+    following formats:
+        * @pypi_pylint//:pkg
+        * @pypi//pylint
+        * @pypi//pylint:pkg
+    """
+    return pkg.replace(":pkg", "") + ":dist_info"
+
+def py_console_script_binary(
+        *,
+        name,
+        pkg,
+        entry_points_txt = None,
+        script = None,
+        binary_rule = py_binary,
+        **kwargs):
     """Generate a py_binary for a console_script entry_point.
 
     Args:
         name: str, The name of the resulting target.
         pkg: The package for which to generate the script.
+        entry_points_txt: The file to be used for parsing the available
+            console_script values. Default to searching for one in the `dist_info`
+            filegroup in the same package as the `pkg` Label.
         script: str, The console script name that the py_binary is going to be
             generated for. Defaults to the normalized name attribute.
         binary_rule: callable, The rule/macro to use to instantiate
@@ -40,7 +66,7 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
     py_console_script_gen(
         name = "_{}_gen".format(name),
         # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
-        dist_info = pkg.replace(":pkg", "") + ":dist_info",
+        entry_points_txt = entry_points_txt or _dist_info(pkg),
         out = main,
         console_script = script,
         console_script_guess = name,

@@ -25,19 +25,19 @@ https://github.com/bazelbuild/bazel/issues/14744
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
 
-def _get_entry_points_txt(dist_info):
+def _get_entry_points_txt(entry_points_txt):
     """Get the entry_points.txt file
 
     TODO: use map_each to avoid flattening of the directories outside the execution phase.
     """
-    for file in dist_info.files.to_list():
+    for file in entry_points_txt.files.to_list():
         if file.basename == _ENTRY_POINTS_TXT:
             return file
 
-    fail("{} does not contain {}".format(dist_info, _ENTRY_POINTS_TXT))
+    fail("{} does not contain {}".format(entry_points_txt, _ENTRY_POINTS_TXT))
 
 def _py_console_script_gen_impl(ctx):
-    entry_points_txt = _get_entry_points_txt(ctx.attr.dist_info)
+    entry_points_txt = _get_entry_points_txt(ctx.attr.entry_points_txt)
 
     args = ctx.actions.args()
     args.add("--console-script", ctx.attr.console_script)
@@ -73,8 +73,8 @@ py_console_script_gen = rule(
             default = "",
             mandatory = False,
         ),
-        "dist_info": attr.label(
-            doc = "The dist-info files for the package.",
+        "entry_points_txt": attr.label(
+            doc = "The filegroup to search for entry_points.txt.",
             mandatory = True,
         ),
         "out": attr.output(

@@ -54,7 +54,7 @@ the version-bound `py_binary` symbol.
 ## py_console_script_binary
 
 <pre>
-py_console_script_binary(<a href="#py_console_script_binary-name">name</a>, <a href="#py_console_script_binary-pkg">pkg</a>, <a href="#py_console_script_binary-script">script</a>, <a href="#py_console_script_binary-binary_rule">binary_rule</a>, <a href="#py_console_script_binary-kwargs">kwargs</a>)
+py_console_script_binary(<a href="#py_console_script_binary-name">name</a>, <a href="#py_console_script_binary-pkg">pkg</a>, <a href="#py_console_script_binary-entry_points_txt">entry_points_txt</a>, <a href="#py_console_script_binary-script">script</a>, <a href="#py_console_script_binary-binary_rule">binary_rule</a>, <a href="#py_console_script_binary-kwargs">kwargs</a>)
 </pre>
 
 Generate a py_binary for a console_script entry_point.
@@ -66,6 +66,7 @@ Generate a py_binary for a console_script entry_point.
 | :------------- | :------------- | :------------- |
 | <a id="py_console_script_binary-name"></a>name |  str, The name of the resulting target.   |  none |
 | <a id="py_console_script_binary-pkg"></a>pkg |  The package for which to generate the script.   |  none |
+| <a id="py_console_script_binary-entry_points_txt"></a>entry_points_txt |  The file to be used for parsing the available console_script values. Default to searching for one in the <code>dist_info</code> filegroup in the same package as the <code>pkg</code> Label.   |  <code>None</code> |
 | <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Defaults to the normalized name attribute.   |  <code>None</code> |
 | <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like <code>py_binary</code>. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  <code>&lt;function py_binary&gt;</code> |
 | <a id="py_console_script_binary-kwargs"></a>kwargs |  Extra parameters forwarded to binary_rule.   |  none |
