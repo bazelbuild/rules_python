@@ -14,7 +14,6 @@
 
 """Public API for for building wheels."""
 
-load("//python/entry_point:py_console_script_binary.bzl", "py_console_script_binary")
 load("//python/private:py_package.bzl", "py_package_lib")
 load("//python/private:py_wheel.bzl", _PyWheelInfo = "PyWheelInfo", _py_wheel = "py_wheel")
 load("//python/private:util.bzl", "copy_propagating_kwargs")
@@ -159,15 +158,23 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
     _py_wheel(name = name, **kwargs)
 
     if twine:
+        if not twine.endswith(":pkg"):
+            fail("twine label should look like @my_twine_repo//:pkg")
+        twine_main = twine.replace(":pkg", ":rules_python_wheel_entry_point_twine.py")
         twine_args = ["upload"]
         twine_args.extend(publish_args)
         twine_args.append("$(rootpath :{})/*".format(_dist_target))
 
-        py_console_script_binary(
+        # TODO: use py_binary from //python:defs.bzl after our stardoc setup is less brittle
+        # buildifier: disable=native-py
+        native.py_binary(
             name = "{}.publish".format(name),
-            pkg = twine,
+            srcs = [twine_main],
             args = twine_args,
             data = [_dist_target],
+            imports = ["."],
+            main = twine_main,
+            deps = [twine],
             visibility = kwargs.get("visibility"),
             **copy_propagating_kwargs(kwargs)
         )

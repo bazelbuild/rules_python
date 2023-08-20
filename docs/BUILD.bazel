@@ -84,7 +84,6 @@ bzl_library(
         "//python/private:util.bzl",
     ],
     deps = [
-        "//python/entry_point:py_console_script_binary_bzl",
         "//python/private:util_bzl",
     ],
 )
