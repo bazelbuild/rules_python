@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 stderr=subprocess.PIPE,
                 env={
                     # otherwise it may try to create ${HOME}/.cache/pylint
-                    "PYLINTHOME": os.environ["TMPDIR"],
+                    "PYLINTHOME": os.environ["TEST_TMPDIR"],
                 },
                 cwd=tmpdir,
             )
