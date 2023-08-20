@@ -122,6 +122,7 @@ class RunTest(unittest.TestCase):
             entries = "\\n".join(sys.path)
             print("Printing sys.path entries for easier debugging:")
             print(f"sys.path is:\\n{entries}")
+            raise
 
         if __name__ == "__main__":
             sys.exit(baz())
@@ -172,6 +173,7 @@ class RunTest(unittest.TestCase):
             entries = "\\n".join(sys.path)
             print("Printing sys.path entries for easier debugging:")
             print(f"sys.path is:\\n{entries}")
+            raise
 
         if __name__ == "__main__":
             sys.exit(Bar.baz())
