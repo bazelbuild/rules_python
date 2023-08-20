@@ -25,13 +25,8 @@ import textwrap
 _ENTRY_POINTS_TXT = "entry_points.txt"
 _TEMPLATE = """\
 import sys
-# When running the `py_console_script_binary` executable target via `bazel run`
-# we start getting inconsistent behaviour with how it works accessing it via
-# rlocationpath as in bzlmod examples. It seems that not all of the PyPI
-# packages are affected by this, but without the following workaround, pylint
-# seems to be not working.
-if ".runfiles" not in sys.path[0]:
-    sys.path = sys.path[1:]
+# FIXME @aignas 2023-08-21: it seems that `pylint` is failing when running via
+# `bazel run` but at least the tests on Linux are passing correctly.
 
 try:
     from {module} import {attr}

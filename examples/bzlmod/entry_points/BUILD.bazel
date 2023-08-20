@@ -9,6 +9,12 @@ py_console_script_binary(
     # Because `pylint` has multiple console_scripts available, we have to
     # specify which we want
     script = "pylint",
+)
+
+py_console_script_binary(
+    name = "pylint_with_deps",
+    pkg = "@pip//pylint",
+    script = "pylint",
     deps = [
         # One can add extra dependencies to the entry point.
         "@pip//pylint_print",
@@ -25,16 +31,31 @@ py_console_script_binary_3_9(
 )
 
 py_test(
-    name = "entry_point_test",
-    srcs = ["test_entry_point.py"],
-    data = [
-        ":pylint",
-        ":yamllint",
-    ],
+    name = "yamllint_test",
+    srcs = ["yamllint_test.py"],
+    data = [":yamllint"],
     env = {
-        "PYLINT_ENTRY_POINT": "$(rlocationpath :pylint)",
-        "YAMLLINT_ENTRY_POINT": "$(rlocationpath :yamllint)",
+        "ENTRY_POINT": "$(rlocationpath :yamllint)",
     },
-    main = "test_entry_point.py",
+    deps = ["@rules_python//python/runfiles"],
+)
+
+py_test(
+    name = "pylint_test",
+    srcs = ["pylint_test.py"],
+    data = [":pylint"],
+    env = {
+        "ENTRY_POINT": "$(rlocationpath :pylint)",
+    },
+    deps = ["@rules_python//python/runfiles"],
+)
+
+py_test(
+    name = "pylint_deps_test",
+    srcs = ["pylint_deps_test.py"],
+    data = [":pylint_with_deps"],
+    env = {
+        "ENTRY_POINT": "$(rlocationpath :pylint_with_deps)",
+    },
     deps = ["@rules_python//python/runfiles"],
 )
