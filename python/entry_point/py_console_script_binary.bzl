@@ -69,7 +69,7 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
         fail("passing 'srcs' attribute to py_console_script_binary is unsupported")
 
     py_entry_point_gen(
-        name = name + "_gen",
+        name = "_{}_gen".format(name),
         # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
         dist_info = pkg.replace(":pkg", "") + ":dist_info",
         out = main,
