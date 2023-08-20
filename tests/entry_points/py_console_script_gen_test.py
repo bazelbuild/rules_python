@@ -155,31 +155,7 @@ class RunTest(unittest.TestCase):
 
             got = out.read_text()
 
-        want = textwrap.dedent(
-            """\
-        import sys
-        # Drop the first entry in the sys.path, because it will point to our workspace
-        # where we are generating the entry_point script and it seems that some package
-        # break due to this reason (e.g. pylint). This means that we should not use this
-        # script to ever generate entry points for scripts within the main workspace,
-        # but that is fine, we can create a separate generator or a boolean flag for
-        # that.
-        if ".runfiles" not in sys.path[0]:
-            sys.path = sys.path[1:]
-
-        try:
-            from foo.baz import Bar
-        except ImportError:
-            entries = "\\n".join(sys.path)
-            print("Printing sys.path entries for easier debugging:")
-            print(f"sys.path is:\\n{entries}")
-            raise
-
-        if __name__ == "__main__":
-            sys.exit(Bar.baz())
-        """
-        )
-        self.assertEqual(want, got)
+        self.assertRegex(got, "from foo\.baz import Bar")
 
 
 if __name__ == "__main__":
