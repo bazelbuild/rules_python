@@ -18,6 +18,7 @@ import atexit
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -32,6 +33,10 @@ import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
 from python.runfiles import runfiles
+
+
+RUNFILES = runfiles.Create()
+
 
 # Replace the os.replace function with shutil.copy to work around os.replace not being able to
 # replace or move files across filesystems.
@@ -76,13 +81,13 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
-def _locate(bazel_runfiles, file):
+def _locate(file):
     """Look up the file via Rlocation"""
 
     if not file:
         return file
 
-    return bazel_runfiles.Rlocation(file)
+    return RUNFILES.Rlocation(file)
 
 
 def _evaluate_marker(marker: Marker, environment: Mapping[str, str], extra: str):
@@ -153,7 +158,7 @@ def _post_process_installation_report(
         file.write("\n")
 
 
-def _generate_intermediate_file(config_setting, requirements_in, intermediate_file):
+def _generate_intermediate_file(config_setting, requirements_in, intermediate_file, intermediate_file_patcher):
     """Generates an installation report and then converts it into an intermediate file."""
     with tempfile.TemporaryDirectory() as temp_dir:
         raw_installation_report = Path(temp_dir) / "installation_report.json"
@@ -178,6 +183,20 @@ def _generate_intermediate_file(config_setting, requirements_in, intermediate_fi
             raw_installation_report,
             intermediate_file)
 
+        if intermediate_file_patcher:
+            env_backup = os.environ.copy()
+            os.environ.pop("PYTHONPATH")
+            os.environ.update(RUNFILES.EnvVars())
+            try:
+                subprocess.run([
+                        _locate(intermediate_file_patcher),
+                        intermediate_file,
+                    ],
+                    check=True,
+                )
+            finally:
+                os.environ = env_backup
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
@@ -188,7 +207,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     parse_str_none = lambda s: None if s == "None" else s
-    bazel_runfiles = runfiles.Create()
 
     requirements_in = sys.argv.pop(1)
     requirements_txt = sys.argv.pop(1)
@@ -197,6 +215,7 @@ if __name__ == "__main__":
     requirements_windows = parse_str_none(sys.argv.pop(1))
     intermediate_file = parse_str_none(sys.argv.pop(1))
     config_setting = parse_str_none(sys.argv.pop(1))
+    intermediate_file_patcher = parse_str_none(sys.argv.pop(1))
     update_target_label = sys.argv.pop(1)
 
     requirements_file = _select_golden_requirements_file(
@@ -204,8 +223,8 @@ if __name__ == "__main__":
         requirements_darwin=requirements_darwin, requirements_windows=requirements_windows
     )
 
-    resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
-    resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
+    resolved_requirements_in = _locate(requirements_in)
+    resolved_requirements_file = _locate(requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
     # Main repo: __main__/<path_to_file>
@@ -296,7 +315,7 @@ if __name__ == "__main__":
             # Feed the output of pip-compile into the installation report
             # generation.
             sys.exit(_generate_intermediate_file(config_setting, requirements_file_relative_path,
-                           Path(pip_installation_report_relative)))
+                           Path(pip_installation_report_relative), intermediate_file_patcher))
         else:
             print("Not generating an intermediate file.")
     else:
@@ -316,7 +335,7 @@ if __name__ == "__main__":
                 )
                 sys.exit(1)
             elif e.code == 0:
-                golden = open(_locate(bazel_runfiles, requirements_file)).readlines()
+                golden = open(_locate(requirements_file)).readlines()
                 out = open(requirements_out).readlines()
                 out = [line.replace(absolute_path_prefix, "") for line in out]
                 if golden != out:

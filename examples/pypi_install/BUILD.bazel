@@ -37,6 +37,12 @@ compile_pip_requirements(
     # - Drop whole packages (is there such a use case?).
     # - Add patches (support needed).
     # - Override/create aliases (support needed).
+    intermediate_file_patcher = "//:intermediate_file_patcher",
+)
+
+py_binary(
+    name = "intermediate_file_patcher",
+    srcs = ["intermediate_file_patcher.py"],
 )
 
 config_setting(

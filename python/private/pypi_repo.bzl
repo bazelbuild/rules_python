@@ -106,6 +106,12 @@ def load_pypi_packages_internal(intermediate, alias_repo_name, **kwargs):
 
 
 def _generate_http_file(package, info):
+    # Extract all the args that we want to pass to http_file.
+    extra_args = {}
+    for arg in info:
+        if arg.startswith("patch"):
+            extra_args[arg] = info[arg]
+
     http_file(
         name = generate_repo_name_for_download(package, info),
         urls = [
@@ -113,6 +119,7 @@ def _generate_http_file(package, info):
         ],
         sha256 = info["sha256"],
         downloaded_file_path = paths.basename(info["url"]),
+        **extra_args
     )
 
 

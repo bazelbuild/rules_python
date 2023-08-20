@@ -48,6 +48,7 @@ def compile_pip_requirements(
         requirements_linux = None,
         requirements_windows = None,
         intermediate_file = None,
+        intermediate_file_patcher = None,
         visibility = ["//visibility:private"],
         tags = None,
         **kwargs):
@@ -102,6 +103,10 @@ def compile_pip_requirements(
     if intermediate_file:
         data += _generate_loc_select(intermediate_file, "{}")
         _validate_keys_match("requirements_txt and intermediate_file", intermediate_file, requirements_txt)
+        if intermediate_file_patcher:
+            data += [intermediate_file_patcher]
+    elif intermediate_file_patcher:
+        fail("Don't specify a patcher without also specifying intermediate_file.")
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -118,6 +123,7 @@ def compile_pip_requirements(
         loc.format(requirements_windows) if requirements_windows else "None",
     ] + (_generate_loc_select(intermediate_file, loc) if intermediate_file else ["None"]) + (
             _generate_config_select(intermediate_file) if intermediate_file else ["None"]) + [
+        loc.format(intermediate_file_patcher) if intermediate_file_patcher else "None",
         "//%s:%s.update" % (native.package_name(), name),
     ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
 

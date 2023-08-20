@@ -91,6 +91,12 @@
                 "charset-normalizer",
                 "idna",
                 "urllib3"
+            ],
+            "patches": [
+                "@//third_party:requests/hello.patch"
+            ],
+            "patch_args": [
+                "-p1"
             ]
         }
     },
