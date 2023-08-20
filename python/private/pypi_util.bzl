@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python/private:pypi_repo.bzl", _pypi_install="pypi_install")
+def generate_repo_name_for_download(package, info):
+    # TODO(phil): Can we make it more human readable by avoiding the checksum?
+    return "pypi_download_{}_{}".format(package, info["sha256"])
 
-pypi_install = _pypi_install
+def generate_repo_name_for_extracted_wheel(package, info):
+    # TODO(phil): Can we make it more human readable by avoiding the checksum?
+    return "pypi_extracted_wheel_{}_{}".format(package, info["sha256"])
+
