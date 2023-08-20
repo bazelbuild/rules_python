@@ -18,7 +18,7 @@ py_console_script_binary(
 
 Or just use the default version:
 ```starlark
-load("@rules_python//python/entry_point:py_console_script_binary.bzl", "py_console_script_binary")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
 py_console_script_binary(
     name = "pylint",

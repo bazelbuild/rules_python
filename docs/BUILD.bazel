@@ -132,10 +132,10 @@ stardoc(
 stardoc(
     name = "py-console-script-binary",
     out = "py_console_script_binary.md_",
-    input = "//python/entry_point:py_console_script_binary.bzl",
+    input = "//python/entry_points:py_console_script_binary.bzl",
     target_compatible_with = _NOT_WINDOWS,
     deps = [
-        "//python/entry_point:py_console_script_binary_bzl",
+        "//python/entry_points:py_console_script_binary_bzl",
     ],
 )
 

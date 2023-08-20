@@ -17,7 +17,6 @@ A private rule to generate an entry_point python file to be used in a py_binary.
 
 Right now it only supports console_scripts via the entry_points.txt file in the dist-info.
 
-
 NOTE @aignas 2023-08-07: This cannot be in pure starlark, because we need to
 read a file and then create a `.py` file based on the contents of that file,
 which cannot be done in pure starlark according to
@@ -25,7 +24,6 @@ https://github.com/bazelbuild/bazel/issues/14744
 """
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
-_TOOLCHAIN_TYPE = "//python:toolchain_type"
 
 def _get_entry_points_txt(dist_info):
     for file in dist_info.files.to_list():
@@ -49,14 +47,13 @@ def _impl(ctx):
         outputs = [ctx.outputs.out],
         arguments = [args],
         executable = ctx.executable._tool,
-        toolchain = _TOOLCHAIN_TYPE,
     )
 
     return [DefaultInfo(
         files = depset([ctx.outputs.out]),
     )]
 
-py_entry_point_gen = rule(
+py_console_script_gen = rule(
     _impl,
     attrs = {
         "console_script": attr.string(
@@ -72,7 +69,7 @@ py_entry_point_gen = rule(
             mandatory = True,
         ),
         "_tool": attr.label(
-            default = "//python/entry_point:generator_bin",
+            default = ":py_console_script_gen_py",
             executable = True,
             cfg = "exec",
         ),

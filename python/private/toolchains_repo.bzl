@@ -188,7 +188,7 @@ load(
     _py_test = "py_test",
 )
 load(
-    "{rules_python}//python/entry_point:py_console_script_binary.bzl",
+    "{rules_python}//python/entry_points:py_console_script_binary.bzl",
     _py_console_script_binary = "py_console_script_binary",
 )
 load("{rules_python}//python:pip.bzl", _compile_pip_requirements = "compile_pip_requirements")

@@ -30,7 +30,7 @@ py_console_script_binary(
 
 Or just use the default version:
 ```starlark
-load("@rules_python//python/entry_point:py_console_script_binary.bzl", "py_console_script_binary")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
 py_console_script_binary(
     name = "pylint",
@@ -48,7 +48,7 @@ py_console_script_binary(
 """
 
 load("//python:py_binary.bzl", "py_binary")
-load("//python/entry_point/private:py_entry_point_gen.bzl", "py_entry_point_gen")
+load(":py_console_script_gen.bzl", "py_console_script_gen")
 
 def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binary, **kwargs):
     """Generate a py_binary for a console_script entry_point.
@@ -68,7 +68,7 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
     if kwargs.pop("srcs", None):
         fail("passing 'srcs' attribute to py_console_script_binary is unsupported")
 
-    py_entry_point_gen(
+    py_console_script_gen(
         name = "_{}_gen".format(name),
         # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
         dist_info = pkg.replace(":pkg", "") + ":dist_info",
