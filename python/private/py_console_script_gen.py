@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import configparser
 import pathlib
+import re
 import sys
 import textwrap
 
@@ -61,11 +62,26 @@ class EntryPointsParser(configparser.ConfigParser):
     optionxform = staticmethod(str)
 
 
+def _normalize(name):
+    """
+    Taken from https://packaging.python.org/en/latest/specifications/name-normalization/
+    and tweaked a bit
+    """
+    return re.sub(r"[-_.]+", "_", name).lower()
+
+
+def _guess_entry_point(guess: str, console_scripts: dict[string, string]) -> str | None:
+    for key, candidate in console_scripts.items():
+        if guess == _normalize(key):
+            return candidate
+
+
 def run(
     *,
     entry_points: pathlib.Path,
     out: pathlib.Path,
     console_script: str,
+    console_script_guess: str,
 ):
     """Run the generator
 
@@ -92,13 +108,20 @@ def run(
             raise RuntimeError(
                 f"The console_script '{console_script}' was not found, only the following are available: {available}"
             ) from None
-    elif len(console_scripts) == 1:
-        entry_point = next(iter(console_scripts.items()))[1]
     else:
-        available = ", ".join(sorted(console_scripts.keys()))
-        raise RuntimeError(
-            f"Please select one of the following console scripts: {available}"
-        ) from None
+        # Get rid of the extension and the common prefix
+        guess = _normalize(console_script_guess)
+        entry_point = _guess_entry_point(
+            guess=guess,
+            console_scripts=console_scripts,
+        )
+
+        if not entry_point:
+            available = ", ".join(sorted(console_scripts.keys()))
+            raise RuntimeError(
+                f"Tried to guess that you wanted '{console_script_guess}', but could not find it. "
+                f"Please select one of the following console scripts: {available}"
+            ) from None
 
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
@@ -123,6 +146,11 @@ def main():
         help="The console_script to generate the entry_point template for.",
     )
     parser.add_argument(
+        "--console-script-guess",
+        required=True,
+        help="The string used for guessing the console_script if it is not provided.",
+    )
+    parser.add_argument(
         "entry_points",
         metavar="ENTRY_POINTS_TXT",
         type=pathlib.Path,
@@ -140,6 +168,7 @@ def main():
         entry_points=args.entry_points,
         out=args.out,
         console_script=args.console_script,
+        console_script_guess=args.console_script_guess,
     )
 
 

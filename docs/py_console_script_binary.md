@@ -10,6 +10,16 @@ load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_cons
 py_console_script_binary(
     name = "pylint",
     pkg = "@pip//pylint",
+)
+```
+
+Or for more advanced setups you can also specify extra dependencies and the exact script name you want to call.
+```starlark
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "pylint_with_deps",
+    pkg = "@pip//pylint",
     # Because `pylint` has multiple console_scripts available, we have to
     # specify which we want
     script = "pylint",
@@ -56,7 +66,7 @@ Generate a py_binary for a console_script entry_point.
 | :------------- | :------------- | :------------- |
 | <a id="py_console_script_binary-name"></a>name |  str, The name of the resulting target.   |  none |
 | <a id="py_console_script_binary-pkg"></a>pkg |  The package for which to generate the script.   |  none |
-| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Mandatory only if there is more than 1 console_script in the package.   |  <code>None</code> |
+| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Defaults to the normalized name attribute.   |  <code>None</code> |
 | <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like <code>py_binary</code>. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  <code>&lt;function py_binary&gt;</code> |
 | <a id="py_console_script_binary-kwargs"></a>kwargs |  Extra parameters forwarded to binary_rule.   |  none |
 

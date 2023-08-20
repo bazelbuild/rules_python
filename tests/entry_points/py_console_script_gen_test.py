@@ -46,6 +46,7 @@ class RunTest(unittest.TestCase):
                     entry_points=entry_points,
                     out=outfile,
                     console_script=None,
+                    console_script_guess="",
                 )
 
         self.assertEqual(
@@ -62,7 +63,6 @@ class RunTest(unittest.TestCase):
                     """
             [console_scripts]
             foo = foo.bar:fizz
-            bar = foo.bar:buzz
             """
                 ).strip()
                 + "\n"
@@ -75,10 +75,11 @@ class RunTest(unittest.TestCase):
                     entry_points=entry_points,
                     out=outfile,
                     console_script=None,
+                    console_script_guess="bar-baz",
                 )
 
         self.assertEqual(
-            "Please select one of the following console scripts: bar, foo",
+            "Tried to guess that you wanted 'bar-baz', but could not find it. Please select one of the following console scripts: foo",
             cm.exception.args[0],
         )
 
@@ -104,6 +105,7 @@ class RunTest(unittest.TestCase):
                     entry_points=entry_points,
                     out=outfile,
                     console_script="baz",
+                    console_script_guess="",
                 )
 
         self.assertEqual(
@@ -125,12 +127,13 @@ class RunTest(unittest.TestCase):
             )
             entry_points = tmpdir / "entry_points.txt"
             entry_points.write_text(given_contents)
-            out = tmpdir / "out.py"
+            out = tmpdir / "foo.py"
 
             run(
                 entry_points=entry_points,
                 out=out,
                 console_script=None,
+                console_script_guess="foo",
             )
 
             got = out.read_text()
@@ -178,6 +181,7 @@ class RunTest(unittest.TestCase):
                 entry_points=entry_points,
                 out=out,
                 console_script="bar",
+                console_script_guess="",
             )
 
             got = out.read_text()

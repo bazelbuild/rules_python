@@ -41,6 +41,7 @@ def _py_console_script_gen_impl(ctx):
 
     args = ctx.actions.args()
     args.add("--console-script", ctx.attr.console_script)
+    args.add("--console-script-guess", ctx.attr.console_script_guess)
     args.add(entry_points_txt)
     args.add(ctx.outputs.out)
 
@@ -64,6 +65,11 @@ py_console_script_gen = rule(
     attrs = {
         "console_script": attr.string(
             doc = "The name of the console_script to create the .py file for. Optional if there is only a single entry-point available.",
+            default = "",
+            mandatory = False,
+        ),
+        "console_script_guess": attr.string(
+            doc = "The string used for guessing the console_script if it is not provided.",
             default = "",
             mandatory = False,
         ),

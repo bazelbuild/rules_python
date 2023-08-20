@@ -26,8 +26,7 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
         name: str, The name of the resulting target.
         pkg: The package for which to generate the script.
         script: str, The console script name that the py_binary is going to be
-            generated for. Mandatory only if there is more than 1
-            console_script in the package.
+            generated for. Defaults to the normalized name attribute.
         binary_rule: callable, The rule/macro to use to instantiate
             the target. It's expected to behave like `py_binary`.
             Defaults to @rules_python//python:py_binary.bzl#py_binary.
@@ -44,6 +43,7 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
         dist_info = pkg.replace(":pkg", "") + ":dist_info",
         out = main,
         console_script = script,
+        console_script_guess = name,
         visibility = ["//visibility:private"],
     )
 

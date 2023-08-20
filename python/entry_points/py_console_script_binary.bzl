@@ -22,6 +22,16 @@ load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_cons
 py_console_script_binary(
     name = "pylint",
     pkg = "@pip//pylint",
+)
+```
+
+Or for more advanced setups you can also specify extra dependencies and the exact script name you want to call.
+```starlark
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "pylint_with_deps",
+    pkg = "@pip//pylint",
     # Because `pylint` has multiple console_scripts available, we have to
     # specify which we want
     script = "pylint",
