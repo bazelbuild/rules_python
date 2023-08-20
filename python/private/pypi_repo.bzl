@@ -106,12 +106,6 @@ def load_pypi_packages_internal(intermediate, alias_repo_name, **kwargs):
 
 
 def _generate_http_file(package, info):
-    # Extract all the args that we want to pass to http_file.
-    extra_args = {}
-    for arg in info:
-        if arg.startswith("patch"):
-            extra_args[arg] = info[arg]
-
     http_file(
         name = generate_repo_name_for_download(package, info),
         urls = [
@@ -119,7 +113,6 @@ def _generate_http_file(package, info):
         ],
         sha256 = info["sha256"],
         downloaded_file_path = paths.basename(info["url"]),
-        **extra_args
     )
 
 
@@ -134,6 +127,8 @@ def _generate_py_library(package, alias_repo_name, info):
 
 def _wheel_library_repo_impl(repository_ctx):
     deps = ["@{}//{}".format(repository_ctx.attr.alias_repo_name, dep) for dep in repository_ctx.attr.deps]
+    # TODO(phil): Pass the intermediate format through here. Then in the
+    # wrapper rule we can extract the deps and the patches.
     lines = [
         """load("@rules_python//python/private:pypi.bzl", "wrapped_py_wheel_library")""",
         """wrapped_py_wheel_library(name="library", wheel_repo_name="{}", deps={})""".format(
