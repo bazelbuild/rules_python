@@ -23,10 +23,21 @@ import sys
 import textwrap
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
+
+# If we create a `py_console_script_binary` in the main workspace, then the first entry in the `sys.path` will allow
+# the Python scripts to load things from outside the `.runfiles` directory. This means that programs like `pylint`
+# and `flake8` get confused trying to load from `pylint` when the `py_console_script_binary` is named `pylint`, hence
+# we remove the first entry point for this reason.
+#
+# This would not happen if we created an console_script binary in the root of an external repository, e.g.
+# `@pypi_pylint//` because that path is treated differently.
+
 _TEMPLATE = """\
 import sys
-# FIXME @aignas 2023-08-21: it seems that `pylint` is failing when running via
-# `bazel run` but at least the tests on Linux are passing correctly.
+
+# See @rules_python//python/private:py_console_script_gen.py for explanation
+if ".runfiles" not in sys.path[0]:
+    sys.path = sys.path[1:]
 
 try:
     from {module} import {attr}
