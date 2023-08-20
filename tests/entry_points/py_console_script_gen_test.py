@@ -28,6 +28,7 @@ class RunTest(unittest.TestCase):
     def test_no_console_scripts_error(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = pathlib.Path(tmpdir)
+            outfile = tmpdir / "out.py"
             given_contents = (
                 textwrap.dedent(
                     """
@@ -43,7 +44,7 @@ class RunTest(unittest.TestCase):
             with self.assertRaises(RuntimeError) as cm:
                 run(
                     entry_points=entry_points,
-                    out=pathlib.Path(__file__),
+                    out=outfile,
                     console_script=None,
                 )
 
@@ -55,6 +56,7 @@ class RunTest(unittest.TestCase):
     def test_no_entry_point_selected_error(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = pathlib.Path(tmpdir)
+            outfile = tmpdir / "out.py"
             given_contents = (
                 textwrap.dedent(
                     """
@@ -71,7 +73,7 @@ class RunTest(unittest.TestCase):
             with self.assertRaises(RuntimeError) as cm:
                 run(
                     entry_points=entry_points,
-                    out=pathlib.Path(__file__),
+                    out=outfile,
                     console_script=None,
                 )
 
