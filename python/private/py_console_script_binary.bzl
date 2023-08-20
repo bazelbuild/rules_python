@@ -23,12 +23,13 @@ def py_console_script_binary(*, name, pkg, script = None, binary_rule = py_binar
     """Generate a py_binary for a console_script entry_point.
 
     Args:
-        name: The name of the resultant binary_rule target.
+        name: str, The name of the resulting target.
         pkg: The package for which to generate the script.
-        script: The console script name that the py_binary is going to be
+        script: str, The console script name that the py_binary is going to be
             generated for. Mandatory only if there is more than 1
             console_script in the package.
-        binary_rule: The binary rule to call to create the py_binary.
+        binary_rule: callable, The rule/macro to use to instantiate
+            the target. It's expected to behave like `py_binary`.
             Defaults to @rules_python//python:py_binary.bzl#py_binary.
         **kwargs: Extra parameters forwarded to binary_rule.
     """

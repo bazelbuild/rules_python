@@ -1,22 +1,9 @@
 <!-- Generated with Stardoc: http://skydoc.bazel.build -->
 
 
-A macro to generate an console_script py_binary from reading the 'entry_points.txt'.
+Creates an executable (a non-test binary) for console_script entry points.
 
-We can specifically request the console_script to be running with e.g. Python 3.9:
-```starlark
-load("@python_versions//3.9:defs.bzl", "py_console_script_binary")
-
-py_console_script_binary(
-    name = "yamllint",
-    pkg = "@pip//yamllint",
-    # yamllint does not have any other scripts except 'yamllint' so the
-    # user does not have to specify which console script we should chose from
-    # the package.
-)
-```
-
-Or just use the default version:
+Generate a `py_binary` target for a particular console_script `entry_point` from a PyPI package, e.g. for creating an executable `pylint` target use:
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
@@ -34,6 +21,23 @@ py_console_script_binary(
 )
 ```
 
+A specific Python version can be forced by using the generated version-aware
+wrappers, e.g. to force Python 3.9:
+```starlark
+load("@python_versions//3.9:defs.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "yamllint",
+    pkg = "@pip//yamllint",
+    # yamllint does not have any other scripts except 'yamllint' so the
+    # user does not have to specify which console script we should chose from
+    # the package.
+)
+```
+
+Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
+the version-bound `py_binary` symbol.
+
 
 <a id="py_console_script_binary"></a>
 
@@ -50,10 +54,10 @@ Generate a py_binary for a console_script entry_point.
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="py_console_script_binary-name"></a>name |  The name of the resultant binary_rule target.   |  none |
+| <a id="py_console_script_binary-name"></a>name |  str, The name of the resulting target.   |  none |
 | <a id="py_console_script_binary-pkg"></a>pkg |  The package for which to generate the script.   |  none |
-| <a id="py_console_script_binary-script"></a>script |  The console script name that the py_binary is going to be generated for. Mandatory only if there is more than 1 console_script in the package.   |  <code>None</code> |
-| <a id="py_console_script_binary-binary_rule"></a>binary_rule |  The binary rule to call to create the py_binary. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  <code>&lt;function py_binary&gt;</code> |
+| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Mandatory only if there is more than 1 console_script in the package.   |  <code>None</code> |
+| <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like <code>py_binary</code>. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  <code>&lt;function py_binary&gt;</code> |
 | <a id="py_console_script_binary-kwargs"></a>kwargs |  Extra parameters forwarded to binary_rule.   |  none |
 
 

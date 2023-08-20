@@ -13,22 +13,9 @@
 # limitations under the License.
 
 """
-A macro to generate an console_script py_binary from reading the 'entry_points.txt'.
+Creates an executable (a non-test binary) for console_script entry points.
 
-We can specifically request the console_script to be running with e.g. Python 3.9:
-```starlark
-load("@python_versions//3.9:defs.bzl", "py_console_script_binary")
-
-py_console_script_binary(
-    name = "yamllint",
-    pkg = "@pip//yamllint",
-    # yamllint does not have any other scripts except 'yamllint' so the
-    # user does not have to specify which console script we should chose from
-    # the package.
-)
-```
-
-Or just use the default version:
+Generate a `py_binary` target for a particular console_script `entry_point` from a PyPI package, e.g. for creating an executable `pylint` target use:
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
@@ -45,6 +32,23 @@ py_console_script_binary(
     ],
 )
 ```
+
+A specific Python version can be forced by using the generated version-aware
+wrappers, e.g. to force Python 3.9:
+```starlark
+load("@python_versions//3.9:defs.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "yamllint",
+    pkg = "@pip//yamllint",
+    # yamllint does not have any other scripts except 'yamllint' so the
+    # user does not have to specify which console script we should chose from
+    # the package.
+)
+```
+
+Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
+the version-bound `py_binary` symbol.
 """
 
 load("//python/private:py_console_script_binary.bzl", _py_console_script_binary = "py_console_script_binary")
