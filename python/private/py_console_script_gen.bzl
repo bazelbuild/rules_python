@@ -32,7 +32,7 @@ def _get_entry_points_txt(dist_info):
 
     fail("{} does not contain {}".format(dist_info, _ENTRY_POINTS_TXT))
 
-def _impl(ctx):
+def _py_console_script_gen_impl(ctx):
     entry_points_txt = _get_entry_points_txt(ctx.attr.dist_info)
 
     args = ctx.actions.args()
@@ -54,7 +54,7 @@ def _impl(ctx):
     )]
 
 py_console_script_gen = rule(
-    _impl,
+    _py_console_script_gen_impl,
     attrs = {
         "console_script": attr.string(
             doc = "The name of the console_script to create the .py file for.",
