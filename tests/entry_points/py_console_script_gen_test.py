@@ -76,7 +76,7 @@ class RunTest(unittest.TestCase):
                 )
 
         self.assertEqual(
-            "Please select one of the following console scripts: foo, bar",
+            "Please select one of the following console scripts: bar, foo",
             cm.exception.args[0],
         )
 

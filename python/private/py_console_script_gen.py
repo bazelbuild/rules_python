@@ -80,7 +80,7 @@ def run(
         return 1
 
     if len(console_scripts) > 1 and not console_script:
-        available = ", ".join(console_scripts.keys())
+        available = ", ".join(sorted(console_scripts.keys()))
         raise RuntimeError(
             f"Please select one of the following console scripts: {available}"
         )
