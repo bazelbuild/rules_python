@@ -71,24 +71,29 @@ def run(
     """
     config = EntryPointsParser()
     config.read(entry_points)
+
     try:
         console_scripts = dict(config["console_scripts"])
     except KeyError:
         raise RuntimeError(
             f"The package does not provide any console_scripts in it's {_ENTRY_POINTS_TXT}"
         )
-        return 1
 
-    if len(console_scripts) > 1 and not console_script:
+    if console_script:
+        try:
+            entry_point = console_scripts[console_script]
+        except KeyError:
+            available = ", ".join(sorted(console_scripts.keys()))
+            raise RuntimeError(
+                f"The console_script '{console_script}' was not found, only the following are available: {available}"
+            ) from None
+    elif len(console_scripts) == 1:
+        entry_point = next(iter(console_scripts.items()))[1]
+    else:
         available = ", ".join(sorted(console_scripts.keys()))
         raise RuntimeError(
             f"Please select one of the following console scripts: {available}"
-        )
-        return 1
-    elif not console_script:
-        console_script = list(console_scripts.keys())[0]
-
-    entry_point = console_scripts[console_script]
+        ) from None
 
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
@@ -126,7 +131,7 @@ def main():
     )
     args = parser.parse_args()
 
-    return run(
+    run(
         entry_points=args.entry_points,
         out=args.out,
         console_script=args.console_script,

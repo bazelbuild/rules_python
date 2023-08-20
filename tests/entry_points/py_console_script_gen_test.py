@@ -82,6 +82,35 @@ class RunTest(unittest.TestCase):
             cm.exception.args[0],
         )
 
+    def test_incorrect_entry_point(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = pathlib.Path(tmpdir)
+            outfile = tmpdir / "out.py"
+            given_contents = (
+                textwrap.dedent(
+                    """
+            [console_scripts]
+            foo = foo.bar:fizz
+            bar = foo.bar:buzz
+            """
+                ).strip()
+                + "\n"
+            )
+            entry_points = tmpdir / "entry_points.txt"
+            entry_points.write_text(given_contents)
+
+            with self.assertRaises(RuntimeError) as cm:
+                run(
+                    entry_points=entry_points,
+                    out=outfile,
+                    console_script="baz",
+                )
+
+        self.assertEqual(
+            "The console_script 'baz' was not found, only the following are available: bar, foo",
+            cm.exception.args[0],
+        )
+
     def test_a_single_entry_point(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = pathlib.Path(tmpdir)
