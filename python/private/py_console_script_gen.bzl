@@ -26,6 +26,10 @@ https://github.com/bazelbuild/bazel/issues/14744
 _ENTRY_POINTS_TXT = "entry_points.txt"
 
 def _get_entry_points_txt(dist_info):
+    """Get the entry_points.txt file
+
+    TODO: use map_each to avoid flattening of the directories outside the execution phase.
+    """
     for file in dist_info.files.to_list():
         if file.basename == _ENTRY_POINTS_TXT:
             return file
