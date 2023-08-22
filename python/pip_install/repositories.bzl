@@ -110,7 +110,6 @@ py_library(
         "**/*.pyc",
         "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
         "**/* *",
-        "**/*.dist-info/RECORD",
         "BUILD",
         "WORKSPACE",
     ]),
