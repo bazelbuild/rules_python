@@ -21,6 +21,10 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* Python version patch level bumps:
+  * 3.9.16 -> 3.9.17
+  * 3.10.9 -> 3.10.12
+  * 3.11.1 -> 3.11.4
 * (bzlmod) `pip.parse` can no longer automatically use the default
   Python version; this was an unreliable and unsafe behavior. The
   `python_version` arg must always be explicitly specified.
