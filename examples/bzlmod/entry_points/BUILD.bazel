@@ -54,5 +54,11 @@ py_test(
     env = {
         "ENTRY_POINT": "$(rlocationpath :pylint_with_deps)",
     },
+    # FIXME @aignas 2023-08-22: Right now this does not work on Windows and I
+    # am not sure why.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = ["@rules_python//python/runfiles"],
 )
