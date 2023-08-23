@@ -1,5 +1,4 @@
 load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_python//python:defs.bzl", "py_test")
 
 # Below are targets for testing the `py_console_script_binary` feature and are
@@ -16,26 +15,11 @@ py_test(
     deps = ["@rules_python//python/runfiles"],
 )
 
-# Here we create a file that has some pylint errors detected only with the
-# pylint-print plugin.
-write_file(
-    name = "file_with_pylint_errors",
-    out = "file_with_pylint_errors.py",
-    content = [
-        '"""',
-        "a module to demonstrate the pylint-print checker",
-        '"""',
-        "",
-        'if __name__ == "__main__":',
-        '    print("Hello, World!")',
-    ],
-)
-
 # Next run pylint on the file to generate a report.
 run_binary(
     name = "pylint_report",
     srcs = [
-        ":file_with_pylint_errors",
+        ":file_with_pylint_errors.py",
     ],
     outs = ["pylint_report.txt"],
     args = [
@@ -44,7 +28,7 @@ run_binary(
         # The `exit-zero` ensures that `run_binary` is successful even though there are lint errors.
         # We check the generated report in the test below.
         "--exit-zero",
-        "$(location :file_with_pylint_errors)",
+        "$(location :file_with_pylint_errors.py)",
     ],
     env = {
         # otherwise it may try to create ${HOME}/.cache/pylint
