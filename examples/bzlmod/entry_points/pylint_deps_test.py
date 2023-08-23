@@ -27,7 +27,7 @@ class ExampleTest(unittest.TestCase):
 
         super().__init__(*args, **kwargs)
 
-    def test_pylint_entry_point_deps(self):
+    def test_pylint_entry_point(self):
         rlocation_path = os.environ.get("ENTRY_POINT")
         assert (
             rlocation_path is not None
@@ -36,44 +36,29 @@ class ExampleTest(unittest.TestCase):
         entry_point = pathlib.Path(runfiles.Create().Rlocation(rlocation_path))
         self.assertTrue(entry_point.exists(), f"'{entry_point}' does not exist")
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = pathlib.Path(tmpdir)
-            script = tmpdir / "hello_world.py"
-            script.write_text(
-                """\
-\"\"\"
-a module to demonstrate the pylint-print checker
-\"\"\"
-
-if __name__ == "__main__":
-    print("Hello, World!")
-"""
-            )
-
-            proc = subprocess.run(
-                [
-                    str(entry_point),
-                    str(script),
-                    "--output-format=text",
-                    "--load-plugins=pylint_print",
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env={
-                    # otherwise it may try to create ${HOME}/.cache/pylint
-                    "PYLINTHOME": os.environ["TEST_TMPDIR"],
-                },
-                # NOTE @aignas 2023-08-23: passing cwd to the `subprocess.run` will break the execution on Windows
-                # As the launcher then cannot find the entry_point, therefore, when using this feature on Windows never
-                # pass `cwd` argument to subprocess.run.
-            )
-
+        proc = subprocess.run(
+            [str(entry_point), "--version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         self.assertEqual(
             "",
             proc.stderr.decode("utf-8").strip(),
         )
+        self.assertRegex(proc.stdout.decode("utf-8").strip(), "^pylint 2\.15\.9")
+
+    def test_pylint_report_has_expected_warnings(self):
+        rlocation_path = os.environ.get("PYLINT_REPORT")
+        assert (
+            rlocation_path is not None
+        ), "expected 'PYLINT_REPORT' env variable to be set to rlocation of the report"
+
+        pylint_report = pathlib.Path(runfiles.Create().Rlocation(rlocation_path))
+        self.assertTrue(pylint_report.exists(), f"'{pylint_report}' does not exist")
+
         self.assertRegex(
-            proc.stdout.decode("utf-8").strip(),
+            pylint_report.read_text().strip(),
             "W8201: Logging should be used instead of the print\(\) function\. \(print-function\)",
         )
 
