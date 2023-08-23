@@ -49,6 +49,7 @@ py_test(
     deps = ["@rules_python//python/runfiles"],
 )
 
+# Here we create a file that has some pylint errors detected only with the pylint-print plugin.
 write_file(
     name = "file_with_pylint_errors",
     out = "file_with_pylint_errors.py",
