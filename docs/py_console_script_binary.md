@@ -3,7 +3,8 @@
 
 Creates an executable (a non-test binary) for console_script entry points.
 
-Generate a `py_binary` target for a particular console_script `entry_point` from a PyPI package, e.g. for creating an executable `pylint` target use:
+Generate a `py_binary` target for a particular console_script `entry_point`
+from a PyPI package, e.g. for creating an executable `pylint` target use:
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
@@ -13,7 +14,10 @@ py_console_script_binary(
 )
 ```
 
-Or for more advanced setups you can also specify extra dependencies and the exact script name you want to call.
+Or for more advanced setups you can also specify extra dependencies and the
+exact script name you want to call. It is useful for tools like flake8, pylint,
+pytest, which have plugin discovery methods and discover dependencies from the
+PyPI packages available in the PYTHONPATH.
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
@@ -21,7 +25,8 @@ py_console_script_binary(
     name = "pylint_with_deps",
     pkg = "@pip//pylint",
     # Because `pylint` has multiple console_scripts available, we have to
-    # specify which we want
+    # specify which we want if the name of the target name 'pylint_with_deps'
+    # cannot be used to guess the entry_point script.
     script = "pylint",
     deps = [
         # One can add extra dependencies to the entry point.
@@ -43,7 +48,17 @@ py_console_script_binary(
 ```
 
 Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
-the version-bound `py_binary` symbol.
+the version-bound `py_binary` symbol:
+```starlark
+load("@python_versions//3.9:defs.bzl", "py_binary")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+py_console_script_binary(
+    name = "yamllint",
+    pkg = "@pip//yamllint:pkg",
+    binary_rule = py_binary,
+)
+```
 
 
 <a id="py_console_script_binary"></a>
