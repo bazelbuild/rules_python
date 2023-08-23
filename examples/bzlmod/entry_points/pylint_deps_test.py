@@ -63,7 +63,9 @@ if __name__ == "__main__":
                     # otherwise it may try to create ${HOME}/.cache/pylint
                     "PYLINTHOME": os.environ["TEST_TMPDIR"],
                 },
-                cwd=tmpdir,
+                # NOTE @aignas 2023-08-23: passing cwd to the `subprocess.run` will break the execution on Windows
+                # As the launcher then cannot find the entry_point, therefore, when using this feature on Windows never
+                # pass `cwd` argument to subprocess.run.
             )
 
         self.assertEqual(
