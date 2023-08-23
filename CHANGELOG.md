@@ -17,6 +17,16 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+## Unreleased
+
+### Added
+
+* (bzlmod, entry_point) Introduce a new
+  [`py_console_script_binary`](./docs/py_console_script_binary.md) macro to
+  `rules_python` workspace to produce a `py_binary` target for a
+  `console_script` entry within `entry_points.txt` `dist-info` file from a
+  Python wheel.
+
 ## [0.25.0] - 2023-08-22
 
 ### Changed
@@ -42,11 +52,6 @@ A brief description of the categories of changes:
 * Created a changelog.
 * (gazelle) Stop generating unnecessary imports.
 * (toolchains) s390x supported for Python 3.9.17, 3.10.12, and 3.11.4.
-* (bzlmod, entry_point) Introduce a new
-  [`py_console_script_binary`](./docs/py_console_script_binary.md) macro to
-  `rules_python` workspace to produce a `py_binary` target for a
-  `console_script` entry within `entry_points.txt` `dist-info` file from a
-  Python wheel.
 
 [0.25.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.25.0
 
