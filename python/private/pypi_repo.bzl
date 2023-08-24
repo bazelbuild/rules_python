@@ -143,7 +143,7 @@ def _wheel_library_repo_impl(repository_ctx):
         ),
         """)""",
     ]
-    repository_ctx.file("BUILD", "\n".join(lines), executable=False)
+    repository_ctx.file("BUILD.bazel", "\n".join(lines), executable=False)
 
 
 _wheel_library_repo = repository_rule(
@@ -170,7 +170,7 @@ def _generate_package_aliases_impl(repository_ctx):
             """load("@rules_python//python/private:pypi.bzl", _generate_package_alias="generate_package_alias")""",
             """_generate_package_alias(INTERMEDIATE)""",
         ]
-        repository_ctx.file("{}/BUILD".format(package), "\n".join(lines), executable=False)
+        repository_ctx.file("{}/BUILD.bazel".format(package), "\n".join(lines), executable=False)
 
 
 generate_package_aliases = repository_rule(
