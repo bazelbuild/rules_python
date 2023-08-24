@@ -60,7 +60,8 @@ py_console_script_binary(
 ```
 
 Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
-the version-bound `py_binary` symbol:
+the version-bound `py_binary` symbol, or any other `py_binary`-compatible rule
+of your choosing:
 ```starlark
 load("@python_versions//3.9:defs.bzl", "py_binary")
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
