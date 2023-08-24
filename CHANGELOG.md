@@ -21,11 +21,10 @@ A brief description of the categories of changes:
 
 ### Added
 
-* (bzlmod, entry_point) Introduce a new
-  [`py_console_script_binary`](./docs/py_console_script_binary.md) macro to
-  `rules_python` workspace to produce a `py_binary` target for a
-  `console_script` entry within `entry_points.txt` `dist-info` file from a
-  Python wheel.
+* (bzlmod, entry_point) Added
+  [`py_console_script_binary`](./docs/py_console_script_binary.md), which
+  allows adding custom dependencies to a package's entry points and customizing
+  the `py_binary` rule used to build it.
 
 ### Removed
 
