@@ -58,8 +58,9 @@ def main(args: Any) -> None:
         shutil.rmtree(link_dir, ignore_errors=True)
 
     patch_args = [args.patch_tool] + args.patch_arg
-    for patch in args.patch:
+    for patch in (args.patch or []):
         with patch.open("r") as stdin:
+            print(f"Applying patch {patch}")
             subprocess.run(patch_args, stdin=stdin, check=True)
 
 

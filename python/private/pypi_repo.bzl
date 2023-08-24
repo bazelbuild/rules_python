@@ -47,7 +47,10 @@ def _pypi_install_impl(repository_ctx):
         """)""",
         """load("@{}//:intermediate.bzl", "INTERMEDIATE")""".format(repository_ctx.name),
         """def load_pypi_packages(name, **kwargs):""",
-        """    _load_pypi_packages_internal(INTERMEDIATE, alias_repo_name=name, **kwargs)""",
+        """    _load_pypi_packages_internal(INTERMEDIATE,""",
+        """                                intermediate_repo_name="{}",""".format(repository_ctx.name),
+        """                               alias_repo_name=name,""",
+        """                               **kwargs)""",
         """    _generate_package_aliases(name=name, intermediate="@{}//:intermediate.bzl", **kwargs)""".format(repository_ctx.name),
     ]
     repository_ctx.file("packages.bzl", "\n".join(lines), executable=False)
@@ -87,7 +90,7 @@ def _combine_intermediate_files(repository_ctx, installation_reports):
     return combined
 
 
-def load_pypi_packages_internal(intermediate, alias_repo_name, **kwargs):
+def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo_name, **kwargs):
     # Only download a wheel/tarball once. We do this by tracking which SHA sums
     # we've downloaded already.
     sha_indexed_infos = {}
@@ -102,7 +105,7 @@ def load_pypi_packages_internal(intermediate, alias_repo_name, **kwargs):
 
                 # TODO(phil): Can we add target_compatible_with information
                 # here?
-                _generate_py_library(package, alias_repo_name, info)
+                _generate_py_library(package, config, info, intermediate_repo_name, alias_repo_name)
 
 
 def _generate_http_file(package, info):
@@ -116,25 +119,29 @@ def _generate_http_file(package, info):
     )
 
 
-def _generate_py_library(package, alias_repo_name, info):
+def _generate_py_library(package, config, info, intermediate_repo_name, alias_repo_name):
     _wheel_library_repo(
         name = generate_repo_name_for_extracted_wheel(package, info),
         alias_repo_name = alias_repo_name,
         wheel_repo_name = generate_repo_name_for_download(package, info),
-        deps = info["deps"],
+        intermediate_repo_name = intermediate_repo_name,
+        intermediate_package = package,
+        intermediate_config = config,
     )
 
 
 def _wheel_library_repo_impl(repository_ctx):
-    deps = ["@{}//{}".format(repository_ctx.attr.alias_repo_name, dep) for dep in repository_ctx.attr.deps]
-    # TODO(phil): Pass the intermediate format through here. Then in the
-    # wrapper rule we can extract the deps and the patches.
     lines = [
         """load("@rules_python//python/private:pypi.bzl", "wrapped_py_wheel_library")""",
-        """wrapped_py_wheel_library(name="library", wheel_repo_name="{}", deps={})""".format(
-            repository_ctx.attr.wheel_repo_name,
-            json.encode(deps),
+        """load("@{}//:intermediate.bzl", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate_repo_name),
+        """wrapped_py_wheel_library(""",
+        """    name="library",""",
+        """    wheel_repo_name="{}",""".format(repository_ctx.attr.wheel_repo_name),
+        """    info=INTERMEDIATE["{}"]["{}"],""".format(
+            repository_ctx.attr.intermediate_package,
+            repository_ctx.attr.intermediate_config,
         ),
+        """)""",
     ]
     repository_ctx.file("BUILD", "\n".join(lines), executable=False)
 
@@ -144,7 +151,9 @@ _wheel_library_repo = repository_rule(
     attrs = {
         "alias_repo_name": attr.string(),
         "wheel_repo_name": attr.string(),
-        "deps": attr.string_list(),
+        "intermediate_repo_name": attr.string(),
+        "intermediate_package": attr.string(),
+        "intermediate_config": attr.string(),
     },
 )
 

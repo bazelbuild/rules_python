@@ -34,17 +34,22 @@ def generate_package_alias(intermediate):
     native.alias(
         name = package,
         actual = select(actual_select),
-        # TODO(phil): Validate that this works in bazel 5. Do we care?
         target_compatible_with = select(target_compatible_with_select),
         visibility = ["//visibility:public"],
     )
 
 
-def wrapped_py_wheel_library(name, wheel_repo_name, deps):
+def wrapped_py_wheel_library(name, wheel_repo_name, info):
+    kwargs = {arg: info.get(arg) for arg in (
+        "deps",
+        "patches",
+        "patch_args",
+        "patch_tool",
+    )}
     pycross_wheel_library(
         name = "library",
         wheel = "@{}//file".format(wheel_repo_name),
         enable_implicit_namespace_pkgs = True,
-        deps = deps,
         visibility = ["//visibility:public"],
+        **kwargs
     )
