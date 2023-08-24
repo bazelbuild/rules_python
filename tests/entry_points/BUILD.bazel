@@ -17,7 +17,6 @@ load("//python:py_test.bzl", "py_test")
 py_test(
     name = "py_console_script_gen_test",
     srcs = ["py_console_script_gen_test.py"],
-    imports = ["../.."],
     main = "py_console_script_gen_test.py",
     visibility = ["//visibility:private"],
     deps = [
