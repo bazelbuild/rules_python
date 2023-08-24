@@ -143,7 +143,10 @@ class RunTest(unittest.TestCase):
         import sys
 
         # See @rules_python//python/private:py_console_script_gen.py for explanation
-        if ".runfiles" not in sys.path[0]:
+        if getattr(sys.flags, "safe_path", False):
+            # We are running on Python 3.11 and we don't need this workaround
+            pass
+        elif ".runfiles" not in sys.path[0]:
             sys.path = sys.path[1:]
 
         try:
