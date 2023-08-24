@@ -52,7 +52,7 @@ def _py_console_script_gen_impl(ctx):
         outputs = [ctx.outputs.out],
         arguments = [args],
         mnemonic = "PyConsoleScriptBinaryGen",
-        progress_message = "Generating input for py_console_script_binary main.",
+        progress_message = "Generating py_console_script_binary main: %{label}",
         executable = ctx.executable._tool,
     )
 
