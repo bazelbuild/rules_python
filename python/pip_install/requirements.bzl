@@ -90,6 +90,8 @@ def compile_pip_requirements(
         loc.format(requirements_darwin) if requirements_darwin else "None",
         loc.format(requirements_windows) if requirements_windows else "None",
         "//%s:%s.update" % (native.package_name(), name),
+        "--resolver=backtracking",
+        "--allow-unsafe",
     ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
 
     deps = [
