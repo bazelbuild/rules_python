@@ -32,8 +32,9 @@ def _dist_info(pkg):
         * @pypi_pylint//:pkg
         * @pypi//pylint
         * @pypi//pylint:pkg
+        * Label("@pypi//pylint:pkg")
     """
-    return pkg.replace(":pkg", "") + ":dist_info"
+    return str(pkg).replace(":pkg", "") + ":dist_info"
 
 def py_console_script_binary(
         *,

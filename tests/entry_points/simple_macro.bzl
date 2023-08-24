@@ -12,28 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//python:py_test.bzl", "py_test")
-load(":simple_macro.bzl", "py_console_script_binary_in_a_macro")
+"""
+A simple test macro.
+"""
 
-py_test(
-    name = "py_console_script_gen_test",
-    srcs = ["py_console_script_gen_test.py"],
-    main = "py_console_script_gen_test.py",
-    visibility = ["//visibility:private"],
-    deps = [
-        "//python/private:py_console_script_gen_lib",
-    ],
-)
+load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
-py_console_script_binary_in_a_macro(
-    name = "twine",
-    pkg = "@publish_deps_twine//:pkg",
-)
+def py_console_script_binary_in_a_macro(name, pkg):
+    """A simple macro to see that we can use our macro in a macro.
 
-build_test(
-    name = "build_entry_point",
-    targets = [
-        ":twine",
-    ],
-)
+    Args:
+        name, str: the name of the target
+        pkg, str: the pkg target
+    """
+    py_console_script_binary(
+        name = name,
+        pkg = Label(pkg),
+    )
