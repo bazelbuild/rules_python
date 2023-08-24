@@ -47,11 +47,12 @@ def py_console_script_binary(
 
     Args:
         name: str, The name of the resulting target.
-        pkg: The package for which to generate the script.
-        entry_points_txt: The file to be used for parsing the available
-            console_script values. Defaults to searching for `entry_points.txt`
-            in the `dist_info` filegroup in the same package as the `pkg`
-            Label.
+        pkg: target, the package for which to generate the script.
+        entry_points_txt: optional target, the entry_points.txt file to parse
+            for available console_script values. It may be a single file, or a
+            group of files, but must contain a file named `entry_point.txt`.
+            If not specified, defaults to the `dist_info` target in the same
+            package as the `pkg` Label.
         script: str, The console script name that the py_binary is going to be
             generated for. Defaults to the normalized name attribute.
         binary_rule: callable, The rule/macro to use to instantiate
