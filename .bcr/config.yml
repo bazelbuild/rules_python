@@ -14,5 +14,5 @@
 
 fixedReleaser:
   login: f0rmiga
-  email: thulio@aspect.dev
+  email: 3149049+f0rmiga@users.noreply.github.com
 moduleRoots: [".", "gazelle"]

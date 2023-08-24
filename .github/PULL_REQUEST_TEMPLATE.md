@@ -1,6 +1,7 @@
 PR Instructions/requirements
 * Title uses `type: description` format. See CONTRIBUTING.md for types.
-* Common types are: build, docs, feat, fix, refactor, revert, test
+  * Common types are: build, docs, feat, fix, refactor, revert, test
+  * Update `CHANGELOG.md` as applicable
 * Breaking changes include "!" after the type and a "BREAKING CHANGES:"
   section at the bottom.
 * Body text describes:
