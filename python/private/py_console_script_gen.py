@@ -12,7 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""entry_point generator."""
+"""
+console_script generator from entry_points.txt contents.
+
+For Python versions earlier than 3.11 and for earlier bazel versions than 7.0 we need to workaround the issue of
+sys.path[0] breaking out of the runfiles tree see the following for more context:
+* https://github.com/bazelbuild/rules_python/issues/382
+* https://github.com/bazelbuild/bazel/pull/15701
+
+In affected bazel and Python versions we see in programs such as `flake8`, `pylint` or `pytest` errors because the
+first `sys.path` element is outside the `runfiles` directory and if the `name` of the `py_binary` is the same as
+the program name, then the script (e.g. `flake8`) will start failing whilst trying to import its own internals from
+the bazel entrypoint script.
+
+The mitigation strategy is to remove the first entry in the `sys.path` if it does not have `.runfiles` and it seems
+to fix the behaviour of console_scripts under `bazel run`.
+
+This would not happen if we created an console_script binary in the root of an external repository, e.g.
+`@pypi_pylint//` because the path for the external repository is already in the runfiles directory.
+"""
 
 from __future__ import annotations
 
@@ -25,19 +43,14 @@ import textwrap
 
 _ENTRY_POINTS_TXT = "entry_points.txt"
 
-# If we create a `py_console_script_binary` in the main workspace, then the first entry in the `sys.path` will allow
-# the Python scripts to load things from outside the `.runfiles` directory. This means that programs like `pylint`
-# and `flake8` get confused trying to load from `pylint` when the `py_console_script_binary` is named `pylint`, hence
-# we remove the first entry point for this reason.
-#
-# This would not happen if we created an console_script binary in the root of an external repository, e.g.
-# `@pypi_pylint//` because that path is treated differently.
-
 _TEMPLATE = """\
 import sys
 
 # See @rules_python//python/private:py_console_script_gen.py for explanation
-if ".runfiles" not in sys.path[0]:
+if getattr(sys.flags, "safe_path", False):
+    # We are running on Python 3.11 and we don't need this workaround
+    pass
+elif ".runfiles" not in sys.path[0]:
     sys.path = sys.path[1:]
 
 try:
@@ -131,7 +144,7 @@ def run(
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description="console_script generator")
     parser.add_argument(
         "--console-script",
         help="The console_script to generate the entry_point template for.",
