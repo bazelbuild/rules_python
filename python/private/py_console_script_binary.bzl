@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Implementation for the macro to generate an console_script py_binary from reading the 'entry_points.txt'.
+Implementation for the macro to generate a console_script py_binary from an 'entry_points.txt' config.
 """
 
 load("//python:py_binary.bzl", "py_binary")
