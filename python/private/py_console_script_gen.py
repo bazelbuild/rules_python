@@ -62,17 +62,9 @@ class EntryPointsParser(configparser.ConfigParser):
     optionxform = staticmethod(str)
 
 
-def _normalize(name):
-    """
-    Taken from https://packaging.python.org/en/latest/specifications/name-normalization/
-    and tweaked a bit
-    """
-    return re.sub(r"[-_.]+", "_", name).lower()
-
-
 def _guess_entry_point(guess: str, console_scripts: dict[string, string]) -> str | None:
     for key, candidate in console_scripts.items():
-        if guess == _normalize(key):
+        if guess == key:
             return candidate
 
 
@@ -110,9 +102,8 @@ def run(
             ) from None
     else:
         # Get rid of the extension and the common prefix
-        guess = _normalize(console_script_guess)
         entry_point = _guess_entry_point(
-            guess=guess,
+            guess=console_script_guess,
             console_scripts=console_scripts,
         )
 
@@ -125,7 +116,7 @@ def run(
 
     module, _, entry_point = entry_point.rpartition(":")
     attr, _, _ = entry_point.partition(".")
-    # TODO: handle extra in entry_point generation
+    # TODO: handle 'extras' in entry_point generation
     # See https://github.com/bazelbuild/rules_python/issues/1383
     # See https://packaging.python.org/en/latest/specifications/entry-points/
 
