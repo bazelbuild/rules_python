@@ -35,6 +35,11 @@ class ExampleTest(unittest.TestCase):
         entry_point = pathlib.Path(runfiles.Create().Rlocation(rlocation_path))
         self.assertTrue(entry_point.exists(), f"'{entry_point}' does not exist")
 
+        # Let's run the entrypoint and check the tool version.
+        #
+        # NOTE @aignas 2023-08-24: the Windows python launcher with Python 3.9 and bazel 6 is not happy if we start
+        # passing extra files via `subprocess.run` and it starts to fail with an error that the file which is the
+        # entry_point cannot be found. However, just calling `--version` seems to be fine.
         proc = subprocess.run(
             [str(entry_point), "--version"],
             check=True,
