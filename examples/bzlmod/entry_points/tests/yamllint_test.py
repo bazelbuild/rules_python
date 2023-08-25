@@ -21,15 +21,25 @@ from python.runfiles import runfiles
 
 
 class ExampleTest(unittest.TestCase):
-    def test_entry_point(self):
-        rlocation_path = os.environ.get("YAMLLINT_ENTRY_POINT")
+    def __init__(self, *args, **kwargs):
+        self.maxDiff = None
+
+        super().__init__(*args, **kwargs)
+
+    def test_yamllint_entry_point(self):
+        rlocation_path = os.environ.get("ENTRY_POINT")
         assert (
             rlocation_path is not None
-        ), "expected 'YAMLLINT_ENTRY_POINT' env variable to be set to rlocation of the tool"
+        ), "expected 'ENTRY_POINT' env variable to be set to rlocation of the tool"
 
         entry_point = pathlib.Path(runfiles.Create().Rlocation(rlocation_path))
         self.assertTrue(entry_point.exists(), f"'{entry_point}' does not exist")
 
+        # Let's run the entrypoint and check the tool version.
+        #
+        # NOTE @aignas 2023-08-24: the Windows python launcher with Python 3.9 and bazel 6 is not happy if we start
+        # passing extra files via `subprocess.run` and it starts to fail with an error that the file which is the
+        # entry_point cannot be found. However, just calling `--version` seems to be fine.
         proc = subprocess.run(
             [str(entry_point), "--version"],
             check=True,
