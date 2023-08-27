@@ -136,6 +136,7 @@ def _wheel_library_repo_impl(repository_ctx):
         """load("@{}//:intermediate.bzl", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate_repo_name),
         """wrapped_py_wheel_library(""",
         """    name="library",""",
+        """    alias_repo_name="{}",""".format(repository_ctx.attr.alias_repo_name),
         """    wheel_repo_name="{}",""".format(repository_ctx.attr.wheel_repo_name),
         """    info=INTERMEDIATE["{}"]["{}"],""".format(
             repository_ctx.attr.intermediate_package,
