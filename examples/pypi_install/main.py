@@ -24,6 +24,9 @@ def cognitojwt_version() -> str:
 def requests_version() -> str:
     return requests.__version__
 
+def patched_hello() -> str:
+    return requests.patched_hello()
+
 def main(argv):
     print(f"cognitojwt version: {cognitojwt_version()}")
     print(f"requests version: {requests_version()}")

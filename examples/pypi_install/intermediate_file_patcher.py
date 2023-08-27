@@ -10,6 +10,7 @@ UPDATES = {
         "patch_args": [
             "-p1",
         ],
+        "patch_dir": "library/site-packages",
     },
 }
 
@@ -29,6 +30,7 @@ def main(argv):
 
     with intermediate_file.open("w") as file:
         json.dump(content, file, indent=4)
+        file.write("\n")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

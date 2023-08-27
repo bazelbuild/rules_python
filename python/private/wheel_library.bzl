@@ -19,8 +19,9 @@ def _pycross_wheel_library_impl(ctx):
     args.add_all(ctx.files.patches, format_each="--patch=%s")
     args.add_all(ctx.attr.patch_args, format_each="--patch-arg=%s")
     args.add("--patch-tool", ctx.attr.patch_tool)
+    args.add("--patch-dir", ctx.attr.patch_dir)
 
-    inputs = [wheel_file]
+    inputs = [wheel_file] + ctx.files.patches
     if name_file:
         inputs.append(name_file)
         args.add("--wheel-name-file", name_file)
@@ -120,6 +121,7 @@ This option is required to support some packages which cannot handle the convers
             executable = True,
         ),
         "patches": attr.label_list(
+            allow_files = True,
             default = [],
             doc =
                 "A list of files that are to be applied as patches after " +
@@ -135,6 +137,10 @@ This option is required to support some packages which cannot handle the convers
         "patch_tool": attr.string(
             default = "patch",
             doc = "The patch(1) utility to use.",
+        ),
+        "patch_dir": attr.string(
+            default = "",
+            doc = "The directory from which to invoke the patch_tool.",
         ),
     }
 )

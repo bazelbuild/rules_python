@@ -93,7 +93,7 @@
                 "urllib3"
             ],
             "patches": [
-                "@//third_party:requests/hello.patch"
+                "@//third_party:requests/0001-Add-a-dummy-patch-for-requests.patch"
             ],
             "patch_args": [
                 "-p1"

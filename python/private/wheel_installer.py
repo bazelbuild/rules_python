@@ -7,6 +7,7 @@ at commit 91e10c1f62926e8e9821897e252e359f797ff989.
 
 import argparse
 import os
+import subprocess
 import shutil
 import sys
 import tempfile
@@ -58,10 +59,11 @@ def main(args: Any) -> None:
         shutil.rmtree(link_dir, ignore_errors=True)
 
     patch_args = [args.patch_tool] + args.patch_arg
+    patch_dir = args.patch_dir or "."
     for patch in (args.patch or []):
         with patch.open("r") as stdin:
             print(f"Applying patch {patch}")
-            subprocess.run(patch_args, stdin=stdin, check=True)
+            subprocess.run(patch_args, stdin=stdin, check=True, cwd=patch_dir)
 
 
 
@@ -112,6 +114,12 @@ def parse_flags(argv) -> Any:
         "--patch-tool",
         type=str,
         help="The tool to invoke when applying patches.",
+    )
+
+    parser.add_argument(
+        "--patch-dir",
+        type=str,
+        help="The directory from which to invoke patch_tool.",
     )
 
     return parser.parse_args(argv[1:])

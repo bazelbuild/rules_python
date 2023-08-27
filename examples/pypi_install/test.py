@@ -22,6 +22,9 @@ class ExampleTest(unittest.TestCase):
         self.assertEqual("1.4.1", main.cognitojwt_version())
         self.assertEqual("2.31.0", main.requests_version())
 
+    def test_patch(self):
+        self.assertEqual("Hello from a patch", main.patched_hello())
+
 
 if __name__ == "__main__":
     unittest.main()

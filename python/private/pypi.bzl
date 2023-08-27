@@ -44,6 +44,7 @@ def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, info):
         "patches",
         "patch_args",
         "patch_tool",
+        "patch_dir",
     )}
     deps = ["@{}//{}".format(alias_repo_name, dep) for dep in info.get("deps", [])]
     pycross_wheel_library(
