@@ -73,10 +73,10 @@ def _context(self):
 def _pop_context(self):
     return self.contexts.pop()
 
-def _new(version):
+def _new(input):
     """Create a new normalizer"""
     self = struct(
-        version = version,
+        input = input,
         contexts = [_ctx(0)],
     )
 
@@ -88,7 +88,7 @@ def _new(version):
         pop_context = mkmethod(self, _pop_context),
 
         # attributes: keep sorted
-        version = self.version,
+        input = self.input,
     )
     return public
 
@@ -113,10 +113,10 @@ def accept(parser, predicate, value):
 
     ctx = parser.context()
 
-    if ctx["start"] >= len(parser.version):
+    if ctx["start"] >= len(parser.input):
         return False
 
-    token = parser.version[ctx["start"]]
+    token = parser.input[ctx["start"]]
 
     if predicate(token):
         if type(value) in ["function", "builtin_function_or_method"]:
@@ -147,7 +147,7 @@ def accept_placeholder(parser):
         return False
 
     start = ctx["start"]
-    for _ in range(start, len(parser.version) + 1):
+    for _ in range(start, len(parser.input) + 1):
         if not accept(parser, _is_not("}"), str):
             break
 
@@ -164,7 +164,7 @@ def accept_digits(parser):
     ctx = parser.open_context()
     start = ctx["start"]
 
-    for i in range(start, len(parser.version) + 1):
+    for i in range(start, len(parser.input) + 1):
         if not accept(parser, _isdigit, str) and not accept_placeholder(parser):
             if i - start >= 1:
                 if ctx["norm"].isdigit():
@@ -197,7 +197,7 @@ def accept_alnum(parser):
     ctx = parser.open_context()
     start = ctx["start"]
 
-    for i in range(start, len(parser.version) + 1):
+    for i in range(start, len(parser.input) + 1):
         if not accept(parser, _isalnum, _lower) and not accept_placeholder(parser):
             if i - start >= 1:
                 parser.close_context()
@@ -224,7 +224,7 @@ def accept_dot_number_sequence(parser):
     start = ctx["start"]
     i = start
 
-    for i in range(start, len(parser.version) + 1):
+    for i in range(start, len(parser.input) + 1):
         if not accept_dot_number(parser):
             break
     return i - start >= 1
@@ -250,7 +250,7 @@ def accept_separator_alnum_sequence(parser):
     start = ctx["start"]
     i = start
 
-    for i in range(start, len(parser.version) + 1):
+    for i in range(start, len(parser.input) + 1):
         if not accept_separator_alnum(parser):
             break
 
@@ -424,9 +424,9 @@ def normalize_pep440(version):
     accept_postrelease(parser)
     accept_devrelease(parser)
     accept_local(parser)
-    if parser.version[parser.context()["start"]:]:
+    if parser.input[parser.context()["start"]:]:
         fail(
-            "Failed to parse PEP 440 version identifier '%s'." % parser.version,
-            "Parse error at '%s'" % parser.version[parser.context()["start"]:],
+            "Failed to parse PEP 440 version identifier '%s'." % parser.input,
+            "Parse error at '%s'" % parser.input[parser.context()["start"]:],
         )
     return parser.context()["norm"]
