@@ -49,7 +49,7 @@ def _ctx(start):
 def _open_context(self):
     """Open an new parsing ctx.
 
-    If the current parsing step succeeds, call self.close_context().
+    If the current parsing step succeeds, call self.accept().
     If the current parsing step fails, call self.discard() to
     go back to how it was before we opened a new ctx.
 
@@ -61,7 +61,7 @@ def _open_context(self):
     self.contexts.append(_ctx(_context(self)["start"]))
     return self.contexts[-1]
 
-def _close_context(self):
+def _accept(self):
     """Close the current ctx successfully and merge the results."""
     finished = self.contexts.pop()
     self.contexts[-1]["norm"] += finished["norm"]
@@ -82,7 +82,7 @@ def _new(input):
 
     public = struct(
         # methods: keep sorted
-        close_context = mkmethod(self, _close_context),
+        accept = mkmethod(self, _accept),
         context = mkmethod(self, _context),
         discard = mkmethod(self, _discard),
         open_context = mkmethod(self, _open_context),
@@ -155,7 +155,7 @@ def accept_placeholder(parser):
         parser.discard()
         return False
 
-    parser.close_context()
+    parser.accept()
     return True
 
 def accept_digits(parser):
@@ -170,7 +170,7 @@ def accept_digits(parser):
                 if ctx["norm"].isdigit():
                     # PEP 440: Integer Normalization
                     ctx["norm"] = str(int(ctx["norm"]))
-                parser.close_context()
+                parser.accept()
                 return True
             break
 
@@ -188,7 +188,7 @@ def accept_string(parser, string, replacement):
 
     ctx["norm"] = replacement
 
-    parser.close_context()
+    parser.accept()
     return True
 
 def accept_alnum(parser):
@@ -200,7 +200,7 @@ def accept_alnum(parser):
     for i in range(start, len(parser.input) + 1):
         if not accept(parser, _isalnum, _lower) and not accept_placeholder(parser):
             if i - start >= 1:
-                parser.close_context()
+                parser.accept()
                 return True
             break
 
@@ -212,7 +212,7 @@ def accept_dot_number(parser):
     parser.open_context()
 
     if accept(parser, _is("."), ".") and accept_digits(parser):
-        parser.close_context()
+        parser.accept()
         return True
     else:
         parser.discard()
@@ -238,7 +238,7 @@ def accept_separator_alnum(parser):
         accept(parser, _in([".", "-", "_"]), ".") and
         (accept_digits(parser) or accept_alnum(parser))
     ):
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
@@ -264,7 +264,7 @@ def accept_epoch(parser):
             parser.discard()
             parser.context()["start"] = ctx["start"]
         else:
-            parser.close_context()
+            parser.accept()
         return True
     else:
         parser.discard()
@@ -279,7 +279,7 @@ def accept_release(parser):
         return False
 
     accept_dot_number_sequence(parser)
-    parser.close_context()
+    parser.accept()
     return True
 
 def accept_pre_l(parser):
@@ -296,7 +296,7 @@ def accept_pre_l(parser):
         accept_string(parser, "pre", "rc") or
         accept_string(parser, "rc", "rc")
     ):
-        parser.close_context()
+        parser.accept()
         return True
     else:
         parser.discard()
@@ -319,7 +319,7 @@ def accept_prerelease(parser):
         # PEP 440: Implicit pre-release number
         ctx["norm"] += "0"
 
-    parser.close_context()
+    parser.accept()
     return True
 
 def accept_implicit_postrelease(parser):
@@ -328,7 +328,7 @@ def accept_implicit_postrelease(parser):
 
     if accept(parser, _is("-"), "") and accept_digits(parser):
         ctx["norm"] = ".post" + ctx["norm"]
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
@@ -354,7 +354,7 @@ def accept_explicit_postrelease(parser):
             # PEP 440: Implicit post release number
             ctx["norm"] += "0"
 
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
@@ -365,7 +365,7 @@ def accept_postrelease(parser):
     parser.open_context()
 
     if accept_implicit_postrelease(parser) or accept_explicit_postrelease(parser):
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
@@ -386,7 +386,7 @@ def accept_devrelease(parser):
             # PEP 440: Implicit development release number
             ctx["norm"] += "0"
 
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
@@ -398,7 +398,7 @@ def accept_local(parser):
 
     if accept(parser, _is("+"), "+") and accept_alnum(parser):
         accept_separator_alnum_sequence(parser)
-        parser.close_context()
+        parser.accept()
         return True
 
     parser.discard()
