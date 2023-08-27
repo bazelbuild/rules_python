@@ -14,6 +14,13 @@
 
 "Implementation of PEP440 version string normalization"
 
+def mkmethod(self, method):
+    """Bind a struct as the first arg to a function.
+
+    This is loosely equivalent to creating a bound method of a class.
+    """
+    return lambda *args, **kwargs: method(self, *args, **kwargs)
+
 def _isdigit(token):
     return token.isdigit()
 
@@ -23,6 +30,37 @@ def _isalnum(token):
 def _lower(token):
     # PEP 440: Case sensitivity
     return token.lower()
+
+def _open_context(self, start):
+    """Open an new parsing context.
+
+    If the current parsing step succeeds, call close_context().
+    If the current parsing step fails, call contexts.pop() to
+    go back to how it was before we opened a new context.
+
+    Args:
+      self: The normalizer.
+      start: index into `version` indicating where the current
+        parsing step starts.
+    """
+    self.contexts.append({"norm": "", "start": start})
+    return self.contexts[-1]
+
+def _new(version):
+    """Create a new normalizer"""
+    self = struct(
+        version = version.strip(),  # PEP 440: Leading and Trailing Whitespace
+        contexts = [],
+    )
+    public = struct(
+        # methods: keep sorted
+        open_context = mkmethod(self, _open_context),
+
+        # attributes: keep sorted
+        contexts = self.contexts,
+        version = self.version,
+    )
+    return public
 
 def normalize_pep440(version):
     """Escape the version component of a filename.
@@ -37,24 +75,7 @@ def normalize_pep440(version):
       string containing the normalized version.
     """
 
-    self = struct(
-        version = version.strip(),  # PEP 440: Leading and Trailing Whitespace
-        contexts = [],
-    )
-
-    def open_context(start):
-        """Open an new parsing context.
-
-        If the current parsing step succeeds, call close_context().
-        If the current parsing step fails, call contexts.pop() to
-        go back to how it was before we opened a new context.
-
-        Args:
-          start: index into `version` indicating where the current
-            parsing step starts.
-        """
-        self.contexts.append({"norm": "", "start": start})
-        return self.contexts[-1]
+    self = _new(version)
 
     def close_context():
         """Close the current context successfully and merge the results."""
@@ -122,7 +143,7 @@ def normalize_pep440(version):
         actually be valid.
 
         """
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         if not accept(is_("{"), str):
             self.contexts.pop()
@@ -143,7 +164,7 @@ def normalize_pep440(version):
     def accept_digits():
         """Accept multiple digits (or placeholders)."""
 
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
         start = context["start"]
 
         for i in range(start, len(self.version) + 1):
@@ -161,7 +182,7 @@ def normalize_pep440(version):
 
     def accept_string(string, replacement):
         """Accept a `string` in the input. Output `replacement`."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         for character in string.elems():
             if not accept(in_([character, character.upper()]), ""):
@@ -176,7 +197,7 @@ def normalize_pep440(version):
     def accept_alnum():
         """Accept an alphanumeric sequence."""
 
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
         start = context["start"]
 
         for i in range(start, len(self.version) + 1):
@@ -191,7 +212,7 @@ def normalize_pep440(version):
 
     def accept_dot_number():
         """Accept a dot followed by digits."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         if accept(is_("."), ".") and accept_digits():
             close_context()
@@ -213,7 +234,7 @@ def normalize_pep440(version):
 
     def accept_separator_alnum():
         """Accept a separator followed by an alphanumeric string."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Local version segments
         if (
@@ -240,7 +261,7 @@ def normalize_pep440(version):
 
     def accept_epoch():
         """PEP 440: Version epochs."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
         if accept_digits() and accept(is_("!"), "!"):
             if context["norm"] == "0!":
                 self.contexts.pop()
@@ -254,7 +275,7 @@ def normalize_pep440(version):
 
     def accept_release():
         """Accept the release segment, numbers separated by dots."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         if not accept_digits():
             self.contexts.pop()
@@ -266,7 +287,7 @@ def normalize_pep440(version):
 
     def accept_pre_l():
         """PEP 440: Pre-release spelling."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         if (
             accept_string("alpha", "a") or
@@ -286,7 +307,7 @@ def normalize_pep440(version):
 
     def accept_prerelease():
         """PEP 440: Pre-releases."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Pre-release separators
         accept(in_(["-", "_", "."]), "")
@@ -306,7 +327,7 @@ def normalize_pep440(version):
 
     def accept_implicit_postrelease():
         """PEP 440: Implicit post releases."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         if accept(is_("-"), "") and accept_digits():
             context["norm"] = ".post" + context["norm"]
@@ -318,7 +339,7 @@ def normalize_pep440(version):
 
     def accept_explicit_postrelease():
         """PEP 440: Post-releases."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Post release separators
         if not accept(in_(["-", "_", "."]), "."):
@@ -344,7 +365,7 @@ def normalize_pep440(version):
 
     def accept_postrelease():
         """PEP 440: Post-releases."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         if accept_implicit_postrelease() or accept_explicit_postrelease():
             close_context()
@@ -355,7 +376,7 @@ def normalize_pep440(version):
 
     def accept_devrelease():
         """PEP 440: Developmental releases."""
-        context = open_context(self.contexts[-1]["start"])
+        context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Development release separators
         if not accept(in_(["-", "_", "."]), "."):
@@ -376,7 +397,7 @@ def normalize_pep440(version):
 
     def accept_local():
         """PEP 440: Local version identifiers."""
-        open_context(self.contexts[-1]["start"])
+        self.open_context(self.contexts[-1]["start"])
 
         if accept(is_("+"), "+") and accept_alnum():
             accept_separator_alnum_sequence()
@@ -387,7 +408,7 @@ def normalize_pep440(version):
         return False
 
     def normalize(self):
-        open_context(0)
+        self.open_context(0)
         accept(is_("v"), "")  # PEP 440: Preceding v character
         accept_epoch()
         accept_release()
