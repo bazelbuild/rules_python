@@ -70,7 +70,7 @@ def _close_context(self):
 def _context(self):
     return self.contexts[-1]
 
-def _pop(self):
+def _pop_context(self):
     return self.contexts.pop()
 
 def _new(version):
@@ -85,7 +85,7 @@ def _new(version):
         close_context = mkmethod(self, _close_context),
         context = mkmethod(self, _context),
         open_context = mkmethod(self, _open_context),
-        pop = mkmethod(self, _pop),
+        pop_context = mkmethod(self, _pop_context),
 
         # attributes: keep sorted
         version = self.version,
@@ -143,7 +143,7 @@ def accept_placeholder(parser):
     ctx = parser.open_context()
 
     if not accept(parser, _is("{"), str):
-        parser.pop()
+        parser.pop_context()
         return False
 
     start = ctx["start"]
@@ -152,7 +152,7 @@ def accept_placeholder(parser):
             break
 
     if not accept(parser, _is("}"), str):
-        parser.pop()
+        parser.pop_context()
         return False
 
     parser.close_context()
@@ -174,7 +174,7 @@ def accept_digits(parser):
                 return True
             break
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_string(parser, string, replacement):
@@ -183,7 +183,7 @@ def accept_string(parser, string, replacement):
 
     for character in string.elems():
         if not accept(parser, _in([character, character.upper()]), ""):
-            parser.pop()
+            parser.pop_context()
             return False
 
     ctx["norm"] = replacement
@@ -204,7 +204,7 @@ def accept_alnum(parser):
                 return True
             break
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_dot_number(parser):
@@ -215,7 +215,7 @@ def accept_dot_number(parser):
         parser.close_context()
         return True
     else:
-        parser.pop()
+        parser.pop_context()
         return False
 
 def accept_dot_number_sequence(parser):
@@ -241,7 +241,7 @@ def accept_separator_alnum(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_separator_alnum_sequence(parser):
@@ -261,13 +261,13 @@ def accept_epoch(parser):
     ctx = parser.open_context()
     if accept_digits(parser) and accept(parser, _is("!"), "!"):
         if ctx["norm"] == "0!":
-            parser.pop()
+            parser.pop_context()
             parser.context()["start"] = ctx["start"]
         else:
             parser.close_context()
         return True
     else:
-        parser.pop()
+        parser.pop_context()
         return False
 
 def accept_release(parser):
@@ -275,7 +275,7 @@ def accept_release(parser):
     parser.open_context()
 
     if not accept_digits(parser):
-        parser.pop()
+        parser.pop_context()
         return False
 
     accept_dot_number_sequence(parser)
@@ -299,7 +299,7 @@ def accept_pre_l(parser):
         parser.close_context()
         return True
     else:
-        parser.pop()
+        parser.pop_context()
         return False
 
 def accept_prerelease(parser):
@@ -310,7 +310,7 @@ def accept_prerelease(parser):
     accept(parser, _in(["-", "_", "."]), "")
 
     if not accept_pre_l(parser):
-        parser.pop()
+        parser.pop_context()
         return False
 
     accept(parser, _in(["-", "_", "."]), "")
@@ -331,7 +331,7 @@ def accept_implicit_postrelease(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_explicit_postrelease(parser):
@@ -357,7 +357,7 @@ def accept_explicit_postrelease(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_postrelease(parser):
@@ -368,7 +368,7 @@ def accept_postrelease(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_devrelease(parser):
@@ -389,7 +389,7 @@ def accept_devrelease(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def accept_local(parser):
@@ -401,7 +401,7 @@ def accept_local(parser):
         parser.close_context()
         return True
 
-    parser.pop()
+    parser.pop_context()
     return False
 
 def normalize_pep440(version):
