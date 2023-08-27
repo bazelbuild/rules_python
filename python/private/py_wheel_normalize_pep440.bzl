@@ -31,6 +31,18 @@ def _lower(token):
     # PEP 440: Case sensitivity
     return token.lower()
 
+def _is(reference):
+    """Predicate testing a token for equality with `reference`."""
+    return lambda token: token == reference
+
+def _is_not(reference):
+    """Predicate testing a token for inequality with `reference`."""
+    return lambda token: token != reference
+
+def _in(reference):
+    """Predicate testing if a token is in the list `reference`."""
+    return lambda token: token in reference
+
 def _open_context(self, start):
     """Open an new parsing context.
 
@@ -83,18 +95,6 @@ def normalize_pep440(version):
         self.contexts[-1]["norm"] += finished["norm"]
         self.contexts[-1]["start"] = finished["start"]
 
-    def is_(reference):
-        """Predicate testing a token for equality with `reference`."""
-        return lambda token: token == reference
-
-    def is_not(reference):
-        """Predicate testing a token for inequality with `reference`."""
-        return lambda token: token != reference
-
-    def in_(reference):
-        """Predicate testing if a token is in the list `reference`."""
-        return lambda token: token in reference
-
     def accept(predicate, value):
         """If `predicate` matches the next token, accept the token.
 
@@ -145,16 +145,16 @@ def normalize_pep440(version):
         """
         context = self.open_context(self.contexts[-1]["start"])
 
-        if not accept(is_("{"), str):
+        if not accept(_is("{"), str):
             self.contexts.pop()
             return False
 
         start = context["start"]
         for _ in range(start, len(self.version) + 1):
-            if not accept(is_not("}"), str):
+            if not accept(_is_not("}"), str):
                 break
 
-        if not accept(is_("}"), str):
+        if not accept(_is("}"), str):
             self.contexts.pop()
             return False
 
@@ -185,7 +185,7 @@ def normalize_pep440(version):
         context = self.open_context(self.contexts[-1]["start"])
 
         for character in string.elems():
-            if not accept(in_([character, character.upper()]), ""):
+            if not accept(_in([character, character.upper()]), ""):
                 self.contexts.pop()
                 return False
 
@@ -214,7 +214,7 @@ def normalize_pep440(version):
         """Accept a dot followed by digits."""
         self.open_context(self.contexts[-1]["start"])
 
-        if accept(is_("."), ".") and accept_digits():
+        if accept(_is("."), ".") and accept_digits():
             close_context()
             return True
         else:
@@ -238,7 +238,7 @@ def normalize_pep440(version):
 
         # PEP 440: Local version segments
         if (
-            accept(in_([".", "-", "_"]), ".") and
+            accept(_in([".", "-", "_"]), ".") and
             (accept_digits() or accept_alnum())
         ):
             close_context()
@@ -262,7 +262,7 @@ def normalize_pep440(version):
     def accept_epoch():
         """PEP 440: Version epochs."""
         context = self.open_context(self.contexts[-1]["start"])
-        if accept_digits() and accept(is_("!"), "!"):
+        if accept_digits() and accept(_is("!"), "!"):
             if context["norm"] == "0!":
                 self.contexts.pop()
                 self.contexts[-1]["start"] = context["start"]
@@ -310,13 +310,13 @@ def normalize_pep440(version):
         context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Pre-release separators
-        accept(in_(["-", "_", "."]), "")
+        accept(_in(["-", "_", "."]), "")
 
         if not accept_pre_l():
             self.contexts.pop()
             return False
 
-        accept(in_(["-", "_", "."]), "")
+        accept(_in(["-", "_", "."]), "")
 
         if not accept_digits():
             # PEP 440: Implicit pre-release number
@@ -329,7 +329,7 @@ def normalize_pep440(version):
         """PEP 440: Implicit post releases."""
         context = self.open_context(self.contexts[-1]["start"])
 
-        if accept(is_("-"), "") and accept_digits():
+        if accept(_is("-"), "") and accept_digits():
             context["norm"] = ".post" + context["norm"]
             close_context()
             return True
@@ -342,7 +342,7 @@ def normalize_pep440(version):
         context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Post release separators
-        if not accept(in_(["-", "_", "."]), "."):
+        if not accept(_in(["-", "_", "."]), "."):
             context["norm"] += "."
 
         # PEP 440: Post release spelling
@@ -351,7 +351,7 @@ def normalize_pep440(version):
             accept_string("rev", "post") or
             accept_string("r", "post")
         ):
-            accept(in_(["-", "_", "."]), "")
+            accept(_in(["-", "_", "."]), "")
 
             if not accept_digits():
                 # PEP 440: Implicit post release number
@@ -379,11 +379,11 @@ def normalize_pep440(version):
         context = self.open_context(self.contexts[-1]["start"])
 
         # PEP 440: Development release separators
-        if not accept(in_(["-", "_", "."]), "."):
+        if not accept(_in(["-", "_", "."]), "."):
             context["norm"] += "."
 
         if accept_string("dev", "dev"):
-            accept(in_(["-", "_", "."]), "")
+            accept(_in(["-", "_", "."]), "")
 
             if not accept_digits():
                 # PEP 440: Implicit development release number
@@ -399,7 +399,7 @@ def normalize_pep440(version):
         """PEP 440: Local version identifiers."""
         self.open_context(self.contexts[-1]["start"])
 
-        if accept(is_("+"), "+") and accept_alnum():
+        if accept(_is("+"), "+") and accept_alnum():
             accept_separator_alnum_sequence()
             close_context()
             return True
@@ -409,7 +409,7 @@ def normalize_pep440(version):
 
     def normalize(self):
         self.open_context(0)
-        accept(is_("v"), "")  # PEP 440: Preceding v character
+        accept(_is("v"), "")  # PEP 440: Preceding v character
         accept_epoch()
         accept_release()
         accept_prerelease()
