@@ -119,6 +119,282 @@ def _new(version):
     )
     return public
 
+def accept_placeholder(parser):
+    """Accept a Bazel placeholder.
+
+    Placeholders aren't actually part of PEP 440, but are used for
+    stamping purposes. A placeholder might be
+    ``{BUILD_TIMESTAMP}``, for instance. We'll accept these as
+    they are, assuming they will expand to something that makes
+    sense where they appear. Before the stamping has happened, a
+    resulting wheel file name containing a placeholder will not
+    actually be valid.
+
+    """
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    if not parser.accept(_is("{"), str):
+        parser.contexts.pop()
+        return False
+
+    start = context["start"]
+    for _ in range(start, len(parser.version) + 1):
+        if not parser.accept(_is_not("}"), str):
+            break
+
+    if not parser.accept(_is("}"), str):
+        parser.contexts.pop()
+        return False
+
+    parser.close_context()
+    return True
+
+def accept_digits(parser):
+    """Accept multiple digits (or placeholders)."""
+
+    context = parser.open_context(parser.contexts[-1]["start"])
+    start = context["start"]
+
+    for i in range(start, len(parser.version) + 1):
+        if not parser.accept(_isdigit, str) and not accept_placeholder(parser):
+            if i - start >= 1:
+                if context["norm"].isdigit():
+                    # PEP 440: Integer Normalization
+                    context["norm"] = str(int(context["norm"]))
+                parser.close_context()
+                return True
+            break
+
+    parser.contexts.pop()
+    return False
+
+def accept_string(parser, string, replacement):
+    """Accept a `string` in the input. Output `replacement`."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    for character in string.elems():
+        if not parser.accept(_in([character, character.upper()]), ""):
+            parser.contexts.pop()
+            return False
+
+    context["norm"] = replacement
+
+    parser.close_context()
+    return True
+
+def accept_alnum(parser):
+    """Accept an alphanumeric sequence."""
+
+    context = parser.open_context(parser.contexts[-1]["start"])
+    start = context["start"]
+
+    for i in range(start, len(parser.version) + 1):
+        if not parser.accept(_isalnum, _lower) and not accept_placeholder(parser):
+            if i - start >= 1:
+                parser.close_context()
+                return True
+            break
+
+    parser.contexts.pop()
+    return False
+
+def accept_dot_number(parser):
+    """Accept a dot followed by digits."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    if parser.accept(_is("."), ".") and accept_digits(parser):
+        parser.close_context()
+        return True
+    else:
+        parser.contexts.pop()
+        return False
+
+def accept_dot_number_sequence(parser):
+    """Accept a sequence of dot+digits."""
+    context = parser.contexts[-1]
+    start = context["start"]
+    i = start
+
+    for i in range(start, len(parser.version) + 1):
+        if not accept_dot_number(parser):
+            break
+    return i - start >= 1
+
+def accept_separator_alnum(parser):
+    """Accept a separator followed by an alphanumeric string."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    # PEP 440: Local version segments
+    if (
+        parser.accept(_in([".", "-", "_"]), ".") and
+        (accept_digits(parser) or accept_alnum(parser))
+    ):
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
+def accept_separator_alnum_sequence(parser):
+    """Accept a sequence of separator+alphanumeric."""
+    context = parser.contexts[-1]
+    start = context["start"]
+    i = start
+
+    for i in range(start, len(parser.version) + 1):
+        if not accept_separator_alnum(parser):
+            break
+
+    return i - start >= 1
+
+def accept_epoch(parser):
+    """PEP 440: Version epochs."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+    if accept_digits(parser) and parser.accept(_is("!"), "!"):
+        if context["norm"] == "0!":
+            parser.contexts.pop()
+            parser.contexts[-1]["start"] = context["start"]
+        else:
+            parser.close_context()
+        return True
+    else:
+        parser.contexts.pop()
+        return False
+
+def accept_release(parser):
+    """Accept the release segment, numbers separated by dots."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    if not accept_digits(parser):
+        parser.contexts.pop()
+        return False
+
+    accept_dot_number_sequence(parser)
+    parser.close_context()
+    return True
+
+def accept_pre_l(parser):
+    """PEP 440: Pre-release spelling."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    if (
+        accept_string(parser, "alpha", "a") or
+        accept_string(parser, "a", "a") or
+        accept_string(parser, "beta", "b") or
+        accept_string(parser, "b", "b") or
+        accept_string(parser, "c", "rc") or
+        accept_string(parser, "preview", "rc") or
+        accept_string(parser, "pre", "rc") or
+        accept_string(parser, "rc", "rc")
+    ):
+        parser.close_context()
+        return True
+    else:
+        parser.contexts.pop()
+        return False
+
+def accept_prerelease(parser):
+    """PEP 440: Pre-releases."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    # PEP 440: Pre-release separators
+    parser.accept(_in(["-", "_", "."]), "")
+
+    if not accept_pre_l(parser):
+        parser.contexts.pop()
+        return False
+
+    parser.accept(_in(["-", "_", "."]), "")
+
+    if not accept_digits(parser):
+        # PEP 440: Implicit pre-release number
+        context["norm"] += "0"
+
+    parser.close_context()
+    return True
+
+def accept_implicit_postrelease(parser):
+    """PEP 440: Implicit post releases."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    if parser.accept(_is("-"), "") and accept_digits(parser):
+        context["norm"] = ".post" + context["norm"]
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
+def accept_explicit_postrelease(parser):
+    """PEP 440: Post-releases."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    # PEP 440: Post release separators
+    if not parser.accept(_in(["-", "_", "."]), "."):
+        context["norm"] += "."
+
+    # PEP 440: Post release spelling
+    if (
+        accept_string(parser, "post", "post") or
+        accept_string(parser, "rev", "post") or
+        accept_string(parser, "r", "post")
+    ):
+        parser.accept(_in(["-", "_", "."]), "")
+
+        if not accept_digits(parser):
+            # PEP 440: Implicit post release number
+            context["norm"] += "0"
+
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
+def accept_postrelease(parser):
+    """PEP 440: Post-releases."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    if accept_implicit_postrelease(parser) or accept_explicit_postrelease(parser):
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
+def accept_devrelease(parser):
+    """PEP 440: Developmental releases."""
+    context = parser.open_context(parser.contexts[-1]["start"])
+
+    # PEP 440: Development release separators
+    if not parser.accept(_in(["-", "_", "."]), "."):
+        context["norm"] += "."
+
+    if accept_string(parser, "dev", "dev"):
+        parser.accept(_in(["-", "_", "."]), "")
+
+        if not accept_digits(parser):
+            # PEP 440: Implicit development release number
+            context["norm"] += "0"
+
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
+def accept_local(parser):
+    """PEP 440: Local version identifiers."""
+    parser.open_context(parser.contexts[-1]["start"])
+
+    if parser.accept(_is("+"), "+") and accept_alnum(parser):
+        accept_separator_alnum_sequence(parser)
+        parser.close_context()
+        return True
+
+    parser.contexts.pop()
+    return False
+
 def normalize_pep440(version):
     """Escape the version component of a filename.
 
@@ -132,298 +408,18 @@ def normalize_pep440(version):
       string containing the normalized version.
     """
 
-    self = _new(version)
-
-    def accept_placeholder():
-        """Accept a Bazel placeholder.
-
-        Placeholders aren't actually part of PEP 440, but are used for
-        stamping purposes. A placeholder might be
-        ``{BUILD_TIMESTAMP}``, for instance. We'll accept these as
-        they are, assuming they will expand to something that makes
-        sense where they appear. Before the stamping has happened, a
-        resulting wheel file name containing a placeholder will not
-        actually be valid.
-
-        """
-        context = self.open_context(self.contexts[-1]["start"])
-
-        if not self.accept(_is("{"), str):
-            self.contexts.pop()
-            return False
-
-        start = context["start"]
-        for _ in range(start, len(self.version) + 1):
-            if not self.accept(_is_not("}"), str):
-                break
-
-        if not self.accept(_is("}"), str):
-            self.contexts.pop()
-            return False
-
-        self.close_context()
-        return True
-
-    def accept_digits():
-        """Accept multiple digits (or placeholders)."""
-
-        context = self.open_context(self.contexts[-1]["start"])
-        start = context["start"]
-
-        for i in range(start, len(self.version) + 1):
-            if not self.accept(_isdigit, str) and not accept_placeholder():
-                if i - start >= 1:
-                    if context["norm"].isdigit():
-                        # PEP 440: Integer Normalization
-                        context["norm"] = str(int(context["norm"]))
-                    self.close_context()
-                    return True
-                break
-
-        self.contexts.pop()
-        return False
-
-    def accept_string(string, replacement):
-        """Accept a `string` in the input. Output `replacement`."""
-        context = self.open_context(self.contexts[-1]["start"])
-
-        for character in string.elems():
-            if not self.accept(_in([character, character.upper()]), ""):
-                self.contexts.pop()
-                return False
-
-        context["norm"] = replacement
-
-        self.close_context()
-        return True
-
-    def accept_alnum():
-        """Accept an alphanumeric sequence."""
-
-        context = self.open_context(self.contexts[-1]["start"])
-        start = context["start"]
-
-        for i in range(start, len(self.version) + 1):
-            if not self.accept(_isalnum, _lower) and not accept_placeholder():
-                if i - start >= 1:
-                    self.close_context()
-                    return True
-                break
-
-        self.contexts.pop()
-        return False
-
-    def accept_dot_number():
-        """Accept a dot followed by digits."""
-        self.open_context(self.contexts[-1]["start"])
-
-        if self.accept(_is("."), ".") and accept_digits():
-            self.close_context()
-            return True
-        else:
-            self.contexts.pop()
-            return False
-
-    def accept_dot_number_sequence():
-        """Accept a sequence of dot+digits."""
-        context = self.contexts[-1]
-        start = context["start"]
-        i = start
-
-        for i in range(start, len(self.version) + 1):
-            if not accept_dot_number():
-                break
-        return i - start >= 1
-
-    def accept_separator_alnum():
-        """Accept a separator followed by an alphanumeric string."""
-        self.open_context(self.contexts[-1]["start"])
-
-        # PEP 440: Local version segments
-        if (
-            self.accept(_in([".", "-", "_"]), ".") and
-            (accept_digits() or accept_alnum())
-        ):
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def accept_separator_alnum_sequence():
-        """Accept a sequence of separator+alphanumeric."""
-        context = self.contexts[-1]
-        start = context["start"]
-        i = start
-
-        for i in range(start, len(self.version) + 1):
-            if not accept_separator_alnum():
-                break
-
-        return i - start >= 1
-
-    def accept_epoch():
-        """PEP 440: Version epochs."""
-        context = self.open_context(self.contexts[-1]["start"])
-        if accept_digits() and self.accept(_is("!"), "!"):
-            if context["norm"] == "0!":
-                self.contexts.pop()
-                self.contexts[-1]["start"] = context["start"]
-            else:
-                self.close_context()
-            return True
-        else:
-            self.contexts.pop()
-            return False
-
-    def accept_release():
-        """Accept the release segment, numbers separated by dots."""
-        self.open_context(self.contexts[-1]["start"])
-
-        if not accept_digits():
-            self.contexts.pop()
-            return False
-
-        accept_dot_number_sequence()
-        self.close_context()
-        return True
-
-    def accept_pre_l():
-        """PEP 440: Pre-release spelling."""
-        self.open_context(self.contexts[-1]["start"])
-
-        if (
-            accept_string("alpha", "a") or
-            accept_string("a", "a") or
-            accept_string("beta", "b") or
-            accept_string("b", "b") or
-            accept_string("c", "rc") or
-            accept_string("preview", "rc") or
-            accept_string("pre", "rc") or
-            accept_string("rc", "rc")
-        ):
-            self.close_context()
-            return True
-        else:
-            self.contexts.pop()
-            return False
-
-    def accept_prerelease():
-        """PEP 440: Pre-releases."""
-        context = self.open_context(self.contexts[-1]["start"])
-
-        # PEP 440: Pre-release separators
-        self.accept(_in(["-", "_", "."]), "")
-
-        if not accept_pre_l():
-            self.contexts.pop()
-            return False
-
-        self.accept(_in(["-", "_", "."]), "")
-
-        if not accept_digits():
-            # PEP 440: Implicit pre-release number
-            context["norm"] += "0"
-
-        self.close_context()
-        return True
-
-    def accept_implicit_postrelease():
-        """PEP 440: Implicit post releases."""
-        context = self.open_context(self.contexts[-1]["start"])
-
-        if self.accept(_is("-"), "") and accept_digits():
-            context["norm"] = ".post" + context["norm"]
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def accept_explicit_postrelease():
-        """PEP 440: Post-releases."""
-        context = self.open_context(self.contexts[-1]["start"])
-
-        # PEP 440: Post release separators
-        if not self.accept(_in(["-", "_", "."]), "."):
-            context["norm"] += "."
-
-        # PEP 440: Post release spelling
-        if (
-            accept_string("post", "post") or
-            accept_string("rev", "post") or
-            accept_string("r", "post")
-        ):
-            self.accept(_in(["-", "_", "."]), "")
-
-            if not accept_digits():
-                # PEP 440: Implicit post release number
-                context["norm"] += "0"
-
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def accept_postrelease():
-        """PEP 440: Post-releases."""
-        self.open_context(self.contexts[-1]["start"])
-
-        if accept_implicit_postrelease() or accept_explicit_postrelease():
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def accept_devrelease():
-        """PEP 440: Developmental releases."""
-        context = self.open_context(self.contexts[-1]["start"])
-
-        # PEP 440: Development release separators
-        if not self.accept(_in(["-", "_", "."]), "."):
-            context["norm"] += "."
-
-        if accept_string("dev", "dev"):
-            self.accept(_in(["-", "_", "."]), "")
-
-            if not accept_digits():
-                # PEP 440: Implicit development release number
-                context["norm"] += "0"
-
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def accept_local():
-        """PEP 440: Local version identifiers."""
-        self.open_context(self.contexts[-1]["start"])
-
-        if self.accept(_is("+"), "+") and accept_alnum():
-            accept_separator_alnum_sequence()
-            self.close_context()
-            return True
-
-        self.contexts.pop()
-        return False
-
-    def normalize(self):
-        self.open_context(0)
-        self.accept(_is("v"), "")  # PEP 440: Preceding v character
-        accept_epoch()
-        accept_release()
-        accept_prerelease()
-        accept_postrelease()
-        accept_devrelease()
-        accept_local()
-        if self.version[self.contexts[-1]["start"]:]:
-            fail(
-                "Failed to parse PEP 440 version identifier '%s'." % self.version,
-                "Parse error at '%s'" % self.version[self.contexts[-1]["start"]:],
-            )
-        return self.contexts[-1]["norm"]
-
-    return normalize(self)
+    parser = _new(version)
+    parser.open_context(0)
+    parser.accept(_is("v"), "")  # PEP 440: Preceding v character
+    accept_epoch(parser)
+    accept_release(parser)
+    accept_prerelease(parser)
+    accept_postrelease(parser)
+    accept_devrelease(parser)
+    accept_local(parser)
+    if parser.version[parser.contexts[-1]["start"]:]:
+        fail(
+            "Failed to parse PEP 440 version identifier '%s'." % parser.version,
+            "Parse error at '%s'" % parser.version[parser.contexts[-1]["start"]:],
+        )
+    return parser.contexts[-1]["norm"]
