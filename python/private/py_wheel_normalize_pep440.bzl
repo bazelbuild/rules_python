@@ -43,7 +43,10 @@ def _in(reference):
     """Predicate testing if a token is in the list `reference`."""
     return lambda token: token in reference
 
-def _open_context(self, start):
+def _ctx(start):
+    return {"norm": "", "start": start}
+
+def _open_context(self):
     """Open an new parsing ctx.
 
     If the current parsing step succeeds, call self.close_context().
@@ -55,7 +58,7 @@ def _open_context(self, start):
       start: index into `version` indicating where the current
         parsing step starts.
     """
-    self.contexts.append({"norm": "", "start": start})
+    self.contexts.append(_ctx(_context(self)["start"]))
     return self.contexts[-1]
 
 def _close_context(self):
@@ -74,8 +77,9 @@ def _new(version):
     """Create a new normalizer"""
     self = struct(
         version = version,
-        contexts = [],
+        contexts = [_ctx(0)],
     )
+
     public = struct(
         # methods: keep sorted
         close_context = mkmethod(self, _close_context),
@@ -136,7 +140,7 @@ def accept_placeholder(parser):
     actually be valid.
 
     """
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     if not accept(parser, _is("{"), str):
         parser.pop()
@@ -157,7 +161,7 @@ def accept_placeholder(parser):
 def accept_digits(parser):
     """Accept multiple digits (or placeholders)."""
 
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
     start = ctx["start"]
 
     for i in range(start, len(parser.version) + 1):
@@ -175,7 +179,7 @@ def accept_digits(parser):
 
 def accept_string(parser, string, replacement):
     """Accept a `string` in the input. Output `replacement`."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     for character in string.elems():
         if not accept(parser, _in([character, character.upper()]), ""):
@@ -190,7 +194,7 @@ def accept_string(parser, string, replacement):
 def accept_alnum(parser):
     """Accept an alphanumeric sequence."""
 
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
     start = ctx["start"]
 
     for i in range(start, len(parser.version) + 1):
@@ -205,7 +209,7 @@ def accept_alnum(parser):
 
 def accept_dot_number(parser):
     """Accept a dot followed by digits."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     if accept(parser, _is("."), ".") and accept_digits(parser):
         parser.close_context()
@@ -227,7 +231,7 @@ def accept_dot_number_sequence(parser):
 
 def accept_separator_alnum(parser):
     """Accept a separator followed by an alphanumeric string."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     # PEP 440: Local version segments
     if (
@@ -254,7 +258,7 @@ def accept_separator_alnum_sequence(parser):
 
 def accept_epoch(parser):
     """PEP 440: Version epochs."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
     if accept_digits(parser) and accept(parser, _is("!"), "!"):
         if ctx["norm"] == "0!":
             parser.pop()
@@ -268,7 +272,7 @@ def accept_epoch(parser):
 
 def accept_release(parser):
     """Accept the release segment, numbers separated by dots."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     if not accept_digits(parser):
         parser.pop()
@@ -280,7 +284,7 @@ def accept_release(parser):
 
 def accept_pre_l(parser):
     """PEP 440: Pre-release spelling."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     if (
         accept_string(parser, "alpha", "a") or
@@ -300,7 +304,7 @@ def accept_pre_l(parser):
 
 def accept_prerelease(parser):
     """PEP 440: Pre-releases."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     # PEP 440: Pre-release separators
     accept(parser, _in(["-", "_", "."]), "")
@@ -320,7 +324,7 @@ def accept_prerelease(parser):
 
 def accept_implicit_postrelease(parser):
     """PEP 440: Implicit post releases."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     if accept(parser, _is("-"), "") and accept_digits(parser):
         ctx["norm"] = ".post" + ctx["norm"]
@@ -332,7 +336,7 @@ def accept_implicit_postrelease(parser):
 
 def accept_explicit_postrelease(parser):
     """PEP 440: Post-releases."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     # PEP 440: Post release separators
     if not accept(parser, _in(["-", "_", "."]), "."):
@@ -358,7 +362,7 @@ def accept_explicit_postrelease(parser):
 
 def accept_postrelease(parser):
     """PEP 440: Post-releases."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     if accept_implicit_postrelease(parser) or accept_explicit_postrelease(parser):
         parser.close_context()
@@ -369,7 +373,7 @@ def accept_postrelease(parser):
 
 def accept_devrelease(parser):
     """PEP 440: Developmental releases."""
-    ctx = parser.open_context(parser.context()["start"])
+    ctx = parser.open_context()
 
     # PEP 440: Development release separators
     if not accept(parser, _in(["-", "_", "."]), "."):
@@ -390,7 +394,7 @@ def accept_devrelease(parser):
 
 def accept_local(parser):
     """PEP 440: Local version identifiers."""
-    parser.open_context(parser.context()["start"])
+    parser.open_context()
 
     if accept(parser, _is("+"), "+") and accept_alnum(parser):
         accept_separator_alnum_sequence(parser)
@@ -413,7 +417,6 @@ def normalize_pep440(version):
       string containing the normalized version.
     """
     parser = _new(version.strip())  # PEP 440: Leading and Trailing Whitespace
-    parser.open_context(0)
     accept(parser, _is("v"), "")  # PEP 440: Preceding v character
     accept_epoch(parser)
     accept_release(parser)
