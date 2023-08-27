@@ -14,6 +14,16 @@
 
 "Implementation of PEP440 version string normalization"
 
+def _isdigit(token):
+    return token.isdigit()
+
+def _isalnum(token):
+    return token.isalnum()
+
+def _lower(token):
+    # PEP 440: Case sensitivity
+    return token.lower()
+
 def normalize_pep440(version):
     """Escape the version component of a filename.
 
@@ -131,14 +141,11 @@ def normalize_pep440(version):
     def accept_digits():
         """Accept multiple digits (or placeholders)."""
 
-        def isdigit(token):
-            return token.isdigit()
-
         context = open_context(contexts[-1]["start"])
         start = context["start"]
 
         for i in range(start, len(version) + 1):
-            if not accept(isdigit, str) and not accept_placeholder():
+            if not accept(_isdigit, str) and not accept_placeholder():
                 if i - start >= 1:
                     if context["norm"].isdigit():
                         # PEP 440: Integer Normalization
@@ -167,18 +174,11 @@ def normalize_pep440(version):
     def accept_alnum():
         """Accept an alphanumeric sequence."""
 
-        def isalnum(token):
-            return token.isalnum()
-
-        # PEP 440: Case sensitivity
-        def lower(token):
-            return token.lower()
-
         context = open_context(contexts[-1]["start"])
         start = context["start"]
 
         for i in range(start, len(version) + 1):
-            if not accept(isalnum, lower) and not accept_placeholder():
+            if not accept(_isalnum, _lower) and not accept_placeholder():
                 if i - start >= 1:
                     close_context()
                     return True
