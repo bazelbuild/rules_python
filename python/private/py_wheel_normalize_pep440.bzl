@@ -46,7 +46,7 @@ def _in(reference):
 def _open_context(self, start):
     """Open an new parsing context.
 
-    If the current parsing step succeeds, call close_context().
+    If the current parsing step succeeds, call self.close_context().
     If the current parsing step fails, call contexts.pop() to
     go back to how it was before we opened a new context.
 
@@ -58,6 +58,12 @@ def _open_context(self, start):
     self.contexts.append({"norm": "", "start": start})
     return self.contexts[-1]
 
+def _close_context(self):
+    """Close the current context successfully and merge the results."""
+    finished = self.contexts.pop()
+    self.contexts[-1]["norm"] += finished["norm"]
+    self.contexts[-1]["start"] = finished["start"]
+
 def _new(version):
     """Create a new normalizer"""
     self = struct(
@@ -66,6 +72,7 @@ def _new(version):
     )
     public = struct(
         # methods: keep sorted
+        close_context = mkmethod(self, _close_context),
         open_context = mkmethod(self, _open_context),
 
         # attributes: keep sorted
@@ -88,12 +95,6 @@ def normalize_pep440(version):
     """
 
     self = _new(version)
-
-    def close_context():
-        """Close the current context successfully and merge the results."""
-        finished = self.contexts.pop()
-        self.contexts[-1]["norm"] += finished["norm"]
-        self.contexts[-1]["start"] = finished["start"]
 
     def accept(predicate, value):
         """If `predicate` matches the next token, accept the token.
@@ -158,7 +159,7 @@ def normalize_pep440(version):
             self.contexts.pop()
             return False
 
-        close_context()
+        self.close_context()
         return True
 
     def accept_digits():
@@ -173,7 +174,7 @@ def normalize_pep440(version):
                     if context["norm"].isdigit():
                         # PEP 440: Integer Normalization
                         context["norm"] = str(int(context["norm"]))
-                    close_context()
+                    self.close_context()
                     return True
                 break
 
@@ -191,7 +192,7 @@ def normalize_pep440(version):
 
         context["norm"] = replacement
 
-        close_context()
+        self.close_context()
         return True
 
     def accept_alnum():
@@ -203,7 +204,7 @@ def normalize_pep440(version):
         for i in range(start, len(self.version) + 1):
             if not accept(_isalnum, _lower) and not accept_placeholder():
                 if i - start >= 1:
-                    close_context()
+                    self.close_context()
                     return True
                 break
 
@@ -215,7 +216,7 @@ def normalize_pep440(version):
         self.open_context(self.contexts[-1]["start"])
 
         if accept(_is("."), ".") and accept_digits():
-            close_context()
+            self.close_context()
             return True
         else:
             self.contexts.pop()
@@ -241,7 +242,7 @@ def normalize_pep440(version):
             accept(_in([".", "-", "_"]), ".") and
             (accept_digits() or accept_alnum())
         ):
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
@@ -267,7 +268,7 @@ def normalize_pep440(version):
                 self.contexts.pop()
                 self.contexts[-1]["start"] = context["start"]
             else:
-                close_context()
+                self.close_context()
             return True
         else:
             self.contexts.pop()
@@ -282,7 +283,7 @@ def normalize_pep440(version):
             return False
 
         accept_dot_number_sequence()
-        close_context()
+        self.close_context()
         return True
 
     def accept_pre_l():
@@ -299,7 +300,7 @@ def normalize_pep440(version):
             accept_string("pre", "rc") or
             accept_string("rc", "rc")
         ):
-            close_context()
+            self.close_context()
             return True
         else:
             self.contexts.pop()
@@ -322,7 +323,7 @@ def normalize_pep440(version):
             # PEP 440: Implicit pre-release number
             context["norm"] += "0"
 
-        close_context()
+        self.close_context()
         return True
 
     def accept_implicit_postrelease():
@@ -331,7 +332,7 @@ def normalize_pep440(version):
 
         if accept(_is("-"), "") and accept_digits():
             context["norm"] = ".post" + context["norm"]
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
@@ -357,7 +358,7 @@ def normalize_pep440(version):
                 # PEP 440: Implicit post release number
                 context["norm"] += "0"
 
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
@@ -368,7 +369,7 @@ def normalize_pep440(version):
         self.open_context(self.contexts[-1]["start"])
 
         if accept_implicit_postrelease() or accept_explicit_postrelease():
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
@@ -389,7 +390,7 @@ def normalize_pep440(version):
                 # PEP 440: Implicit development release number
                 context["norm"] += "0"
 
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
@@ -401,7 +402,7 @@ def normalize_pep440(version):
 
         if accept(_is("+"), "+") and accept_alnum():
             accept_separator_alnum_sequence()
-            close_context()
+            self.close_context()
             return True
 
         self.contexts.pop()
