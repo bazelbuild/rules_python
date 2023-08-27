@@ -63,8 +63,9 @@ def main(args: Any) -> None:
     for patch in (args.patch or []):
         with patch.open("r") as stdin:
             print(f"Applying patch {patch}")
-            subprocess.run(patch_args, stdin=stdin, check=True, cwd=patch_dir)
-
+            print("patch_dir = " + str(patch_dir))
+            print("cwd = " + str(args.directory / patch_dir))
+            subprocess.run(patch_args, stdin=stdin, check=True, cwd=args.directory / patch_dir)
 
 
 def parse_flags(argv) -> Any:
