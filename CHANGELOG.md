@@ -17,6 +17,20 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+## Unreleased
+
+### Added
+
+* (bzlmod, entry_point) Added
+  [`py_console_script_binary`](./docs/py_console_script_binary.md), which
+  allows adding custom dependencies to a package's entry points and customizing
+  the `py_binary` rule used to build it.
+
+### Removed
+
+* (bzlmod) The `entry_point` macro is no longer supported and has been removed
+  in favour of the `py_console_script_binary` macro for `bzlmod` users.
+
 ## [0.25.0] - 2023-08-22
 
 ### Changed
