@@ -386,17 +386,20 @@ def normalize_pep440(version):
         self.contexts.pop()
         return False
 
-    open_context(0)
-    accept(is_("v"), "")  # PEP 440: Preceding v character
-    accept_epoch()
-    accept_release()
-    accept_prerelease()
-    accept_postrelease()
-    accept_devrelease()
-    accept_local()
-    if self.version[self.contexts[-1]["start"]:]:
-        fail(
-            "Failed to parse PEP 440 version identifier '%s'." % self.version,
-            "Parse error at '%s'" % self.version[self.contexts[-1]["start"]:],
-        )
-    return self.contexts[-1]["norm"]
+    def normalize(self):
+        open_context(0)
+        accept(is_("v"), "")  # PEP 440: Preceding v character
+        accept_epoch()
+        accept_release()
+        accept_prerelease()
+        accept_postrelease()
+        accept_devrelease()
+        accept_local()
+        if self.version[self.contexts[-1]["start"]:]:
+            fail(
+                "Failed to parse PEP 440 version identifier '%s'." % self.version,
+                "Parse error at '%s'" % self.version[self.contexts[-1]["start"]:],
+            )
+        return self.contexts[-1]["norm"]
+
+    return normalize(self)
