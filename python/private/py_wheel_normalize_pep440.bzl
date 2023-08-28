@@ -55,8 +55,6 @@ def _open_context(self):
 
     Args:
       self: The normalizer.
-      start: index into `version` indicating where the current
-        parsing step starts.
     """
     self.contexts.append(_ctx(_context(self)["start"]))
     return self.contexts[-1]
@@ -103,6 +101,7 @@ def accept(parser, predicate, value):
     `version`.
 
     Args:
+      parser: The normalizer.
       predicate: function taking a token and returning a boolean
         saying if we want to accept the token.
       value: the string to add if there's a match, or, if `value`
@@ -141,6 +140,11 @@ def accept_placeholder(parser):
     resulting wheel file name containing a placeholder will not
     actually be valid.
 
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a placeholder was accepted.
     """
     ctx = parser.open_context()
 
@@ -158,7 +162,14 @@ def accept_placeholder(parser):
     return parser.accept()
 
 def accept_digits(parser):
-    """Accept multiple digits (or placeholders)."""
+    """Accept multiple digits (or placeholders).
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether some digits (or placeholders) were accepted.
+    """
 
     ctx = parser.open_context()
     start = ctx["start"]
@@ -175,7 +186,16 @@ def accept_digits(parser):
     return parser.discard()
 
 def accept_string(parser, string, replacement):
-    """Accept a `string` in the input. Output `replacement`."""
+    """Accept a `string` in the input. Output `replacement`.
+
+    Args:
+      parser: The normalizer.
+      string: The string to search for in the parser input.
+      replacement: The normalized string to use if the string was found.
+
+    Returns:
+      whether the string was accepted.
+    """
     ctx = parser.open_context()
 
     for character in string.elems():
@@ -187,7 +207,14 @@ def accept_string(parser, string, replacement):
     return parser.accept()
 
 def accept_alnum(parser):
-    """Accept an alphanumeric sequence."""
+    """Accept an alphanumeric sequence.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether an alphanumeric sequence was accepted.
+    """
 
     ctx = parser.open_context()
     start = ctx["start"]
@@ -201,7 +228,14 @@ def accept_alnum(parser):
     return parser.discard()
 
 def accept_dot_number(parser):
-    """Accept a dot followed by digits."""
+    """Accept a dot followed by digits.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a dot+digits pair was accepted.
+    """
     parser.open_context()
 
     if accept(parser, _is("."), ".") and accept_digits(parser):
@@ -210,7 +244,14 @@ def accept_dot_number(parser):
         return parser.discard()
 
 def accept_dot_number_sequence(parser):
-    """Accept a sequence of dot+digits."""
+    """Accept a sequence of dot+digits.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a sequence of dot+digits pairs was accepted.
+    """
     ctx = parser.context()
     start = ctx["start"]
     i = start
@@ -221,7 +262,14 @@ def accept_dot_number_sequence(parser):
     return i - start >= 1
 
 def accept_separator_alnum(parser):
-    """Accept a separator followed by an alphanumeric string."""
+    """Accept a separator followed by an alphanumeric string.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a separator and an alphanumeric string were accepted.
+    """
     parser.open_context()
 
     # PEP 440: Local version segments
@@ -234,7 +282,14 @@ def accept_separator_alnum(parser):
     return parser.discard()
 
 def accept_separator_alnum_sequence(parser):
-    """Accept a sequence of separator+alphanumeric."""
+    """Accept a sequence of separator+alphanumeric.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a sequence of separator+alphanumerics was accepted.
+    """
     ctx = parser.context()
     start = ctx["start"]
     i = start
@@ -246,7 +301,14 @@ def accept_separator_alnum_sequence(parser):
     return i - start >= 1
 
 def accept_epoch(parser):
-    """PEP 440: Version epochs."""
+    """PEP 440: Version epochs.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a PEP 440 epoch identifier was accepted.
+    """
     ctx = parser.open_context()
     if accept_digits(parser) and accept(parser, _is("!"), "!"):
         if ctx["norm"] == "0!":
@@ -256,7 +318,14 @@ def accept_epoch(parser):
         return parser.discard()
 
 def accept_release(parser):
-    """Accept the release segment, numbers separated by dots."""
+    """Accept the release segment, numbers separated by dots.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a release segment was accepted.
+    """
     parser.open_context()
 
     if not accept_digits(parser):
@@ -266,7 +335,14 @@ def accept_release(parser):
     return parser.accept()
 
 def accept_pre_l(parser):
-    """PEP 440: Pre-release spelling."""
+    """PEP 440: Pre-release spelling.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a prerelease keyword was accepted.
+    """
     parser.open_context()
 
     if (
@@ -284,7 +360,14 @@ def accept_pre_l(parser):
         return parser.discard()
 
 def accept_prerelease(parser):
-    """PEP 440: Pre-releases."""
+    """PEP 440: Pre-releases.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a prerelease identifier was accepted.
+    """
     ctx = parser.open_context()
 
     # PEP 440: Pre-release separators
@@ -302,7 +385,14 @@ def accept_prerelease(parser):
     return parser.accept()
 
 def accept_implicit_postrelease(parser):
-    """PEP 440: Implicit post releases."""
+    """PEP 440: Implicit post releases.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether an implicit postrelease identifier was accepted.
+    """
     ctx = parser.open_context()
 
     if accept(parser, _is("-"), "") and accept_digits(parser):
@@ -312,7 +402,14 @@ def accept_implicit_postrelease(parser):
     return parser.discard()
 
 def accept_explicit_postrelease(parser):
-    """PEP 440: Post-releases."""
+    """PEP 440: Post-releases.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether an explicit postrelease identifier was accepted.
+    """
     ctx = parser.open_context()
 
     # PEP 440: Post release separators
@@ -336,7 +433,14 @@ def accept_explicit_postrelease(parser):
     return parser.discard()
 
 def accept_postrelease(parser):
-    """PEP 440: Post-releases."""
+    """PEP 440: Post-releases.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a postrelease identifier was accepted.
+    """
     parser.open_context()
 
     if accept_implicit_postrelease(parser) or accept_explicit_postrelease(parser):
@@ -345,7 +449,14 @@ def accept_postrelease(parser):
     return parser.discard()
 
 def accept_devrelease(parser):
-    """PEP 440: Developmental releases."""
+    """PEP 440: Developmental releases.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a developmental release identifier was accepted.
+    """
     ctx = parser.open_context()
 
     # PEP 440: Development release separators
@@ -364,7 +475,14 @@ def accept_devrelease(parser):
     return parser.discard()
 
 def accept_local(parser):
-    """PEP 440: Local version identifiers."""
+    """PEP 440: Local version identifiers.
+
+    Args:
+      parser: The normalizer.
+
+    Returns:
+      whether a local version identifier was accepted.
+    """
     parser.open_context()
 
     if accept(parser, _is("+"), "+") and accept_alnum(parser):
