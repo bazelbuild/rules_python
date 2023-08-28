@@ -13,4 +13,6 @@ PIP_INSTALL_PY_SRCS = [
     "@rules_python//python/pip_install/tools/wheel_installer:namespace_pkgs.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel_installer.py",
+    "@rules_python//python/private:repack_whl.py",
+    "@rules_python//tools:wheelmaker.py",
 ]

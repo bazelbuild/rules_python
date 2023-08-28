@@ -113,6 +113,19 @@ pip.parse(
         "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
+
+# You can add patches that will be applied on the whl contents.
+#
+# The patches have to be in the unified-diff format.
+pip.override(
+    file = "requests-2.25.1-py2.py3-none-any.whl",
+    patch_strip = 1,
+    patches = [
+        "@//patches:empty.patch",
+        "@//patches:requests_metadata.patch",
+        "@//patches:requests_record.patch",
+    ],
+)
 use_repo(pip, "pip")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
