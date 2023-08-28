@@ -250,10 +250,8 @@ def accept_epoch(parser):
     ctx = parser.open_context()
     if accept_digits(parser) and accept(parser, _is("!"), "!"):
         if ctx["norm"] == "0!":
-            parser.discard()
-            parser.context()["start"] = ctx["start"]
-        else:
-            return parser.accept()
+            ctx["norm"] = ""
+        return parser.accept()
     else:
         return parser.discard()
 
