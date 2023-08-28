@@ -92,6 +92,7 @@ exports_files(
         "coverage.patch",
         "py_package.bzl",
         "py_wheel.bzl",
+        "py_wheel_normalize_pep440.bzl",
         "reexports.bzl",
         "stamp.bzl",
         "util.bzl",
