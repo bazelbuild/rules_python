@@ -70,6 +70,12 @@ platformdirs==2.6.0 \
 pylint==2.15.9 \
     --hash=sha256:18783cca3cfee5b83c6c5d10b3cdb66c6594520ffae61890858fe8d932e1c6b4 \
     --hash=sha256:349c8cd36aede4d50a0754a8c0218b43323d13d5d88f4b2952ddfe3e169681eb
+    # via
+    #   -r requirements.in
+    #   pylint-print
+pylint-print==1.0.1 \
+    --hash=sha256:30aa207e9718ebf4ceb47fb87012092e6d8743aab932aa07aa14a73e750ad3d0 \
+    --hash=sha256:a2b2599e7887b93e551db2624c523c1e6e9e58c3be8416cd98d41e4427e2669b
     # via -r requirements.in
 python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \

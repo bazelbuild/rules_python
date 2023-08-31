@@ -12,7 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-fixedReleaser:
-  login: f0rmiga
-  email: 3149049+f0rmiga@users.noreply.github.com
-moduleRoots: [".", "gazelle"]
+"""
+A simple test macro.
+"""
+
+load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+def py_console_script_binary_in_a_macro(name, pkg):
+    """A simple macro to see that we can use our macro in a macro.
+
+    Args:
+        name, str: the name of the target
+        pkg, str: the pkg target
+    """
+    py_console_script_binary(
+        name = name,
+        pkg = Label(pkg),
+    )

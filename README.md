@@ -1,6 +1,6 @@
 # Python Rules for Bazel
 
-[![Build status](https://badge.buildkite.com/1bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=main)](https://buildkite.com/bazel/python-rules-python-postsubmit)
+[![Build status](https://badge.buildkite.com/0bcfe58b6f5741aacb09b12485969ba7a1205955a45b53e854.svg?branch=main)](https://buildkite.com/bazel/rules-python-python)
 
 ## Overview
 
