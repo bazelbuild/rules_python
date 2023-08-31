@@ -4,4 +4,8 @@ compile_pip_requirements(
     name = "requirements",
     requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
+    tags = [
+        "no-sandbox",
+        "no-remote-exec",
+    ],
 )
