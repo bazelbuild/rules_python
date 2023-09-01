@@ -81,7 +81,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
-    # we programtically find it.
+    # we programmatically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None:
         python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
@@ -154,9 +154,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map):
         whl_map[hub_name][whl_name][full_version(pip_attr.python_version)] = pip_name + "_"
 
 def _pip_impl(module_ctx):
-    """Implementation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
+    """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
-    This implmentation iterates through all of the `pip.parse` calls and creates
+    This implementation iterates through all of the `pip.parse` calls and creates
     different pip hub repositories based on the "hub_name".  Each of the
     pip calls create spoke repos that uses a specific Python interpreter.
 
@@ -190,52 +190,33 @@ def _pip_impl(module_ctx):
     Both of these pip spokes contain requirements files that includes websocket
     and its dependencies.
 
-    Two different repositories are created for the two spokes:
-
-    - @@rules_python~override~pip~pip_39
-    - @@rules_python~override~pip~pip_310
-
-    The different spoke names are a combination of the hub_name and the Python version.
-    In the future we may remove this repository, but we do not support entry points.
-    yet, and that functionality exists in these repos.
-
     We also need repositories for the wheels that the different pip spokes contain.
     For each Python version a different wheel repository is created. In our example
-    each pip spoke had a requirments file that contained websockets. We
+    each pip spoke had a requirements file that contained websockets. We
     then create two different wheel repositories that are named the following.
 
     - @@rules_python~override~pip~pip_39_websockets
     - @@rules_python~override~pip~pip_310_websockets
 
-    And if the wheel has any other dependies subsequest wheels are created in the same fashion.
+    And if the wheel has any other dependencies subsequent wheels are created in the same fashion.
 
-    We also create a repository for the wheel alias.  We want to just use the syntax
-    'requirement("websockets")' we need to have an alias repository that is named:
-
-    - @@rules_python~override~pip~pip_websockets
-
-    This repository contains alias statements for the different wheel components (pkg, data, etc).
-    Each of those aliases has a select that resolves to a spoke repository depending on
-    the Python version.
+    The hub repository has aliases for `pkg`, `data`, etc, which have a select that resolves to
+    a spoke repository depending on the Python version.
 
     Also we may have more than one hub as defined in a MODULES.bazel file.  So we could have multiple
     hubs pointing to various different pip spokes.
 
-    Some other business rules notes.  A hub can only have one spoke per Python version.  We cannot
+    Some other business rules notes. A hub can only have one spoke per Python version.  We cannot
     have a hub named "pip" that has two spokes that use the Python 3.9 interpreter.  Second
-    we cannot have the same hub name used in submodules.  The hub name has to be globally
+    we cannot have the same hub name used in sub-modules.  The hub name has to be globally
     unique.
 
-    This implementation reuses elements of non-bzlmod code and also reuses the first implementation
-    of pip bzlmod, but adds the capability to have multiple pip.parse calls.
-
     This implementation also handles the creation of whl_modification JSON files that are used
-    during the creation of wheel libraries.  These JSON files used via the annotations argument
+    during the creation of wheel libraries. These JSON files used via the annotations argument
     when calling wheel_installer.py.
 
     Args:
         module_ctx: module contents
-
     """
 
     # Build all of the wheel modifications if the tag class is called.
