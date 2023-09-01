@@ -77,7 +77,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
+def _create_whl_repos(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -103,8 +103,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below. This is needed to contain
-    # the pip_repository logic to a single module extension.
+    # needed for the whl_libary declarations below.
     requirements_lock_content = module_ctx.read(requrements_lock)
     parse_result = parse_requirements(requirements_lock_content)
     requirements = parse_result.requirements
@@ -281,7 +280,7 @@ def _pip_impl(module_ctx):
                     python_versions = [pip_attr.python_version],
                 )
 
-            _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, hub_whl_map)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_hub_repository_bzlmod(
