@@ -15,7 +15,6 @@
 "pip module extension for use with bzlmod"
 
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
-load("//python:pip.bzl", "whl_library_alias")
 load(
     "//python/pip_install:pip_repository.bzl",
     "locked_requirements_label",
@@ -25,6 +24,7 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:version_label.bzl", "version_label")
 
@@ -146,7 +146,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
 
-        whl_map[hub_name][whl_name][pip_attr.python_version] = pip_name + "_"
+        whl_map[hub_name][whl_name][full_version(pip_attr.python_version)] = pip_name + "_"
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
@@ -284,27 +284,11 @@ def _pip_impl(module_ctx):
             _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, hub_whl_map)
 
     for hub_name, whl_map in hub_whl_map.items():
-        for whl_name, version_map in whl_map.items():
-            if DEFAULT_PYTHON_VERSION in version_map:
-                whl_default_version = DEFAULT_PYTHON_VERSION
-            else:
-                whl_default_version = None
-
-            # Create the alias repositories which contains different select
-            # statements  These select statements point to the different pip
-            # whls that are based on a specific version of Python.
-            whl_library_alias(
-                name = hub_name + "_" + whl_name,
-                wheel_name = whl_name,
-                default_version = whl_default_version,
-                version_map = version_map,
-            )
-
-        # Create the hub repository for pip.
         pip_hub_repository_bzlmod(
             name = hub_name,
             repo_name = hub_name,
-            whl_library_alias_names = whl_map.keys(),
+            whl_map = whl_map,
+            default_version = full_version(DEFAULT_PYTHON_VERSION),
         )
 
 def _pip_parse_ext_attrs():

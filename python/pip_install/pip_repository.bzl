@@ -268,10 +268,12 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
     return requirements_txt
 
 def _pip_hub_repository_bzlmod_impl(rctx):
-    bzl_packages = rctx.attr.whl_library_alias_names
+    bzl_packages = rctx.attr.whl_map.keys()
     aliases = render_pkg_aliases(
         repo_name = rctx.attr.repo_name,
-        bzl_packages = bzl_packages,
+        rules_python = rctx.attr._template.workspace_name,
+        default_version = rctx.attr.default_version,
+        whl_map = rctx.attr.whl_map,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
@@ -301,13 +303,20 @@ def _pip_hub_repository_bzlmod_impl(rctx):
     })
 
 pip_hub_repository_bzlmod_attrs = {
+    "default_version": attr.string(
+        mandatory = True,
+        doc = """\
+This is the default python version in the format of X.Y.Z. This should match
+what is setup by the 'python' extension using the 'is_default = True'
+setting.""",
+    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
-    "whl_library_alias_names": attr.string_list(
+    "whl_map": attr.string_list_dict(
         mandatory = True,
-        doc = "The list of whl alias that we use to build aliases and the whl names",
+        doc = "The wheel map where values are python versions",
     ),
     "_template": attr.label(
         default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
