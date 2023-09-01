@@ -323,52 +323,6 @@ pip_hub_repository_bzlmod = repository_rule(
     implementation = _pip_hub_repository_bzlmod_impl,
 )
 
-def _pip_repository_bzlmod_impl(rctx):
-    requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    content = rctx.read(requirements_txt)
-    parsed_requirements_txt = parse_requirements(content)
-
-    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
-
-    bzl_packages = sorted([name for name, _ in packages])
-    _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
-
-pip_repository_bzlmod_attrs = {
-    "repo_name": attr.string(
-        mandatory = True,
-        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name",
-    ),
-    "requirements_darwin": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
-    ),
-    "requirements_linux": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Linux",
-    ),
-    "requirements_lock": attr.label(
-        allow_single_file = True,
-        doc = """
-A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
-of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
-wheels are fetched/built only for the targets specified by 'build/run/test'.
-""",
-    ),
-    "requirements_windows": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Windows",
-    ),
-    "_template": attr.label(
-        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
-    ),
-}
-
-pip_repository_bzlmod = repository_rule(
-    attrs = pip_repository_bzlmod_attrs,
-    doc = """A rule for bzlmod pip_repository creation. Intended for private use only.""",
-    implementation = _pip_repository_bzlmod_impl,
-)
-
 def _pip_repository_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)
     content = rctx.read(requirements_txt)

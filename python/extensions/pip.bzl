@@ -21,7 +21,6 @@ load(
     "locked_requirements_label",
     "pip_hub_repository_bzlmod",
     "pip_repository_attrs",
-    "pip_repository_bzlmod",
     "use_isolated",
     "whl_library",
 )
@@ -111,16 +110,6 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
     requirements = parse_result.requirements
     extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
-    # Create the repository where users load the `requirement` macro. Under bzlmod
-    # this does not create the install_deps() macro.
-    # TODO: we may not need this repository once we have entry points
-    # supported. For now a user can access this repository and use
-    # the entrypoint functionality.
-    pip_repository_bzlmod(
-        name = pip_name,
-        repo_name = pip_name,
-        requirements_lock = pip_attr.requirements_lock,
-    )
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
 
