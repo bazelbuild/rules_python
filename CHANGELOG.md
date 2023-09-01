@@ -58,6 +58,11 @@ A brief description of the categories of changes:
 * (bzlmod) The `entry_point` macro is no longer supported and has been removed
   in favour of the `py_console_script_binary` macro for `bzlmod` users.
 
+* (bzlmod) The `pip.parse` no longer generates `{hub_name}_{py_version}` hub repos
+  as the `entry_point` macro has been superseded by `py_console_script_binary`.
+
+* (bzlmod) The `pip.parse` no longer generates `{hub_name}_{distribution}` hub repos.
+
 ### Fixed
 
 * (whl_library) No longer restarts repository rule when fetching external
