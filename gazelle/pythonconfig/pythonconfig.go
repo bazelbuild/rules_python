@@ -78,6 +78,7 @@ const (
 	// GenerationModeProject defines the mode in which a coarse-grained target will
 	// be generated englobing sub-directories containing Python files.
 	GenerationModeProject GenerationModeType = "project"
+	GenerationModeFile    GenerationModeType = "file"
 )
 
 const (
@@ -126,6 +127,7 @@ type Config struct {
 	ignoreDependencies       map[string]struct{}
 	validateImportStatements bool
 	coarseGrainedGeneration  bool
+	perFileGeneration        bool
 	libraryNamingConvention  string
 	binaryNamingConvention   string
 	testNamingConvention     string
@@ -145,6 +147,7 @@ func New(
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: true,
 		coarseGrainedGeneration:  false,
+		perFileGeneration:        false,
 		libraryNamingConvention:  packageNameNamingConventionSubstitution,
 		binaryNamingConvention:   fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:     fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
@@ -169,6 +172,7 @@ func (c *Config) NewChild() *Config {
 		ignoreDependencies:       make(map[string]struct{}),
 		validateImportStatements: c.validateImportStatements,
 		coarseGrainedGeneration:  c.coarseGrainedGeneration,
+		perFileGeneration:        c.perFileGeneration,
 		libraryNamingConvention:  c.libraryNamingConvention,
 		binaryNamingConvention:   c.binaryNamingConvention,
 		testNamingConvention:     c.testNamingConvention,
@@ -325,6 +329,18 @@ func (c *Config) SetCoarseGrainedGeneration(coarseGrained bool) {
 // generated or not.
 func (c *Config) CoarseGrainedGeneration() bool {
 	return c.coarseGrainedGeneration
+}
+
+// SetPerFileGneration sets whether a separate py_library target should be
+// generated for each file.
+func (c *Config) SetPerFileGeneration(perFile bool) {
+	c.perFileGeneration = perFile
+}
+
+// PerFileGeneration returns whether a separate py_library target should be
+// generated for each file.
+func (c *Config) PerFileGeneration() bool {
+	return c.perFileGeneration
 }
 
 // SetLibraryNamingConvention sets the py_library target naming convention.

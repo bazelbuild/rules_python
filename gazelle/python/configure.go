@@ -137,8 +137,13 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			switch pythonconfig.GenerationModeType(strings.TrimSpace(d.Value)) {
 			case pythonconfig.GenerationModePackage:
 				config.SetCoarseGrainedGeneration(false)
+				config.SetPerFileGeneration(false)
+			case pythonconfig.GenerationModeFile:
+				config.SetCoarseGrainedGeneration(false)
+				config.SetPerFileGeneration(true)
 			case pythonconfig.GenerationModeProject:
 				config.SetCoarseGrainedGeneration(true)
+				config.SetPerFileGeneration(false)
 			default:
 				err := fmt.Errorf("invalid value for directive %q: %s",
 					pythonconfig.GenerationMode, d.Value)
