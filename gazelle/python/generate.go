@@ -213,14 +213,11 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	collisionErrors := singlylinkedlist.New()
 
-	var pyLibrary *rule.Rule
-	if !pyLibraryFilenames.Empty() {
-		deps, err := parser.parse(pyLibraryFilenames)
+	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
+		deps, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
-
-		pyLibraryTargetName := cfg.RenderLibraryName(packageName)
 
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
@@ -239,15 +236,18 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
+		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
-			addSrcs(pyLibraryFilenames).
+			addSrcs(srcs).
 			addModuleDependencies(deps).
 			generateImportsAttribute().
 			build()
 
 		result.Gen = append(result.Gen, pyLibrary)
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+	}
+	if !pyLibraryFilenames.Empty() {
+		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
 	if hasPyBinary {
