@@ -156,7 +156,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					//   1. The directory has a BUILD or BUILD.bazel files. Then
 					//       it doesn't matter at all what it has since it's a
 					//       separate Bazel package.
-					//   2. (only for fine-grained generation) The directory has
+					//   2. (only for package and file generation) The directory has
 					// 		 an __init__.py, __main__.py or __test__.py, meaning
 					// 		 a BUILD file will be generated.
 					if isBazelPackage(path) {
@@ -246,7 +246,22 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Gen = append(result.Gen, pyLibrary)
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
 	}
-	if !pyLibraryFilenames.Empty() {
+	if cfg.PerFileGeneration() {
+		pyLibraryFilenames.Each(func(index int, filename interface{}) {
+			if filename == pyLibraryEntrypointFilename {
+				stat, err := os.Stat(filename.(string))
+				if err != nil {
+					log.Fatalf("ERROR: %v\n", err)
+				}
+				if stat.Size() == 0 {
+					return // ignore empty __init__.py
+				}
+			}
+			srcs := treeset.NewWith(godsutils.StringComparator, filename)
+			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			appendPyLibrary(srcs, pyLibraryTargetName)
+		})
+	} else if !pyLibraryFilenames.Empty() {
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
