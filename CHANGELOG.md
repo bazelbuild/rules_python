@@ -31,6 +31,12 @@ A brief description of the categories of changes:
 * (bzlmod) The `entry_point` macro is no longer supported and has been removed
   in favour of the `py_console_script_binary` macro for `bzlmod` users.
 
+### Fixed
+
+* (whl_library) No longer restarts repository rule when fetching external
+  dependencies improving initial build times involving external dependency
+  fetching.
+
 ## [0.25.0] - 2023-08-22
 
 ### Changed
