@@ -14,7 +14,7 @@
 
 ""
 
-load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
+load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
@@ -119,7 +119,7 @@ def _get_xcode_location_cflags(rctx):
         "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
     ]
 
-def _get_toolchain_unix_cflags(rctx):
+def _get_toolchain_unix_cflags(rctx, python_interpreter):
     """Gather cflags from a standalone toolchain for unix systems.
 
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -131,11 +131,11 @@ def _get_toolchain_unix_cflags(rctx):
         return []
 
     # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+    if not is_standalone_interpreter(rctx, python_interpreter):
         return []
 
     er = rctx.execute([
-        rctx.path(rctx.attr.python_interpreter_target).realpath,
+        python_interpreter,
         "-c",
         "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
     ])
@@ -143,7 +143,7 @@ def _get_toolchain_unix_cflags(rctx):
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
     _python_version = er.stdout
     include_path = "{}/include/python{}".format(
-        get_interpreter_dirname(rctx, rctx.attr.python_interpreter_target),
+        python_interpreter.dirname,
         _python_version,
     )
 
@@ -214,11 +214,12 @@ def _parse_optional_attrs(rctx, args):
 
     return args
 
-def _create_repository_execution_environment(rctx):
+def _create_repository_execution_environment(rctx, python_interpreter):
     """Create a environment dictionary for processes we spawn with rctx.execute.
 
     Args:
-        rctx: The repository context.
+        rctx (repository_ctx): The repository context.
+        python_interpreter (path): The resolved python interpreter.
     Returns:
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
@@ -226,7 +227,7 @@ def _create_repository_execution_environment(rctx):
     # Gather any available CPPFLAGS values
     cppflags = []
     cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
 
     env = {
         "PYTHONPATH": _construct_pypath(rctx),
@@ -626,7 +627,7 @@ def _whl_library_impl(rctx):
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = _create_repository_execution_environment(rctx),
+        environment = _create_repository_execution_environment(rctx, python_interpreter),
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )

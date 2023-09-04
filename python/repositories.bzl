@@ -74,26 +74,26 @@ def get_interpreter_dirname(rctx, python_interpreter_target):
 
     return rctx.path(Label("{}//:WORKSPACE".format(str(python_interpreter_target).split("//")[0]))).dirname
 
-def is_standalone_interpreter(rctx, python_interpreter_target):
+def is_standalone_interpreter(rctx, python_interpreter_path):
     """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
 
     Args:
         rctx (repository_ctx): The repository rule's context object.
-        python_interpreter_target (Target): A target representing a python interpreter.
+        python_interpreter_path (path): A path representing the interpreter.
 
     Returns:
         bool: Whether or not the target is from a rules_python generated toolchain.
     """
 
     # Only update the location when using a hermetic toolchain.
-    if not python_interpreter_target:
+    if not python_interpreter_path:
         return False
 
     # This is a rules_python provided toolchain.
     return rctx.execute([
         "ls",
         "{}/{}".format(
-            get_interpreter_dirname(rctx, python_interpreter_target),
+            python_interpreter_path.dirname,
             STANDALONE_INTERPRETER_FILENAME,
         ),
     ]).return_code == 0
