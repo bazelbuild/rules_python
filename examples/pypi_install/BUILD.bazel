@@ -34,7 +34,7 @@ compile_pip_requirements(
     # - Inject dependencies.
     # - Remove dependencies.
     # - Drop whole packages (is there such a use case?).
-    # - Add patches (support needed).
+    # - Add patches.
     # - Override/create aliases (support needed).
     intermediate_file_patcher = "//:intermediate_file_patcher",
 )

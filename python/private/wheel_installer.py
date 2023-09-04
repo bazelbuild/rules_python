@@ -62,9 +62,6 @@ def main(args: Any) -> None:
     patch_dir = args.patch_dir or "."
     for patch in (args.patch or []):
         with patch.open("r") as stdin:
-            print(f"Applying patch {patch}")
-            print("patch_dir = " + str(patch_dir))
-            print("cwd = " + str(args.directory / patch_dir))
             subprocess.run(patch_args, stdin=stdin, check=True, cwd=args.directory / patch_dir)
 
 
