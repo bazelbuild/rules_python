@@ -20,4 +20,5 @@ py_library(
     name = "foo",
     srcs = ["foo.py"],
     visibility = ["//:__subpackages__"],
+    deps = [":custom"],
 )
