@@ -43,15 +43,11 @@ def _construct_pypath(rctx):
     Returns: String of the PYTHONPATH.
     """
 
-    # Get the root directory of these rules
-    rules_root = rctx.path(Label("//:BUILD.bazel")).dirname
-    thirdparty_roots = [
-        # Includes all the external dependencies from repositories.bzl
-        rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
-        for repo in all_requirements
-    ]
     separator = ":" if not "windows" in rctx.os.name.lower() else ";"
-    pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
+    pypath = separator.join([
+        str(rctx.path(entry).dirname)
+        for entry in rctx.attr._python_path_entries
+    ])
     return pypath
 
 def _get_python_interpreter_attr(rctx):
@@ -719,6 +715,19 @@ whl_library_attrs = {
     "requirement": attr.string(
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
+    ),
+    "_python_path_entries": attr.label_list(
+        # Get the root directory of these rules and keep them as a default attribute
+        # in order to avoid unnecessary repository fetching restarts.
+        #
+        # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
+        default = [
+            Label("//:BUILD.bazel"),
+        ] + [
+            # Includes all the external dependencies from repositories.bzl
+            Label("@" + repo + "//:BUILD.bazel")
+            for repo in all_requirements
+        ],
     ),
 }
 
