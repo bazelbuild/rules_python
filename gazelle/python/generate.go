@@ -249,7 +249,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	if cfg.PerFileGeneration() {
 		pyLibraryFilenames.Each(func(index int, filename interface{}) {
 			if filename == pyLibraryEntrypointFilename {
-				stat, err := os.Stat(filename.(string))
+				stat, err := os.Stat(filepath.Join(args.Dir, filename.(string)))
 				if err != nil {
 					log.Fatalf("ERROR: %v\n", err)
 				}
