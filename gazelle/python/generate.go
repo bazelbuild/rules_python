@@ -153,12 +153,17 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				if entry.IsDir() {
 					// If we are visiting a directory, we determine if we should
 					// halt digging the tree based on a few criterias:
-					//   1. The directory has a BUILD or BUILD.bazel files. Then
+					//   1. We are using per-file generation.
+					//   2. The directory has a BUILD or BUILD.bazel files. Then
 					//       it doesn't matter at all what it has since it's a
 					//       separate Bazel package.
-					//   2. (only for package and file generation) The directory has
-					// 		 an __init__.py, __main__.py or __test__.py, meaning
-					// 		 a BUILD file will be generated.
+					//   3. (only for package generation) The directory has an
+					//       __init__.py, __main__.py or __test__.py, meaning a
+					//       BUILD file will be generated.
+					if cfg.PerFileGeneration() {
+						return fs.SkipDir
+					}
+
 					if isBazelPackage(path) {
 						boundaryPackages[path] = struct{}{}
 						return nil

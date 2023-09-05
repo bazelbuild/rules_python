@@ -3,13 +3,6 @@ load("@rules_python//python:defs.bzl", "py_library")
 # gazelle:python_generation_mode file
 
 py_library(
-    name = "baz",
-    srcs = ["baz/baz.py"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//bar:foo"],
-)
-
-py_library(
     name = "foo",
     srcs = ["foo.py"],
     visibility = ["//:__subpackages__"],
