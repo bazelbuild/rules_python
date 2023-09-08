@@ -61,47 +61,46 @@ def _forward_arg(kwargs, intermediate, package, arg_name, default, transform):
 
 def _accumulate_transitive_deps_inner(intermediate, configs, package, already_accumulated):
     for config in configs:
-        if config in intermediate[package]:
-            deps = intermediate[package][config].get("deps", [])
-        else:
-            deps = intermediate["//conditions:default"][config].get("deps", [])
+        pending_deps = sets.make([package])
 
-        new_deps = sets.difference(sets.make(deps), already_accumulated[config])
-        already_accumulated[config] = sets.union(already_accumulated[config], new_deps)
+        for _ in range(1000):
+            if sets.length(pending_deps) == 0:
+                break
 
-        for dep in sets.to_list(new_deps):
-            _accumulate_transitive_deps_inner(intermediate, configs, dep, already_accumulated)
+            dep = sets.to_list(pending_deps)[0]
+            sets.remove(pending_deps, dep)
+
+            deps = intermediate[dep].get(config, "//conditions:default").get("deps", [])
+            new_deps = sets.difference(sets.make(deps), already_accumulated[config])
+            new_deps = sets.difference(new_deps, pending_deps)
+            already_accumulated[config] = sets.union(already_accumulated[config], new_deps)
+            pending_deps = sets.union(pending_deps, new_deps)
+
+        if sets.length(pending_deps) > 0:
+            fail("Failed to accumulate the transitive deps for {} in 1000 iterations!".format(package))
 
 def _accumulate_transitive_deps(intermediate, configs, package):
     already_accumulated = {config: sets.make([package]) for config in configs}
     _accumulate_transitive_deps_inner(intermediate, configs, package, already_accumulated)
-    return select({config: sets.to_list(set) for config, set in already_accumulated})
+    return {config: sets.to_list(sets.remove(set, package)) for config, set in already_accumulated.items()}
+
+def to_alias_refs(alias_repo_name, deps):
+    return ["@{}//{}".format(alias_repo_name, dep) for dep in deps]
 
 def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediate, configs, package):
     kwargs = {}
     for arg_name, default in _FORWARDED_ARGS:
         _forward_arg(kwargs, intermediate, package, arg_name, default, _no_transform)
 
-    to_alias_refs = lambda deps: ["@{}//{}".format(alias_repo_name, dep) for dep in deps]
-
-    _forward_arg(kwargs, intermediate, package, "deps", [], to_alias_refs)
-
-    deps = _accumulate_transitive_deps(intermediate, configs, package)
+    deps_dict = _accumulate_transitive_deps(intermediate, configs, package)
+    deps = select({config: to_alias_refs(alias_repo_name, deps) for config, deps in deps_dict.items()})
 
     pycross_wheel_library(
-        name = "underlying_library",
+        name = name,
         wheel = "@{}//file".format(wheel_repo_name),
         enable_implicit_namespace_pkgs = True,
         # TODO(phil): Can we restrict visibility?
         visibility = ["//visibility:public"],
         deps = deps,
         **kwargs
-    )
-
-    py_library(
-        name = name,
-        deps = [
-            ":underlying_library",
-        ],
-        visibility = ["//visibility:public"],
     )
