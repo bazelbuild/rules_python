@@ -103,6 +103,10 @@ def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo
                 # set()?
                 sha_indexed_infos[info["sha256"]] = True
 
+                # TODO(phil): Do we need to support individual py_library
+                # targets per config? Should only be an issue if someone needs
+                # to assemble a runfiles tree with multiple configurations in
+                # it.
                 # TODO(phil): Can we add target_compatible_with information
                 # here?
                 _generate_py_library(package, config, info, intermediate_repo_name, alias_repo_name)
@@ -138,10 +142,8 @@ def _wheel_library_repo_impl(repository_ctx):
         """    name="library",""",
         """    alias_repo_name="{}",""".format(repository_ctx.attr.alias_repo_name),
         """    wheel_repo_name="{}",""".format(repository_ctx.attr.wheel_repo_name),
-        """    info=INTERMEDIATE["{}"]["{}"],""".format(
-            repository_ctx.attr.intermediate_package,
-            repository_ctx.attr.intermediate_config,
-        ),
+        """    intermediate=INTERMEDIATE,""",
+        """    package="{}",""".format(repository_ctx.attr.intermediate_package),
         """)""",
     ]
     repository_ctx.file("BUILD.bazel", "\n".join(lines), executable=False)

@@ -16,6 +16,13 @@ load("//python/private:wheel_library.bzl", "pycross_wheel_library")
 load(":pypi_util.bzl", "generate_repo_name_for_extracted_wheel")
 
 
+_FORWARDED_ARGS = (
+    ("patches", None),
+    ("patch_args", None),
+    ("patch_tool", None),
+    ("patch_dir", None),
+)
+
 def generate_package_alias(intermediate):
     package = native.package_name()
     if package not in intermediate:
@@ -38,20 +45,31 @@ def generate_package_alias(intermediate):
         visibility = ["//visibility:public"],
     )
 
+def _nop(value):
+    return value
 
-def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, info):
-    kwargs = {arg: info.get(arg) for arg in (
-        "patches",
-        "patch_args",
-        "patch_tool",
-        "patch_dir",
-    )}
-    deps = ["@{}//{}".format(alias_repo_name, dep) for dep in info.get("deps", [])]
+def _forward_arg(kwargs, intermediate, package, arg_name, default, transform):
+    select_dict = {}
+
+    for config, info in intermediate[package].items():
+        select_dict[config] = (transform or _nop)(info.get(arg_name, default))
+
+    kwargs[arg_name] = select(select_dict)
+
+
+def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediate, package):
+    kwargs = {}
+    for arg_name, default in _FORWARDED_ARGS:
+        _forward_arg(kwargs, intermediate, package, arg_name, default, _nop)
+
+    to_alias_refs = lambda deps: ["@{}//{}".format(alias_repo_name, dep) for dep in deps]
+
+    _forward_arg(kwargs, intermediate, package, "deps", [], to_alias_refs)
+
     pycross_wheel_library(
         name = "library",
         wheel = "@{}//file".format(wheel_repo_name),
         enable_implicit_namespace_pkgs = True,
         visibility = ["//visibility:public"],
-        deps = deps,
         **kwargs
     )

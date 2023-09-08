@@ -104,6 +104,7 @@ def parse_flags(argv) -> Any:
     parser.add_argument(
         "--patch-arg",
         type=Path,
+        default=[],
         action="append",
         help="An argument for the patch_tool when applying the patches.",
     )
