@@ -1,8 +1,23 @@
+# Copyright 2023 Jeremy Volkman. All rights reserved.
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """Implementation of the pycross_wheel_library rule."""
 
-load(":providers.bzl", "PycrossWheelInfo")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@rules_python//python:defs.bzl", "PyInfo")
+load(":providers.bzl", "PycrossWheelInfo")
 
 def _pycross_wheel_library_impl(ctx):
     out = ctx.actions.declare_directory(ctx.attr.name)
@@ -34,8 +49,8 @@ def _pycross_wheel_library_impl(ctx):
         arguments = [args],
         # Set environment variables to make generated .pyc files reproducible.
         env = {
-            "SOURCE_DATE_EPOCH": "315532800",
             "PYTHONHASHSEED": "0",
+            "SOURCE_DATE_EPOCH": "315532800",
         },
         mnemonic = "WheelInstall",
         progress_message = "Installing %s" % ctx.file.wheel.basename,
@@ -95,14 +110,9 @@ pycross_wheel_library = rule(
             doc = "A list of this wheel's Python library dependencies.",
             providers = [DefaultInfo, PyInfo],
         ),
-        "wheel": attr.label(
-            doc = "The wheel file.",
-            allow_single_file = [".whl"],
-            mandatory = True,
-        ),
         "enable_implicit_namespace_pkgs": attr.bool(
-        default = True,
-        doc = """
+            default = True,
+            doc = """
 If true, disables conversion of native namespace packages into pkg-util style namespace packages. When set all py_binary
 and py_test targets must specify either `legacy_create_init=False` or the global Bazel option
 `--incompatible_default_to_explicit_init_py` to prevent `__init__.py` being automatically generated in every directory.
@@ -111,12 +121,17 @@ This option is required to support some packages which cannot handle the convers
         ),
         "python_version": attr.string(
             doc = "The python version required for this wheel ('PY2' or 'PY3')",
-            values = ["PY2", "PY3", ""]
+            values = ["PY2", "PY3", ""],
+        ),
+        "wheel": attr.label(
+            doc = "The wheel file.",
+            allow_single_file = [".whl"],
+            mandatory = True,
         ),
         "_tool": attr.label(
             default = Label("//pycross/private/tools:wheel_installer"),
-            cfg = "host",
+            cfg = "exec",
             executable = True,
         ),
-    }
+    },
 )
