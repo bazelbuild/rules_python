@@ -35,10 +35,15 @@ def _pypi_install_impl(repository_ctx):
     else:
         intermediate = {}
 
-    repository_ctx.file(
-            "intermediate.bzl",
-            "INTERMEDIATE = {}\n".format(json.encode_indent(intermediate)),
-            executable=False)
+    configs = []
+    for package in intermediate:
+        configs.extend(intermediate[package].keys())
+
+    lines = ["INTERMEDIATE = {}".format(json.encode_indent(intermediate)), ""]
+    repository_ctx.file("intermediate.bzl", "\n".join(lines), executable=False)
+
+    lines = ["CONFIGS = {}".format(json.encode_indent(configs)), ""]
+    repository_ctx.file("configs.bzl", "\n".join(lines), executable=False)
 
     lines = [
         """load("@rules_python//python/private:pypi_repo.bzl",""",
@@ -138,11 +143,13 @@ def _wheel_library_repo_impl(repository_ctx):
     lines = [
         """load("@rules_python//python/private:pypi.bzl", "wrapped_py_wheel_library")""",
         """load("@{}//:intermediate.bzl", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate_repo_name),
+        """load("@{}//:configs.bzl", "CONFIGS")""".format(repository_ctx.attr.intermediate_repo_name),
         """wrapped_py_wheel_library(""",
         """    name="library",""",
         """    alias_repo_name="{}",""".format(repository_ctx.attr.alias_repo_name),
         """    wheel_repo_name="{}",""".format(repository_ctx.attr.wheel_repo_name),
         """    intermediate=INTERMEDIATE,""",
+        """    configs=CONFIGS,""",
         """    package="{}",""".format(repository_ctx.attr.intermediate_package),
         """)""",
     ]
@@ -167,6 +174,11 @@ def _generate_package_aliases_impl(repository_ctx):
         fail("Expected intermediate.bzl to start with 'INTERMEDIATE = '. Did the implementation get out of sync?")
     intermediate = json.decode(bzl_intermediate[len("INTERMEDIATE = "):])
 
+    dep_tracked_lines = [
+        """load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")""",
+        """""",
+    ]
+
     for package in intermediate:
         lines = [
             """load("{}", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate),
@@ -174,6 +186,15 @@ def _generate_package_aliases_impl(repository_ctx):
             """_generate_package_alias(INTERMEDIATE)""",
         ]
         repository_ctx.file("{}/BUILD.bazel".format(package), "\n".join(lines), executable=False)
+
+        dep_tracked_lines += [
+            """bool_flag(""",
+            """    name="{}",""".format(package),
+            """    build_setting_default = False,""",
+            """)""",
+        ]
+
+    repository_ctx.file("_package_already_included/BUILD.bazel", "\n".join(dep_tracked_lines), executable=False)
 
 
 generate_package_aliases = repository_rule(
