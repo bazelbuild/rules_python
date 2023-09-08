@@ -78,12 +78,10 @@ def _py_proto_aspect_impl(target, ctx):
         # Handles multiple repository and virtual import cases
         proto_root = proto_info.proto_source_root
         if proto_root.startswith(ctx.bin_dir.path):
-            plugin_output = proto_root
-        else:
-            plugin_output = ctx.bin_dir.path + "/" + proto_root
+            proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
 
-        if plugin_output == ".":
-            plugin_output = ctx.bin_dir.path
+        plugin_output = ctx.bin_dir.path + "/" + proto_root
+        proto_root = ctx.workspace_name + "/" + proto_root
 
         proto_common.compile(
             actions = ctx.actions,
@@ -109,6 +107,7 @@ def _py_proto_aspect_impl(target, ctx):
     return [
         _PyProtoInfo(
             imports = depset(
+                [proto_root],
                 transitive = [dep[PyInfo].imports for dep in api_deps],
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
