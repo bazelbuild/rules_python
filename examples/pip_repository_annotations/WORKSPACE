@@ -56,7 +56,6 @@ pip_parse(
     annotations = ANNOTATIONS,
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
-    requirements_windows = "//:requirements_windows.txt",
 )
 
 load("@pip_parsed//:requirements.bzl", install_pip_parse_deps = "install_deps")
