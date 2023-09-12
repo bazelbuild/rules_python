@@ -19,6 +19,10 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Changed
+* (multi-version) The `distribs` attribute is no longer propagated. This
+  attribute has been long deprecated by Bazel and shouldn't be used.
+
 ### Added
 
 * (bzlmod, entry_point) Added
