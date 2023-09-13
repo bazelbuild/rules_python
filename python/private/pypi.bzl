@@ -95,6 +95,11 @@ def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediat
     deps_dict = _accumulate_transitive_deps(intermediate, configs, package)
     deps = select({config: to_alias_refs(alias_repo_name, deps) for config, deps in deps_dict.items()})
 
+    # TODO(phil): Probably need to split this in order to support circular
+    # dependencies. An "underlying" library and a "high level" that depends on
+    # the transitive closure of underlying libraries. Need to find a good
+    # example of this though. torch, dvc[gs]==2.43.1, apache-airflow all
+    # require sdist support.
     pycross_wheel_library(
         name = name,
         wheel = "@{}//file".format(wheel_repo_name),
