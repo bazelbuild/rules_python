@@ -19,6 +19,10 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Changed
+
+* (deps) Upgrade rules_go 0.39.1 -> 0.41.0; this is so gazelle integration works with upcoming Bazel versions
+
 ### Added
 
 * (bzlmod, entry_point) Added
