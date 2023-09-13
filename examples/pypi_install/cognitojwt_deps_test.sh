@@ -14,7 +14,7 @@ EXPECTED_OUTPUT="$(cat <<EOF
 @pypi//ecdsa:ecdsa
 @pypi//pyasn1:pyasn1
 @pypi//pycparser:pycparser
-@pypi//python-jose:python-jose
+@pypi//python_jose:python_jose
 @pypi//rsa:rsa
 @pypi//six:six
 EOF
