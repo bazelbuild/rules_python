@@ -13,20 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Python providers."""
+load("//python:defs.bzl", "py_test")
+load(":wheel_library.bzl", "py_wheel_library")
 
-PyWheelInfo = provider(
-    doc = "Information about a Python wheel.",
-    fields = {
-        "name_file": "File: A file containing the canonical name of the wheel.",
-        "wheel_file": "File: The wheel file itself.",
-    },
+py_wheel_library(
+    name = "extracted_wheel_for_testing",
+    wheel = "@wheel_for_testing//file",
 )
 
-PyTargetEnvironmentInfo = provider(
-    doc = "A target environment description.",
-    fields = {
-        "file": "The JSON file containing target environment information.",
-        "python_compatible_with": "A list of constraints used to select this platform.",
-    },
+py_test(
+    name = "py_wheel_library_test",
+    srcs = [
+        "py_wheel_library_test.py",
+    ],
+    data = [
+        ":extracted_wheel_for_testing",
+    ],
+    deps = [
+        "//python/runfiles",
+    ],
 )
