@@ -5,7 +5,7 @@ from pathlib import Path
 UPDATES = {
     "requests": {
         "patches": [
-            "@//third_party:requests/hello.patch",
+            "@//third_party:requests/0001-Add-a-dummy-patch-for-requests.patch",
         ],
         "patch_args": [
             "-p1",

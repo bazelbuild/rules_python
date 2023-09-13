@@ -15,6 +15,7 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load(":pypi_util.bzl", "generate_repo_name_for_download", "generate_repo_name_for_extracted_wheel")
 
 def pypi_install(pip_installation_report = None, **kwargs):
@@ -25,6 +26,19 @@ def pypi_install(pip_installation_report = None, **kwargs):
         pip_installation_report_swapped[report] = config_setting
     _pypi_install(pip_installation_report = pip_installation_report_swapped, **kwargs)
 
+def _clean_info(info):
+    result = dict(**info)
+    if "deps" in result:
+        result["deps"] = [normalize_name(dep) for dep in result["deps"]]
+    return result
+
+def _clean_intermediate(intermediate):
+    result = {}
+    for package, info_per_config in intermediate.items():
+        result[normalize_name(package)] = {
+            config: _clean_info(info) for config, info in info_per_config.items()
+        }
+    return result
 
 def _pypi_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", "\n", executable = False)
@@ -39,7 +53,7 @@ def _pypi_install_impl(repository_ctx):
     for package in intermediate:
         configs.extend(intermediate[package].keys())
 
-    lines = ["INTERMEDIATE = {}".format(json.encode_indent(intermediate)), ""]
+    lines = ["INTERMEDIATE = {}".format(json.encode_indent(_clean_intermediate(intermediate))), ""]
     repository_ctx.file("intermediate.bzl", "\n".join(lines), executable=False)
 
     lines = ["CONFIGS = {}".format(json.encode_indent(configs)), ""]

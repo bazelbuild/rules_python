@@ -4,5 +4,5 @@ cognitojwt
 # Common dependency whose functionality is easy to validate.
 requests
 
-# A library with a circular dependency.
-apache-airflow
+# TODO(philsc): Get a package with circular dependencies.
+# We want to support those packages.
