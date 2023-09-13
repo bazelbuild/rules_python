@@ -23,6 +23,10 @@ A brief description of the categories of changes:
 
 * (deps) Upgrade rules_go 0.39.1 -> 0.41.0; this is so gazelle integration works with upcoming Bazel versions
 
+* (multi-version) The `distribs` attribute is no longer propagated. This
+  attribute has been long deprecated by Bazel and shouldn't be used.
+
+
 ### Added
 
 * (bzlmod, entry_point) Added

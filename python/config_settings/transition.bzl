@@ -152,7 +152,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     # https://bazel.build/reference/be/common-definitions#common-attributes
     compatible_with = kwargs.pop("compatible_with", None)
     deprecation = kwargs.pop("deprecation", None)
-    distribs = kwargs.pop("distribs", None)
     exec_compatible_with = kwargs.pop("exec_compatible_with", None)
     exec_properties = kwargs.pop("exec_properties", None)
     features = kwargs.pop("features", None)
@@ -166,7 +165,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     common_attrs = {
         "compatible_with": compatible_with,
         "deprecation": deprecation,
-        "distribs": distribs,
         "exec_compatible_with": exec_compatible_with,
         "exec_properties": exec_properties,
         "features": features,
