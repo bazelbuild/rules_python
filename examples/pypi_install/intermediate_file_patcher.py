@@ -10,7 +10,7 @@ UPDATES = {
         "patch_args": [
             "-p1",
         ],
-        "patch_dir": "library/site-packages",
+        "patch_dir": "site-packages",
     },
 }
 

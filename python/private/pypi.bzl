@@ -53,17 +53,10 @@ def _no_transform(value):
 def _forward_arg(kwargs, intermediate, package, arg_name, default, transform):
     select_dict = {}
 
-    found = False
     for config, info in intermediate[package].items():
         select_dict[config] = transform(info.get(arg_name, default))
-        if arg_name in info:
-            print(transform(info.get(arg_name, default)))
-            print(select_dict)
-            found = True
 
     kwargs[arg_name] = select(select_dict)
-    if found:
-        print(kwargs[arg_name])
 
 
 def _accumulate_transitive_deps_inner(intermediate, configs, package, already_accumulated):
