@@ -66,6 +66,7 @@ def _py_proto_aspect_impl(target, ctx):
 
     generated_sources = []
     proto_info = target[ProtoInfo]
+    proto_root = proto_info.proto_source_root
     if proto_info.direct_sources:
         # Generate py files
         generated_sources = proto_common.declare_generated_files(
@@ -76,7 +77,6 @@ def _py_proto_aspect_impl(target, ctx):
         )
 
         # Handles multiple repository and virtual import cases
-        proto_root = proto_info.proto_source_root
         if proto_root.startswith(ctx.bin_dir.path):
             proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
 

@@ -28,6 +28,8 @@ buildifier:
   build_targets:
     - "--"
     - "..."
+    # This has its own workspace and needs to run from there
+    - "-//examples/py_proto_library/..."
     # As a regression test for #225, check that wheel targets still build when
     # their package path is qualified with the repo name.
     - "@rules_python//examples/wheel/..."
