@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-import pricetag_pb2
+from proto import pricetag_pb2
 
 
 class TestCase(unittest.TestCase):
