@@ -18,7 +18,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe", "read_netrc", "read_user_netrc", "use_netrc")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
 load(
@@ -97,11 +97,23 @@ def _python_repository_impl(rctx):
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
 
+    if rctx.attr.netrc:
+        netrc = read_netrc(rctx, rctx.attr.netrc)
+    elif "NETRC" in rctx.os.environ:
+        netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
+    else:
+        netrc = read_user_netrc(rctx)
+
+    auth = None
+    if netrc:
+        auth = use_netrc(netrc, urls, rctx.attr.auth_patterns)
+
     if release_filename.endswith(".zst"):
         rctx.download(
             url = urls,
             sha256 = rctx.attr.sha256,
             output = release_filename,
+            auth = auth,
         )
         unzstd = rctx.which("unzstd")
         if not unzstd:
@@ -109,6 +121,7 @@ def _python_repository_impl(rctx):
             rctx.download_and_extract(
                 url = url,
                 sha256 = rctx.attr.zstd_sha256,
+                auth = auth,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
 
@@ -146,6 +159,7 @@ def _python_repository_impl(rctx):
             url = urls,
             sha256 = rctx.attr.sha256,
             stripPrefix = rctx.attr.strip_prefix,
+            auth = auth,
         )
 
     patches = rctx.attr.patches
@@ -441,6 +455,12 @@ For more information see the official bazel docs
         ),
         "urls": attr.string_list(
             doc = "The URL of the interpreter to download. Exactly one of url and urls must be set.",
+        ),
+        "netrc": attr.string(
+            doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
+        ),
+        "auth_patterns": attr.string_dict(
+            doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
         ),
         "zstd_sha256": attr.string(
             default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
