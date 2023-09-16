@@ -44,6 +44,9 @@ A brief description of the categories of changes:
 * (gazelle) New `# gazelle:python_generation_mode file` directive to support
   generating one `py_library` per file.
 
+* (python_repository) Support `netrc` and `auth_patterns` attributes to enable
+  authentication against private HTTP hosts serving Python toolchain binaries.
+
 ### Removed
 
 * (bzlmod) The `entry_point` macro is no longer supported and has been removed
@@ -118,5 +121,3 @@ A brief description of the categories of changes:
 * Expose Python C headers through the toolchain.
 
 [0.24.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.24.0
-
-
