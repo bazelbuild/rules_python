@@ -103,10 +103,7 @@ def _python_repository_impl(rctx):
         netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
     else:
         netrc = read_user_netrc(rctx)
-
-    auth = None
-    if netrc:
-        auth = use_netrc(netrc, urls, rctx.attr.auth_patterns)
+    auth = use_netrc(netrc, urls, rctx.attr.auth_patterns)
 
     if release_filename.endswith(".zst"):
         rctx.download(
@@ -386,6 +383,9 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "auth_patterns": attr.string_dict(
+            doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
+        ),
         "coverage_tool": attr.string(
             # Mirrors the definition at
             # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
@@ -426,6 +426,9 @@ For more information see the official bazel docs
             doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
         ),
+        "netrc": attr.string(
+            doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
+        ),
         "patches": attr.label_list(
             doc = "A list of patch files to apply to the unpacked interpreter",
             mandatory = False,
@@ -455,12 +458,6 @@ For more information see the official bazel docs
         ),
         "urls": attr.string_list(
             doc = "The URL of the interpreter to download. Exactly one of url and urls must be set.",
-        ),
-        "netrc": attr.string(
-            doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
-        ),
-        "auth_patterns": attr.string_dict(
-            doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
         ),
         "zstd_sha256": attr.string(
             default = "7c42d56fac126929a6a85dbc73ff1db2411d04f104fae9bdea51305663a83fd0",
