@@ -57,6 +57,7 @@ def maybe_precompile(ctx, srcs):
     Returns:
         List of Files; the desired output files derived from the input sources.
     """
+    _ = ctx  # @unused
 
     # Precompilation isn't implemented yet, so just return srcs as-is
     return srcs

@@ -471,10 +471,6 @@ def _get_interpreter_path(ctx, *, runtime, flag_interpreter_path):
 
     return interpreter_path
 
-def _should_build_native_deps_dso(ctx):
-    _ = ctx  # @unused
-    return False
-
 def _get_native_deps_dso_name(ctx):
     _ = ctx  # @unused
     fail("Building native deps DSO not supported.")
