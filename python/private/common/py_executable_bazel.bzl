@@ -51,19 +51,13 @@ responsible for creating (possibly empty) `__init__.py` files and adding them to
 the `srcs` of Python targets as required.
                                        """,
         ),
-        "_zipper": attr.label(
-            cfg = "exec",
-            executable = True,
-            default = "@" + TOOLS_REPO + "//tools/zip:zipper",
+        "_bootstrap_template": attr.label(
+            allow_single_file = True,
+            default = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt",
         ),
         "_launcher": attr.label(
             cfg = "target",
             default = "@" + TOOLS_REPO + "//tools/launcher:launcher",
-            executable = True,
-        ),
-        "_windows_launcher_maker": attr.label(
-            default = "@" + TOOLS_REPO + "//tools/launcher:launcher_maker",
-            cfg = "exec",
             executable = True,
         ),
         "_py_interpreter": attr.label(
@@ -78,9 +72,15 @@ the `srcs` of Python targets as required.
         "_py_toolchain_type": attr.label(
             default = "@" + TOOLS_REPO + "//tools/python:toolchain_type",
         ),
-        "_bootstrap_template": attr.label(
-            allow_single_file = True,
-            default = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt",
+        "_windows_launcher_maker": attr.label(
+            default = "@" + TOOLS_REPO + "//tools/launcher:launcher_maker",
+            cfg = "exec",
+            executable = True,
+        ),
+        "_zipper": attr.label(
+            cfg = "exec",
+            executable = True,
+            default = "@" + TOOLS_REPO + "//tools/zip:zipper",
         ),
     },
 )
@@ -299,18 +299,18 @@ def _expand_bootstrap_template(
         template = template,
         output = output,
         substitutions = {
-            "%shebang%": shebang,
+            "%coverage_tool%": coverage_tool_runfiles_path,
+            "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
+            "%imports%": ":".join(imports.to_list()),
+            "%is_zipfile%": "True" if is_for_zip else "False",
             "%main%": "{}/{}".format(
                 ctx.workspace_name,
                 main_py.short_path,
             ),
             "%python_binary%": runtime_details.executable_interpreter_path,
-            "%coverage_tool%": coverage_tool_runfiles_path,
-            "%imports%": ":".join(imports.to_list()),
-            "%workspace_name%": ctx.workspace_name,
-            "%is_zipfile%": "True" if is_for_zip else "False",
-            "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
+            "%shebang%": shebang,
             "%target%": str(ctx.label),
+            "%workspace_name%": ctx.workspace_name,
         },
         is_executable = True,
     )

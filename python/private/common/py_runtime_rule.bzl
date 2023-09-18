@@ -14,9 +14,9 @@
 """Implementation of py_runtime rule."""
 
 load(":common/paths.bzl", "paths")
-load(":common/python/providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", _PyRuntimeInfo = "PyRuntimeInfo")
-load(":common/python/common.bzl", "check_native_allowed")
 load(":common/python/attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
+load(":common/python/common.bzl", "check_native_allowed")
+load(":common/python/providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", _PyRuntimeInfo = "PyRuntimeInfo")
 
 _py_builtins = _builtins.internal.py_builtins
 
@@ -128,6 +128,45 @@ py_runtime(
 """,
     fragments = ["py"],
     attrs = NATIVE_RULES_ALLOWLIST_ATTRS | {
+        "bootstrap_template": attr.label(
+            allow_single_file = True,
+            default = DEFAULT_BOOTSTRAP_TEMPLATE,
+            doc = """
+The bootstrap script template file to use. Should have %python_binary%,
+%workspace_name%, %main%, and %imports%.
+
+This template, after expansion, becomes the executable file used to start the
+process, so it is responsible for initial bootstrapping actions such as finding
+the Python interpreter, runfiles, and constructing an environment to run the
+intended Python application.
+
+While this attribute is currently optional, it will become required when the
+Python rules are moved out of Bazel itself.
+
+The exact variable names expanded is an unstable API and is subject to change.
+The API will become more stable when the Python rules are moved out of Bazel
+itself.
+
+See @bazel_tools//tools/python:python_bootstrap_template.txt for more variables.
+""",
+        ),
+        "coverage_tool": attr.label(
+            allow_files = False,
+            doc = """
+This is a target to use for collecting code coverage information from `py_binary`
+and `py_test` targets.
+
+If set, the target must either produce a single file or be an executable target.
+The path to the single file, or the executable if the target is executable,
+determines the entry point for the python coverage tool.  The target and its
+runfiles will be added to the runfiles when coverage is enabled.
+
+The entry point for the tool must be loadable by a Python interpreter (e.g. a
+`.py` or `.pyc` file).  It must accept the command line arguments
+of coverage.py (https://coverage.readthedocs.io), at least including
+the `run` and `lcov` subcommands.
+""",
+        ),
         "files": attr.label_list(
             allow_files = True,
             doc = """
@@ -147,23 +186,6 @@ platform runtime this attribute must not be set.
 For a platform runtime, this is the absolute path of a Python interpreter on
 the target platform. For an in-build runtime this attribute must not be set.
 """),
-        "coverage_tool": attr.label(
-            allow_files = False,
-            doc = """
-This is a target to use for collecting code coverage information from `py_binary`
-and `py_test` targets.
-
-If set, the target must either produce a single file or be an executable target.
-The path to the single file, or the executable if the target is executable,
-determines the entry point for the python coverage tool.  The target and its
-runfiles will be added to the runfiles when coverage is enabled.
-
-The entry point for the tool must be loadable by a Python interpreter (e.g. a
-`.py` or `.pyc` file).  It must accept the command line arguments
-of coverage.py (https://coverage.readthedocs.io), at least including
-the `run` and `lcov` subcommands.
-""",
-        ),
         "python_version": attr.string(
             default = "_INTERNAL_SENTINEL",
             values = ["PY2", "PY3", "_INTERNAL_SENTINEL"],
@@ -186,28 +208,6 @@ See https://github.com/bazelbuild/bazel/issues/8685 for
 motivation.
 
 Does not apply to Windows.
-""",
-        ),
-        "bootstrap_template": attr.label(
-            allow_single_file = True,
-            default = DEFAULT_BOOTSTRAP_TEMPLATE,
-            doc = """
-The bootstrap script template file to use. Should have %python_binary%,
-%workspace_name%, %main%, and %imports%.
-
-This template, after expansion, becomes the executable file used to start the
-process, so it is responsible for initial bootstrapping actions such as finding
-the Python interpreter, runfiles, and constructing an environment to run the
-intended Python application.
-
-While this attribute is currently optional, it will become required when the
-Python rules are moved out of Bazel itself.
-
-The exact variable names expanded is an unstable API and is subject to change.
-The API will become more stable when the Python rules are moved out of Bazel
-itself.
-
-See @bazel_tools//tools/python:python_bootstrap_template.txt for more variables.
 """,
         ),
     },

@@ -13,22 +13,22 @@
 # limitations under the License.
 """Rule implementation of py_binary for Bazel."""
 
-load(":common/python/semantics.bzl", "TOOLS_REPO")
+load(":common/python/attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
 load(
     ":common/python/py_executable_bazel.bzl",
     "create_executable_rule",
     "py_executable_bazel_impl",
 )
-load(":common/python/attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
+load(":common/python/semantics.bzl", "TOOLS_REPO")
 
 _PY_TEST_ATTRS = {
-    "_lcov_merger": attr.label(
-        default = configuration_field(fragment = "coverage", name = "output_generator"),
+    "_collect_cc_coverage": attr.label(
+        default = "@" + TOOLS_REPO + "//tools/test:collect_cc_coverage",
         executable = True,
         cfg = "exec",
     ),
-    "_collect_cc_coverage": attr.label(
-        default = "@" + TOOLS_REPO + "//tools/test:collect_cc_coverage",
+    "_lcov_merger": attr.label(
+        default = configuration_field(fragment = "coverage", name = "output_generator"),
         executable = True,
         cfg = "exec",
     ),

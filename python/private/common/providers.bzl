@@ -71,14 +71,14 @@ def _PyRuntimeInfo_init(
         stub_shebang = DEFAULT_STUB_SHEBANG
 
     return {
-        "interpreter_path": interpreter_path,
-        "interpreter": interpreter,
-        "files": files,
-        "coverage_tool": coverage_tool,
+        "bootstrap_template": bootstrap_template,
         "coverage_files": coverage_files,
+        "coverage_tool": coverage_tool,
+        "files": files,
+        "interpreter": interpreter,
+        "interpreter_path": interpreter_path,
         "python_version": python_version,
         "stub_shebang": stub_shebang,
-        "bootstrap_template": bootstrap_template,
     }
 
 # TODO(#15897): Rename this to PyRuntimeInfo when we're ready to replace the Java
@@ -96,16 +96,15 @@ the same conventions as the standard CPython interpreter.
 """,
     init = _PyRuntimeInfo_init,
     fields = {
-        "interpreter_path": (
-            "If this is a platform runtime, this field is the absolute " +
-            "filesystem path to the interpreter on the target platform. " +
-            "Otherwise, this is `None`."
+        "bootstrap_template": (
+            "See py_runtime_rule.bzl%py_runtime.bootstrap_template for docs."
         ),
-        "interpreter": (
-            "If this is an in-build runtime, this field is a `File` representing " +
-            "the interpreter. Otherwise, this is `None`. Note that an in-build " +
-            "runtime can use either a prebuilt, checked-in interpreter or an " +
-            "interpreter built from source."
+        "coverage_files": (
+            "The files required at runtime for using `coverage_tool`. " +
+            "Will be `None` if no `coverage_tool` was provided."
+        ),
+        "coverage_tool": (
+            "If set, this field is a `File` representing tool used for collecting code coverage information from python tests. Otherwise, this is `None`."
         ),
         "files": (
             "If this is an in-build runtime, this field is a `depset` of `File`s" +
@@ -114,12 +113,16 @@ the same conventions as the standard CPython interpreter.
             "The value of `interpreter` need not be included in this field. If " +
             "this is a platform runtime then this field is `None`."
         ),
-        "coverage_tool": (
-            "If set, this field is a `File` representing tool used for collecting code coverage information from python tests. Otherwise, this is `None`."
+        "interpreter": (
+            "If this is an in-build runtime, this field is a `File` representing " +
+            "the interpreter. Otherwise, this is `None`. Note that an in-build " +
+            "runtime can use either a prebuilt, checked-in interpreter or an " +
+            "interpreter built from source."
         ),
-        "coverage_files": (
-            "The files required at runtime for using `coverage_tool`. " +
-            "Will be `None` if no `coverage_tool` was provided."
+        "interpreter_path": (
+            "If this is a platform runtime, this field is the absolute " +
+            "filesystem path to the interpreter on the target platform. " +
+            "Otherwise, this is `None`."
         ),
         "python_version": (
             "Indicates whether this runtime uses Python major version 2 or 3. " +
@@ -130,9 +133,6 @@ the same conventions as the standard CPython interpreter.
             "\"Shebang\" expression prepended to the bootstrapping Python stub " +
             "script used when executing `py_binary` targets.  Does not " +
             "apply to Windows."
-        ),
-        "bootstrap_template": (
-            "See py_runtime_rule.bzl%py_runtime.bootstrap_template for docs."
         ),
     },
 )
@@ -163,17 +163,25 @@ def _PyInfo_init(
     _check_arg_type("has_py2_only_sources", "bool", has_py2_only_sources)
     _check_arg_type("has_py3_only_sources", "bool", has_py3_only_sources)
     return {
-        "transitive_sources": transitive_sources,
-        "imports": imports,
-        "uses_shared_libraries": uses_shared_libraries,
         "has_py2_only_sources": has_py2_only_sources,
         "has_py3_only_sources": has_py2_only_sources,
+        "imports": imports,
+        "transitive_sources": transitive_sources,
+        "uses_shared_libraries": uses_shared_libraries,
     }
 
 PyInfo, _unused_raw_py_info_ctor = provider(
     "Encapsulates information provided by the Python rules.",
     init = _PyInfo_init,
     fields = {
+        "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
+        "has_py3_only_sources": "Whether any of this target's transitive sources requires a Python 3 runtime.",
+        "imports": """\
+A depset of import path strings to be added to the `PYTHONPATH` of executable
+Python targets. These are accumulated from the transitive `deps`.
+The order of the depset is not guaranteed and may be changed in the future. It
+is recommended to use `default` order (the default).
+""",
         "transitive_sources": """\
 A (`postorder`-compatible) depset of `.py` files appearing in the target's
 `srcs` and the `srcs` of the target's transitive `deps`.
@@ -184,14 +192,6 @@ as a `.so` file).
 
 This field is currently unused in Bazel and may go away in the future.
 """,
-        "imports": """\
-A depset of import path strings to be added to the `PYTHONPATH` of executable
-Python targets. These are accumulated from the transitive `deps`.
-The order of the depset is not guaranteed and may be changed in the future. It
-is recommended to use `default` order (the default).
-""",
-        "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
-        "has_py3_only_sources": "Whether any of this target's transitive sources requires a Python 3 runtime.",
     },
 )
 

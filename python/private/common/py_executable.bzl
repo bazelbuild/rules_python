@@ -13,7 +13,17 @@
 # limitations under the License.
 """Common functionality between test/binary executables."""
 
+load(":common/cc/cc_common.bzl", _cc_common = "cc_common")
 load(":common/cc/cc_helper.bzl", "cc_helper")
+load(
+    ":common/python/attributes.bzl",
+    "AGNOSTIC_EXECUTABLE_ATTRS",
+    "COMMON_ATTRS",
+    "PY_SRCS_ATTRS",
+    "SRCS_VERSION_ALL_VALUES",
+    "create_srcs_attr",
+    "create_srcs_version_attr",
+)
 load(
     ":common/python/common.bzl",
     "TOOLCHAIN_TYPE",
@@ -28,15 +38,6 @@ load(
     "union_attrs",
 )
 load(
-    ":common/python/attributes.bzl",
-    "AGNOSTIC_EXECUTABLE_ATTRS",
-    "COMMON_ATTRS",
-    "PY_SRCS_ATTRS",
-    "SRCS_VERSION_ALL_VALUES",
-    "create_srcs_attr",
-    "create_srcs_version_attr",
-)
-load(
     ":common/python/providers.bzl",
     "PyCcLinkParamsProvider",
     "PyRuntimeInfo",
@@ -48,7 +49,6 @@ load(
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
 )
-load(":common/cc/cc_common.bzl", _cc_common = "cc_common")
 
 _py_builtins = _builtins.internal.py_builtins
 
@@ -450,13 +450,13 @@ def _write_build_data(ctx, central_uncachable_version_file, extra_write_build_da
     ctx.actions.run(
         executable = ctx.executable._build_data_gen,
         env = {
-            "TARGET": str(ctx.label),
-            "OUTPUT": build_data.path,
-            "VERSION_FILE": version_file.path,
             # NOTE: ctx.info_file is undocumented; see
             # https://github.com/bazelbuild/bazel/issues/9363
             "INFO_FILE": ctx.info_file.path,
+            "OUTPUT": build_data.path,
             "PLATFORM": cc_helper.find_cpp_toolchain(ctx).toolchain_id,
+            "TARGET": str(ctx.label),
+            "VERSION_FILE": version_file.path,
         } | extra_write_build_data_env,
         inputs = depset(
             direct = direct_inputs,

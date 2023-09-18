@@ -13,6 +13,7 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load(":common/cc/cc_info.bzl", _CcInfo = "CcInfo")
 load(":common/python/common.bzl", "union_attrs")
 load(":common/python/providers.bzl", "PyInfo")
 load(
@@ -22,7 +23,6 @@ load(
     "SRCS_ATTR_ALLOW_FILES",
     "TOOLS_REPO",
 )
-load(":common/cc/cc_info.bzl", _CcInfo = "CcInfo")
 
 PackageSpecificationInfo = _builtins.toplevel.PackageSpecificationInfo
 
@@ -98,14 +98,14 @@ COMMON_ATTRS = union_attrs(
     DATA_ATTRS,
     NATIVE_RULES_ALLOWLIST_ATTRS,
     {
+        # NOTE: This attribute is deprecated and slated for removal.
+        "distribs": attr.string_list(),
         # TODO(b/148103851): This attribute is deprecated and slated for
         # removal.
         # NOTE: The license attribute is missing in some Java integration tests,
         # so fallback to a regular string_list for that case.
         # buildifier: disable=attr-license
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
-        # NOTE: This attribute is deprecated and slated for removal.
-        "distribs": attr.string_list(),
     },
     allow_none = True,
 )
@@ -113,15 +113,15 @@ COMMON_ATTRS = union_attrs(
 # Attributes common to rules accepting Python sources and deps.
 PY_SRCS_ATTRS = union_attrs(
     {
-        # Required attribute, but details vary by rule.
-        # Use create_srcs_attr to create one.
-        "srcs": None,
         "deps": attr.label_list(
             providers = [[PyInfo], [_CcInfo]],
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,
         ),
+        # Required attribute, but details vary by rule.
+        # Use create_srcs_attr to create one.
+        "srcs": None,
         # NOTE: In Google, this attribute is deprecated, and can only
         # effectively be PY3 or PY3ONLY. Externally, with Bazel, this attribute
         # has a separate story.
