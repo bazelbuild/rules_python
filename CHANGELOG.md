@@ -33,6 +33,8 @@ A brief description of the categories of changes:
   [`py_console_script_binary`](./docs/py_console_script_binary.md), which
   allows adding custom dependencies to a package's entry points and customizing
   the `py_binary` rule used to build it.
+* New Python versions available: `3.8.17`, `3.9.18`, `3.10.13`, `3.11.5` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20230826.
 
 ### Removed
 
