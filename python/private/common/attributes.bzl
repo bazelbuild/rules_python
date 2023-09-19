@@ -13,18 +13,20 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
-load(":common/cc/cc_info.bzl", _CcInfo = "CcInfo")
-load(":common/python/common.bzl", "union_attrs")
-load(":common/python/providers.bzl", "PyInfo")
+load(":common.bzl", "union_attrs")
+load(":providers.bzl", "PyInfo")
+load(":py_internal.bzl", "py_internal")
 load(
-    ":common/python/semantics.bzl",
+    ":semantics.bzl",
     "DEPS_ATTR_ALLOW_RULES",
     "PLATFORMS_LOCATION",
     "SRCS_ATTR_ALLOW_FILES",
     "TOOLS_REPO",
 )
 
-PackageSpecificationInfo = _builtins.toplevel.PackageSpecificationInfo
+# TODO: Load CcInfo from rules_cc
+_CcInfo = CcInfo
+_PackageSpecificationInfo = py_internal.PackageSpecificationInfo
 
 _STAMP_VALUES = [-1, 0, 1]
 
@@ -89,7 +91,7 @@ NATIVE_RULES_ALLOWLIST_ATTRS = {
             fragment = "py",
             name = "native_rules_allowlist",
         ),
-        providers = [PackageSpecificationInfo],
+        providers = [_PackageSpecificationInfo],
     ),
 }
 

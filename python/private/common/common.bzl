@@ -13,23 +13,21 @@
 # limitations under the License.
 """Various things common to Bazel and Google rule implementations."""
 
-load(":common/cc/cc_helper.bzl", "cc_helper")
+load(":cc_helper.bzl", "cc_helper")
+load(":providers.bzl", "PyInfo")
+load(":py_internal.bzl", "py_internal")
 load(
-    ":common/python/providers.bzl",
-    "PyInfo",
-)
-load(
-    ":common/python/semantics.bzl",
+    ":semantics.bzl",
     "NATIVE_RULES_MIGRATION_FIX_CMD",
     "NATIVE_RULES_MIGRATION_HELP_URL",
     "TOOLS_REPO",
 )
 
-_testing = _builtins.toplevel.testing
-_platform_common = _builtins.toplevel.platform_common
-_coverage_common = _builtins.toplevel.coverage_common
-_py_builtins = _builtins.internal.py_builtins
-PackageSpecificationInfo = _builtins.toplevel.PackageSpecificationInfo
+_testing = testing
+_platform_common = platform_common
+_coverage_common = coverage_common
+_py_builtins = py_internal
+PackageSpecificationInfo = py_internal.PackageSpecificationInfo
 
 TOOLCHAIN_TYPE = "@" + TOOLS_REPO + "//tools/python:toolchain_type"
 

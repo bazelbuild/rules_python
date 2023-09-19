@@ -13,13 +13,18 @@
 # limitations under the License.
 """Common functions that are specific to Bazel rule implementation"""
 
-load(":common/cc/cc_common.bzl", _cc_common = "cc_common")
-load(":common/cc/cc_info.bzl", _CcInfo = "CcInfo")
-load(":common/paths.bzl", "paths")
-load(":common/python/common.bzl", "is_bool")
-load(":common/python/providers.bzl", "PyCcLinkParamsProvider")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load(":common.bzl", "is_bool")
+load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":py_internal.bzl", "py_internal")
 
-_py_builtins = _builtins.internal.py_builtins
+# TODO: Load cc_common from rules_cc
+_cc_common = cc_common
+
+# TODO: Load CcInfo from rules_cc
+_CcInfo = CcInfo
+
+_py_builtins = py_internal
 
 def collect_cc_info(ctx, extra_deps = []):
     """Collect C++ information from dependencies for Bazel.

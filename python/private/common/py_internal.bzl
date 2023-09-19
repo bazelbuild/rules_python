@@ -1,4 +1,4 @@
-# Copyright 2022 The Bazel Authors. All rights reserved.
+# Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Macro to wrap the py_runtime rule."""
+"""PYTHON RULE IMPLEMENTATION ONLY: Do not use outside of the rule implementations and their tests.
 
-load(":py_runtime_rule.bzl", py_runtime_rule = "py_runtime")
+Re-exports the restricted-use py_internal helper under its original name.
 
-# NOTE: The function name is purposefully selected to match the underlying
-# rule name so that e.g. 'generator_function' shows as the same name so
-# that it is less confusing to users.
-def py_runtime(**kwargs):
-    py_runtime_rule(**kwargs)
+These may change at any time and are closely coupled to the rule implementation.
+"""
+
+# buildifier: disable=bzl-visibility
+load("//tools/build_defs/python/private:py_internal_renamed.bzl", "py_internal_renamed")
+
+py_internal = py_internal_renamed

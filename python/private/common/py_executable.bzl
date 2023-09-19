@@ -13,10 +13,8 @@
 # limitations under the License.
 """Common functionality between test/binary executables."""
 
-load(":common/cc/cc_common.bzl", _cc_common = "cc_common")
-load(":common/cc/cc_helper.bzl", "cc_helper")
 load(
-    ":common/python/attributes.bzl",
+    ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
     "COMMON_ATTRS",
     "PY_SRCS_ATTRS",
@@ -24,8 +22,9 @@ load(
     "create_srcs_attr",
     "create_srcs_version_attr",
 )
+load(":cc_helper.bzl", "cc_helper")
 load(
-    ":common/python/common.bzl",
+    ":common.bzl",
     "TOOLCHAIN_TYPE",
     "check_native_allowed",
     "collect_imports",
@@ -38,19 +37,23 @@ load(
     "union_attrs",
 )
 load(
-    ":common/python/providers.bzl",
+    ":providers.bzl",
     "PyCcLinkParamsProvider",
     "PyRuntimeInfo",
 )
+load(":py_internal.bzl", "py_internal")
 load(
-    ":common/python/semantics.bzl",
+    ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
 )
 
-_py_builtins = _builtins.internal.py_builtins
+# TODO: Load cc_common from rules_cc
+_cc_common = cc_common
+
+_py_builtins = py_internal
 
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
@@ -677,9 +680,8 @@ def is_stamping_enabled(ctx, semantics):
 def _is_tool_config(ctx):
     # NOTE: The is_tool_configuration() function is only usable by builtins.
     # See https://github.com/bazelbuild/bazel/issues/14444 for the FR for
-    # a more public API. Outside of builtins, ctx.bin_dir.path can be
-    # checked for `/host/` or `-exec-`.
-    return ctx.configuration.is_tool_configuration()
+    # a more public API. Until that's available, py_internal to the rescue.
+    return py_internal.is_tool_configuration(ctx)
 
 def _create_providers(
         *,

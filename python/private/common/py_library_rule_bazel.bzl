@@ -13,23 +13,11 @@
 # limitations under the License.
 """Implementation of py_library for Bazel."""
 
+load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
+load(":common.bzl", "create_library_semantics_struct", "union_attrs")
+load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
 load(
-    ":common/python/attributes_bazel.bzl",
-    "IMPORTS_ATTRS",
-)
-load(
-    ":common/python/common.bzl",
-    "create_library_semantics_struct",
-    "union_attrs",
-)
-load(
-    ":common/python/common_bazel.bzl",
-    "collect_cc_info",
-    "get_imports",
-    "maybe_precompile",
-)
-load(
-    ":common/python/py_library.bzl",
+    ":py_library.bzl",
     "LIBRARY_ATTRS",
     "create_py_library_rule",
     bazel_py_library_impl = "py_library_impl",

@@ -13,12 +13,13 @@
 # limitations under the License.
 """Implementation of py_runtime rule."""
 
-load(":common/paths.bzl", "paths")
-load(":common/python/attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
-load(":common/python/common.bzl", "check_native_allowed")
-load(":common/python/providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", _PyRuntimeInfo = "PyRuntimeInfo")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load(":attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
+load(":common.bzl", "check_native_allowed")
+load(":providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", _PyRuntimeInfo = "PyRuntimeInfo")
+load(":py_internal.bzl", "py_internal")
 
-_py_builtins = _builtins.internal.py_builtins
+_py_builtins = py_internal
 
 def _py_runtime_impl(ctx):
     check_native_allowed(ctx)

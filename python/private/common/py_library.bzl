@@ -14,7 +14,7 @@
 """Implementation of py_library rule."""
 
 load(
-    ":common/python/attributes.bzl",
+    ":attributes.bzl",
     "COMMON_ATTRS",
     "PY_SRCS_ATTRS",
     "SRCS_VERSION_ALL_VALUES",
@@ -22,7 +22,7 @@ load(
     "create_srcs_version_attr",
 )
 load(
-    ":common/python/common.bzl",
+    ":common.bzl",
     "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
@@ -32,9 +32,10 @@ load(
     "filter_to_py_srcs",
     "union_attrs",
 )
-load(":common/python/providers.bzl", "PyCcLinkParamsProvider")
+load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":py_internal.bzl", "py_internal")
 
-_py_builtins = _builtins.internal.py_builtins
+_py_builtins = py_internal
 
 LIBRARY_ATTRS = union_attrs(
     COMMON_ATTRS,
