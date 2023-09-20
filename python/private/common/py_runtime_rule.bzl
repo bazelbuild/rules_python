@@ -13,6 +13,7 @@
 # limitations under the License.
 """Implementation of py_runtime rule."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load(":attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
 load(":common.bzl", "check_native_allowed")
@@ -128,7 +129,7 @@ py_runtime(
 ```
 """,
     fragments = ["py"],
-    attrs = NATIVE_RULES_ALLOWLIST_ATTRS | {
+    attrs = dicts.add(NATIVE_RULES_ALLOWLIST_ATTRS, {
         "bootstrap_template": attr.label(
             allow_single_file = True,
             default = DEFAULT_BOOTSTRAP_TEMPLATE,
@@ -211,5 +212,5 @@ motivation.
 Does not apply to Windows.
 """,
         ),
-    },
+    }),
 )

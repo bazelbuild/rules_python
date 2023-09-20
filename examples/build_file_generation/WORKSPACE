@@ -71,8 +71,11 @@ local_repository(
     path = "../../gazelle",
 )
 
-# Next we load the toolchain from rules_python.
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+# Next we load the setup and toolchain from rules_python.
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+
+# Perform general setup
+py_repositories()
 
 # We now register a hermetic Python interpreter rather than relying on a system-installed interpreter.
 # This toolchain will allow bazel to download a specific python version, and use that version

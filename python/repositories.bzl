@@ -21,6 +21,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
+load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load(
     "//python/private:toolchains_repo.bzl",
     "multi_toolchain_aliases",
@@ -46,6 +47,10 @@ def py_repositories():
     This function should be loaded and called in the user's WORKSPACE.
     With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
     """
+    maybe(
+        internal_config_repo,
+        name = "rules_python_internal",
+    )
     http_archive(
         name = "bazel_skylib",
         sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",

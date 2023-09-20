@@ -27,7 +27,7 @@ _testing = testing
 _platform_common = platform_common
 _coverage_common = coverage_common
 _py_builtins = py_internal
-PackageSpecificationInfo = py_internal.PackageSpecificationInfo
+PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
 TOOLCHAIN_TYPE = "@" + TOOLS_REPO + "//tools/python:toolchain_type"
 

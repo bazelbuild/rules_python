@@ -13,6 +13,7 @@
 # limitations under the License.
 """Implementation for Bazel Python executable."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
 load(
@@ -62,10 +63,13 @@ the `srcs` of Python targets as required.
             executable = True,
         ),
         "_py_interpreter": attr.label(
+            # The configuration_field args are validated when called;
+            # we use the precense of py_internal to indicate this Bazel
+            # build has that fragment and name.
             default = configuration_field(
                 fragment = "bazel_py",
                 name = "python_top",
-            ),
+            ) if py_internal else None,
         ),
         # TODO: This appears to be vestigial. It's only added because
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
@@ -88,7 +92,7 @@ the `srcs` of Python targets as required.
 
 def create_executable_rule(*, attrs, **kwargs):
     return create_base_executable_rule(
-        attrs = BAZEL_EXECUTABLE_ATTRS | attrs,
+        attrs = dicts.add(BAZEL_EXECUTABLE_ATTRS, attrs),
         fragments = ["py", "bazel_py"],
         **kwargs
     )

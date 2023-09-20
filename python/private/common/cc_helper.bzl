@@ -20,4 +20,4 @@ These may change at any time and are closely coupled to the rule implementation.
 
 load(":py_internal.bzl", "py_internal")
 
-cc_helper = py_internal.cc_helper
+cc_helper = getattr(py_internal, "cc_helper", None)

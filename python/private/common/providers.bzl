@@ -13,6 +13,7 @@
 # limitations under the License.
 """Providers for Python rules."""
 
+load("@rules_python_internal//:rules_python_config.bzl", "config")
 load(":semantics.bzl", "TOOLS_REPO")
 
 # TODO: load CcInfo from rules_cc
@@ -22,6 +23,18 @@ DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
 DEFAULT_BOOTSTRAP_TEMPLATE = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt"
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
+
+# Helper to make the provider definitions not crash under Bazel 5.4:
+# Bazel 5.4 doesn't support the `init` arg of `provider()`, so we have to
+# not pass that when using Bazel 5.4. But, not passing the `init` arg
+# changes the return value from a two-tuple to a single value, which then
+# breaks Bazel 6+ code.
+# This isn't actually used under Bazel 5.4, so just stub out the values
+# to get past the loading phase.
+def _define_provider(doc, fields, **kwargs):
+    if not config.enable_pystar:
+        return provider("Stub, not used", fields = []), None
+    return provider(doc = doc, fields = fields, **kwargs)
 
 def _PyRuntimeInfo_init(
         *,
@@ -82,7 +95,7 @@ def _PyRuntimeInfo_init(
 
 # TODO(#15897): Rename this to PyRuntimeInfo when we're ready to replace the Java
 # implemented provider with the Starlark one.
-PyRuntimeInfo, _unused_raw_py_runtime_info_ctor = provider(
+PyRuntimeInfo, _unused_raw_py_runtime_info_ctor = _define_provider(
     doc = """Contains information about a Python runtime, as returned by the `py_runtime`
 rule.
 
@@ -169,8 +182,8 @@ def _PyInfo_init(
         "uses_shared_libraries": uses_shared_libraries,
     }
 
-PyInfo, _unused_raw_py_info_ctor = provider(
-    "Encapsulates information provided by the Python rules.",
+PyInfo, _unused_raw_py_info_ctor = _define_provider(
+    doc = "Encapsulates information provided by the Python rules.",
     init = _PyInfo_init,
     fields = {
         "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
@@ -200,7 +213,7 @@ def _PyCcLinkParamsProvider_init(cc_info):
     }
 
 # buildifier: disable=name-conventions
-PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = provider(
+PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = _define_provider(
     doc = ("Python-wrapper to forward CcInfo.linking_context. This is to " +
            "allow Python targets to propagate C++ linking information, but " +
            "without the Python target appearing to be a valid C++ rule dependency"),

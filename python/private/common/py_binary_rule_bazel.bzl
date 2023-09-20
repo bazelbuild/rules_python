@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rule implementation of py_binary for Bazel."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
 load(
     ":py_executable_bazel.bzl",
@@ -43,6 +44,6 @@ def _py_binary_impl(ctx):
 
 py_binary = create_executable_rule(
     implementation = _py_binary_impl,
-    attrs = AGNOSTIC_BINARY_ATTRS | _PY_TEST_ATTRS,
+    attrs = dicts.add(AGNOSTIC_BINARY_ATTRS, _PY_TEST_ATTRS),
     executable = True,
 )

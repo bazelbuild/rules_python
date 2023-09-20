@@ -13,6 +13,10 @@
 # limitations under the License.
 """PYTHON RULE IMPLEMENTATION ONLY: Do not use outside of the rule implementations and their tests.
 
+NOTE: This file is only loaded by @rules_python_internal//:py_internal.bzl. This
+is because the `py_internal` global symbol is only present in Bazel 7+, so
+a repo rule has to conditionally load this depending on the Bazel version.
+
 Re-exports the restricted-use py_internal helper under another name. This is
 necessary because `py_internal = py_internal` results in an error (trying
 to bind a local symbol to itself before its defined).
@@ -22,4 +26,5 @@ the internal helpers only rules_python is allowed to use.
 
 These may change at any time and are closely coupled to the rule implementation.
 """
+
 py_internal_renamed = py_internal

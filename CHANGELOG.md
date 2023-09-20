@@ -32,6 +32,11 @@ A brief description of the categories of changes:
 * (multi-version) The `distribs` attribute is no longer propagated. This
   attribute has been long deprecated by Bazel and shouldn't be used.
 
+* Calling `//python:repositories.bzl#py_repositories()` is required. It has
+  always been documented as necessary, but it was possible to omit it in certain
+  cases. An error about `@rules_python_internal` means the `py_repositories()`
+  call is missing in `WORKSPACE`.
+
 
 ### Added
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Rule implementation of py_test for Bazel."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
 load(
@@ -50,6 +51,6 @@ def _py_test_impl(ctx):
 
 py_test = create_executable_rule(
     implementation = _py_test_impl,
-    attrs = AGNOSTIC_TEST_ATTRS | _BAZEL_PY_TEST_ATTRS,
+    attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
     test = True,
 )
