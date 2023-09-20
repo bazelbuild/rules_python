@@ -13,25 +13,26 @@
 # limitations under the License.
 """Implementation for Bazel Python executable."""
 
-load(":common/paths.bzl", "paths")
-load(":common/python/attributes_bazel.bzl", "IMPORTS_ATTRS")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
 load(
-    ":common/python/common.bzl",
+    ":common.bzl",
     "create_binary_semantics_struct",
     "create_cc_details_struct",
     "create_executable_result_struct",
     "union_attrs",
 )
-load(":common/python/common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
-load(":common/python/providers.bzl", "DEFAULT_STUB_SHEBANG")
+load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
+load(":providers.bzl", "DEFAULT_STUB_SHEBANG")
 load(
-    ":common/python/py_executable.bzl",
+    ":py_executable.bzl",
     "create_base_executable_rule",
     "py_executable_base_impl",
 )
-load(":common/python/semantics.bzl", "TOOLS_REPO")
+load(":py_internal.bzl", "py_internal")
+load(":semantics.bzl", "TOOLS_REPO")
 
-_py_builtins = _builtins.internal.py_builtins
+_py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"
 _ZIP_RUNFILES_DIRECTORY_NAME = "runfiles"
 

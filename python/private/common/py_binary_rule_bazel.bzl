@@ -13,13 +13,13 @@
 # limitations under the License.
 """Rule implementation of py_binary for Bazel."""
 
-load(":common/python/attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
+load(":attributes.bzl", "AGNOSTIC_BINARY_ATTRS")
 load(
-    ":common/python/py_executable_bazel.bzl",
+    ":py_executable_bazel.bzl",
     "create_executable_rule",
     "py_executable_bazel_impl",
 )
-load(":common/python/semantics.bzl", "TOOLS_REPO")
+load(":semantics.bzl", "TOOLS_REPO")
 
 _PY_TEST_ATTRS = {
     "_collect_cc_coverage": attr.label(

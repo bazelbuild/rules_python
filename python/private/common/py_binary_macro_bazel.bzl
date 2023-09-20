@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of macro-half of py_test rule."""
+"""Implementation of macro-half of py_binary rule."""
 
-load(":common/python/common_bazel.bzl", "convert_legacy_create_init_to_int")
-load(":common/python/py_test_bazel.bzl", py_test_rule = "py_test")
+load(":common_bazel.bzl", "convert_legacy_create_init_to_int")
+load(":py_binary_rule_bazel.bzl", py_binary_rule = "py_binary")
 
-def py_test(**kwargs):
+def py_binary(**kwargs):
     convert_legacy_create_init_to_int(kwargs)
-    py_test_rule(**kwargs)
+    py_binary_rule(**kwargs)

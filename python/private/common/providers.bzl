@@ -13,14 +13,13 @@
 # limitations under the License.
 """Providers for Python rules."""
 
-load(":common/python/semantics.bzl", "TOOLS_REPO")
+load(":semantics.bzl", "TOOLS_REPO")
 
-_CcInfo = _builtins.toplevel.CcInfo
+# TODO: load CcInfo from rules_cc
+_CcInfo = CcInfo
 
-# NOTE: This is copied to PyRuntimeInfo.java
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
-# NOTE: This is copied to PyRuntimeInfo.java
 DEFAULT_BOOTSTRAP_TEMPLATE = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt"
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
 
