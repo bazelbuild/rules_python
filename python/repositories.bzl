@@ -86,13 +86,10 @@ def is_standalone_interpreter(rctx, python_interpreter_path):
     ]).return_code == 0
 
 def _get_auth(rctx, urls):
-    """
-    Convenience utility for automatically retrieving netrc-based authentication parameters for
-    repository download rules used in python_repository.
+    """Utility for retrieving netrc-based authentication parameters for repository download rules used in python_repository.
 
     The implementation below is copied directly from Bazel's implementation of `http_archive`.
-    Accordingly, the return value of this function should be used identically as the `auth`
-    parameter of `http_archive`.
+    Accordingly, the return value of this function should be used identically as the `auth` parameter of `http_archive`.
     Reference: https://github.com/bazelbuild/bazel/blob/6.3.2/tools/build_defs/repo/http.bzl#L109
 
     Args:
