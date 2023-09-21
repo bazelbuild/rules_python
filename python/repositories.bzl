@@ -85,6 +85,31 @@ def is_standalone_interpreter(rctx, python_interpreter_path):
         ),
     ]).return_code == 0
 
+def _get_auth(rctx, urls):
+    """
+    Convenience utility for automatically retrieving netrc-based authentication parameters for
+    repository download rules used in python_repository.
+
+    The implementation below is copied directly from Bazel's implementation of `http_archive`.
+    Accordingly, the return value of this function should be used identically as the `auth`
+    parameter of `http_archive`.
+    Reference: https://github.com/bazelbuild/bazel/blob/6.3.2/tools/build_defs/repo/http.bzl#L109
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object.
+        urls: A list of URLs from which assets will be downloaded.
+
+    Returns:
+        dict: A map of authentication parameters by URL.
+    """
+    if rctx.attr.netrc:
+        netrc = read_netrc(rctx, rctx.attr.netrc)
+    elif "NETRC" in rctx.os.environ:
+        netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
+    else:
+        netrc = read_user_netrc(rctx)
+    return use_netrc(netrc, urls, rctx.attr.auth_patterns)
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
@@ -96,14 +121,7 @@ def _python_repository_impl(rctx):
     python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
-
-    if rctx.attr.netrc:
-        netrc = read_netrc(rctx, rctx.attr.netrc)
-    elif "NETRC" in rctx.os.environ:
-        netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
-    else:
-        netrc = read_user_netrc(rctx)
-    auth = use_netrc(netrc, urls, rctx.attr.auth_patterns)
+    auth = _get_auth(rctx, urls)
 
     if release_filename.endswith(".zst"):
         rctx.download(
@@ -359,11 +377,13 @@ py_cc_toolchain(
     rctx.file("BUILD.bazel", build_content)
 
     attrs = {
+        "auth_patterns": rctx.attr.auth_patterns,
         "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
+        "netrc": rctx.attr.netrc,
         "patches": rctx.attr.patches,
         "platform": platform,
         "python_version": python_version,
