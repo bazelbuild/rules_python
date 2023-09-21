@@ -35,6 +35,8 @@ A brief description of the categories of changes:
   the `py_binary` rule used to build it.
 * New Python versions available: `3.8.17`, `3.9.18`, `3.10.13`, `3.11.5` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20230826.
+* (gazelle) New `# gazelle:python_generation_mode file` directive to support
+  generating one `py_library` per file.
 
 ### Removed
 

@@ -153,12 +153,17 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				if entry.IsDir() {
 					// If we are visiting a directory, we determine if we should
 					// halt digging the tree based on a few criterias:
-					//   1. The directory has a BUILD or BUILD.bazel files. Then
+					//   1. We are using per-file generation.
+					//   2. The directory has a BUILD or BUILD.bazel files. Then
 					//       it doesn't matter at all what it has since it's a
 					//       separate Bazel package.
-					//   2. (only for fine-grained generation) The directory has
-					// 		 an __init__.py, __main__.py or __test__.py, meaning
-					// 		 a BUILD file will be generated.
+					//   3. (only for package generation) The directory has an
+					//       __init__.py, __main__.py or __test__.py, meaning a
+					//       BUILD file will be generated.
+					if cfg.PerFileGeneration() {
+						return fs.SkipDir
+					}
+
 					if isBazelPackage(path) {
 						boundaryPackages[path] = struct{}{}
 						return nil
@@ -213,14 +218,11 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	collisionErrors := singlylinkedlist.New()
 
-	var pyLibrary *rule.Rule
-	if !pyLibraryFilenames.Empty() {
-		deps, err := parser.parse(pyLibraryFilenames)
+	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
+		deps, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
-
-		pyLibraryTargetName := cfg.RenderLibraryName(packageName)
 
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
@@ -239,15 +241,33 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		pyLibrary = newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
+		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
-			addSrcs(pyLibraryFilenames).
+			addSrcs(srcs).
 			addModuleDependencies(deps).
 			generateImportsAttribute().
 			build()
 
 		result.Gen = append(result.Gen, pyLibrary)
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+	}
+	if cfg.PerFileGeneration() {
+		pyLibraryFilenames.Each(func(index int, filename interface{}) {
+			if filename == pyLibraryEntrypointFilename {
+				stat, err := os.Stat(filepath.Join(args.Dir, filename.(string)))
+				if err != nil {
+					log.Fatalf("ERROR: %v\n", err)
+				}
+				if stat.Size() == 0 {
+					return // ignore empty __init__.py
+				}
+			}
+			srcs := treeset.NewWith(godsutils.StringComparator, filename)
+			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			appendPyLibrary(srcs, pyLibraryTargetName)
+		})
+	} else if !pyLibraryFilenames.Empty() {
+		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
 	if hasPyBinary {
