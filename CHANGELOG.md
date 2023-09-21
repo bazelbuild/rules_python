@@ -21,6 +21,12 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* Python version patch level bumps:
+  * 3.8.15  -> 3.8.17
+  * 3.9.17  -> 3.9.18
+  * 3.10.12 -> 3.10.13
+  * 3.11.4  -> 3.11.5
+
 * (deps) Upgrade rules_go 0.39.1 -> 0.41.0; this is so gazelle integration works with upcoming Bazel versions
 
 * (multi-version) The `distribs` attribute is no longer propagated. This
