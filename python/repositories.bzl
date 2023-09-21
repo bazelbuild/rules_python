@@ -18,7 +18,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe", "read_netrc", "read_user_netrc", "use_netrc")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
 load(
@@ -85,6 +85,28 @@ def is_standalone_interpreter(rctx, python_interpreter_path):
         ),
     ]).return_code == 0
 
+def _get_auth(rctx, urls):
+    """Utility for retrieving netrc-based authentication parameters for repository download rules used in python_repository.
+
+    The implementation below is copied directly from Bazel's implementation of `http_archive`.
+    Accordingly, the return value of this function should be used identically as the `auth` parameter of `http_archive`.
+    Reference: https://github.com/bazelbuild/bazel/blob/6.3.2/tools/build_defs/repo/http.bzl#L109
+
+    Args:
+        rctx (repository_ctx): The repository rule's context object.
+        urls: A list of URLs from which assets will be downloaded.
+
+    Returns:
+        dict: A map of authentication parameters by URL.
+    """
+    if rctx.attr.netrc:
+        netrc = read_netrc(rctx, rctx.attr.netrc)
+    elif "NETRC" in rctx.os.environ:
+        netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
+    else:
+        netrc = read_user_netrc(rctx)
+    return use_netrc(netrc, urls, rctx.attr.auth_patterns)
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
@@ -96,12 +118,14 @@ def _python_repository_impl(rctx):
     python_short_version = python_version.rpartition(".")[0]
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
+    auth = _get_auth(rctx, urls)
 
     if release_filename.endswith(".zst"):
         rctx.download(
             url = urls,
             sha256 = rctx.attr.sha256,
             output = release_filename,
+            auth = auth,
         )
         unzstd = rctx.which("unzstd")
         if not unzstd:
@@ -109,6 +133,7 @@ def _python_repository_impl(rctx):
             rctx.download_and_extract(
                 url = url,
                 sha256 = rctx.attr.zstd_sha256,
+                auth = auth,
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
 
@@ -146,6 +171,7 @@ def _python_repository_impl(rctx):
             url = urls,
             sha256 = rctx.attr.sha256,
             stripPrefix = rctx.attr.strip_prefix,
+            auth = auth,
         )
 
     patches = rctx.attr.patches
@@ -348,11 +374,13 @@ py_cc_toolchain(
     rctx.file("BUILD.bazel", build_content)
 
     attrs = {
+        "auth_patterns": rctx.attr.auth_patterns,
         "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
+        "netrc": rctx.attr.netrc,
         "patches": rctx.attr.patches,
         "platform": platform,
         "python_version": python_version,
@@ -372,6 +400,9 @@ python_repository = repository_rule(
     _python_repository_impl,
     doc = "Fetches the external tools needed for the Python toolchain.",
     attrs = {
+        "auth_patterns": attr.string_dict(
+            doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
+        ),
         "coverage_tool": attr.string(
             # Mirrors the definition at
             # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
@@ -411,6 +442,9 @@ For more information see the official bazel docs
             default = False,
             doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
             mandatory = False,
+        ),
+        "netrc": attr.string(
+            doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
         ),
         "patches": attr.label_list(
             doc = "A list of patch files to apply to the unpacked interpreter",
