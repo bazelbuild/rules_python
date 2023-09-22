@@ -58,6 +58,8 @@ A brief description of the categories of changes:
   dependencies improving initial build times involving external dependency
   fetching.
 
+* (gazelle) Improve runfiles lookup hermeticity.
+
 ## [0.25.0] - 2023-08-22
 
 ### Changed

@@ -38,13 +38,20 @@ var (
 )
 
 func startParserProcess(ctx context.Context) {
-	parseScriptRunfile, err := runfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
+	rfiles, err := runfiles.New()
+	if err != nil {
+		log.Printf("failed to create a runfiles object: %v\n", err)
+		os.Exit(1)
+	}
+
+	parseScriptRunfile, err := rfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)
 	}
 
 	cmd := exec.CommandContext(ctx, parseScriptRunfile)
+	cmd.Env = rfiles.Env()
 
 	cmd.Stderr = os.Stderr
 
