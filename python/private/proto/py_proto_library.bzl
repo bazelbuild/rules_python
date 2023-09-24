@@ -107,6 +107,9 @@ def _py_proto_aspect_impl(target, ctx):
     return [
         _PyProtoInfo(
             imports = depset(
+                # Adding to PYTHONPATH so the generated modules can be imported.
+                # This is necessary when there is strip_import_prefix, the Python
+                # modules are generated under _virtual_imports.
                 [proto_root],
                 transitive = [dep[PyInfo].imports for dep in api_deps],
             ),

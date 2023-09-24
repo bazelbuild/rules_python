@@ -10,5 +10,6 @@ py_proto_library(
 proto_library(
     name = "pricetag_proto",
     srcs = ["pricetag.proto"],
+    # https://bazel.build/reference/be/protocol-buffer#proto_library.strip_import_prefix
     strip_import_prefix = "/example.com",
 )
