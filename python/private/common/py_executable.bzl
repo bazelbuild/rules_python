@@ -47,6 +47,7 @@ load(
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
+    "PLATFORMS_LOCATION",
     "PY_RUNTIME_ATTR_NAME",
 )
 
@@ -91,6 +92,17 @@ filename in `srcs`, `main` must be specified.
     allow_none = True,
 )
 
+def is_target_platform_windows(ctx):
+    """Determine if the target platform is a windows platform.
+
+    Args:
+        ctx (ctx): The rule's context object
+
+    Returns:
+        bool: True if the target platform is Windows.
+    """
+    return ctx.target_platform_has_constraint(Label("{}/os:windows".format(PLATFORMS_LOCATION)))
+
 def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = []):
     """Base rule implementation for a Python executable.
 
@@ -114,7 +126,8 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
     output_sources = semantics.maybe_precompile(ctx, direct_sources)
     imports = collect_imports(ctx, semantics)
-    executable, files_to_build = _compute_outputs(ctx, output_sources)
+    is_windows = is_target_platform_windows(ctx)
+    executable, files_to_build = _compute_outputs(ctx, output_sources, is_windows)
 
     runtime_details = _get_runtime_details(ctx, semantics)
     if ctx.configuration.coverage_enabled:
@@ -192,9 +205,8 @@ def _validate_executable(ctx):
         fail("It is not allowed to use Python 2")
     check_native_allowed(ctx)
 
-def _compute_outputs(ctx, output_sources):
-    # TODO: This should use the configuration instead of the Bazel OS.
-    if _py_builtins.get_current_os_name() == "windows":
+def _compute_outputs(ctx, output_sources, is_windows):
+    if is_windows:
         executable = ctx.actions.declare_file(ctx.label.name + ".exe")
     else:
         executable = ctx.actions.declare_file(ctx.label.name)

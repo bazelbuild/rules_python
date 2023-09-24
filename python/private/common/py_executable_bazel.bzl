@@ -27,6 +27,7 @@ load(":providers.bzl", "DEFAULT_STUB_SHEBANG")
 load(
     ":py_executable.bzl",
     "create_base_executable_rule",
+    "is_target_platform_windows",
     "py_executable_base_impl",
 )
 load(":py_internal.bzl", "py_internal")
@@ -170,9 +171,7 @@ def _create_executable(
         runtime_details = runtime_details,
     )
 
-    # TODO: This should use the configuration instead of the Bazel OS.
-    # This is just legacy behavior.
-    is_windows = _py_builtins.get_current_os_name() == "windows"
+    is_windows = is_target_platform_windows(ctx)
 
     if is_windows:
         if not executable.extension == "exe":
