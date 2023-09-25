@@ -122,7 +122,8 @@ def compile_pip_requirements(
         loc.format(requirements_darwin) if requirements_darwin else "None",
         loc.format(requirements_windows) if requirements_windows else "None",
     ] + (_generate_loc_select(intermediate_file, loc) if intermediate_file else ["None"]) + (
-            _generate_config_select(intermediate_file) if intermediate_file else ["None"]) + [
+        _generate_config_select(intermediate_file) if intermediate_file else ["None"]
+    ) + [
         loc.format(intermediate_file_patcher) if intermediate_file_patcher else "None",
         "//%s:%s.update" % (native.package_name(), name),
     ] + (["--generate-hashes"] if generate_hashes else []) + extra_args

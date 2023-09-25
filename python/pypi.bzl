@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python/private:pypi_repo.bzl", _pypi_install="pypi_install")
+load("//python/private:pypi_repo.bzl", _pypi_install = "pypi_install")
 
 pypi_install = _pypi_install

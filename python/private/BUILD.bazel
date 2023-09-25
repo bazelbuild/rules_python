@@ -141,10 +141,10 @@ print_toolchains_checksums(name = "print_toolchains_checksums")
 py_binary(
     name = "wheel_installer",
     srcs = ["wheel_installer.py"],
+    visibility = ["//visibility:public"],
     deps = [
         "@pypi__installer//:lib",
     ],
-    visibility = ["//visibility:public"],
 )
 
 # Used for py_console_script_gen rule

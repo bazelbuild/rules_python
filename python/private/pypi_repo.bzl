@@ -36,7 +36,8 @@ def _clean_intermediate(intermediate):
     result = {}
     for package, info_per_config in intermediate.items():
         result[normalize_name(package)] = {
-            config: _clean_info(info) for config, info in info_per_config.items()
+            config: _clean_info(info)
+            for config, info in info_per_config.items()
         }
     return result
 
@@ -44,8 +45,9 @@ def _pypi_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", "\n", executable = False)
     if repository_ctx.attr.pip_installation_report:
         intermediate = _combine_intermediate_files(
-                repository_ctx,
-                repository_ctx.attr.pip_installation_report)
+            repository_ctx,
+            repository_ctx.attr.pip_installation_report,
+        )
     else:
         intermediate = {}
 
@@ -54,10 +56,10 @@ def _pypi_install_impl(repository_ctx):
         configs.extend(intermediate[package].keys())
 
     lines = ["INTERMEDIATE = {}".format(json.encode_indent(_clean_intermediate(intermediate))), ""]
-    repository_ctx.file("intermediate.bzl", "\n".join(lines), executable=False)
+    repository_ctx.file("intermediate.bzl", "\n".join(lines), executable = False)
 
     lines = ["CONFIGS = {}".format(json.encode_indent(configs)), ""]
-    repository_ctx.file("configs.bzl", "\n".join(lines), executable=False)
+    repository_ctx.file("configs.bzl", "\n".join(lines), executable = False)
 
     lines = [
         """load("@rules_python//python/private:pypi_repo.bzl",""",
@@ -72,8 +74,7 @@ def _pypi_install_impl(repository_ctx):
         """                               **kwargs)""",
         """    _generate_package_aliases(name=name, intermediate="@{}//:intermediate.bzl", **kwargs)""".format(repository_ctx.name),
     ]
-    repository_ctx.file("packages.bzl", "\n".join(lines), executable=False)
-
+    repository_ctx.file("packages.bzl", "\n".join(lines), executable = False)
 
 _pypi_install = repository_rule(
     implementation = _pypi_install_impl,
@@ -85,7 +86,6 @@ _pypi_install = repository_rule(
     },
 )
 
-
 def _combine_intermediate_files(repository_ctx, installation_reports):
     combined = {}
 
@@ -96,18 +96,17 @@ def _combine_intermediate_files(repository_ctx, installation_reports):
         for package in intermediate:
             config_settings = intermediate[package].keys()
             if len(config_settings) != 1:
-                fail("Expected 1 config setting for package %s in %s, but got %d." \
-                        % (package, intermediate_label, len(config_settings)))
+                fail("Expected 1 config setting for package %s in %s, but got %d." %
+                     (package, intermediate_label, len(config_settings)))
             config_setting = config_settings[0]
 
             info = combined.setdefault(package, {})
             if config_setting in info:
-                fail("Two intermediate files have the same config setting for package %s in %s." \
-                        % (package, intermediate_label))
+                fail("Two intermediate files have the same config setting for package %s in %s." %
+                     (package, intermediate_label))
             info[config_setting] = intermediate[package][config_setting]
 
     return combined
-
 
 def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo_name, **kwargs):
     # Only download a wheel/tarball once. We do this by tracking which SHA sums
@@ -118,6 +117,7 @@ def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo
         for config, info in configs.items():
             if info["sha256"] not in sha_indexed_infos:
                 _generate_http_file(package, info)
+
                 # TODO(phil): What do we need to track here? Can we switch to a
                 # set()?
                 sha_indexed_infos[info["sha256"]] = True
@@ -130,7 +130,6 @@ def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo
                 # here?
                 _generate_py_library(package, config, info, intermediate_repo_name, alias_repo_name)
 
-
 def _generate_http_file(package, info):
     http_file(
         name = generate_repo_name_for_download(package, info),
@@ -141,7 +140,6 @@ def _generate_http_file(package, info):
         downloaded_file_path = paths.basename(info["url"]),
     )
 
-
 def _generate_py_library(package, config, info, intermediate_repo_name, alias_repo_name):
     _wheel_library_repo(
         name = generate_repo_name_for_extracted_wheel(package, info),
@@ -151,7 +149,6 @@ def _generate_py_library(package, config, info, intermediate_repo_name, alias_re
         intermediate_package = package,
         intermediate_config = config,
     )
-
 
 def _wheel_library_repo_impl(repository_ctx):
     lines = [
@@ -167,8 +164,7 @@ def _wheel_library_repo_impl(repository_ctx):
         """    package="{}",""".format(repository_ctx.attr.intermediate_package),
         """)""",
     ]
-    repository_ctx.file("BUILD.bazel", "\n".join(lines), executable=False)
-
+    repository_ctx.file("BUILD.bazel", "\n".join(lines), executable = False)
 
 _wheel_library_repo = repository_rule(
     implementation = _wheel_library_repo_impl,
@@ -180,7 +176,6 @@ _wheel_library_repo = repository_rule(
         "intermediate_config": attr.string(),
     },
 )
-
 
 def _generate_package_aliases_impl(repository_ctx):
     bzl_intermediate = repository_ctx.read(repository_ctx.path(repository_ctx.attr.intermediate))
@@ -199,7 +194,7 @@ def _generate_package_aliases_impl(repository_ctx):
             """load("@rules_python//python/private:pypi.bzl", _generate_package_alias="generate_package_alias")""",
             """_generate_package_alias(INTERMEDIATE)""",
         ]
-        repository_ctx.file("{}/BUILD.bazel".format(package), "\n".join(lines), executable=False)
+        repository_ctx.file("{}/BUILD.bazel".format(package), "\n".join(lines), executable = False)
 
         dep_tracked_lines += [
             """bool_flag(""",
@@ -208,8 +203,7 @@ def _generate_package_aliases_impl(repository_ctx):
             """)""",
         ]
 
-    repository_ctx.file("_package_already_included/BUILD.bazel", "\n".join(dep_tracked_lines), executable=False)
-
+    repository_ctx.file("_package_already_included/BUILD.bazel", "\n".join(dep_tracked_lines), executable = False)
 
 generate_package_aliases = repository_rule(
     implementation = _generate_package_aliases_impl,

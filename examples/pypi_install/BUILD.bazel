@@ -5,8 +5,8 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "@pypi//requests",
         "@pypi//cognitojwt",
+        "@pypi//requests",
     ],
 )
 
@@ -20,13 +20,6 @@ py_test(
 compile_pip_requirements(
     name = "requirements",
     extra_args = ["--allow-unsafe"],
-    requirements_in = "requirements.in",
-    # Pass in a select-like value that lets the macro decide what to do with
-    # the file. Having these values as dictionaries allows us to do some
-    # validation before the underlying targets get instantiated.
-    requirements_txt = {
-        "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
-    },
     intermediate_file = {
         "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
@@ -37,6 +30,13 @@ compile_pip_requirements(
     # - Add patches.
     # - Override/create aliases (support needed).
     intermediate_file_patcher = "//:intermediate_file_patcher",
+    requirements_in = "requirements.in",
+    # Pass in a select-like value that lets the macro decide what to do with
+    # the file. Having these values as dictionaries allows us to do some
+    # validation before the underlying targets get instantiated.
+    requirements_txt = {
+        "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
+    },
 )
 
 py_binary(
@@ -55,10 +55,10 @@ config_setting(
 genquery(
     name = "cognitojwt_deps",
     expression = """filter(@pypi//, kind(".* rule", deps(@pypi//cognitojwt)))""",
-    scope = ["@pypi//cognitojwt"],
     opts = [
         "--notool_deps",
     ],
+    scope = ["@pypi//cognitojwt"],
 )
 
 sh_test(

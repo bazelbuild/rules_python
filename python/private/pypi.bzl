@@ -17,7 +17,6 @@ load("//python/private:wheel_library.bzl", "pycross_wheel_library")
 load("//python:defs.bzl", "py_library")
 load(":pypi_util.bzl", "generate_repo_name_for_extracted_wheel")
 
-
 _FORWARDED_ARGS = (
     ("patches", None),
     ("patch_args", None),
@@ -57,7 +56,6 @@ def _forward_arg(kwargs, intermediate, package, arg_name, default, transform):
         select_dict[config] = transform(info.get(arg_name, default))
 
     kwargs[arg_name] = select(select_dict)
-
 
 def _accumulate_transitive_deps_inner(intermediate, configs, package, already_accumulated):
     for config in configs:
