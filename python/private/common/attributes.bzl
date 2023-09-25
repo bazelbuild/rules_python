@@ -26,7 +26,7 @@ load(
 
 # TODO: Load CcInfo from rules_cc
 _CcInfo = CcInfo
-_PackageSpecificationInfo = py_internal.PackageSpecificationInfo
+_PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
 _STAMP_VALUES = [-1, 0, 1]
 
@@ -85,15 +85,28 @@ DATA_ATTRS = {
     ),
 }
 
-NATIVE_RULES_ALLOWLIST_ATTRS = {
-    "_native_rules_allowlist": attr.label(
+def _create_native_rules_allowlist_attrs():
+    if py_internal:
+        # The fragment and name are validated when configuration_field is called
         default = configuration_field(
             fragment = "py",
             name = "native_rules_allowlist",
+        )
+
+        # A None provider isn't allowed
+        providers = [_PackageSpecificationInfo]
+    else:
+        default = None
+        providers = []
+
+    return {
+        "_native_rules_allowlist": attr.label(
+            default = default,
+            providers = providers,
         ),
-        providers = [_PackageSpecificationInfo],
-    ),
-}
+    }
+
+NATIVE_RULES_ALLOWLIST_ATTRS = _create_native_rules_allowlist_attrs()
 
 # Attributes common to all rules.
 COMMON_ATTRS = union_attrs(

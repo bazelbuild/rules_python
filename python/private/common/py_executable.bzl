@@ -13,6 +13,7 @@
 # limitations under the License.
 """Common functionality between test/binary executables."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -452,7 +453,7 @@ def _write_build_data(ctx, central_uncachable_version_file, extra_write_build_da
 
     ctx.actions.run(
         executable = ctx.executable._build_data_gen,
-        env = {
+        env = dicts.add({
             # NOTE: ctx.info_file is undocumented; see
             # https://github.com/bazelbuild/bazel/issues/9363
             "INFO_FILE": ctx.info_file.path,
@@ -460,7 +461,7 @@ def _write_build_data(ctx, central_uncachable_version_file, extra_write_build_da
             "PLATFORM": cc_helper.find_cpp_toolchain(ctx).toolchain_id,
             "TARGET": str(ctx.label),
             "VERSION_FILE": version_file.path,
-        } | extra_write_build_data_env,
+        }, extra_write_build_data_env),
         inputs = depset(
             direct = direct_inputs,
         ),
@@ -808,8 +809,8 @@ def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
         fragments = fragments + ["py"]
     return rule(
         # TODO: add ability to remove attrs, i.e. for imports attr
-        attrs = EXECUTABLE_ATTRS | attrs,
-        toolchains = [TOOLCHAIN_TYPE] + cc_helper.use_cpp_toolchain(),
+        attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
+        toolchains = [TOOLCHAIN_TYPE] + (cc_helper.use_cpp_toolchain() if cc_helper else []),
         fragments = fragments,
         **kwargs
     )

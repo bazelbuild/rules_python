@@ -13,6 +13,7 @@
 # limitations under the License.
 """Implementation of py_library rule."""
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
@@ -92,7 +93,7 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
         A rule object
     """
     return rule(
-        attrs = LIBRARY_ATTRS | attrs,
+        attrs = dicts.add(LIBRARY_ATTRS, attrs),
         # TODO(b/253818097): fragments=py is only necessary so that
         # RequiredConfigFragmentsTest passes
         fragments = ["py"],
