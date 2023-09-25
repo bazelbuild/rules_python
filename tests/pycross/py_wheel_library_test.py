@@ -15,7 +15,7 @@
 import unittest
 from pathlib import Path
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 RUNFILES = runfiles.Create()
 
@@ -24,7 +24,7 @@ class TestPyWheelLibrary(unittest.TestCase):
     def setUp(self):
         self.extraction_dir = Path(
             RUNFILES.Rlocation(
-                "rules_python/third_party/rules_pycross/pycross/private/extracted_wheel_for_testing"
+                "rules_python/tests/pycross/extracted_wheel_for_testing"
             )
         )
         self.assertTrue(self.extraction_dir.exists(), self.extraction_dir)

@@ -1,4 +1,3 @@
-# Copyright 2023 Jeremy Volkman. All rights reserved.
 # Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,3 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("//python:defs.bzl", "py_test")
+load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")
+
+py_wheel_library(
+    name = "extracted_wheel_for_testing",
+    wheel = "@wheel_for_testing//file",
+)
+
+py_test(
+    name = "py_wheel_library_test",
+    srcs = [
+        "py_wheel_library_test.py",
+    ],
+    data = [
+        ":extracted_wheel_for_testing",
+    ],
+    deps = [
+        "//python/runfiles",
+    ],
+)
