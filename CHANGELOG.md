@@ -20,8 +20,23 @@ A brief description of the categories of changes:
 ## Unreleased
 
 ### Changed
+
+* Python version patch level bumps:
+  * 3.8.15  -> 3.8.17
+  * 3.9.17  -> 3.9.18
+  * 3.10.12 -> 3.10.13
+  * 3.11.4  -> 3.11.5
+
+* (deps) Upgrade rules_go 0.39.1 -> 0.41.0; this is so gazelle integration works with upcoming Bazel versions
+
 * (multi-version) The `distribs` attribute is no longer propagated. This
   attribute has been long deprecated by Bazel and shouldn't be used.
+
+* Calling `//python:repositories.bzl#py_repositories()` is required. It has
+  always been documented as necessary, but it was possible to omit it in certain
+  cases. An error about `@rules_python_internal` means the `py_repositories()`
+  call is missing in `WORKSPACE`.
+
 
 ### Added
 
@@ -29,6 +44,13 @@ A brief description of the categories of changes:
   [`py_console_script_binary`](./docs/py_console_script_binary.md), which
   allows adding custom dependencies to a package's entry points and customizing
   the `py_binary` rule used to build it.
+* New Python versions available: `3.8.17`, `3.9.18`, `3.10.13`, `3.11.5` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20230826.
+* (gazelle) New `# gazelle:python_generation_mode file` directive to support
+  generating one `py_library` per file.
+
+* (python_repository) Support `netrc` and `auth_patterns` attributes to enable
+  authentication against private HTTP hosts serving Python toolchain binaries.
 
 ### Removed
 
@@ -104,5 +126,3 @@ A brief description of the categories of changes:
 * Expose Python C headers through the toolchain.
 
 [0.24.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.24.0
-
-

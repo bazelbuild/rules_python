@@ -9,9 +9,11 @@
 "Python toolchain module extension for internal rule use"
 
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
+load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 
 # buildifier: disable=unused-variable
 def _internal_deps_impl(module_ctx):
+    internal_config_repo(name = "rules_python_internal")
     pip_install_dependencies()
 
 internal_deps = module_extension(

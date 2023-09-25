@@ -15,6 +15,7 @@ internal_deps = use_extension("@rules_python//python/extensions/private:internal
 internal_deps.install()
 use_repo(
     internal_deps,
+    "rules_python_internal",
     # START: maintained by 'bazel run //tools/private:update_pip_deps'
     "pypi__build",
     "pypi__click",
