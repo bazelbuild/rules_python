@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO(philsc): Remove the buildifier warning suppression once we migrate
+# rules_pycross code into the main source tree.
+
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
-load("//python/private:wheel_library.bzl", "pycross_wheel_library")
+load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")  # buildifier: disable=bzl-visibility
 load("//python:defs.bzl", "py_library")
 load(":pypi_util.bzl", "generate_repo_name_for_extracted_wheel")
 
@@ -98,7 +101,7 @@ def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediat
     # the transitive closure of underlying libraries. Need to find a good
     # example of this though. torch, dvc[gs]==2.43.1, apache-airflow all
     # require sdist support.
-    pycross_wheel_library(
+    py_wheel_library(
         name = name,
         wheel = "@{}//file".format(wheel_repo_name),
         enable_implicit_namespace_pkgs = True,
