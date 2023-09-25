@@ -14,6 +14,7 @@
 
 """Public API for for building wheels."""
 
+load("//python:py_binary.bzl", "py_binary")
 load("//python/private:py_package.bzl", "py_package_lib")
 load("//python/private:py_wheel.bzl", _PyWheelInfo = "PyWheelInfo", _py_wheel = "py_wheel")
 load("//python/private:util.bzl", "copy_propagating_kwargs")
@@ -167,7 +168,7 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
 
         # TODO: use py_binary from //python:defs.bzl after our stardoc setup is less brittle
         # buildifier: disable=native-py
-        native.py_binary(
+        py_binary(
             name = "{}.publish".format(name),
             srcs = [twine_main],
             args = twine_args,

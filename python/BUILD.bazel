@@ -71,6 +71,18 @@ bzl_library(
 )
 
 bzl_library(
+    name = "packaging_bzl",
+    srcs = ["packaging.bzl"],
+    deps = [
+        ":py_binary_bzl",
+        "//python/private:py_package.bzl",
+        "//python/private:py_wheel_bzl",
+        "//python/private:stamp_bzl",
+        "//python/private:util_bzl",
+    ],
+)
+
+bzl_library(
     name = "proto_bzl",
     srcs = [
         "proto.bzl",

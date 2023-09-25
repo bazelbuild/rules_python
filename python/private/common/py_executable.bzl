@@ -49,12 +49,19 @@ load(
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
+    "TOOLS_REPO",
 )
 
 # TODO: Load cc_common from rules_cc
 _cc_common = cc_common
 
 _py_builtins = py_internal
+
+# Bazel 5.4 doesn't have config_common.toolchain_type
+_CC_TOOLCHAINS = [config_common.toolchain_type(
+    "@" + TOOLS_REPO + "//tools/cpp:toolchain_type",
+    mandatory = False,
+)] if hasattr(config_common, "toolchain_type") else []
 
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
@@ -810,7 +817,7 @@ def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
     return rule(
         # TODO: add ability to remove attrs, i.e. for imports attr
         attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
-        toolchains = [TOOLCHAIN_TYPE] + (cc_helper.use_cpp_toolchain() if cc_helper else []),
+        toolchains = [TOOLCHAIN_TYPE] + _CC_TOOLCHAINS,
         fragments = fragments,
         **kwargs
     )
