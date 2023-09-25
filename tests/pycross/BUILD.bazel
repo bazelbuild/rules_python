@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("//python:defs.bzl", "py_test")
-load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")
+load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")  # buildifier: disable=bzl-visibility
 
 py_wheel_library(
     name = "extracted_wheel_for_testing",
