@@ -102,6 +102,7 @@ def main(args: Any) -> None:
     patch_dir = args.patch_dir or "."
     for patch in (args.patch or []):
         with patch.open("r") as stdin:
+            # TODO(philsc): Only print stdout/stderr on failure.
             subprocess.run(patch_args, stdin=stdin, check=True, cwd=args.directory / patch_dir)
 
 
