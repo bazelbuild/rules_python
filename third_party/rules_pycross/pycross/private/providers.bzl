@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pycross providers."""
+"""Python providers."""
 
-PycrossWheelInfo = provider(
+PyWheelInfo = provider(
     doc = "Information about a Python wheel.",
     fields = {
         "name_file": "File: A file containing the canonical name of the wheel.",
@@ -23,7 +23,7 @@ PycrossWheelInfo = provider(
     },
 )
 
-PycrossTargetEnvironmentInfo = provider(
+PyTargetEnvironmentInfo = provider(
     doc = "A target environment description.",
     fields = {
         "file": "The JSON file containing target environment information.",

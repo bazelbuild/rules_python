@@ -26,7 +26,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bazelbuild/rules_go/go/tools/bazel"
+	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
 )
@@ -38,7 +38,7 @@ var (
 )
 
 func startParserProcess(ctx context.Context) {
-	parseScriptRunfile, err := bazel.Runfile("python/parse")
+	parseScriptRunfile, err := runfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)

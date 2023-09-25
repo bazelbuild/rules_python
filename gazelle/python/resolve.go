@@ -151,10 +151,10 @@ func (py *Resolver) Resolve(
 			for len(moduleParts) > 1 {
 				// Iterate back through the possible imports until
 				// a match is found.
-				// For example, "from foo.bar import baz" where bar is a variable, we should try
-				// `foo.bar.baz` first, then `foo.bar`, then `foo`. In the first case, the import could be file `baz.py`
-				// in the directory `foo/bar`.
-				// Or, the import could be variable `bar` in file `foo/bar.py`.
+				// For example, "from foo.bar import baz" where baz is a module, we should try `foo.bar.baz` first, then
+				// `foo.bar`, then `foo`.
+				// In the first case, the import could be file `baz.py` in the directory `foo/bar`.
+				// Or, the import could be variable `baz` in file `foo/bar.py`.
 				// The import could also be from a standard module, e.g. `six.moves`, where
 				// the dependency is actually `six`.
 				moduleParts = moduleParts[:len(moduleParts)-1]

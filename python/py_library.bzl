@@ -14,7 +14,12 @@
 
 """Public entry point for py_library."""
 
+load("@rules_python_internal//:rules_python_config.bzl", "config")
 load("//python/private:util.bzl", "add_migration_tag")
+load("//python/private/common:py_library_macro_bazel.bzl", _starlark_py_library = "py_library")
+
+# buildifier: disable=native-python
+_py_library_impl = _starlark_py_library if config.enable_pystar else native.py_library
 
 def py_library(**attrs):
     """See the Bazel core [py_library](https://docs.bazel.build/versions/master/be/python.html#py_library) documentation.
@@ -25,5 +30,4 @@ def py_library(**attrs):
     if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
 
-    # buildifier: disable=native-python
-    native.py_library(**add_migration_tag(attrs))
+    _py_library_impl(**add_migration_tag(attrs))
