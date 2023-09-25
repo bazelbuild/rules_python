@@ -51,7 +51,7 @@ func startParserProcess(ctx context.Context) {
 	}
 
 	cmd := exec.CommandContext(ctx, parseScriptRunfile)
-	cmd.Env = rfiles.Env()
+	cmd.Env = append(os.Environ(), rfiles.Env()...)
 
 	cmd.Stderr = os.Stderr
 
