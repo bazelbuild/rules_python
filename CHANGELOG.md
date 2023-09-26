@@ -48,9 +48,10 @@ A brief description of the categories of changes:
   https://github.com/indygreg/python-build-standalone/releases/tag/20230826.
 * (gazelle) New `# gazelle:python_generation_mode file` directive to support
   generating one `py_library` per file.
-
 * (python_repository) Support `netrc` and `auth_patterns` attributes to enable
   authentication against private HTTP hosts serving Python toolchain binaries.
+* `//python:packaging_bzl` added, a `bzl_library` for the Starlark
+  files `//python:packaging.bzl` requires.
 
 ### Removed
 
