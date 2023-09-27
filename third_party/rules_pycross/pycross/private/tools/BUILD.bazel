@@ -13,41 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
-
-package(default_visibility = ["//visibility:private"])
-
-py_library(
-    name = "namespace_pkgs",
-    srcs = [
-        "namespace_pkgs.py",
-    ],
-)
-
-py_test(
-    name = "namespace_pkgs_test",
-    size = "small",
-    srcs = [
-        "namespace_pkgs_test.py",
-    ],
-    tags = [
-        "unit",
-        # TODO(philsc): Make this work.
-        "manual",
-    ],
-    deps = [
-        ":namespace_pkgs",
-    ],
-)
+load("//python:defs.bzl", "py_binary")
 
 py_binary(
     name = "wheel_installer",
     srcs = ["wheel_installer.py"],
     visibility = ["//visibility:public"],
     deps = [
-        ":namespace_pkgs",
-        # TODO(philsc): Make this work with what's available in rules_python.
-        #"@rules_pycross_pypi_deps_absl_py//:pkg",
-        #"@rules_pycross_pypi_deps_installer//:pkg",
+        "//python/pip_install/tools/wheel_installer:lib",
+        "@pypi__installer//:lib",
     ],
 )

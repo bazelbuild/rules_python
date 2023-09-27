@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of the pycross_wheel_library rule."""
+"""Implementation of the py_wheel_library rule."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@rules_python//python:defs.bzl", "PyInfo")
-load(":providers.bzl", "PycrossWheelInfo")
+load("//python:defs.bzl", "PyInfo")
+load(":providers.bzl", "PyWheelInfo")
 
-def _pycross_wheel_library_impl(ctx):
+def _py_wheel_library_impl(ctx):
     out = ctx.actions.declare_directory(ctx.attr.name)
 
     wheel_target = ctx.attr.wheel
-    if PycrossWheelInfo in wheel_target:
-        wheel_file = wheel_target[PycrossWheelInfo].wheel_file
-        name_file = wheel_target[PycrossWheelInfo].name_file
+    if PyWheelInfo in wheel_target:
+        wheel_file = wheel_target[PyWheelInfo].wheel_file
+        name_file = wheel_target[PyWheelInfo].name_file
     else:
         wheel_file = ctx.file.wheel
         name_file = None
@@ -103,8 +103,8 @@ def _pycross_wheel_library_impl(ctx):
         ),
     ]
 
-pycross_wheel_library = rule(
-    implementation = _pycross_wheel_library_impl,
+py_wheel_library = rule(
+    implementation = _py_wheel_library_impl,
     attrs = {
         "deps": attr.label_list(
             doc = "A list of this wheel's Python library dependencies.",
@@ -129,7 +129,7 @@ This option is required to support some packages which cannot handle the convers
             mandatory = True,
         ),
         "_tool": attr.label(
-            default = Label("//pycross/private/tools:wheel_installer"),
+            default = Label("//third_party/rules_pycross/pycross/private/tools:wheel_installer"),
             cfg = "exec",
             executable = True,
         ),

@@ -12,21 +12,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Python providers."""
-
-PyWheelInfo = provider(
-    doc = "Information about a Python wheel.",
-    fields = {
-        "name_file": "File: A file containing the canonical name of the wheel.",
-        "wheel_file": "File: The wheel file itself.",
-    },
-)
-
-PyTargetEnvironmentInfo = provider(
-    doc = "A target environment description.",
-    fields = {
-        "file": "The JSON file containing target environment information.",
-        "python_compatible_with": "A list of constraints used to select this platform.",
-    },
-)
