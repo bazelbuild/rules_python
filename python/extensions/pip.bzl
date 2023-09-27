@@ -113,29 +113,23 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map):
         whl_map[hub_name] = {}
 
     whl_modifications = {}
-    if pip_attr.whl_modifications:
-        # Normalize the name before collecting the wheel modifications so that
-        # the users can pass in both, normalized and non-normalized names. If
-        # they are used to bazel's target normalization, they will be well used
-        # to the normalization rules.
-        #
-        # Normalizing both is OK because there would be no two different
-        # whl_library repos which have the same normalized name as the
-        # whl_library creation would error out anyway.
-        whl_modifications = {
-            normalize_name(whl_name): mod
-            for mod, whl_name in pip_attr.whl_modifications.items()
-        }
+    if pip_attr.whl_modifications != None:
+        for mod, whl_name in pip_attr.whl_modifications.items():
+            whl_modifications[whl_name] = mod
 
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
+        # We are not using the "sanitized name" because the user
+        # would need to guess what name we modified the whl name
+        # to.
+        annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
-            annotation = whl_modifications.get(whl_name),
+            annotation = annotation,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
