@@ -267,10 +267,14 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
-    repo_name = rctx.attr.repo_name
-    build_contents = _BUILD_FILE_CONTENTS
-    aliases = render_pkg_aliases(repo_name = repo_name, bzl_packages = bzl_packages)
+def _pip_hub_repository_bzlmod_impl(rctx):
+    bzl_packages = rctx.attr.whl_map.keys()
+    aliases = render_pkg_aliases(
+        repo_name = rctx.attr.repo_name,
+        rules_python = rctx.attr._template.workspace_name,
+        default_version = rctx.attr.default_version,
+        whl_map = rctx.attr.whl_map,
+    )
     for path, contents in aliases.items():
         rctx.file(path, contents)
 
@@ -280,7 +284,7 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    rctx.file("BUILD.bazel", build_contents)
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
@@ -296,24 +300,26 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
-        "%%REQUIREMENTS_LOCK%%": requirements,
     })
 
-def _pip_hub_repository_bzlmod_impl(rctx):
-    bzl_packages = rctx.attr.whl_library_alias_names
-    _create_pip_repository_bzlmod(rctx, bzl_packages, "")
-
 pip_hub_repository_bzlmod_attrs = {
+    "default_version": attr.string(
+        mandatory = True,
+        doc = """\
+This is the default python version in the format of X.Y.Z. This should match
+what is setup by the 'python' extension using the 'is_default = True'
+setting.""",
+    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
-    "whl_library_alias_names": attr.string_list(
+    "whl_map": attr.string_list_dict(
         mandatory = True,
-        doc = "The list of whl alias that we use to build aliases and the whl names",
+        doc = "The wheel map where values are python versions",
     ),
     "_template": attr.label(
-        default = ":pip_hub_repository_requirements_bzlmod.bzl.tmpl",
+        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
     ),
 }
 
@@ -321,52 +327,6 @@ pip_hub_repository_bzlmod = repository_rule(
     attrs = pip_hub_repository_bzlmod_attrs,
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _pip_hub_repository_bzlmod_impl,
-)
-
-def _pip_repository_bzlmod_impl(rctx):
-    requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    content = rctx.read(requirements_txt)
-    parsed_requirements_txt = parse_requirements(content)
-
-    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
-
-    bzl_packages = sorted([name for name, _ in packages])
-    _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
-
-pip_repository_bzlmod_attrs = {
-    "repo_name": attr.string(
-        mandatory = True,
-        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name",
-    ),
-    "requirements_darwin": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
-    ),
-    "requirements_linux": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Linux",
-    ),
-    "requirements_lock": attr.label(
-        allow_single_file = True,
-        doc = """
-A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
-of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
-wheels are fetched/built only for the targets specified by 'build/run/test'.
-""",
-    ),
-    "requirements_windows": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Windows",
-    ),
-    "_template": attr.label(
-        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
-    ),
-}
-
-pip_repository_bzlmod = repository_rule(
-    attrs = pip_repository_bzlmod_attrs,
-    doc = """A rule for bzlmod pip_repository creation. Intended for private use only.""",
-    implementation = _pip_repository_bzlmod_impl,
 )
 
 def _pip_repository_impl(rctx):
