@@ -37,6 +37,9 @@ A brief description of the categories of changes:
   cases. An error about `@rules_python_internal` means the `py_repositories()`
   call is missing in `WORKSPACE`.
 
+* (bzlmod): the `pip.parse` extension will generate os/arch specific lock
+  file entries on `bazel>=6.4`.
+
 
 ### Added
 
