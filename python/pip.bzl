@@ -17,8 +17,8 @@ load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annot
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:full_version.bzl", "full_version")
 load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
-load(":versions.bzl", "MINOR_MAPPING")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
@@ -295,7 +295,7 @@ alias(
     for [python_version, repo_prefix] in version_map:
         alias.append("""\
         "@{rules_python}//python/config_settings:is_python_{full_python_version}": "{actual}",""".format(
-            full_python_version = MINOR_MAPPING[python_version] if python_version in MINOR_MAPPING else python_version,
+            full_python_version = full_version(python_version),
             actual = "@{repo_prefix}{wheel_name}//:{alias_name}".format(
                 repo_prefix = repo_prefix,
                 wheel_name = wheel_name,
