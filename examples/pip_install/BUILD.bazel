@@ -87,7 +87,7 @@ py_test(
 genquery(
     name = "yamllint_lib_by_version",
     expression = """
-    attr("tags", "\\bpypi_version=1.26.3\\b", "@pip_yamllint//:pkg")
+    attr("tags", "\\bpypi_version=1.28.0\\b", "@pip_yamllint//:pkg")
     intersect
     attr("tags", "\\bpypi_name=yamllint\\b", "@pip_yamllint//:pkg")
     """,
