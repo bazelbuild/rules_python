@@ -17,6 +17,12 @@ load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_
 
 py_wheel_library(
     name = "extracted_wheel_for_testing",
+    patch_args = [
+        "-p1",
+    ],
+    patches = [
+        "0001-Add-new-file-for-testing-patch-support.patch",
+    ],
     wheel = "@wheel_for_testing//file",
 )
 

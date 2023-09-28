@@ -23,9 +23,7 @@ RUNFILES = runfiles.Create()
 class TestPyWheelLibrary(unittest.TestCase):
     def setUp(self):
         self.extraction_dir = Path(
-            RUNFILES.Rlocation(
-                "rules_python/tests/pycross/extracted_wheel_for_testing"
-            )
+            RUNFILES.Rlocation("rules_python/tests/pycross/extracted_wheel_for_testing")
         )
         self.assertTrue(self.extraction_dir.exists(), self.extraction_dir)
         self.assertTrue(self.extraction_dir.is_dir(), self.extraction_dir)
@@ -42,6 +40,11 @@ class TestPyWheelLibrary(unittest.TestCase):
             self.assertTrue(
                 (self.extraction_dir / path).exists(), f"{path} does not exist"
             )
+
+    def test_patched_file_contents(self):
+        """Validate that the patch got applied correctly."""
+        file = self.extraction_dir / "site-packages/numpy/file_added_via_patch.txt"
+        self.assertEqual(file.read_text(), "Hello from a patch!\n")
 
 
 if __name__ == "__main__":
