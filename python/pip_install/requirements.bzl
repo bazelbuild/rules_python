@@ -90,20 +90,23 @@ def compile_pip_requirements(
         loc.format(requirements_darwin) if requirements_darwin else "None",
         loc.format(requirements_windows) if requirements_windows else "None",
         "//%s:%s.update" % (native.package_name(), name),
+        "--resolver=backtracking",
+        "--allow-unsafe",
     ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
 
     deps = [
         requirement("build"),
         requirement("click"),
         requirement("colorama"),
+        requirement("importlib_metadata"),
+        requirement("more_itertools"),
         requirement("pep517"),
         requirement("pip"),
         requirement("pip_tools"),
+        requirement("pyproject_hooks"),
         requirement("setuptools"),
         requirement("tomli"),
-        requirement("importlib_metadata"),
         requirement("zipp"),
-        requirement("more_itertools"),
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 
