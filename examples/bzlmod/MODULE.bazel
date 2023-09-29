@@ -28,7 +28,8 @@ python.toolchain(
 # work in progress.
 python.toolchain(
     configure_coverage_tool = True,
-    python_version = "3.10",
+    # One can also provide the full Python version.
+    python_version = "3.10.9",
 )
 
 # You only need to load this repositories if you are using multiple Python versions.
@@ -102,7 +103,10 @@ pip.parse(
 )
 pip.parse(
     hub_name = "pip",
-    python_version = "3.10",
+    # NOTE: if you are registering the python toolchain with the full version
+    # in 'python.toolchain' call, then you need to use the full version here as
+    # well or otherwise the resolution will fail.
+    python_version = "3.10.9",
     requirements_lock = "//:requirements_lock_3_10.txt",
     requirements_windows = "//:requirements_windows_3_10.txt",
     # These modifications were created above and we

@@ -16,4 +16,12 @@ import websockets
 
 
 def websockets_is_for_python_version(sanitized_version_check):
-    return f"pypi_{sanitized_version_check}_websockets" in websockets.__file__
+    # We are checking that the name of the repository folders
+    # match the expexted generated names. If we update the folder
+    # structure or naming we will need to modify this test
+    if f"pypi_{sanitized_version_check}_websockets" in websockets.__file__:
+        return True
+
+    raise RuntimeError(
+        f"Expected version '{sanitized_version_check}' was not in {websockets.__file__}"
+    )

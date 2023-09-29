@@ -21,6 +21,10 @@ import libs.my_lib as my_lib
 # If we update the folder structure or naming we need to modify this test.
 sanitized_version_check = f"{sys.version_info.major}{sys.version_info.minor}"
 
-if not my_lib.websockets_is_for_python_version(sanitized_version_check):
-    print("expected package for Python version is different than returned")
-    sys.exit(1)
+try:
+    my_lib.websockets_is_for_python_version(sanitized_version_check)
+except RuntimeError as e:
+    print(
+        f"Expected package for Python version is different than returned. Current version is {sys.version_info}"
+    )
+    raise e
