@@ -16,8 +16,8 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//tools/build_defs/python/tests:base_tests.bzl", "create_base_tests")
-load("//tools/build_defs/python/tests:util.bzl", "WINDOWS_ATTR", pt_util = "util")
+load("//tests/base_rules:base_tests.bzl", "create_base_tests")
+load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 
 _tests = []
 
