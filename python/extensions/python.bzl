@@ -16,6 +16,7 @@
 
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python/extensions/private:pythons_hub.bzl", "hub_repo")
+load("//python/private:full_version.bzl", "full_version")
 load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
 
 # This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
@@ -74,7 +75,7 @@ def _python_impl(module_ctx):
         module_toolchain_versions = []
 
         for toolchain_attr in mod.tags.toolchain:
-            toolchain_version = toolchain_attr.python_version
+            toolchain_version, _, _ = full_version(toolchain_attr.python_version).rpartition(".")
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
             # Duplicate versions within a module indicate a misconfigured module.
