@@ -14,9 +14,7 @@
 
 """Implementation of py_runtime_pair."""
 
-# TODO: move py_runtime_pair into rules_python (and the rest of @bazel_tools//python)
-# py_runtime should be loaded from rules_python, but this creates a circular dep, because py_runtime_pair is imported there.
-py_runtime = native.py_runtime
+load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 
 def _py_runtime_pair_impl(ctx):
     if ctx.attr.py2_runtime != None:
@@ -47,9 +45,9 @@ def _py_runtime_pair_impl(ctx):
 
 # buildifier: disable=unused-variable
 def _is_py2_disabled(ctx):
-    # In Google, this file isn't bundled with Bazel, so we have to conditionally
+    # Because this file isn't bundled with Bazel, so we have to conditionally
     # check for this flag.
-    # TODO: Remove this once a build with the flag is released in Google
+    # TODO: Remove this once all supported Balze versions have this flag.
     if not hasattr(ctx.fragments.py, "disable_py"):
         return False
     return ctx.fragments.py.disable_py2
