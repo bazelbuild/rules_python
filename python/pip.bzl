@@ -19,6 +19,7 @@ load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compi
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
+load("//python/private:version_label.bzl", "version_label")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
@@ -369,7 +370,7 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
         if not python_version in requirements_lock:
             fail("Missing requirements_lock for Python version %s in '%s'" % (python_version, name))
 
-        pip_parse_name = name + "_" + python_version.replace(".", "_")
+        pip_parse_name = name + "_" + version_label(full_version(python_version), sep = "_")
         pip_parse(
             name = pip_parse_name,
             python_interpreter_target = python_interpreter_target[python_version],
