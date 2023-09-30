@@ -17,17 +17,17 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:defs.bzl", "py_test")
 load(
-    "//tools/build_defs/python/tests:py_executable_base_tests.bzl",
+    "//tests/base_rules:py_executable_base_tests.bzl",
     "create_executable_tests",
 )
-load("//tools/build_defs/python/tests:util.bzl", pt_util = "util")
+load("//tests/base_rules:util.bzl", pt_util = "util")
 
 # Explicit Label() calls are required so that it resolves in @rules_python context instead of
 # @rules_testing context.
 _FAKE_CC_TOOLCHAIN = Label("//tests/cc:cc_toolchain_suite")
 _FAKE_CC_TOOLCHAINS = [str(Label("//tests/cc:all"))]
-_PLATFORM_MAC = Label("//tools/build_defs/python/tests:mac")
-_PLATFORM_LINUX = Label("//tools/build_defs/python/tests:linux")
+_PLATFORM_MAC = Label("//tests/base_rules:mac")
+_PLATFORM_LINUX = Label("//tests/base_rules:linux")
 
 _tests = []
 

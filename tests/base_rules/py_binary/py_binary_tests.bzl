@@ -15,7 +15,7 @@
 
 load("//python:defs.bzl", "py_binary")
 load(
-    "//tools/build_defs/python/tests:py_executable_base_tests.bzl",
+    "//tests/base_rules:py_executable_base_tests.bzl",
     "create_executable_tests",
 )
 

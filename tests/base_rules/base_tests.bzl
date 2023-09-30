@@ -17,8 +17,8 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
-load("//tools/build_defs/python/tests:py_info_subject.bzl", "py_info_subject")
-load("//tools/build_defs/python/tests:util.bzl", pt_util = "util")
+load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
+load("//tests/base_rules:util.bzl", pt_util = "util")
 
 _tests = []
 
