@@ -332,7 +332,7 @@ def _create_windows_exe_launcher(
     launch_info.add("binary_type=Python")
     launch_info.add(ctx.workspace_name, format = "workspace_name=%s")
     launch_info.add(
-        "1" if ctx.configuration.runfiles_enabled() else "0",
+        "1" if py_internal.runfiles_enabled(ctx) else "0",
         format = "symlink_runfiles_enabled=%s",
     )
     launch_info.add(python_binary_path, format = "python_bin_path=%s")

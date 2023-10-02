@@ -488,7 +488,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
         return struct(dso = None, runfiles = ctx.runfiles())
 
     dso = ctx.actions.declare_file(semantics.get_native_deps_dso_name(ctx))
-    share_native_deps = ctx.fragments.cpp.share_native_deps()
+    share_native_deps = py_internal.share_native_deps(ctx)
     cc_feature_config = cc_configure_features(
         ctx,
         cc_toolchain = cc_details.cc_toolchain,
@@ -571,7 +571,7 @@ def _create_shared_native_deps_dso(
         features = requested_features,
         is_test_target_partially_disabled_thin_lto = is_test and partially_disabled_thin_lto,
     )
-    return ctx.actions.declare_shareable_artifact("_nativedeps/%x.so" % dso_hash)
+    return py_internal.declare_shareable_artifact(ctx, "_nativedeps/%x.so" % dso_hash)
 
 # This is a minimal version of NativeDepsHelper.getSharedNativeDepsPath, see
 # com.google.devtools.build.lib.rules.nativedeps.NativeDepsHelper#getSharedNativeDepsPath
