@@ -104,7 +104,8 @@ bzl_library(
 
 bzl_library(
     name = "py_runtime_pair_macro_bzl",
-    srcs = ["py_runtime_pair_rule.bzl"],
+    srcs = ["py_runtime_pair_macro.bzl"],
+    visibility = ["//:__subpackages__"],
     deps = [":py_runtime_pair_rule_bzl"],
 )
 
