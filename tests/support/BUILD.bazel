@@ -11,3 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# ====================
+# NOTE: You probably want to use the constants in test_platforms.bzl
+# Otherwise, you'll probably have to manually call Label() on these targets
+# to force them to resolve in the proper context.
+# ====================
+platform(
+    name = "mac",
+    constraint_values = [
+        "@platforms//os:macos",
+    ],
+)
+
+platform(
+    name = "linux",
+    constraint_values = [
+        "@platforms//os:linux",
+    ],
+)
+
+platform(
+    name = "windows",
+    constraint_values = [
+        "@platforms//os:windows",
+    ],
+)
