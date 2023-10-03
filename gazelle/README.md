@@ -64,9 +64,6 @@ pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 # operating systems, we have requirements for each.
 pip.parse(
     name = "pip",
-    # When using gazelle you must use set the following flag
-    # in order for the generation of gazelle dependency resolution.
-    incompatible_generate_aliases = True,
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
