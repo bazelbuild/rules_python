@@ -14,13 +14,14 @@
 
 import argparse
 import base64
-import collections
 import hashlib
 import os
 import re
 import sys
 import zipfile
 from pathlib import Path
+
+_ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
 
 def commonpath(path1, path2):
@@ -189,7 +190,8 @@ class WheelMaker(object):
         """Add given 'contents' as filename to the distribution."""
         if sys.version_info[0] > 2 and isinstance(contents, str):
             contents = contents.encode("utf-8", "surrogateescape")
-        self._zipfile.writestr(filename, contents)
+        zinfo = self._zipinfo(filename)
+        self._zipfile.writestr(zinfo, contents)
         hash = hashlib.sha256()
         hash.update(contents)
         self._add_to_record(filename, self._serialize_digest(hash), len(contents))
@@ -219,19 +221,33 @@ class WheelMaker(object):
             return
 
         arcname = arcname_from(package_filename)
+        zinfo = self._zipinfo(arcname)
 
-        self._zipfile.write(real_filename, arcname=arcname)
-        # Find the hash and length
+        # Write file to the zip archive while computing the hash and length
         hash = hashlib.sha256()
         size = 0
-        with open(real_filename, "rb") as f:
-            while True:
-                block = f.read(2**20)
-                if not block:
-                    break
-                hash.update(block)
-                size += len(block)
+        with open(real_filename, "rb") as fsrc:
+            with self._zipfile.open(zinfo, "w") as fdst:
+                while True:
+                    block = fsrc.read(2**20)
+                    if not block:
+                        break
+                    fdst.write(block)
+                    hash.update(block)
+                    size += len(block)
         self._add_to_record(arcname, self._serialize_digest(hash), size)
+
+    def _zipinfo(self, filename):
+        """Construct deterministic ZipInfo entry for a file named filename"""
+        # Strip leading path separators to mirror ZipInfo.from_file behavior
+        separators = os.path.sep
+        if os.path.altsep is not None:
+            separators += os.path.altsep
+        arcname = filename.lstrip(separators)
+
+        zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
+        zinfo.compress_type = self._zipfile.compression
+        return zinfo
 
     def add_wheelfile(self):
         """Write WHEEL file to the distribution"""
