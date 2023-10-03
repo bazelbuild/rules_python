@@ -14,18 +14,20 @@
 
 "pip module extension for use with bzlmod"
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
-load("@rules_python//python:pip.bzl", "whl_library_alias")
 load(
-    "@rules_python//python/pip_install:pip_repository.bzl",
+    "//python/pip_install:pip_repository.bzl",
     "locked_requirements_label",
     "pip_hub_repository_bzlmod",
     "pip_repository_attrs",
-    "pip_repository_bzlmod",
     "use_isolated",
     "whl_library",
 )
-load("@rules_python//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:full_version.bzl", "full_version")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:version_label.bzl", "version_label")
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -76,14 +78,14 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
+def _create_whl_repos(module_ctx, pip_attr, whl_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
-    # we programtically find it.
+    # we programmatically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None:
-        python_name = "python_{}".format(pip_attr.python_version.replace(".", "_"))
+        python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
         if python_name not in INTERPRETER_LABELS.keys():
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
@@ -95,27 +97,19 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    pip_name = hub_name + "_{}".format(pip_attr.python_version.replace(".", ""))
+    pip_name = "{}_{}".format(
+        hub_name,
+        version_label(pip_attr.python_version),
+    )
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below. This is needed to contain
-    # the pip_repository logic to a single module extension.
+    # needed for the whl_libary declarations below.
     requirements_lock_content = module_ctx.read(requrements_lock)
     parse_result = parse_requirements(requirements_lock_content)
     requirements = parse_result.requirements
     extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
-    # Create the repository where users load the `requirement` macro. Under bzlmod
-    # this does not create the install_deps() macro.
-    # TODO: we may not need this repository once we have entry points
-    # supported. For now a user can access this repository and use
-    # the entrypoint functionality.
-    pip_repository_bzlmod(
-        name = pip_name,
-        repo_name = pip_name,
-        requirements_lock = pip_attr.requirements_lock,
-    )
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
 
@@ -130,7 +124,7 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
         # would need to guess what name we modified the whl name
         # to.
         annotation = whl_modifications.get(whl_name)
-        whl_name = _sanitize_name(whl_name)
+        whl_name = normalize_name(whl_name)
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
@@ -152,12 +146,12 @@ def _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, whl_map):
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
 
-        whl_map[hub_name][whl_name][pip_attr.python_version] = pip_name + "_"
+        whl_map[hub_name][whl_name][full_version(pip_attr.python_version)] = pip_name + "_"
 
 def _pip_impl(module_ctx):
-    """Implementation of a class tag that creates the pip hub(s) and corresponding pip spoke, alias and whl repositories.
+    """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
-    This implmentation iterates through all of the `pip.parse` calls and creates
+    This implementation iterates through all of the `pip.parse` calls and creates
     different pip hub repositories based on the "hub_name".  Each of the
     pip calls create spoke repos that uses a specific Python interpreter.
 
@@ -191,52 +185,33 @@ def _pip_impl(module_ctx):
     Both of these pip spokes contain requirements files that includes websocket
     and its dependencies.
 
-    Two different repositories are created for the two spokes:
-
-    - @@rules_python~override~pip~pip_39
-    - @@rules_python~override~pip~pip_310
-
-    The different spoke names are a combination of the hub_name and the Python version.
-    In the future we may remove this repository, but we do not support entry points.
-    yet, and that functionality exists in these repos.
-
     We also need repositories for the wheels that the different pip spokes contain.
     For each Python version a different wheel repository is created. In our example
-    each pip spoke had a requirments file that contained websockets. We
+    each pip spoke had a requirements file that contained websockets. We
     then create two different wheel repositories that are named the following.
 
     - @@rules_python~override~pip~pip_39_websockets
     - @@rules_python~override~pip~pip_310_websockets
 
-    And if the wheel has any other dependies subsequest wheels are created in the same fashion.
+    And if the wheel has any other dependencies subsequent wheels are created in the same fashion.
 
-    We also create a repository for the wheel alias.  We want to just use the syntax
-    'requirement("websockets")' we need to have an alias repository that is named:
-
-    - @@rules_python~override~pip~pip_websockets
-
-    This repository contains alias statements for the different wheel components (pkg, data, etc).
-    Each of those aliases has a select that resolves to a spoke repository depending on
-    the Python version.
+    The hub repository has aliases for `pkg`, `data`, etc, which have a select that resolves to
+    a spoke repository depending on the Python version.
 
     Also we may have more than one hub as defined in a MODULES.bazel file.  So we could have multiple
     hubs pointing to various different pip spokes.
 
-    Some other business rules notes.  A hub can only have one spoke per Python version.  We cannot
+    Some other business rules notes. A hub can only have one spoke per Python version.  We cannot
     have a hub named "pip" that has two spokes that use the Python 3.9 interpreter.  Second
-    we cannot have the same hub name used in submodules.  The hub name has to be globally
+    we cannot have the same hub name used in sub-modules.  The hub name has to be globally
     unique.
 
-    This implementation reuses elements of non-bzlmod code and also reuses the first implementation
-    of pip bzlmod, but adds the capability to have multiple pip.parse calls.
-
     This implementation also handles the creation of whl_modification JSON files that are used
-    during the creation of wheel libraries.  These JSON files used via the annotations argument
+    during the creation of wheel libraries. These JSON files used via the annotations argument
     when calling wheel_installer.py.
 
     Args:
         module_ctx: module contents
-
     """
 
     # Build all of the wheel modifications if the tag class is called.
@@ -254,73 +229,47 @@ def _pip_impl(module_ctx):
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
             hub_name = pip_attr.hub_name
-            if hub_name in pip_hub_map:
-                # We cannot have two hubs with the same name in different
-                # modules.
-                if pip_hub_map[hub_name].module_name != mod.name:
-                    fail((
-                        "Duplicate cross-module pip hub named '{hub}': pip hub " +
-                        "names must be unique across modules. First defined " +
-                        "by module '{first_module}', second attempted by " +
-                        "module '{second_module}'"
-                    ).format(
-                        hub = hub_name,
-                        first_module = pip_hub_map[hub_name].module_name,
-                        second_module = mod.name,
-                    ))
-
-                if pip_attr.python_version in pip_hub_map[hub_name].python_versions:
-                    fail((
-                        "Duplicate pip python version '{version}' for hub " +
-                        "'{hub}' in module '{module}': the Python versions " +
-                        "used for a hub must be unique"
-                    ).format(
-                        hub = hub_name,
-                        module = mod.name,
-                        version = pip_attr.python_version,
-                    ))
-                else:
-                    pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
-            else:
+            if hub_name not in pip_hub_map:
                 pip_hub_map[pip_attr.hub_name] = struct(
                     module_name = mod.name,
                     python_versions = [pip_attr.python_version],
                 )
-
-            _create_versioned_pip_and_whl_repos(module_ctx, pip_attr, hub_whl_map)
-
-    for hub_name, whl_map in hub_whl_map.items():
-        for whl_name, version_map in whl_map.items():
-            if DEFAULT_PYTHON_VERSION not in version_map:
+            elif pip_hub_map[hub_name].module_name != mod.name:
+                # We cannot have two hubs with the same name in different
+                # modules.
                 fail((
-                    "Default python version '{version}' missing in pip " +
-                    "hub '{hub}': update your pip.parse() calls so that " +
-                    'includes `python_version = "{version}"`'
+                    "Duplicate cross-module pip hub named '{hub}': pip hub " +
+                    "names must be unique across modules. First defined " +
+                    "by module '{first_module}', second attempted by " +
+                    "module '{second_module}'"
                 ).format(
-                    version = DEFAULT_PYTHON_VERSION,
                     hub = hub_name,
+                    first_module = pip_hub_map[hub_name].module_name,
+                    second_module = mod.name,
                 ))
 
-            # Create the alias repositories which contains different select
-            # statements  These select statements point to the different pip
-            # whls that are based on a specific version of Python.
-            whl_library_alias(
-                name = hub_name + "_" + whl_name,
-                wheel_name = whl_name,
-                default_version = DEFAULT_PYTHON_VERSION,
-                version_map = version_map,
-            )
+            elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
+                fail((
+                    "Duplicate pip python version '{version}' for hub " +
+                    "'{hub}' in module '{module}': the Python versions " +
+                    "used for a hub must be unique"
+                ).format(
+                    hub = hub_name,
+                    module = mod.name,
+                    version = pip_attr.python_version,
+                ))
+            else:
+                pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-        # Create the hub repository for pip.
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map)
+
+    for hub_name, whl_map in hub_whl_map.items():
         pip_hub_repository_bzlmod(
             name = hub_name,
             repo_name = hub_name,
-            whl_library_alias_names = whl_map.keys(),
+            whl_map = whl_map,
+            default_version = full_version(DEFAULT_PYTHON_VERSION),
         )
-
-# Keep in sync with python/pip_install/tools/bazel.py
-def _sanitize_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
 
 def _pip_parse_ext_attrs():
     attrs = dict({
@@ -347,23 +296,22 @@ Targets from different hubs should not be used together.
 """,
         ),
         "python_version": attr.string(
-            default = DEFAULT_PYTHON_VERSION,
+            mandatory = True,
             doc = """
-The Python version to use for resolving the pip dependencies. If not specified,
-then the default Python version (as set by the root module or rules_python)
-will be used.
+The Python version to use for resolving the pip dependencies, in Major.Minor
+format (e.g. "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
+If not specified, then the default Python version (as set by the root module or
+rules_python) will be used.
 
 The version specified here must have a corresponding `python.toolchain()`
-configured. This attribute defaults to the version of the toolchain
-that is set as the default Python version.  Or if only one toolchain
-is used, this attribute defaults to that version of Python.
+configured.
 """,
         ),
         "whl_modifications": attr.label_keyed_string_dict(
             mandatory = False,
             doc = """\
 A dict of labels to wheel names that is typically generated by the whl_modifications.
-The labels are JSON config files describing the modifications.           
+The labels are JSON config files describing the modifications.
 """,
         ),
     }, **pip_repository_attrs)
@@ -396,7 +344,7 @@ executable.""",
         ),
         "copy_files": attr.string_dict(
             doc = """\
-(dict, optional): A mapping of `src` and `out` files for 
+(dict, optional): A mapping of `src` and `out` files for
 [@bazel_skylib//rules:copy_file.bzl][cf]""",
         ),
         "data": attr.string_list(
@@ -433,6 +381,17 @@ cannot have a child module that uses the same `hub_name`.
     }
     return attrs
 
+def _extension_extra_args():
+    args = {}
+
+    if bazel_features.external_deps.module_extension_has_os_arch_dependent:
+        args = args | {
+            "arch_dependent": True,
+            "os_dependent": True,
+        }
+
+    return args
+
 pip = module_extension(
     doc = """\
 This extension is used to make dependencies from pip available.
@@ -457,10 +416,10 @@ the BUILD files for wheels.
             attrs = _pip_parse_ext_attrs(),
             doc = """\
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
-This tag class reuses most of the pip attributes that are found in 
+This tag class reuses most of the pip attributes that are found in
 @rules_python//python/pip_install:pip_repository.bzl.
-The exceptions are it does not use the args 'repo_prefix', 
-and 'incompatible_generate_aliases'.  We set the repository prefix 
+The exceptions are it does not use the args 'repo_prefix',
+and 'incompatible_generate_aliases'.  We set the repository prefix
 for the user and the alias arg is always True in bzlmod.
 """,
         ),
@@ -475,6 +434,7 @@ extension.
 """,
         ),
     },
+    **_extension_extra_args()
 )
 
 def _whl_mods_repo_impl(rctx):
@@ -484,7 +444,7 @@ def _whl_mods_repo_impl(rctx):
 
 _whl_mods_repo = repository_rule(
     doc = """\
-This rule creates json files based on the whl_mods attribute. 
+This rule creates json files based on the whl_mods attribute.
 """,
     implementation = _whl_mods_repo_impl,
     attrs = {

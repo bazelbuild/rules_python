@@ -9,10 +9,7 @@ This file is auto-generated from the `@rules_python//python/pip_install/private:
 PIP_INSTALL_PY_SRCS = [
     "@rules_python//python/pip_install/tools/dependency_resolver:__init__.py",
     "@rules_python//python/pip_install/tools/dependency_resolver:dependency_resolver.py",
-    "@rules_python//python/pip_install/tools/lib:__init__.py",
-    "@rules_python//python/pip_install/tools/lib:annotation.py",
-    "@rules_python//python/pip_install/tools/lib:arguments.py",
-    "@rules_python//python/pip_install/tools/lib:bazel.py",
+    "@rules_python//python/pip_install/tools/wheel_installer:arguments.py",
     "@rules_python//python/pip_install/tools/wheel_installer:namespace_pkgs.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel.py",
     "@rules_python//python/pip_install/tools/wheel_installer:wheel_installer.py",

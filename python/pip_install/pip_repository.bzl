@@ -14,17 +14,23 @@
 
 ""
 
-load("//python:repositories.bzl", "get_interpreter_dirname", "is_standalone_interpreter")
+load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
+load("//python/private:which.bzl", "which_with_fail")
 
 CPPFLAGS = "CPPFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+
+_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -37,15 +43,11 @@ def _construct_pypath(rctx):
     Returns: String of the PYTHONPATH.
     """
 
-    # Get the root directory of these rules
-    rules_root = rctx.path(Label("//:BUILD.bazel")).dirname
-    thirdparty_roots = [
-        # Includes all the external dependencies from repositories.bzl
-        rctx.path(Label("@" + repo + "//:BUILD.bazel")).dirname
-        for repo in all_requirements
-    ]
     separator = ":" if not "windows" in rctx.os.name.lower() else ";"
-    pypath = separator.join([str(p) for p in [rules_root] + thirdparty_roots])
+    pypath = separator.join([
+        str(rctx.path(entry).dirname)
+        for entry in rctx.attr._python_path_entries
+    ])
     return pypath
 
 def _get_python_interpreter_attr(rctx):
@@ -103,10 +105,7 @@ def _get_xcode_location_cflags(rctx):
     if not rctx.os.name.lower().startswith("mac os"):
         return []
 
-    # Locate xcode-select
-    xcode_select = rctx.which("xcode-select")
-
-    xcode_sdk_location = rctx.execute([xcode_select, "--print-path"])
+    xcode_sdk_location = rctx.execute([which_with_fail("xcode-select", rctx), "--print-path"])
     if xcode_sdk_location.return_code != 0:
         return []
 
@@ -120,7 +119,7 @@ def _get_xcode_location_cflags(rctx):
         "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
     ]
 
-def _get_toolchain_unix_cflags(rctx):
+def _get_toolchain_unix_cflags(rctx, python_interpreter):
     """Gather cflags from a standalone toolchain for unix systems.
 
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -132,11 +131,11 @@ def _get_toolchain_unix_cflags(rctx):
         return []
 
     # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, rctx.attr.python_interpreter_target):
+    if not is_standalone_interpreter(rctx, python_interpreter):
         return []
 
     er = rctx.execute([
-        rctx.path(rctx.attr.python_interpreter_target).realpath,
+        python_interpreter,
         "-c",
         "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
     ])
@@ -144,7 +143,7 @@ def _get_toolchain_unix_cflags(rctx):
         fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
     _python_version = er.stdout
     include_path = "{}/include/python{}".format(
-        get_interpreter_dirname(rctx, rctx.attr.python_interpreter_target),
+        python_interpreter.dirname,
         _python_version,
     )
 
@@ -215,11 +214,12 @@ def _parse_optional_attrs(rctx, args):
 
     return args
 
-def _create_repository_execution_environment(rctx):
+def _create_repository_execution_environment(rctx, python_interpreter):
     """Create a environment dictionary for processes we spawn with rctx.execute.
 
     Args:
-        rctx: The repository context.
+        rctx (repository_ctx): The repository context.
+        python_interpreter (path): The resolved python interpreter.
     Returns:
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
@@ -227,7 +227,7 @@ def _create_repository_execution_environment(rctx):
     # Gather any available CPPFLAGS values
     cppflags = []
     cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
 
     env = {
         "PYTHONPATH": _construct_pypath(rctx),
@@ -267,60 +267,16 @@ A requirements_lock attribute must be specified, or a platform-specific lockfile
 """)
     return requirements_txt
 
-# Keep in sync with `_clean_pkg_name` in generated bzlmod requirements.bzl
-def _clean_pkg_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
-def _pkg_aliases(rctx, repo_name, bzl_packages):
-    """Create alias declarations for each python dependency.
-
-    The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
-    allow users to use requirement() without needed a corresponding `use_repo()` for each dep
-    when using bzlmod.
-
-    Args:
-        rctx: the repository context.
-        repo_name: the repository name of the parent that is visible to the users.
-        bzl_packages: the list of packages to setup.
-    """
-    for name in bzl_packages:
-        build_content = """package(default_visibility = ["//visibility:public"])
-
-alias(
-    name = "{name}",
-    actual = "@{repo_name}_{dep}//:pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = "@{repo_name}_{dep}//:pkg",
-)
-
-alias(
-    name = "whl",
-    actual = "@{repo_name}_{dep}//:whl",
-)
-
-alias(
-    name = "data",
-    actual = "@{repo_name}_{dep}//:data",
-)
-
-alias(
-    name = "dist_info",
-    actual = "@{repo_name}_{dep}//:dist_info",
-)
-""".format(
-            name = name,
-            repo_name = repo_name,
-            dep = name,
-        )
-        rctx.file("{}/BUILD.bazel".format(name), build_content)
-
-def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
-    repo_name = rctx.attr.repo_name
-    build_contents = _BUILD_FILE_CONTENTS
-    _pkg_aliases(rctx, repo_name, bzl_packages)
+def _pip_hub_repository_bzlmod_impl(rctx):
+    bzl_packages = rctx.attr.whl_map.keys()
+    aliases = render_pkg_aliases(
+        repo_name = rctx.attr.repo_name,
+        rules_python = rctx.attr._template.workspace_name,
+        default_version = rctx.attr.default_version,
+        whl_map = rctx.attr.whl_map,
+    )
+    for path, contents in aliases.items():
+        rctx.file(path, contents)
 
     # NOTE: we are using the canonical name with the double '@' in order to
     # always uniquely identify a repository, as the labels are being passed as
@@ -328,7 +284,7 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    rctx.file("BUILD.bazel", build_contents)
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
@@ -344,24 +300,26 @@ def _create_pip_repository_bzlmod(rctx, bzl_packages, requirements):
         ]),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
-        "%%REQUIREMENTS_LOCK%%": requirements,
     })
 
-def _pip_hub_repository_bzlmod_impl(rctx):
-    bzl_packages = rctx.attr.whl_library_alias_names
-    _create_pip_repository_bzlmod(rctx, bzl_packages, "")
-
 pip_hub_repository_bzlmod_attrs = {
+    "default_version": attr.string(
+        mandatory = True,
+        doc = """\
+This is the default python version in the format of X.Y.Z. This should match
+what is setup by the 'python' extension using the 'is_default = True'
+setting.""",
+    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
-    "whl_library_alias_names": attr.string_list(
+    "whl_map": attr.string_list_dict(
         mandatory = True,
-        doc = "The list of whl alias that we use to build aliases and the whl names",
+        doc = "The wheel map where values are python versions",
     ),
     "_template": attr.label(
-        default = ":pip_hub_repository_requirements_bzlmod.bzl.tmpl",
+        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
     ),
 }
 
@@ -371,58 +329,12 @@ pip_hub_repository_bzlmod = repository_rule(
     implementation = _pip_hub_repository_bzlmod_impl,
 )
 
-def _pip_repository_bzlmod_impl(rctx):
-    requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    content = rctx.read(requirements_txt)
-    parsed_requirements_txt = parse_requirements(content)
-
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
-
-    bzl_packages = sorted([name for name, _ in packages])
-    _create_pip_repository_bzlmod(rctx, bzl_packages, str(requirements_txt))
-
-pip_repository_bzlmod_attrs = {
-    "repo_name": attr.string(
-        mandatory = True,
-        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name",
-    ),
-    "requirements_darwin": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Mac OS",
-    ),
-    "requirements_linux": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Linux",
-    ),
-    "requirements_lock": attr.label(
-        allow_single_file = True,
-        doc = """
-A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
-of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
-wheels are fetched/built only for the targets specified by 'build/run/test'.
-""",
-    ),
-    "requirements_windows": attr.label(
-        allow_single_file = True,
-        doc = "Override the requirements_lock attribute when the host platform is Windows",
-    ),
-    "_template": attr.label(
-        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
-    ),
-}
-
-pip_repository_bzlmod = repository_rule(
-    attrs = pip_repository_bzlmod_attrs,
-    doc = """A rule for bzlmod pip_repository creation. Intended for private use only.""",
-    implementation = _pip_repository_bzlmod_impl,
-)
-
 def _pip_repository_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)
     content = rctx.read(requirements_txt)
     parsed_requirements_txt = parse_requirements(content)
 
-    packages = [(_clean_pkg_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
+    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
     bzl_packages = sorted([name for name, _ in packages])
 
@@ -432,7 +344,7 @@ def _pip_repository_impl(rctx):
 
     annotations = {}
     for pkg, annotation in rctx.attr.annotations.items():
-        filename = "{}.annotation.json".format(_clean_pkg_name(pkg))
+        filename = "{}.annotation.json".format(normalize_name(pkg))
         rctx.file(filename, json.encode_indent(json.decode(annotation)))
         annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
 
@@ -461,7 +373,9 @@ def _pip_repository_impl(rctx):
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
 
     if rctx.attr.incompatible_generate_aliases:
-        _pkg_aliases(rctx, rctx.attr.name, bzl_packages)
+        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+        for path, contents in aliases.items():
+            rctx.file(path, contents)
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
@@ -666,23 +580,14 @@ def _whl_library_impl(rctx):
         "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
-        "--repo",
-        rctx.attr.repo,
-        "--repo-prefix",
-        rctx.attr.repo_prefix,
     ]
-    if rctx.attr.annotation:
-        args.extend([
-            "--annotation",
-            rctx.path(rctx.attr.annotation),
-        ])
 
     args = _parse_optional_attrs(rctx, args)
 
     result = rctx.execute(
         args,
         # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = _create_repository_execution_environment(rctx),
+        environment = _create_repository_execution_environment(rctx, python_interpreter),
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
@@ -690,7 +595,71 @@ def _whl_library_impl(rctx):
     if result.return_code:
         fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
+    metadata = json.decode(rctx.read("metadata.json"))
+    rctx.delete("metadata.json")
+
+    entry_points = {}
+    for item in metadata["entry_points"]:
+        name = item["name"]
+        module = item["module"]
+        attribute = item["attribute"]
+
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] + "_py" if name.endswith(".py") else name
+        entry_point_target_name = (
+            _WHEEL_ENTRY_POINT_PREFIX + "_" + entry_point_without_py
+        )
+        entry_point_script_name = entry_point_target_name + ".py"
+
+        rctx.file(
+            entry_point_script_name,
+            _generate_entry_point_contents(module, attribute),
+        )
+        entry_points[entry_point_without_py] = entry_point_script_name
+
+    build_file_contents = generate_whl_library_build_bazel(
+        repo_prefix = rctx.attr.repo_prefix,
+        dependencies = metadata["deps"],
+        data_exclude = rctx.attr.pip_data_exclude,
+        tags = [
+            "pypi_name=" + metadata["name"],
+            "pypi_version=" + metadata["version"],
+        ],
+        entry_points = entry_points,
+        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
     return
+
+def _generate_entry_point_contents(
+        module,
+        attribute,
+        shebang = "#!/usr/bin/env python3"):
+    """Generate the contents of an entry point script.
+
+    Args:
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    contents = """\
+{shebang}
+import sys
+from {module} import {attribute}
+if __name__ == "__main__":
+    sys.exit({attribute}())
+""".format(
+        shebang = shebang,
+        module = module,
+        attribute = attribute,
+    )
+    return contents
 
 whl_library_attrs = {
     "annotation": attr.label(
@@ -707,6 +676,19 @@ whl_library_attrs = {
     "requirement": attr.string(
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
+    ),
+    "_python_path_entries": attr.label_list(
+        # Get the root directory of these rules and keep them as a default attribute
+        # in order to avoid unnecessary repository fetching restarts.
+        #
+        # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
+        default = [
+            Label("//:BUILD.bazel"),
+        ] + [
+            # Includes all the external dependencies from repositories.bzl
+            Label("@" + repo + "//:BUILD.bazel")
+            for repo in all_requirements
+        ],
     ),
 }
 

@@ -34,7 +34,7 @@ python_register_multi_toolchains(
     python_versions = MINOR_MAPPING.values(),
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 # Used for Bazel CI
 http_archive(
@@ -72,7 +72,7 @@ _py_gazelle_deps()
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
 # https://github.com/bazelbuild/rules_python/issues/1016.
-load("@python//3.11.1:defs.bzl", "interpreter")
+load("@python//3.11.5:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -86,3 +86,14 @@ pip_parse(
 load("@publish_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+# This wheel is purely here to validate the wheel extraction code. It's not
+# intended for anything else.
+http_file(
+    name = "wheel_for_testing",
+    downloaded_file_path = "numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+    sha256 = "0d60fbae8e0019865fc4784745814cff1c421df5afee233db6d88ab4f14655a2",
+    urls = [
+        "https://files.pythonhosted.org/packages/50/67/3e966d99a07d60a21a21d7ec016e9e4c2642a86fea251ec68677daf71d4d/numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+    ],
+)

@@ -17,7 +17,8 @@ them to the desired target platform.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
+load("//python:py_binary.bzl", _py_binary = "py_binary")
+load("//python:py_test.bzl", _py_test = "py_test")
 load("//python/config_settings/private:py_args.bzl", "py_args")
 
 def _transition_python_version_impl(_, attr):
@@ -151,7 +152,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     # https://bazel.build/reference/be/common-definitions#common-attributes
     compatible_with = kwargs.pop("compatible_with", None)
     deprecation = kwargs.pop("deprecation", None)
-    distribs = kwargs.pop("distribs", None)
     exec_compatible_with = kwargs.pop("exec_compatible_with", None)
     exec_properties = kwargs.pop("exec_properties", None)
     features = kwargs.pop("features", None)
@@ -165,7 +165,6 @@ def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
     common_attrs = {
         "compatible_with": compatible_with,
         "deprecation": deprecation,
-        "distribs": distribs,
         "exec_compatible_with": exec_compatible_with,
         "exec_properties": exec_properties,
         "features": features,

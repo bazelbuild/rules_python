@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import shutil
 import tempfile
@@ -54,28 +55,29 @@ class TestRequirementExtrasParsing(unittest.TestCase):
                 )
 
 
-class BazelTestCase(unittest.TestCase):
-    def test_generate_entry_point_contents(self):
-        got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
-        want = """#!/usr/bin/env python3
-import sys
-from sphinx.cmd.build import main
-if __name__ == "__main__":
-    sys.exit(main())
-"""
-        self.assertEqual(got, want)
-
-    def test_generate_entry_point_contents_with_shebang(self):
-        got = wheel_installer._generate_entry_point_contents(
-            "sphinx.cmd.build", "main", shebang="#!/usr/bin/python"
-        )
-        want = """#!/usr/bin/python
-import sys
-from sphinx.cmd.build import main
-if __name__ == "__main__":
-    sys.exit(main())
-"""
-        self.assertEqual(got, want)
+# TODO @aignas 2023-07-21: migrate to starlark
+# class BazelTestCase(unittest.TestCase):
+#     def test_generate_entry_point_contents(self):
+#         got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
+#         want = """#!/usr/bin/env python3
+# import sys
+# from sphinx.cmd.build import main
+# if __name__ == "__main__":
+#     sys.exit(main())
+# """
+#         self.assertEqual(got, want)
+#
+#     def test_generate_entry_point_contents_with_shebang(self):
+#         got = wheel_installer._generate_entry_point_contents(
+#             "sphinx.cmd.build", "main", shebang="#!/usr/bin/python"
+#         )
+#         want = """#!/usr/bin/python
+# import sys
+# from sphinx.cmd.build import main
+# if __name__ == "__main__":
+#     sys.exit(main())
+# """
+#         self.assertEqual(got, want)
 
 
 class TestWhlFilegroup(unittest.TestCase):
@@ -93,15 +95,33 @@ class TestWhlFilegroup(unittest.TestCase):
             self.wheel_path,
             installation_dir=Path(self.wheel_dir),
             extras={},
-            pip_data_exclude=[],
             enable_implicit_namespace_pkgs=False,
-            repo_prefix="prefix_",
         )
 
-        self.assertIn(self.wheel_name, os.listdir(self.wheel_dir))
-        with open("{}/BUILD.bazel".format(self.wheel_dir)) as build_file:
-            build_file_content = build_file.read()
-            self.assertIn("filegroup", build_file_content)
+        want_files = [
+            "metadata.json",
+            "site-packages",
+            self.wheel_name,
+        ]
+        self.assertEqual(
+            sorted(want_files),
+            sorted(
+                [
+                    str(p.relative_to(self.wheel_dir))
+                    for p in Path(self.wheel_dir).glob("*")
+                ]
+            ),
+        )
+        with open("{}/metadata.json".format(self.wheel_dir)) as metadata_file:
+            metadata_file_content = json.load(metadata_file)
+
+        want = dict(
+            version="0.0.1",
+            name="example-minimal-package",
+            deps=[],
+            entry_points=[],
+        )
+        self.assertEqual(want, metadata_file_content)
 
 
 if __name__ == "__main__":

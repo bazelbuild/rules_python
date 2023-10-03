@@ -14,7 +14,8 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
-load("//python:versions.bzl", "MINOR_MAPPING", "WINDOWS_NAME")
+load("//python:versions.bzl", "WINDOWS_NAME")
+load("//python/private:full_version.bzl", "full_version")
 load(
     "//python/private:toolchains_repo.bzl",
     "get_host_os_arch",
@@ -27,12 +28,6 @@ def _have_same_length(*lists):
     if not lists:
         fail("expected at least one list")
     return len({len(length): None for length in lists}) == 1
-
-def _get_version(python_version):
-    # we need to get the MINOR_MAPPING or use the full version
-    if python_version in MINOR_MAPPING:
-        python_version = MINOR_MAPPING[python_version]
-    return python_version
 
 def _python_toolchain_build_file_content(
         prefixes,
@@ -55,7 +50,7 @@ def _python_toolchain_build_file_content(
     # build the toolchain content by calling python_toolchain_build_file_content
     return "\n".join([python_toolchain_build_file_content(
         prefix = prefixes[i],
-        python_version = _get_version(python_versions[i]),
+        python_version = full_version(python_versions[i]),
         set_python_version_constraint = set_python_version_constraints[i],
         user_repository_name = user_repository_names[i],
         rules_python = rules_python,

@@ -26,7 +26,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bazelbuild/rules_go/go/tools/bazel"
+	"github.com/bazelbuild/rules_go/go/runfiles"
 )
 
 var (
@@ -39,7 +39,13 @@ var (
 func startStdModuleProcess(ctx context.Context) {
 	stdModulesSeen = make(map[string]struct{})
 
-	stdModulesScriptRunfile, err := bazel.Runfile("python/std_modules")
+	rfiles, err := runfiles.New()
+	if err != nil {
+		log.Printf("failed to create a runfiles object: %v\n", err)
+		os.Exit(1)
+	}
+
+	stdModulesScriptRunfile, err := rfiles.Rlocation("rules_python_gazelle_plugin/python/std_modules")
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
 		os.Exit(1)
@@ -49,7 +55,8 @@ func startStdModuleProcess(ctx context.Context) {
 
 	cmd.Stderr = os.Stderr
 	// All userland site-packages should be ignored.
-	cmd.Env = []string{"PYTHONNOUSERSITE=1"}
+	cmd.Env = append([]string{"PYTHONNOUSERSITE=1"}, rfiles.Env()...)
+
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)

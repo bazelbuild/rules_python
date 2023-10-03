@@ -86,16 +86,22 @@ def _python_impl(module_ctx):
             # much else that can be done. Modules don't know and can't control
             # what other modules do, so the first in the dependency graph wins.
             if toolchain_version in global_toolchain_versions:
-                _warn_duplicate_global_toolchain_version(
-                    toolchain_version,
-                    first = global_toolchain_versions[toolchain_version],
-                    second_toolchain_name = toolchain_name,
-                    second_module_name = mod.name,
-                )
+                # If the python version is explicitly provided by the root
+                # module, they should not be warned for choosing the same
+                # version that rules_python provides as default.
+                first = global_toolchain_versions[toolchain_version]
+                if mod.name != "rules_python" or not first.is_root:
+                    _warn_duplicate_global_toolchain_version(
+                        toolchain_version,
+                        first = first,
+                        second_toolchain_name = toolchain_name,
+                        second_module_name = mod.name,
+                    )
                 continue
             global_toolchain_versions[toolchain_version] = struct(
                 toolchain_name = toolchain_name,
                 module_name = mod.name,
+                is_root = mod.is_root,
             )
 
             # Only the root module and rules_python are allowed to specify the default
@@ -250,7 +256,9 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
                 "python_version": attr.string(
                     mandatory = True,
-                    doc = "The Python version, in `major.minor` format, e.g '3.12', to create a toolchain for.",
+                    doc = "The Python version, in `major.minor` format, e.g " +
+                          "'3.12', to create a toolchain for. Patch level " +
+                          "granularity (e.g. '3.12.1') is not supported.",
                 ),
             },
         ),
