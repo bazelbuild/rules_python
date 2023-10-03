@@ -22,8 +22,6 @@ import sys
 import zipfile
 from pathlib import Path
 
-import packaging.version
-
 
 def commonpath(path1, path2):
     ret = []
@@ -32,6 +30,16 @@ def commonpath(path1, path2):
             break
         ret.append(a)
     return os.path.sep.join(ret)
+
+
+def escape_filename_segment(segment):
+    """Escapes a filename segment per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
+
+    This is a legacy function, kept for backwards compatibility,
+    and may be removed in the future. See `escape_filename_distribution_name`
+    and `normalize_pep440` for the modern alternatives.
+    """
+    return re.sub(r"[^\w\d.]+", "_", segment, re.UNICODE)
 
 
 def normalize_package_name(name):
@@ -68,6 +76,8 @@ def normalize_pep440(version):
 
     """
 
+    import packaging.version
+
     try:
         return str(packaging.version.Version(version))
     except packaging.version.InvalidVersion:
@@ -95,9 +105,11 @@ class WheelMaker(object):
         platform,
         outfile=None,
         strip_path_prefixes=None,
+        incompatible_normalize_name=False,
+        incompatible_normalize_version=False,
     ):
         self._name = name
-        self._version = normalize_pep440(version)
+        self._version = version
         self._build_tag = build_tag
         self._python_tag = python_tag
         self._abi = abi
@@ -107,12 +119,30 @@ class WheelMaker(object):
             strip_path_prefixes if strip_path_prefixes is not None else []
         )
 
-        self._distinfo_dir = (
-            escape_filename_distribution_name(self._name)
-            + "-"
-            + self._version
-            + ".dist-info/"
-        )
+        if incompatible_normalize_version:
+            self._version = normalize_pep440(self._version)
+            self._escaped_version = self._version
+        else:
+            self._escaped_version = escape_filename_segment(self._version)
+
+        if incompatible_normalize_name:
+            escaped_name = escape_filename_distribution_name(self._name)
+            self._distinfo_dir = (
+                escaped_name + "-" + self._escaped_version + ".dist-info/"
+            )
+            self._wheelname_fragment_distribution_name = escaped_name
+        else:
+            # The legacy behavior escapes the distinfo dir but not the
+            # wheel name. Enable incompatible_normalize_name to fix it.
+            # https://github.com/bazelbuild/rules_python/issues/1132
+            self._distinfo_dir = (
+                escape_filename_segment(self._name)
+                + "-"
+                + self._escaped_version
+                + ".dist-info/"
+            )
+            self._wheelname_fragment_distribution_name = self._name
+
         self._zipfile = None
         # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
@@ -129,7 +159,7 @@ class WheelMaker(object):
 
     def wheelname(self) -> str:
         components = [
-            escape_filename_distribution_name(self._name),
+            self._wheelname_fragment_distribution_name,
             self._version,
         ]
         if self._build_tag:
@@ -222,7 +252,7 @@ Root-Is-Purelib: {}
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
         metadata = re.sub("^Name: .*$", "Name: %s" % name, metadata, flags=re.MULTILINE)
-        metadata += "Version: %s\n\n" % normalize_pep440(version)
+        metadata += "Version: %s\n\n" % version
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
@@ -380,6 +410,10 @@ def parse_args() -> argparse.Namespace:
         help="Pass in the stamp info file for stamping",
     )
 
+    feature_group = parser.add_argument_group("Feature flags")
+    feature_group.add_argument("--incompatible_normalize_name", action="store_true")
+    feature_group.add_argument("--incompatible_normalize_version", action="store_true")
+
     return parser.parse_args(sys.argv[1:])
 
 
@@ -436,6 +470,8 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
+        incompatible_normalize_name=arguments.incompatible_normalize_name,
+        incompatible_normalize_version=arguments.incompatible_normalize_version,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
@@ -460,8 +496,15 @@ def main() -> None:
             with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
+        if arguments.incompatible_normalize_version:
+            version_in_metadata = normalize_pep440(version)
+        else:
+            version_in_metadata = version
         maker.add_metadata(
-            metadata=metadata, name=name, description=description, version=version
+            metadata=metadata,
+            name=name,
+            description=description,
+            version=version_in_metadata,
         )
 
         if arguments.entry_points_file:

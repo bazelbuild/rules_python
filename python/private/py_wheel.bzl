@@ -118,6 +118,21 @@ See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
     ),
 }
 
+_feature_flags = {
+    "incompatible_normalize_name": attr.bool(
+        default = False,
+        doc = "Normalize the package distribution name according to current " +
+              "standards.",
+    ),
+    "incompatible_normalize_version": attr.bool(
+        default = False,
+        doc = "Normalize the package version according to PEP440 standard. " +
+              "With this option set to True, if the user wants to pass any " +
+              "stamp variables, they have to be enclosed in '{}', e.g. " +
+              "'{BUILD_TIMESTAMP}'.",
+    ),
+}
+
 _requirement_attrs = {
     "extra_requires": attr.string_list_dict(
         doc = "List of optional requirements for this package",
@@ -274,13 +289,25 @@ def _py_wheel_impl(ctx):
     python_tag = _replace_make_variables(ctx.attr.python_tag, ctx)
     version = _replace_make_variables(ctx.attr.version, ctx)
 
-    outfile = ctx.actions.declare_file("-".join([
-        _escape_filename_distribution_name(ctx.attr.distribution),
-        normalize_pep440(version),
+    filename_segments = []
+
+    if ctx.attr.incompatible_normalize_name:
+        filename_segments.append(_escape_filename_distribution_name(ctx.attr.distribution))
+    else:
+        filename_segments.append(_escape_filename_segment(ctx.attr.distribution))
+
+    if ctx.attr.incompatible_normalize_version:
+        filename_segments.append(normalize_pep440(version))
+    else:
+        filename_segments.append(_escape_filename_segment(version))
+
+    filename_segments.extend([
         _escape_filename_segment(python_tag),
         _escape_filename_segment(abi),
         _escape_filename_segment(ctx.attr.platform),
-    ]) + ".whl")
+    ])
+
+    outfile = ctx.actions.declare_file("-".join(filename_segments) + ".whl")
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
@@ -309,6 +336,10 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile)
     args.add("--name_file", name_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
+    if ctx.attr.incompatible_normalize_name:
+        args.add("--incompatible_normalize_name")
+    if ctx.attr.incompatible_normalize_version:
+        args.add("--incompatible_normalize_version")
 
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):
@@ -460,6 +491,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
             ),
         },
         _distribution_attrs,
+        _feature_flags,
         _requirement_attrs,
         _entrypoint_attrs,
         _other_attrs,
