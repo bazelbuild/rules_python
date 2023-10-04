@@ -1,3 +1,70 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+bzl_library(
+    name = "pip_repository_bzl",
+    srcs = ["pip_repository.bzl"],
+    # Semi-public: What is intended to be public and what is intended to be
+    # internal is unclear. Some symbols are clearly public (e.g.
+    # package_annotations), some are clearly internal (e.g.
+    # pip_hub_repository_bzlmod), and many are unknown.
+    visibility = ["//visibility:public"],
+    deps = [
+        ":repositories_bzl",
+        ":requirements_parser_bzl",
+        "//python:repositories_bzl",
+        "//python:versions_bzl",
+        "//python/pip_install/private:generate_whl_library_build_bazel_bzl",
+        "//python/pip_install/private:srcs_bzl",
+        "//python/private:bzlmod_enabled_bzl",
+        "//python/private:normalize_name_bzl",
+        "//python/private:render_pkg_aliases_bzl",
+        "//python/private:toolchains_repo_bzl",
+        "//python/private:which_bzl",
+    ],
+)
+
+bzl_library(
+    name = "requirements_bzl",
+    srcs = ["requirements.bzl"],
+    deps = [
+        ":repositories_bzl",
+        "//python:defs_bzl",
+    ],
+)
+
+bzl_library(
+    name = "requirements_parser_bzl",
+    srcs = ["requirements_parser.bzl"],
+)
+
+bzl_library(
+    name = "repositories_bzl",
+    srcs = ["repositories.bzl"],
+    deps = [
+        "//:version_bzl",
+        "//python/private:bazel_tools_bzl",
+        "@bazel_skylib//lib:versions",
+    ],
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
