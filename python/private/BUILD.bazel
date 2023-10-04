@@ -157,9 +157,10 @@ bzl_library(
 bzl_library(
     name = "bazel_tools_bzl",
     srcs = [
-        "@bazel_tools//tools/python:srcs_version.bzl",
-        "@bazel_tools//tools/python:toolchain.bzl",
-        "@bazel_tools//tools/python:utils.bzl",
+        # This set of sources is overly broad, but it's the only public
+        # target available across Bazel versions that has all the necessary
+        # sources.
+        "@bazel_tools//tools:bzl_srcs",
     ],
     visibility = ["//python:__pkg__"],
 )
