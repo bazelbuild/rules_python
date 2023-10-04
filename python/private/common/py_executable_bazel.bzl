@@ -21,6 +21,7 @@ load(
     "create_binary_semantics_struct",
     "create_cc_details_struct",
     "create_executable_result_struct",
+    "target_platform_has_any_constraint",
     "union_attrs",
 )
 load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
@@ -174,9 +175,7 @@ def _create_executable(
         runtime_details = runtime_details,
     )
 
-    # TODO: This should use the configuration instead of the Bazel OS.
-    # This is just legacy behavior.
-    is_windows = _py_builtins.get_current_os_name() == "windows"
+    is_windows = target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints)
 
     if is_windows:
         if not executable.extension == "exe":

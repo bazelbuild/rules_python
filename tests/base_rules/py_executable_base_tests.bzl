@@ -13,13 +13,51 @@
 # limitations under the License.
 """Tests common to py_binary and py_test (executable rules)."""
 
+load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
+load("//tests/support:test_platforms.bzl", "WINDOWS")
 
 _tests = []
+
+def _test_basic_windows(name, config):
+    if rp_config.enable_pystar:
+        target_compatible_with = []
+    else:
+        target_compatible_with = ["@platforms//:incompatible"]
+    rt_util.helper_target(
+        config.rule,
+        name = name + "_subject",
+        srcs = ["main.py"],
+        main = "main.py",
+    )
+    analysis_test(
+        name = name,
+        impl = _test_basic_windows_impl,
+        target = name + "_subject",
+        config_settings = {
+            "//command_line_option:cpu": "windows_x86_64",
+            "//command_line_option:crosstool_top": Label("//tests/cc:cc_toolchain_suite"),
+            "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
+            "//command_line_option:platforms": [WINDOWS],
+        },
+        attr_values = {"target_compatible_with": target_compatible_with},
+    )
+
+def _test_basic_windows_impl(env, target):
+    target = env.expect.that_target(target)
+    target.executable().path().contains(".exe")
+    target.runfiles().contains_predicate(matching.str_endswith(
+        target.meta.format_str("/{name}"),
+    ))
+    target.runfiles().contains_predicate(matching.str_endswith(
+        target.meta.format_str("/{name}.exe"),
+    ))
+
+_tests.append(_test_basic_windows)
 
 def _test_executable_in_runfiles(name, config):
     rt_util.helper_target(
