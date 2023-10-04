@@ -18,6 +18,8 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
+# NOTE: Only public visibility for historical reasons.
+# This package is only for rules_python to generate its own docs.
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
@@ -32,47 +34,35 @@ _DOCS = {
     "python": "//docs:core-docs",
 }
 
-# We define these bzl_library targets here rather than in the //python package
-# because they're only used for doc generation. This way, we avoid requiring
-# our users to depend on Skylib.
-
-bzl_library(
-    name = "bazel_repo_tools",
-    srcs = [
-        "@bazel_tools//tools:bzl_srcs",
-    ],
+# Temporary compatibility aliases for some other projects depending on the old
+# bzl_library targets.
+alias(
+    name = "defs",
+    actual = "//python:defs_bzl",
+    deprecation = "Use //python:defs_bzl instead; targets under //docs are internal.",
 )
 
-bzl_library(
-    name = "defs",
-    srcs = [
-        "//python:defs.bzl",
-        "//python/private:reexports.bzl",
-    ],
-    deps = [
-        ":bazel_repo_tools",
-        "//python:defs_bzl",
-        "//python/private:reexports_bzl",
-    ],
+alias(
+    name = "bazel_repo_tools",
+    actual = "//python/private:bazel_tools_bzl",
+    deprecation = "Use @bazel_tools//tools:bzl_srcs instead; targets under //docs are internal.",
 )
 
 bzl_library(
     name = "pip_install_bzl",
-    srcs = [
-        "//python:bzl",
-        "//python/pip_install:bzl",
-    ],
+    deprecation = "Use //python:pip_bzl or //python/pip_install:pip_repository_bzl instead; " +
+                  "targets under //docs are internal.",
     deps = [
-        ":defs",
-        "//:version.bzl",
+        "//python:pip_bzl",
+        "//python/pip_install:pip_repository_bzl",
     ],
 )
 
-bzl_library(
+alias(
     name = "requirements_parser_bzl",
-    srcs = [
-        "//python/pip_install:requirements_parser.bzl",
-    ],
+    actual = "//python/pip_install:pip_repository_bzl",
+    deprecation = "Use //python/pip_install:pip_repository_bzl instead; Both the requirements " +
+                  "parser and targets under //docs are internal",
 )
 
 # Empty list means "compatible with all".
@@ -93,7 +83,9 @@ stardoc(
     out = "python.md_",
     input = "//python:defs.bzl",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = [":defs"],
+    deps = [
+        "//python:defs_bzl",
+    ],
 )
 
 stardoc(
@@ -102,9 +94,7 @@ stardoc(
     input = "//python:pip.bzl",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
     deps = [
-        ":bazel_repo_tools",
-        ":pip_install_bzl",
-        "@bazel_skylib//lib:versions",
+        "//python:pip_bzl",
     ],
 )
 
@@ -114,10 +104,7 @@ stardoc(
     input = "//python/pip_install:pip_repository.bzl",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
     deps = [
-        ":bazel_repo_tools",
-        ":pip_install_bzl",
-        ":requirements_parser_bzl",
-        "@bazel_skylib//lib:versions",
+        "//python/pip_install:pip_repository_bzl",
     ],
 )
 
