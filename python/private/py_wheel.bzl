@@ -121,8 +121,16 @@ See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
 _feature_flags = {
     "incompatible_normalize_name": attr.bool(
         default = False,
-        doc = "Normalize the package distribution name according to current " +
-              "standards.",
+        doc = """\
+Normalize the package distribution name according to latest
+Python packaging standards.
+
+See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+and https://packaging.python.org/en/latest/specifications/name-normalization/.
+
+Apart from the valid names according to the above, we also accept
+'{' and '}', which may be used as placeholders for stamping.
+""",
     ),
     "incompatible_normalize_version": attr.bool(
         default = False,
