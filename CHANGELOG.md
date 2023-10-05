@@ -55,6 +55,14 @@ A brief description of the categories of changes:
   authentication against private HTTP hosts serving Python toolchain binaries.
 * `//python:packaging_bzl` added, a `bzl_library` for the Starlark
   files `//python:packaging.bzl` requires.
+* (py_wheel) Added the `incompatible_normalize_name` feature flag to
+  normalize the package distribution name according to latest Python
+  packaging standards. Defaults to `False` for the time being.
+* (py_wheel) Added the `incompatible_normalize_version` feature flag
+  to normalize the package version according to PEP440 standard. This
+  also adds support for local version specifiers (versions with a `+`
+  in them), in accordance with PEP440. Defaults to `False` for the
+  time being.
 
 ### Removed
 
