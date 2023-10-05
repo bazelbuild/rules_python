@@ -30,7 +30,7 @@ load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-1],
+    default_version = MINOR_MAPPING.values()[-2],
     python_versions = MINOR_MAPPING.values(),
 )
 
