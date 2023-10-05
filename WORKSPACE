@@ -30,7 +30,7 @@ load("//python:versions.bzl", "MINOR_MAPPING")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-1],
+    default_version = MINOR_MAPPING.values()[-2],
     python_versions = MINOR_MAPPING.values(),
 )
 
@@ -72,7 +72,7 @@ _py_gazelle_deps()
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
 # https://github.com/bazelbuild/rules_python/issues/1016.
-load("@python//3.11.5:defs.bzl", "interpreter")
+load("@python//3.11.6:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
