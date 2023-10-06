@@ -19,3 +19,7 @@ build --incompatible_default_to_explicit_init_py
 # Windows makes use of runfiles for some rules
 build --enable_runfiles
 startup --windows_enable_symlinks
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://github.com/bazelbuild/rules_python/issues/1469
+common --noenable_bzlmod
