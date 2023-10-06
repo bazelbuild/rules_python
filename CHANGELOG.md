@@ -19,6 +19,8 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+## [0.26.0] - 2023-10-06
+
 ### Changed
 
 * Python version patch level bumps:
