@@ -128,7 +128,9 @@ BREAKING CHANGE: <summary>
 ```
 
 Where `(scope)` is optional, and `!` is only required if there is a breaking change.
-If a breaking change is introduced, then `BREAKING CHANGE:` is required.
+If a breaking change is introduced, then `BREAKING CHANGE:` is required; see
+the [Breaking Changes](#breaking-changes) section for how to introduce breaking
+changes.
 
 Common `type`s:
 
@@ -183,6 +185,78 @@ Issues should be triaged as follows:
 - Anything else, such as feature requests not related to existing core rules
   functionality, should also be filed in this repository but without the
   `core-rules` label.
+
+## Breaking Changes
+
+Breaking changes are generally permitted, but we follow a 3-step process for
+introducing them. The intent behind this process is to balance the difficulty of
+version upgrades for users, maintaining multiple code paths, and being able to
+introduce modern functionality.
+
+The general process is:
+
+1. In version `N`, introduce the new behavior, but it must be disabled by
+   default. Users can opt into the new functionality when they upgrade to
+   version `N`, which lets them try it and verify functionality.
+2. In version `N+1`, the new behavior can be enabled by default. Users can
+   opt out if necessary, but doing so causes a warning to be issued.
+3. In version `N+2`, the new behavior is always enabled and cannot be opted out
+   of. The API for the control mechanism can be removed in this release.
+
+Note that the `+1` and `+2` releases are just examples; the steps are not
+required to happen in immedially subsequent releases.
+
+
+### How to control breaking changes
+
+The details of the control mechanism will depend on the situation. Below is
+a summary of some different options.
+
+* Environment variables are best for repository rule behavior. Environment
+  variables can be propagated to rules and macros using the generated
+  `@rules_python_internal//:config.bzl` file.
+* Attributes are applicable to macros and regular rules, especially when the
+  behavior is likely to vary on a per-target basis.
+* [User defined build settings](https://bazel.build/extending/config#user-defined-build-settings)
+  (aka custom build flags) are applicable for rules when the behavior change
+  generally wouldn't vary on a per-target basis. They also have the benefit that
+  an entire code base can have them easily enabled by a bazel command line flag.
+* Allowlists allow a project to centrally control if something is
+  enabled/disabled. Under the hood, they are basically a specialized custom
+  build flag.
+
+Note that attributes and flags can seamlessly interoperate by having the default
+controlled by a flag, and an attribute can override the flag setting. This
+allows a project to enable the new behavior by default while they work to fix
+problematic cases to prepare for the next upgrade.
+
+### What is considered a breaking change?
+
+Precisely defining what constitutes a breaking change is hard because it's
+easy for _someone, somewhere_ to depend on _some_ observable behavior, despite
+our best efforts to thoroughly document what is or isn't supported and hiding
+any internal details.
+
+In general, something is considered a breaking change when it changes the
+direct behavior of a supported public API. Simply being able to observe a
+behavior change doesn't necessarily mean it's a breaking change.
+
+Long standing undocumented behavior is a large grey area and really depends on
+how load-bearing it has become and what sort of reasonable expectation of
+behavior there is.
+
+Here's some examples of what would or wouldn't be considered a breaking change.
+
+Breaking changes:
+  * Renaming an function argument for public functions.
+  * Enforcing stricter validation than was previously required when there's a
+    sensible reason users would run afoul of it.
+  * Changing the name of a public rule.
+
+Not breaking changes:
+  * Upgrading dependencies
+  * Changing internal details, such as renaming an internal file.
+  * Changing a rule to a macro.
 
 ## FAQ
 
