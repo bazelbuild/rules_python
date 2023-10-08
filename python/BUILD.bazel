@@ -111,6 +111,7 @@ bzl_library(
     name = "py_binary_bzl",
     srcs = ["py_binary.bzl"],
     deps = [
+        "//python/private:register_extension_info_bzl",
         "//python/private:util_bzl",
         "//python/private/common:py_binary_macro_bazel_bzl",
         "@rules_python_internal//:rules_python_config_bzl",
@@ -142,6 +143,7 @@ bzl_library(
     name = "py_library_bzl",
     srcs = ["py_library.bzl"],
     deps = [
+        "//python/private:register_extension_info_bzl",
         "//python/private:util_bzl",
         "//python/private/common:py_library_macro_bazel_bzl",
         "@rules_python_internal//:rules_python_config_bzl",
@@ -182,6 +184,7 @@ bzl_library(
     name = "py_test_bzl",
     srcs = ["py_test.bzl"],
     deps = [
+        "//python/private:register_extension_info_bzl",
         "//python/private:util_bzl",
         "//python/private/common:py_test_macro_bazel_bzl",
         "@rules_python_internal//:rules_python_config_bzl",

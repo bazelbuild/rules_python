@@ -164,6 +164,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "register_extension_info_bzl",
+    srcs = ["register_extension_info.bzl"],
+)
+
+bzl_library(
     name = "render_pkg_aliases_bzl",
     srcs = ["render_pkg_aliases.bzl"],
     deps = [
