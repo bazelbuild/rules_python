@@ -203,7 +203,7 @@ def _create_executable(
 
     extra_files_to_build = []
 
-    # NOTE: --build_python_zip defauls to true on Windows
+    # NOTE: --build_python_zip defaults to true on Windows
     build_zip_enabled = ctx.fragments.py.build_python_zip
 
     # When --build_python_zip is enabled, then the zip file becomes
@@ -260,7 +260,7 @@ def _create_executable(
         # Double check this just to make sure.
         if not is_windows or not build_zip_enabled:
             fail(("Should not occur: The non-executable-zip and " +
-                  "non-boostrap-template case should have windows and zip " +
+                  "non-bootstrap-template case should have windows and zip " +
                   "both true, but got " +
                   "is_windows={is_windows} " +
                   "build_zip_enabled={build_zip_enabled}").format(
