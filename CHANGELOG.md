@@ -19,6 +19,12 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Fixed
+
+* Skip aliases for unloaded toolchains. Some Python versions that don't have full
+  platform support, and referencing their undefined repositories can break operations
+  like `bazel query rdeps(...)`.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed
