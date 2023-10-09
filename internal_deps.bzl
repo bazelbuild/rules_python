@@ -14,8 +14,22 @@
 
 """Dependencies that are needed for rules_python tests and tools."""
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive", _http_file = "http_file")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+
+def http_archive(name, **kwargs):
+    maybe(
+        _http_archive,
+        name = name,
+        **kwargs
+    )
+
+def http_file(name, **kwargs):
+    maybe(
+        _http_file,
+        name = name,
+        **kwargs
+    )
 
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
@@ -23,8 +37,7 @@ def rules_python_internal_deps():
     # This version is also used in python/tests/toolchains/workspace_template/WORKSPACE.tmpl
     # and tests/ignore_root_user_error/WORKSPACE.
     # If you update this dependency, please update the tests as well.
-    maybe(
-        http_archive,
+    http_archive(
         name = "bazel_skylib",
         sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
         urls = [
@@ -33,8 +46,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "rules_pkg",
         urls = [
             "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.7.0/rules_pkg-0.7.0.tar.gz",
@@ -43,16 +55,14 @@ def rules_python_internal_deps():
         sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "rules_testing",
         sha256 = "8df0a8eb21739ea4b0a03f5dc79e68e245a45c076cfab404b940cc205cb62162",
         strip_prefix = "rules_testing-0.4.0",
         url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.4.0/rules_testing-v0.4.0.tar.gz",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "rules_license",
         urls = [
             "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
@@ -61,18 +71,18 @@ def rules_python_internal_deps():
         sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "io_bazel_stardoc",
-        url = "https://github.com/bazelbuild/stardoc/archive/6f274e903009158504a9d9130d7f7d5f3e9421ed.tar.gz",
-        sha256 = "b5d6891f869d5b5a224316ec4dd9e9d481885a9b1a1c81eb846e20180156f2fa",
-        strip_prefix = "stardoc-6f274e903009158504a9d9130d7f7d5f3e9421ed",
+        sha256 = "62bd2e60216b7a6fec3ac79341aa201e0956477e7c8f6ccc286f279ad1d96432",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.6.2/stardoc-0.6.2.tar.gz",
+            "https://github.com/bazelbuild/stardoc/releases/download/0.6.2/stardoc-0.6.2.tar.gz",
+        ],
     )
 
     # The below two deps are required for the integration test with bazel
     # gazelle. Maybe the test should be moved to the `gazelle` workspace?
-    maybe(
-        http_archive,
+    http_archive(
         name = "io_bazel_rules_go",
         sha256 = "278b7ff5a826f3dc10f04feaf0b70d48b68748ccd512d7f98bf442077f043fe3",
         urls = [
@@ -81,8 +91,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "bazel_gazelle",
         sha256 = "727f3e4edd96ea20c29e8c2ca9e8d2af724d8c7778e7923a854b2c80952bc405",
         urls = [
@@ -92,8 +101,7 @@ def rules_python_internal_deps():
     )
 
     # Test data for WHL tool testing.
-    maybe(
-        http_file,
+    http_file(
         name = "futures_2_2_0_whl",
         downloaded_file_path = "futures-2.2.0-py2.py3-none-any.whl",
         sha256 = "9fd22b354a4c4755ad8c7d161d93f5026aca4cfe999bd2e53168f14765c02cd6",
@@ -104,8 +112,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_file,
+    http_file(
         name = "futures_3_1_1_whl",
         downloaded_file_path = "futures-3.1.1-py2-none-any.whl",
         sha256 = "c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f",
@@ -116,8 +123,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_file,
+    http_file(
         name = "google_cloud_language_whl",
         downloaded_file_path = "google_cloud_language-0.29.0-py2.py3-none-any.whl",
         sha256 = "a2dd34f0a0ebf5705dcbe34bd41199b1d0a55c4597d38ed045bd183361a561e9",
@@ -128,8 +134,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_file,
+    http_file(
         name = "grpc_whl",
         downloaded_file_path = "grpcio-1.6.0-cp27-cp27m-manylinux1_i686.whl",
         sha256 = "c232d6d168cb582e5eba8e1c0da8d64b54b041dd5ea194895a2fe76050916561",
@@ -140,8 +145,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_file,
+    http_file(
         name = "mock_whl",
         downloaded_file_path = "mock-2.0.0-py2.py3-none-any.whl",
         sha256 = "5ce3c71c5545b472da17b72268978914d0252980348636840bd34a00b5cc96c1",
@@ -152,8 +156,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "build_bazel_integration_testing",
         urls = [
             "https://github.com/bazelbuild/bazel-integration-testing/archive/165440b2dbda885f8d1ccb8d0f417e6cf8c54f17.zip",
@@ -162,8 +165,7 @@ def rules_python_internal_deps():
         sha256 = "2401b1369ef44cc42f91dc94443ef491208dbd06da1e1e10b702d8c189f098e3",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "rules_proto",
         sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
         strip_prefix = "rules_proto-5.3.0-21.7",
@@ -172,8 +174,7 @@ def rules_python_internal_deps():
         ],
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "com_google_protobuf",
         sha256 = "75be42bd736f4df6d702a0e4e4d30de9ee40eac024c4b845d17ae4cc831fe4ae",
         strip_prefix = "protobuf-21.7",
@@ -181,4 +182,34 @@ def rules_python_internal_deps():
             "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
             "https://github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
         ],
+    )
+
+    # Needed for stardoc
+    http_archive(
+        name = "rules_java",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_java/releases/download/6.3.0/rules_java-6.3.0.tar.gz",
+            "https://github.com/bazelbuild/rules_java/releases/download/6.3.0/rules_java-6.3.0.tar.gz",
+        ],
+        sha256 = "29ba147c583aaf5d211686029842c5278e12aaea86f66bd4a9eb5e525b7f2701",
+    )
+
+    RULES_JVM_EXTERNAL_TAG = "5.2"
+    RULES_JVM_EXTERNAL_SHA = "f86fd42a809e1871ca0aabe89db0d440451219c3ce46c58da240c7dcdc00125f"
+    http_archive(
+        name = "rules_jvm_external",
+        patch_args = ["-p1"],
+        patches = ["@io_bazel_stardoc//:rules_jvm_external.patch"],
+        strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+        sha256 = RULES_JVM_EXTERNAL_SHA,
+        url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG),
+    )
+
+    http_archive(
+        name = "rules_license",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
+            "https://github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
+        ],
+        sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
     )

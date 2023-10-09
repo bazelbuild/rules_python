@@ -12,6 +12,8 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
+bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
+
 internal_deps = use_extension("@rules_python//python/extensions/private:internal_deps.bzl", "internal_deps")
 internal_deps.install()
 use_repo(

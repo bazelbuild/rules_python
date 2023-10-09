@@ -16,7 +16,6 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 # NOTE: Only public visibility for historical reasons.
 # This package is only for rules_python to generate its own docs.
@@ -65,16 +64,11 @@ alias(
                   "parser and targets under //docs are internal",
 )
 
-# Empty list means "compatible with all".
-# Stardoc+bzlmod doesn't currently work with our docs, so disable trying to
-# build it for now.
-_COMPATIBLE_PLATFORM = [] if not BZLMOD_ENABLED else ["@platforms//:incompatible"]
-
 # TODO: Stardoc does not guarantee consistent outputs accross platforms (Unix/Windows).
 # As a result we do not build or test docs on Windows.
 _TARGET_COMPATIBLE_WITH = select({
-    "@platforms//os:linux": _COMPATIBLE_PLATFORM,
-    "@platforms//os:macos": _COMPATIBLE_PLATFORM,
+    "@platforms//os:linux": [],
+    "@platforms//os:macos": [],
     "//conditions:default": ["@platforms//:incompatible"],
 })
 

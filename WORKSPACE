@@ -21,6 +21,22 @@ load("//:internal_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
 
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
+load("@io_bazel_stardoc//:deps.bzl", "stardoc_external_deps")
+
+stardoc_external_deps()
+
+load("@stardoc_maven//:defs.bzl", stardoc_pinned_maven_install = "pinned_maven_install")
+
+stardoc_pinned_maven_install()
+
 load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
