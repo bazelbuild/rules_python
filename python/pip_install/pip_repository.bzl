@@ -25,12 +25,16 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
+load("//python/private/bzlmod:pip_repository.bzl", _pip_hub_repository_bzlmod = "pip_repository")
 
 CPPFLAGS = "CPPFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
+
+# Kept for not creating merge conflicts with PR#1476, can be removed later.
+pip_hub_repository_bzlmod = _pip_hub_repository_bzlmod
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -266,68 +270,6 @@ def locked_requirements_label(ctx, attr):
 A requirements_lock attribute must be specified, or a platform-specific lockfile using one of the requirements_* attributes.
 """)
     return requirements_txt
-
-def _pip_hub_repository_bzlmod_impl(rctx):
-    bzl_packages = rctx.attr.whl_map.keys()
-    aliases = render_pkg_aliases(
-        repo_name = rctx.attr.repo_name,
-        rules_python = rctx.attr._template.workspace_name,
-        default_version = rctx.attr.default_version,
-        whl_map = rctx.attr.whl_map,
-    )
-    for path, contents in aliases.items():
-        rctx.file(path, contents)
-
-    # NOTE: we are using the canonical name with the double '@' in order to
-    # always uniquely identify a repository, as the labels are being passed as
-    # a string and the resolution of the label happens at the call-site of the
-    # `requirement`, et al. macros.
-    macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
-
-    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
-    rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
-        "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "data")
-            for p in bzl_packages
-        ]),
-        "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, p)
-            for p in bzl_packages
-        ]),
-        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "whl")
-            for p in bzl_packages
-        ]),
-        "%%MACRO_TMPL%%": macro_tmpl,
-        "%%NAME%%": rctx.attr.name,
-    })
-
-pip_hub_repository_bzlmod_attrs = {
-    "default_version": attr.string(
-        mandatory = True,
-        doc = """\
-This is the default python version in the format of X.Y.Z. This should match
-what is setup by the 'python' extension using the 'is_default = True'
-setting.""",
-    ),
-    "repo_name": attr.string(
-        mandatory = True,
-        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
-    ),
-    "whl_map": attr.string_list_dict(
-        mandatory = True,
-        doc = "The wheel map where values are python versions",
-    ),
-    "_template": attr.label(
-        default = ":pip_repository_requirements_bzlmod.bzl.tmpl",
-    ),
-}
-
-pip_hub_repository_bzlmod = repository_rule(
-    attrs = pip_hub_repository_bzlmod_attrs,
-    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
-    implementation = _pip_hub_repository_bzlmod_impl,
-)
 
 def _pip_repository_impl(rctx):
     requirements_txt = locked_requirements_label(rctx, rctx.attr)

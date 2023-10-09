@@ -27,6 +27,7 @@ licenses(["notice"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
+        "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
         "//tools/build_defs/python/private:distribution",
