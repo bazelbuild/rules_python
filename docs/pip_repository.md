@@ -1,4 +1,9 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# pip integration
+
+Out of items documented below only `package_annotation` annotation is available
+for general usage. Any other APIs are subject to change.
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 
 

@@ -1,4 +1,6 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Python C/C++ toolchain provider info.
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Provider for C/C++ information about the Python runtime.
 

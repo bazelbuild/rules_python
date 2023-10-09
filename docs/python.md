@@ -1,4 +1,6 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Core Python rules
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Core rules for building Python projects.
 

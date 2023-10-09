@@ -1,4 +1,6 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Python C/C++ toolchain rule
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Implementation of py_cc_toolchain rule.
 
