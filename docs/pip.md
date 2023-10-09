@@ -18,8 +18,8 @@ whl_library_alias(<a href="#whl_library_alias-name">name</a>, <a href="#whl_libr
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="whl_library_alias-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="whl_library_alias-default_version"></a>default_version |  Optional Python version in major.minor format, e.g. '3.10'.The Python version of the wheel to use when the versions from <code>version_map</code> don't match. This allows the default (version unaware) rules to match and select a wheel. If not specified, then the default rules won't be able to resolve a wheel and an error will occur.   | String | optional | <code>""</code> |
-| <a id="whl_library_alias-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
+| <a id="whl_library_alias-default_version"></a>default_version |  Optional Python version in major.minor format, e.g. '3.10'.The Python version of the wheel to use when the versions from `version_map` don't match. This allows the default (version unaware) rules to match and select a wheel. If not specified, then the default rules won't be able to resolve a wheel and an error will occur.   | String | optional |  `""`  |
+| <a id="whl_library_alias-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<p>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 | <a id="whl_library_alias-version_map"></a>version_map |  -   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 | <a id="whl_library_alias-wheel_name"></a>wheel_name |  -   | String | required |  |
 
@@ -55,18 +55,18 @@ be checked into it to ensure that all developers/users have the same dependency 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="compile_pip_requirements-name"></a>name |  base name for generated targets, typically "requirements".   |  none |
-| <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile.   |  <code>[]</code> |
-| <a id="compile_pip_requirements-extra_deps"></a>extra_deps |  extra dependencies passed to pip-compile.   |  <code>[]</code> |
-| <a id="compile_pip_requirements-generate_hashes"></a>generate_hashes |  whether to put hashes in the requirements_txt file.   |  <code>True</code> |
-| <a id="compile_pip_requirements-py_binary"></a>py_binary |  the py_binary rule to be used.   |  <code>&lt;function py_binary&gt;</code> |
-| <a id="compile_pip_requirements-py_test"></a>py_test |  the py_test rule to be used.   |  <code>&lt;function py_test&gt;</code> |
-| <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies.   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_txt"></a>requirements_txt |  result of "compiling" the requirements.in file.   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_darwin"></a>requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_linux"></a>requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| <a id="compile_pip_requirements-requirements_windows"></a>requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  <code>None</code> |
-| <a id="compile_pip_requirements-visibility"></a>visibility |  passed to both the _test and .update rules.   |  <code>["//visibility:private"]</code> |
-| <a id="compile_pip_requirements-tags"></a>tags |  tagging attribute common to all build rules, passed to both the _test and .update rules.   |  <code>None</code> |
+| <a id="compile_pip_requirements-extra_args"></a>extra_args |  passed to pip-compile.   |  `[]` |
+| <a id="compile_pip_requirements-extra_deps"></a>extra_deps |  extra dependencies passed to pip-compile.   |  `[]` |
+| <a id="compile_pip_requirements-generate_hashes"></a>generate_hashes |  whether to put hashes in the requirements_txt file.   |  `True` |
+| <a id="compile_pip_requirements-py_binary"></a>py_binary |  the py_binary rule to be used.   |  `<function py_binary>` |
+| <a id="compile_pip_requirements-py_test"></a>py_test |  the py_test rule to be used.   |  `<function py_test>` |
+| <a id="compile_pip_requirements-requirements_in"></a>requirements_in |  file expressing desired dependencies.   |  `None` |
+| <a id="compile_pip_requirements-requirements_txt"></a>requirements_txt |  result of "compiling" the requirements.in file.   |  `None` |
+| <a id="compile_pip_requirements-requirements_darwin"></a>requirements_darwin |  File of darwin specific resolve output to check validate if requirement.in has changes.   |  `None` |
+| <a id="compile_pip_requirements-requirements_linux"></a>requirements_linux |  File of linux specific resolve output to check validate if requirement.in has changes.   |  `None` |
+| <a id="compile_pip_requirements-requirements_windows"></a>requirements_windows |  File of windows specific resolve output to check validate if requirement.in has changes.   |  `None` |
+| <a id="compile_pip_requirements-visibility"></a>visibility |  passed to both the _test and .update rules.   |  `["//visibility:private"]` |
+| <a id="compile_pip_requirements-tags"></a>tags |  tagging attribute common to all build rules, passed to both the _test and .update rules.   |  `None` |
 | <a id="compile_pip_requirements-kwargs"></a>kwargs |  other bazel attributes passed to the "_test" rule.   |  none |
 
 
@@ -121,12 +121,12 @@ Annotations to apply to the BUILD file content from package generated from a `pi
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="package_annotation-additive_build_content"></a>additive_build_content |  Raw text to add to the generated <code>BUILD</code> file of a package.   |  <code>None</code> |
-| <a id="package_annotation-copy_files"></a>copy_files |  A mapping of <code>src</code> and <code>out</code> files for [@bazel_skylib//rules:copy_file.bzl][cf]   |  <code>{}</code> |
-| <a id="package_annotation-copy_executables"></a>copy_executables |  A mapping of <code>src</code> and <code>out</code> files for [@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as executable.   |  <code>{}</code> |
-| <a id="package_annotation-data"></a>data |  A list of labels to add as <code>data</code> dependencies to the generated <code>py_library</code> target.   |  <code>[]</code> |
-| <a id="package_annotation-data_exclude_glob"></a>data_exclude_glob |  A list of exclude glob patterns to add as <code>data</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
-| <a id="package_annotation-srcs_exclude_glob"></a>srcs_exclude_glob |  A list of labels to add as <code>srcs</code> to the generated <code>py_library</code> target.   |  <code>[]</code> |
+| <a id="package_annotation-additive_build_content"></a>additive_build_content |  Raw text to add to the generated `BUILD` file of a package.   |  `None` |
+| <a id="package_annotation-copy_files"></a>copy_files |  A mapping of `src` and `out` files for [@bazel_skylib//rules:copy_file.bzl][cf]   |  `{}` |
+| <a id="package_annotation-copy_executables"></a>copy_executables |  A mapping of `src` and `out` files for [@bazel_skylib//rules:copy_file.bzl][cf]. Targets generated here will also be flagged as executable.   |  `{}` |
+| <a id="package_annotation-data"></a>data |  A list of labels to add as `data` dependencies to the generated `py_library` target.   |  `[]` |
+| <a id="package_annotation-data_exclude_glob"></a>data_exclude_glob |  A list of exclude glob patterns to add as `data` to the generated `py_library` target.   |  `[]` |
+| <a id="package_annotation-srcs_exclude_glob"></a>srcs_exclude_glob |  A list of labels to add as `srcs` to the generated `py_library` target.   |  `[]` |
 
 **RETURNS**
 
@@ -162,9 +162,9 @@ install_deps()
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="pip_install-requirements"></a>requirements |  A 'requirements.txt' pip requirements file.   |  <code>None</code> |
-| <a id="pip_install-name"></a>name |  A unique name for the created external repository (default 'pip').   |  <code>"pip"</code> |
-| <a id="pip_install-kwargs"></a>kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
+| <a id="pip_install-requirements"></a>requirements |  A 'requirements.txt' pip requirements file.   |  `None` |
+| <a id="pip_install-name"></a>name |  A unique name for the created external repository (default 'pip').   |  `"pip"` |
+| <a id="pip_install-kwargs"></a>kwargs |  Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.   |  none |
 
 
 <a id="pip_parse"></a>
@@ -265,9 +265,9 @@ See the example in rules_python/examples/pip_parse_vendored.
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="pip_parse-requirements"></a>requirements |  Deprecated. See requirements_lock.   |  <code>None</code> |
-| <a id="pip_parse-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'. Note that if your lockfile is platform-dependent, you can use the <code>requirements_[platform]</code> attributes.   |  <code>None</code> |
-| <a id="pip_parse-name"></a>name |  The name of the generated repository. The generated repositories containing each requirement will be of the form <code>&lt;name&gt;_&lt;requirement-name&gt;</code>.   |  <code>"pip_parsed_deps"</code> |
-| <a id="pip_parse-kwargs"></a>kwargs |  Additional arguments to the [<code>pip_repository</code>](./pip_repository.md) repository rule.   |  none |
+| <a id="pip_parse-requirements"></a>requirements |  Deprecated. See requirements_lock.   |  `None` |
+| <a id="pip_parse-requirements_lock"></a>requirements_lock |  A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that wheels are fetched/built only for the targets specified by 'build/run/test'. Note that if your lockfile is platform-dependent, you can use the `requirements_[platform]` attributes.   |  `None` |
+| <a id="pip_parse-name"></a>name |  The name of the generated repository. The generated repositories containing each requirement will be of the form `<name>_<requirement-name>`.   |  `"pip_parsed_deps"` |
+| <a id="pip_parse-kwargs"></a>kwargs |  Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.   |  none |
 
 

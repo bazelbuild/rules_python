@@ -5,7 +5,6 @@ Implementation of py_cc_toolchain rule.
 NOTE: This is a beta-quality feature. APIs subject to change until
 https://github.com/bazelbuild/rules_python/issues/824 is considered done.
 
-
 <a id="py_cc_toolchain"></a>
 
 ## py_cc_toolchain
@@ -18,7 +17,6 @@ A toolchain for a Python runtime's C/C++ information (e.g. headers)
 
 This rule carries information about the C/C++ side of a Python runtime, e.g.
 headers, shared libraries, etc.
-
 
 **ATTRIBUTES**
 
