@@ -30,6 +30,14 @@ _produces_py_info = rule(
     attrs = {"srcs": attr.label_list(allow_files = True)},
 )
 
+def _not_produces_py_info_impl(ctx):
+    _ = ctx  # @unused
+    return [DefaultInfo()]
+
+_not_produces_py_info = rule(
+    implementation = _not_produces_py_info_impl,
+)
+
 def _test_consumes_provider(name, config):
     rt_util.helper_target(
         config.base_test_rule,
@@ -62,7 +70,7 @@ def _test_requires_provider(name, config):
         deps = [name + "_nopyinfo"],
     )
     rt_util.helper_target(
-        native.filegroup,
+        _not_produces_py_info,
         name = name + "_nopyinfo",
     )
     analysis_test(
