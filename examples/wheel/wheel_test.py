@@ -18,18 +18,23 @@ import subprocess
 import unittest
 import zipfile
 
+from python.runfiles import runfiles
+
 
 class WheelTest(unittest.TestCase):
     maxDiff = None
 
-    def test_py_library_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
-            "example_minimal_library-0.0.1-py3-none-any.whl",
+    def setUp(self):
+        super().setUp()
+        self.runfiles = runfiles.Create()
+
+    def _get_path(self, filename):
+        return self.runfiles.Rlocation(
+            os.path.join("rules_python/examples/wheel", filename)
         )
+
+    def test_py_library_wheel(self):
+        filename = self._get_path("example_minimal_library-0.0.1-py3-none-any.whl")
         with zipfile.ZipFile(filename) as zf:
             self.assertEqual(
                 zf.namelist(),
@@ -43,11 +48,7 @@ class WheelTest(unittest.TestCase):
             )
 
     def test_py_package_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "example_minimal_package-0.0.1-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
@@ -65,11 +66,7 @@ class WheelTest(unittest.TestCase):
             )
 
     def test_customized_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "example_customized-0.0.1-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
@@ -154,31 +151,27 @@ second = second.main:s""",
             )
 
     def test_legacy_filename_escaping(self):
-        filename = os.path.join(
-            os.environ['TEST_SRCDIR'],
-            'rules_python',
-            'examples',
-            'wheel',
-            'file_name_escaping-0.0.1_r7-py3-none-any.whl',
+        filename = self._get_path(
+            "file_name_escaping-0.0.1_r7-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
             self.assertEquals(
                 zf.namelist(),
                 [
-                    'examples/wheel/lib/data.txt',
-                    'examples/wheel/lib/module_with_data.py',
-                    'examples/wheel/lib/simple_module.py',
-                    'examples/wheel/main.py',
+                    "examples/wheel/lib/data.txt",
+                    "examples/wheel/lib/module_with_data.py",
+                    "examples/wheel/lib/simple_module.py",
+                    "examples/wheel/main.py",
                     # PEP calls for replacing only in the archive filename.
                     # Alas setuptools also escapes in the dist-info directory
                     # name, so let's be compatible.
-                    'file_name_escaping-0.0.1_r7.dist-info/WHEEL',
-                    'file_name_escaping-0.0.1_r7.dist-info/METADATA',
-                    'file_name_escaping-0.0.1_r7.dist-info/RECORD',
+                    "file_name_escaping-0.0.1_r7.dist-info/WHEEL",
+                    "file_name_escaping-0.0.1_r7.dist-info/METADATA",
+                    "file_name_escaping-0.0.1_r7.dist-info/RECORD",
                 ],
             )
             metadata_contents = zf.read(
-                'file_name_escaping-0.0.1_r7.dist-info/METADATA'
+                "file_name_escaping-0.0.1_r7.dist-info/METADATA"
             )
             self.assertEquals(
                 metadata_contents,
@@ -192,11 +185,7 @@ UNKNOWN
             )
 
     def test_filename_escaping(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "file_name_escaping-0.0.1rc1+ubuntu.r7-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
@@ -230,11 +219,7 @@ UNKNOWN
             )
 
     def test_custom_package_root_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "examples_custom_package_root-0.0.1-py3-none-any.whl",
         )
 
@@ -262,11 +247,7 @@ UNKNOWN
                 self.assertFalse(line.startswith("/"))
 
     def test_custom_package_root_multi_prefix_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "example_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl",
         )
 
@@ -293,11 +274,7 @@ UNKNOWN
                 self.assertFalse(line.startswith("/"))
 
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "example_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl",
         )
 
@@ -324,11 +301,7 @@ UNKNOWN
                 self.assertFalse(line.startswith("/"))
 
     def test_python_requires_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "example_python_requires_in_a_package-0.0.1-py3-none-any.whl",
         )
         with zipfile.ZipFile(filename) as zf:
@@ -359,11 +332,7 @@ UNKNOWN
             "Windows": "win",
         }
         os_string = os_strings[platform.system()]
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             f"example_python_abi3_binary_wheel-0.0.1-cp38-abi3-{os_string}_{arch}.whl",
         )
         with zipfile.ZipFile(filename) as zf:
@@ -396,11 +365,7 @@ Tag: cp38-abi3-{os_string}_{arch}
             )
 
     def test_rule_creates_directory_and_is_included_in_wheel(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
+        filename = self._get_path(
             "use_rule_with_dir_in_outs-0.0.1-py3-none-any.whl",
         )
 
@@ -417,12 +382,8 @@ Tag: cp38-abi3-{os_string}_{arch}
             )
 
     def test_rule_expands_workspace_status_keys_in_wheel_metadata(self):
-        filename = os.path.join(
-            os.environ["TEST_SRCDIR"],
-            "rules_python",
-            "examples",
-            "wheel",
-            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl",
+        filename = self._get_path(
+            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl"
         )
 
         with zipfile.ZipFile(filename) as zf:

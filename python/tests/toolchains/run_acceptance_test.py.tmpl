@@ -16,12 +16,17 @@ import os
 import subprocess
 import unittest
 
-
 class TestPythonVersion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir("%test_location%")
-        rules_python_path = os.path.join(os.environ["TEST_SRCDIR"], "rules_python")
+        test_srcdir = os.environ["TEST_SRCDIR"]
+        # When bzlmod is enabled, the name of the directory in runfiles changes
+        # to _main instead of rules_python
+        if os.path.exists(os.path.join(test_srcdir, "_main")):
+          rules_python_path = os.path.join(test_srcdir, "_main")
+        else:
+          rules_python_path = os.path.join(test_srcdir, "rules_python")
 
         test_tmpdir = os.environ["TEST_TMPDIR"]
         if %is_windows%:
@@ -57,13 +62,13 @@ class TestPythonVersion(unittest.TestCase):
 
     def test_match_toolchain(self):
         output = subprocess.check_output(
-          f"bazel run @python//:python3 -- --version",
+          f"bazel run --announce_rc @python//:python3 -- --version",
           shell = True, # Shell needed to look up via PATH
           text=True,
         ).strip()
         self.assertEqual(output, "Python %python_version%")
 
-        subprocess.run("bazel test //...", shell=True, check=True)
+        subprocess.run("bazel test --announce_rc //...", shell=True, check=True)
 
 
 if __name__ == "__main__":
