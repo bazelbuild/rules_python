@@ -1,0 +1,40 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+#cc_binary(
+#    name = "patch",
+#    srcs = [
+#        "src/patch.c",
+#        "src/common.h",
+#        "src/inp.h",
+#        "src/pch.h",
+#        "src/util.c",
+#        "src/util.h",
+#        "src/version.h",
+#        "src/safe.h",
+#    ],
+#    includes = [
+#        "src",
+#    ],
+#    deps = [
+#        #"@gnulib//:gnulib",
+#    ],
+#    visibility = ["//visibility:public"],
+#)
+
+filegroup(
+    name = "srcs",
+    srcs = glob([
+        "**/*",
+        "*/*",
+    ]),
+)
+
+configure_make(
+    name = "configure_make",
+    lib_source = ":srcs",
+    out_binaries = [
+        "patch",
+    ],
+)
