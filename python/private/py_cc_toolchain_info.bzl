@@ -33,7 +33,7 @@ PyCcToolchainInfo = provider(
 
     When consuming this map, it's suggested to use `providers_map.values()` to
     return all providers; or copy the map and filter out or replace keys as
-    appropriate. Note that any keys begining with `_` (underscore) are
+    appropriate. Note that any keys beginning with `_` (underscore) are
     considered private and should be forward along as-is (this better allows
     e.g. `:current_py_cc_headers` to act as the underlying headers target it
     represents).

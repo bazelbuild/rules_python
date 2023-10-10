@@ -46,7 +46,7 @@ py_console_script_binary(
 )
 ```
 
-Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
+Alternatively, the `py_console_script_binary.binary_rule` arg can be passed
 the version-bound `py_binary` symbol, or any other `py_binary`-compatible rule
 of your choosing:
 ```starlark

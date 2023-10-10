@@ -355,7 +355,7 @@ def create_py_info(ctx, *, direct_sources, imports):
     transitive_sources_depsets = []  # list of depsets
     transitive_sources_files = []  # list of Files
     for target in ctx.attr.deps:
-        # PyInfo may not be present for e.g. cc_library rules.
+        # PyInfo may not be present e.g. cc_library rules.
         if PyInfo in target:
             info = target[PyInfo]
             transitive_sources_depsets.append(info.transitive_sources)
