@@ -553,11 +553,13 @@ def python_register_toolchains(
                 ))
             register_coverage_tool = False
 
+    loaded_platforms = []
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
         if not sha256:
             continue
 
+        loaded_platforms.append(platform)
         (release_filename, urls, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
 
         # allow passing in a tool version
@@ -604,6 +606,7 @@ def python_register_toolchains(
         name = name,
         python_version = python_version,
         user_repository_name = name,
+        platforms = loaded_platforms,
     )
 
     # in bzlmod we write out our own toolchain repos
