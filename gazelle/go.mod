@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/bazelbuild/bazel-gazelle v0.31.1
 	github.com/bazelbuild/buildtools v0.0.0-20230510134650-37bd1811516d
-	github.com/bazelbuild/rules_go v0.39.1
+	github.com/bazelbuild/rules_go v0.41.0
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/emirpasic/gods v1.18.1
 	github.com/ghodss/yaml v1.0.0

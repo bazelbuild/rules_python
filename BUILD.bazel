@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
@@ -42,6 +43,12 @@ filegroup(
         "//python/tests/toolchains:__pkg__",
         "//tests:__pkg__",
     ],
+)
+
+bzl_library(
+    name = "version_bzl",
+    srcs = ["version.bzl"],
+    visibility = ["//:__subpackages__"],
 )
 
 # Reexport of all bzl files used to allow downstream rules to generate docs

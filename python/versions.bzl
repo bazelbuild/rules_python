@@ -97,6 +97,28 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.8.17": {
+        "url": "20230826/cpython-{python_version}+20230826-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "c6f7a130d0044a78e39648f4dae56dcff5a41eba91888a99f6e560507162e6a1",
+            "aarch64-unknown-linux-gnu": "9f6d585091fe26906ff1dbb80437a3fe37a1e3db34d6ecc0098f3d6a78356682",
+            "x86_64-apple-darwin": "155b06821607bae1a58ecc60a7d036b358c766f19e493b8876190765c883a5c2",
+            "x86_64-pc-windows-msvc": "6428e1b4e0b4482d390828de7d4c82815257443416cb786abe10cb2466ca68cd",
+            "x86_64-unknown-linux-gnu": "8d3e1826c0bb7821ec63288038644808a2d45553245af106c685ef5892fabcd8",
+        },
+        "strip_prefix": "python",
+    },
+    "3.8.18": {
+        "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "1825b1f7220bc93ff143f2e70b5c6a79c6469e0eeb40824e07a7277f59aabfda",
+            "aarch64-unknown-linux-gnu": "236a300f386ead02ca98dbddbc026ff4ef4de6701a394106e291ff8b75445ee1",
+            "x86_64-apple-darwin": "fcf04532e644644213977242cd724fe5e84c0a5ac92ae038e07f1b01b474fca3",
+            "x86_64-pc-windows-msvc": "a9d203e78caed94de368d154e841610cef6f6b484738573f4ae9059d37e898a5",
+            "x86_64-unknown-linux-gnu": "1e8a3babd1500111359b0f5675d770984bcbcb2cc8890b117394f0ed342fb9ec",
+        },
+        "strip_prefix": "python",
+    },
     "3.9.10": {
         "url": "20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz",
         "sha256": {
@@ -163,6 +185,19 @@ TOOL_VERSIONS = {
             "x86_64-apple-darwin": "dfe1bea92c94b9cb779288b0b06e39157c5ff7e465cdd24032ac147c2af485c0",
             "x86_64-pc-windows-msvc": "9b9a1e21eff29dcf043cea38180cf8ca3604b90117d00062a7b31605d4157714",
             "x86_64-unknown-linux-gnu": "26c4a712b4b8e11ed5c027db5654eb12927c02da4857b777afb98f7a930ce637",
+        },
+        "strip_prefix": "python",
+    },
+    "3.9.18": {
+        "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "fdc4054837e37b69798c2ef796222a480bc1f80e8ad3a01a95d0168d8282a007",
+            "aarch64-unknown-linux-gnu": "1e0a3e8ce8e58901a259748c0ab640d2b8294713782d14229e882c6898b2fb36",
+            "ppc64le-unknown-linux-gnu": "101c38b22fb2f5a0945156da4259c8e9efa0c08de9d7f59afa51e7ce6e22a1cc",
+            "s390x-unknown-linux-gnu": "eee31e55ffbc1f460d7b17f05dd89e45a2636f374a6f8dc29ea13d0497f7f586",
+            "x86_64-apple-darwin": "82231cb77d4a5c8081a1a1d5b8ae440abe6993514eb77a926c826e9a69a94fb1",
+            "x86_64-pc-windows-msvc": "02ea7bb64524886bd2b05d6b6be4401035e4ba4319146f274f0bcd992822cd75",
+            "x86_64-unknown-linux-gnu": "f3ff38b1ccae7dcebd8bbf2e533c9a984fac881de0ffd1636fbb61842bd924de",
         },
         "strip_prefix": "python",
     },
@@ -246,6 +281,19 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.10.13": {
+        "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "fd027b1dedf1ea034cdaa272e91771bdf75ddef4c8653b05d224a0645aa2ca3c",
+            "aarch64-unknown-linux-gnu": "8675915ff454ed2f1597e27794bc7df44f5933c26b94aa06af510fe91b58bb97",
+            "ppc64le-unknown-linux-gnu": "f3f9c43eec1a0c3f72845d0b705da17a336d3906b7df212d2640b8f47e8ff375",
+            "s390x-unknown-linux-gnu": "859f6cfe9aedb6e8858892fdc124037e83ab05f28d42a7acd314c6a16d6bd66c",
+            "x86_64-apple-darwin": "be0b19b6af1f7d8c667e5abef5505ad06cf72e5a11bb5844970c395a7e5b1275",
+            "x86_64-pc-windows-msvc": "b8d930ce0d04bda83037ad3653d7450f8907c88e24bb8255a29b8dab8930d6f1",
+            "x86_64-unknown-linux-gnu": "5d0429c67c992da19ba3eb58b3acd0b35ec5e915b8cae9a4aa8ca565c423847a",
+        },
+        "strip_prefix": "python",
+    },
     "3.11.1": {
         "url": "20230116/cpython-{python_version}+20230116-{platform}-{build}.tar.gz",
         "sha256": {
@@ -282,14 +330,54 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.11.5": {
+        "url": "20230826/cpython-{python_version}+20230826-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "dab64b3580118ad2073babd7c29fd2053b616479df5c107d31fe2af1f45e948b",
+            "aarch64-unknown-linux-gnu": "bb5c5d1ea0f199fe2d3f0996fff4b48ca6ddc415a3dbd98f50bff7fce48aac80",
+            "ppc64le-unknown-linux-gnu": "14121b53e9c8c6d0741f911ae00102a35adbcf5c3cdf732687ef7617b7d7304d",
+            "s390x-unknown-linux-gnu": "fe459da39874443579d6fe88c68777c6d3e331038e1fb92a0451879fb6beb16d",
+            "x86_64-apple-darwin": "4a4efa7378c72f1dd8ebcce1afb99b24c01b07023aa6b8fea50eaedb50bf2bfc",
+            "x86_64-pc-windows-msvc": "00f002263efc8aea896bcfaaf906b1f4dab3e5cd3db53e2b69ab9a10ba220b97",
+            "x86_64-unknown-linux-gnu": "fbed6f7694b2faae5d7c401a856219c945397f772eea5ca50c6eb825cbc9d1e1",
+        },
+        "strip_prefix": "python",
+    },
+    "3.11.6": {
+        "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "916c35125b5d8323a21526d7a9154ca626453f63d0878e95b9f613a95006c990",
+            "aarch64-unknown-linux-gnu": "3e26a672df17708c4dc928475a5974c3fb3a34a9b45c65fb4bd1e50504cc84ec",
+            "ppc64le-unknown-linux-gnu": "7937035f690a624dba4d014ffd20c342e843dd46f89b0b0a1e5726b85deb8eaf",
+            "s390x-unknown-linux-gnu": "f9f19823dba3209cedc4647b00f46ed0177242917db20fb7fb539970e384531c",
+            "x86_64-apple-darwin": "178cb1716c2abc25cb56ae915096c1a083e60abeba57af001996e8bc6ce1a371",
+            "x86_64-pc-windows-msvc": "3933545e6d41462dd6a47e44133ea40995bc6efeed8c2e4cbdf1a699303e95ea",
+            "x86_64-unknown-linux-gnu": "ee37a7eae6e80148c7e3abc56e48a397c1664f044920463ad0df0fc706eacea8",
+        },
+        "strip_prefix": "python",
+    },
+    "3.12.0": {
+        "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "4734a2be2becb813830112c780c9879ac3aff111a0b0cd590e65ec7465774d02",
+            "aarch64-unknown-linux-gnu": "bccfe67cf5465a3dfb0336f053966e2613a9bc85a6588c2fcf1366ef930c4f88",
+            "ppc64le-unknown-linux-gnu": "b5dae075467ace32c594c7877fe6ebe0837681f814601d5d90ba4c0dfd87a1f2",
+            "s390x-unknown-linux-gnu": "5681621349dd85d9726d1b67c84a9686ce78f72e73a6f9e4cc4119911655759e",
+            "x86_64-apple-darwin": "5a9e88c8aa52b609d556777b52ebde464ae4b4f77e4aac4eb693af57395c9abf",
+            "x86_64-pc-windows-msvc": "facfaa1fbc8653f95057f3c4a0f8aa833dab0e0b316e24ee8686bc761d4b4f8d",
+            "x86_64-unknown-linux-gnu": "e51a5293f214053ddb4645b2c9f84542e2ef86870b8655704367bd4b29d39fe9",
+        },
+        "strip_prefix": "python",
+    },
 }
 
 # buildifier: disable=unsorted-dict-items
 MINOR_MAPPING = {
-    "3.8": "3.8.15",
-    "3.9": "3.9.17",
-    "3.10": "3.10.12",
-    "3.11": "3.11.4",
+    "3.8": "3.8.18",
+    "3.9": "3.9.18",
+    "3.10": "3.10.13",
+    "3.11": "3.11.6",
+    "3.12": "3.12.0",
 }
 
 PLATFORMS = {

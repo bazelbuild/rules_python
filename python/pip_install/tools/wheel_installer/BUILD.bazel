@@ -9,6 +9,7 @@ py_library(
         "wheel.py",
         "wheel_installer.py",
     ],
+    visibility = ["//third_party/rules_pycross/pycross/private:__subpackages__"],
     deps = [
         requirement("installer"),
         requirement("pip"),

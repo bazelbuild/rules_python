@@ -64,9 +64,6 @@ pip = use_extension("@rules_python//python:extensions.bzl", "pip")
 # operating systems, we have requirements for each.
 pip.parse(
     name = "pip",
-    # When using gazelle you must use set the following flag
-    # in order for the generation of gazelle dependency resolution.
-    incompatible_generate_aliases = True,
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
@@ -189,9 +186,9 @@ Python-specific directives are as follows:
 | `# gazelle:python_validate_import_statements`| `true` |
 | Controls whether the Python import statements should be validated. Can be "true" or "false" | |
 | `# gazelle:python_generation_mode`| `package` |
-| Controls the target generation mode. Can be "package" or "project" | |
+| Controls the target generation mode. Can be "file", "package", or "project" | |
 | `# gazelle:python_library_naming_convention`| `$package_name$` |
-| Controls the `py_library` naming convention. It interpolates $package_name$ with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
+| Controls the `py_library` naming convention. It interpolates \$package_name\$ with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
 | `# gazelle:python_binary_naming_convention` | `$package_name$_bin` |
 | Controls the `py_binary` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
 | `# gazelle:python_test_naming_convention` | `$package_name$_test` |
@@ -206,11 +203,15 @@ Python source files are those ending in `.py` but not ending in `_test.py`.
 First, we look for the nearest ancestor BUILD file starting from the folder
 containing the Python source file.
 
-If there is no `py_library` in this BUILD file, one is created, using the
-package name as the target's name. This makes it the default target in the
-package.
+In package generation mode, if there is no `py_library` in this BUILD file, one
+is created using the package name as the target's name. This makes it the
+default target in the package. Next, all source files are collected into the
+`srcs` of the `py_library`.
 
-Next, all source files are collected into the `srcs` of the `py_library`.
+In project generation mode, all source files in subdirectories (that don't have
+BUILD files) are also collected.
+
+In file generation mode, each file is given its own target.
 
 Finally, the `import` statements in the source files are parsed, and
 dependencies are added to the `deps` attribute.

@@ -25,10 +25,6 @@ compile_pip_requirements(
         "requirements.in",
         "requirements_extra.in",
     ],
-    extra_args = [
-        "--allow-unsafe",
-        "--resolver=backtracking",
-    ],
     requirements_in = "requirements.txt",
     requirements_txt = "requirements_lock.txt",
 )
@@ -38,10 +34,6 @@ compile_pip_requirements(
     data = [
         "requirements.in",
         "requirements_extra.in",
-    ],
-    extra_args = [
-        "--allow-unsafe",
-        "--resolver=backtracking",
     ],
     generate_hashes = False,
     requirements_in = "requirements.txt",
@@ -66,10 +58,6 @@ compile_pip_requirements(
     data = [
         "requirements_extra.in",
         "requirements_os_specific.in",
-    ],
-    extra_args = [
-        "--allow-unsafe",
-        "--resolver=backtracking",
     ],
     requirements_darwin = "requirements_lock_darwin.txt",
     requirements_in = "requirements_os_specific.in",

@@ -1,5 +1,8 @@
 sphinx==4.3.2
 yamllint>=1.28.0
 
-# Last avialable for ubuntu python3.6
+# Last available for Ubuntu python3.6
 setuptools==59.6.0
+
+certifi>=2023.7.22  # https://security.snyk.io/vuln/SNYK-PYTHON-CERTIFI-5805047
+

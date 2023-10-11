@@ -4,6 +4,7 @@ PR Instructions/requirements
   * Update `CHANGELOG.md` as applicable
 * Breaking changes include "!" after the type and a "BREAKING CHANGES:"
   section at the bottom.
+  See CONTRIBUTING.md for our breaking changes process.
 * Body text describes:
   * Why this change is being made, briefly.
   * Before and after behavior, as applicable
