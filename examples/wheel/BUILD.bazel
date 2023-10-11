@@ -323,4 +323,7 @@ py_test(
         ":python_requires_in_a_package",
         ":use_rule_with_dir_in_outs",
     ],
+    deps = [
+        "//python/runfiles",
+    ],
 )

@@ -514,18 +514,14 @@ class RunfilesTest(unittest.TestCase):
             )
 
     def testCurrentRepository(self):
-        # This test assumes that it is running without --enable_bzlmod as the
-        # correct result with Bzlmod would be the empty string - the canonical
-        # name # of the main repository. Without Bzlmod, the main repository is
-        # treated just like any other repository and has the name of its
-        # runfiles directory returned, which coincides with the name specified
-        # in the WORKSPACE file.
-        #
-        # Specify a fake runfiles directory to verify that its value isn't used
-        # by the function.
+        # Under bzlmod, the current repository name is the empty string instead
+        # of the name in the workspace file.
+        if bool(int(os.environ["BZLMOD_ENABLED"])):
+            expected = ""
+        else:
+            expected = "rules_python"
         self.assertEqual(
-            runfiles.Create({"RUNFILES_DIR": "whatever"}).CurrentRepository(),
-            "rules_python",
+            runfiles.Create({"RUNFILES_DIR": "whatever"}).CurrentRepository(), expected
         )
 
     @staticmethod
