@@ -31,11 +31,14 @@ class WheelTest(unittest.TestCase):
     def _get_path(self, filename):
         runfiles_path = os.path.join("rules_python/examples/wheel", filename)
         path = self.runfiles.Rlocation(runfiles_path)
+        # The runfiles API can return None if the path doesn't exist or
+        # can't be resolved.
         if not path:
-            raise AssertionError(f"Runfiles failed to find {runfiles_path}")
+            raise AssertionError(f"Runfiles failed to resolve {runfiles_path}")
         elif not os.path.exists(path):
+            # A non-None value doesn't mean the file actually exists, though
             raise AssertionError(
-                f"Path {path} does not exist (from runfiles " + f"path {runfiles_path}"
+                f"Path {path} does not exist (from runfiles path {runfiles_path}"
             )
         else:
             return path
