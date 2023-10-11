@@ -29,9 +29,16 @@ class WheelTest(unittest.TestCase):
         self.runfiles = runfiles.Create()
 
     def _get_path(self, filename):
-        return self.runfiles.Rlocation(
-            os.path.join("rules_python/examples/wheel", filename)
-        )
+        runfiles_path = os.path.join("rules_python/examples/wheel", filename)
+        path = self.runfiles.Rlocation(runfiles_path)
+        if not path:
+            raise AssertionError(f"Runfiles failed to find {runfiles_path}")
+        elif not os.path.exists(path):
+            raise AssertionError(
+                f"Path {path} does not exist (from runfiles " + f"path {runfiles_path}"
+            )
+        else:
+            return path
 
     def test_py_library_wheel(self):
         filename = self._get_path("example_minimal_library-0.0.1-py3-none-any.whl")
