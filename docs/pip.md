@@ -1,4 +1,11 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# pip integration
+
+This contains a set of rules that are used to support inclusion of third-party
+dependencies via fully locked `requirements.txt` files. Some of the exported
+symbols should not be used and they are either undocumented here or marked as
+for internal use only.
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Import pip requirements into Bazel.
 

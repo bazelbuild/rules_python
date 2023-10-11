@@ -1,4 +1,6 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Packaging
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Public API for for building wheels.
 
