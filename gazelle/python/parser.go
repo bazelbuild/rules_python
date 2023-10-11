@@ -17,16 +17,17 @@ package python
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"sync"
 
-	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
 )
@@ -35,23 +36,19 @@ var (
 	parserStdin  io.WriteCloser
 	parserStdout io.Reader
 	parserMutex  sync.Mutex
+	//go:embed parse.py
+	parser     []byte
+	parserPath = path.Join(os.TempDir(), "parse.py")
 )
 
 func startParserProcess(ctx context.Context) {
-	rfiles, err := runfiles.New()
-	if err != nil {
-		log.Printf("failed to create a runfiles object: %v\n", err)
+	// "python -c" doesn't like parse.py for some reason, possibly due to the
+	// thread pool. So we need to write the code to a tmp file and execute it.
+	if err := os.WriteFile(parserPath, parser, 0644); err != nil {
+		log.Printf("cannot write %q: %s", parserPath, err.Error())
 		os.Exit(1)
 	}
-
-	parseScriptRunfile, err := rfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-
-	cmd := exec.CommandContext(ctx, parseScriptRunfile)
-	cmd.Env = append(os.Environ(), rfiles.Env()...)
+	cmd := exec.CommandContext(ctx, "python3", parserPath)
 
 	cmd.Stderr = os.Stderr
 
@@ -86,6 +83,7 @@ func shutdownParserProcess() {
 	if err := parserStdin.Close(); err != nil {
 		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
 	}
+	//os.Remove(parserPath)
 }
 
 // python3Parser implements a parser for Python files that extracts the modules

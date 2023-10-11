@@ -17,6 +17,7 @@ package python
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"log"
@@ -25,8 +26,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/bazelbuild/rules_go/go/runfiles"
 )
 
 var (
@@ -34,28 +33,18 @@ var (
 	stdModulesStdout io.Reader
 	stdModulesMutex  sync.Mutex
 	stdModulesSeen   map[string]struct{}
+	//go:embed std_modules.py
+	stdModue []byte
 )
 
 func startStdModuleProcess(ctx context.Context) {
 	stdModulesSeen = make(map[string]struct{})
 
-	rfiles, err := runfiles.New()
-	if err != nil {
-		log.Printf("failed to create a runfiles object: %v\n", err)
-		os.Exit(1)
-	}
-
-	stdModulesScriptRunfile, err := rfiles.Rlocation("rules_python_gazelle_plugin/python/std_modules")
-	if err != nil {
-		log.Printf("failed to initialize std_modules: %v\n", err)
-		os.Exit(1)
-	}
-
-	cmd := exec.CommandContext(ctx, stdModulesScriptRunfile)
+	cmd := exec.CommandContext(ctx, "python3", "-c", string(stdModue))
 
 	cmd.Stderr = os.Stderr
 	// All userland site-packages should be ignored.
-	cmd.Env = append([]string{"PYTHONNOUSERSITE=1"}, rfiles.Env()...)
+	cmd.Env = []string{"PYTHONNOUSERSITE=1"}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
