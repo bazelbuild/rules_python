@@ -216,7 +216,7 @@ py_binary(
 Using PyPI packages (aka "pip install") involves two main steps.
 
 1. [Installing third_party packages](#installing-third_party-packages)
-2. [Using third_party packages as dependencies](#using-third_party-packages-as-dependencies
+2. [Using third_party packages as dependencies](#using-third_party-packages-as-dependencies)
 
 ### Installing third_party packages
 
