@@ -38,7 +38,7 @@ filegroup(
 
 filegroup(
     name = "whl",
-    srcs = glob(["*.whl"], allow_empty = True),
+    srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
 )
 
@@ -64,6 +64,7 @@ py_library(
 """
     actual = generate_whl_library_build_bazel(
         repo_prefix = "pypi_",
+        whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         data_exclude = [],
         tags = ["tag1", "tag2"],
@@ -93,7 +94,7 @@ filegroup(
 
 filegroup(
     name = "whl",
-    srcs = glob(["*.whl"], allow_empty = True),
+    srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
 )
 
@@ -135,6 +136,7 @@ copy_file(
 """
     actual = generate_whl_library_build_bazel(
         repo_prefix = "pypi_",
+        whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         data_exclude = [],
         tags = ["tag1", "tag2"],
@@ -171,7 +173,7 @@ filegroup(
 
 filegroup(
     name = "whl",
-    srcs = glob(["*.whl"], allow_empty = True),
+    srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
 )
 
@@ -206,6 +208,7 @@ py_binary(
 """
     actual = generate_whl_library_build_bazel(
         repo_prefix = "pypi_",
+        whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         data_exclude = [],
         tags = ["tag1", "tag2"],

@@ -526,10 +526,25 @@ def _whl_library_impl(rctx):
 
     args = _parse_optional_attrs(rctx, args)
 
+    # Manually construct the PYTHONPATH since we cannot use the toolchain here
+    environment = _create_repository_execution_environment(rctx, python_interpreter)
+
     result = rctx.execute(
         args,
-        # Manually construct the PYTHONPATH since we cannot use the toolchain here
-        environment = _create_repository_execution_environment(rctx, python_interpreter),
+        environment = environment,
+        quiet = rctx.attr.quiet,
+        timeout = rctx.attr.timeout,
+    )
+    if result.return_code:
+        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
+
+    whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
+    if not rctx.delete("whl_file.json"):
+        fail("failed to delete the whl_file.json file")
+
+    result = rctx.execute(
+        args + ["--whl-file", whl_path],
+        environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
@@ -562,6 +577,7 @@ def _whl_library_impl(rctx):
 
     build_file_contents = generate_whl_library_build_bazel(
         repo_prefix = rctx.attr.repo_prefix,
+        whl_name = whl_path.basename,
         dependencies = metadata["deps"],
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
