@@ -105,6 +105,8 @@ class _WhlFile(zipfile.ZipFile):
         **kwargs,
     ):
         self._distinfo_dir = distinfo_dir
+        if not self._distinfo_dir.endswith("/"):
+            self._distinfo_dir += "/"
         self._strip_path_prefixes = strip_path_prefixes or []
         # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
@@ -194,7 +196,6 @@ class _WhlFile(zipfile.ZipFile):
         """Write RECORD file to the distribution."""
         record_path = self.distinfo_path("RECORD")
         entries = self._record + [(record_path, b"", b"")]
-        entries.sort()
         contents = b""
         for filename, digest, size in entries:
             if sys.version_info[0] > 2 and isinstance(filename, str):
