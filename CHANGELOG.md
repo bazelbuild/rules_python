@@ -24,6 +24,7 @@ A brief description of the categories of changes:
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full
   platform support, and referencing their undefined repositories can break operations
   like `bazel query rdeps(...)`.
+* Python code generated from `proto_library` with `strip_import_prefix` can be imported now.
 
 ## [0.26.0] - 2023-10-06
 
