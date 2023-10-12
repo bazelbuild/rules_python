@@ -23,6 +23,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,14 +34,19 @@ var (
 	stdModulesStdout io.Reader
 	stdModulesMutex  sync.Mutex
 	stdModulesSeen   map[string]struct{}
-	//go:embed std_modules.py
-	stdModue []byte
+	//go:embed std_modules.zip
+	stdModule     []byte
+	stdModulePath = path.Join(os.TempDir(), "std_modules.zip")
 )
 
 func startStdModuleProcess(ctx context.Context) {
 	stdModulesSeen = make(map[string]struct{})
 
-	cmd := exec.CommandContext(ctx, "python3", "-c", string(stdModue))
+	if err := os.WriteFile(stdModulePath, stdModule, 0644); err != nil {
+		log.Printf("cannot write %q: %s", stdModulePath, err.Error())
+		os.Exit(1)
+	}
+	cmd := exec.CommandContext(ctx, "python3", stdModulePath)
 
 	cmd.Stderr = os.Stderr
 	// All userland site-packages should be ignored.

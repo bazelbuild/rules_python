@@ -36,14 +36,12 @@ var (
 	parserStdin  io.WriteCloser
 	parserStdout io.Reader
 	parserMutex  sync.Mutex
-	//go:embed parse.py
+	//go:embed parse.zip
 	parser     []byte
-	parserPath = path.Join(os.TempDir(), "parse.py")
+	parserPath = path.Join(os.TempDir(), "parse.zip")
 )
 
 func startParserProcess(ctx context.Context) {
-	// "python -c" doesn't like parse.py for some reason, possibly due to the
-	// thread pool. So we need to write the code to a tmp file and execute it.
 	if err := os.WriteFile(parserPath, parser, 0644); err != nil {
 		log.Printf("cannot write %q: %s", parserPath, err.Error())
 		os.Exit(1)

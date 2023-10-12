@@ -1,5 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 go_library(
     name = "python",
@@ -15,10 +16,7 @@ go_library(
         "std_modules.go",
         "target.go",
     ],
-    embedsrcs = [
-        "parse.py",
-        "std_modules.py",
-    ],
+    embedsrcs = [":zip_files"],
     importpath = "github.com/bazelbuild/rules_python/gazelle/python",
     visibility = ["//visibility:public"],
     deps = [
@@ -35,7 +33,29 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
+        "@io_bazel_rules_go//go/runfiles",
     ],
+)
+
+py_binary(
+    name = "parse",
+    srcs = ["parse.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "std_modules",
+    srcs = ["std_modules.py"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "zip_files",
+    srcs = [
+        ":parse",
+        ":std_modules"
+    ],
+    output_group = "python_zip_file",
 )
 
 go_test(
