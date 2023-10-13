@@ -1,0 +1,6 @@
+# NOTE: This is only used as input to create the resolved requirements.txt file,
+# which is what builds, both Bazel and Readthedocs, both use.
+sphinx
+myst-parser
+sphinx_rtd_theme
+readthedocs-sphinx-ext

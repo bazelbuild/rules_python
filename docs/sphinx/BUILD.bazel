@@ -1,0 +1,96 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@docs_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
+load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
+load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
+
+# We only build for Linux and Mac because the actual doc process only runs
+# on Linux. Mac is close enough. Making CI happy under Windows is too much
+# of a headache, though, so we don't bother with that.
+_TARGET_COMPATIBLE_WITH = select({
+    "@platforms//os:linux": [],
+    "@platforms//os:macos": [],
+    "//conditions:default": ["@platforms//:incompatible"],
+})
+
+# See README.md for instructions. Short version:
+# * `bazel run //docs/sphinx:docs.serve` in a separate terminal
+# * `ibazel build //docs/sphinx:docs` to automatically rebuild docs
+sphinx_docs(
+    name = "docs",
+    srcs = [
+        ":bzl_api_docs",
+    ] + glob(
+        include = [
+            "*.md",
+            "**/*.md",
+            "_static/**",
+        ],
+        exclude = ["README.md"],
+    ),
+    config = "conf.py",
+    formats = [
+        "html",
+    ],
+    sphinx = ":sphinx-build",
+    strip_prefix = package_name() + "/",
+    tags = ["docs"],
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
+
+sphinx_stardocs(
+    name = "bzl_api_docs",
+    docs = {
+        "api/cc/py_cc_toolchain.md": dict(
+            dep = "//python/private:py_cc_toolchain_bzl",
+            input = "//python/private:py_cc_toolchain_rule.bzl",
+        ),
+        "api/cc/py_cc_toolchain_info.md": "//python/cc:py_cc_toolchain_info_bzl",
+        "api/defs.md": "//python:defs_bzl",
+        "api/entry_points/py_console_script_binary.md": "//python/entry_points:py_console_script_binary_bzl",
+        "api/packaging.md": "//python:packaging_bzl",
+        "api/pip.md": "//python:pip_bzl",
+    },
+    tags = ["docs"],
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
+
+readthedocs_install(
+    name = "readthedocs_install",
+    docs = [":docs"],
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
+
+sphinx_build_binary(
+    name = "sphinx-build",
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+    deps = [
+        requirement("sphinx"),
+        requirement("sphinx_rtd_theme"),
+        requirement("myst_parser"),
+        requirement("readthedocs_sphinx_ext"),
+    ],
+)
+
+# Run bazel run //docs/sphinx:requirements.update
+compile_pip_requirements(
+    name = "requirements",
+    requirements_darwin = "requirements_darwin.txt",
+    requirements_in = "requirements.in",
+    requirements_txt = "requirements_linux.txt",
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
