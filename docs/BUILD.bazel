@@ -26,7 +26,6 @@ licenses(["notice"])  # Apache 2.0
 _DOCS = [
     "packaging",
     "pip",
-    "pip_repository",
     "py_cc_toolchain",
     "py_cc_toolchain_info",
     # TODO @aignas 2023-10-09: move some of the example code from the `.bzl` files
@@ -91,16 +90,6 @@ stardoc(
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
     deps = [
         "//python:pip_bzl",
-    ],
-)
-
-stardoc(
-    name = "pip-repository",
-    out = "pip_repository.md.gen",
-    input = "//python/pip_install:pip_repository.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = [
-        "//python/pip_install:pip_repository_bzl",
     ],
 )
 
