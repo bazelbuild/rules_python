@@ -26,6 +26,7 @@ bzl_library(
         ":requirements_parser_bzl",
         "//python:repositories_bzl",
         "//python:versions_bzl",
+        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
         "//python/pip_install/private:generate_whl_library_build_bazel_bzl",
         "//python/pip_install/private:srcs_bzl",
         "//python/private:bzlmod_enabled_bzl",

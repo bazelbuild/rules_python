@@ -1,10 +1,10 @@
-# Copyright 2022 The Bazel Authors. All rights reserved.
+# Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask, jsonify
-from random_number_generator import generate_random_number
-import sphinx  # noqa
+"""Constants used by parts of pip_repository for naming libraries and wheels."""
 
-app = Flask(__name__)
-
-@app.route('/random-number', methods=['GET'])
-def get_random_number():
-    return jsonify({'number': generate_random_number.generate_random_number()})
-
-"""Start the python web server"""
-def main():
-    app.run()
+WHEEL_FILE_PUBLIC_LABEL = "whl"
+WHEEL_FILE_IMPL_LABEL = "_whl"
+PY_LIBRARY_PUBLIC_LABEL = "pkg"
+PY_LIBRARY_IMPL_LABEL = "_pkg"
+DATA_LABEL = "data"
+DIST_INFO_LABEL = "dist_info"
+WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
+NODEPS_LABEL = "no_deps"

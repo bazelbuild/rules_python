@@ -1,1 +1,4 @@
 flask
+sphinx
+sphinxcontrib-serializinghtml
+colorama  # platform-conditional dependency of sphinx

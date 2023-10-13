@@ -14,13 +14,17 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
+load(
+    "//python/private:labels.bzl",
+    "DATA_LABEL",
+    "DIST_INFO_LABEL",
+    "PY_LIBRARY_IMPL_LABEL",
+    "PY_LIBRARY_PUBLIC_LABEL",
+    "WHEEL_ENTRY_POINT_PREFIX",
+    "WHEEL_FILE_IMPL_LABEL",
+    "WHEEL_FILE_PUBLIC_LABEL",
+)
 load("//python/private:normalize_name.bzl", "normalize_name")
-
-_WHEEL_FILE_LABEL = "whl"
-_PY_LIBRARY_LABEL = "pkg"
-_DATA_LABEL = "data"
-_DIST_INFO_LABEL = "dist_info"
-_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 _COPY_FILE_TEMPLATE = """\
 copy_file(
@@ -59,13 +63,13 @@ filegroup(
 )
 
 filegroup(
-    name = "{whl_file_label}",
+    name = "{whl_file_impl_label}",
     srcs = ["{whl_name}"],
     data = {whl_file_deps},
 )
 
 py_library(
-    name = "{name}",
+    name = "{py_library_impl_label}",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude={srcs_exclude},
@@ -83,6 +87,16 @@ py_library(
     deps = {dependencies},
     tags = {tags},
 )
+
+alias(
+   name = "{py_library_public_label}",
+   actual = "{py_library_actual_label}",
+)
+
+alias(
+   name = "{whl_file_public_label}",
+   actual = "{whl_file_actual_label}",
+)
 """
 
 def generate_whl_library_build_bazel(
@@ -93,7 +107,9 @@ def generate_whl_library_build_bazel(
         data_exclude,
         tags,
         entry_points,
-        annotation = None):
+        annotation = None,
+        group_name = None,
+        group_deps = []):
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
@@ -104,6 +120,12 @@ def generate_whl_library_build_bazel(
         tags: list of tags to apply to generated py_library rules.
         entry_points: A dict of entry points to add py_binary rules for.
         annotation: The annotation for the build file.
+        group_name: Optional[str]; name of the dependency group (if any) which contains this library.
+          If set, this library will behave as a shim to group implementation rules which will provide
+          simultaneously installed dependencies which would otherwise form a cycle.
+        group_deps: List[str]; names of fellow members of the group (if any). These will be excluded
+          from generated deps lists so as to avoid direct cycles. These dependencies will be provided
+          at runtime by the group rules which wrap this library and its fellows together.
 
     Returns:
         A complete BUILD file as a string
@@ -113,15 +135,15 @@ def generate_whl_library_build_bazel(
     data = []
     srcs_exclude = []
     data_exclude = [] + data_exclude
-    dependencies = sorted(dependencies)
+    dependencies = sorted([normalize_name(d) for d in dependencies])
     tags = sorted(tags)
 
     for entry_point, entry_point_script_name in entry_points.items():
         additional_content.append(
             _generate_entry_point_rule(
-                name = "{}_{}".format(_WHEEL_ENTRY_POINT_PREFIX, entry_point),
+                name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, entry_point),
                 script = entry_point_script_name,
-                pkg = ":" + _PY_LIBRARY_LABEL,
+                pkg = ":" + PY_LIBRARY_PUBLIC_LABEL,
             ),
         )
 
@@ -154,28 +176,45 @@ def generate_whl_library_build_bazel(
         if item not in _data_exclude:
             _data_exclude.append(item)
 
-    lib_dependencies = [
-        "@" + repo_prefix + normalize_name(d) + "//:" + _PY_LIBRARY_LABEL
+    # Ensure this list is normalized
+    # Note: mapping used as set
+    group_deps = {
+        normalize_name(d): True
+        for d in group_deps
+    }
+
+    non_group_deps = [
+        d
         for d in dependencies
+        if d not in group_deps
+    ]
+
+    lib_dependencies = [
+        "@" + repo_prefix + normalize_name(d) + "//:" + PY_LIBRARY_PUBLIC_LABEL
+        for d in non_group_deps
     ]
     whl_file_deps = [
-        "@" + repo_prefix + normalize_name(d) + "//:" + _WHEEL_FILE_LABEL
-        for d in dependencies
+        "@" + repo_prefix + normalize_name(d) + "//:" + WHEEL_FILE_PUBLIC_LABEL
+        for d in non_group_deps
     ]
 
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
-                name = _PY_LIBRARY_LABEL,
+                py_library_public_label = PY_LIBRARY_PUBLIC_LABEL,
+                py_library_impl_label = PY_LIBRARY_IMPL_LABEL,
+                py_library_actual_label = ("@" + repo_prefix + "_groups//:" + normalize_name(group_name) + "_" + PY_LIBRARY_PUBLIC_LABEL) if group_name else PY_LIBRARY_IMPL_LABEL,
                 dependencies = repr(lib_dependencies),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
-                whl_file_label = _WHEEL_FILE_LABEL,
+                whl_file_public_label = WHEEL_FILE_PUBLIC_LABEL,
+                whl_file_impl_label = WHEEL_FILE_IMPL_LABEL,
+                whl_file_actual_label = ("@" + repo_prefix + "_groups//:" + normalize_name(group_name) + "_" + WHEEL_FILE_PUBLIC_LABEL) if group_name else WHEEL_FILE_IMPL_LABEL,
                 whl_file_deps = repr(whl_file_deps),
                 tags = repr(tags),
-                data_label = _DATA_LABEL,
-                dist_info_label = _DIST_INFO_LABEL,
-                entry_point_prefix = _WHEEL_ENTRY_POINT_PREFIX,
+                data_label = DATA_LABEL,
+                dist_info_label = DIST_INFO_LABEL,
+                entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
             ),

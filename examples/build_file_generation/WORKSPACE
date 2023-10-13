@@ -102,6 +102,19 @@ pip_parse(
     #
     # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
     python_interpreter_target = interpreter,
+
+    # Requirement groups allow Bazel to tolerate PyPi cycles by putting dependencies
+    # which are known to form cycles into groups together.
+    requirement_groups = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
     # Set the location of the lock file.
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",

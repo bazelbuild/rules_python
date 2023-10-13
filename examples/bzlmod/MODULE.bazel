@@ -90,6 +90,16 @@ use_repo(pip, "whl_mods_hub")
 pip.parse(
     hub_name = "pip",
     python_version = "3.9",
+    requirement_groups = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
     # These modifications were created above and we
@@ -103,6 +113,16 @@ pip.parse(
 pip.parse(
     hub_name = "pip",
     python_version = "3.10",
+    requirement_groups = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
     requirements_lock = "//:requirements_lock_3_10.txt",
     requirements_windows = "//:requirements_windows_3_10.txt",
     # These modifications were created above and we
