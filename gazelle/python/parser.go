@@ -24,7 +24,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 	"sync"
 
@@ -36,17 +35,10 @@ var (
 	parserStdin  io.WriteCloser
 	parserStdout io.Reader
 	parserMutex  sync.Mutex
-	//go:embed parse.zip
-	parser     []byte
-	parserPath = path.Join(os.TempDir(), "parse.zip")
 )
 
 func startParserProcess(ctx context.Context) {
-	if err := os.WriteFile(parserPath, parser, 0644); err != nil {
-		log.Printf("cannot write %q: %s", parserPath, err.Error())
-		os.Exit(1)
-	}
-	cmd := exec.CommandContext(ctx, "python3", parserPath)
+	cmd := exec.CommandContext(ctx, "python3", pyzPath, "parse")
 
 	cmd.Stderr = os.Stderr
 
@@ -81,7 +73,6 @@ func shutdownParserProcess() {
 	if err := parserStdin.Close(); err != nil {
 		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
 	}
-	//os.Remove(parserPath)
 }
 
 // python3Parser implements a parser for Python files that extracts the modules

@@ -16,7 +16,16 @@ package python
 
 import (
 	"context"
+	_ "embed"
 	"github.com/bazelbuild/bazel-gazelle/language"
+	"log"
+	"os"
+)
+
+var (
+	//go:embed helper.zip
+	pythonZip []byte
+	pyzPath   string
 )
 
 type LifeCycleManager struct {
@@ -24,6 +33,14 @@ type LifeCycleManager struct {
 }
 
 func (l *LifeCycleManager) Before(ctx context.Context) {
+	pyzFile, err := os.CreateTemp("", "python_zip_")
+	if err != nil {
+		log.Fatalf("failed to write parser zip: %v", err)
+	}
+	pyzPath = pyzFile.Name()
+	if _, err := pyzFile.Write(pythonZip); err != nil {
+		log.Fatalf("cannot write %q: %v", pyzPath, err)
+	}
 	startParserProcess(ctx)
 	startStdModuleProcess(ctx)
 }
@@ -34,4 +51,5 @@ func (l *LifeCycleManager) DoneGeneratingRules() {
 
 func (l *LifeCycleManager) AfterResolvingDeps(ctx context.Context) {
 	shutdownStdModuleProcess()
+	os.Remove(pyzPath)
 }

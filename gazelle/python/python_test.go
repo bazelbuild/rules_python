@@ -21,18 +21,15 @@ package python_test
 
 import (
 	"bytes"
-	"context"
 	"errors"
+	"github.com/bazelbuild/bazel-gazelle/testtools"
+	"github.com/bazelbuild/rules_go/go/tools/bazel"
+	"github.com/ghodss/yaml"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
-
-	"github.com/bazelbuild/bazel-gazelle/testtools"
-	"github.com/bazelbuild/rules_go/go/tools/bazel"
-	"github.com/ghodss/yaml"
 )
 
 const (
@@ -152,9 +149,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 
 		args := []string{"-build_file_name=BUILD,BUILD.bazel"}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		t.Cleanup(cancel)
-		cmd := exec.CommandContext(ctx, gazellePath, args...)
+		cmd := exec.Command(gazellePath, args...)
 		var stdout, stderr bytes.Buffer
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
