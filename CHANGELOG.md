@@ -19,6 +19,12 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Changed
+
+* Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
+  as all of the publicly available symbols (etc. `package_annotation`) are
+  re-exported via `//python:pip_bzl` `bzl_library`.
+
 ### Fixed
 
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full

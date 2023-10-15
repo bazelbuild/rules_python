@@ -21,11 +21,6 @@ package(
 bzl_library(
     name = "pip_repository_bzl",
     srcs = ["pip_repository.bzl"],
-    # Semi-public: What is intended to be public and what is intended to be
-    # internal is unclear. Some symbols are clearly public (e.g.
-    # package_annotations), some are clearly internal (e.g.
-    # pip_hub_repository_bzlmod), and many are unknown.
-    visibility = ["//visibility:public"],
     deps = [
         ":repositories_bzl",
         ":requirements_parser_bzl",
