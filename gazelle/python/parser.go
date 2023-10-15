@@ -38,8 +38,9 @@ var (
 )
 
 func startParserProcess(ctx context.Context) {
-	cmd := exec.CommandContext(ctx, "python3", pyzPath, "parse")
-
+	// due to #691, we need a system interpreter to boostrap, part of which is
+	// to locate the hermetic interpreter.
+	cmd := exec.CommandContext(ctx, "python3", helperPath, "parse")
 	cmd.Stderr = os.Stderr
 
 	stdin, err := cmd.StdinPipe()

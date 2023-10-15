@@ -24,6 +24,7 @@ A brief description of the categories of changes:
 * Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
   as all of the publicly available symbols (etc. `package_annotation`) are
   re-exported via `//python:pip_bzl` `bzl_library`.
+* Gazelle Python extension no longer have runtime dependencies.
 
 ### Fixed
 

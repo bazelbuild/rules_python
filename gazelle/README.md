@@ -125,7 +125,6 @@ with the rules_python extension included. This typically goes in your root
 
 ```starlark
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 
 # Our gazelle target points to the python gazelle binary.
 # This is the simple case where we only need one language supported.
@@ -134,7 +133,6 @@ load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 # See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
 gazelle(
     name = "gazelle",
-    data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
 ```

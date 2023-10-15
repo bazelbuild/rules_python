@@ -58,10 +58,12 @@ go_test(
     srcs = ["python_test.go"],
     data = [
         ":gazelle_binary",
+        ":helper",
     ] + glob(["testdata/**"]),
     deps = [
         "@bazel_gazelle//testtools:go_default_library",
         "@com_github_ghodss_yaml//:yaml",
+        "@io_bazel_rules_go//go/runfiles:go_default_library",
         "@io_bazel_rules_go//go/tools/bazel:go_default_library",
     ],
 )

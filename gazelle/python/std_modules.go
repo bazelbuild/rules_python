@@ -38,8 +38,9 @@ var (
 func startStdModuleProcess(ctx context.Context) {
 	stdModulesSeen = make(map[string]struct{})
 
-	cmd := exec.CommandContext(ctx, "python3", pyzPath, "std_modules")
-
+	// due to #691, we need a system interpreter to boostrap, part of which is
+	// to locate the hermetic interpreter.
+	cmd := exec.CommandContext(ctx, "python3", helperPath, "std_modules")
 	cmd.Stderr = os.Stderr
 	// All userland site-packages should be ignored.
 	cmd.Env = []string{"PYTHONNOUSERSITE=1"}
