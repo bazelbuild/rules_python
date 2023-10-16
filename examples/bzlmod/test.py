@@ -76,7 +76,7 @@ class ExampleTest(unittest.TestCase):
             )
 
     def test_main(self):
-        self.assertEquals(
+        self.assertEqual(
             """\
 -  -
 A  1
