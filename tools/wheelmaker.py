@@ -246,6 +246,8 @@ class WheelMaker(object):
         arcname = filename.lstrip(separators)
 
         zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
+        zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
+        zinfo.external_attr = 0o777 << 16  # permissions: rwxrwxrwx
         zinfo.compress_type = self._zipfile.compression
         return zinfo
 
