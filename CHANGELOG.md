@@ -33,7 +33,6 @@ A brief description of the categories of changes:
   like `bazel query rdeps(...)`.
 
 * Python code generated from `proto_library` with `strip_import_prefix` can be imported now.
-* Removed usage of a deprecated method `TestCase.assertEquals` in tests.
 
 * (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
   follow the order of files written to the `.whl` archive.
