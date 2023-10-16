@@ -7,7 +7,9 @@ Gazelle may be run by Bazel using the gazelle rule, or it may be installed and r
 
 This directory contains a plugin for
 [Gazelle](https://github.com/bazelbuild/bazel-gazelle)
-that generates BUILD files content for Python code. When Gazelle is run as a command line tool with this plugin, it embeds with a Python interpreter, which is the one Bazel resolves to when it is building the plugin. The behavior of the plugin is different with different version of the interpreter. Distributors of Gazelle binaries need to build a Gazelle binary for each OS+CPU architecture+Python version combination they are targeting.
+that generates BUILD files content for Python code. When Gazelle is run as a command line tool with this plugin, it embeds a Python interpreter resolved during the plugin build.
+The behavior of the plugin is slightly different with different version of the interpreter as the Python `stdlib` changes with every minor version release.
+Distributors of Gazelle binaries should, therefore, build a Gazelle binary for each OS+CPU architecture+Minor Python version combination they are targeting.
 
 The following instructions are for when you use [bzlmod](https://docs.bazel.build/versions/5.0.0/bzlmod.html).
 Please refer to older documentation that includes instructions on how to use Gazelle
