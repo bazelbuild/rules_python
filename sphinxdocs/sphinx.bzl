@@ -18,7 +18,8 @@ The general usage of the Sphinx rules requires two pieces:
 
 1. Using `sphinx_docs` to define the docs to build and options for building.
 2. Defining a `sphinx-build` binary to run Sphinx with the necessary
-   dependencies to be used by (1).
+   dependencies to be used by (1); the `sphinx_build_binary` rule helps with
+   this.
 
 Defining your own `sphinx-build` binary is necessary because Sphinx uses
 a plugin model to support extensibility.
@@ -55,7 +56,7 @@ def sphinx_build_binary(name, py_binary_rule = py_binary, **kwargs):
         **kwargs
     )
 
-def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", **kwargs):
+def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", extra_opts = [], **kwargs):
     """Generate docs using Sphinx.
 
     This generates two public targets:
@@ -71,8 +72,10 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
         srcs: (label list) The source files for Sphinx to process.
         sphinx: (label) the Sphinx tool to use for building
             documentation. Because Sphinx supports various plugins, you must
-            construct your own `py_binary` target with the dependencies
-            Sphinx needs for your documentation.
+            construct your own binary with the necessary dependencies. The
+            `sphinx_build_binary` rule can be used to define such a binary, but
+            any executable supporting the `sphinx-build` command line interface
+            can be used (typically some `py_binary` program).
         config: (label) the Sphinx config file (`conf.py`) to use.
         formats: (list of str) the formats (`-b` flag) to generate documentation
             in. Each format will become an output group.
@@ -82,7 +85,7 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
         extra_opts: (list[str]) Additional options to pass onto Sphinx building.
         **kwargs: (dict) Common attributes to pass onto rules.
     """
-    add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_build_binary")
+    add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_docs")
     common_kwargs = copy_propagating_kwargs(kwargs)
 
     _sphinx_docs(
@@ -92,6 +95,7 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
         config = config,
         formats = formats,
         strip_prefix = strip_prefix,
+        extra_opts = extra_opts,
         **kwargs
     )
 
@@ -143,6 +147,10 @@ _sphinx_docs = rule(
             mandatory = True,
             doc = "Config file for Sphinx",
         ),
+        "extra_opts": attr.string_list(
+            doc = "Additional options to pass onto Sphinx. These are added after " +
+                  "other options, but before the source/output args.",
+        ),
         "formats": attr.string_list(doc = "Output formats for Sphinx to create."),
         "sphinx": attr.label(
             executable = True,
@@ -155,10 +163,6 @@ _sphinx_docs = rule(
             doc = "Doc source files for Sphinx.",
         ),
         "strip_prefix": attr.string(doc = "Prefix to remove from input file paths."),
-        "extra_opts": attr.string_list(
-            doc = "Additional options to pass onto Sphinx. These are added after " +
-                  "other options, but before the source/output args.",
-        ),
     },
 )
 
