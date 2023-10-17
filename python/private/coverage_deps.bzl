@@ -100,7 +100,6 @@ _coverage_patch = Label("//python/private:coverage.patch")
 
 def coverage_dep(name, python_version, platform, visibility):
     """Register a single coverage dependency based on the python version and platform.
-wqw
     Args:
         name: The name of the registered repository.
         python_version: The full python version.
