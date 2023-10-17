@@ -84,11 +84,13 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 # for python requirements.
 _py_gazelle_deps()
 
+# This interpreter is used for various rules_python dev-time tools
+load("@python//3.11.6:defs.bzl", "interpreter")
+
 #####################
 # Install twine for our own runfiles wheel publishing.
 # Eventually we might want to install twine automatically for users too, see:
 # https://github.com/bazelbuild/rules_python/issues/1016.
-load("@python//3.11.6:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -102,6 +104,21 @@ pip_parse(
 load("@publish_deps//:requirements.bzl", "install_deps")
 
 install_deps()
+
+#####################
+# Install sphinx for doc generation.
+
+pip_parse(
+    name = "docs_deps",
+    incompatible_generate_aliases = True,
+    python_interpreter_target = interpreter,
+    requirements_darwin = "//docs/sphinx:requirements_darwin.txt",
+    requirements_lock = "//docs/sphinx:requirements_linux.txt",
+)
+
+load("@docs_deps//:requirements.bzl", docs_install_deps = "install_deps")
+
+docs_install_deps()
 
 # This wheel is purely here to validate the wheel extraction code. It's not
 # intended for anything else.

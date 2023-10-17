@@ -23,7 +23,7 @@ buildifier:
   # NOTE: Keep in sync with //:version.bzl
   bazel: 5.4.0
 .minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
-  bazel: 6.0.0 # test minimum supported version of bazel for bzlmod tests
+  bazel: 6.2.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -154,8 +154,9 @@ tasks:
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      - "--build_tag_filters=-docs"
     test_flags:
-      - "--test_tag_filters=-integration-test,-acceptance-test"
+      - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
