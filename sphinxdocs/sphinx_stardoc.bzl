@@ -25,10 +25,12 @@ _RULE_TEMPLATE = Label("//sphinxdocs:rule_template.vm")
 _PROVIDER_TEMPLATE = Label("//sphinxdocs:provider_template.vm")
 
 def sphinx_stardocs(name, docs, **kwargs):
-    """Generate Sphinx-friendly markdown docs using Stardoc for bzl libraries.
+    """Generate Sphinx-friendly Markdown docs using Stardoc for bzl libraries.
 
     A `build_test` for the docs is also generated to ensure Stardoc is able
     to process the files.
+
+    NOTE: This generates MyST-flavored Markdown.
 
     Args:
         name: `str`, the name of the resulting file group with the generated docs.

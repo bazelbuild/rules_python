@@ -23,8 +23,7 @@ load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 # of a headache, though, so we don't bother with that.
 _TARGET_COMPATIBLE_WITH = select({
     "@platforms//os:linux": [],
-    #"@platforms//os:macos": [],
-    "@paltforms//os:macos": ["@platforms//:incompatible"],
+    "@platforms//os:macos": [],
     "//conditions:default": ["@platforms//:incompatible"],
 })
 
@@ -96,5 +95,5 @@ compile_pip_requirements(
     requirements_darwin = "requirements_darwin.txt",
     requirements_in = "requirements.in",
     requirements_txt = "requirements_linux.txt",
-    #target_compatible_with = _TARGET_COMPATIBLE_WITH,
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
