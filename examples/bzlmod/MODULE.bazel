@@ -28,14 +28,14 @@ python.toolchain(
 # work in progress.
 python.toolchain(
     configure_coverage_tool = True,
-    python_version = "3.10",
+    python_version = "3.10.9",
 )
 
 # You only need to load this repositories if you are using multiple Python versions.
 # See the tests folder for various examples on using multiple Python versions.
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
 # rules based on the `python_version` arg values.
-use_repo(python, "python_3_10", "python_3_9", "python_versions")
+use_repo(python, "python_3_9", "python_versions", python_3_10 = "python_3_10_9")
 
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
@@ -102,7 +102,7 @@ pip.parse(
 )
 pip.parse(
     hub_name = "pip",
-    python_version = "3.10",
+    python_version = "3.10.9",
     requirements_lock = "//:requirements_lock_3_10.txt",
     requirements_windows = "//:requirements_windows_3_10.txt",
     # These modifications were created above and we
