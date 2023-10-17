@@ -79,6 +79,7 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
         strip_prefix: (str) A prefix to remove from the file paths of the
             source files. e.g., given `//docs:foo.md`, stripping `docs/`
             makes Sphinx see `foo.md` in its generated source directory.
+        extra_opts: (list[str]) Additional options to pass onto Sphinx building.
         **kwargs: (dict) Common attributes to pass onto rules.
     """
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_build_binary")
@@ -154,6 +155,10 @@ _sphinx_docs = rule(
             doc = "Doc source files for Sphinx.",
         ),
         "strip_prefix": attr.string(doc = "Prefix to remove from input file paths."),
+        "extra_opts": attr.string_list(
+            doc = "Additional options to pass onto Sphinx. These are added after " +
+                  "other options, but before the source/output args.",
+        ),
     },
 )
 
@@ -192,6 +197,7 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
     args.add("-j", "auto")  # Build in parallel, if possible
     args.add("-E")  # Don't try to use cache files. Bazel can't make use of them.
     args.add("-a")  # Write all files; don't try to detect "changed" files
+    args.add_all(ctx.attr.extra_opts)
     args.add(source_path)
     args.add(output_dir.path)
 

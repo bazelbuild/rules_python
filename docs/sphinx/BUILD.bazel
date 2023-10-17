@@ -43,6 +43,9 @@ sphinx_docs(
         exclude = ["README.md"],
     ),
     config = "conf.py",
+    # Building produces lots of warnings right now because the docs aren't
+    # entirely ready yet. Silence these to reduce the spam in CI logs.
+    extra_opts = ["-Q"],
     formats = [
         "html",
     ],
