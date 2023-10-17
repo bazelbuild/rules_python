@@ -13,40 +13,33 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//sphinxdocs/private:sphinx.bzl", "sphinx_defines_flag")
 
 package(
     default_visibility = ["//:__subpackages__"],
 )
 
-# These are only exported because they're passed as files to the //sphinxdocs
-# macros, and thus must be visible to other packages. They should only be
-# referenced by the //sphinxdocs macros.
-exports_files(
-    [
-        "func_template.vm",
-        "header_template.vm",
-        "provider_template.vm",
-        "readthedocs_install.py",
-        "rule_template.vm",
-        "sphinx_build.py",
-        "sphinx_server.py",
-    ],
+# Additional -D values to add to every Sphinx build.
+# This is usually used to override the version when building
+sphinx_defines_flag(
+    name = "extra_defines",
+    build_setting_default = [],
 )
 
 bzl_library(
     name = "sphinx_bzl",
     srcs = ["sphinx.bzl"],
-    deps = [
-        "//python:py_binary_bzl",
-        "@bazel_skylib//lib:paths",
-        "@bazel_skylib//lib:types",
-        "@bazel_skylib//rules:build_test",
-        "@io_bazel_stardoc//stardoc:stardoc_lib",
-    ],
+    deps = ["//sphinxdocs/private:sphinx_bzl"],
+)
+
+bzl_library(
+    name = "sphinx_stardoc_bzl",
+    srcs = ["sphinx_stardoc.bzl"],
+    deps = ["//sphinxdocs/private:sphinx_stardoc_bzl"],
 )
 
 bzl_library(
     name = "readthedocs_bzl",
     srcs = ["readthedocs.bzl"],
-    deps = ["//python:py_binary_bzl"],
+    deps = ["//sphinxdocs/private:readthedocs_bzl"],
 )

@@ -5,37 +5,35 @@ project = "rules_python"
 copyright = "2023, The Bazel Authors"
 author = "Bazel"
 
-# Readthedocs fills these in
-release = "0.0.0"
-version = release
+# NOTE: These are overriden by -D flags via --//sphinxdocs:extra_defines
+version = "0.0.0"
+release = version
 
 # -- General configuration
 
 # Any extensions here not built into Sphinx must also be added to
-# the dependencies of Bazel and Readthedocs.
-# * //docs:requirements.in
-# * Regenerate //docs:requirements.txt (used by readthedocs)
-# * Add the dependencies to //docs:sphinx_build
+# the dependencies of //docs/sphinx:sphinx-builder
 extensions = [
-    "sphinx.ext.duration",
-    "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
 ]
 
-exclude_patterns = ["crossrefs.md"]
+exclude_patterns = ["_includes/*"]
 
-intersphinx_mapping = {}
+intersphinx_mapping = {
+    "bazel": ("https://bazel.build/", "bazel_inventory.inv"),
+}
 
-intersphinx_disabled_domains = ["std"]
-
-# Prevent local refs from inadvertently linking elsewhere, per
-# https://docs.readthedocs.io/en/stable/guides/intersphinx.html#using-intersphinx
-intersphinx_disabled_reftypes = ["*"]
+extlinks = {
+    "gh-path": ("https://github.com/bazelbuild/rules_python/tree/main/%s", "%s"),
+}
 
 templates_path = ["_templates"]
 
@@ -58,7 +56,12 @@ myst_enable_extensions = [
     "attrs_inline",
     "colon_fence",
     "deflist",
+    "substitution",
 ]
+
+myst_substitutions = {}
+
+primary_domain = None  # The default is 'py', which we don't make much use of
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ["_static"]
@@ -71,3 +74,7 @@ html_css_files = [
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
+
+#suppress_warnings = ["myst.header", "myst.xref_missing"]
+
+nitpicky = True

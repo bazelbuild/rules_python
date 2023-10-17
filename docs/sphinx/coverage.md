@@ -13,7 +13,7 @@ argument when registerting toolchains.
 
 For Bzlmod:
 
-```starlark
+```
 python.toolchain(
     "@python3_9_toolchains//:all",
     configure_coverage_tool = True,
@@ -22,18 +22,20 @@ python.toolchain(
 
 For WORKSPACE configuration:
 
-```starlark
+```
 python_register_toolchains(
    register_coverage_tool = True,
 )
 ```
 
-NOTE: This will implicitly add the version of `coverage` bundled with
+:::{note}
+This will implicitly add the version of `coverage` bundled with
 `rules_python` to the dependencies of `py_test` rules when `bazel coverage` is
 run. If a target already transitively depends on a different version of
 `coverage`, then behavior is undefined -- it is undefined which version comes
 first in the import path. If you find yourself in this situation, then you'll
 need to manually configure coverage (see below).
+:::
 
 ## Manually configuring coverage
 
@@ -42,7 +44,7 @@ To manually configure coverage support, you'll need to set the
 the coverage entry point file and, optionally, client libraries that are added
 to `py_test` targets. Typically, this would be a `filegroup` that looked like:
 
-```starlark
+```
 filegroup(
   name = "coverage",
   srcs = ["coverage_main.py"],
