@@ -7,7 +7,9 @@ Gazelle may be run by Bazel using the gazelle rule, or it may be installed and r
 
 This directory contains a plugin for
 [Gazelle](https://github.com/bazelbuild/bazel-gazelle)
-that generates BUILD files content for Python code.
+that generates BUILD files content for Python code. When Gazelle is run as a command line tool with this plugin, it embeds a Python interpreter resolved during the plugin build.
+The behavior of the plugin is slightly different with different version of the interpreter as the Python `stdlib` changes with every minor version release.
+Distributors of Gazelle binaries should, therefore, build a Gazelle binary for each OS+CPU architecture+Minor Python version combination they are targeting.
 
 The following instructions are for when you use [bzlmod](https://docs.bazel.build/versions/5.0.0/bzlmod.html).
 Please refer to older documentation that includes instructions on how to use Gazelle
@@ -125,7 +127,6 @@ with the rules_python extension included. This typically goes in your root
 
 ```starlark
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 
 # Our gazelle target points to the python gazelle binary.
 # This is the simple case where we only need one language supported.
@@ -134,7 +135,6 @@ load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 # See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
 gazelle(
     name = "gazelle",
-    data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
 ```
