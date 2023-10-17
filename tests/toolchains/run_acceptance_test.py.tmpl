@@ -15,6 +15,7 @@
 import os
 import subprocess
 import unittest
+import pathlib
 
 class TestPythonVersion(unittest.TestCase):
     @classmethod
@@ -41,30 +42,52 @@ class TestPythonVersion(unittest.TestCase):
         # Bazelisk requires a cache directory be set
         os.environ["XDG_CACHE_HOME"] = os.path.join(test_tmpdir, "xdg-cache-home")
 
-        # Unset this so this works when called by Bazel's latest Bazel build
-        # pipeline. It sets the following combination, which interfere with each other:
-        # * --sandbox_tmpfs_path=/tmp
-        # * --test_env=USE_BAZEL_VERSION
-        # * USE_BAZEL_VERSION=/tmp/<something>
-        os.environ.pop("USE_BAZEL_VERSION", None)
+        env_to_clear = [
+            # Unset this so this works when called by Bazel's latest Bazel build
+            # pipeline. It sets the following combination, which interfere with each other:
+            # * --sandbox_tmpfs_path=/tmp
+            # * --test_env=USE_BAZEL_VERSION
+            # * USE_BAZEL_VERSION=/tmp/<something>
+            "USE_BAZEL_VERSION",
+            "RUNFILES_DIR",
+            "RUNFILES_MANIFEST_FILE",
+            "RUNFILES_MANIFEST_ONLY",
+            "TEST_SRCDIR"
+        ]
+        for e in env_to_clear:
+            os.environ.pop(e, None)
 
-        with open(".bazelrc", "w") as bazelrc:
-            bazelrc.write(
-                os.linesep.join(
-                    [
-                        'build --override_repository rules_python="{}"'.format(
-                            rules_python_path.replace("\\", "/")
-                        ),
-                        "build --test_output=errors",
-                    ]
-                )
+        bazelrclines = [
+            "build --test_output=errors",
+        ]
+
+        if %is_bzlmod%:
+            bazelrclines.extend(
+                [
+                    'build --override_module rules_python="{}"'.format(
+                        rules_python_path.replace("\\", "/")
+                    ),
+                    "common --enable_bzlmod",
+                ]
             )
+        else:
+            bazelrclines.extend(
+                [
+                    'build --override_repository rules_python="{}"'.format(
+                        rules_python_path.replace("\\", "/")
+                    ),
+                    "common --noexperimental_enable_bzlmod",
+                ]
+            )
+
+        bazelrc = pathlib.Path(".bazelrc")
+        bazelrc.write_text(os.linesep.join(bazelrclines))
 
     def test_match_toolchain(self):
         output = subprocess.check_output(
-          f"bazel run --announce_rc @python//:python3 -- --version",
-          shell = True, # Shell needed to look up via PATH
-          text=True,
+            f"bazel run --announce_rc @python//:python3 -- --version",
+            shell = True, # Shell needed to look up via PATH
+            text=True,
         ).strip()
         self.assertEqual(output, "Python %python_version%")
 
