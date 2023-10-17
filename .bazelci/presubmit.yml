@@ -100,7 +100,7 @@ tasks:
     # TODO: Change to "rolling" once
     # https://github.com/bazelbuild/bazel/commit/f3aafea59ae021c6a12086cb2cd34c5fa782faf1
     # is available in rolling.
-    bazel: "last_green"
+    bazel: "2b8219042c132483e0af39ef20d67dfd6442af01"
     environment:
       RULES_PYTHON_ENABLE_PYSTAR: "1"
     test_flags:
@@ -115,7 +115,7 @@ tasks:
     # TODO: Change to "rolling" once
     # https://github.com/bazelbuild/bazel/commit/f3aafea59ae021c6a12086cb2cd34c5fa782faf1
     # is available in rolling.
-    bazel: "last_green"
+    bazel: "2b8219042c132483e0af39ef20d67dfd6442af01"
     environment:
       RULES_PYTHON_ENABLE_PYSTAR: "1"
     test_flags:
