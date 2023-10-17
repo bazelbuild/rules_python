@@ -105,6 +105,8 @@ A brief description of the categories of changes:
 
 * (gazelle) Improve runfiles lookup hermeticity.
 
+* (py_wheel) Produce deterministic wheel files
+
 ## [0.25.0] - 2023-08-22
 
 ### Changed
