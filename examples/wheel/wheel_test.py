@@ -198,7 +198,7 @@ second = second.main:s""",
         )
         with zipfile.ZipFile(filename) as zf:
             self.assertAllEntriesHasReproducibleMetadata(zf)
-            self.assertEquals(
+            self.assertEqual(
                 zf.namelist(),
                 [
                     "examples/wheel/lib/data.txt",
@@ -216,7 +216,7 @@ second = second.main:s""",
             metadata_contents = zf.read(
                 "file_name_escaping-0.0.1_r7.dist-info/METADATA"
             )
-            self.assertEquals(
+            self.assertEqual(
                 metadata_contents,
                 b"""\
 Metadata-Version: 2.1
