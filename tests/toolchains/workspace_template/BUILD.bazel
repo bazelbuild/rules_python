@@ -1,5 +1,6 @@
 exports_files([
     "BUILD.bazel.tmpl",
+    "MODULE.bazel.tmpl",
     "WORKSPACE.tmpl",
     "python_version_test.py",
 ])

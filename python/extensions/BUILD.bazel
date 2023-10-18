@@ -19,5 +19,5 @@ licenses(["notice"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//extensions:__pkg__"],
+    visibility = ["//python:__pkg__"],
 )
