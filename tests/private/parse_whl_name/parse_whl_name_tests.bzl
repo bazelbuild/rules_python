@@ -52,6 +52,17 @@ def _test_multiple_platforms(env):
 
 _tests.append(_test_multiple_platforms)
 
+def _test_real_numpy_wheel(env):
+    got = parse_whl_name("numpy-1.26.1-pp39-pypy39_pp73-macosx_10_9_x86_64.whl")
+    env.expect.that_str(got.distribution).equals("numpy")
+    env.expect.that_str(got.version).equals("1.26.1")
+    env.expect.that_str(got.abi_tag).equals("pypy39_pp73")
+    env.expect.that_str(got.platform_tag).equals("macosx_10_9_x86_64")
+    env.expect.that_str(got.python_tag).equals("pp39")
+    env.expect.that_str(got.build_tag).equals(None)
+
+_tests.append(_test_real_numpy_wheel)
+
 def parse_whl_name_test_suite(name):
     """Create the test suite.
 
