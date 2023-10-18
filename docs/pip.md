@@ -145,24 +145,10 @@ str: A json encoded string of the provided content.
 ## pip_install
 
 <pre>
-pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-kwargs">kwargs</a>)
+pip_install(<a href="#pip_install-requirements">requirements</a>, <a href="#pip_install-name">name</a>, <a href="#pip_install-allow_pip_install">allow_pip_install</a>, <a href="#pip_install-kwargs">kwargs</a>)
 </pre>
 
-Accepts a locked/compiled requirements file and installs the dependencies listed within.
-
-```python
-load("@rules_python//python:pip.bzl", "pip_install")
-
-pip_install(
-    name = "pip_deps",
-    requirements = ":requirements.txt",
-)
-
-load("@pip_deps//:requirements.bzl", "install_deps")
-
-install_deps()
-```
-
+Will be removed in 0.28.0
 
 **PARAMETERS**
 
@@ -171,6 +157,7 @@ install_deps()
 | :------------- | :------------- | :------------- |
 | <a id="pip_install-requirements"></a>requirements |  A 'requirements.txt' pip requirements file.   |  `None` |
 | <a id="pip_install-name"></a>name |  A unique name for the created external repository (default 'pip').   |  `"pip"` |
+| <a id="pip_install-allow_pip_install"></a>allow_pip_install |  change this to keep this rule working (default False).   |  `False` |
 | <a id="pip_install-kwargs"></a>kwargs |  Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.   |  none |
 
 

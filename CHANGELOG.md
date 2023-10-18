@@ -24,7 +24,17 @@ A brief description of the categories of changes:
 * Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
   as all of the publicly available symbols (etc. `package_annotation`) are
   re-exported via `//python:pip_bzl` `bzl_library`.
-* Gazelle Python extension no longer has runtime dependencies. Using `GAZELLE_PYTHON_RUNTIME_DEPS` from `@rules_python_gazelle_plugin//:def.bzl` is no longer necessary.
+
+* Gazelle Python extension no longer has runtime dependencies. Using
+  `GAZELLE_PYTHON_RUNTIME_DEPS` from `@rules_python_gazelle_plugin//:def.bzl` is
+  no longer necessary.
+
+Breaking changes:
+
+* (pip) `pip_install` repository rule in this release has been disabled and
+  will fail by default. The API symbol is going to be removed in the next
+  version, please migrate to `compile_pip_requirements` and `pip_parse` as a
+  replacement.
 
 ### Fixed
 

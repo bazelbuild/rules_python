@@ -23,31 +23,20 @@ load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 
-def pip_install(requirements = None, name = "pip", **kwargs):
-    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
-
-    ```python
-    load("@rules_python//python:pip.bzl", "pip_install")
-
-    pip_install(
-        name = "pip_deps",
-        requirements = ":requirements.txt",
-    )
-
-    load("@pip_deps//:requirements.bzl", "install_deps")
-
-    install_deps()
-    ```
+def pip_install(requirements = None, name = "pip", allow_pip_install = False, **kwargs):
+    """Will be removed in 0.28.0
 
     Args:
         requirements (Label): A 'requirements.txt' pip requirements file.
         name (str, optional): A unique name for the created external repository (default 'pip').
+        allow_pip_install (bool, optional): change this to keep this rule working (default False).
         **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
     """
 
-    # buildifier: disable=print
-    print("pip_install is deprecated. Please switch to pip_parse. pip_install will be removed in a future release.")
-    pip_parse(requirements = requirements, name = name, **kwargs)
+    if allow_pip_install:
+        pip_parse(requirements = requirements, name = name, **kwargs)
+    else:
+        fail("pip_install support has been removed. Please use compile_pip_requirements to fully resolve the requirements file and use the result with pip_parse as a replacement.")
 
 def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
