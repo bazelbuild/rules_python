@@ -42,27 +42,19 @@ class TestPythonVersion(unittest.TestCase):
         # Bazelisk requires a cache directory be set
         os.environ["XDG_CACHE_HOME"] = os.path.join(test_tmpdir, "xdg-cache-home")
 
-        env_to_clear = [
-            # Unset this so this works when called by Bazel's latest Bazel build
-            # pipeline. It sets the following combination, which interfere with each other:
-            # * --sandbox_tmpfs_path=/tmp
-            # * --test_env=USE_BAZEL_VERSION
-            # * USE_BAZEL_VERSION=/tmp/<something>
-            "USE_BAZEL_VERSION",
-            "RUNFILES_DIR",
-            "RUNFILES_MANIFEST_FILE",
-            "RUNFILES_MANIFEST_ONLY",
-            "TEST_SRCDIR"
-        ]
-        for e in env_to_clear:
-            os.environ.pop(e, None)
+        # Unset this so this works when called by Bazel's latest Bazel build
+        # pipeline. It sets the following combination, which interfere with each other:
+        # * --sandbox_tmpfs_path=/tmp
+        # * --test_env=USE_BAZEL_VERSION
+        # * USE_BAZEL_VERSION=/tmp/<something>
+        os.environ.pop("USE_BAZEL_VERSION", None)
 
-        bazelrclines = [
+        bazelrc_lines = [
             "build --test_output=errors",
         ]
 
         if %is_bzlmod%:
-            bazelrclines.extend(
+            bazelrc_lines.extend(
                 [
                     'build --override_module rules_python="{}"'.format(
                         rules_python_path.replace("\\", "/")
@@ -71,7 +63,7 @@ class TestPythonVersion(unittest.TestCase):
                 ]
             )
         else:
-            bazelrclines.extend(
+            bazelrc_lines.extend(
                 [
                     'build --override_repository rules_python="{}"'.format(
                         rules_python_path.replace("\\", "/")
@@ -81,7 +73,7 @@ class TestPythonVersion(unittest.TestCase):
             )
 
         bazelrc = pathlib.Path(".bazelrc")
-        bazelrc.write_text(os.linesep.join(bazelrclines))
+        bazelrc.write_text(os.linesep.join(bazelrc_lines))
 
     def test_match_toolchain(self):
         output = subprocess.check_output(
