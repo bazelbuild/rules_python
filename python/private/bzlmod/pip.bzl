@@ -227,6 +227,9 @@ def _pip_impl(module_ctx):
 
     for module in module_ctx.modules:
         for attr in module.tags.override:
+            if not module.is_root:
+                fail("overrides are only supported in root modules")
+
             if not attr.file.endswith(".whl"):
                 fail("Only whl overrides are supported at this time")
 
