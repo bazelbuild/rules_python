@@ -38,10 +38,15 @@ def _py_wheel_library_impl(ctx):
     args.add("--patch-tool", ctx.attr.patch_tool)
     args.add("--patch-dir", ctx.attr.patch_dir)
 
+    tools = []
     inputs = [wheel_file] + ctx.files.patches
     if name_file:
         inputs.append(name_file)
         args.add("--wheel-name-file", name_file)
+
+    if ctx.attr.patch_tool_target:
+        args.add("--patch-tool-target", ctx.attr.patch_tool_target.files_to_run.executable)
+        tools.append(ctx.executable.patch_tool_target)
 
     if ctx.attr.enable_implicit_namespace_pkgs:
         args.add("--enable-implicit-namespace-pkgs")
@@ -50,6 +55,7 @@ def _py_wheel_library_impl(ctx):
         inputs = inputs,
         outputs = [out],
         executable = ctx.executable._tool,
+        tools = tools,
         arguments = [args],
         # Set environment variables to make generated .pyc files reproducible.
         env = {
@@ -107,7 +113,7 @@ def _py_wheel_library_impl(ctx):
         ),
     ]
 
-py_wheel_library = rule(
+_py_wheel_library = rule(
     implementation = _py_wheel_library_impl,
     attrs = {
         "deps": attr.label_list(
@@ -135,8 +141,13 @@ This option is required to support some packages which cannot handle the convers
             doc = "The directory from which to invoke the patch_tool.",
         ),
         "patch_tool": attr.string(
-            default = "patch",
-            doc = "The patch(1) utility to use.",
+            doc = "The patch(1) utility from the host to use. " +
+                  "If set, overrides `patch_tool_target`.",
+        ),
+        "patch_tool_target": attr.label(
+            executable = True,
+            cfg = "exec",
+            doc = "The label of the patch(1) utility to use. Only used if `patch_tool` is not set.",
         ),
         "patches": attr.label_list(
             allow_files = True,
@@ -161,3 +172,14 @@ This option is required to support some packages which cannot handle the convers
         ),
     },
 )
+
+def py_wheel_library(patches = None, patch_tool = None, patch_tool_target = None, **kwargs):
+    if patches and not patch_tool and not patch_tool_target:
+        patch_tool_target = "@patch//:patch_binary"
+
+    _py_wheel_library(
+        patches = patches,
+        patch_tool = patch_tool,
+        patch_tool_target = patch_tool_target,
+        **kwargs
+    )

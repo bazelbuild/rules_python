@@ -98,23 +98,29 @@ def main(args: Any) -> None:
 
     setup_namespace_pkg_compatibility(lib_dir)
 
-    patch_args = [args.patch_tool] + args.patch_arg
-    patch_dir = args.patch_dir or "."
-    for patch in args.patch or []:
-        with patch.open("r") as stdin:
-            try:
-                subprocess.run(
-                    patch_args,
-                    stdin=stdin,
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    cwd=args.directory / patch_dir,
-                )
-            except subprocess.CalledProcessError as error:
-                print(f"Patch {patch} failed to apply:")
-                print(error.stdout.decode("utf-8"))
-                raise
+    if args.patch:
+        if args.patch_tool and args.patch_tool_target:
+            raise ValueError("Only specify one of 'patch_tool' and 'patch_tool_target'.")
+        if not args.patch_tool and not args.patch_tool_target:
+            raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
+
+        patch_args = [args.patch_tool or Path.cwd() / args.patch_tool_target] + args.patch_arg
+        patch_dir = args.patch_dir or "."
+        for patch in args.patch or []:
+            with patch.open("r") as stdin:
+                try:
+                    subprocess.run(
+                        patch_args,
+                        stdin=stdin,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        cwd=args.directory / patch_dir,
+                    )
+                except subprocess.CalledProcessError as error:
+                    print(f"Patch {patch} failed to apply:")
+                    print(error.stdout.decode("utf-8"))
+                    raise
 
 
 def parse_flags(argv) -> Any:
@@ -164,6 +170,12 @@ def parse_flags(argv) -> Any:
     parser.add_argument(
         "--patch-tool",
         type=str,
+        help="The tool to invoke when applying patches.",
+    )
+
+    parser.add_argument(
+        "--patch-tool-target",
+        type=Path,
         help="The tool to invoke when applying patches.",
     )
 

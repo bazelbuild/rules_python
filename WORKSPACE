@@ -109,31 +109,8 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 
 rules_foreign_cc_dependencies()
 
-
-
-http_archive(
-    name = "gnulib",
-    urls = [
-        "https://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=snapshot;h=e017871121364b67549ea00fcfebc0cb6cc99fb3;sf=tgz",
-    ],
-    strip_prefix = "gnulib-e017871",
-    type = "tgz",
-    sha256 = "a285dc300c3d9c25cc06e38827ef40f6073ec3b9b0fcb5bba433f943be92d8d4",
-    build_file = "//:third_party/gnulib.BUILD.bazel",
-)
-
 http_archive(
     name = "patch",
-    urls = [
-        "http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.gz",
-    ],
-    strip_prefix = "patch-2.7.6",
-    sha256 = "8cf86e00ad3aaa6d26aca30640e86b0e3e1f395ed99f189b06d4c9f74bc58a4e",
-    build_file = "//:third_party/patch.BUILD.bazel",
-)
-
-http_archive(
-    name = "patch2",
     urls = [
         "http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.gz",
     ],

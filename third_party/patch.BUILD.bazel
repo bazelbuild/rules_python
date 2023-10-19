@@ -1,27 +1,6 @@
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
-
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
-
-#cc_binary(
-#    name = "patch",
-#    srcs = [
-#        "src/patch.c",
-#        "src/common.h",
-#        "src/inp.h",
-#        "src/pch.h",
-#        "src/util.c",
-#        "src/util.h",
-#        "src/version.h",
-#        "src/safe.h",
-#    ],
-#    includes = [
-#        "src",
-#    ],
-#    deps = [
-#        #"@gnulib//:gnulib",
-#    ],
-#    visibility = ["//visibility:public"],
-#)
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//:third_party/patch.bzl", "find_patch_executable")
 
 filegroup(
     name = "srcs",
@@ -32,9 +11,24 @@ filegroup(
 )
 
 configure_make(
-    name = "configure_make",
+    name = "patch_make",
     lib_source = ":srcs",
     out_binaries = [
         "patch",
     ],
+)
+
+# The configure_make rule automatically includes the header file "include"
+# directory. We need to filter out just the patch binary itself.
+find_patch_executable(
+    name = "find_patch",
+    src = ":patch_make",
+)
+
+copy_file(
+    name = "patch_binary",
+    out = "patch",
+    src = ":find_patch",
+    is_executable = True,
+    visibility = ["//visibility:public"],
 )
