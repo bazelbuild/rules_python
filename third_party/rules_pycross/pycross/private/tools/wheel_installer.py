@@ -104,7 +104,7 @@ def main(args: Any) -> None:
 
         patch_args = [args.patch_tool or Path.cwd() / args.patch_tool_target] + args.patch_arg
         patch_dir = args.patch_dir or "."
-        for patch in args.patch or []:
+        for patch in args.patch:
             with patch.open("r") as stdin:
                 try:
                     subprocess.run(
@@ -153,6 +153,7 @@ def parse_flags(argv) -> Any:
     parser.add_argument(
         "--patch",
         type=Path,
+        default=[],
         action="append",
         help="A patch file to apply.",
     )
@@ -162,25 +163,27 @@ def parse_flags(argv) -> Any:
         type=Path,
         default=[],
         action="append",
-        help="An argument for the patch_tool when applying the patches.",
+        help="An argument for the patch tool when applying the patches.",
     )
 
     parser.add_argument(
         "--patch-tool",
         type=str,
-        help="The tool to invoke when applying patches.",
+        help=("The tool from PATH to invoke when applying patches. "
+              "If set, --patch-tool-target is ignored."),
     )
 
     parser.add_argument(
         "--patch-tool-target",
         type=Path,
-        help="The tool to invoke when applying patches.",
+        help=("The path to the tool to invoke when applying patches. "
+              "Ignored when --patch-tool is set."),
     )
 
     parser.add_argument(
         "--patch-dir",
         type=str,
-        help="The directory from which to invoke patch_tool.",
+        help="The directory from which to invoke the patch tool.",
     )
 
     return parser.parse_args(argv[1:])
