@@ -54,7 +54,7 @@ bzl_library(
         "//python/private:util_bzl",
         "@bazel_skylib//lib:types",
         "@bazel_skylib//rules:build_test",
-        "@io_bazel_stardoc//stardoc",
+        "@io_bazel_stardoc//stardoc:stardoc_lib",
     ],
 )
 
