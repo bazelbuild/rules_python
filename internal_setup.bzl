@@ -17,8 +17,8 @@
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@build_bazel_integration_testing//tools:repositories.bzl", "bazel_binaries")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
