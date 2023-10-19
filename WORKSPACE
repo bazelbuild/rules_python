@@ -111,10 +111,10 @@ rules_foreign_cc_dependencies()
 
 http_archive(
     name = "patch",
+    build_file = "//:third_party/patch.BUILD.bazel",
+    sha256 = "8cf86e00ad3aaa6d26aca30640e86b0e3e1f395ed99f189b06d4c9f74bc58a4e",
+    strip_prefix = "patch-2.7.6",
     urls = [
         "http://ftp.gnu.org/gnu/patch/patch-2.7.6.tar.gz",
     ],
-    strip_prefix = "patch-2.7.6",
-    sha256 = "8cf86e00ad3aaa6d26aca30640e86b0e3e1f395ed99f189b06d4c9f74bc58a4e",
-    build_file = "//:third_party/patch.BUILD.bazel",
 )
