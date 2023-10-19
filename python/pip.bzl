@@ -11,7 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Import pip requirements into Bazel."""
+"""Rules for pip integration.
+
+This contains a set of rules that are used to support inclusion of third-party
+dependencies via fully locked `requirements.txt` files. Some of the exported
+symbols should not be used and they are either undocumented here or marked as
+for internal use only.
+"""
 
 load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
