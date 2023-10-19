@@ -102,7 +102,9 @@ def main(args: Any) -> None:
         if not args.patch_tool and not args.patch_tool_target:
             raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
 
-        patch_args = [args.patch_tool or Path.cwd() / args.patch_tool_target] + args.patch_arg
+        patch_args = [
+            args.patch_tool or Path.cwd() / args.patch_tool_target
+        ] + args.patch_arg
         patch_dir = args.patch_dir or "."
         for patch in args.patch:
             with patch.open("r") as stdin:
@@ -169,15 +171,19 @@ def parse_flags(argv) -> Any:
     parser.add_argument(
         "--patch-tool",
         type=str,
-        help=("The tool from PATH to invoke when applying patches. "
-              "If set, --patch-tool-target is ignored."),
+        help=(
+            "The tool from PATH to invoke when applying patches. "
+            "If set, --patch-tool-target is ignored."
+        ),
     )
 
     parser.add_argument(
         "--patch-tool-target",
         type=Path,
-        help=("The path to the tool to invoke when applying patches. "
-              "Ignored when --patch-tool is set."),
+        help=(
+            "The path to the tool to invoke when applying patches. "
+            "Ignored when --patch-tool is set."
+        ),
     )
 
     parser.add_argument(
