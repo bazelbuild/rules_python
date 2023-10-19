@@ -241,9 +241,9 @@ readthedocs-sphinx-ext==2.2.3 \
     --hash=sha256:6583c26791a5853ee9e57ce9db864e2fb06808ba470f805d74d53fc50811e012 \
     --hash=sha256:e9d911792789b88ae12e2be94d88c619f89a4fa1fe9e42c1505c9930a07163d8
     # via -r docs/sphinx/requirements.in
-requests==2.28.2 \
-    --hash=sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa \
-    --hash=sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf
+requests==2.31.0 \
+    --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
+    --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1
     # via
     #   readthedocs-sphinx-ext
     #   sphinx
