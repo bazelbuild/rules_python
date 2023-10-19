@@ -99,8 +99,6 @@ def main(args: Any) -> None:
     setup_namespace_pkg_compatibility(lib_dir)
 
     if args.patch:
-        if args.patch_tool and args.patch_tool_target:
-            raise ValueError("Only specify one of 'patch_tool' and 'patch_tool_target'.")
         if not args.patch_tool and not args.patch_tool_target:
             raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
 

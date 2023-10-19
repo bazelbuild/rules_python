@@ -147,7 +147,8 @@ This option is required to support some packages which cannot handle the convers
         "patch_tool_target": attr.label(
             executable = True,
             cfg = "exec",
-            doc = "The label of the patch(1) utility to use. Only used if `patch_tool` is not set.",
+            doc = "The label of the patch(1) utility to use. " +
+                  "Only used if `patch_tool` is not set.",
         ),
         "patches": attr.label_list(
             allow_files = True,
@@ -174,6 +175,8 @@ This option is required to support some packages which cannot handle the convers
 )
 
 def py_wheel_library(patches = None, patch_tool = None, patch_tool_target = None, **kwargs):
+    # If the user has specified patches, but hasn't specified how to apply
+    # those patches, default to our internally-provided patch binary.
     if patches and not patch_tool and not patch_tool_target:
         patch_tool_target = "@patch//:patch_binary"
 
