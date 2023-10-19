@@ -8,4 +8,4 @@ build:
   commands:
     - env
     - npm install -g @bazel/bazelisk
-    - bazel run --//sphinxdocs:extra_defines=version=$READTHEDOCS_VERSION //docs/sphinx:readthedocs_install
+    - bazel run --config=rtd --//sphinxdocs:extra_defines=version=$READTHEDOCS_VERSION //docs/sphinx:readthedocs_install

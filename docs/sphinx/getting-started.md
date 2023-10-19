@@ -11,7 +11,7 @@ the older way of configuring bazel with a `WORKSPACE` file.
 The first step to using rules_python with bzlmod is to add the dependency to
 your MODULE.bazel file:
 
-```
+```starlark
 # Update the version "0.0.0" to the release found here:
 # https://github.com/bazelbuild/rules_python/releases.
 bazel_dep(name = "rules_python", version = "0.0.0")
@@ -19,7 +19,7 @@ bazel_dep(name = "rules_python", version = "0.0.0")
 
 Once added, you can load the rules and use them:
 
-```
+```starlark
 load("@rules_python//python:py_binary.bzl", "py_binary")
 
 py_binary(...)
@@ -52,7 +52,7 @@ rules (which always use the default Python version) should only be done by the
 root module. If submodules use them, then they may run with a different Python
 version than they expect.
 
-```
+```starlark
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(
@@ -77,7 +77,7 @@ To configure a submodule with the version-aware rules, request the particular
 version you need, then use the `@python_versions` repo to use the rules that
 force specific versions:
 
-```
+```starlark
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(
@@ -109,7 +109,7 @@ To import rules_python in your project, you first need to add it to your
 
 To depend on a particular unreleased version, you can do the following:
 
-```
+```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 
@@ -136,7 +136,7 @@ py_repositories()
 
 To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
-```
+```starlark
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
@@ -171,7 +171,7 @@ Python toolchains can be utilized in other bazel rules, such as `genrule()`, by 
 Once you've imported the rule set into your `WORKSPACE` using any of these
 methods, you can then load the core rules in your `BUILD` files with the following:
 
-```
+```starlark
 load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(

@@ -13,7 +13,7 @@ argument when registerting toolchains.
 
 For Bzlmod:
 
-```
+```starlark
 python.toolchain(
     "@python3_9_toolchains//:all",
     configure_coverage_tool = True,
@@ -22,7 +22,7 @@ python.toolchain(
 
 For WORKSPACE configuration:
 
-```
+```starlark
 python_register_toolchains(
    register_coverage_tool = True,
 )
@@ -44,7 +44,7 @@ To manually configure coverage support, you'll need to set the
 the coverage entry point file and, optionally, client libraries that are added
 to `py_test` targets. Typically, this would be a `filegroup` that looked like:
 
-```
+```starlark
 filegroup(
   name = "coverage",
   srcs = ["coverage_main.py"],

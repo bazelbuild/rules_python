@@ -1,20 +1,20 @@
-## Using dependencies from PyPI
+# Using dependencies from PyPI
 
 Using PyPI packages (aka "pip install") involves two main steps.
 
-1. [Installing third_party packages](#installing-third-party-packages)
-2. [Using third_party packages as dependencies](#using-third_party-packages-as-dependencies)
+1. [Installing third party packages](#installing-third-party-packages)
+2. [Using third party packages as dependencies](#using-third-party-packages-as-dependencies)
 
-### Installing third party packages
+## Installing third party packages
 
-#### Using bzlmod
+### Using bzlmod
 
 To add pip dependencies to your `MODULE.bazel` file, use the `pip.parse`
 extension, and call it to create the central external repo and individual wheel
 external repos. Include in the `MODULE.bazel` the toolchain extension as shown
 in the first bzlmod example above.
 
-```
+```starlark
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "my_deps",
@@ -26,12 +26,12 @@ use_repo(pip, "my_deps")
 For more documentation, including how the rules can update/create a requirements
 file, see the bzlmod examples under the {gh-path}`examples` folder.
 
-#### Using a WORKSPACE file
+### Using a WORKSPACE file
 
 To add pip dependencies to your `WORKSPACE`, load the `pip_parse` function and
 call it to create the central external repo and individual wheel external repos.
 
-```
+```starlark
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 # Create a central repo that knows about the dependencies needed from
@@ -46,7 +46,7 @@ load("@my_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
-#### pip rules
+### pip rules
 
 Note that since `pip_parse` is a repository rule and therefore executes pip at
 WORKSPACE-evaluation time, Bazel has no information about the Python toolchain
@@ -77,7 +77,7 @@ transition. Still, some users of `pip_install` will need to replace their
 existing `requirements.txt` with a fully resolved set of dependencies using a
 tool such as `pip-tools` or the `compile_pip_requirements` repository rule.
 
-### Using third_party packages as dependencies
+## Using third party packages as dependencies
 
 Each extracted wheel repo contains a `py_library` target representing
 the wheel's contents. There are two ways to access this library. The
@@ -85,7 +85,7 @@ first uses the `requirement()` function defined in the central
 repo's `//:requirements.bzl` file. This function maps a pip package
 name to a label:
 
-```
+```starlark
 load("@my_deps//:requirements.bzl", "requirement")
 
 py_library(
@@ -99,17 +99,16 @@ py_library(
 )
 ```
 
-The reason `requirement()` exists is that the pattern for the labels,
-while not expected to change frequently, is not guaranteed to be
-stable. Using `requirement()` ensures you do not have to refactor
-your `BUILD` files if the pattern changes.
+The reason `requirement()` exists is to insulate from
+changes to the underlying repository and label strings. However, those
+labels have become directly used, so aren't able to easily change regardless.
 
 On the other hand, using `requirement()` has several drawbacks; see
 [this issue][requirements-drawbacks] for an enumeration. If you don't
 want to use `requirement()`, you can use the library
 labels directly instead. For `pip_parse`, the labels are of the following form:
 
-```
+```starlark
 @{name}_{package}//:pkg
 ```
 
@@ -123,27 +122,21 @@ buildozer command:
 buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...:*
 ```
 
-For `pip_install`, the labels are instead of the form:
-
-```
-@{name}//pypi__{package}
-```
-
 [requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
 
-#### 'Extras' dependencies
+### 'Extras' dependencies
 
 Any 'extras' specified in the requirements lock file will be automatically added
 as transitive dependencies of the package. In the example above, you'd just put
 `requirement("useful_dep")`.
 
-### Consuming Wheel Dists Directly
+## Consuming Wheel Dists Directly
 
 If you need to depend on the wheel dists themselves, for instance, to pass them
 to some other packaging tool, you can get a handle to them with the
 `whl_requirement` macro. For example:
 
-```
+```starlark
 filegroup(
     name = "whl_files",
     data = [

@@ -10,6 +10,8 @@ version = "0.0.0"
 release = version
 
 # -- General configuration
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html
+# for more settings
 
 # Any extensions here not built into Sphinx must also be added to
 # the dependencies of //docs/sphinx:sphinx-builder
@@ -26,27 +28,24 @@ extensions = [
 ]
 
 exclude_patterns = ["_includes/*"]
+templates_path = ["_templates"]
+primary_domain = None  # The default is 'py', which we don't make much use of
+nitpicky = True
+
+# --- Intersphinx configuration
 
 intersphinx_mapping = {
     "bazel": ("https://bazel.build/", "bazel_inventory.inv"),
 }
 
+# --- Extlinks configuration
 extlinks = {
-    "gh-path": ("https://github.com/bazelbuild/rules_python/tree/main/%s", "%s"),
+    "gh-path": (f"https://github.com/bazelbuild/rules_python/tree/main/%s", "%s"),
 }
 
-templates_path = ["_templates"]
-
-# -- Options for HTML output
-
-html_theme = "sphinx_rtd_theme"
-
-# See https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html
-# for options
-html_theme_options = {}
-
-# Keep this in sync with the stardoc templates
-html_permalinks_icon = "¶"
+# --- MyST configuration
+# See https://myst-parser.readthedocs.io/en/latest/configuration.html
+# for more settings
 
 # See https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
 # for additional extensions.
@@ -61,7 +60,17 @@ myst_enable_extensions = [
 
 myst_substitutions = {}
 
-primary_domain = None  # The default is 'py', which we don't make much use of
+# -- Options for HTML output
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# For additional html settings
+
+# See https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html for
+# them-specific options
+html_theme = "sphinx_rtd_theme"
+html_theme_options = {}
+
+# Keep this in sync with the stardoc templates
+html_permalinks_icon = "¶"
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ["_static"]
@@ -75,6 +84,11 @@ html_css_files = [
 # -- Options for EPUB output
 epub_show_urls = "footnote"
 
-#suppress_warnings = ["myst.header", "myst.xref_missing"]
+suppress_warnings = ["myst.header", "myst.xref_missing"]
 
-nitpicky = True
+
+def setup(app):
+  # Pygments says it supports starlark, but it doesn't seem to actually
+  # recognize `starlark` as a name. So just manually map it to python.
+  from sphinx.highlighting import lexer_classes
+  app.add_lexer('starlark', lexer_classes['python'])

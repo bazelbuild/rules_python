@@ -7,7 +7,7 @@ To pull in dependencies from PyPI, the `pip_parse` macro is used.
 This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
 In your WORKSPACE file:
 
-```python
+```starlark
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -22,7 +22,7 @@ install_deps()
 
 You can then reference installed dependencies from a `BUILD` file with:
 
-```python
+```starlark
 load("@pip_deps//:requirements.bzl", "requirement")
 
 py_library(
@@ -42,7 +42,7 @@ functionality for exposing [entry points][whl_ep] as `py_binary` targets as well
 
 [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
-```python
+```starlark
 load("@pip_deps//:requirements.bzl", "entry_point")
 
 alias(
@@ -57,7 +57,7 @@ alias(
 Note that for packages whose name and script are the same, only the name of the package
 is needed when calling the `entry_point` macro.
 
-```python
+```starlark
 load("@pip_deps//:requirements.bzl", "entry_point")
 
 alias(
