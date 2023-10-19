@@ -218,8 +218,8 @@ class WheelMaker(object):
         platform,
         outfile=None,
         strip_path_prefixes=None,
-        incompatible_normalize_name=False,
-        incompatible_normalize_version=False,
+        incompatible_normalize_name=True,
+        incompatible_normalize_version=True,
     ):
         self._name = name
         self._version = version
@@ -460,8 +460,10 @@ def parse_args() -> argparse.Namespace:
     )
 
     feature_group = parser.add_argument_group("Feature flags")
-    feature_group.add_argument("--incompatible_normalize_name", action="store_true")
-    feature_group.add_argument("--incompatible_normalize_version", action="store_true")
+    feature_group.add_argument("--noincompatible_normalize_name", action="store_true")
+    feature_group.add_argument(
+        "--noincompatible_normalize_version", action="store_true"
+    )
 
     return parser.parse_args(sys.argv[1:])
 
@@ -519,8 +521,8 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
-        incompatible_normalize_name=arguments.incompatible_normalize_name,
-        incompatible_normalize_version=arguments.incompatible_normalize_version,
+        incompatible_normalize_name=not arguments.noincompatible_normalize_name,
+        incompatible_normalize_version=not arguments.noincompatible_normalize_version,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
@@ -545,10 +547,10 @@ def main() -> None:
             with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
-        if arguments.incompatible_normalize_version:
-            version_in_metadata = normalize_pep440(version)
-        else:
+        if arguments.noincompatible_normalize_version:
             version_in_metadata = version
+        else:
+            version_in_metadata = normalize_pep440(version)
         maker.add_metadata(
             metadata=metadata,
             name=name,

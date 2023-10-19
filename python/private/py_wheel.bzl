@@ -120,7 +120,7 @@ See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
 
 _feature_flags = {
     "incompatible_normalize_name": attr.bool(
-        default = False,
+        default = True,
         doc = """\
 Normalize the package distribution name according to latest
 Python packaging standards.
@@ -133,7 +133,7 @@ Apart from the valid names according to the above, we also accept
 """,
     ),
     "incompatible_normalize_version": attr.bool(
-        default = False,
+        default = True,
         doc = "Normalize the package version according to PEP440 standard. " +
               "With this option set to True, if the user wants to pass any " +
               "stamp variables, they have to be enclosed in '{}', e.g. " +
@@ -344,10 +344,10 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile)
     args.add("--name_file", name_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
-    if ctx.attr.incompatible_normalize_name:
-        args.add("--incompatible_normalize_name")
-    if ctx.attr.incompatible_normalize_version:
-        args.add("--incompatible_normalize_version")
+    if not ctx.attr.incompatible_normalize_name:
+        args.add("--noincompatible_normalize_name")
+    if not ctx.attr.incompatible_normalize_version:
+        args.add("--noincompatible_normalize_version")
 
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):
