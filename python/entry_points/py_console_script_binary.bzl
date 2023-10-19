@@ -14,6 +14,9 @@
 
 """
 Creates an executable (a non-test binary) for console_script entry points.
+
+```{include} /_includes/py_console_script_binary.md
+```
 """
 
 load("//python/private:py_console_script_binary.bzl", _py_console_script_binary = "py_console_script_binary")

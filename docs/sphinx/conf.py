@@ -5,50 +5,47 @@ project = "rules_python"
 copyright = "2023, The Bazel Authors"
 author = "Bazel"
 
-# Readthedocs fills these in
-release = "0.0.0"
-version = release
+# NOTE: These are overriden by -D flags via --//sphinxdocs:extra_defines
+version = "0.0.0"
+release = version
 
 # -- General configuration
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html
+# for more settings
 
 # Any extensions here not built into Sphinx must also be added to
-# the dependencies of Bazel and Readthedocs.
-# * //docs:requirements.in
-# * Regenerate //docs:requirements.txt (used by readthedocs)
-# * Add the dependencies to //docs:sphinx_build
+# the dependencies of //docs/sphinx:sphinx-builder
 extensions = [
-    "sphinx.ext.duration",
-    "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
 ]
 
-exclude_patterns = ["crossrefs.md"]
-
-intersphinx_mapping = {}
-
-intersphinx_disabled_domains = ["std"]
-
-# Prevent local refs from inadvertently linking elsewhere, per
-# https://docs.readthedocs.io/en/stable/guides/intersphinx.html#using-intersphinx
-intersphinx_disabled_reftypes = ["*"]
-
+exclude_patterns = ["_includes/*"]
 templates_path = ["_templates"]
+primary_domain = None  # The default is 'py', which we don't make much use of
+nitpicky = True
 
-# -- Options for HTML output
+# --- Intersphinx configuration
 
-html_theme = "sphinx_rtd_theme"
+intersphinx_mapping = {
+    "bazel": ("https://bazel.build/", "bazel_inventory.inv"),
+}
 
-# See https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html
-# for options
-html_theme_options = {}
+# --- Extlinks configuration
+extlinks = {
+    "gh-path": (f"https://github.com/bazelbuild/rules_python/tree/main/%s", "%s"),
+}
 
-# Keep this in sync with the stardoc templates
-html_permalinks_icon = "¶"
+# --- MyST configuration
+# See https://myst-parser.readthedocs.io/en/latest/configuration.html
+# for more settings
 
 # See https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
 # for additional extensions.
@@ -58,7 +55,22 @@ myst_enable_extensions = [
     "attrs_inline",
     "colon_fence",
     "deflist",
+    "substitution",
 ]
+
+myst_substitutions = {}
+
+# -- Options for HTML output
+# See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# For additional html settings
+
+# See https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html for
+# them-specific options
+html_theme = "sphinx_rtd_theme"
+html_theme_options = {}
+
+# Keep this in sync with the stardoc templates
+html_permalinks_icon = "¶"
 
 # These folders are copied to the documentation's HTML output
 html_static_path = ["_static"]
@@ -71,3 +83,12 @@ html_css_files = [
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
+
+suppress_warnings = ["myst.header", "myst.xref_missing"]
+
+
+def setup(app):
+  # Pygments says it supports starlark, but it doesn't seem to actually
+  # recognize `starlark` as a name. So just manually map it to python.
+  from sphinx.highlighting import lexer_classes
+  app.add_lexer('starlark', lexer_classes['python'])

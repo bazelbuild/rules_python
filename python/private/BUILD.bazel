@@ -203,8 +203,7 @@ bzl_library(
     name = "util_bzl",
     srcs = ["util.bzl"],
     visibility = [
-        "//docs:__subpackages__",
-        "//python:__subpackages__",
+        "//:__subpackages__",
     ],
     deps = ["@bazel_skylib//lib:types"],
 )

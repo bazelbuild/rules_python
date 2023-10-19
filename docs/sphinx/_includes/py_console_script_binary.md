@@ -1,5 +1,3 @@
-# //pytho/entrypoints:py_console_script_binary
-
 This rule is to make it easier to generate `console_script` entry points
 as per Python [specification].
 
@@ -63,32 +61,4 @@ py_console_script_binary(
 
 [specification]: https://packaging.python.org/en/latest/specifications/entry-points/
 [`py_console_script_binary.binary_rule`]: #py_console_script_binary-binary_rule
-
-
-<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
-
-Creates an executable (a non-test binary) for console_script entry points.
-
-<a id="py_console_script_binary"></a>
-
-## py_console_script_binary
-
-<pre>
-py_console_script_binary(<a href="#py_console_script_binary-name">name</a>, <a href="#py_console_script_binary-pkg">pkg</a>, <a href="#py_console_script_binary-entry_points_txt">entry_points_txt</a>, <a href="#py_console_script_binary-script">script</a>, <a href="#py_console_script_binary-binary_rule">binary_rule</a>, <a href="#py_console_script_binary-kwargs">kwargs</a>)
-</pre>
-
-Generate a py_binary for a console_script entry_point.
-
-**PARAMETERS**
-
-
-| Name  | Description | Default Value |
-| :------------- | :------------- | :------------- |
-| <a id="py_console_script_binary-name"></a>name |  str, The name of the resulting target.   |  none |
-| <a id="py_console_script_binary-pkg"></a>pkg |  target, the package for which to generate the script.   |  none |
-| <a id="py_console_script_binary-entry_points_txt"></a>entry_points_txt |  optional target, the entry_points.txt file to parse for available console_script values. It may be a single file, or a group of files, but must contain a file named `entry_points.txt`. If not specified, defaults to the `dist_info` target in the same package as the `pkg` Label.   |  `None` |
-| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Defaults to the normalized name attribute.   |  `None` |
-| <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like `py_binary`. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  `<function py_binary>` |
-| <a id="py_console_script_binary-kwargs"></a>kwargs |  Extra parameters forwarded to binary_rule.   |  none |
-
 

@@ -13,26 +13,12 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
 # NOTE: Only public visibility for historical reasons.
 # This package is only for rules_python to generate its own docs.
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
-
-_DOCS = [
-    "packaging",
-    "pip",
-    "py_cc_toolchain",
-    "py_cc_toolchain_info",
-    # TODO @aignas 2023-10-09: move some of the example code from the `.bzl` files
-    # to the markdown once #1476 is merged.
-    "py_console_script_binary",
-    "python",
-]
 
 # Temporary compatibility aliases for some other projects depending on the old
 # bzl_library targets.
@@ -63,125 +49,4 @@ alias(
     actual = "//python/pip_install:pip_repository_bzl",
     deprecation = "Use //python/pip_install:pip_repository_bzl instead; Both the requirements " +
                   "parser and targets under //docs are internal",
-)
-
-# TODO: Stardoc does not guarantee consistent outputs accross platforms (Unix/Windows).
-# As a result we do not build or test docs on Windows.
-_TARGET_COMPATIBLE_WITH = select({
-    "@platforms//os:linux": [],
-    "@platforms//os:macos": [],
-    "//conditions:default": ["@platforms//:incompatible"],
-})
-
-stardoc(
-    name = "core-docs",
-    out = "python.md.gen",
-    input = "//python:defs.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = [
-        "//python:defs_bzl",
-    ],
-)
-
-stardoc(
-    name = "pip-docs",
-    out = "pip.md.gen",
-    input = "//python:pip.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = [
-        "//python:pip_bzl",
-    ],
-)
-
-stardoc(
-    name = "py-console-script-binary",
-    out = "py_console_script_binary.md.gen",
-    input = "//python/entry_points:py_console_script_binary.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = [
-        "//python/entry_points:py_console_script_binary_bzl",
-    ],
-)
-
-stardoc(
-    name = "packaging-docs",
-    out = "packaging.md.gen",
-    input = "//python:packaging.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = ["//python:packaging_bzl"],
-)
-
-stardoc(
-    name = "py_cc_toolchain-docs",
-    out = "py_cc_toolchain.md.gen",
-    # NOTE: The public file isn't used as the input because it would document
-    # the macro, which doesn't have the attribute documentation. The macro
-    # doesn't do anything interesting to users, so bypass it to avoid having to
-    # copy/paste all the rule's doc in the macro.
-    input = "//python/private:py_cc_toolchain_rule.bzl",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    deps = ["//python/private:py_cc_toolchain_bzl"],
-)
-
-stardoc(
-    name = "py_cc_toolchain_info-docs",
-    out = "py_cc_toolchain_info.md.gen",
-    input = "//python/cc:py_cc_toolchain_info.bzl",
-    deps = ["//python/cc:py_cc_toolchain_info_bzl"],
-)
-
-[
-    # retain any modifications made by the maintainers above the generated part
-    genrule(
-        name = "merge_" + k,
-        srcs = [
-            k + ".md",
-            k + ".md.gen",
-        ],
-        outs = [k + ".md_"],
-        cmd = ";".join([
-            "sed -En '/{comment_bait}/q;p' <$(location {first}) > $@",
-            "sed -E 's/{comment_doc}/{comment_note}/g' $(location {second}) >> $@",
-        ]).format(
-            comment_bait = "Stardoc: http:..skydoc.bazel.build -->",
-            comment_doc = "^<!.*(Stardoc:.*skydoc.bazel.build.*)",
-            comment_note = "<!-- Everything including and below this line replaced " +
-                           "with output from \\1",
-            first = k + ".md",
-            second = k + ".md.gen",
-        ),
-    )
-    for k in _DOCS
-]
-
-[
-    diff_test(
-        name = "check_" + k,
-        failure_message = "Please run:   bazel run //docs:update",
-        file1 = k + ".md",
-        file2 = k + ".md_",
-        tags = ["doc_check_test"],
-        target_compatible_with = _TARGET_COMPATIBLE_WITH,
-    )
-    for k in _DOCS
-]
-
-write_file(
-    name = "gen_update",
-    out = "update.sh",
-    content = [
-        "#!/usr/bin/env bash",
-        "cd $BUILD_WORKSPACE_DIRECTORY",
-    ] + [
-        "cp -fv bazel-bin/docs/{0}.md_ docs/{0}.md".format(k)
-        for k in _DOCS
-    ],
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
-)
-
-sh_binary(
-    name = "update",
-    srcs = ["update.sh"],
-    data = ["merge_" + k for k in _DOCS],
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )

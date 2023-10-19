@@ -6,5 +6,6 @@ build:
   tools:
     nodejs: "19"
   commands:
+    - env
     - npm install -g @bazel/bazelisk
-    - bazel run //docs/sphinx:readthedocs_install
+    - bazel run --config=rtd --//sphinxdocs:extra_defines=version=$READTHEDOCS_VERSION //docs/sphinx:readthedocs_install
