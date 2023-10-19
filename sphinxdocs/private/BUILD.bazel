@@ -43,7 +43,6 @@ bzl_library(
         "@bazel_skylib//lib:paths",
         "@bazel_skylib//lib:types",
         "@bazel_skylib//rules:build_test",
-        "@bazel_skylib//rules:expand_template",
         "@io_bazel_stardoc//stardoc:stardoc_lib",
     ],
 )
