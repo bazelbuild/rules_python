@@ -214,16 +214,14 @@ def rules_python_internal_deps():
         sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "rules_foreign_cc",
         sha256 = "1c726b3ddcbf9061cca885fed3101a7966f0fe959a56c76ef861e04cc719a8fb",
         strip_prefix = "rules_foreign_cc-14ded03b9c835e9ccba6a20f0944729dccab8d9b",
         url = "https://github.com/bazelbuild/rules_foreign_cc/archive/14ded03b9c835e9ccba6a20f0944729dccab8d9b.tar.gz",
     )
 
-    maybe(
-        http_archive,
+    http_archive(
         name = "patch",
         build_file = "//:third_party/patch.BUILD.bazel",
         sha256 = "8cf86e00ad3aaa6d26aca30640e86b0e3e1f395ed99f189b06d4c9f74bc58a4e",
