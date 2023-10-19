@@ -15,6 +15,7 @@
 import os
 import subprocess
 import unittest
+import pathlib
 
 class TestPythonVersion(unittest.TestCase):
     @classmethod
@@ -48,23 +49,37 @@ class TestPythonVersion(unittest.TestCase):
         # * USE_BAZEL_VERSION=/tmp/<something>
         os.environ.pop("USE_BAZEL_VERSION", None)
 
-        with open(".bazelrc", "w") as bazelrc:
-            bazelrc.write(
-                os.linesep.join(
-                    [
-                        'build --override_repository rules_python="{}"'.format(
-                            rules_python_path.replace("\\", "/")
-                        ),
-                        "build --test_output=errors",
-                    ]
-                )
+        bazelrc_lines = [
+            "build --test_output=errors",
+        ]
+
+        if %is_bzlmod%:
+            bazelrc_lines.extend(
+                [
+                    'build --override_module rules_python="{}"'.format(
+                        rules_python_path.replace("\\", "/")
+                    ),
+                    "common --enable_bzlmod",
+                ]
             )
+        else:
+            bazelrc_lines.extend(
+                [
+                    'build --override_repository rules_python="{}"'.format(
+                        rules_python_path.replace("\\", "/")
+                    ),
+                    "common --noexperimental_enable_bzlmod",
+                ]
+            )
+
+        bazelrc = pathlib.Path(".bazelrc")
+        bazelrc.write_text(os.linesep.join(bazelrc_lines))
 
     def test_match_toolchain(self):
         output = subprocess.check_output(
-          f"bazel run --announce_rc @python//:python3 -- --version",
-          shell = True, # Shell needed to look up via PATH
-          text=True,
+            f"bazel run --announce_rc @python//:python3 -- --version",
+            shell = True, # Shell needed to look up via PATH
+            text=True,
         ).strip()
         self.assertEqual(output, "Python %python_version%")
 

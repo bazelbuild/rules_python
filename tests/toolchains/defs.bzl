@@ -16,6 +16,7 @@
 """
 
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 _WINDOWS_RUNNER_TEMPLATE = """\
 @ECHO OFF
@@ -24,12 +25,28 @@ powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
 """
 
 def _acceptance_test_impl(ctx):
-    workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
-    ctx.actions.expand_template(
-        template = ctx.file._workspace_tmpl,
-        output = workspace,
-        substitutions = {"%python_version%": ctx.attr.python_version},
-    )
+    files = []
+
+    if BZLMOD_ENABLED:
+        module_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "MODULE.bazel"]))
+        ctx.actions.expand_template(
+            template = ctx.file._module_bazel_tmpl,
+            output = module_bazel,
+            substitutions = {"%python_version%": ctx.attr.python_version},
+        )
+        files.append(module_bazel)
+
+        workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
+        ctx.actions.write(workspace, "")
+        files.append(workspace)
+    else:
+        workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
+        ctx.actions.expand_template(
+            template = ctx.file._workspace_tmpl,
+            output = workspace,
+            substitutions = {"%python_version%": ctx.attr.python_version},
+        )
+        files.append(workspace)
 
     build_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "BUILD.bazel"]))
     ctx.actions.expand_template(
@@ -37,23 +54,27 @@ def _acceptance_test_impl(ctx):
         output = build_bazel,
         substitutions = {"%python_version%": ctx.attr.python_version},
     )
+    files.append(build_bazel)
 
     python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
     ctx.actions.symlink(
         target_file = ctx.file._python_version_test,
         output = python_version_test,
     )
+    files.append(python_version_test)
 
     run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
     ctx.actions.expand_template(
         template = ctx.file._run_acceptance_test_tmpl,
         output = run_acceptance_test_py,
         substitutions = {
+            "%is_bzlmod%": str(BZLMOD_ENABLED),
             "%is_windows%": str(ctx.attr.is_windows),
             "%python_version%": ctx.attr.python_version,
             "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
         },
     )
+    files.append(run_acceptance_test_py)
 
     toolchain = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"]
     py3_runtime = toolchain.py3_runtime
@@ -81,14 +102,9 @@ def _acceptance_test_impl(ctx):
             ),
             is_executable = True,
         )
+    files.append(executable)
+    files.extend(ctx.files._distribution)
 
-    files = [
-        build_bazel,
-        executable,
-        python_version_test,
-        run_acceptance_test_py,
-        workspace,
-    ] + ctx.files._distribution
     return [DefaultInfo(
         executable = executable,
         files = depset(
@@ -120,26 +136,31 @@ _acceptance_test = rule(
         "_build_bazel_tmpl": attr.label(
             doc = "The BUILD.bazel template.",
             allow_single_file = True,
-            default = Label("//python/tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
+            default = Label("//tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
         ),
         "_distribution": attr.label(
             doc = "The rules_python source distribution.",
             default = Label("//:distribution"),
         ),
+        "_module_bazel_tmpl": attr.label(
+            doc = "The MODULE.bazel template.",
+            allow_single_file = True,
+            default = Label("//tests/toolchains/workspace_template:MODULE.bazel.tmpl"),
+        ),
         "_python_version_test": attr.label(
             doc = "The python_version_test.py used to test the Python version.",
             allow_single_file = True,
-            default = Label("//python/tests/toolchains/workspace_template:python_version_test.py"),
+            default = Label("//tests/toolchains/workspace_template:python_version_test.py"),
         ),
         "_run_acceptance_test_tmpl": attr.label(
             doc = "The run_acceptance_test.py template.",
             allow_single_file = True,
-            default = Label("//python/tests/toolchains:run_acceptance_test.py.tmpl"),
+            default = Label("//tests/toolchains:run_acceptance_test.py.tmpl"),
         ),
         "_workspace_tmpl": attr.label(
             doc = "The WORKSPACE template.",
             allow_single_file = True,
-            default = Label("//python/tests/toolchains/workspace_template:WORKSPACE.tmpl"),
+            default = Label("//tests/toolchains/workspace_template:WORKSPACE.tmpl"),
         ),
     },
     test = True,
