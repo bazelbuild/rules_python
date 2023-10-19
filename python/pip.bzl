@@ -20,7 +20,6 @@ for internal use only.
 """
 
 load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
-load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:full_version.bzl", "full_version")
@@ -28,6 +27,7 @@ load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
+pip_parse = pip_repository
 
 def pip_install(requirements = None, name = "pip", allow_pip_install = False, **kwargs):
     """Will be removed in 0.28.0
@@ -43,41 +43,6 @@ def pip_install(requirements = None, name = "pip", allow_pip_install = False, **
         pip_parse(requirements = requirements, name = name, **kwargs)
     else:
         fail("pip_install support has been disabled, please use pip_parse as a replacement.")
-
-def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):
-    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
-
-    Those dependencies become available as addressable targets and
-    in a generated `requirements.bzl` file. The `requirements.bzl` file can
-    be checked into source control, if desired; see {ref}`vendoring-requirements`
-
-    For more information, see {ref}`pip-integration`.
-
-    Args:
-        requirements_lock (Label): A fully resolved 'requirements.txt' pip requirement file
-            containing the transitive set of your dependencies. If this file is passed instead
-            of 'requirements' no resolve will take place and pip_repository will create
-            individual repositories for each of your dependencies so that wheels are
-            fetched/built only for the targets specified by 'build/run/test'.
-            Note that if your lockfile is platform-dependent, you can use the `requirements_[platform]`
-            attributes.
-        requirements (Label): Deprecated. See requirements_lock.
-        name (str, optional): The name of the generated repository. The generated repositories
-            containing each requirement will be of the form `<name>_<requirement-name>`.
-        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
-    """
-    pip_install_dependencies()
-
-    # Temporary compatibility shim.
-    # pip_install was previously document to use requirements while pip_parse was using requirements_lock.
-    # We would prefer everyone move to using requirements_lock, but we maintain a temporary shim.
-    reqs_to_use = requirements_lock if requirements_lock else requirements
-
-    pip_repository(
-        name = name,
-        requirements_lock = reqs_to_use,
-        **kwargs
-    )
 
 def _multi_pip_parse_impl(rctx):
     rules_python = rctx.attr._rules_python_workspace.workspace_name

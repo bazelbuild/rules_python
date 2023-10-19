@@ -29,11 +29,16 @@ A brief description of the categories of changes:
   `GAZELLE_PYTHON_RUNTIME_DEPS` from `@rules_python_gazelle_plugin//:def.bzl` is
   no longer necessary.
 
+* The installation of `pip_parse` repository rule toolchain dependencies is now
+  done as part of `py_repositories` call.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
   will fail by default. The API symbol is going to be removed in the next
-  version, please migrate to `pip_parse` as a replacement.
+  version, please migrate to `pip_parse` as a replacement. The `pip_parse`
+  rule no longer supports `requirements` attribute, please use
+  `requirements_lock` instead.
 
 ### Fixed
 
