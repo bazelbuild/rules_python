@@ -15,7 +15,7 @@ python_register_toolchains(
 )
 
 load("@python39//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "package_annotation", "pip_install", "pip_parse")
+load("@rules_python//python:pip.bzl", "package_annotation", "pip_parse")
 
 # Here we can see an example of annotations being applied to an arbitrary
 # package. For details on `package_annotation` and it's uses, see the
@@ -52,24 +52,12 @@ write_file(
 
 # For a more thorough example of `pip_parse`. See `@rules_python//examples/pip_parse`
 pip_parse(
-    name = "pip_parsed",
+    name = "pip",
     annotations = ANNOTATIONS,
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
 
-load("@pip_parsed//:requirements.bzl", install_pip_parse_deps = "install_deps")
+load("@pip//:requirements.bzl", "install_deps")
 
-install_pip_parse_deps()
-
-# For a more thorough example of `pip_install`. See `@rules_python//examples/pip_install`
-pip_install(
-    name = "pip_installed",
-    annotations = ANNOTATIONS,
-    python_interpreter_target = interpreter,
-    requirements = "//:requirements.txt",
-)
-
-load("@pip_installed//:requirements.bzl", install_pip_install_deps = "install_deps")
-
-install_pip_install_deps()
+install_deps()
