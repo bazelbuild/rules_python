@@ -33,8 +33,7 @@ Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
   will fail by default. The API symbol is going to be removed in the next
-  version, please migrate to `compile_pip_requirements` and `pip_parse` as a
-  replacement.
+  version, please migrate to `pip_parse` as a replacement.
 
 ### Fixed
 

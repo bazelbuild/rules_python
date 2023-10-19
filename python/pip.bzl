@@ -36,7 +36,7 @@ def pip_install(requirements = None, name = "pip", allow_pip_install = False, **
     if allow_pip_install:
         pip_parse(requirements = requirements, name = name, **kwargs)
     else:
-        fail("pip_install support has been removed. Please use compile_pip_requirements to fully resolve the requirements file and use the result with pip_parse as a replacement.")
+        fail("pip_install support has been disabled, please use pip_parse as a replacement.")
 
 def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):
     """Accepts a locked/compiled requirements file and installs the dependencies listed within.
