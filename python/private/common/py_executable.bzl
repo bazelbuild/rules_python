@@ -35,6 +35,7 @@ load(
     "create_py_info",
     "csv",
     "filter_to_py_srcs",
+    "target_platform_has_any_constraint",
     "union_attrs",
 )
 load(
@@ -48,6 +49,7 @@ load(
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
+    "PLATFORMS_LOCATION",
     "PY_RUNTIME_ATTR_NAME",
     "TOOLS_REPO",
 )
@@ -92,6 +94,11 @@ filename in `srcs`, `main` must be specified.
             default = "PY3",
             # NOTE: Some tests care about the order of these values.
             values = ["PY2", "PY3"],
+        ),
+        "_windows_constraints": attr.label_list(
+            default = [
+                PLATFORMS_LOCATION + "/os:windows",
+            ],
         ),
     },
     create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
@@ -201,8 +208,7 @@ def _validate_executable(ctx):
     check_native_allowed(ctx)
 
 def _compute_outputs(ctx, output_sources):
-    # TODO: This should use the configuration instead of the Bazel OS.
-    if _py_builtins.get_current_os_name() == "windows":
+    if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
         executable = ctx.actions.declare_file(ctx.label.name + ".exe")
     else:
         executable = ctx.actions.declare_file(ctx.label.name)
@@ -488,7 +494,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
         return struct(dso = None, runfiles = ctx.runfiles())
 
     dso = ctx.actions.declare_file(semantics.get_native_deps_dso_name(ctx))
-    share_native_deps = ctx.fragments.cpp.share_native_deps()
+    share_native_deps = py_internal.share_native_deps(ctx)
     cc_feature_config = cc_configure_features(
         ctx,
         cc_toolchain = cc_details.cc_toolchain,
@@ -571,7 +577,7 @@ def _create_shared_native_deps_dso(
         features = requested_features,
         is_test_target_partially_disabled_thin_lto = is_test and partially_disabled_thin_lto,
     )
-    return ctx.actions.declare_shareable_artifact("_nativedeps/%x.so" % dso_hash)
+    return py_internal.declare_shareable_artifact(ctx, "_nativedeps/%x.so" % dso_hash)
 
 # This is a minimal version of NativeDepsHelper.getSharedNativeDepsPath, see
 # com.google.devtools.build.lib.rules.nativedeps.NativeDepsHelper#getSharedNativeDepsPath

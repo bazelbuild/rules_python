@@ -60,7 +60,7 @@ filegroup(
 
 filegroup(
     name = "{whl_file_label}",
-    srcs = glob(["*.whl"], allow_empty = True),
+    srcs = ["{whl_name}"],
     data = {whl_file_deps},
 )
 
@@ -86,7 +86,9 @@ py_library(
 """
 
 def generate_whl_library_build_bazel(
+        *,
         repo_prefix,
+        whl_name,
         dependencies,
         data_exclude,
         tags,
@@ -96,6 +98,7 @@ def generate_whl_library_build_bazel(
 
     Args:
         repo_prefix: the repo prefix that should be used for dependency lists.
+        whl_name: the whl_name that this is generated for.
         dependencies: a list of PyPI packages that are dependencies to the py_library.
         data_exclude: more patterns to exclude from the data attribute of generated py_library rules.
         tags: list of tags to apply to generated py_library rules.
@@ -166,6 +169,7 @@ def generate_whl_library_build_bazel(
                 name = _PY_LIBRARY_LABEL,
                 dependencies = repr(lib_dependencies),
                 data_exclude = repr(_data_exclude),
+                whl_name = whl_name,
                 whl_file_label = _WHEEL_FILE_LABEL,
                 whl_file_deps = repr(whl_file_deps),
                 tags = repr(tags),

@@ -1,10 +1,11 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Python C/C++ toolchain rule
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Implementation of py_cc_toolchain rule.
 
 NOTE: This is a beta-quality feature. APIs subject to change until
 https://github.com/bazelbuild/rules_python/issues/824 is considered done.
-
 
 <a id="py_cc_toolchain"></a>
 
@@ -18,7 +19,6 @@ A toolchain for a Python runtime's C/C++ information (e.g. headers)
 
 This rule carries information about the C/C++ side of a Python runtime, e.g.
 headers, shared libraries, etc.
-
 
 **ATTRIBUTES**
 

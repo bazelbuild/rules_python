@@ -15,6 +15,7 @@
 """Public entry point for py_library."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:register_extension_info.bzl", "register_extension_info")
 load("//python/private:util.bzl", "add_migration_tag")
 load("//python/private/common:py_library_macro_bazel.bzl", _starlark_py_library = "py_library")
 
@@ -31,3 +32,8 @@ def py_library(**attrs):
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
 
     _py_library_impl(**add_migration_tag(attrs))
+
+register_extension_info(
+    extension = py_library,
+    label_regex_for_dep = "{extension_name}",
+)

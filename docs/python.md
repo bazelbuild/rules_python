@@ -1,4 +1,6 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# Core Python rules
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
 
 Core rules for building Python projects.
 
@@ -10,12 +12,10 @@ Core rules for building Python projects.
 current_py_toolchain(<a href="#current_py_toolchain-name">name</a>)
 </pre>
 
-
-    This rule exists so that the current python toolchain can be used in the `toolchains` attribute of
-    other rules, such as genrule. It allows exposing a python toolchain after toolchain resolution has
-    happened, to a rule which expects a concrete implementation of a toolchain, rather than a
-    toolchain_type which could be resolved to that toolchain.
-    
+This rule exists so that the current python toolchain can be used in the `toolchains` attribute of
+other rules, such as genrule. It allows exposing a python toolchain after toolchain resolution has
+happened, to a rule which expects a concrete implementation of a toolchain, rather than a
+toolchain_type which could be resolved to that toolchain.
 
 **ATTRIBUTES**
 
@@ -35,13 +35,12 @@ py_import(<a href="#py_import-name">name</a>, <a href="#py_import-deps">deps</a>
 
 This rule allows the use of Python packages as dependencies.
 
-    It imports the given `.egg` file(s), which might be checked in source files,
-    fetched externally as with `http_file`, or produced as outputs of other rules.
+It imports the given `.egg` file(s), which might be checked in source files,
+fetched externally as with `http_file`, or produced as outputs of other rules.
 
-    It may be used like a `py_library`, in the `deps` of other Python rules.
+It may be used like a `py_library`, in the `deps` of other Python rules.
 
-    This is similar to [java_import](https://docs.bazel.build/versions/master/be/java.html#java_import).
-    
+This is similar to [java_import](https://docs.bazel.build/versions/master/be/java.html#java_import).
 
 **ATTRIBUTES**
 
@@ -49,8 +48,8 @@ This rule allows the use of Python packages as dependencies.
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="py_import-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="py_import-deps"></a>deps |  The list of other libraries to be linked in to the binary target.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
-| <a id="py_import-srcs"></a>srcs |  The list of Python package files provided to Python targets that depend on this target. Note that currently only the .egg format is accepted. For .whl files, try the whl_library rule. We accept contributions to extend py_import to handle .whl.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
+| <a id="py_import-deps"></a>deps |  The list of other libraries to be linked in to the binary target.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
+| <a id="py_import-srcs"></a>srcs |  The list of Python package files provided to Python targets that depend on this target. Note that currently only the .egg format is accepted. For .whl files, try the whl_library rule. We accept contributions to extend py_import to handle .whl.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 
 <a id="py_binary"></a>
@@ -130,7 +129,7 @@ schema:
 ```python
 platform_common.ToolchainInfo(
     py2_runtime = None,
-    py3_runtime = &lt;PyRuntimeInfo or None&gt;,
+    py3_runtime = <PyRuntimeInfo or None>,
 )
 ```
 
@@ -154,7 +153,7 @@ py_runtime_pair(
 
 toolchain(
     name = "my_toolchain",
-    target_compatible_with = &lt;...&gt;,
+    target_compatible_with = <...>,
     toolchain = ":my_py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
 )
@@ -173,8 +172,8 @@ register_toolchains("//my_pkg:my_toolchain")
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="py_runtime_pair-name"></a>name |  str, the name of the target   |  none |
-| <a id="py_runtime_pair-py2_runtime"></a>py2_runtime |  optional Label; must be unset or None; an error is raised otherwise.   |  <code>None</code> |
-| <a id="py_runtime_pair-py3_runtime"></a>py3_runtime |  Label; a target with <code>PyRuntimeInfo</code> for Python 3.   |  <code>None</code> |
+| <a id="py_runtime_pair-py2_runtime"></a>py2_runtime |  optional Label; must be unset or None; an error is raised otherwise.   |  `None` |
+| <a id="py_runtime_pair-py3_runtime"></a>py3_runtime |  Label; a target with `PyRuntimeInfo` for Python 3.   |  `None` |
 | <a id="py_runtime_pair-attrs"></a>attrs |  Extra attrs passed onto the native rule   |  none |
 
 
@@ -206,8 +205,7 @@ find_requirements(<a href="#find_requirements-name">name</a>)
 
 The aspect definition. Can be invoked on the command line as
 
-    bazel build //pkg:my_py_binary_target         --aspects=@rules_python//python:defs.bzl%find_requirements         --output_groups=pyversioninfo
-
+bazel build //pkg:my_py_binary_target         --aspects=@rules_python//python:defs.bzl%find_requirements         --output_groups=pyversioninfo
 
 **ASPECT ATTRIBUTES**
 
@@ -222,6 +220,6 @@ The aspect definition. Can be invoked on the command line as
 
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="find_requirements-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |   |
+| <a id="find_requirements-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 
 

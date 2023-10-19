@@ -50,6 +50,7 @@ cc_toolchain_suite(
     toolchains = {
         "darwin_x86_64": ":mac_toolchain",
         "k8": ":linux_toolchain",
+        "windows_x86_64": ":windows_toolchain",
     },
 )
 
@@ -105,4 +106,30 @@ fake_cc_toolchain_config(
     name = "linux_toolchain_config",
     target_cpu = "k8",
     toolchain_identifier = "linux-toolchain",
+)
+
+cc_toolchain(
+    name = "windows_toolchain",
+    all_files = ":empty",
+    compiler_files = ":empty",
+    dwp_files = ":empty",
+    linker_files = ":empty",
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    supports_param_files = 0,
+    toolchain_config = ":windows_toolchain_config",
+    toolchain_identifier = "windows-toolchain",
+)
+
+toolchain(
+    name = "windows_toolchain_definition",
+    target_compatible_with = ["@platforms//os:windows"],
+    toolchain = ":windows_toolchain",
+    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+)
+
+fake_cc_toolchain_config(
+    name = "windows_toolchain_config",
+    target_cpu = "windows_x86_64",
+    toolchain_identifier = "windows-toolchain",
 )

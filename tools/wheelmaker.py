@@ -14,13 +14,14 @@
 
 import argparse
 import base64
-import collections
 import hashlib
 import os
 import re
 import sys
 import zipfile
 from pathlib import Path
+
+_ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
 
 
 def commonpath(path1, path2):
@@ -33,86 +34,87 @@ def commonpath(path1, path2):
 
 
 def escape_filename_segment(segment):
-    """Escapes a filename segment per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode"""
+    """Escapes a filename segment per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
+
+    This is a legacy function, kept for backwards compatibility,
+    and may be removed in the future. See `escape_filename_distribution_name`
+    and `normalize_pep440` for the modern alternatives.
+    """
     return re.sub(r"[^\w\d.]+", "_", segment, re.UNICODE)
 
 
-class WheelMaker(object):
+def normalize_package_name(name):
+    """Normalize a package name according to the Python Packaging User Guide.
+
+    See https://packaging.python.org/en/latest/specifications/name-normalization/
+    """
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def escape_filename_distribution_name(name):
+    """Escape the distribution name component of a filename.
+
+    See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+    """
+    return normalize_package_name(name).replace("-", "_")
+
+
+def normalize_pep440(version):
+    """Normalize version according to PEP 440, with fallback for placeholders.
+
+    If there's a placeholder in braces, such as {BUILD_TIMESTAMP},
+    replace it with 0. Such placeholders can be used with stamping, in
+    which case they would have been resolved already by now; if they
+    haven't, we're doing an unstamped build, but we still need to
+    produce a valid version. If such replacements are made, the
+    original version string, sanitized to dot-separated alphanumerics,
+    is appended as a local version segment, so you understand what
+    placeholder was involved.
+
+    If that still doesn't produce a valid version, use version 0 and
+    append the original version string, sanitized to dot-separated
+    alphanumerics, as a local version segment.
+
+    """
+
+    import packaging.version
+
+    try:
+        return str(packaging.version.Version(version))
+    except packaging.version.InvalidVersion:
+        pass
+
+    sanitized = re.sub(r"[^a-z0-9]+", ".", version.lower()).strip(".")
+    substituted = re.sub(r"\{\w+\}", "0", version)
+    delimiter = "." if "+" in substituted else "+"
+    try:
+        return str(packaging.version.Version(f"{substituted}{delimiter}{sanitized}"))
+    except packaging.version.InvalidVersion:
+        return str(packaging.version.Version(f"0+{sanitized}"))
+
+
+class _WhlFile(zipfile.ZipFile):
     def __init__(
         self,
-        name,
-        version,
-        build_tag,
-        python_tag,
-        abi,
-        platform,
-        outfile=None,
+        filename,
+        *,
+        mode,
+        distinfo_dir,
         strip_path_prefixes=None,
+        compression=zipfile.ZIP_DEFLATED,
+        **kwargs,
     ):
-        self._name = name
-        self._version = version
-        self._build_tag = build_tag
-        self._python_tag = python_tag
-        self._abi = abi
-        self._platform = platform
-        self._outfile = outfile
-        self._strip_path_prefixes = (
-            strip_path_prefixes if strip_path_prefixes is not None else []
-        )
-
-        self._distinfo_dir = (
-            escape_filename_segment(self._name)
-            + "-"
-            + escape_filename_segment(self._version)
-            + ".dist-info/"
-        )
-        self._zipfile = None
+        self._distinfo_dir = distinfo_dir
+        if not self._distinfo_dir.endswith("/"):
+            self._distinfo_dir += "/"
+        self._strip_path_prefixes = strip_path_prefixes or []
         # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
 
-    def __enter__(self):
-        self._zipfile = zipfile.ZipFile(
-            self.filename(), mode="w", compression=zipfile.ZIP_DEFLATED
-        )
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self._zipfile.close()
-        self._zipfile = None
-
-    def wheelname(self) -> str:
-        components = [self._name, self._version]
-        if self._build_tag:
-            components.append(self._build_tag)
-        components += [self._python_tag, self._abi, self._platform]
-        return "-".join(components) + ".whl"
-
-    def filename(self) -> str:
-        if self._outfile:
-            return self._outfile
-        return self.wheelname()
-
-    def disttags(self):
-        return ["-".join([self._python_tag, self._abi, self._platform])]
+        super().__init__(filename, mode=mode, compression=compression, **kwargs)
 
     def distinfo_path(self, basename):
         return self._distinfo_dir + basename
-
-    def _serialize_digest(self, hash):
-        # https://www.python.org/dev/peps/pep-0376/#record
-        # "base64.urlsafe_b64encode(digest) with trailing = removed"
-        digest = base64.urlsafe_b64encode(hash.digest())
-        digest = b"sha256=" + digest.rstrip(b"=")
-        return digest
-
-    def add_string(self, filename, contents):
-        """Add given 'contents' as filename to the distribution."""
-        if sys.version_info[0] > 2 and isinstance(contents, str):
-            contents = contents.encode("utf-8", "surrogateescape")
-        self._zipfile.writestr(filename, contents)
-        hash = hashlib.sha256()
-        hash.update(contents)
-        self._add_to_record(filename, self._serialize_digest(hash), len(contents))
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
@@ -139,19 +141,157 @@ class WheelMaker(object):
             return
 
         arcname = arcname_from(package_filename)
+        zinfo = self._zipinfo(arcname)
 
-        self._zipfile.write(real_filename, arcname=arcname)
-        # Find the hash and length
+        # Write file to the zip archive while computing the hash and length
         hash = hashlib.sha256()
         size = 0
-        with open(real_filename, "rb") as f:
-            while True:
-                block = f.read(2**20)
-                if not block:
-                    break
-                hash.update(block)
-                size += len(block)
+        with open(real_filename, "rb") as fsrc:
+            with self.open(zinfo, "w") as fdst:
+                while True:
+                    block = fsrc.read(2**20)
+                    if not block:
+                        break
+                    fdst.write(block)
+                    hash.update(block)
+                    size += len(block)
         self._add_to_record(arcname, self._serialize_digest(hash), size)
+
+    def add_string(self, filename, contents):
+        """Add given 'contents' as filename to the distribution."""
+        if sys.version_info[0] > 2 and isinstance(contents, str):
+            contents = contents.encode("utf-8", "surrogateescape")
+        zinfo = self._zipinfo(filename)
+        self.writestr(zinfo, contents)
+        hash = hashlib.sha256()
+        hash.update(contents)
+        self._add_to_record(filename, self._serialize_digest(hash), len(contents))
+
+    def _serialize_digest(self, hash):
+        # https://www.python.org/dev/peps/pep-0376/#record
+        # "base64.urlsafe_b64encode(digest) with trailing = removed"
+        digest = base64.urlsafe_b64encode(hash.digest())
+        digest = b"sha256=" + digest.rstrip(b"=")
+        return digest
+
+    def _add_to_record(self, filename, hash, size):
+        size = str(size).encode("ascii")
+        self._record.append((filename, hash, size))
+
+    def _zipinfo(self, filename):
+        """Construct deterministic ZipInfo entry for a file named filename"""
+        # Strip leading path separators to mirror ZipInfo.from_file behavior
+        separators = os.path.sep
+        if os.path.altsep is not None:
+            separators += os.path.altsep
+        arcname = filename.lstrip(separators)
+
+        zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
+        zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
+        zinfo.external_attr = 0o777 << 16  # permissions: rwxrwxrwx
+        zinfo.compress_type = self.compression
+        return zinfo
+
+    def add_recordfile(self):
+        """Write RECORD file to the distribution."""
+        record_path = self.distinfo_path("RECORD")
+        entries = self._record + [(record_path, b"", b"")]
+        contents = b""
+        for filename, digest, size in entries:
+            if sys.version_info[0] > 2 and isinstance(filename, str):
+                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
+            contents += b"%s,%s,%s\n" % (filename, digest, size)
+
+        self.add_string(record_path, contents)
+        return contents
+
+
+class WheelMaker(object):
+    def __init__(
+        self,
+        name,
+        version,
+        build_tag,
+        python_tag,
+        abi,
+        platform,
+        outfile=None,
+        strip_path_prefixes=None,
+        incompatible_normalize_name=False,
+        incompatible_normalize_version=False,
+    ):
+        self._name = name
+        self._version = version
+        self._build_tag = build_tag
+        self._python_tag = python_tag
+        self._abi = abi
+        self._platform = platform
+        self._outfile = outfile
+        self._strip_path_prefixes = strip_path_prefixes
+
+        if incompatible_normalize_version:
+            self._version = normalize_pep440(self._version)
+            self._escaped_version = self._version
+        else:
+            self._escaped_version = escape_filename_segment(self._version)
+
+        if incompatible_normalize_name:
+            escaped_name = escape_filename_distribution_name(self._name)
+            self._distinfo_dir = (
+                escaped_name + "-" + self._escaped_version + ".dist-info/"
+            )
+            self._wheelname_fragment_distribution_name = escaped_name
+        else:
+            # The legacy behavior escapes the distinfo dir but not the
+            # wheel name. Enable incompatible_normalize_name to fix it.
+            # https://github.com/bazelbuild/rules_python/issues/1132
+            self._distinfo_dir = (
+                escape_filename_segment(self._name)
+                + "-"
+                + self._escaped_version
+                + ".dist-info/"
+            )
+            self._wheelname_fragment_distribution_name = self._name
+
+        self._whlfile = None
+
+    def __enter__(self):
+        self._whlfile = _WhlFile(
+            self.filename(),
+            mode="w",
+            distinfo_dir=self._distinfo_dir,
+            strip_path_prefixes=self._strip_path_prefixes,
+        )
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self._whlfile.close()
+        self._whlfile = None
+
+    def wheelname(self) -> str:
+        components = [
+            self._wheelname_fragment_distribution_name,
+            self._version,
+        ]
+        if self._build_tag:
+            components.append(self._build_tag)
+        components += [self._python_tag, self._abi, self._platform]
+        return "-".join(components) + ".whl"
+
+    def filename(self) -> str:
+        if self._outfile:
+            return self._outfile
+        return self.wheelname()
+
+    def disttags(self):
+        return ["-".join([self._python_tag, self._abi, self._platform])]
+
+    def distinfo_path(self, basename):
+        return self._whlfile.distinfo_path(basename)
+
+    def add_file(self, package_filename, real_filename):
+        """Add given file to the distribution."""
+        self._whlfile.add_file(package_filename, real_filename)
 
     def add_wheelfile(self):
         """Write WHEEL file to the distribution"""
@@ -165,7 +305,7 @@ Root-Is-Purelib: {}
         )
         for tag in self.disttags():
             wheel_contents += "Tag: %s\n" % tag
-        self.add_string(self.distinfo_path("WHEEL"), wheel_contents)
+        self._whlfile.add_string(self.distinfo_path("WHEEL"), wheel_contents)
 
     def add_metadata(self, metadata, name, description, version):
         """Write METADATA file to the distribution."""
@@ -177,23 +317,11 @@ Root-Is-Purelib: {}
         # provided.
         metadata += description if description else "UNKNOWN"
         metadata += "\n"
-        self.add_string(self.distinfo_path("METADATA"), metadata)
+        self._whlfile.add_string(self.distinfo_path("METADATA"), metadata)
 
     def add_recordfile(self):
         """Write RECORD file to the distribution."""
-        record_path = self.distinfo_path("RECORD")
-        entries = self._record + [(record_path, b"", b"")]
-        entries.sort()
-        contents = b""
-        for filename, digest, size in entries:
-            if sys.version_info[0] > 2 and isinstance(filename, str):
-                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
-            contents += b"%s,%s,%s\n" % (filename, digest, size)
-        self.add_string(record_path, contents)
-
-    def _add_to_record(self, filename, hash, size):
-        size = str(size).encode("ascii")
-        self._record.append((filename, hash, size))
+        self._whlfile.add_recordfile()
 
 
 def get_files_to_package(input_files):
@@ -330,6 +458,10 @@ def parse_args() -> argparse.Namespace:
         help="Pass in the stamp info file for stamping",
     )
 
+    feature_group = parser.add_argument_group("Feature flags")
+    feature_group.add_argument("--incompatible_normalize_name", action="store_true")
+    feature_group.add_argument("--incompatible_normalize_version", action="store_true")
+
     return parser.parse_args(sys.argv[1:])
 
 
@@ -386,6 +518,8 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
+        incompatible_normalize_name=arguments.incompatible_normalize_name,
+        incompatible_normalize_version=arguments.incompatible_normalize_version,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
@@ -410,8 +544,15 @@ def main() -> None:
             with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
                 metadata = metadata_file.read()
 
+        if arguments.incompatible_normalize_version:
+            version_in_metadata = normalize_pep440(version)
+        else:
+            version_in_metadata = version
         maker.add_metadata(
-            metadata=metadata, name=name, description=description, version=version
+            metadata=metadata,
+            name=name,
+            description=description,
+            version=version_in_metadata,
         )
 
         if arguments.entry_points_file:

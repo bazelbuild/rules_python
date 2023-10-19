@@ -14,7 +14,11 @@
 
 """Public entry point for py_runtime_pair."""
 
-load("@bazel_tools//tools/python:toolchain.bzl", _py_runtime_pair = "py_runtime_pair")
+load("@bazel_tools//tools/python:toolchain.bzl", _bazel_tools_impl = "py_runtime_pair")
+load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:py_runtime_pair_macro.bzl", _starlark_impl = "py_runtime_pair")
+
+_py_runtime_pair = _bazel_tools_impl if not config.enable_pystar else _starlark_impl
 
 # NOTE: This doc is copy/pasted from the builtin py_runtime_pair rule so our
 # doc generator gives useful API docs.

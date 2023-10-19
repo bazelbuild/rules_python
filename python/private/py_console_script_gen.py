@@ -28,7 +28,7 @@ the bazel entrypoint script.
 The mitigation strategy is to remove the first entry in the `sys.path` if it does not have `.runfiles` and it seems
 to fix the behaviour of console_scripts under `bazel run`.
 
-This would not happen if we created an console_script binary in the root of an external repository, e.g.
+This would not happen if we created a console_script binary in the root of an external repository, e.g.
 `@pypi_pylint//` because the path for the external repository is already in the runfiles directory.
 """
 
@@ -102,7 +102,7 @@ def run(
         console_scripts = dict(config["console_scripts"])
     except KeyError:
         raise RuntimeError(
-            f"The package does not provide any console_scripts in it's {_ENTRY_POINTS_TXT}"
+            f"The package does not provide any console_scripts in its {_ENTRY_POINTS_TXT}"
         )
 
     if console_script:

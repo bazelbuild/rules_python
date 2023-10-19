@@ -17,6 +17,7 @@ package python
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,7 +27,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
 )
@@ -38,21 +38,9 @@ var (
 )
 
 func startParserProcess(ctx context.Context) {
-	rfiles, err := runfiles.New()
-	if err != nil {
-		log.Printf("failed to create a runfiles object: %v\n", err)
-		os.Exit(1)
-	}
-
-	parseScriptRunfile, err := rfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-
-	cmd := exec.CommandContext(ctx, parseScriptRunfile)
-	cmd.Env = append(os.Environ(), rfiles.Env()...)
-
+	// due to #691, we need a system interpreter to boostrap, part of which is
+	// to locate the hermetic interpreter.
+	cmd := exec.CommandContext(ctx, "python3", helperPath, "parse")
 	cmd.Stderr = os.Stderr
 
 	stdin, err := cmd.StdinPipe()

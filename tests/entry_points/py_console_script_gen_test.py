@@ -50,7 +50,7 @@ class RunTest(unittest.TestCase):
                 )
 
         self.assertEqual(
-            "The package does not provide any console_scripts in it's entry_points.txt",
+            "The package does not provide any console_scripts in its entry_points.txt",
             cm.exception.args[0],
         )
 

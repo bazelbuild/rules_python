@@ -1,7 +1,7 @@
-<!-- Generated with Stardoc: http://skydoc.bazel.build -->
+# //pytho/entrypoints:py_console_script_binary
 
-
-Creates an executable (a non-test binary) for console_script entry points.
+This rule is to make it easier to generate `console_script` entry points
+as per Python [specification].
 
 Generate a `py_binary` target for a particular console_script `entry_point`
 from a PyPI package, e.g. for creating an executable `pylint` target use:
@@ -15,9 +15,9 @@ py_console_script_binary(
 ```
 
 Or for more advanced setups you can also specify extra dependencies and the
-exact script name you want to call. It is useful for tools like flake8, pylint,
-pytest, which have plugin discovery methods and discover dependencies from the
-PyPI packages available in the PYTHONPATH.
+exact script name you want to call. It is useful for tools like `flake8`, `pylint`,
+`pytest`, which have plugin discovery methods and discover dependencies from the
+PyPI packages available in the `PYTHONPATH`.
 ```starlark
 load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
@@ -47,7 +47,7 @@ py_console_script_binary(
 )
 ```
 
-Alternatively, the the `py_console_script_binary.binary_rule` arg can be passed
+Alternatively, the [`py_console_script_binary.binary_rule`] arg can be passed
 the version-bound `py_binary` symbol, or any other `py_binary`-compatible rule
 of your choosing:
 ```starlark
@@ -61,6 +61,13 @@ py_console_script_binary(
 )
 ```
 
+[specification]: https://packaging.python.org/en/latest/specifications/entry-points/
+[`py_console_script_binary.binary_rule`]: #py_console_script_binary-binary_rule
+
+
+<!-- Everything including and below this line replaced with output from Stardoc: http://skydoc.bazel.build -->
+
+Creates an executable (a non-test binary) for console_script entry points.
 
 <a id="py_console_script_binary"></a>
 
@@ -79,9 +86,9 @@ Generate a py_binary for a console_script entry_point.
 | :------------- | :------------- | :------------- |
 | <a id="py_console_script_binary-name"></a>name |  str, The name of the resulting target.   |  none |
 | <a id="py_console_script_binary-pkg"></a>pkg |  target, the package for which to generate the script.   |  none |
-| <a id="py_console_script_binary-entry_points_txt"></a>entry_points_txt |  optional target, the entry_points.txt file to parse for available console_script values. It may be a single file, or a group of files, but must contain a file named <code>entry_points.txt</code>. If not specified, defaults to the <code>dist_info</code> target in the same package as the <code>pkg</code> Label.   |  <code>None</code> |
-| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Defaults to the normalized name attribute.   |  <code>None</code> |
-| <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like <code>py_binary</code>. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  <code>&lt;function py_binary&gt;</code> |
+| <a id="py_console_script_binary-entry_points_txt"></a>entry_points_txt |  optional target, the entry_points.txt file to parse for available console_script values. It may be a single file, or a group of files, but must contain a file named `entry_points.txt`. If not specified, defaults to the `dist_info` target in the same package as the `pkg` Label.   |  `None` |
+| <a id="py_console_script_binary-script"></a>script |  str, The console script name that the py_binary is going to be generated for. Defaults to the normalized name attribute.   |  `None` |
+| <a id="py_console_script_binary-binary_rule"></a>binary_rule |  callable, The rule/macro to use to instantiate the target. It's expected to behave like `py_binary`. Defaults to @rules_python//python:py_binary.bzl#py_binary.   |  `<function py_binary>` |
 | <a id="py_console_script_binary-kwargs"></a>kwargs |  Extra parameters forwarded to binary_rule.   |  none |
 
 

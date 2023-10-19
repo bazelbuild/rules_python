@@ -21,11 +21,40 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
+  as all of the publicly available symbols (etc. `package_annotation`) are
+  re-exported via `//python:pip_bzl` `bzl_library`.
+
+* Gazelle Python extension no longer has runtime dependencies. Using
+  `GAZELLE_PYTHON_RUNTIME_DEPS` from `@rules_python_gazelle_plugin//:def.bzl` is
+  no longer necessary.
+
+Breaking changes:
+
+* (pip) `pip_install` repository rule in this release has been disabled and
+  will fail by default. The API symbol is going to be removed in the next
+  version, please migrate to `pip_parse` as a replacement.
+
+### Fixed
+
+* Skip aliases for unloaded toolchains. Some Python versions that don't have full
+  platform support, and referencing their undefined repositories can break operations
+  like `bazel query rdeps(...)`.
+
+* Python code generated from `proto_library` with `strip_import_prefix` can be imported now.
+
+* (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
+  follow the order of files written to the `.whl` archive.
+
+## [0.26.0] - 2023-10-06
+
+### Changed
+
 * Python version patch level bumps:
-  * 3.8.15  -> 3.8.17
+  * 3.8.15  -> 3.8.18
   * 3.9.17  -> 3.9.18
   * 3.10.12 -> 3.10.13
-  * 3.11.4  -> 3.11.5
+  * 3.11.4  -> 3.11.6
 
 * (deps) Upgrade rules_go 0.39.1 -> 0.41.0; this is so gazelle integration works with upcoming Bazel versions
 
@@ -47,14 +76,30 @@ A brief description of the categories of changes:
   [`py_console_script_binary`](./docs/py_console_script_binary.md), which
   allows adding custom dependencies to a package's entry points and customizing
   the `py_binary` rule used to build it.
-* New Python versions available: `3.8.17`, `3.9.18`, `3.10.13`, `3.11.5` using
+
+* New Python versions available: `3.8.17`, `3.11.5` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20230826.
+
 * (gazelle) New `# gazelle:python_generation_mode file` directive to support
   generating one `py_library` per file.
+
 * (python_repository) Support `netrc` and `auth_patterns` attributes to enable
   authentication against private HTTP hosts serving Python toolchain binaries.
+
 * `//python:packaging_bzl` added, a `bzl_library` for the Starlark
   files `//python:packaging.bzl` requires.
+* (py_wheel) Added the `incompatible_normalize_name` feature flag to
+  normalize the package distribution name according to latest Python
+  packaging standards. Defaults to `False` for the time being.
+* (py_wheel) Added the `incompatible_normalize_version` feature flag
+  to normalize the package version according to PEP440 standard. This
+  also adds support for local version specifiers (versions with a `+`
+  in them), in accordance with PEP440. Defaults to `False` for the
+  time being.
+
+* New Python versions available: `3.8.18`, `3.9.18`, `3.10.13`, `3.11.6`, `3.12.0` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20231002.
+  `3.12.0` support is considered beta and may have issues.
 
 ### Removed
 

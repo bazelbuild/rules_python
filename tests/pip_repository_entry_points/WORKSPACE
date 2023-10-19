@@ -1,4 +1,4 @@
-workspace(name = "pip_repository_annotations_example")
+workspace(name = "pip_entry_points_example")
 
 local_repository(
     name = "rules_python",
@@ -17,28 +17,16 @@ python_register_toolchains(
 )
 
 load("@python310//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_install", "pip_parse")
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 # For a more thorough example of `pip_parse`. See `@rules_python//examples/pip_parse`
 pip_parse(
-    name = "pip_parsed",
+    name = "pip",
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
     requirements_windows = "//:requirements_windows.txt",
 )
 
-load("@pip_parsed//:requirements.bzl", install_pip_parse_deps = "install_deps")
+load("@pip//:requirements.bzl", "install_deps")
 
-install_pip_parse_deps()
-
-# For a more thorough example of `pip_install`. See `@rules_python//examples/pip_install`
-pip_install(
-    name = "pip_installed",
-    python_interpreter_target = interpreter,
-    requirements = "//:requirements.txt",
-    requirements_windows = "//:requirements_windows.txt",
-)
-
-load("@pip_installed//:requirements.bzl", install_pip_install_deps = "install_deps")
-
-install_pip_install_deps()
+install_deps()

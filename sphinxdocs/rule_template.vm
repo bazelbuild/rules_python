@@ -1,0 +1,48 @@
+#set( $nl = "
+" )
+#set( $rn = $ruleInfo.ruleName)
+#set( $rnl = $rn.replaceAll("[.]", "_").toLowerCase())
+{.starlark-object}
+#[[##]]# $ruleName
+
+#set( $hasAttrs = false)
+{.starlark-signature}
+${ruleInfo.ruleName}(## Comment to consume newline
+#foreach ($attr in $ruleInfo.getAttributeList())
+#set( $hasAttrs = true)
+[${attr.name}](#${rnl}_${attr.name})## Comment to consume newline
+#if(!$attr.getDefaultValue().isEmpty())
+=$attr.getDefaultValue()#end#if($foreach.hasNext),
+#end
+#end
+)
+
+$ruleInfo.docString
+
+#if ($hasAttrs)
+{#${rnl}_attributes}
+**ATTRIBUTES** [¶](#${rnl}_attributes){.headerlink}
+
+#foreach ($attr in $ruleInfo.getAttributeList())
+#set($link = $rnl + "_" + $attr.name)
+#if($attr.mandatory)
+#set($opt = "required")
+#else
+#set($opt = "optional")
+#end
+#if($attr.type == "NAME")
+#set($type = "[Name][target-name]")
+#elseif($attr.type == "LABEL_LIST")
+#set($type = "list of [label][attr-label]s")
+#end
+#if(!$attr.getDefaultValue().isEmpty())
+#set($default = ", default `" + $attr.getDefaultValue() + "`")
+#else
+#set($default = "")
+#end
+:[${attr.name}[¶](#$link){.headerlink}]{.span}: []{#$link}
+  _($opt $type$default)_
+  $attr.docString.replaceAll("$nl", "$nl  ")
+
+#end
+#end
