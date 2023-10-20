@@ -14,10 +14,8 @@
 
 ""
 
-load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//:version.bzl", "MINIMUM_BAZEL_VERSION")
 
 _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private:update_pip_deps'
@@ -137,13 +135,6 @@ def pip_install_dependencies():
 
     (However we call it from pip_install, making it optional for users to do so.)
     """
-
-    # We only support Bazel LTS and rolling releases.
-    # Give the user an obvious error to upgrade rather than some obscure missing symbol later.
-    # It's not guaranteed that users call this function, but it's used by all the pip fetch
-    # repository rules so it's likely that most users get the right error.
-    versions.check(MINIMUM_BAZEL_VERSION)
-
     for (name, url, sha256) in _RULE_DEPS:
         maybe(
             http_archive,

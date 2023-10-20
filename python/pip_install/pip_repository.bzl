@@ -454,10 +454,14 @@ pip_repository_attrs = {
     ),
     "requirements_lock": attr.label(
         allow_single_file = True,
-        doc = """
-A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
-of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
-wheels are fetched/built only for the targets specified by 'build/run/test'.
+        doc = """\
+A fully resolved 'requirements.txt' pip requirement file containing the
+transitive set of your dependencies. If this file is passed instead of
+'requirements' no resolve will take place and pip_repository will create
+individual repositories for each of your dependencies so that wheels are
+fetched/built only for the targets specified by 'build/run/test'. Note that if
+your lockfile is platform-dependent, you can use the `requirements_[platform]`
+attributes.
 """,
     ),
     "requirements_windows": attr.label(
@@ -473,22 +477,32 @@ pip_repository_attrs.update(**common_attrs)
 
 pip_repository = repository_rule(
     attrs = pip_repository_attrs,
-    doc = """A rule for importing `requirements.txt` dependencies into Bazel.
+    doc = """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-This rule imports a `requirements.txt` file and generates a new
-`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
+Those dependencies become available in a generated `requirements.bzl` file.
+You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-```python
-pip_repository(
-    name = "foo",
-    requirements = ":requirements.txt",
+This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
+In your WORKSPACE file:
+
+```starlark
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "pip_deps",
+    requirements_lock = ":requirements.txt",
 )
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+
+install_deps()
 ```
 
-You can then reference imported dependencies from your `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with:
 
-```python
-load("@foo//:requirements.bzl", "requirement")
+```starlark
+load("@pip_deps//:requirements.bzl", "requirement")
+
 py_library(
     name = "bar",
     ...
@@ -500,17 +514,52 @@ py_library(
 )
 ```
 
-Or alternatively:
-```python
-load("@foo//:requirements.bzl", "all_requirements")
-py_binary(
-    name = "baz",
-    ...
-    deps = [
-       ":foo",
-    ] + all_requirements,
+In addition to the `requirement` macro, which is used to access the generated `py_library`
+target generated from a package's wheel, The generated `requirements.bzl` file contains
+functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+
+[whl_ep]: https://packaging.python.org/specifications/entry-points/
+
+```starlark
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "pip-compile",
+    actual = entry_point(
+        pkg = "pip-tools",
+        script = "pip-compile",
+    ),
 )
 ```
+
+Note that for packages whose name and script are the same, only the name of the package
+is needed when calling the `entry_point` macro.
+
+```starlark
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "flake8",
+    actual = entry_point("flake8"),
+)
+```
+
+## Vendoring the requirements.bzl file
+
+In some cases you may not want to generate the requirements.bzl file as a repository rule
+while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
+such as a ruleset, you may want to include the requirements.bzl file rather than make your users
+install the WORKSPACE setup to generate it.
+See https://github.com/bazelbuild/rules_python/issues/608
+
+This is the same workflow as Gazelle, which creates `go_repository` rules with
+[`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
+
+To do this, use the "write to source file" pattern documented in
+https://blog.aspect.dev/bazel-can-write-to-the-source-folder
+to put a copy of the generated requirements.bzl into your project.
+Then load the requirements.bzl file directly rather than from the generated repository.
+See the example in rules_python/examples/pip_parse_vendored.
 """,
     implementation = _pip_repository_impl,
     environ = common_env,
