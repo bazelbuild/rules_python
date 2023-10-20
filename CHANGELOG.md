@@ -35,6 +35,10 @@ Breaking changes:
   will fail by default. The API symbol is going to be removed in the next
   version, please migrate to `pip_parse` as a replacement.
 
+* (py_wheel) switch `incompatible_normalize_name` and
+  `incompatible_normalize_version` to `True` by default to enforce `PEP440`
+  for wheel names built by `rules_python`.
+
 ### Fixed
 
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full
