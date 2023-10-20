@@ -46,6 +46,11 @@ Breaking changes:
 * (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
   follow the order of files written to the `.whl` archive.
 
+### Added
+
+* (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
+  arguments to the new `pip.override` tag class.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed

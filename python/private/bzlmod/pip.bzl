@@ -26,6 +26,7 @@ load(
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
 
@@ -78,7 +79,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -131,6 +132,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map):
             repo = pip_name,
             repo_prefix = pip_name + "_",
             annotation = annotation,
+            whl_patches = {
+                p: json.encode(args)
+                for p, args in whl_overrides.get(whl_name, {}).items()
+            },
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
@@ -217,6 +222,35 @@ def _pip_impl(module_ctx):
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(module_ctx)
 
+    _overriden_whl_set = {}
+    whl_overrides = {}
+
+    for module in module_ctx.modules:
+        for attr in module.tags.override:
+            if not module.is_root:
+                fail("overrides are only supported in root modules")
+
+            if not attr.file.endswith(".whl"):
+                fail("Only whl overrides are supported at this time")
+
+            whl_name = normalize_name(parse_whl_name(attr.file).distribution)
+
+            if attr.file in _overriden_whl_set:
+                fail("Duplicate module overrides for '{}'".format(attr.file))
+            _overriden_whl_set[attr.file] = None
+
+            for patch in attr.patches:
+                if whl_name not in whl_overrides:
+                    whl_overrides[whl_name] = {}
+
+                if patch not in whl_overrides[whl_name]:
+                    whl_overrides[whl_name][patch] = struct(
+                        patch_strip = attr.patch_strip,
+                        whls = [],
+                    )
+
+                whl_overrides[whl_name][patch].whls.append(attr.file)
+
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
     pip_hub_map = {}
@@ -261,7 +295,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
@@ -381,6 +415,35 @@ cannot have a child module that uses the same `hub_name`.
     }
     return attrs
 
+# NOTE: the naming of 'override' is taken from the bzlmod native
+# 'archive_override', 'git_override' bzlmod functions.
+_override_tag = tag_class(
+    attrs = {
+        "file": attr.string(
+            doc = """\
+The Python distribution file name which needs to be patched. This will be
+applied to all repositories that setup this distribution via the pip.parse tag
+class.""",
+            mandatory = True,
+        ),
+        "patch_strip": attr.int(
+            default = 0,
+            doc = """\
+The number of leading path segments to be stripped from the file name in the
+patches.""",
+        ),
+        "patches": attr.label_list(
+            doc = """\
+A list of patches to apply to the repository *after* 'whl_library' is extracted
+and BUILD.bazel file is generated.""",
+            mandatory = True,
+        ),
+    },
+    doc = """\
+Apply any overrides (e.g. patches) to a given Python distribution defined by
+other tags in this extension.""",
+)
+
 def _extension_extra_args():
     args = {}
 
@@ -412,6 +475,7 @@ the BUILD files for wheels.
 """,
     implementation = _pip_impl,
     tag_classes = {
+        "override": _override_tag,
         "parse": tag_class(
             attrs = _pip_parse_ext_attrs(),
             doc = """\

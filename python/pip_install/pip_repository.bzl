@@ -22,6 +22,7 @@ load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "gener
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
@@ -44,6 +45,7 @@ def _construct_pypath(rctx):
 
     Args:
         rctx: Handle to the repository_context.
+
     Returns: String of the PYTHONPATH.
     """
 
@@ -542,6 +544,22 @@ def _whl_library_impl(rctx):
     if not rctx.delete("whl_file.json"):
         fail("failed to delete the whl_file.json file")
 
+    if rctx.attr.whl_patches:
+        patches = {}
+        for patch_file, json_args in patches.items():
+            patch_dst = struct(**json.decode(json_args))
+            if whl_path.basename in patch_dst.whls:
+                patches[patch_file] = patch_dst.patch_strip
+
+        whl_path = patch_whl(
+            rctx,
+            python_interpreter = python_interpreter,
+            whl_path = whl_path,
+            patches = patches,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+
     result = rctx.execute(
         args + ["--whl-file", whl_path],
         environment = environment,
@@ -634,6 +652,13 @@ whl_library_attrs = {
     "requirement": attr.string(
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
+    ),
+    "whl_patches": attr.label_keyed_string_dict(
+        doc = """"a label-keyed-string dict that has
+            json.encode(struct([whl_file], patch_strip]) as values. This
+            is to maintain flexibility and correct bzlmod extension interface
+            until we have a better way to define whl_library and move whl
+            patching to a separate place. INTERNAL USE ONLY.""",
     ),
     "_python_path_entries": attr.label_list(
         # Get the root directory of these rules and keep them as a default attribute
