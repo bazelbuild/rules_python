@@ -1,4 +1,4 @@
-load("//python:versions.bzl", "TOOL_VERSIONS")
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
@@ -10,4 +10,7 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
-construct_config_settings(python_versions = TOOL_VERSIONS.keys())
+construct_config_settings(
+    minor_mapping = MINOR_MAPPING,
+    python_versions = TOOL_VERSIONS.keys(),
+)

@@ -94,6 +94,8 @@ Breaking changes:
 * (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
   to find out how `rules_python` would normalize a PyPI distribution name.
 
+* (config_settings) The `python_version` flag now accepts minor Python versions.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed
