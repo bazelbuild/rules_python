@@ -72,6 +72,9 @@ Breaking changes:
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
   arguments to the new `pip.override` tag class.
 
+* (pip) Support for using PEP621 compliant `pyproject.toml` for creating a resolved
+  `requirements.txt` file.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed
