@@ -1,5 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 
+import os
+
 # -- Project information
 project = "rules_python"
 copyright = "2023, The Bazel Authors"
@@ -26,6 +28,29 @@ extensions = [
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
 ]
+
+# Adapted from the template code:
+# https://github.com/readthedocs/readthedocs.org/blob/main/readthedocs/doc_builder/templates/doc_builder/conf.py.tmpl
+if os.environ.get("READTHEDOCS") == "True":
+  # Must come first because it can interfere with other extensions, according
+  # to the original conf.py template comments
+  extensions.insert(0, "readthedocs_ext.readthedocs")
+
+  if os.environ.get("READTHEDOCS_VERSION_TYPE") == "external":
+    # Insert after the main extension
+    extensions.insert(1, "readthedocs_ext.external_version_warning")
+    readthedocs_vcs_url = "http://github.com/bazelbuild/rules_python/pull/{}".format(
+        os.environ.get("READTHEDOCS_VERSION", "")
+    )
+    # The build id isn't directly available, but it appears to be encoded
+    # into the host name, so we can parse it from that. The format appears
+    # to be `build-X-project-Y-Z`, where:
+    # * X is an integer build id
+    # * Y is an integer project id
+    # * Z is the project name
+    _build_id = os.environ.get("HOSTNAME", "build-0-project-0-rules-python")
+    _build_id = _build_id.split("-")[1]
+    readthedocs_build_url = f"https://readthedocs.org/projects/rules-python/builds/{_build_id}"
 
 exclude_patterns = ["_includes/*"]
 templates_path = ["_templates"]
@@ -69,6 +94,33 @@ myst_substitutions = {}
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {}
 
+# The html_context settings are part of the jinja context used by the themes.
+html_context = {
+    # This controls whether the flyout menu is shown. It is always false
+    # because:
+    # * For local builds, the flyout menu is empty and doesn't show in the
+    #   same place as for RTD builds. No point in showing it locally.
+    # * For RTD builds, the flyout menu is always automatically injected,
+    #   so having it be True makes the flyout show up twice.
+    "READTHEDOCS": False,
+    'PRODUCTION_DOMAIN': "readthedocs.org",
+    # This is the path to a page's source (after the github user/repo/commit)
+    "conf_py_path": "/docs/sphinx/",
+    'github_user': 'bazelbuild',
+    'github_repo': 'rules_python',
+    # The git version that was checked out, e.g. the tag or branch name
+    'github_version': os.environ.get("READTHEDOCS_GIT_IDENTIFIER", ""),
+    # For local builds, the github link won't work. Disabling it replaces
+    # it with a "view source" link to view the source Sphinx saw, which
+    # is useful for local development.
+    'display_github': os.environ.get("READTHEDOCS") == "True",
+    'commit': os.environ.get("READTHEDOCS_GIT_COMMIT_HASH", "unknown commit"),
+
+    # Used by readthedocs_ext.external_version_warning extension
+    # This is the PR number being built
+    'current_version': os.environ.get("READTHEDOCS_VERSION", ""),
+}
+
 # Keep this in sync with the stardoc templates
 html_permalinks_icon = "¶"
 
@@ -85,7 +137,6 @@ html_css_files = [
 epub_show_urls = "footnote"
 
 suppress_warnings = ["myst.header", "myst.xref_missing"]
-
 
 def setup(app):
   # Pygments says it supports starlark, but it doesn't seem to actually
