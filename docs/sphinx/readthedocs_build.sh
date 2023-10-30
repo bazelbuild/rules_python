@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -eou pipefail
 
 declare -a extra_env
 while IFS='=' read -r -d '' name value; do
