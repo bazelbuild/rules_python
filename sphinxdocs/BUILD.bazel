@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//sphinxdocs/private:sphinx.bzl", "sphinx_defines_flag")
+load("//sphinxdocs/private:sphinx.bzl", "repeated_string_list_flag")
 
 package(
     default_visibility = ["//:__subpackages__"],
@@ -21,8 +21,13 @@ package(
 
 # Additional -D values to add to every Sphinx build.
 # This is usually used to override the version when building
-sphinx_defines_flag(
+repeated_string_list_flag(
     name = "extra_defines",
+    build_setting_default = [],
+)
+
+repeated_string_list_flag(
+    name = "extra_env",
     build_setting_default = [],
 )
 

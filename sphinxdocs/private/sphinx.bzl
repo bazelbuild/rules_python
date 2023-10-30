@@ -155,6 +155,7 @@ _sphinx_docs = rule(
         ),
         "strip_prefix": attr.string(doc = "Prefix to remove from input file paths."),
         "_extra_defines_flag": attr.label(default = "//sphinxdocs:extra_defines"),
+        "_extra_env_flag": attr.label(default = "//sphinxdocs:extra_env"),
     },
 )
 
@@ -201,9 +202,14 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
     args.add("-E")  # Don't try to use cache files. Bazel can't make use of them.
     args.add("-a")  # Write all files; don't try to detect "changed" files
     args.add_all(ctx.attr.extra_opts)
-    args.add_all(ctx.attr._extra_defines_flag[_SphinxDefinesInfo].value, before_each = "-D")
+    args.add_all(ctx.attr._extra_defines_flag[_FlagInfo].value, before_each = "-D")
     args.add(source_path)
     args.add(output_dir.path)
+
+    env = dict([
+        v.split("=", 1)
+        for v in ctx.attr._extra_env_flag[_FlagInfo].value
+    ])
 
     ctx.actions.run(
         executable = ctx.executable.sphinx,
@@ -212,19 +218,20 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
         outputs = [output_dir],
         mnemonic = "SphinxBuildDocs",
         progress_message = "Sphinx building {} for %{{label}}".format(format),
+        env = env,
     )
     return output_dir
 
-_SphinxDefinesInfo = provider(
-    doc = "Provider for the extra_defines flag value",
+_FlagInfo = provider(
+    doc = "Provider for a flag value",
     fields = ["value"],
 )
 
-def _sphinx_defines_flag_impl(ctx):
-    return _SphinxDefinesInfo(value = ctx.build_setting_value)
+def _repeated_string_list_flag_impl(ctx):
+    return _FlagInfo(value = ctx.build_setting_value)
 
-sphinx_defines_flag = rule(
-    implementation = _sphinx_defines_flag_impl,
+repeated_string_list_flag = rule(
+    implementation = _repeated_string_list_flag_impl,
     build_setting = config.string_list(flag = True, repeatable = True),
 )
 
