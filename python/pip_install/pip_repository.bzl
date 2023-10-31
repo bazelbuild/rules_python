@@ -317,28 +317,32 @@ def _pip_repository_impl(rctx):
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
 
     if rctx.attr.incompatible_generate_aliases:
+        macro_tmpl = "@%s//{}:{}" % rctx.attr.name
         aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
         for path, contents in aliases.items():
             rctx.file(path, contents)
+    else:
+        macro_tmpl = "@%s_{}//:{}" % rctx.attr.name
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "data")
             for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "pkg")
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:whl".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "whl")
             for p in bzl_packages
         ]),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
         "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%PACKAGES%%": _format_repr_list(
             [
