@@ -570,34 +570,34 @@ tasks:
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: ubuntu2004
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_ubuntu:
     name: compile_pip_requirements test from external repo on Ubuntu
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: ubuntu2004
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_debian:
     name: compile_pip_requirements test from external repo on Debian
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: debian11
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_macos:
     name: compile_pip_requirements test from external repo on macOS
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: macos
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_windows:
     name: compile_pip_requirements test from external repo on Windows
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: windows
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
 
