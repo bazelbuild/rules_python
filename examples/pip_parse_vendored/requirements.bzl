@@ -7,7 +7,7 @@ from //:requirements.txt
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
-all_requirements = ["@pip//certifi", "@pip//charset_normalizer", "@pip//idna", "@pip//requests", "@pip//urllib3"]
+all_requirements = ["@pip//certifi:pkg", "@pip//charset_normalizer:pkg", "@pip//idna:pkg", "@pip//requests:pkg", "@pip//urllib3:pkg"]
 
 all_whl_requirements = ["@pip//certifi:whl", "@pip//charset_normalizer:whl", "@pip//idna:whl", "@pip//requests:whl", "@pip//urllib3:whl"]
 
@@ -21,16 +21,16 @@ def _clean_name(name):
     return name.replace("-", "_").replace(".", "_").lower()
 
 def requirement(name):
-    return "@pip_" + _clean_name(name) + "//:pkg"
+    return "@pip//{}:{}".format(_clean_name(name), "pkg")
 
 def whl_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:whl"
+    return "@pip//{}:{}".format(_clean_name(name), "whl")
 
 def data_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:data"
+    return "@pip//{}:{}".format(_clean_name(name), "data")
 
 def dist_info_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:dist_info"
+    return "@pip//{}:{}".format(_clean_name(name), "dist_info")
 
 def entry_point(pkg, script = None):
     if not script:
