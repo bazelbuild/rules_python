@@ -52,9 +52,6 @@ gazelle_python_manifest(
         "//:requirements_windows.txt",
     ],
     tags = ["exclusive"],
-    # NOTE: we can use this flag in order to make our setup compatible with
-    # bzlmod.
-    use_pip_repository_aliases = True,
 )
 
 # Our gazelle target points to the python gazelle binary.

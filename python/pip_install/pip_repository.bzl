@@ -441,8 +441,21 @@ pip_repository_attrs = {
         doc = "Optional annotations to apply to packages",
     ),
     "incompatible_generate_aliases": attr.bool(
-        default = False,
-        doc = "Allow generating aliases '@pip//<pkg>' -> '@pip_<pkg>//:pkg'.",
+        default = True,
+        doc = """\
+If true, extra aliases will be created in the main `hub` repo - i.e. the repo
+where the `requirements.bzl` is located. This means that for a Python package
+`PyYAML` initialized within a `pip` `hub_repo` there will be the following
+aliases generated:
+- `@pip//pyyaml` will point to `@pip_pyyaml//:pkg`
+- `@pip//pyyaml:data` will point to `@pip_pyyaml//:data`
+- `@pip//pyyaml:dist_info` will point to `@pip_pyyaml//:dist_info`
+- `@pip//pyyaml:pkg` will point to `@pip_pyyaml//:pkg`
+- `@pip//pyyaml:whl` will point to `@pip_pyyaml//:whl`
+
+This is to keep the dependencies coming from PyPI to have more ergonomic label
+names and support smooth transition to `bzlmod`.
+""",
     ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
