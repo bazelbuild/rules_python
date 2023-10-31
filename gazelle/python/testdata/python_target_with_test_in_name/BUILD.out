@@ -11,7 +11,7 @@ py_test(
     srcs = ["real_test.py"],
     deps = [
         ":python_target_with_test_in_name",
-        "@gazelle_python_test_boto3//:pkg",
+        "@gazelle_python_test//boto3",
     ],
 )
 

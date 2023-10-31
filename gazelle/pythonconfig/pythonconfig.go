@@ -232,7 +232,7 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				}
 				sanitizedDistribution := SanitizeDistribution(distributionName)
 
-				if repo := gazelleManifest.PipRepository; repo == nil || (repo.UsePipRepositoryAliases != nil && *repo.UsePipRepositoryAliases == false) {
+				if repo := gazelleManifest.PipRepository; repo != nil && (repo.UsePipRepositoryAliases != nil && *repo.UsePipRepositoryAliases == false) {
 					// TODO @aignas 2023-10-31: to be removed later.
 					// @<repository_name>_<distribution_name>//:pkg
 					distributionRepositoryName = distributionRepositoryName + "_" + sanitizedDistribution
