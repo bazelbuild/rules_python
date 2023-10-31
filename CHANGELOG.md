@@ -37,9 +37,12 @@ A brief description of the categories of changes:
   strings during the transition period. For example, instead of
   `@pypi_foo//:pkg`, you can now use `@pypi//foo` or `@pypi//foo:pkg`. Other
   labels that are present in the `foo` package are `dist_info`, `whl` and
-  `data`.
+  `data`. Note, that the `@pypi_foo//:pkg` labels are still present for
+  backwards compatibility.
 
-* (gazelle) The flag `use_pip_repository_aliases` is now set to `True` by default.
+* (gazelle) The flag `use_pip_repository_aliases` is now set to `True` by
+  default, which will cause `gazelle` to change third-party dependency labels
+  from `@pip_foo//:pkg` to `@pip//foo` by default.
 
 Breaking changes:
 
