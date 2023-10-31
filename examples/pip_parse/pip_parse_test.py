@@ -28,7 +28,11 @@ class PipInstallTest(unittest.TestCase):
     def _remove_leading_dirs(self, paths):
         # Removes the first two directories (external/<reponame>)
         # to normalize what workspace and bzlmod produce.
-        return [str(Path(*Path(v).parts[2:])) for v in paths]
+        #return [str(Path(*Path(v).parts[2:])) for v in paths]
+        return [
+            '/'.join(v.split('/')[2:])
+            for v in paths
+        ]
 
     def test_entry_point(self):
         entry_point_path = os.environ.get("YAMLLINT_ENTRY_POINT")
