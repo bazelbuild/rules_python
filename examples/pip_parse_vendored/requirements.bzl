@@ -9,7 +9,9 @@ load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
 all_requirements = ["@pip//certifi:pkg", "@pip//charset_normalizer:pkg", "@pip//idna:pkg", "@pip//requests:pkg", "@pip//urllib3:pkg"]
 
-all_whl_requirements = ["@pip//certifi:whl", "@pip//charset_normalizer:whl", "@pip//idna:whl", "@pip//requests:whl", "@pip//urllib3:whl"]
+all_whl_requirements_by_package = {"certifi": "@pip//certifi:whl", "charset_normalizer": "@pip//charset_normalizer:whl", "idna": "@pip//idna:whl", "requests": "@pip//requests:whl", "urllib3": "@pip//urllib3:whl"}
+
+all_whl_requirements = all_whl_requirements_by_package.values()
 
 all_data_requirements = ["@pip//certifi:data", "@pip//charset_normalizer:data", "@pip//idna:data", "@pip//requests:data", "@pip//urllib3:data"]
 
