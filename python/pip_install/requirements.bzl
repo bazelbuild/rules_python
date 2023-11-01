@@ -49,7 +49,10 @@ def compile_pip_requirements(
 
     Args:
         name: base name for generated targets, typically "requirements".
-        src: The file containing inputs to dependency resolution.
+        src: file containing inputs to dependency resolution. If not specified,
+            defaults to `{name}.in`. Supported formats are:
+            * a requirements text file, usually named `requirements.in`
+            * A `.toml` file, where the `project.dependencies` list is used
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
