@@ -14,14 +14,13 @@
 """Providers for Python rules."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
-load(":semantics.bzl", "TOOLS_REPO")
 
 # TODO: load CcInfo from rules_cc
 _CcInfo = CcInfo
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
-DEFAULT_BOOTSTRAP_TEMPLATE = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt"
+DEFAULT_BOOTSTRAP_TEMPLATE = "@bazel_tools//tools/python:python_bootstrap_template.txt"
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
 
 # Helper to make the provider definitions not crash under Bazel 5.4:
