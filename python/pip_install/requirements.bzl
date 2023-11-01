@@ -19,7 +19,7 @@ load("//python/pip_install:repositories.bzl", "requirement")
 
 def compile_pip_requirements(
         name,
-        srcs = [],
+        src = None,
         extra_args = [],
         extra_deps = [],
         generate_hashes = True,
@@ -49,14 +49,13 @@ def compile_pip_requirements(
 
     Args:
         name: base name for generated targets, typically "requirements".
-        srcs: The list of files containing inputs to dependency resolution.
+        src: The file containing inputs to dependency resolution.
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
-        pyproject.toml: the pyproject.toml file.
-        requirements_in: file expressing desired dependencies. Deprecated, use srcs instead.
+        requirements_in: file expressing desired dependencies. Deprecated, use src instead.
         requirements_txt: result of "compiling" the requirements.in file.
         requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
@@ -66,9 +65,9 @@ def compile_pip_requirements(
         **kwargs: other bazel attributes passed to the "_test" rule.
     """
     if requirements_in == None:
-        srcs = srcs or [name + ".in"]
+        src = src or name + ".in"
     else:
-        srcs = [requirements_in]
+        src = requirements_in
 
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
@@ -81,7 +80,7 @@ def compile_pip_requirements(
         visibility = visibility,
     )
 
-    data = [name, requirements_txt] + srcs + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, requirements_txt, src] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -90,7 +89,7 @@ def compile_pip_requirements(
     loc = "$(rlocationpath {})"
 
     args = [
-        loc.format(srcs),
+        loc.format(src),
         loc.format(requirements_txt),
         # String None is a placeholder for argv ordering.
         loc.format(requirements_linux) if requirements_linux else "None",
