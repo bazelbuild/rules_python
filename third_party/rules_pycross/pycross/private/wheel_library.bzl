@@ -178,7 +178,8 @@ def py_wheel_library(patches = None, patch_tool = None, patch_tool_target = None
     # If the user has specified patches, but hasn't specified how to apply
     # those patches, default to our internally-provided patch binary.
     if patches and not patch_tool and not patch_tool_target:
-        patch_tool_target = "@patch//:patch_binary"
+        fail("Patches specified, but missing `patch_tool` or `patch_tool_target` attributes. " +
+             "I.e. unsure how to apply patches.")
 
     _py_wheel_library(
         patches = patches,
