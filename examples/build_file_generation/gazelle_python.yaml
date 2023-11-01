@@ -114,5 +114,4 @@ manifest:
     zipp.py310compat: zipp
   pip_repository:
     name: pip
-    use_pip_repository_aliases: true
-integrity: 030d6d99b56c32d6577e616b617260d0a93588af791269162e43391a5a4fa576
+integrity: a88d99bf5ea018bdb052ccda8ea5c98b6bae81312a338f909532285b76026fe1

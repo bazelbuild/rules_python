@@ -25,12 +25,24 @@ A brief description of the categories of changes:
   as all of the publicly available symbols (etc. `package_annotation`) are
   re-exported via `//python:pip_bzl` `bzl_library`.
 
-* Gazelle Python extension no longer has runtime dependencies. Using
+* (gazelle) Gazelle Python extension no longer has runtime dependencies. Using
   `GAZELLE_PYTHON_RUNTIME_DEPS` from `@rules_python_gazelle_plugin//:def.bzl` is
   no longer necessary.
 
-* The installation of `pip_parse` repository rule toolchain dependencies is now
-  done as part of `py_repositories` call.
+* (pip_parse) The installation of `pip_parse` repository rule toolchain
+  dependencies is now done as part of `py_repositories` call.
+
+* (pip_parse) The flag `incompatible_generate_aliases` has been flipped to
+  `True` by default on `non-bzlmod` setups allowing users to use the same label
+  strings during the transition period. For example, instead of
+  `@pypi_foo//:pkg`, you can now use `@pypi//foo` or `@pypi//foo:pkg`. Other
+  labels that are present in the `foo` package are `dist_info`, `whl` and
+  `data`. Note, that the `@pypi_foo//:pkg` labels are still present for
+  backwards compatibility.
+
+* (gazelle) The flag `use_pip_repository_aliases` is now set to `True` by
+  default, which will cause `gazelle` to change third-party dependency labels
+  from `@pip_foo//:pkg` to `@pip//foo` by default.
 
 Breaking changes:
 
