@@ -24,7 +24,6 @@ pip_parse(
     # can be passed
     # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
     name = "pypi",
-    incompatible_generate_aliases = True,
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
     # extra_pip_args = ["-v"],
