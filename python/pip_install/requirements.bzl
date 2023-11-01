@@ -85,14 +85,19 @@ def compile_pip_requirements(
     args = [
         loc.format(requirements_in),
         loc.format(requirements_txt),
-        # String None is a placeholder for argv ordering.
-        loc.format(requirements_linux) if requirements_linux else "None",
-        loc.format(requirements_darwin) if requirements_darwin else "None",
-        loc.format(requirements_windows) if requirements_windows else "None",
         "//%s:%s.update" % (native.package_name(), name),
         "--resolver=backtracking",
         "--allow-unsafe",
-    ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
+    ]
+    if generate_hashes:
+        args.append("--generate-hashes")
+    if requirements_linux:
+        args.append("--requirements-linux={}".format(loc.format(requirements_linux)))
+    if requirements_darwin:
+        args.append("--requirements-darwin={}".format(loc.format(requirements_darwin)))
+    if requirements_windows:
+        args.append("--requirements-windows={}".format(loc.format(requirements_windows)))
+    args.extend(extra_args)
 
     deps = [
         requirement("build"),
