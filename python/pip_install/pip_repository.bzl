@@ -22,6 +22,7 @@ load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "gener
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
@@ -44,6 +45,7 @@ def _construct_pypath(rctx):
 
     Args:
         rctx: Handle to the repository_context.
+
     Returns: String of the PYTHONPATH.
     """
 
@@ -315,28 +317,32 @@ def _pip_repository_impl(rctx):
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
 
     if rctx.attr.incompatible_generate_aliases:
+        macro_tmpl = "@%s//{}:{}" % rctx.attr.name
         aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
         for path, contents in aliases.items():
             rctx.file(path, contents)
+    else:
+        macro_tmpl = "@%s_{}//:{}" % rctx.attr.name
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:data".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:data".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "data")
             for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:pkg".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "pkg")
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            "@{}//{}:whl".format(rctx.attr.name, p) if rctx.attr.incompatible_generate_aliases else "@{}_{}//:whl".format(rctx.attr.name, p)
+            macro_tmpl.format(p, "whl")
             for p in bzl_packages
         ]),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
         "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%PACKAGES%%": _format_repr_list(
             [
@@ -439,8 +445,21 @@ pip_repository_attrs = {
         doc = "Optional annotations to apply to packages",
     ),
     "incompatible_generate_aliases": attr.bool(
-        default = False,
-        doc = "Allow generating aliases '@pip//<pkg>' -> '@pip_<pkg>//:pkg'.",
+        default = True,
+        doc = """\
+If true, extra aliases will be created in the main `hub` repo - i.e. the repo
+where the `requirements.bzl` is located. This means that for a Python package
+`PyYAML` initialized within a `pip` `hub_repo` there will be the following
+aliases generated:
+- `@pip//pyyaml` will point to `@pip_pyyaml//:pkg`
+- `@pip//pyyaml:data` will point to `@pip_pyyaml//:data`
+- `@pip//pyyaml:dist_info` will point to `@pip_pyyaml//:dist_info`
+- `@pip//pyyaml:pkg` will point to `@pip_pyyaml//:pkg`
+- `@pip//pyyaml:whl` will point to `@pip_pyyaml//:whl`
+
+This is to keep the dependencies coming from PyPI to have more ergonomic label
+names and support smooth transition to `bzlmod`.
+""",
     ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
@@ -452,10 +471,14 @@ pip_repository_attrs = {
     ),
     "requirements_lock": attr.label(
         allow_single_file = True,
-        doc = """
-A fully resolved 'requirements.txt' pip requirement file containing the transitive set of your dependencies. If this file is passed instead
-of 'requirements' no resolve will take place and pip_repository will create individual repositories for each of your dependencies so that
-wheels are fetched/built only for the targets specified by 'build/run/test'.
+        doc = """\
+A fully resolved 'requirements.txt' pip requirement file containing the
+transitive set of your dependencies. If this file is passed instead of
+'requirements' no resolve will take place and pip_repository will create
+individual repositories for each of your dependencies so that wheels are
+fetched/built only for the targets specified by 'build/run/test'. Note that if
+your lockfile is platform-dependent, you can use the `requirements_[platform]`
+attributes.
 """,
     ),
     "requirements_windows": attr.label(
@@ -471,22 +494,32 @@ pip_repository_attrs.update(**common_attrs)
 
 pip_repository = repository_rule(
     attrs = pip_repository_attrs,
-    doc = """A rule for importing `requirements.txt` dependencies into Bazel.
+    doc = """Accepts a locked/compiled requirements file and installs the dependencies listed within.
 
-This rule imports a `requirements.txt` file and generates a new
-`requirements.bzl` file.  This is used via the `WORKSPACE` pattern:
+Those dependencies become available in a generated `requirements.bzl` file.
+You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-```python
-pip_repository(
-    name = "foo",
-    requirements = ":requirements.txt",
+This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
+In your WORKSPACE file:
+
+```starlark
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "pip_deps",
+    requirements_lock = ":requirements.txt",
 )
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+
+install_deps()
 ```
 
-You can then reference imported dependencies from your `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with:
 
-```python
-load("@foo//:requirements.bzl", "requirement")
+```starlark
+load("@pip_deps//:requirements.bzl", "requirement")
+
 py_library(
     name = "bar",
     ...
@@ -498,17 +531,52 @@ py_library(
 )
 ```
 
-Or alternatively:
-```python
-load("@foo//:requirements.bzl", "all_requirements")
-py_binary(
-    name = "baz",
-    ...
-    deps = [
-       ":foo",
-    ] + all_requirements,
+In addition to the `requirement` macro, which is used to access the generated `py_library`
+target generated from a package's wheel, The generated `requirements.bzl` file contains
+functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+
+[whl_ep]: https://packaging.python.org/specifications/entry-points/
+
+```starlark
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "pip-compile",
+    actual = entry_point(
+        pkg = "pip-tools",
+        script = "pip-compile",
+    ),
 )
 ```
+
+Note that for packages whose name and script are the same, only the name of the package
+is needed when calling the `entry_point` macro.
+
+```starlark
+load("@pip_deps//:requirements.bzl", "entry_point")
+
+alias(
+    name = "flake8",
+    actual = entry_point("flake8"),
+)
+```
+
+## Vendoring the requirements.bzl file
+
+In some cases you may not want to generate the requirements.bzl file as a repository rule
+while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
+such as a ruleset, you may want to include the requirements.bzl file rather than make your users
+install the WORKSPACE setup to generate it.
+See https://github.com/bazelbuild/rules_python/issues/608
+
+This is the same workflow as Gazelle, which creates `go_repository` rules with
+[`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
+
+To do this, use the "write to source file" pattern documented in
+https://blog.aspect.dev/bazel-can-write-to-the-source-folder
+to put a copy of the generated requirements.bzl into your project.
+Then load the requirements.bzl file directly rather than from the generated repository.
+See the example in rules_python/examples/pip_parse_vendored.
 """,
     implementation = _pip_repository_impl,
     environ = common_env,
@@ -541,6 +609,22 @@ def _whl_library_impl(rctx):
     whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
     if not rctx.delete("whl_file.json"):
         fail("failed to delete the whl_file.json file")
+
+    if rctx.attr.whl_patches:
+        patches = {}
+        for patch_file, json_args in patches.items():
+            patch_dst = struct(**json.decode(json_args))
+            if whl_path.basename in patch_dst.whls:
+                patches[patch_file] = patch_dst.patch_strip
+
+        whl_path = patch_whl(
+            rctx,
+            python_interpreter = python_interpreter,
+            whl_path = whl_path,
+            patches = patches,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
 
     result = rctx.execute(
         args + ["--whl-file", whl_path],
@@ -634,6 +718,13 @@ whl_library_attrs = {
     "requirement": attr.string(
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
+    ),
+    "whl_patches": attr.label_keyed_string_dict(
+        doc = """"a label-keyed-string dict that has
+            json.encode(struct([whl_file], patch_strip]) as values. This
+            is to maintain flexibility and correct bzlmod extension interface
+            until we have a better way to define whl_library and move whl
+            patching to a separate place. INTERNAL USE ONLY.""",
     ),
     "_python_path_entries": attr.label_list(
         # Get the root directory of these rules and keep them as a default attribute

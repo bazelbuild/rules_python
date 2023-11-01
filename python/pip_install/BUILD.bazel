@@ -30,6 +30,7 @@ bzl_library(
         "//python/pip_install/private:srcs_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:normalize_name_bzl",
+        "//python/private:patch_whl_bzl",
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:toolchains_repo_bzl",
         "//python/private:which_bzl",
@@ -97,6 +98,8 @@ filegroup(
     srcs = [
         "//python/pip_install/tools/dependency_resolver:py_srcs",
         "//python/pip_install/tools/wheel_installer:py_srcs",
+        "//python/private:repack_whl.py",
+        "//tools:wheelmaker.py",
     ],
     visibility = ["//python/pip_install/private:__pkg__"],
 )

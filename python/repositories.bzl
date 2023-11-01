@@ -19,6 +19,7 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe", "read_netrc", "read_user_netrc", "use_netrc")
+load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
 load("//python/private:full_version.bzl", "full_version")
@@ -59,6 +60,7 @@ def py_repositories():
             "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
         ],
     )
+    pip_install_dependencies()
 
 ########
 # Remaining content of the file is only used to support toolchains.

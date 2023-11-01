@@ -6,5 +6,9 @@ build:
   tools:
     nodejs: "19"
   commands:
+    - env
     - npm install -g @bazel/bazelisk
-    - bazel run //docs/sphinx:readthedocs_install
+    - bazel version
+    # Put the actual build behind a shell script because its easier to modify than
+    # the yaml config.
+    - docs/sphinx/readthedocs_build.sh

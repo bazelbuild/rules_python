@@ -115,9 +115,6 @@ gazelle_python_manifest(
     # This should point to wherever we declare our python dependencies
     # (the same as what we passed to the modules_mapping rule in WORKSPACE)
     requirements = "//:requirements_lock.txt",
-    # NOTE: we can use this flag in order to make our setup compatible with
-    # bzlmod.
-    use_pip_repository_aliases = True,
 )
 ```
 

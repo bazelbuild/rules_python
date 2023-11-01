@@ -1,0 +1,57 @@
+module(
+    name = "multi_python_versions",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.4.0")
+bazel_dep(name = "rules_python", version = "0.0.0")
+local_path_override(
+    module_name = "rules_python",
+    path = "../..",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.8",
+)
+python.toolchain(
+    configure_coverage_tool = True,
+    # Only set when you have mulitple toolchain versions.
+    is_default = True,
+    python_version = "3.9",
+)
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.10",
+)
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.11",
+)
+use_repo(
+    python,
+    python = "python_versions",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+use_repo(pip, "pypi")
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.8",
+    requirements_lock = "//requirements:requirements_lock_3_8.txt",
+)
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.9",
+    requirements_lock = "//requirements:requirements_lock_3_9.txt",
+)
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.10",
+    requirements_lock = "//requirements:requirements_lock_3_10.txt",
+)
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.11",
+    requirements_lock = "//requirements:requirements_lock_3_11.txt",
+)

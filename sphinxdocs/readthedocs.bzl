@@ -13,36 +13,6 @@
 # limitations under the License.
 """Starlark rules for integrating Sphinx and Readthedocs."""
 
-load("//python:py_binary.bzl", "py_binary")
-load("//python/private:util.bzl", "add_tag")  # buildifier: disable=bzl-visibility
+load("//sphinxdocs/private:readthedocs.bzl", _readthedocs_install = "readthedocs_install")
 
-_INSTALL_MAIN_SRC = Label("//sphinxdocs:readthedocs_install.py")
-
-def readthedocs_install(name, docs, **kwargs):
-    """Run a program to copy Sphinx doc files into readthedocs output directories.
-
-    This is intended to be run using `bazel run` during the readthedocs
-    build process when the build process is overridden. See
-    https://docs.readthedocs.io/en/stable/build-customization.html#override-the-build-process
-    for more information.
-
-    Args:
-        name: (str) name of the installer
-        docs: (label list) list of targets that generate directories to copy
-            into the directories readthedocs expects final output in. This
-            is typically a single `sphinx_stardocs` target.
-        **kwargs: (dict) additional kwargs to pass onto the installer
-    """
-    add_tag(kwargs, "@rules_python//sphinxdocs:readthedocs_install")
-    py_binary(
-        name = name,
-        srcs = [_INSTALL_MAIN_SRC],
-        main = _INSTALL_MAIN_SRC,
-        data = docs,
-        args = [
-            "$(rlocationpaths {})".format(d)
-            for d in docs
-        ],
-        deps = ["//python/runfiles"],
-        **kwargs
-    )
+readthedocs_install = _readthedocs_install

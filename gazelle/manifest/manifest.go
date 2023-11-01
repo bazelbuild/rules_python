@@ -146,5 +146,5 @@ type PipRepository struct {
 	Name string
 	// UsePipRepositoryAliases allows to use aliases generated pip_repository
 	// when passing incompatible_generate_aliases = True.
-	UsePipRepositoryAliases bool `yaml:"use_pip_repository_aliases,omitempty"`
+	UsePipRepositoryAliases *bool `yaml:"use_pip_repository_aliases,omitempty"`
 }

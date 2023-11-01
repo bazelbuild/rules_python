@@ -15,7 +15,7 @@
 load("@docs_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
-load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
+load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs", "sphinx_inventory")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
 # We only build for Linux and Mac because the actual doc process only runs
@@ -33,19 +33,22 @@ _TARGET_COMPATIBLE_WITH = select({
 sphinx_docs(
     name = "docs",
     srcs = [
+        ":bazel_inventory",
         ":bzl_api_docs",
     ] + glob(
         include = [
             "*.md",
             "**/*.md",
             "_static/**",
+            "_includes/**",
         ],
-        exclude = ["README.md"],
+        exclude = [
+            "README.md",
+            "_*",
+            "*.inv*",
+        ],
     ),
     config = "conf.py",
-    # Building produces lots of warnings right now because the docs aren't
-    # entirely ready yet. Silence these to reduce the spam in CI logs.
-    extra_opts = ["-Q"],
     formats = [
         "html",
     ],
@@ -55,12 +58,18 @@ sphinx_docs(
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
 
+sphinx_inventory(
+    name = "bazel_inventory",
+    src = "bazel_inventory.txt",
+)
+
 sphinx_stardocs(
     name = "bzl_api_docs",
     docs = {
         "api/cc/py_cc_toolchain.md": dict(
             dep = "//python/private:py_cc_toolchain_bzl",
             input = "//python/private:py_cc_toolchain_rule.bzl",
+            public_load_path = "//python/cc:py_cc_toolchain.bzl",
         ),
         "api/cc/py_cc_toolchain_info.md": "//python/cc:py_cc_toolchain_info_bzl",
         "api/defs.md": "//python:defs_bzl",
@@ -68,6 +77,7 @@ sphinx_stardocs(
         "api/packaging.md": "//python:packaging_bzl",
         "api/pip.md": "//python:pip_bzl",
     },
+    footer = "_stardoc_footer.md",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )

@@ -89,6 +89,17 @@ bzl_library(
 )
 
 bzl_library(
+    name = "patch_whl_bzl",
+    srcs = ["patch_whl.bzl"],
+    deps = [":parse_whl_name_bzl"],
+)
+
+bzl_library(
+    name = "parse_whl_name_bzl",
+    srcs = ["parse_whl_name.bzl"],
+)
+
+bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = [
         "py_cc_toolchain_macro.bzl",
@@ -203,8 +214,7 @@ bzl_library(
     name = "util_bzl",
     srcs = ["util.bzl"],
     visibility = [
-        "//docs:__subpackages__",
-        "//python:__subpackages__",
+        "//:__subpackages__",
     ],
     deps = ["@bazel_skylib//lib:types"],
 )
@@ -240,13 +250,14 @@ bzl_library(
 exports_files(
     [
         "coverage.patch",
+        "repack_whl.py",
+        "py_cc_toolchain_rule.bzl",
         "py_package.bzl",
         "py_wheel.bzl",
         "py_wheel_normalize_pep440.bzl",
         "reexports.bzl",
         "stamp.bzl",
         "util.bzl",
-        "py_cc_toolchain_rule.bzl",
     ],
     visibility = ["//:__subpackages__"],
 )

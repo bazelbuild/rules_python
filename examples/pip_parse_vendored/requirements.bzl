@@ -7,11 +7,11 @@ from //:requirements.txt
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
-all_requirements = ["@pip_certifi//:pkg", "@pip_charset_normalizer//:pkg", "@pip_idna//:pkg", "@pip_requests//:pkg", "@pip_urllib3//:pkg"]
+all_requirements = ["@pip//certifi:pkg", "@pip//charset_normalizer:pkg", "@pip//idna:pkg", "@pip//requests:pkg", "@pip//urllib3:pkg"]
 
-all_whl_requirements = ["@pip_certifi//:whl", "@pip_charset_normalizer//:whl", "@pip_idna//:whl", "@pip_requests//:whl", "@pip_urllib3//:whl"]
+all_whl_requirements = ["@pip//certifi:whl", "@pip//charset_normalizer:whl", "@pip//idna:whl", "@pip//requests:whl", "@pip//urllib3:whl"]
 
-all_data_requirements = ["@pip_certifi//:data", "@pip_charset_normalizer//:data", "@pip_idna//:data", "@pip_requests//:data", "@pip_urllib3//:data"]
+all_data_requirements = ["@pip//certifi:data", "@pip//charset_normalizer:data", "@pip//idna:data", "@pip//requests:data", "@pip//urllib3:data"]
 
 _packages = [("pip_certifi", "certifi==2023.7.22     --hash=sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082     --hash=sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9"), ("pip_charset_normalizer", "charset-normalizer==2.1.1     --hash=sha256:5a3d016c7c547f69d6f81fb0db9449ce888b418b5b9952cc5e6e66843e9dd845     --hash=sha256:83e9a75d1911279afd89352c68b45348559d1fc0506b054b346651b5e7fee29f"), ("pip_idna", "idna==3.4     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4     --hash=sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"), ("pip_requests", "requests==2.28.1     --hash=sha256:7c5599b102feddaa661c826c56ab4fee28bfd17f5abca1ebbe3e7f19d7c97983     --hash=sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"), ("pip_urllib3", "urllib3==1.26.13     --hash=sha256:47cc05d99aaa09c9e72ed5809b60e7ba354e64b59c9c173ac3018642d8bb41fc     --hash=sha256:c083dd0dce68dbfbe1129d5271cb90f9447dea7d52097c6e0126120c521ddea8")]
 _config = {"download_only": False, "enable_implicit_namespace_pkgs": False, "environment": {}, "extra_pip_args": [], "isolated": True, "pip_data_exclude": [], "python_interpreter": "python3", "python_interpreter_target": interpreter, "quiet": True, "repo": "pip", "repo_prefix": "pip_", "timeout": 600}
@@ -21,16 +21,16 @@ def _clean_name(name):
     return name.replace("-", "_").replace(".", "_").lower()
 
 def requirement(name):
-    return "@pip_" + _clean_name(name) + "//:pkg"
+    return "@pip//{}:{}".format(_clean_name(name), "pkg")
 
 def whl_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:whl"
+    return "@pip//{}:{}".format(_clean_name(name), "whl")
 
 def data_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:data"
+    return "@pip//{}:{}".format(_clean_name(name), "data")
 
 def dist_info_requirement(name):
-    return "@pip_" + _clean_name(name) + "//:dist_info"
+    return "@pip//{}:{}".format(_clean_name(name), "dist_info")
 
 def entry_point(pkg, script = None):
     if not script:
