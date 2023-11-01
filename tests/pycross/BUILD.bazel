@@ -25,10 +25,10 @@ py_wheel_library(
     patch_args = [
         "-p1",
     ],
+    patch_tool_target = ":unix_patcher",
     patches = [
         "0001-Add-new-file-for-testing-patch-support.patch",
     ],
-    patch_tool_target = ":unix_patcher",
     wheel = "@wheel_for_testing//file",
 )
 
