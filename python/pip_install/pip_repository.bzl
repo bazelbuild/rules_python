@@ -334,10 +334,10 @@ def _pip_repository_impl(rctx):
             macro_tmpl.format(p, "pkg")
             for p in bzl_packages
         ]),
-        "%%ALL_WHL_REQUIREMENTS%%": _format_repr_list([
-            macro_tmpl.format(p, "whl")
+        "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
+            p: macro_tmpl.format(p, "whl")
             for p in bzl_packages
-        ]),
+        })),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
