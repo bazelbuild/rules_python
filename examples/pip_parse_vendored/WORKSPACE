@@ -21,7 +21,6 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # It also wouldn't be needed by users of this ruleset.
 pip_parse(
     name = "pip",
-    incompatible_generate_aliases = True,
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
