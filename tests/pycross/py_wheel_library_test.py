@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import platform
 import unittest
 from pathlib import Path
 
@@ -41,6 +42,7 @@ class TestPyWheelLibrary(unittest.TestCase):
                 (self.extraction_dir / path).exists(), f"{path} does not exist"
             )
 
+    @unittest.skipIf(platform.system() == "Windows", "Patching on Windows is currently not supported.")
     def test_patched_file_contents(self):
         """Validate that the patch got applied correctly."""
         file = self.extraction_dir / "site-packages/numpy/file_added_via_patch.txt"

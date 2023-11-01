@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_test")
+load("//python:defs.bzl", "py_binary", "py_test")
 load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")  # buildifier: disable=bzl-visibility
+
+py_binary(
+    name = "unix_patcher",
+    srcs = ["unix_patcher.py"],
+)
 
 py_wheel_library(
     name = "extracted_wheel_for_testing",
@@ -23,6 +28,7 @@ py_wheel_library(
     patches = [
         "0001-Add-new-file-for-testing-patch-support.patch",
     ],
+    patch_tool_target = ":unix_patcher",
     wheel = "@wheel_for_testing//file",
 )
 
