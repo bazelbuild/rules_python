@@ -42,7 +42,10 @@ class TestPyWheelLibrary(unittest.TestCase):
                 (self.extraction_dir / path).exists(), f"{path} does not exist"
             )
 
-    @unittest.skipIf(platform.system() == "Windows", "Patching on Windows is currently not supported.")
+    @unittest.skipIf(
+        platform.system() == "Windows",
+        "Patching on Windows is currently not supported.",
+    )
     def test_patched_file_contents(self):
         """Validate that the patch got applied correctly."""
         file = self.extraction_dir / "site-packages/numpy/file_added_via_patch.txt"
