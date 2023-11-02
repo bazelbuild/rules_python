@@ -50,7 +50,7 @@ def compile_pip_requirements(
     Args:
         name: base name for generated targets, typically "requirements".
         src: file containing inputs to dependency resolution. If not specified,
-            defaults to `{name}.in`. Supported formats are:
+            defaults to `pyproject.toml`. Supported formats are:
             * a requirements text file, usually named `requirements.in`
             * A `.toml` file, where the `project.dependencies` list is used as per
               [PEP621](https://peps.python.org/pep-0621/).
@@ -71,7 +71,7 @@ def compile_pip_requirements(
     if requirements_in and src:
         fail("Only one of 'src' and 'requirements_in' attributes can be used")
     else:
-        src = requirements_in or src or name + ".in"
+        src = requirements_in or src or "pyproject.toml"
 
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
