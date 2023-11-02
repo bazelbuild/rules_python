@@ -32,6 +32,10 @@ A brief description of the categories of changes:
 * (pip_parse) The installation of `pip_parse` repository rule toolchain
   dependencies is now done as part of `py_repositories` call.
 
+* (pip_parse) The generated `requirements.bzl` file now has an additional symbol
+  `all_whl_requirements_by_package` which provides a map from the original package name
+  (as it appears in requirements.txt) to the target that provides the built wheel file.
+
 * (pip_parse) The flag `incompatible_generate_aliases` has been flipped to
   `True` by default on `non-bzlmod` setups allowing users to use the same label
   strings during the transition period. For example, instead of
