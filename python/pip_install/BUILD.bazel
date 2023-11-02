@@ -34,7 +34,6 @@ bzl_library(
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:toolchains_repo_bzl",
         "//python/private:which_bzl",
-        "//python/private/bzlmod:pip_repository_bzl",
     ],
 )
 

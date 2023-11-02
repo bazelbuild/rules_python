@@ -26,16 +26,12 @@ load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
-load("//python/private/bzlmod:pip_repository.bzl", _pip_hub_repository_bzlmod = "pip_repository")
 
 CPPFLAGS = "CPPFLAGS"
 
 COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
-
-# Kept for not creating merge conflicts with PR#1476, can be removed later.
-pip_hub_repository_bzlmod = _pip_hub_repository_bzlmod
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
