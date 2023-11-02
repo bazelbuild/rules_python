@@ -51,10 +51,10 @@ def _pip_repository_impl(rctx):
             macro_tmpl.format(p, p)
             for p in bzl_packages
         ]),
-        "%%ALL_WHL_REQUIREMENTS%%": render.list([
-            macro_tmpl.format(p, "whl")
+        "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": render.dict({
+            p: macro_tmpl.format(p, "whl")
             for p in bzl_packages
-        ]),
+        }),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
     })
