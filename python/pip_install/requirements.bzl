@@ -52,7 +52,8 @@ def compile_pip_requirements(
         src: file containing inputs to dependency resolution. If not specified,
             defaults to `{name}.in`. Supported formats are:
             * a requirements text file, usually named `requirements.in`
-            * A `.toml` file, where the `project.dependencies` list is used
+            * A `.toml` file, where the `project.dependencies` list is used as per
+              [PEP621](https://peps.python.org/pep-0621/).
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
@@ -67,10 +68,10 @@ def compile_pip_requirements(
         visibility: passed to both the _test and .update rules.
         **kwargs: other bazel attributes passed to the "_test" rule.
     """
-    if requirements_in == None:
-        src = src or name + ".in"
+    if requirements_in and src:
+        fail("Only one of 'src' and 'requirements_in' attributes can be used")
     else:
-        src = requirements_in
+        src = requirements_in or src or name + ".in"
 
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
