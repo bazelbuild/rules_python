@@ -20,7 +20,7 @@ import sys
 def main(argv):
     # For the purposes of our pycross testing, we can skip patching on Windows
     # for now. We don't have a great way to do that at the moment.
-    if platform.system() == "Windwos":
+    if platform.system() == "Windows":
         print("Applying patches on Windows is not supported at the moment.")
         return
 
