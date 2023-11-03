@@ -1,9 +1,17 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("//python:defs.bzl", "py_binary")
 load("//tools/bazel_integration_test:bazel_integration_test.bzl", "bazel_integration_test")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
+
+py_binary(
+    name = "pypiserver",
+    srcs = ["pypiserver.py"],
+    deps = ["@pypi__pypiserver//:lib"],
+    visibility = ["//visibility:public"],
+)
 
 bazel_integration_test(
     name = "pip_repository_entry_points_example",
