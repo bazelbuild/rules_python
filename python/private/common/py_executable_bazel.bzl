@@ -32,7 +32,6 @@ load(
     "py_executable_base_impl",
 )
 load(":py_internal.bzl", "py_internal")
-load(":semantics.bzl", "TOOLS_REPO")
 
 _py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"
@@ -56,11 +55,11 @@ the `srcs` of Python targets as required.
         ),
         "_bootstrap_template": attr.label(
             allow_single_file = True,
-            default = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt",
+            default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
         ),
         "_launcher": attr.label(
             cfg = "target",
-            default = "@" + TOOLS_REPO + "//tools/launcher:launcher",
+            default = "@bazel_tools//tools/launcher:launcher",
             executable = True,
         ),
         "_py_interpreter": attr.label(
@@ -76,17 +75,17 @@ the `srcs` of Python targets as required.
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
         "_py_toolchain_type": attr.label(
-            default = "@" + TOOLS_REPO + "//tools/python:toolchain_type",
+            default = "@bazel_tools//tools/python:toolchain_type",
         ),
         "_windows_launcher_maker": attr.label(
-            default = "@" + TOOLS_REPO + "//tools/launcher:launcher_maker",
+            default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
             executable = True,
         ),
         "_zipper": attr.label(
             cfg = "exec",
             executable = True,
-            default = "@" + TOOLS_REPO + "//tools/zip:zipper",
+            default = "@bazel_tools//tools/zip:zipper",
         ),
     },
 )

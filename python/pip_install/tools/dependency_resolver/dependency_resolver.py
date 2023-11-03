@@ -19,7 +19,9 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Optional, Tuple
 
+import click
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
@@ -77,23 +79,24 @@ def _locate(bazel_runfiles, file):
     return bazel_runfiles.Rlocation(file)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print(
-            "Expected at least two arguments: requirements_in requirements_out",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    parse_str_none = lambda s: None if s == "None" else s
+@click.command(context_settings={"ignore_unknown_options": True})
+@click.argument("requirements_in")
+@click.argument("requirements_txt")
+@click.argument("update_target_label")
+@click.option("--requirements-linux")
+@click.option("--requirements-darwin")
+@click.option("--requirements-windows")
+@click.argument("extra_args", nargs=-1, type=click.UNPROCESSED)
+def main(
+    requirements_in: str,
+    requirements_txt: str,
+    update_target_label: str,
+    requirements_linux: Optional[str],
+    requirements_darwin: Optional[str],
+    requirements_windows: Optional[str],
+    extra_args: Tuple[str, ...],
+) -> None:
     bazel_runfiles = runfiles.Create()
-
-    requirements_in = sys.argv.pop(1)
-    requirements_txt = sys.argv.pop(1)
-    requirements_linux = parse_str_none(sys.argv.pop(1))
-    requirements_darwin = parse_str_none(sys.argv.pop(1))
-    requirements_windows = parse_str_none(sys.argv.pop(1))
-    update_target_label = sys.argv.pop(1)
 
     requirements_file = _select_golden_requirements_file(
         requirements_txt=requirements_txt, requirements_linux=requirements_linux,
@@ -128,6 +131,8 @@ if __name__ == "__main__":
     os.environ["LC_ALL"] = "C.UTF-8"
     os.environ["LANG"] = "C.UTF-8"
 
+    argv = []
+
     UPDATE = True
     # Detect if we are running under `bazel test`.
     if "TEST_TMPDIR" in os.environ:
@@ -136,8 +141,7 @@ if __name__ == "__main__":
         # to the real user cache, Bazel sandboxing makes the file read-only
         # and we fail.
         # In theory this makes the test more hermetic as well.
-        sys.argv.append("--cache-dir")
-        sys.argv.append(os.environ["TEST_TMPDIR"])
+        argv.append(f"--cache-dir={os.environ['TEST_TMPDIR']}")
         # Make a copy for pip-compile to read and mutate.
         requirements_out = os.path.join(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_file) + ".out"
@@ -153,14 +157,13 @@ if __name__ == "__main__":
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    sys.argv.append("--output-file")
-    sys.argv.append(requirements_file_relative if UPDATE else requirements_out)
-    sys.argv.append(
+    argv.append(f"--output-file={requirements_file_relative if UPDATE else requirements_out}")
+    argv.append(
         requirements_in_relative
         if Path(requirements_in_relative).exists()
         else resolved_requirements_in
     )
-    print(sys.argv)
+    argv.extend(extra_args)
 
     if UPDATE:
         print("Updating " + requirements_file_relative)
@@ -176,7 +179,7 @@ if __name__ == "__main__":
                         resolved_requirements_file, requirements_file_tree
                     )
                 )
-        cli()
+        cli(argv)
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
@@ -185,7 +188,7 @@ if __name__ == "__main__":
         # cli will exit(0) on success
         try:
             print("Checking " + requirements_file)
-            cli()
+            cli(argv)
             print("cli() should exit", file=sys.stderr)
             sys.exit(1)
         except SystemExit as e:
@@ -219,3 +222,7 @@ if __name__ == "__main__":
                     file=sys.stderr,
                 )
                 sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

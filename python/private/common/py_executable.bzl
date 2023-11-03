@@ -49,9 +49,7 @@ load(
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
-    "PLATFORMS_LOCATION",
     "PY_RUNTIME_ATTR_NAME",
-    "TOOLS_REPO",
 )
 
 # TODO: Load cc_common from rules_cc
@@ -61,7 +59,7 @@ _py_builtins = py_internal
 
 # Bazel 5.4 doesn't have config_common.toolchain_type
 _CC_TOOLCHAINS = [config_common.toolchain_type(
-    "@" + TOOLS_REPO + "//tools/cpp:toolchain_type",
+    "@bazel_tools//tools/cpp:toolchain_type",
     mandatory = False,
 )] if hasattr(config_common, "toolchain_type") else []
 
@@ -97,7 +95,7 @@ filename in `srcs`, `main` must be specified.
         ),
         "_windows_constraints": attr.label_list(
             default = [
-                PLATFORMS_LOCATION + "/os:windows",
+                "@platforms//os:windows",
             ],
         ),
     },

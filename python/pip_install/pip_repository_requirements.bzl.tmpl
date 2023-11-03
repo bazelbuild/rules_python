@@ -8,7 +8,9 @@ from %%REQUIREMENTS_LOCK%%
 
 all_requirements = %%ALL_REQUIREMENTS%%
 
-all_whl_requirements = %%ALL_WHL_REQUIREMENTS%%
+all_whl_requirements_by_package = %%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%
+
+all_whl_requirements = all_whl_requirements_by_package.values()
 
 all_data_requirements = %%ALL_DATA_REQUIREMENTS%%
 

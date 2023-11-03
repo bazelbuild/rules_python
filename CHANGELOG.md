@@ -32,6 +32,10 @@ A brief description of the categories of changes:
 * (pip_parse) The installation of `pip_parse` repository rule toolchain
   dependencies is now done as part of `py_repositories` call.
 
+* (pip_parse) The generated `requirements.bzl` file now has an additional symbol
+  `all_whl_requirements_by_package` which provides a map from the original package name
+  (as it appears in requirements.txt) to the target that provides the built wheel file.
+
 * (pip_parse) The flag `incompatible_generate_aliases` has been flipped to
   `True` by default on `non-bzlmod` setups allowing users to use the same label
   strings during the transition period. For example, instead of
@@ -43,6 +47,10 @@ A brief description of the categories of changes:
 * (gazelle) The flag `use_pip_repository_aliases` is now set to `True` by
   default, which will cause `gazelle` to change third-party dependency labels
   from `@pip_foo//:pkg` to `@pip//foo` by default.
+
+* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `src`
+  or `requirements_in` attributes are unspecified, matching the upstream
+  `pip-compile` behaviour more closely.
 
 Breaking changes:
 
@@ -71,6 +79,9 @@ Breaking changes:
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
   arguments to the new `pip.override` tag class.
+
+* (pip) Support for using [PEP621](https://peps.python.org/pep-0621/) compliant
+  `pyproject.toml` for creating a resolved `requirements.txt` file.
 
 ## [0.26.0] - 2023-10-06
 

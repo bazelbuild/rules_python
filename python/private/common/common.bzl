@@ -20,7 +20,6 @@ load(
     ":semantics.bzl",
     "NATIVE_RULES_MIGRATION_FIX_CMD",
     "NATIVE_RULES_MIGRATION_HELP_URL",
-    "TOOLS_REPO",
 )
 
 _testing = testing
@@ -29,7 +28,7 @@ _coverage_common = coverage_common
 _py_builtins = py_internal
 PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
-TOOLCHAIN_TYPE = "@" + TOOLS_REPO + "//tools/python:toolchain_type"
+TOOLCHAIN_TYPE = "@bazel_tools//tools/python:toolchain_type"
 
 # Extensions without the dot
 _PYTHON_SOURCE_EXTENSIONS = ["py"]

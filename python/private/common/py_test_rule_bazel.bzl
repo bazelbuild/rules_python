@@ -21,13 +21,12 @@ load(
     "create_executable_rule",
     "py_executable_bazel_impl",
 )
-load(":semantics.bzl", "TOOLS_REPO")
 
 _BAZEL_PY_TEST_ATTRS = {
     # This *might* be a magic attribute to help C++ coverage work. There's no
     # docs about this; see TestActionBuilder.java
     "_collect_cc_coverage": attr.label(
-        default = "@" + TOOLS_REPO + "//tools/test:collect_cc_coverage",
+        default = "@bazel_tools//tools/test:collect_cc_coverage",
         executable = True,
         cfg = "exec",
     ),
