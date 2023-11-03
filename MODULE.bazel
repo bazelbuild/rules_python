@@ -30,6 +30,7 @@ use_repo(
     "pypi__pep517",
     "pypi__pip",
     "pypi__pip_tools",
+    "pypi__pypiserver",
     "pypi__pyproject_hooks",
     "pypi__setuptools",
     "pypi__tomli",
