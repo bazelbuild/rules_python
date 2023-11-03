@@ -6,7 +6,7 @@ load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 # lockfile based on the requirements.in.
 compile_pip_requirements(
     name = "requirements",
-    src = "requirements.in",
+    srcs = ["requirements.in"],
 )
 
 # The requirements.bzl file is generated with a reference to the interpreter for the host platform.
