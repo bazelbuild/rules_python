@@ -48,6 +48,10 @@ A brief description of the categories of changes:
   default, which will cause `gazelle` to change third-party dependency labels
   from `@pip_foo//:pkg` to `@pip//foo` by default.
 
+* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `src`
+  or `requirements_in` attributes are unspecified, matching the upstream
+  `pip-compile` behaviour more closely.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
@@ -75,6 +79,9 @@ Breaking changes:
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
   arguments to the new `pip.override` tag class.
+
+* (pip) Support for using [PEP621](https://peps.python.org/pep-0621/) compliant
+  `pyproject.toml` for creating a resolved `requirements.txt` file.
 
 ## [0.26.0] - 2023-10-06
 

@@ -19,6 +19,7 @@ load("//python/pip_install:repositories.bzl", "requirement")
 
 def compile_pip_requirements(
         name,
+        src = None,
         extra_args = [],
         extra_deps = [],
         generate_hashes = True,
@@ -48,12 +49,17 @@ def compile_pip_requirements(
 
     Args:
         name: base name for generated targets, typically "requirements".
+        src: file containing inputs to dependency resolution. If not specified,
+            defaults to `pyproject.toml`. Supported formats are:
+            * a requirements text file, usually named `requirements.in`
+            * A `.toml` file, where the `project.dependencies` list is used as per
+              [PEP621](https://peps.python.org/pep-0621/).
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
-        requirements_in: file expressing desired dependencies.
+        requirements_in: file expressing desired dependencies. Deprecated, use src instead.
         requirements_txt: result of "compiling" the requirements.in file.
         requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
@@ -62,7 +68,11 @@ def compile_pip_requirements(
         visibility: passed to both the _test and .update rules.
         **kwargs: other bazel attributes passed to the "_test" rule.
     """
-    requirements_in = name + ".in" if requirements_in == None else requirements_in
+    if requirements_in and src:
+        fail("Only one of 'src' and 'requirements_in' attributes can be used")
+    else:
+        src = requirements_in or src or "pyproject.toml"
+
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
     # "Default" target produced by this macro
@@ -74,7 +84,7 @@ def compile_pip_requirements(
         visibility = visibility,
     )
 
-    data = [name, requirements_in, requirements_txt] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, requirements_txt, src] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -83,7 +93,7 @@ def compile_pip_requirements(
     loc = "$(rlocationpath {})"
 
     args = [
-        loc.format(requirements_in),
+        loc.format(src),
         loc.format(requirements_txt),
         "//%s:%s.update" % (native.package_name(), name),
         "--resolver=backtracking",
@@ -105,6 +115,7 @@ def compile_pip_requirements(
         requirement("colorama"),
         requirement("importlib_metadata"),
         requirement("more_itertools"),
+        requirement("packaging"),
         requirement("pep517"),
         requirement("pip"),
         requirement("pip_tools"),
