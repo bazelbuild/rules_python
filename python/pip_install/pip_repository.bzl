@@ -298,9 +298,15 @@ def _pip_repository_impl(rctx):
                 if d in right_deps:
                     fail("Error: Requirement %s is repeated between cycles %s and %s, they must be merged." % (d, left_group, right_group))
 
-    # And normalize the names
+    # And normalize the names as used in the cycle specs
+    #
+    # NOTE: We must check that a listed dependency is actually in the actual
+    # requirements set for the current platform so that we can support cycles in
+    # platform-conditional requirements. Otherwise we'll blindly generate a
+    # label referencing a package which may not be installed on the current
+    # platform.
     requirement_cycles = {
-        normalize_name(name): sorted([normalize_name(d) for d in group])
+        normalize_name(name): sorted([normalize_name(d) for d in group if d in bzl_packages])
         for name, group in requirement_cycles.items()
     }
 
