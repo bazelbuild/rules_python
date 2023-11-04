@@ -35,7 +35,7 @@ bzl_library(
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:toolchains_repo_bzl",
         "//python/private:which_bzl",
-        "@bazel_skylib//lib:sets.bzl",
+        "@bazel_skylib//lib:sets",
     ],
 )
 
