@@ -53,12 +53,6 @@ manifest:
     click.testing: click
     click.types: click
     click.utils: click
-    colorama: colorama
-    colorama.ansi: colorama
-    colorama.ansitowin32: colorama
-    colorama.initialise: colorama
-    colorama.win32: colorama
-    colorama.winterm: colorama
     docutils: docutils
     docutils.core: docutils
     docutils.examples: docutils
@@ -830,4 +824,4 @@ manifest:
     zipp.py310compat: zipp
   pip_repository:
     name: pip
-integrity: a88d99bf5ea018bdb052ccda8ea5c98b6bae81312a338f909532285b76026fe1
+integrity: 4658c69530ba1ee117da0c963c9c671041e1c470d938c31cdbbfccc21dd259cb
