@@ -130,6 +130,70 @@ Any 'extras' specified in the requirements lock file will be automatically added
 as transitive dependencies of the package. In the example above, you'd just put
 `requirement("useful_dep")`.
 
+### Packaging cycles
+
+Sometimes PyPi packages contain dependency cycles -- for instance `sphinx`
+depends on `sphinxcontrib-serializinghtml`. When using them as `requirement()`s,
+ala
+
+```
+py_binary(
+  name = "doctool",
+  ...
+  deps = [
+    requirement("sphinx"),
+   ]
+)
+```
+
+Bazel will protest because it doesn't support cycles in the build graph --
+
+```
+ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alias rule @pypi_sphinxcontrib_serializinghtml//:pkg: cycle in dependency graph:
+    //:doctool (...)
+    @pypi//sphinxcontrib_serializinghtml:pkg (...)
+.-> @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+|   @pypi_sphinxcontrib_serializinghtml//:_pkg (...)
+|   @pypi_sphinx//:pkg (...)
+|   @pypi_sphinx//:_pkg (...)
+`-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+```
+
+The `requirement_cycles` argument allows you to work around these issues by
+specifying groups of packages which form cycles. `pip_parse` will transparently
+fix the cycles for you and provide the cyclic dependencies simultaneously.
+
+```
+pip_parse(
+  ...
+  requirement_cycles = {
+    "sphinx": [
+      "sphinx",
+      "sphinxcontrib-serializinghtml",
+    ]
+  },
+)
+```
+
+`pip_parse` supports fixing multiple cycles simultaneously, however cycles must
+be distinct. `apache-airflow` for instance has dependency cycles with a number
+of its optional dependencies, which means those optional dependencies must all
+be a part of the `airflow` cycle. For instance --
+
+```
+pip_parse(
+  ...
+  requirement_cycles = {
+    "airflow": [
+      "apache-airflow",
+      "apache-airflow-providers-common-sql",
+      "apache-airflow-providers-postgres",
+      "apache-airflow-providers-sqlite",
+    ]
+  }
+)
+```
+
 ## Consuming Wheel Dists Directly
 
 If you need to depend on the wheel dists themselves, for instance, to pass them
