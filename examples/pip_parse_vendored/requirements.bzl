@@ -51,10 +51,8 @@ def install_deps(**whl_library_kwargs):
          `whl_library` calls. See pip_repository.bzl for details.
     """
 
+    # Set up the requirement groups
     all_requirement_groups = {}
-
-    whl_config = dict(_config)
-    whl_config.update(whl_library_kwargs)
 
     requirement_group_mapping = {
         requirement: group_name
@@ -68,6 +66,10 @@ def install_deps(**whl_library_kwargs):
         repo_prefix = "pip_",
         groups = all_requirement_groups,
     )
+
+    # Install wheels which may be participants in a group
+    whl_config = dict(_config)
+    whl_config.update(whl_library_kwargs)
 
     for name, requirement in _packages:
         group_name = requirement_group_mapping.get(name.replace("pip_", ""))
