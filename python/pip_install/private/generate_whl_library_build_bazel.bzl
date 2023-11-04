@@ -66,6 +66,7 @@ filegroup(
     name = "{whl_file_impl_label}",
     srcs = ["{whl_name}"],
     data = {whl_file_deps},
+    visibility = {impl_vis},
 )
 
 py_library(
@@ -86,6 +87,7 @@ py_library(
     imports = ["site-packages"],
     deps = {dependencies},
     tags = {tags},
+    visibility = {impl_vis},
 )
 
 alias(
@@ -183,6 +185,7 @@ def generate_whl_library_build_bazel(
         for d in group_deps
     }
 
+    # Filter out deps which are within the group to avoid cycles
     non_group_deps = [
         d
         for d in dependencies
@@ -190,26 +193,42 @@ def generate_whl_library_build_bazel(
     ]
 
     lib_dependencies = [
-        "@" + repo_prefix + normalize_name(d) + "//:" + PY_LIBRARY_PUBLIC_LABEL
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_PUBLIC_LABEL,)
         for d in non_group_deps
     ]
+
     whl_file_deps = [
-        "@" + repo_prefix + normalize_name(d) + "//:" + WHEEL_FILE_PUBLIC_LABEL
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_PUBLIC_LABEL,)
         for d in non_group_deps
     ]
+
+    # If this library is a member of a group, its public label aliases need to
+    # point to the group implementation rule not the implementation rules. We
+    # also need to mark the implementation rules as visible to the group
+    # implementation.
+    if group_name:
+        group_repo = repo_prefix + "_groups"
+        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL,)
+        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL,)
+        impl_vis = "@%s//:__pkg__" % (group_repo,)
+
+    else:
+        library_impl_label = PY_LIBRARY_IMPL_LABEL
+        whl_impl_label = WHEEL_FILE_IMPL_LABEL
+        impl_vis = "//visibility:private"
 
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
                 py_library_public_label = PY_LIBRARY_PUBLIC_LABEL,
                 py_library_impl_label = PY_LIBRARY_IMPL_LABEL,
-                py_library_actual_label = ("@" + repo_prefix + "_groups//:" + normalize_name(group_name) + "_" + PY_LIBRARY_PUBLIC_LABEL) if group_name else PY_LIBRARY_IMPL_LABEL,
+                py_library_actual_label = library_impl_label,
                 dependencies = repr(lib_dependencies),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
                 whl_file_public_label = WHEEL_FILE_PUBLIC_LABEL,
                 whl_file_impl_label = WHEEL_FILE_IMPL_LABEL,
-                whl_file_actual_label = ("@" + repo_prefix + "_groups//:" + normalize_name(group_name) + "_" + WHEEL_FILE_PUBLIC_LABEL) if group_name else WHEEL_FILE_IMPL_LABEL,
+                whl_file_actual_label = whl_impl_label,
                 whl_file_deps = repr(whl_file_deps),
                 tags = repr(tags),
                 data_label = DATA_LABEL,
@@ -217,6 +236,7 @@ def generate_whl_library_build_bazel(
                 entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
+                impl_vis = repr([impl_vis]),
             ),
         ] + additional_content,
     )
