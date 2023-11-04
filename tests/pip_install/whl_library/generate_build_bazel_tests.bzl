@@ -40,6 +40,7 @@ filegroup(
     name = "_whl",
     srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
+    visibility = ["//visibility:private"],
 )
 
 py_library(
@@ -60,6 +61,7 @@ py_library(
     imports = ["site-packages"],
     deps = ["@pypi_bar_baz//:pkg", "@pypi_foo//:pkg"],
     tags = ["tag1", "tag2"],
+    visibility = ["//visibility:private"],
 )
 
 alias(
@@ -106,6 +108,7 @@ filegroup(
     name = "_whl",
     srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
+    visibility = ["//visibility:private"],
 )
 
 py_library(
@@ -126,6 +129,7 @@ py_library(
     imports = ["site-packages"],
     deps = ["@pypi_bar_baz//:pkg", "@pypi_foo//:pkg"],
     tags = ["tag1", "tag2"],
+    visibility = ["//visibility:private"],
 )
 
 alias(
@@ -195,6 +199,7 @@ filegroup(
     name = "_whl",
     srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl", "@pypi_foo//:whl"],
+    visibility = ["//visibility:private"],
 )
 
 py_library(
@@ -215,6 +220,7 @@ py_library(
     imports = ["site-packages"],
     deps = ["@pypi_bar_baz//:pkg", "@pypi_foo//:pkg"],
     tags = ["tag1", "tag2"],
+    visibility = ["//visibility:private"],
 )
 
 alias(
@@ -270,6 +276,7 @@ filegroup(
     name = "_whl",
     srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl"],
+    visibility = ["@pypi__groups//:__pkg__"],
 )
 
 py_library(
@@ -290,6 +297,7 @@ py_library(
     imports = ["site-packages"],
     deps = ["@pypi_bar_baz//:pkg"],
     tags = [],
+    visibility = ["@pypi__groups//:__pkg__"],
 )
 
 alias(
