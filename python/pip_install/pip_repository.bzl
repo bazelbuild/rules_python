@@ -27,6 +27,7 @@ load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -279,9 +280,28 @@ def _pip_repository_impl(rctx):
 
     bzl_packages = sorted([normalize_name(name) for name, _ in parsed_requirements_txt.requirements])
 
-    requirement_groups = {
-        normalize_name(name): [normalize_name(d) for d in group]
-        for name, group in rctx.attr.requirement_groups.items()
+    # Normalize cycles first
+    requirement_cycles = {
+        name: sorted(sets.to_list(sets.make(deps)))
+        for name, deps in rctx.attr.requirement_cycles.items()
+    }
+
+    # Check for conflicts between cycles _before_ we normalize package names so
+    # that reported errors use the names the user specified
+    for i in range(len(requirement_cycles)):
+        left_group = requirement_cycles.keys()[i]
+        left_deps = requirement_cycles.values()[i]
+        for j in range(len(requirement_cycles) - (i + 1)):
+            right_deps = requirement_cycles.values()[1 + i + j]
+            right_group = requirement_cycles.keys()[1 + i + j]
+            for d in left_deps:
+                if d in right_deps:
+                    fail("Error: Requirement %s is repeated between cycles %s and %s, they must be merged." % (d, left_group, right_group))
+
+    # And normalize the names
+    requirement_cycles = {
+        normalize_name(name): sorted([normalize_name(d) for d in group])
+        for name, group in requirement_cycles.items()
     }
 
     imports = [
@@ -338,7 +358,7 @@ def _pip_repository_impl(rctx):
             macro_tmpl.format(p, "pkg")
             for p in bzl_packages
         ]),
-        "%%ALL_REQUIREMENT_GROUPS%%": _format_dict(_repr_dict(requirement_groups)),
+        "%%ALL_REQUIREMENT_GROUPS%%": _format_dict(_repr_dict(requirement_cycles)),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
             p: macro_tmpl.format(p, "whl")
             for p in bzl_packages
@@ -433,14 +453,61 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
 Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
 """,
     ),
-    "requirement_groups": attr.string_list_dict(
+    "requirement_cycles": attr.string_list_dict(
         default = {},
         doc = """\
-A mapping of requirements which form dependency cycles into groups.
+A mapping of dependency cycle names to a list of requirements which form that cycle.
 
-Groups of packages will be wrapped so that if a dependency is taken on a member of the cycle the rest of the cycle will
-be correctly included as transitive dependencies.
-        """,
+Requirements which form cycles will be installed together and taken as
+dependencies together in order to ensure that the cycle is always satisified.
+
+Example:
+  `sphinx` depends on `sphinxcontrib-serializinghtml`
+  When listing both as requirements, ala
+
+  ```
+  py_binary(
+    name = "doctool",
+    ...
+    deps = [
+      "@pypi//sphinx:pkg",
+      "@pypi//sphinxcontrib_serializinghtml",
+     ]
+  )
+  ```
+
+  Will produce a Bazel error such as
+
+  ```
+  ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alias rule @pypi_sphinxcontrib_serializinghtml//:pkg: cycle in dependency graph:
+      //:doctool (...)
+      @pypi//sphinxcontrib_serializinghtml:pkg (...)
+  .-> @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  |   @pypi_sphinxcontrib_serializinghtml//:_pkg (...)
+  |   @pypi_sphinx//:pkg (...)
+  |   @pypi_sphinx//:_pkg (...)
+  `-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  ```
+
+  Which we can resolve by configuring these two requirements to be installed together as a cycle
+
+  ```
+  pip_parse(
+    ...
+    requirement_cycles = {
+      "sphinx": [
+        "sphinx",
+        "sphinxcontrib-serializinghtml",
+      ]
+    },
+  )
+  ```
+
+Warning:
+  If a dependency participates in multiple cycles, all of those cycles must be
+  collapsed down to one. For instance `a <-> b` and `a <-> c` cannot be listed
+  as two separate cycles.
+""",
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
     "timeout": attr.int(

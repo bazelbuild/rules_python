@@ -120,14 +120,14 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         for mod, whl_name in pip_attr.whl_modifications.items():
             whl_modifications[whl_name] = mod
 
-    requirement_groups = {
+    requirement_cycles = {
         name: [normalize_name(whl_name) for whl_name in whls]
-        for name, whls in pip_attr.requirement_groups.items()
+        for name, whls in pip_attr.requirement_cycles.items()
     }
 
     whl_group_mapping = {
         whl_name: group_name
-        for group_name, group_whls in requirement_groups.items()
+        for group_name, group_whls in requirement_cycles.items()
         for whl_name in group_whls
     }
 
@@ -135,7 +135,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     group_library(
         name = group_repo,
         repo_prefix = pip_name + "_",
-        groups = pip_attr.requirement_groups,
+        groups = pip_attr.requirement_cycles,
     )
 
     # Create a new wheel library for each of the different whls
@@ -146,7 +146,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
         group_name = whl_group_mapping.get(whl_name)
-        group_deps = requirement_groups.get(group_name, [])
+        group_deps = requirement_cycles.get(group_name, [])
 
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
