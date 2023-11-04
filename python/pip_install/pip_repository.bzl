@@ -728,7 +728,7 @@ whl_library_attrs = {
         allow_files = True,
     ),
     "group_deps": attr.string_list(
-        doc = "List of requirements to skip in order to break the cycles within a dependency group.",
+        doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
         default = [],
     ),
     "group_name": attr.string(
