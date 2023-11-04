@@ -63,15 +63,15 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
     """
 
     lib_dependencies = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_IMPL_LABEL,)
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_IMPL_LABEL)
         for d in group_members
     ]
     whl_file_deps = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d),  WHEEL_FILE_IMPL_LABEL,)
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_IMPL_LABEL)
         for d in group_members
     ]
     visibility = [
-        "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d),)
+        "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d))
         for d in group_members
     ]
 

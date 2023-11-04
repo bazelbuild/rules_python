@@ -193,12 +193,12 @@ def generate_whl_library_build_bazel(
     ]
 
     lib_dependencies = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_PUBLIC_LABEL,)
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_PUBLIC_LABEL)
         for d in non_group_deps
     ]
 
     whl_file_deps = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_PUBLIC_LABEL,)
+        "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_PUBLIC_LABEL)
         for d in non_group_deps
     ]
 
@@ -208,8 +208,8 @@ def generate_whl_library_build_bazel(
     # implementation.
     if group_name:
         group_repo = repo_prefix + "_groups"
-        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL,)
-        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL,)
+        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
+        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
         impl_vis = "@%s//:__pkg__" % (group_repo,)
 
     else:
