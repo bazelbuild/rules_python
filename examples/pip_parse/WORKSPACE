@@ -57,6 +57,7 @@ pip_parse(
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt"
 )
 
 load("@pypi//:requirements.bzl", "install_deps")
