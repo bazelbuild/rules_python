@@ -75,6 +75,9 @@ Breaking changes:
 * (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
   follow the order of files written to the `.whl` archive.
 
+* (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
+  is used.
+
 ### Added
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
