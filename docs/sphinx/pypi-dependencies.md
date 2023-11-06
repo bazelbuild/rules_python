@@ -194,6 +194,22 @@ pip_parse(
 )
 ```
 
+Alternatively, one could resolve the cycle by removing one leg of it.
+
+For example while `apache-airflow-providers-sqlite` is "baked into" the Airflow
+package, `apache-airflow-providers-postgres` is not and is an optional feature.
+Rather than listing `apache-airflow[postgres]` in your `requirements.txt` which
+would expose a cycle via the extra, one could either _manually_ depend on
+`apache-airflow` and `apache-airflow-providers-postgres` separately as
+requirements. Bazel rules which need only `apache-airflow` can take it as a
+dependency, and rules which explicitly want to mix in
+`apache-airflow-providers-postgres` now can.
+
+Alternatively, one could use `rules_python`'s patching features to remove one
+leg of the dependency manually. For instance by making
+`apache-airflow-providers-postgres` not explicitly depend on `apache-airflow` or
+perhaps `apache-airflow-providers-common-sql`.
+
 ## Consuming Wheel Dists Directly
 
 If you need to depend on the wheel dists themselves, for instance, to pass them
