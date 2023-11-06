@@ -122,7 +122,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
 
     requirement_cycles = {
         name: [normalize_name(whl_name) for whl_name in whls]
-        for name, whls in pip_attr.requirement_cycles.items()
+        for name, whls in pip_attr.experimental_requirement_cycles.items()
     }
 
     whl_group_mapping = {
@@ -135,7 +135,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     group_library(
         name = group_repo,
         repo_prefix = pip_name + "_",
-        groups = pip_attr.requirement_cycles,
+        groups = pip_attr.experimental_requirement_cycles,
     )
 
     # Create a new wheel library for each of the different whls

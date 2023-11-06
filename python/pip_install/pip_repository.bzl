@@ -283,7 +283,7 @@ def _pip_repository_impl(rctx):
     # Normalize cycles first
     requirement_cycles = {
         name: sorted(sets.to_list(sets.make(deps)))
-        for name, deps in rctx.attr.requirement_cycles.items()
+        for name, deps in rctx.attr.experimental_requirement_cycles.items()
     }
 
     # Check for conflicts between cycles _before_ we normalize package names so
@@ -296,7 +296,7 @@ def _pip_repository_impl(rctx):
             right_group = requirement_cycles.keys()[1 + i + j]
             for d in left_deps:
                 if d in right_deps:
-                    fail("Error: Requirement %s is repeated between cycles %s and %s, they must be merged." % (d, left_group, right_group))
+                    fail("Error: Requirement %s cannot be repeated between cycles %s and %s; please merge the cycles." % (d, left_group, right_group))
 
     # And normalize the names as used in the cycle specs
     #
@@ -459,7 +459,7 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
 Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
 """,
     ),
-    "requirement_cycles": attr.string_list_dict(
+    "experimental_requirement_cycles": attr.string_list_dict(
         default = {},
         doc = """\
 A mapping of dependency cycle names to a list of requirements which form that cycle.
@@ -500,7 +500,7 @@ Example:
   ```
   pip_parse(
     ...
-    requirement_cycles = {
+    experimental_requirement_cycles = {
       "sphinx": [
         "sphinx",
         "sphinxcontrib-serializinghtml",

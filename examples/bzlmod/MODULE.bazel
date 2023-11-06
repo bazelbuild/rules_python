@@ -90,7 +90,7 @@ use_repo(pip, "whl_mods_hub")
 pip.parse(
     hub_name = "pip",
     python_version = "3.9",
-    requirement_cycles = {
+    experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
             "sphinxcontrib-qthelp",
@@ -113,7 +113,7 @@ pip.parse(
 pip.parse(
     hub_name = "pip",
     python_version = "3.10",
-    requirement_cycles = {
+    experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
             "sphinxcontrib-qthelp",
