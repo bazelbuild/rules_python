@@ -48,7 +48,7 @@ A brief description of the categories of changes:
   default, which will cause `gazelle` to change third-party dependency labels
   from `@pip_foo//:pkg` to `@pip//foo` by default.
 
-* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `src`
+* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `srcs`
   or `requirements_in` attributes are unspecified, matching the upstream
   `pip-compile` behaviour more closely.
 
