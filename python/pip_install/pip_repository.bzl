@@ -418,47 +418,6 @@ can be passed.
         """,
         default = {},
     ),
-    "extra_pip_args": attr.string_list(
-        doc = "Extra arguments to pass on to pip. Must not contain spaces.",
-    ),
-    "isolated": attr.bool(
-        doc = """\
-Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
-the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` environment variable can be used
-to control this flag.
-""",
-        default = True,
-    ),
-    "pip_data_exclude": attr.string_list(
-        doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
-    ),
-    "python_interpreter": attr.string(
-        doc = """\
-The python interpreter to use. This can either be an absolute path or the name
-of a binary found on the host's `PATH` environment variable. If no value is set
-`python3` is defaulted for Unix systems and `python.exe` for Windows.
-""",
-        # NOTE: This attribute should not have a default. See `_get_python_interpreter_attr`
-        # default = "python3"
-    ),
-    "python_interpreter_target": attr.label(
-        allow_single_file = True,
-        doc = """
-If you are using a custom python interpreter built by another repository rule,
-use this attribute to specify its BUILD target. This allows pip_repository to invoke
-pip using the same interpreter as your toolchain. If set, takes precedence over
-python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:python".
-""",
-    ),
-    "quiet": attr.bool(
-        default = True,
-        doc = "If True, suppress printing stdout and stderr output to the terminal.",
-    ),
-    "repo_prefix": attr.string(
-        doc = """
-Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
-""",
-    ),
     "experimental_requirement_cycles": attr.string_list_dict(
         default = {},
         doc = """\
@@ -513,6 +472,47 @@ Warning:
   If a dependency participates in multiple cycles, all of those cycles must be
   collapsed down to one. For instance `a <-> b` and `a <-> c` cannot be listed
   as two separate cycles.
+""",
+    ),
+    "extra_pip_args": attr.string_list(
+        doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+    ),
+    "isolated": attr.bool(
+        doc = """\
+Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
+the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` environment variable can be used
+to control this flag.
+""",
+        default = True,
+    ),
+    "pip_data_exclude": attr.string_list(
+        doc = "Additional data exclusion parameters to add to the pip packages BUILD file.",
+    ),
+    "python_interpreter": attr.string(
+        doc = """\
+The python interpreter to use. This can either be an absolute path or the name
+of a binary found on the host's `PATH` environment variable. If no value is set
+`python3` is defaulted for Unix systems and `python.exe` for Windows.
+""",
+        # NOTE: This attribute should not have a default. See `_get_python_interpreter_attr`
+        # default = "python3"
+    ),
+    "python_interpreter_target": attr.label(
+        allow_single_file = True,
+        doc = """
+If you are using a custom python interpreter built by another repository rule,
+use this attribute to specify its BUILD target. This allows pip_repository to invoke
+pip using the same interpreter as your toolchain. If set, takes precedence over
+python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:python".
+""",
+    ),
+    "quiet": attr.bool(
+        default = True,
+        doc = "If True, suppress printing stdout and stderr output to the terminal.",
+    ),
+    "repo_prefix": attr.string(
+        doc = """
+Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
