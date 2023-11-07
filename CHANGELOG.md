@@ -86,6 +86,9 @@ Breaking changes:
 * (pip) Support for using [PEP621](https://peps.python.org/pep-0621/) compliant
   `pyproject.toml` for creating a resolved `requirements.txt` file.
 
+* (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
+  to find out how `rules_python` would normalize a PyPI distribution name.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed

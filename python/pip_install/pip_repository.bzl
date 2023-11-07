@@ -279,6 +279,8 @@ def _pip_repository_impl(rctx):
     bzl_packages = dict(sorted([[name, normalize_name(name)] for name, _ in parsed_requirements_txt.requirements]))
 
     imports = [
+        # NOTE: Maintain the order consistent with `buildifier`
+        'load("@rules_python//python:pip.bzl", "pip_utils")',
         'load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")',
     ]
 
@@ -337,7 +339,7 @@ def _pip_repository_impl(rctx):
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
-        "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%IMPORTS%%": "\n".join(imports),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%PACKAGES%%": _format_repr_list(
