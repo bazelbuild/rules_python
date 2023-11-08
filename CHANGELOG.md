@@ -64,6 +64,8 @@ Breaking changes:
   `incompatible_normalize_version` to `True` by default to enforce `PEP440`
   for wheel names built by `rules_python`.
 
+* (tools/wheelmaker.py) drop support for Python 2 as only Python 3 is tested.
+
 ### Fixed
 
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full
