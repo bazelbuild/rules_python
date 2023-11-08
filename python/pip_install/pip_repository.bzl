@@ -333,7 +333,7 @@ def _pip_repository_impl(rctx):
             for p in bzl_packages.values()
         ]),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
-            name: macro_tmpl.format(p, "whl")
+            normalize_name(name): macro_tmpl.format(p, "whl")
             for name, p in bzl_packages.items()
         })),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
