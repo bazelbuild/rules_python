@@ -32,9 +32,32 @@ load(
 )
 load(":which.bzl", "which_with_fail")
 
+_py_toolchain_type = Label("@bazel_tools//tools/python:toolchain_type")
+_py_cc_toolchain_type = Label("//python/cc:toolchain_type")
+
 def get_repository_name(repository_workspace):
     dummy_label = "//:_"
     return str(repository_workspace.relative(dummy_label))[:-len(dummy_label)] or "@"
+
+def toolchain_defs(user_repository_name, prefix, **kwargs):
+    """For internal use only."""
+    native.toolchain(
+        name = "{prefix}_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:python_runtimes".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = _py_toolchain_type,
+        **kwargs
+    )
+
+    native.toolchain(
+        name = "{prefix}_py_cc_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:py_cc_toolchain".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = _py_cc_toolchain_type,
+        **kwargs
+    )
 
 def python_toolchain_build_file_content(
         prefix,
@@ -77,21 +100,13 @@ def python_toolchain_build_file_content(
     # order to get us an index to increment the increment.
     return "".join([
         """
-toolchain(
-    name = "{prefix}{platform}_toolchain",
+load("@rules_python//python/private:toolchains_repo.bzl", "toolchain_defs")
+
+toolchain_defs(
+    user_repository_name = "{user_repository_name}_{platform}",
+    prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
     target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-)
-
-toolchain(
-    name = "{prefix}{platform}_py_cc_toolchain",
-    target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:py_cc_toolchain",
-    toolchain_type = "@rules_python//python/cc:toolchain_type",
-
 )
 """.format(
             compatible_with = meta.compatible_with,
