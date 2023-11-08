@@ -42,5 +42,5 @@ py_console_script_binary(
 ```
 """.format(
         pkg = pip_utils.normalize_name(pkg),
-        script = "" if not script else "\n    script = %s" % actual_script,
+        script = "" if not script else "\n    script = \"%s\"," % actual_script,
     ))
