@@ -23,6 +23,7 @@ alias repository with only the toolchain attribute pointing into the
 platform-specific repositories.
 """
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load(
     "//python:versions.bzl",
     "LINUX_NAME",
@@ -56,10 +57,20 @@ def toolchain_defs(*, prefix, user_repository_name, python_version, set_python_v
     # This if statement does not appear to work unless it is in the
     # toolchain file.
     if set_python_version_constraint == "True":
-        constraint = "//python/config_settings:is_python_{python_version}".format(
-            python_version = python_version,
+        major_minor, _, _ = python_version.rpartition(".")
+
+        selects.config_setting_group(
+            name = prefix + "_version_setting",
+            match_any = [
+                Label("//python/config_settings:is_python_%s" % v)
+                for v in [
+                    major_minor,
+                    python_version,
+                ]
+            ],
+            visibility = ["//visibility:private"],
         )
-        target_settings = [Label(constraint)]
+        target_settings = [prefix + "_version_setting"]
     elif set_python_version_constraint == "False":
         target_settings = []
     else:
