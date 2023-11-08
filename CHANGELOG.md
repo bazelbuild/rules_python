@@ -33,8 +33,11 @@ A brief description of the categories of changes:
   dependencies is now done as part of `py_repositories` call.
 
 * (pip_parse) The generated `requirements.bzl` file now has an additional symbol
-  `all_whl_requirements_by_package` which provides a map from the original package name
-  (as it appears in requirements.txt) to the target that provides the built wheel file.
+  `all_whl_requirements_by_package` which provides a map from the normalized
+  PyPI package name to the target that provides the built wheel file. Use
+  `pip_utils.normalize_name` function from `@rules_python//python:pip.bzl` to
+  convert a PyPI package name to a key in the `all_whl_requirements_by_package`
+  map.
 
 * (pip_parse) The flag `incompatible_generate_aliases` has been flipped to
   `True` by default on `non-bzlmod` setups allowing users to use the same label
