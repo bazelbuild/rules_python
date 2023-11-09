@@ -5,11 +5,12 @@ from //:requirements.txt
 """
 
 load("@python39//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_utils")
 load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
 
 all_requirements = ["@pip//certifi:pkg", "@pip//charset_normalizer:pkg", "@pip//idna:pkg", "@pip//requests:pkg", "@pip//urllib3:pkg"]
 
-all_whl_requirements_by_package = {"certifi": "@pip//certifi:whl", "charset-normalizer": "@pip//charset_normalizer:whl", "idna": "@pip//idna:whl", "requests": "@pip//requests:whl", "urllib3": "@pip//urllib3:whl"}
+all_whl_requirements_by_package = {"certifi": "@pip//certifi:whl", "charset_normalizer": "@pip//charset_normalizer:whl", "idna": "@pip//idna:whl", "requests": "@pip//requests:whl", "urllib3": "@pip//urllib3:whl"}
 
 all_whl_requirements = all_whl_requirements_by_package.values()
 
@@ -19,25 +20,22 @@ _packages = [("pip_certifi", "certifi==2023.7.22     --hash=sha256:539cc1d13202e
 _config = {"download_only": False, "enable_implicit_namespace_pkgs": False, "environment": {}, "extra_pip_args": [], "isolated": True, "pip_data_exclude": [], "python_interpreter": "python3", "python_interpreter_target": interpreter, "quiet": True, "repo": "pip", "repo_prefix": "pip_", "timeout": 600}
 _annotations = {}
 
-def _clean_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
 def requirement(name):
-    return "@pip//{}:{}".format(_clean_name(name), "pkg")
+    return "@pip//{}:{}".format(pip_utils.normalize_name(name), "pkg")
 
 def whl_requirement(name):
-    return "@pip//{}:{}".format(_clean_name(name), "whl")
+    return "@pip//{}:{}".format(pip_utils.normalize_name(name), "whl")
 
 def data_requirement(name):
-    return "@pip//{}:{}".format(_clean_name(name), "data")
+    return "@pip//{}:{}".format(pip_utils.normalize_name(name), "data")
 
 def dist_info_requirement(name):
-    return "@pip//{}:{}".format(_clean_name(name), "dist_info")
+    return "@pip//{}:{}".format(pip_utils.normalize_name(name), "dist_info")
 
 def entry_point(pkg, script = None):
     if not script:
         script = pkg
-    return "@pip_" + _clean_name(pkg) + "//:rules_python_wheel_entry_point_" + script
+    return "@pip_" + pip_utils.normalize_name(pkg) + "//:rules_python_wheel_entry_point_" + script
 
 def _get_annotation(requirement):
     # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`

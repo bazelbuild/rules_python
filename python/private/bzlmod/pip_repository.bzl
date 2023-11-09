@@ -56,7 +56,7 @@ def _pip_repository_impl(rctx):
             for p in bzl_packages
         }),
         "%%MACRO_TMPL%%": macro_tmpl,
-        "%%NAME%%": rctx.attr.name,
+        "%%NAME%%": rctx.attr.repo_name,
     })
 
 pip_repository_attrs = {
