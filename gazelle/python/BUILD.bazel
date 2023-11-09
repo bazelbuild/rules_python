@@ -65,6 +65,8 @@ gazelle_test(
         # Use this so that we don't need to manually maintain the list.
         ["testdata/*"],
         exclude = ["testdata/*.md"],
+        # The directories aren't inputs themselves; we just want their
+        # names.
         exclude_directories = 0,
     ),
     deps = [
