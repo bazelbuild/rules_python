@@ -276,7 +276,7 @@ def _pip_repository_impl(rctx):
 
     packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
-    bzl_packages = dict(sorted([[name, normalize_name(name)] for name, _ in parsed_requirements_txt.requirements]))
+    bzl_packages = sorted([normalize_name(name) for name, _ in parsed_requirements_txt.requirements])
 
     imports = [
         # NOTE: Maintain the order consistent with `buildifier`
@@ -316,7 +316,7 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.incompatible_generate_aliases:
         macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages.values())
+        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
         for path, contents in aliases.items():
             rctx.file(path, contents)
     else:
@@ -326,15 +326,15 @@ def _pip_repository_impl(rctx):
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "pkg")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
-            normalize_name(name): macro_tmpl.format(p, "whl")
-            for name, p in bzl_packages.items()
+            p: macro_tmpl.format(p, "whl")
+            for p in bzl_packages
         })),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
