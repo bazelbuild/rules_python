@@ -29,6 +29,7 @@ import (
 )
 
 var (
+	stdModulesCmd    *exec.Cmd
 	stdModulesStdin  io.WriteCloser
 	stdModulesStdout io.Reader
 	stdModulesMutex  sync.Mutex
@@ -40,41 +41,38 @@ func startStdModuleProcess(ctx context.Context) {
 
 	// due to #691, we need a system interpreter to boostrap, part of which is
 	// to locate the hermetic interpreter.
-	cmd := exec.CommandContext(ctx, "python3", helperPath, "std_modules")
-	cmd.Stderr = os.Stderr
+	stdModulesCmd = exec.CommandContext(ctx, "python3", helperPath, "std_modules")
+	stdModulesCmd.Stderr = os.Stderr
 	// All userland site-packages should be ignored.
-	cmd.Env = []string{"PYTHONNOUSERSITE=1"}
+	stdModulesCmd.Env = []string{"PYTHONNOUSERSITE=1"}
 
-	stdin, err := cmd.StdinPipe()
+	stdin, err := stdModulesCmd.StdinPipe()
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
 		os.Exit(1)
 	}
 	stdModulesStdin = stdin
 
-	stdout, err := cmd.StdoutPipe()
+	stdout, err := stdModulesCmd.StdoutPipe()
 	if err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
 		os.Exit(1)
 	}
 	stdModulesStdout = stdout
 
-	if err := cmd.Start(); err != nil {
+	if err := stdModulesCmd.Start(); err != nil {
 		log.Printf("failed to initialize std_modules: %v\n", err)
 		os.Exit(1)
 	}
-
-	go func() {
-		if err := cmd.Wait(); err != nil {
-			log.Printf("failed to wait for std_modules: %v\n", err)
-			os.Exit(1)
-		}
-	}()
 }
 
 func shutdownStdModuleProcess() {
 	if err := stdModulesStdin.Close(); err != nil {
 		fmt.Fprintf(os.Stderr, "error closing std module: %v", err)
+	}
+
+	if err := stdModulesCmd.Wait(); err != nil {
+		log.Printf("failed to wait for std_modules: %v\n", err)
 	}
 }
 

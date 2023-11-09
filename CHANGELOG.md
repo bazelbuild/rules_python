@@ -78,6 +78,9 @@ Breaking changes:
 * (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
   is used.
 
+* (gazelle) Move waiting for the Python interpreter process to exit to the shutdown hook
+  to make the usage of the `exec.Command` more idiomatic.
+
 ### Added
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
