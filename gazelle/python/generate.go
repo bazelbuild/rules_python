@@ -371,7 +371,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addModuleDependencies(deps).
 			generateImportsAttribute()
 	}
-	if hasPyTestEntryPointFile || hasPyTestEntryPointTarget {
+	if hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration() {
 		if hasPyTestEntryPointFile {
 			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
 			// the file exists on disk.

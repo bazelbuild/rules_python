@@ -160,7 +160,7 @@ class _WhlFile(zipfile.ZipFile):
 
     def add_string(self, filename, contents):
         """Add given 'contents' as filename to the distribution."""
-        if sys.version_info[0] > 2 and isinstance(contents, str):
+        if isinstance(contents, str):
             contents = contents.encode("utf-8", "surrogateescape")
         zinfo = self._zipinfo(filename)
         self.writestr(zinfo, contents)
@@ -199,7 +199,7 @@ class _WhlFile(zipfile.ZipFile):
         entries = self._record + [(record_path, b"", b"")]
         contents = b""
         for filename, digest, size in entries:
-            if sys.version_info[0] > 2 and isinstance(filename, str):
+            if isinstance(filename, str):
                 filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
             contents += b"%s,%s,%s\n" % (filename, digest, size)
 
@@ -530,22 +530,14 @@ def main() -> None:
 
         description = None
         if arguments.description_file:
-            if sys.version_info[0] == 2:
-                with open(arguments.description_file, "rt") as description_file:
-                    description = description_file.read()
-            else:
-                with open(
-                    arguments.description_file, "rt", encoding="utf-8"
-                ) as description_file:
-                    description = description_file.read()
+            with open(
+                arguments.description_file, "rt", encoding="utf-8"
+            ) as description_file:
+                description = description_file.read()
 
         metadata = None
-        if sys.version_info[0] == 2:
-            with open(arguments.metadata_file, "rt") as metadata_file:
-                metadata = metadata_file.read()
-        else:
-            with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
-                metadata = metadata_file.read()
+        with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
+            metadata = metadata_file.read()
 
         if arguments.noincompatible_normalize_version:
             version_in_metadata = version

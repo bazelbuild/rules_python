@@ -1,6 +1,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle_binary")
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@rules_python//python:defs.bzl", "py_binary")
+load(":gazelle_test.bzl", "gazelle_test")
 
 go_library(
     name = "python",
@@ -53,13 +54,21 @@ filegroup(
     output_group = "python_zip_file",
 )
 
-go_test(
+gazelle_test(
     name = "python_test",
     srcs = ["python_test.go"],
     data = [
         ":gazelle_binary",
         ":helper",
-    ] + glob(["testdata/**"]),
+    ],
+    test_dirs = glob(
+        # Use this so that we don't need to manually maintain the list.
+        ["testdata/*"],
+        exclude = ["testdata/*.md"],
+        # The directories aren't inputs themselves; we just want their
+        # names.
+        exclude_directories = 0,
+    ),
     deps = [
         "@bazel_gazelle//testtools:go_default_library",
         "@com_github_ghodss_yaml//:yaml",

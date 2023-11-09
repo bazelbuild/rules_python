@@ -39,6 +39,11 @@ def _test_basic_windows(name, config):
         impl = _test_basic_windows_impl,
         target = name + "_subject",
         config_settings = {
+            # NOTE: The default for this flag is based on the Bazel host OS, not
+            # the target platform. For windows, it defaults to true, so force
+            # it to that to match behavior when this test runs on other
+            # platforms.
+            "//command_line_option:build_python_zip": "true",
             "//command_line_option:cpu": "windows_x86_64",
             "//command_line_option:crosstool_top": Label("//tests/cc:cc_toolchain_suite"),
             "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
@@ -51,7 +56,7 @@ def _test_basic_windows_impl(env, target):
     target = env.expect.that_target(target)
     target.executable().path().contains(".exe")
     target.runfiles().contains_predicate(matching.str_endswith(
-        target.meta.format_str("/{name}"),
+        target.meta.format_str("/{name}.zip"),
     ))
     target.runfiles().contains_predicate(matching.str_endswith(
         target.meta.format_str("/{name}.exe"),

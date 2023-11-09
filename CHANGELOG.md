@@ -64,6 +64,8 @@ Breaking changes:
   `incompatible_normalize_version` to `True` by default to enforce `PEP440`
   for wheel names built by `rules_python`.
 
+* (tools/wheelmaker.py) drop support for Python 2 as only Python 3 is tested.
+
 ### Fixed
 
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full
@@ -74,6 +76,9 @@ Breaking changes:
 
 * (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
   follow the order of files written to the `.whl` archive.
+
+* (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
+  is used.
 
 ### Added
 
