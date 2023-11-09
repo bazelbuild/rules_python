@@ -81,7 +81,7 @@ def _render_whl_library_alias(
         )
         selects[condition] = actual
 
-    if default_version:
+    if default_version and default_version in versions:
         no_match_error = None
         default_actual = "@{repo_name}_{version}_{dep}//:{target}".format(
             repo_name = repo_name,
@@ -109,7 +109,7 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
     if versions:
         versions = sorted(versions)
 
-    if versions and not default_version:
+    if versions and (not default_version or default_version not in versions):
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
             supported_versions = ", ".join(versions),
             rules_python = rules_python,
