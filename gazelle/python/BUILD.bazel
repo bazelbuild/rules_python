@@ -61,7 +61,7 @@ gazelle_test(
         ":gazelle_binary",
         ":helper",
     ],
-    testdata = glob(
+    test_dirs = glob(
         # Use this so that we don't need to manually maintain the list.
         ["testdata/*"],
         exclude = ["testdata/*.md"],
