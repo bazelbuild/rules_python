@@ -107,10 +107,13 @@ def _py_proto_aspect_impl(target, ctx):
     return [
         _PyProtoInfo(
             imports = depset(
-                # Adding to PYTHONPATH so the generated modules can be imported.
-                # This is necessary when there is strip_import_prefix, the Python
-                # modules are generated under _virtual_imports.
-                [proto_root],
+                # Adding to PYTHONPATH so the generated modules can be
+                # imported.  This is necessary when there is
+                # strip_import_prefix, the Python modules are generated under
+                # _virtual_imports. But it's undesirable otherwise, because it
+                # will put the repo root at the top of the PYTHONPATH, ahead of
+                # directories added through `imports` attributes.
+                [proto_root] if "_virtual_imports" in proto_root else [],
                 transitive = [dep[PyInfo].imports for dep in api_deps],
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
