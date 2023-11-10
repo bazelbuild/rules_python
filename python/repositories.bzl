@@ -259,6 +259,7 @@ def _python_repository_impl(rctx):
             "libs/**",
             "Scripts/**",
             "share/**",
+            "tcl/**",
         ]
     else:
         glob_include += [

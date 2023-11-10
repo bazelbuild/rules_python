@@ -86,6 +86,8 @@ Breaking changes:
 * (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
   is used.
 
+* (python_register_toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
+
 ### Added
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
