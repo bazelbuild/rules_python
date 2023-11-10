@@ -9,4 +9,5 @@ py_library(
         "subpackage1/module5.py",
     ],
     visibility = ["//:__subpackages__"],
+    deps = ["//package2:resolved_package"],
 )
