@@ -55,7 +55,7 @@ A brief description of the categories of changes:
   or `requirements_in` attributes are unspecified, matching the upstream
   `pip-compile` behaviour more closely.
 
-* Make Gazelle use relative paths if possible for dependencies added through
+* (gazelle) Use relative paths if possible for dependencies added through
   the use of the `resolve` directive.
 
 Breaking changes:
