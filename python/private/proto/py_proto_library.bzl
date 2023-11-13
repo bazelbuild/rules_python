@@ -114,7 +114,7 @@ def _py_proto_aspect_impl(target, ctx):
                 # will put the repo root at the top of the PYTHONPATH, ahead of
                 # directories added through `imports` attributes.
                 [proto_root] if "_virtual_imports" in proto_root else [],
-                transitive = [dep[PyInfo].imports for dep in api_deps],
+                transitive = [dep[PyInfo].imports for dep in api_deps] + [dep.imports for dep in deps],
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
