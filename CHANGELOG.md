@@ -55,6 +55,9 @@ A brief description of the categories of changes:
   or `requirements_in` attributes are unspecified, matching the upstream
   `pip-compile` behaviour more closely.
 
+* (gazelle) Use relative paths if possible for dependencies added through
+  the use of the `resolve` directive.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
