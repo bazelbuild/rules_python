@@ -2,15 +2,15 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:proto.bzl", "py_proto_library")
 
 py_proto_library(
-    name = "pricetag_proto_py_pb2",
+    name = "message_proto_py_pb2",
     visibility = ["//visibility:public"],
-    deps = [":pricetag_proto"],
+    deps = [":message_proto"],
 )
 
 proto_library(
-    name = "pricetag_proto",
-    srcs = ["pricetag.proto"],
+    name = "message_proto",
+    srcs = ["message.proto"],
     # https://bazel.build/reference/be/protocol-buffer#proto_library.strip_import_prefix
     strip_import_prefix = "/example.com",
-    visibility = ["//visibility:public"],
+    deps = ["//example.com/proto:pricetag_proto"],
 )
