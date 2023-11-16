@@ -146,6 +146,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
+            experimental_set_target_compatible_with = pip_attr.experimental_set_target_compatible_with,
         )
 
         if whl_name not in whl_map[hub_name]:
@@ -307,6 +308,11 @@ def _pip_impl(module_ctx):
 
 def _pip_parse_ext_attrs():
     attrs = dict({
+        "experimental_set_target_compatible_with": attr.bool(
+            default = False,
+            doc = "A flag to set 'target_compatible_with' attribute for the py_library target. " +
+                  "This is detected from the whl file name.",
+        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """

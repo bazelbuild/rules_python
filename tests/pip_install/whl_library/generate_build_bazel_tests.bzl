@@ -55,6 +55,7 @@ py_library(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
+    target_compatible_with = None,
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["site-packages"],
@@ -111,6 +112,7 @@ py_library(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "data_exclude_all"],
     ),
+    target_compatible_with = None,
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["site-packages"],
@@ -190,6 +192,7 @@ py_library(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
+    target_compatible_with = None,
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["site-packages"],

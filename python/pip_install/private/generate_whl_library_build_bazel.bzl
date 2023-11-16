@@ -15,6 +15,7 @@
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_whl_name.bzl", "whl_target_compatible_with")
 
 _WHEEL_FILE_LABEL = "whl"
 _PY_LIBRARY_LABEL = "pkg"
@@ -77,6 +78,7 @@ py_library(
         ["site-packages/**/*"],
         exclude={data_exclude},
     ),
+    target_compatible_with = {target_compatible_with},
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["site-packages"],
@@ -93,7 +95,8 @@ def generate_whl_library_build_bazel(
         data_exclude,
         tags,
         entry_points,
-        annotation = None):
+        annotation = None,
+        set_target_compatible_with = False):
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
@@ -104,6 +107,8 @@ def generate_whl_library_build_bazel(
         tags: list of tags to apply to generated py_library rules.
         entry_points: A dict of entry points to add py_binary rules for.
         annotation: The annotation for the build file.
+        set_target_compatible_with: Set constraints for `py_library` based
+          on the whl name.
 
     Returns:
         A complete BUILD file as a string
@@ -178,6 +183,7 @@ def generate_whl_library_build_bazel(
                 entry_point_prefix = _WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
+                target_compatible_with = "None" if not set_target_compatible_with else repr(whl_target_compatible_with(whl_name)),
             ),
         ] + additional_content,
     )

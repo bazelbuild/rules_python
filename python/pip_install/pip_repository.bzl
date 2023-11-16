@@ -668,6 +668,7 @@ def _whl_library_impl(rctx):
         ],
         entry_points = entry_points,
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+        set_target_compatible_with = rctx.attr.experimental_set_target_compatible_with,
     )
     rctx.file("BUILD.bazel", build_file_contents)
 
@@ -708,6 +709,11 @@ whl_library_attrs = {
             "See `package_annotation`"
         ),
         allow_files = True,
+    ),
+    "experimental_set_target_compatible_with": attr.bool(
+        default = False,
+        doc = "A flag to set 'target_compatible_with' attribute for the py_library target. " +
+              "This is detected from the whl file name.",
     ),
     "repo": attr.string(
         mandatory = True,

@@ -16,6 +16,32 @@
 A starlark implementation of a Wheel filename parsing.
 """
 
+_LEGACY_ALIASES = {
+    "manylinux1_i686": "manylinux_2_5_i686",
+    "manylinux1_x86_64": "manylinux_2_5_x86_64",
+    "manylinux2010_i686": "manylinux_2_12_i686",
+    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
+    "manylinux2014_aarch64": "manylinux_2_17_aarch64",
+    "manylinux2014_armv7l": "manylinux_2_17_armv7l",
+    "manylinux2014_i686": "manylinux_2_17_i686",
+    "manylinux2014_ppc64": "manylinux_2_17_ppc64",
+    "manylinux2014_ppc64le": "manylinux_2_17_ppc64le",
+    "manylinux2014_s390x": "manylinux_2_17_s390x",
+    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
+}
+
+_ARCH = {
+    "aarch64": "aarch64",
+    "amd64": "x86_64",
+    "arm64": "aarch64",
+    "armv7l": "aarch32",
+    "i686": "x86_32",
+    "ppc64": "ppc",
+    "ppc64le": "ppc64le",
+    "s390x": "s390x",
+    "x86_64": "x86_64",
+}
+
 def parse_whl_name(file):
     """Parse whl file name into a struct of constituents.
 
@@ -70,3 +96,80 @@ def parse_whl_name(file):
         abi_tag = abi_tag,
         platform_tag = platform_tag,
     )
+
+def _convert_from_legacy(platform_tag):
+    return _LEGACY_ALIASES.get(platform_tag, platform_tag)
+
+def whl_target_compatible_with(file):
+    """Parse whl file and return compatibility list.
+
+    Args:
+        file (str): The file name of a wheel
+
+    Returns:
+        A list that can be put into target_compatible_with
+    """
+    parsed = parse_whl_name(file)
+
+    if parsed.platform_tag == "any" and parsed.abi_tag == "none":
+        return []
+
+    # TODO @aignas 2023-11-16: add ABI handling
+
+    platform, _, _ = parsed.platform_tag.partition(".")
+    platform = _convert_from_legacy(platform)
+
+    if platform.startswith("manylinux"):
+        _, _, tail = platform.partition("_")
+
+        _glibc_major, _, tail = tail.partition("_")  # Discard as this is currently unused
+        _glibc_minor, _, arch = tail.partition("_")  # Discard as this is currently unused
+
+        return [
+            "@platforms//cpu:" + _ARCH.get(arch, arch),
+            "@platforms//os:linux",
+        ]
+        # TODO @aignas 2023-11-16: figure out when this happens, perhaps it is when
+        # we build a wheel instead ourselves instead of downloading it from PyPI?
+
+    elif platform.startswith("linux_"):
+        _, _, arch = platform.partition("_")
+
+        return [
+            "@platforms//cpu:" + _ARCH.get(arch, arch),
+            "@platforms//os:linux",
+        ]
+
+    elif platform.startswith("macosx"):
+        _, _, tail = platform.partition("_")
+
+        _os_major, _, tail = tail.partition("_")  # Discard as this is currently unused
+        _os_minor, _, arch = tail.partition("_")  # Discard as this is currently unused
+
+        if arch.startswith("universal"):
+            return ["@platforms//os:osx"]
+        else:
+            return [
+                "@platforms//cpu:" + _ARCH.get(arch, arch),
+                "@platforms//os:osx",
+            ]
+    elif platform.startswith("win"):
+        if platform == "win32":
+            return [
+                "@platforms//cpu:x86_32",
+                "@platforms//os:windows",
+            ]
+        elif platform == "win64":
+            return [
+                "@platforms//cpu:x86_32",
+                "@platforms//os:windows",
+            ]
+
+        _, _, arch = platform.partition("_")
+
+        return [
+            "@platforms//cpu:" + _ARCH.get(arch, arch),
+            "@platforms//os:windows",
+        ]
+
+    fail("Could not parse platform values for a wheel platform: '{}'".format(parsed))

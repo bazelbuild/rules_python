@@ -97,6 +97,13 @@ Breaking changes:
 * (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
   to find out how `rules_python` would normalize a PyPI distribution name.
 
+* (whl_library) Added an `experimental_set_target_compatible_with` to `whl_library` and
+  `pip.parse` module extension which will configure bazel constraints for `py_library`
+  targets derived from a `whl` file via repository rules. In order to use it, you need to
+  specificy `experimental_set_target_compatible_with = True` to either `pip.parse` in your
+  `MODULE.bazel` or `install_deps` from the auto-generated `requirements.bzl` if you are
+  using `WORKSPACE`.
+
 ## [0.26.0] - 2023-10-06
 
 ### Changed
