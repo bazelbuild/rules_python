@@ -64,6 +64,11 @@ A brief description of the categories of changes:
 * (gazelle) Use relative paths if possible for dependencies added through
   the use of the `resolve` directive.
 
+* (gazelle) When using `python_generation_mode file`, one `py_test` target is
+  made per test file even if a target named `__test__` or a file named
+  `__test__.py` exists in the same package. Previously in these cases there
+  would only be one test target made.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
