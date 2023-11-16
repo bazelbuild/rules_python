@@ -19,6 +19,12 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
+## [0.27.0] - 2023-11-16
+
+[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
+
 ### Changed
 
 * Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
@@ -86,7 +92,11 @@ Breaking changes:
 * (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
   is used.
 
-* (python_register_toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
+* (toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
+
+* (bzlmod) sub-modules now don't have the `//conditions:default` clause in the
+  hub repos created by `pip.parse`. This should fix confusing error messages
+  in case there is a misconfiguration of toolchains or a bug in `rules_python`.
 
 ### Added
 
@@ -98,6 +108,8 @@ Breaking changes:
 
 * (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
   to find out how `rules_python` would normalize a PyPI distribution name.
+
+[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
 
 ## [0.26.0] - 2023-10-06
 
@@ -171,6 +183,8 @@ Breaking changes:
   fetching.
 
 * (gazelle) Improve runfiles lookup hermeticity.
+
+[0.26.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.26.0
 
 ## [0.25.0] - 2023-08-22
 
