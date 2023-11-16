@@ -413,6 +413,7 @@ def _pip_repository_impl(rctx):
 common_env = [
     "RULES_PYTHON_PIP_ISOLATED",
     REPO_DEBUG_ENV_VAR,
+    "ABNORMAL_BAZEL_PLATFORM_SALT",
 ]
 
 common_attrs = {
