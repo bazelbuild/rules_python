@@ -371,7 +371,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addModuleDependencies(deps).
 			generateImportsAttribute()
 	}
-	if hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration() {
+	if (hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration()) && !cfg.PerFileGeneration() {
+		// Create one py_test target per package
 		if hasPyTestEntryPointFile {
 			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
 			// the file exists on disk.
@@ -396,7 +397,20 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		pyTestFilenames.Each(func(index int, testFile interface{}) {
 			srcs := treeset.NewWith(godsutils.StringComparator, testFile)
 			pyTestTargetName := strings.TrimSuffix(filepath.Base(testFile.(string)), ".py")
-			pyTestTargets = append(pyTestTargets, newPyTestTargetBuilder(srcs, pyTestTargetName))
+			pyTestTarget := newPyTestTargetBuilder(srcs, pyTestTargetName)
+
+			if hasPyTestEntryPointTarget {
+				entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
+				main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
+				pyTestTarget.
+					addSrc(entrypointTarget).
+					addResolvedDependency(entrypointTarget).
+					setMain(main)
+			} else if hasPyTestEntryPointFile {
+				pyTestTarget.addSrc(pyTestEntrypointFilename)
+				pyTestTarget.setMain(pyTestEntrypointFilename)
+			}
+			pyTestTargets = append(pyTestTargets, pyTestTarget)
 		})
 	}
 
