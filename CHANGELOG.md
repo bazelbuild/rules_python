@@ -97,6 +97,8 @@ Breaking changes:
 * (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
   is used.
 
+* (toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
+
 * (bzlmod) sub-modules now don't have the `//conditions:default` clause in the
   hub repos created by `pip.parse`. This should fix confusing error messages
   in case there is a misconfiguration of toolchains or a bug in `rules_python`.
