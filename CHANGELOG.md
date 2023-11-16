@@ -69,6 +69,9 @@ A brief description of the categories of changes:
   `__test__.py` exists in the same package. Previously in these cases there
   would only be one test target made.
 
+* (gazelle) If a non-test Python file contains `if __name__ == "__main__":`,
+  then a `py_binary` target is made for it instead of a `py_library` target.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and

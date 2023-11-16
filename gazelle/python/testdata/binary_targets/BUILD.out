@@ -1,0 +1,35 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_library(
+    name = "binary_targets",
+    srcs = [
+        "bar.py",
+        "baz.py",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+py_binary(
+    name = "bar_binary",
+    srcs = ["bar_binary.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [":binary_targets"],
+)
+
+py_binary(
+    name = "single_quote_main",
+    srcs = ["single_quote_main.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [":bar_test"],
+)
+
+py_test(
+    name = "bar_test",
+    srcs = ["bar_test.py"],
+    deps = [":bar_binary"],
+)
+
+py_test(
+    name = "name_main_test",
+    srcs = ["name_main_test.py"],
+)

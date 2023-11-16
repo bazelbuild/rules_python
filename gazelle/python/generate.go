@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -85,13 +86,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	packageName := filepath.Base(args.Dir)
 
+	pyBinaryFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyLibraryFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyTestFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFileNames := treeset.NewWith(godsutils.StringComparator)
-
-	// hasPyBinary controls whether a py_binary target should be generated for
-	// this package or not.
-	hasPyBinary := false
 
 	// hasPyTestEntryPointFile and hasPyTestEntryPointTarget control whether a py_test target should
 	// be generated for this package or not.
@@ -106,14 +104,14 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		ext := filepath.Ext(f)
 		if ext == ".py" {
 			pyFileNames.Add(f)
-			if !hasPyBinary && f == pyBinaryEntrypointFilename {
-				hasPyBinary = true
-			} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
+			if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
 				hasConftestFile = true
 			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
 				pyTestFilenames.Add(f)
+			} else if f == pyBinaryEntrypointFilename || hasNameEqualsMain(filepath.Join(args.Config.RepoRoot, args.Rel, f)) {
+				pyBinaryFilenames.Add(f)
 			} else {
 				pyLibraryFilenames.Add(f)
 			}
@@ -270,13 +268,19 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
-	if hasPyBinary {
-		deps, err := parser.parseSingle(pyBinaryEntrypointFilename)
+	pyBinaryFilenames.Each(func(index int, filename interface{}) {
+		entrypointFilename := filename.(string)
+		deps, err := parser.parseSingle(entrypointFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
 
-		pyBinaryTargetName := cfg.RenderBinaryName(packageName)
+		var pyBinaryTargetName string
+		if entrypointFilename == pyBinaryEntrypointFilename {
+			pyBinaryTargetName = cfg.RenderBinaryName(packageName)
+		} else {
+			pyBinaryTargetName = strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+		}
 
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
@@ -296,17 +300,20 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
-			setMain(pyBinaryEntrypointFilename).
 			addVisibility(visibility).
-			addSrc(pyBinaryEntrypointFilename).
+			addSrc(entrypointFilename).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
+
+		if entrypointFilename == pyBinaryEntrypointFilename {
+			pyBinaryTarget.setMain(pyBinaryEntrypointFilename)
+		}
 
 		pyBinary := pyBinaryTarget.build()
 
 		result.Gen = append(result.Gen, pyBinary)
 		result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
-	}
+	})
 
 	var conftest *rule.Rule
 	if hasConftestFile {
@@ -459,6 +466,20 @@ func hasEntrypointFile(dir string) bool {
 		if _, err := os.Stat(path); err == nil {
 			return true
 		}
+	}
+	return false
+}
+
+// hasNameEqualsMain determines if the file contains 'if __name__ == "__main__"'.
+func hasNameEqualsMain(path string) bool {
+	searchString := `if __name__ == ['"]__main__['"]:`
+	bytesContents, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	match, err := regexp.Match(searchString, bytesContents)
+	if err == nil {
+		return match
 	}
 	return false
 }
