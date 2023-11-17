@@ -97,6 +97,9 @@ Breaking changes:
 * (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
   is used.
 
+* (gazelle) Move waiting for the Python interpreter process to exit to the shutdown hook
+  to make the usage of the `exec.Command` more idiomatic.
+
 * (toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
 
 * (bzlmod) sub-modules now don't have the `//conditions:default` clause in the
