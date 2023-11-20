@@ -43,6 +43,9 @@ A brief description of the categories of changes:
 * (wheel) Add support for `data_files` attributes in py_wheel rule
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
 
+* (py_wheel) `bzlmod` installations now provide a `twine` setup for the default
+  Python toolchain in `rules_python` for version 3.11.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
@@ -268,7 +271,6 @@ A brief description of the categories of changes:
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
-
 
 ## [0.27.0] - 2023-11-16
 

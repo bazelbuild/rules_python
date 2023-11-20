@@ -1,3 +1,4 @@
+load("@python_versions//3.11:defs.bzl", "py_console_script_binary")
 load("//python:pip.bzl", "compile_pip_requirements")
 
 compile_pip_requirements(
@@ -5,4 +6,10 @@ compile_pip_requirements(
     src = "requirements.in",
     requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
+)
+
+py_console_script_binary(
+    name = "twine",
+    pkg = "@rules_python_publish_deps//twine",
+    visibility = ["//visibility:public"],
 )
