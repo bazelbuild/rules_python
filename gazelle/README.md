@@ -109,7 +109,7 @@ modules_mapping(
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
-    # This is what we called our `pip_install` rule, where third-party
+    # This is what we called our `pip_parse` rule, where third-party
     # python libraries are loaded in BUILD files.
     pip_repository_name = "pip",
     # This should point to wherever we declare our python dependencies
