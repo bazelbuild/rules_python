@@ -13,9 +13,9 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":py_internal.bzl", "py_internal")
 load(
     ":semantics.bzl",

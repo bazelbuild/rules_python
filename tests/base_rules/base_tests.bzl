@@ -17,15 +17,15 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
+load("//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load("//tests/base_rules:util.bzl", pt_util = "util")
 
 _tests = []
 
 _PRODUCES_PY_INFO_ATTRS = {
-    "srcs": attr.label_list(allow_files = True),
     "imports": attr.string_list(),
+    "srcs": attr.label_list(allow_files = True),
 }
 
 def _create_py_info(ctx, provider_type):
