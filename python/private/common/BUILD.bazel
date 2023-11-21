@@ -74,7 +74,7 @@ bzl_library(
     srcs = ["providers.bzl"],
     deps = [
         ":semantics_bzl",
-        "@rules_python_internal//:rules_python_config_bzl",
+        "//python/private:util_bzl",
     ],
 )
 
@@ -171,9 +171,10 @@ bzl_library(
     srcs = ["py_runtime_rule.bzl"],
     deps = [
         ":attributes_bzl",
-        ":common_bzl",
         ":providers_bzl",
         ":py_internal_bzl",
+        "//python/private:reexports_bzl",
+        "//python/private:util_bzl",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
     ],

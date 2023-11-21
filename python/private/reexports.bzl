@@ -37,4 +37,4 @@ different name. Then we can load it from elsewhere.
 BuiltinPyInfo = PyInfo
 
 # buildifier: disable=name-conventions
-internal_PyRuntimeInfo = PyRuntimeInfo
+BuiltinPyRuntimeInfo = PyRuntimeInfo

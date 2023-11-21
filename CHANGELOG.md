@@ -19,6 +19,12 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Changed
+
+* (toolchains) `py_runtime`, `py_runtime_pair`, and `PyRuntimeInfo` now use the
+  rules_python Starlark implementation, not the one built into Bazel. NOTE: This
+  only applies to Bazel 6+; Bazel 5 still uses the builtin implementation.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
