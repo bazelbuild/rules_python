@@ -61,7 +61,7 @@ def py_library_impl(ctx, *, semantics):
     runfiles = collect_runfiles(ctx = ctx, files = output_sources)
 
     cc_info = semantics.get_cc_info_for_library(ctx)
-    py_info, deps_transitive_sources = create_py_info(
+    py_info, deps_transitive_sources, builtins_py_info = create_py_info(
         ctx,
         direct_sources = depset(direct_sources),
         imports = collect_imports(ctx, semantics),
@@ -78,6 +78,7 @@ def py_library_impl(ctx, *, semantics):
     return [
         DefaultInfo(files = output_sources, runfiles = runfiles),
         py_info,
+        builtins_py_info,
         create_instrumented_files_info(ctx),
         PyCcLinkParamsProvider(cc_info = cc_info),
         create_output_group_info(py_info.transitive_sources, extra_groups = {}),
