@@ -70,7 +70,7 @@ def _py_info_subject_imports(self):
     Method: PyInfoSubject.imports
     """
     return subjects.collection(
-        self.actual.imports,
+        self.actual.imports.to_list(),
         meta = self.meta.derive("imports()"),
     )
 

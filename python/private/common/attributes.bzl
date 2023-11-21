@@ -15,6 +15,7 @@
 
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":py_internal.bzl", "py_internal")
 load(
     ":semantics.bzl",
@@ -127,7 +128,11 @@ COMMON_ATTRS = union_attrs(
 PY_SRCS_ATTRS = union_attrs(
     {
         "deps": attr.label_list(
-            providers = [[PyInfo], [_CcInfo]],
+            providers = [
+                [PyInfo],
+                [_CcInfo],
+                [BuiltinPyInfo],
+            ],
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,

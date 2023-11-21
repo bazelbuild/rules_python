@@ -17,17 +17,37 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load("//tests/base_rules:util.bzl", pt_util = "util")
 
 _tests = []
 
+_PRODUCES_PY_INFO_ATTRS = {
+    "srcs": attr.label_list(allow_files = True),
+    "imports": attr.string_list(),
+}
+
+def _create_py_info(ctx, provider_type):
+    return [provider_type(
+        transitive_sources = depset(ctx.files.srcs),
+        imports = depset(ctx.attr.imports),
+    )]
+
+def _produces_builtin_py_info_impl(ctx):
+    return _create_py_info(ctx, BuiltinPyInfo)
+
+_produces_builtin_py_info = rule(
+    implementation = _produces_builtin_py_info_impl,
+    attrs = _PRODUCES_PY_INFO_ATTRS,
+)
+
 def _produces_py_info_impl(ctx):
-    return [PyInfo(transitive_sources = depset(ctx.files.srcs))]
+    return _create_py_info(ctx, BuiltinPyInfo)
 
 _produces_py_info = rule(
     implementation = _produces_py_info_impl,
-    attrs = {"srcs": attr.label_list(allow_files = True)},
+    attrs = _PRODUCES_PY_INFO_ATTRS,
 )
 
 def _not_produces_py_info_impl(ctx):
@@ -38,30 +58,58 @@ _not_produces_py_info = rule(
     implementation = _not_produces_py_info_impl,
 )
 
-def _test_consumes_provider(name, config):
+def _py_info_propagation_setup(name, config, produce_py_info_rule, test_impl):
     rt_util.helper_target(
         config.base_test_rule,
         name = name + "_subject",
-        deps = [name + "_produces_py_info"],
+        deps = [name + "_produces_builtin_py_info"],
     )
     rt_util.helper_target(
-        _produces_py_info,
-        name = name + "_produces_py_info",
+        produce_py_info_rule,
+        name = name + "_produces_builtin_py_info",
         srcs = [rt_util.empty_file(name + "_produce.py")],
+        imports = ["custom-import"],
     )
     analysis_test(
         name = name,
         target = name + "_subject",
-        impl = _test_consumes_provider_impl,
+        impl = test_impl,
     )
 
-def _test_consumes_provider_impl(env, target):
-    env.expect.that_target(target).provider(
-        PyInfo,
+def _py_info_propagation_test_impl(env, target, provider_type):
+    info = env.expect.that_target(target).provider(
+        provider_type,
         factory = py_info_subject,
-    ).transitive_sources().contains("{package}/{test_name}_produce.py")
+    )
 
-_tests.append(_test_consumes_provider)
+    info.transitive_sources().contains("{package}/{test_name}_produce.py")
+    info.imports().contains("custom-import")
+
+def _test_py_info_propagation_builtin(name, config):
+    _py_info_propagation_setup(
+        name,
+        config,
+        _produces_builtin_py_info,
+        _test_py_info_propagation_builtin_impl,
+    )
+
+def _test_py_info_propagation_builtin_impl(env, target):
+    _py_info_propagation_test_impl(env, target, BuiltinPyInfo)
+
+_tests.append(_test_py_info_propagation_builtin)
+
+def _test_py_info_propagation(name, config):
+    _py_info_propagation_setup(
+        name,
+        config,
+        _produces_py_info,
+        _test_py_info_propagation_impl,
+    )
+
+def _test_py_info_propagation_impl(env, target):
+    _py_info_propagation_test_impl(env, target, PyInfo)
+
+_tests.append(_test_py_info_propagation)
 
 def _test_requires_provider(name, config):
     rt_util.helper_target(
