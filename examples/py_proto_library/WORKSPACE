@@ -22,27 +22,28 @@ python_register_toolchains(
 # Then we need to setup dependencies in order to use py_proto_library
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+
 http_archive(
     name = "rules_proto",
-    sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-    strip_prefix = "rules_proto-5.3.0-21.7",
-    urls = [
-        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
-    ],
+    sha256 = "903af49528dc37ad2adbb744b317da520f133bc1cbbecbdd2a6c546c9ead080b",
+    strip_prefix = "rules_proto-6.0.0-rc0",
+    url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc0/rules_proto-6.0.0-rc0.tar.gz",
 )
+
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+rules_proto_dependencies()
+rules_proto_toolchains()
+
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "75be42bd736f4df6d702a0e4e4d30de9ee40eac024c4b845d17ae4cc831fe4ae",
-    strip_prefix = "protobuf-21.7",
-    urls = [
-        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
-    ],
+    # sha256 = "8632d7e8a6cbbd7e58f40e3f62fed77bff3df6e4dcac73498f0a68ba5a38d892",
+    strip_prefix = "protobuf-d1c5e885b7b7d3ac888e89cf4d45cb0c9fa6b4ed",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/d1c5e885b7b7d3ac888e89cf4d45cb0c9fa6b4ed.tar.gz"],
 )
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps", "protobuf_register_toolchains")
+protobuf_deps()
+protobuf_register_toolchains()
 
-rules_proto_dependencies()
-
-rules_proto_toolchains()

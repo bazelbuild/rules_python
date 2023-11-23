@@ -17,8 +17,6 @@
 load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load("//python:defs.bzl", "PyInfo")
 
-ProtoLangToolchainInfo = proto_common.ProtoLangToolchainInfo
-
 _PyProtoInfo = provider(
     doc = "Encapsulates information needed by the Python proto rules.",
     fields = {
@@ -51,7 +49,6 @@ def _py_proto_aspect_impl(target, ctx):
       ([_PyProtoInfo]) Providers collecting transitive information about
       generated files.
     """
-
     _proto_library = ctx.rule.attr
 
     # Check Proto file names
@@ -61,7 +58,7 @@ def _py_proto_aspect_impl(target, ctx):
                 proto.path,
             ))
 
-    proto_lang_toolchain_info = ctx.attr._aspect_proto_toolchain[ProtoLangToolchainInfo]
+    proto_lang_toolchain_info = ctx.toolchains["@rules_python//python/proto:toolchain_type"].proto
     api_deps = [proto_lang_toolchain_info.runtime]
 
     generated_sources = []
@@ -123,14 +120,10 @@ def _py_proto_aspect_impl(target, ctx):
 
 _py_proto_aspect = aspect(
     implementation = _py_proto_aspect_impl,
-    attrs = {
-        "_aspect_proto_toolchain": attr.label(
-            default = ":python_toolchain",
-        ),
-    },
     attr_aspects = ["deps"],
     required_providers = [ProtoInfo],
     provides = [_PyProtoInfo],
+    toolchains = ["@rules_python//python/proto:toolchain_type"]
 )
 
 def _py_proto_library_rule(ctx):
