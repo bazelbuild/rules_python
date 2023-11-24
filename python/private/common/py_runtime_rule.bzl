@@ -15,15 +15,15 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
 load(":attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
-load(":common.bzl", "check_native_allowed")
-load(":providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", _PyRuntimeInfo = "PyRuntimeInfo")
+load(":providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":py_internal.bzl", "py_internal")
 
 _py_builtins = py_internal
 
 def _py_runtime_impl(ctx):
-    check_native_allowed(ctx)
     interpreter_path = ctx.attr.interpreter_path or None  # Convert empty string to None
     interpreter = ctx.file.interpreter
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
@@ -44,7 +44,7 @@ def _py_runtime_impl(ctx):
     if ctx.attr.coverage_tool:
         coverage_di = ctx.attr.coverage_tool[DefaultInfo]
 
-        if _py_builtins.is_singleton_depset(coverage_di.files):
+        if _is_singleton_depset(coverage_di.files):
             coverage_tool = coverage_di.files.to_list()[0]
         elif coverage_di.files_to_run and coverage_di.files_to_run.executable:
             coverage_tool = coverage_di.files_to_run.executable
@@ -60,38 +60,44 @@ def _py_runtime_impl(ctx):
         coverage_files = None
 
     python_version = ctx.attr.python_version
-    if python_version == "_INTERNAL_SENTINEL":
-        if ctx.fragments.py.use_toolchains:
-            fail(
-                "When using Python toolchains, this attribute must be set explicitly to either 'PY2' " +
-                "or 'PY3'. See https://github.com/bazelbuild/bazel/issues/7899 for more " +
-                "information. You can temporarily avoid this error by reverting to the legacy " +
-                "Python runtime mechanism (`--incompatible_use_python_toolchains=false`).",
-            )
-        else:
-            python_version = ctx.fragments.py.default_python_version
 
     # TODO: Uncomment this after --incompatible_python_disable_py2 defaults to true
     # if ctx.fragments.py.disable_py2 and python_version == "PY2":
     #     fail("Using Python 2 is not supported and disabled; see " +
     #          "https://github.com/bazelbuild/bazel/issues/15684")
 
+    py_runtime_info_kwargs = dict(
+        interpreter_path = interpreter_path or None,
+        interpreter = interpreter,
+        files = runtime_files if hermetic else None,
+        coverage_tool = coverage_tool,
+        coverage_files = coverage_files,
+        python_version = python_version,
+        stub_shebang = ctx.attr.stub_shebang,
+        bootstrap_template = ctx.file.bootstrap_template,
+    )
+    builtin_py_runtime_info_kwargs = dict(py_runtime_info_kwargs)
+    if not IS_BAZEL_7_OR_HIGHER:
+        builtin_py_runtime_info_kwargs.pop("bootstrap_template")
     return [
-        _PyRuntimeInfo(
-            interpreter_path = interpreter_path or None,
-            interpreter = interpreter,
-            files = runtime_files if hermetic else None,
-            coverage_tool = coverage_tool,
-            coverage_files = coverage_files,
-            python_version = python_version,
-            stub_shebang = ctx.attr.stub_shebang,
-            bootstrap_template = ctx.file.bootstrap_template,
-        ),
+        PyRuntimeInfo(**py_runtime_info_kwargs),
+        # Return the builtin provider for better compatibility.
+        # 1. There is a legacy code path in py_binary that
+        #    checks for the provider when toolchains aren't used
+        # 2. It makes it easier to transition from builtins to rules_python
+        BuiltinPyRuntimeInfo(**builtin_py_runtime_info_kwargs),
         DefaultInfo(
             files = runtime_files,
             runfiles = ctx.runfiles(),
         ),
     ]
+
+def _is_singleton_depset(files):
+    # Bazel 6 doesn't have this helper to optimize detecting singleton depsets.
+    if _py_builtins:
+        return _py_builtins.is_singleton_depset(files)
+    else:
+        return len(files.to_list()) == 1
 
 # Bind to the name "py_runtime" to preserve the kind/rule_class it shows up
 # as elsewhere.
@@ -189,8 +195,8 @@ For a platform runtime, this is the absolute path of a Python interpreter on
 the target platform. For an in-build runtime this attribute must not be set.
 """),
         "python_version": attr.string(
-            default = "_INTERNAL_SENTINEL",
-            values = ["PY2", "PY3", "_INTERNAL_SENTINEL"],
+            default = "PY3",
+            values = ["PY2", "PY3"],
             doc = """
 Whether this runtime is for Python major version 2 or 3. Valid values are `"PY2"`
 and `"PY3"`.

@@ -83,3 +83,9 @@ def add_tag(attrs, tag):
             attrs["tags"] = tags + [tag]
     else:
         attrs["tags"] = [tag]
+
+IS_BAZEL_7_OR_HIGHER = hasattr(native, "starlark_doc_extract")
+
+# Bazel 5.4 has a bug where every access of testing.ExecutionInfo is a
+# different object that isn't equal to any other. This is fixed in bazel 6+.
+IS_BAZEL_6_OR_HIGHER = testing.ExecutionInfo == testing.ExecutionInfo

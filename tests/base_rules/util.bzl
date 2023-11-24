@@ -14,6 +14,7 @@
 """Helpers and utilities multiple tests re-use."""
 
 load("@bazel_skylib//lib:structs.bzl", "structs")
+load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")  # buildifier: disable=bzl-visibility
 
 # Use this with is_windows()
 WINDOWS_ATTR = {"windows": attr.label(default = "@platforms//os:windows")}
@@ -53,9 +54,7 @@ def _struct_with(s, **kwargs):
     return struct(**struct_dict)
 
 def _is_bazel_6_or_higher():
-    # Bazel 5.4 has a bug where every access of testing.ExecutionInfo is a
-    # different object that isn't equal to any other. This is fixed in bazel 6+.
-    return testing.ExecutionInfo == testing.ExecutionInfo
+    return IS_BAZEL_6_OR_HIGHER
 
 def _is_windows(env):
     """Tell if the target platform is windows.

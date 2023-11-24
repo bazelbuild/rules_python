@@ -29,6 +29,20 @@ _SKIP_TEST = {
     "target_compatible_with": ["@platforms//:incompatible"],
 }
 
+def _simple_binary_impl(ctx):
+    output = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(output, "", is_executable = True)
+    return [DefaultInfo(
+        executable = output,
+        runfiles = ctx.runfiles(ctx.files.data),
+    )]
+
+_simple_binary = rule(
+    implementation = _simple_binary_impl,
+    attrs = {"data": attr.label_list(allow_files = True)},
+    executable = True,
+)
+
 def _test_bootstrap_template(name):
     # The bootstrap_template arg isn't present in older Bazel versions, so
     # we have to conditionally pass the arg and mark the test incompatible.
@@ -123,6 +137,86 @@ def _test_cannot_specify_files_for_system_interpreter_impl(env, target):
 
 _tests.append(_test_cannot_specify_files_for_system_interpreter)
 
+def _test_coverage_tool_executable(name):
+    if br_util.is_bazel_6_or_higher():
+        py_runtime_kwargs = {
+            "coverage_tool": name + "_coverage_tool",
+        }
+        attr_values = {}
+    else:
+        py_runtime_kwargs = {}
+        attr_values = _SKIP_TEST
+
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        python_version = "PY3",
+        interpreter_path = "/bogus",
+        **py_runtime_kwargs
+    )
+    rt_util.helper_target(
+        _simple_binary,
+        name = name + "_coverage_tool",
+        data = ["coverage_file1.txt", "coverage_file2.txt"],
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_coverage_tool_executable_impl,
+        attr_values = attr_values,
+    )
+
+def _test_coverage_tool_executable_impl(env, target):
+    info = env.expect.that_target(target).provider(PyRuntimeInfo, factory = py_runtime_info_subject)
+    info.coverage_tool().short_path_equals("{package}/{test_name}_coverage_tool")
+    info.coverage_files().contains_exactly([
+        "{package}/{test_name}_coverage_tool",
+        "{package}/coverage_file1.txt",
+        "{package}/coverage_file2.txt",
+    ])
+
+_tests.append(_test_coverage_tool_executable)
+
+def _test_coverage_tool_plain_files(name):
+    if br_util.is_bazel_6_or_higher():
+        py_runtime_kwargs = {
+            "coverage_tool": name + "_coverage_tool",
+        }
+        attr_values = {}
+    else:
+        py_runtime_kwargs = {}
+        attr_values = _SKIP_TEST
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        python_version = "PY3",
+        interpreter_path = "/bogus",
+        **py_runtime_kwargs
+    )
+    rt_util.helper_target(
+        native.filegroup,
+        name = name + "_coverage_tool",
+        srcs = ["coverage_tool.py"],
+        data = ["coverage_file1.txt", "coverage_file2.txt"],
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_coverage_tool_plain_files_impl,
+        attr_values = attr_values,
+    )
+
+def _test_coverage_tool_plain_files_impl(env, target):
+    info = env.expect.that_target(target).provider(PyRuntimeInfo, factory = py_runtime_info_subject)
+    info.coverage_tool().short_path_equals("{package}/coverage_tool.py")
+    info.coverage_files().contains_exactly([
+        "{package}/coverage_tool.py",
+        "{package}/coverage_file1.txt",
+        "{package}/coverage_file2.txt",
+    ])
+
+_tests.append(_test_coverage_tool_plain_files)
+
 def _test_in_build_interpreter(name):
     rt_util.helper_target(
         py_runtime,
@@ -174,35 +268,6 @@ def _test_must_have_either_inbuild_or_system_interpreter_impl(env, target):
     )
 
 _tests.append(_test_must_have_either_inbuild_or_system_interpreter)
-
-def _test_python_version_required(name):
-    # Bazel 5.4 will entirely crash when python_version is missing.
-    if br_util.is_bazel_6_or_higher():
-        py_runtime_kwargs = {}
-        attr_values = {}
-    else:
-        py_runtime_kwargs = {"python_version": "PY3"}
-        attr_values = _SKIP_TEST
-    rt_util.helper_target(
-        py_runtime,
-        name = name + "_subject",
-        interpreter_path = "/math/pi",
-        **py_runtime_kwargs
-    )
-    analysis_test(
-        name = name,
-        target = name + "_subject",
-        impl = _test_python_version_required_impl,
-        expect_failure = True,
-        attr_values = attr_values,
-    )
-
-def _test_python_version_required_impl(env, target):
-    env.expect.that_target(target).failures().contains_predicate(
-        matching.str_matches("must be set*PY2*PY3"),
-    )
-
-_tests.append(_test_python_version_required)
 
 def _test_system_interpreter(name):
     rt_util.helper_target(
