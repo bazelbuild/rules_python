@@ -306,7 +306,7 @@ def _pip_repository_impl(rctx):
     # label referencing a package which may not be installed on the current
     # platform.
     requirement_cycles = {
-        normalize_name(name): sorted([normalize_name(d) for d in group if d in bzl_packages])
+        normalize_name(name): sorted([normalize_name(d) for d in group if normalize_name(d) in bzl_packages])
         for name, group in requirement_cycles.items()
     }
 
