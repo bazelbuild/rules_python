@@ -6,7 +6,7 @@ from //:requirements.txt
 
 load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_utils")
-load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")
+load("@rules_python//python/pip_install:pip_repository.bzl", "group_library", "whl_library")
 
 all_requirements = ["@pip//certifi:pkg", "@pip//charset_normalizer:pkg", "@pip//idna:pkg", "@pip//requests:pkg", "@pip//urllib3:pkg"]
 
@@ -44,12 +44,42 @@ def _get_annotation(requirement):
     return _annotations.get(name)
 
 def install_deps(**whl_library_kwargs):
+    """Repository rule macro. Install dependencies from `pip_parse`.
+
+    Args:
+       **whl_library_kwargs: Additional arguments which will flow to underlying
+         `whl_library` calls. See pip_repository.bzl for details.
+    """
+
+    # Set up the requirement groups
+    all_requirement_groups = {}
+
+    requirement_group_mapping = {
+        requirement: group_name
+        for group_name, group_requirements in all_requirement_groups.items()
+        for requirement in group_requirements
+    }
+
+    group_repo = "pip__groups"
+    group_library(
+        name = group_repo,
+        repo_prefix = "pip_",
+        groups = all_requirement_groups,
+    )
+
+    # Install wheels which may be participants in a group
     whl_config = dict(_config)
     whl_config.update(whl_library_kwargs)
+
     for name, requirement in _packages:
+        group_name = requirement_group_mapping.get(name.replace("pip_", ""))
+        group_deps = all_requirement_groups.get(group_name, [])
+
         whl_library(
             name = name,
             requirement = requirement,
+            group_name = group_name,
+            group_deps = group_deps,
             annotation = _get_annotation(requirement),
             **whl_config
         )

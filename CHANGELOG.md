@@ -59,6 +59,11 @@ A brief description of the categories of changes:
   `data`. Note, that the `@pypi_foo//:pkg` labels are still present for
   backwards compatibility.
 
+* (pip_parse) The parameter `requirement_cycles` may be provided a map of names
+  to lists of requirements which form a dependency cycle. `pip_parse` will break
+  the cycle for you transparently. This behavior is also available under bzlmod
+  as `pip.parse(requirement_cycles={})`.
+
 * (gazelle) The flag `use_pip_repository_aliases` is now set to `True` by
   default, which will cause `gazelle` to change third-party dependency labels
   from `@pip_foo//:pkg` to `@pip//foo` by default.

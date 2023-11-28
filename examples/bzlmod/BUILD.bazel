@@ -39,6 +39,7 @@ py_library(
     name = "lib",
     srcs = ["lib.py"],
     deps = [
+        requirement("sphinx"),
         requirement("pylint"),
         requirement("tabulate"),
         requirement("python-dateutil"),

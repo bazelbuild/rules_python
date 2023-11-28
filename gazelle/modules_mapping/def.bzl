@@ -26,11 +26,15 @@ module name doesn't match the wheel distribution name.
 def _modules_mapping_impl(ctx):
     modules_mapping = ctx.actions.declare_file(ctx.attr.modules_mapping_name)
     args = ctx.actions.args()
+    all_wheels = depset(
+        [whl for whl in ctx.files.wheels],
+        transitive = [dep[DefaultInfo].files for dep in ctx.attr.wheels] + [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.wheels],
+    )
     args.add("--output_file", modules_mapping.path)
     args.add_all("--exclude_patterns", ctx.attr.exclude_patterns)
-    args.add_all("--wheels", [whl.path for whl in ctx.files.wheels])
+    args.add_all("--wheels", [whl.path for whl in all_wheels.to_list()])
     ctx.actions.run(
-        inputs = ctx.files.wheels,
+        inputs = all_wheels.to_list(),
         outputs = [modules_mapping],
         executable = ctx.executable._generator,
         arguments = [args],
