@@ -61,6 +61,8 @@ def parse_comments(content):
 
 def parse_main(content):
     for line in content.splitlines():
+        if not line.strip():
+            continue
         tokens = list(tokenize(BytesIO(line.encode("utf-8")).readline))
         if len(tokens) < 5:
             continue
