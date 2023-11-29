@@ -1,0 +1,4 @@
+filegroup(
+    name = "collided_main",
+    srcs = ["collided_main.py"],
+)

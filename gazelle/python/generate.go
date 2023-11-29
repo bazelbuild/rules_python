@@ -89,9 +89,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	pyTestFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFileNames := treeset.NewWith(godsutils.StringComparator)
 
-	// hasPyBinary controls whether a py_binary target should be generated for
+	// hasPyBinaryEntryPointFile controls whether a single py_binary target should be generated for
 	// this package or not.
-	hasPyBinary := false
+	hasPyBinaryEntryPointFile := false
 
 	// hasPyTestEntryPointFile and hasPyTestEntryPointTarget control whether a py_test target should
 	// be generated for this package or not.
@@ -106,8 +106,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		ext := filepath.Ext(f)
 		if ext == ".py" {
 			pyFileNames.Add(f)
-			if !hasPyBinary && f == pyBinaryEntrypointFilename {
-				hasPyBinary = true
+			if !hasPyBinaryEntryPointFile && f == pyBinaryEntrypointFilename {
+				hasPyBinaryEntryPointFile = true
 			} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
@@ -219,7 +219,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	collisionErrors := singlylinkedlist.New()
 
 	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
-		deps, err := parser.parse(srcs)
+		deps, mainModules, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -238,6 +238,41 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						fqTarget.String(), actualPyLibraryKind, t.Kind(), pythonconfig.LibraryNamingConvention)
 					collisionErrors.Add(err)
 				}
+			}
+		}
+
+		if !hasPyBinaryEntryPointFile {
+			// Creating one py_binary target per main module when __main__.py doesn't exist.
+			for _, filename := range mainModules {
+				pyBinaryTargetName := strings.TrimSuffix(filepath.Base(filename), ".py")
+				// Check if a target with the same name we are generating already
+				// exists, and if it is of a different kind from the one we are
+				// generating. If so, we have to throw an error since Gazelle won't
+				// generate it correctly.
+				collide := false
+				if args.File != nil {
+					for _, t := range args.File.Rules {
+						if t.Name() == pyBinaryTargetName && t.Kind() != actualPyBinaryKind {
+							fqTarget := label.New("", args.Rel, pyLibraryTargetName)
+							log.Printf("failed to generate target %q of kind %q: "+
+								"a target of kind %q with the same name already exists.",
+								fqTarget.String(), actualPyBinaryKind, t.Kind())
+							collide = true
+							break
+						}
+					}
+				}
+				if collide {
+					continue
+				}
+				srcs.Remove(filename)
+				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
+					addVisibility(visibility).
+					addSrc(filename).
+					addModuleDependencies(deps).
+					generateImportsAttribute().build()
+				result.Gen = append(result.Gen, pyBinary)
+				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
 			}
 		}
 
@@ -270,8 +305,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
-	if hasPyBinary {
-		deps, err := parser.parseSingle(pyBinaryEntrypointFilename)
+	if hasPyBinaryEntryPointFile {
+		deps, _, err := parser.parseSingle(pyBinaryEntrypointFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -310,7 +345,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var conftest *rule.Rule
 	if hasConftestFile {
-		deps, err := parser.parseSingle(conftestFilename)
+		deps, _, err := parser.parseSingle(conftestFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -346,7 +381,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var pyTestTargets []*targetBuilder
 	newPyTestTargetBuilder := func(srcs *treeset.Set, pyTestTargetName string) *targetBuilder {
-		deps, err := parser.parse(srcs)
+		deps, _, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}

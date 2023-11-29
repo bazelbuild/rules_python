@@ -1,0 +1,21 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+filegroup(
+    name = "collided_main",
+    srcs = ["collided_main.py"],
+)
+
+py_binary(
+    name = "main",
+    srcs = ["main.py"],
+    visibility = ["//:__subpackages__"],
+)
+
+py_library(
+    name = "binary_without_entrypoint",
+    srcs = [
+        "__init__.py",
+        "collided_main.py",
+    ],
+    visibility = ["//:__subpackages__"],
+)
