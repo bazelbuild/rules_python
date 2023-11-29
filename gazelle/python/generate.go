@@ -243,27 +243,23 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		if !hasPyBinaryEntryPointFile {
 			// Creating one py_binary target per main module when __main__.py doesn't exist.
+		mainModulesLoop:
 			for _, filename := range mainModules {
 				pyBinaryTargetName := strings.TrimSuffix(filepath.Base(filename), ".py")
 				// Check if a target with the same name we are generating already
 				// exists, and if it is of a different kind from the one we are
 				// generating. If so, we have to throw an error since Gazelle won't
 				// generate it correctly.
-				collide := false
 				if args.File != nil {
 					for _, t := range args.File.Rules {
 						if t.Name() == pyBinaryTargetName && t.Kind() != actualPyBinaryKind {
-							fqTarget := label.New("", args.Rel, pyLibraryTargetName)
+							fqTarget := label.New("", args.Rel, pyBinaryTargetName)
 							log.Printf("failed to generate target %q of kind %q: "+
 								"a target of kind %q with the same name already exists.",
 								fqTarget.String(), actualPyBinaryKind, t.Kind())
-							collide = true
-							break
+							continue mainModulesLoop
 						}
 					}
-				}
-				if collide {
-					continue
 				}
 				srcs.Remove(filename)
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
