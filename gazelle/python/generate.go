@@ -19,6 +19,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	pathpkg "path"
 	"path/filepath"
 	"strings"
 
@@ -252,18 +253,31 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
 	}
 	if cfg.PerFileGeneration() {
+		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
 		pyLibraryFilenames.Each(func(index int, filename interface{}) {
+			var pyLibraryTargetName string
 			if filename == pyLibraryEntrypointFilename {
-				stat, err := os.Stat(filepath.Join(args.Dir, filename.(string)))
-				if err != nil {
-					log.Fatalf("ERROR: %v\n", err)
+				if !nonEmptyInit {
+					return // ignore empty __init__.py.
 				}
-				if stat.Size() == 0 {
-					return // ignore empty __init__.py
+				if args.File.Pkg == "" {
+					// As per Python spec, an __init__.py file does not make sense without
+					// a package name, but someone can technically configure the Bazel
+					// workspace as the Python package (i.e. parent of the Bazel workspace
+					// is part of PYTHONPATH), in which case this should be the workspace
+					// name, but there is no mechanism to obtain that here. So let's just
+					// call it "__init__".
+					pyLibraryTargetName = "__init__"
+				} else {
+					pyLibraryTargetName = pathpkg.Base(args.File.Pkg)
 				}
+			} else {
+				pyLibraryTargetName = strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
 			}
 			srcs := treeset.NewWith(godsutils.StringComparator, filename)
-			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if hasInit && nonEmptyInit {
+				srcs.Add(pyLibraryEntrypointFilename)
+			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
 		})
 	} else if !pyLibraryFilenames.Empty() {
@@ -461,6 +475,19 @@ func hasEntrypointFile(dir string) bool {
 		}
 	}
 	return false
+}
+
+// hasLibraryEntrypointFile returns if the given directory has the library
+// entrypoint file, and if it is non-empty.
+func hasLibraryEntrypointFile(dir string) (bool, bool) {
+	stat, err := os.Stat(filepath.Join(dir, pyLibraryEntrypointFilename))
+	if os.IsNotExist(err) {
+		return false, false
+	}
+	if err != nil {
+		log.Fatalf("ERROR: %v\n", err)
+	}
+	return true, stat.Size() != 0
 }
 
 // isEntrypointFile returns whether the given path is an entrypoint file. The

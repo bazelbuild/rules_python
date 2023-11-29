@@ -16,9 +16,10 @@
 # STDIN receives parse requests, one per line. It outputs the parsed modules and
 # comments from all the files from each request.
 
-import parse
-import std_modules
 import sys
+
+import python.parse as parse
+import python.std_modules as std_modules
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

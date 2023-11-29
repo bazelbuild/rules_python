@@ -11,6 +11,9 @@ py_library(
 
 py_library(
     name = "foo",
-    srcs = ["foo.py"],
+    srcs = [
+        "__init__.py",
+        "foo.py",
+    ],
     visibility = ["//:__subpackages__"],
 )
