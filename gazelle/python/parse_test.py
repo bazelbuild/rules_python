@@ -16,11 +16,21 @@ def foo():
 
     def test_has_main(self):
         content = """
-def main():
-    pass
+import unittest
+
+from lib import main
+
+
+class ExampleTest(unittest.TestCase):
+    def test_main(self):
+        self.assertEqual(
+            "",
+            main([["A", 1], ["B", 2]]),
+        )
+
 
 if __name__ == "__main__":
-    main()
+    unittest.main()
 """
         self.assertTrue(parse.parse_main(content))
 

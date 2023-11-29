@@ -60,17 +60,26 @@ def parse_comments(content):
 
 
 def parse_main(content):
-    for line in content.splitlines():
-        if not line.strip():
+    g = tokenize(BytesIO(content.encode("utf-8")).readline)
+    for token_type, token_val, start, _, _ in g:
+        if token_type != NAME or token_val != "if" or start[1] != 0:
             continue
-        tokens = list(tokenize(BytesIO(line.encode("utf-8")).readline))
-        if len(tokens) < 5:
-            continue
-        if tokens[1].type == NAME and tokens[1].string == "if" and \
-            tokens[2].type == NAME and tokens[2].string == "__name__" and \
-            tokens[3].type == OP and tokens[3].string == "==" and \
-            tokens[4].type == STRING and tokens[4].string.strip("\"'") == '__main__':
+        try:
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != NAME or token_val != "__name__":
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != OP or token_val != "==":
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != STRING or token_val.strip("\"'") != '__main__':
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != OP or token_val != ":":
+                continue
             return True
+        except StopIteration:
+            break
     return False
 
 
