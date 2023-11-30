@@ -37,7 +37,7 @@ def pip_install(requirements = None, name = "pip", allow_pip_install = False, **
         requirements (Label): A 'requirements.txt' pip requirements file.
         name (str, optional): A unique name for the created external repository (default 'pip').
         allow_pip_install (bool, optional): change this to keep this rule working (default False).
-        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
+        **kwargs (dict): Additional arguments to the [`pip_parse`](#pip_parse) repository rule.
     """
 
     if allow_pip_install:
