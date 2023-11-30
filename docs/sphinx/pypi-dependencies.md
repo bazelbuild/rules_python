@@ -161,14 +161,15 @@ ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alia
 `-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
 ```
 
-The `requirement_cycles` argument allows you to work around these issues by
-specifying groups of packages which form cycles. `pip_parse` will transparently
-fix the cycles for you and provide the cyclic dependencies simultaneously.
+The `experimental_requirement_cycles` argument allows you to work around these
+issues by specifying groups of packages which form cycles. `pip_parse` will
+transparently fix the cycles for you and provide the cyclic dependencies
+simultaneously.
 
 ```
 pip_parse(
   ...
-  requirement_cycles = {
+  experimental_requirement_cycles = {
     "sphinx": [
       "sphinx",
       "sphinxcontrib-serializinghtml",
@@ -185,7 +186,7 @@ be a part of the `airflow` cycle. For instance --
 ```
 pip_parse(
   ...
-  requirement_cycles = {
+  experimental_requirement_cycles = {
     "airflow": [
       "apache-airflow",
       "apache-airflow-providers-common-sql",
