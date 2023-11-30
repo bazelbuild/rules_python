@@ -3,8 +3,9 @@
 Using PyPI packages (aka "pip install") involves two main steps.
 
 1. [Installing third party packages](#installing-third-party-packages)
-2. [Using third party packages as dependencies](#using-third-party-packages-as-dependencies)
+2. [Using third party packages as dependencies](#using-third-party-packages)
 
+{#installing-third-party-packages}
 ## Installing third party packages
 
 ### Using bzlmod
@@ -77,6 +78,7 @@ transition. Still, some users of `pip_install` will need to replace their
 existing `requirements.txt` with a fully resolved set of dependencies using a
 tool such as `pip-tools` or the `compile_pip_requirements` repository rule.
 
+{#using-third-party-packages}
 ## Using third party packages as dependencies
 
 Each extracted wheel repo contains a `py_library` target representing

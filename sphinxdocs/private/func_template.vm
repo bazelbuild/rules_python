@@ -32,8 +32,9 @@ ${funcInfo.docString}
 {.params-box}
 #end
 ## The .span wrapper is necessary so the trailing colon doesn't wrap
-:[${param.name}[¶](#$link){.headerlink}]{.span}: []{#$link}
-#if(!$param.getDefaultValue().isEmpty())(_default `${param.getDefaultValue()}`_) #end
+:[${param.name}[¶](#$link){.headerlink}]{.span}:
+  {#$link}
+#if(!$param.getDefaultValue().isEmpty())  (_default `${param.getDefaultValue()}`_) #end
 #if(!$param.docString.isEmpty())
   $param.docString.replaceAll("$nl", "$nl  ")
 #else
