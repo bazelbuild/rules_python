@@ -17,7 +17,7 @@ go_library(
         "std_modules.go",
         "target.go",
     ],
-    embedsrcs = [":helper.zip"],
+    embedsrcs = [":helper.zip"],  # keep
     importpath = "github.com/bazelbuild/rules_python/gazelle/python",
     visibility = ["//visibility:public"],
     deps = [
