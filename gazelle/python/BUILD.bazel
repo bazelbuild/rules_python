@@ -40,11 +40,11 @@ go_library(
 py_binary(
     name = "helper",
     srcs = [
-        "__main__.py",
-        "parse.py",
-        "std_modules.py",
+        "//rules_python_gazelle_helper:__main__.py",
+        "//rules_python_gazelle_helper:parse.py",
+        "//rules_python_gazelle_helper:std_modules.py",
     ],
-    main = "__main__.py",
+    main = "//rules_python_gazelle_helper:__main__.py",
     visibility = ["//visibility:public"],
 )
 
