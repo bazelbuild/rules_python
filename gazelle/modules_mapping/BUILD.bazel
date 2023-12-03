@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 
+# gazelle:exclude *.py
+
 py_binary(
     name = "generator",
     srcs = ["generator.py"],
