@@ -106,10 +106,10 @@ For example:
 Note that Bazel's output filename cannot include the stamp information, as outputs must be known
 during the analysis phase and the stamp data is available only during the action execution.
 
-The [`py_wheel`](/docs/packaging.md#py_wheel) macro produces a `.dist`-suffix target which creates a
+The [`py_wheel`](#py_wheel) macro produces a `.dist`-suffix target which creates a
 `dist/` folder containing the wheel with the stamped name, suitable for publishing.
 
-See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
+See [`py_wheel_dist`](#py_wheel_dist) for more info.
 """,
     ),
     "_stamp_flag": attr.label(
@@ -509,7 +509,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
 py_wheel = rule(
     implementation = py_wheel_lib.implementation,
     doc = """\
-Internal rule used by the [py_wheel macro](/docs/packaging.md#py_wheel).
+Internal rule used by the [py_wheel macro](#py_wheel).
 
 These intentionally have the same name to avoid sharp edges with Bazel macros.
 For example, a `bazel query` for a user's `py_wheel` macro expands to `py_wheel` targets,

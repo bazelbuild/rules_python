@@ -9,3 +9,6 @@ tabulate~=0.9.0
 pylint~=2.15.5
 pylint-print
 python-dateutil>=2.8.2
+sphinx
+sphinxcontrib-serializinghtml
+colorama

@@ -110,6 +110,16 @@ install_deps()
 
 pip_parse(
     name = "docs_deps",
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-serializinghtml",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+        ],
+    },
     incompatible_generate_aliases = True,
     python_interpreter_target = interpreter,
     requirements_darwin = "//docs/sphinx:requirements_darwin.txt",

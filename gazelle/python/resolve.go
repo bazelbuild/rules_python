@@ -172,7 +172,7 @@ func (py *Resolver) Resolve(
 						if override.Repo == from.Repo {
 							override.Repo = ""
 						}
-						dep := override.String()
+						dep := override.Rel(from.Repo, from.Pkg).String()
 						deps.Add(dep)
 						if explainDependency == dep {
 							log.Printf("Explaining dependency (%s): "+

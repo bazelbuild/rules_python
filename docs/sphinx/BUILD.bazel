@@ -18,9 +18,12 @@ load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
 load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs", "sphinx_inventory")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
-# We only build for Linux and Mac because the actual doc process only runs
-# on Linux. Mac is close enough. Making CI happy under Windows is too much
-# of a headache, though, so we don't bother with that.
+# We only build for Linux and Mac because:
+# 1. The actual doc process only runs on Linux
+# 2. Mac is a common development platform, and is close enough to Linux
+#    it's feasible to make work.
+# Making CI happy under Windows is too much of a headache, though, so we don't
+# bother with that.
 _TARGET_COMPATIBLE_WITH = select({
     "@platforms//os:linux": [],
     "@platforms//os:macos": [],

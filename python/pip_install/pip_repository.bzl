@@ -14,10 +14,12 @@
 
 ""
 
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
@@ -276,10 +278,42 @@ def _pip_repository_impl(rctx):
 
     packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
-    bzl_packages = dict(sorted([[name, normalize_name(name)] for name, _ in parsed_requirements_txt.requirements]))
+    bzl_packages = sorted([normalize_name(name) for name, _ in parsed_requirements_txt.requirements])
+
+    # Normalize cycles first
+    requirement_cycles = {
+        name: sorted(sets.to_list(sets.make(deps)))
+        for name, deps in rctx.attr.experimental_requirement_cycles.items()
+    }
+
+    # Check for conflicts between cycles _before_ we normalize package names so
+    # that reported errors use the names the user specified
+    for i in range(len(requirement_cycles)):
+        left_group = requirement_cycles.keys()[i]
+        left_deps = requirement_cycles.values()[i]
+        for j in range(len(requirement_cycles) - (i + 1)):
+            right_deps = requirement_cycles.values()[1 + i + j]
+            right_group = requirement_cycles.keys()[1 + i + j]
+            for d in left_deps:
+                if d in right_deps:
+                    fail("Error: Requirement %s cannot be repeated between cycles %s and %s; please merge the cycles." % (d, left_group, right_group))
+
+    # And normalize the names as used in the cycle specs
+    #
+    # NOTE: We must check that a listed dependency is actually in the actual
+    # requirements set for the current platform so that we can support cycles in
+    # platform-conditional requirements. Otherwise we'll blindly generate a
+    # label referencing a package which may not be installed on the current
+    # platform.
+    requirement_cycles = {
+        normalize_name(name): sorted([normalize_name(d) for d in group if normalize_name(d) in bzl_packages])
+        for name, group in requirement_cycles.items()
+    }
 
     imports = [
-        'load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")',
+        # NOTE: Maintain the order consistent with `buildifier`
+        'load("@rules_python//python:pip.bzl", "pip_utils")',
+        'load("@rules_python//python/pip_install:pip_repository.bzl", "group_library", "whl_library")',
     ]
 
     annotations = {}
@@ -314,7 +348,7 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.incompatible_generate_aliases:
         macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages.values())
+        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
         for path, contents in aliases.items():
             rctx.file(path, contents)
     else:
@@ -324,20 +358,21 @@ def _pip_repository_impl(rctx):
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "pkg")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
+        "%%ALL_REQUIREMENT_GROUPS%%": _format_dict(_repr_dict(requirement_cycles)),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
-            name: macro_tmpl.format(p, "whl")
-            for name, p in bzl_packages.items()
+            p: macro_tmpl.format(p, "whl")
+            for p in bzl_packages
         })),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
-        "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%IMPORTS%%": "\n".join(imports),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%PACKAGES%%": _format_repr_list(
@@ -382,6 +417,62 @@ style env vars are ignored, but env vars that control requests and urllib3
 can be passed.
         """,
         default = {},
+    ),
+    "experimental_requirement_cycles": attr.string_list_dict(
+        default = {},
+        doc = """\
+A mapping of dependency cycle names to a list of requirements which form that cycle.
+
+Requirements which form cycles will be installed together and taken as
+dependencies together in order to ensure that the cycle is always satisified.
+
+Example:
+  `sphinx` depends on `sphinxcontrib-serializinghtml`
+  When listing both as requirements, ala
+
+  ```
+  py_binary(
+    name = "doctool",
+    ...
+    deps = [
+      "@pypi//sphinx:pkg",
+      "@pypi//sphinxcontrib_serializinghtml",
+     ]
+  )
+  ```
+
+  Will produce a Bazel error such as
+
+  ```
+  ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alias rule @pypi_sphinxcontrib_serializinghtml//:pkg: cycle in dependency graph:
+      //:doctool (...)
+      @pypi//sphinxcontrib_serializinghtml:pkg (...)
+  .-> @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  |   @pypi_sphinxcontrib_serializinghtml//:_pkg (...)
+  |   @pypi_sphinx//:pkg (...)
+  |   @pypi_sphinx//:_pkg (...)
+  `-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  ```
+
+  Which we can resolve by configuring these two requirements to be installed together as a cycle
+
+  ```
+  pip_parse(
+    ...
+    experimental_requirement_cycles = {
+      "sphinx": [
+        "sphinx",
+        "sphinxcontrib-serializinghtml",
+      ]
+    },
+  )
+  ```
+
+Warning:
+  If a dependency participates in multiple cycles, all of those cycles must be
+  collapsed down to one. For instance `a <-> b` and `a <-> c` cannot be listed
+  as two separate cycles.
+""",
     ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
@@ -495,7 +586,6 @@ pip_repository = repository_rule(
 Those dependencies become available in a generated `requirements.bzl` file.
 You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
 In your WORKSPACE file:
 
 ```starlark
@@ -659,6 +749,8 @@ def _whl_library_impl(rctx):
         repo_prefix = rctx.attr.repo_prefix,
         whl_name = whl_path.basename,
         dependencies = metadata["deps"],
+        group_name = rctx.attr.group_name,
+        group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
             "pypi_name=" + metadata["name"],
@@ -706,6 +798,13 @@ whl_library_attrs = {
             "See `package_annotation`"
         ),
         allow_files = True,
+    ),
+    "group_deps": attr.string_list(
+        doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
+        default = [],
+    ),
+    "group_name": attr.string(
+        doc = "Name of the group, if any.",
     ),
     "repo": attr.string(
         mandatory = True,
@@ -781,6 +880,29 @@ def package_annotation(
         data_exclude_glob = data_exclude_glob,
         srcs_exclude_glob = srcs_exclude_glob,
     ))
+
+def _group_library_impl(rctx):
+    build_file_contents = generate_group_library_build_bazel(
+        repo_prefix = rctx.attr.repo_prefix,
+        groups = rctx.attr.groups,
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
+group_library = repository_rule(
+    attrs = {
+        "groups": attr.string_list_dict(
+            doc = "A mapping of group names to requirements within that group.",
+        ),
+        "repo_prefix": attr.string(
+            doc = "Prefix used for the whl_library created components of each group",
+        ),
+    },
+    implementation = _group_library_impl,
+    doc = """
+Create a package containing only wrapper py_library and whl_library rules for implementing dependency groups.
+This is an implementation detail of dependency groups and should not be used alone.
+    """,
+)
 
 # pip_repository implementation
 

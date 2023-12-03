@@ -15,10 +15,11 @@
 """Implementation of py_runtime_pair."""
 
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
+load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 
 def _py_runtime_pair_impl(ctx):
     if ctx.attr.py2_runtime != None:
-        py2_runtime = ctx.attr.py2_runtime[PyRuntimeInfo]
+        py2_runtime = _get_py_runtime_info(ctx.attr.py2_runtime)
         if py2_runtime.python_version != "PY2":
             fail("The Python runtime in the 'py2_runtime' attribute did not have " +
                  "version 'PY2'")
@@ -26,7 +27,7 @@ def _py_runtime_pair_impl(ctx):
         py2_runtime = None
 
     if ctx.attr.py3_runtime != None:
-        py3_runtime = ctx.attr.py3_runtime[PyRuntimeInfo]
+        py3_runtime = _get_py_runtime_info(ctx.attr.py3_runtime)
         if py3_runtime.python_version != "PY3":
             fail("The Python runtime in the 'py3_runtime' attribute did not have " +
                  "version 'PY3'")
@@ -43,6 +44,12 @@ def _py_runtime_pair_impl(ctx):
         py3_runtime = py3_runtime,
     )]
 
+def _get_py_runtime_info(target):
+    if PyRuntimeInfo in target:
+        return target[PyRuntimeInfo]
+    else:
+        return target[BuiltinPyRuntimeInfo]
+
 # buildifier: disable=unused-variable
 def _is_py2_disabled(ctx):
     # Because this file isn't bundled with Bazel, so we have to conditionally
@@ -58,7 +65,7 @@ py_runtime_pair = rule(
         # The two runtimes are used by the py_binary at runtime, and so need to
         # be built for the target platform.
         "py2_runtime": attr.label(
-            providers = [PyRuntimeInfo],
+            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
             cfg = "target",
             doc = """\
 The runtime to use for Python 2 targets. Must have `python_version` set to
@@ -66,7 +73,7 @@ The runtime to use for Python 2 targets. Must have `python_version` set to
 """,
         ),
         "py3_runtime": attr.label(
-            providers = [PyRuntimeInfo],
+            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
             cfg = "target",
             doc = """\
 The runtime to use for Python 3 targets. Must have `python_version` set to

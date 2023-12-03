@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
+# gazelle:resolve py resolved_package //package2:resolved_package
+
 py_library(
     name = "relative_imports",
     srcs = [

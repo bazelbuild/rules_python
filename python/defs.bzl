@@ -15,7 +15,7 @@
 
 load("@bazel_tools//tools/python:srcs_version.bzl", _find_requirements = "find_requirements")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
-load("//python:py_info.bzl", internal_PyInfo = "PyInfo")
+load("//python:py_info.bzl", _PyInfo = "PyInfo")
 load("//python:py_library.bzl", _py_library = "py_library")
 load("//python:py_runtime.bzl", _py_runtime = "py_runtime")
 load("//python:py_runtime_info.bzl", internal_PyRuntimeInfo = "PyRuntimeInfo")
@@ -26,9 +26,7 @@ load(":py_import.bzl", _py_import = "py_import")
 
 # Patching placeholder: end of loads
 
-# Exports of native-defined providers.
-
-PyInfo = internal_PyInfo
+PyInfo = _PyInfo
 
 PyRuntimeInfo = internal_PyRuntimeInfo
 

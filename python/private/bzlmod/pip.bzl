@@ -18,6 +18,7 @@ load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
+    "group_library",
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
@@ -119,6 +120,24 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         for mod, whl_name in pip_attr.whl_modifications.items():
             whl_modifications[whl_name] = mod
 
+    requirement_cycles = {
+        name: [normalize_name(whl_name) for whl_name in whls]
+        for name, whls in pip_attr.experimental_requirement_cycles.items()
+    }
+
+    whl_group_mapping = {
+        whl_name: group_name
+        for group_name, group_whls in requirement_cycles.items()
+        for whl_name in group_whls
+    }
+
+    group_repo = "%s__groups" % (pip_name,)
+    group_library(
+        name = group_repo,
+        repo_prefix = pip_name + "_",
+        groups = pip_attr.experimental_requirement_cycles,
+    )
+
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
         # We are not using the "sanitized name" because the user
@@ -126,6 +145,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         # to.
         annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
+        group_name = whl_group_mapping.get(whl_name)
+        group_deps = requirement_cycles.get(group_name, [])
+
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
@@ -146,6 +168,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
+            group_name = group_name,
+            group_deps = group_deps,
         )
 
         if whl_name not in whl_map[hub_name]:

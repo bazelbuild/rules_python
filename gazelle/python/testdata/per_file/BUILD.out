@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 # gazelle:python_generation_mode file
 
@@ -21,4 +21,14 @@ py_library(
     srcs = ["foo.py"],
     visibility = ["//:__subpackages__"],
     deps = [":custom"],
+)
+
+py_test(
+    name = "bar_test",
+    srcs = ["bar_test.py"],
+)
+
+py_test(
+    name = "foo_test",
+    srcs = ["foo_test.py"],
 )

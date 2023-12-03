@@ -21,6 +21,29 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (toolchains) `py_runtime`, `py_runtime_pair`, and `PyRuntimeInfo` now use the
+  rules_python Starlark implementation, not the one built into Bazel. NOTE: This
+  only applies to Bazel 6+; Bazel 5 still uses the builtin implementation.
+
+* (pip_parse) The parameter `experimental_requirement_cycles` may be provided a
+  map of names to lists of requirements which form a dependency
+  cycle. `pip_parse` will break the cycle for you transparently. This behavior
+  is also available under bzlmod as
+  `pip.parse(experimental_requirement_cycles={})`.
+
+### Fixed
+
+* (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
+  and above due to a bug in the helper components not being on PYTHONPATH.
+
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
+## [0.27.0] - 2023-11-16
+
+[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
+
+### Changed
+
 * Make `//python/pip_install:pip_repository_bzl` `bzl_library` target internal
   as all of the publicly available symbols (etc. `package_annotation`) are
   re-exported via `//python:pip_bzl` `bzl_library`.
@@ -33,8 +56,11 @@ A brief description of the categories of changes:
   dependencies is now done as part of `py_repositories` call.
 
 * (pip_parse) The generated `requirements.bzl` file now has an additional symbol
-  `all_whl_requirements_by_package` which provides a map from the original package name
-  (as it appears in requirements.txt) to the target that provides the built wheel file.
+  `all_whl_requirements_by_package` which provides a map from the normalized
+  PyPI package name to the target that provides the built wheel file. Use
+  `pip_utils.normalize_name` function from `@rules_python//python:pip.bzl` to
+  convert a PyPI package name to a key in the `all_whl_requirements_by_package`
+  map.
 
 * (pip_parse) The flag `incompatible_generate_aliases` has been flipped to
   `True` by default on `non-bzlmod` setups allowing users to use the same label
@@ -52,6 +78,14 @@ A brief description of the categories of changes:
   or `requirements_in` attributes are unspecified, matching the upstream
   `pip-compile` behaviour more closely.
 
+* (gazelle) Use relative paths if possible for dependencies added through
+  the use of the `resolve` directive.
+
+* (gazelle) When using `python_generation_mode file`, one `py_test` target is
+  made per test file even if a target named `__test__` or a file named
+  `__test__.py` exists in the same package. Previously in these cases there
+  would only be one test target made.
+
 Breaking changes:
 
 * (pip) `pip_install` repository rule in this release has been disabled and
@@ -64,6 +98,8 @@ Breaking changes:
   `incompatible_normalize_version` to `True` by default to enforce `PEP440`
   for wheel names built by `rules_python`.
 
+* (tools/wheelmaker.py) drop support for Python 2 as only Python 3 is tested.
+
 ### Fixed
 
 * Skip aliases for unloaded toolchains. Some Python versions that don't have full
@@ -75,6 +111,18 @@ Breaking changes:
 * (py_wheel) Produce deterministic wheel files and make `RECORD` file entries
   follow the order of files written to the `.whl` archive.
 
+* (gazelle) Generate a single `py_test` target when `gazelle:python_generation_mode project`
+  is used.
+
+* (gazelle) Move waiting for the Python interpreter process to exit to the shutdown hook
+  to make the usage of the `exec.Command` more idiomatic.
+
+* (toolchains) Keep tcl subdirectory in Windows build of hermetic interpreter.
+
+* (bzlmod) sub-modules now don't have the `//conditions:default` clause in the
+  hub repos created by `pip.parse`. This should fix confusing error messages
+  in case there is a misconfiguration of toolchains or a bug in `rules_python`.
+
 ### Added
 
 * (bzlmod) Added `.whl` patching support via `patches` and `patch_strip`
@@ -82,6 +130,11 @@ Breaking changes:
 
 * (pip) Support for using [PEP621](https://peps.python.org/pep-0621/) compliant
   `pyproject.toml` for creating a resolved `requirements.txt` file.
+
+* (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
+  to find out how `rules_python` would normalize a PyPI distribution name.
+
+[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
 
 ## [0.26.0] - 2023-10-06
 
@@ -155,6 +208,8 @@ Breaking changes:
   fetching.
 
 * (gazelle) Improve runfiles lookup hermeticity.
+
+[0.26.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.26.0
 
 ## [0.25.0] - 2023-08-22
 

@@ -19,6 +19,7 @@ ${providerInfo.providerName}(## Comment to consume newline
 $providerInfo.docString
 
 #if ($hasFields)
+{#${pnl}_fields}
 **FIELDS** [¶](#${pnl}_fields){.headerlink}
 
 #foreach ($field in $providerInfo.getFieldInfoList())
