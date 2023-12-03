@@ -142,7 +142,8 @@ This option is required to support some packages which cannot handle the convers
         ),
         "patch_tool": attr.string(
             doc = "The patch(1) utility from the host to use. " +
-                  "If set, overrides `patch_tool_target`.",
+                  "If set, overrides `patch_tool_target`. Please note that setting " +
+                  "this means that builds are not completely hermetic.",
         ),
         "patch_tool_target": attr.label(
             executable = True,
