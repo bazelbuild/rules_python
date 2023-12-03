@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
 filegroup(
     name = "collided_main",
@@ -11,6 +11,12 @@ py_binary(
     visibility = ["//:__subpackages__"],
 )
 
+py_binary(
+    name = "main2",
+    srcs = ["main2.py"],
+    visibility = ["//:__subpackages__"],
+)
+
 py_library(
     name = "binary_without_entrypoint",
     srcs = [
@@ -18,4 +24,9 @@ py_library(
         "collided_main.py",
     ],
     visibility = ["//:__subpackages__"],
+)
+
+py_test(
+    name = "main_test",
+    srcs = ["main_test.py"],
 )
