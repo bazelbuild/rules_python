@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_binary", "py_test")
+load("//python:defs.bzl", "py_test")
 load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")  # buildifier: disable=bzl-visibility
 
 py_wheel_library(
@@ -42,12 +42,12 @@ py_wheel_library(
     patches = [
         "0001-Add-new-file-for-testing-patch-support.patch",
     ],
-    wheel = "@wheel_for_testing//file",
     target_compatible_with = select({
         # We don't have `patch` available on the Windows CI machines.
         "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    wheel = "@wheel_for_testing//file",
 )
 
 py_test(
