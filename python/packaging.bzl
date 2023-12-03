@@ -66,7 +66,7 @@ This also has the advantage that stamping information is included in the wheel's
     implementation = _py_wheel_dist_impl,
     attrs = {
         "out": attr.string(doc = "name of the resulting directory", mandatory = True),
-        "wheel": attr.label(doc = "a [py_wheel rule](/docs/packaging.md#py_wheel_rule)", providers = [PyWheelInfo]),
+        "wheel": attr.label(doc = "a [py_wheel target](#py_wheel)", providers = [PyWheelInfo]),
     },
 )
 
@@ -115,9 +115,9 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
     )
     ```
 
-    To publish the wheel to Pypi, the twine package is required.
-    rules_python doesn't provide twine itself, see https://github.com/bazelbuild/rules_python/issues/1016
-    However you can install it with pip_parse, just like we do in the WORKSPACE file in rules_python.
+    To publish the wheel to PyPI, the twine package is required.
+    rules_python doesn't provide twine itself, see [https://github.com/bazelbuild/rules_python/issues/1016].
+    However you can install it with [pip_parse](#pip_parse), just like we do in the WORKSPACE file in rules_python.
 
     Once you've installed twine, you can pass its label to the `twine` attribute of this macro,
     to get a "[name].publish" target.

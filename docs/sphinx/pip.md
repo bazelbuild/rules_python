@@ -1,10 +1,9 @@
 (pip-integration)=
 # Pip Integration
 
-To pull in dependencies from PyPI, the `pip_parse` macro is used.
+To pull in dependencies from PyPI, the `pip_parse` function is used, which
+invokes `pip` to download and install dependencies from PyPI.
 
-
-This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
 In your WORKSPACE file:
 
 ```starlark

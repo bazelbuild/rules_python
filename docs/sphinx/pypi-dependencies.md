@@ -3,8 +3,9 @@
 Using PyPI packages (aka "pip install") involves two main steps.
 
 1. [Installing third party packages](#installing-third-party-packages)
-2. [Using third party packages as dependencies](#using-third-party-packages-as-dependencies)
+2. [Using third party packages as dependencies](#using-third-party-packages)
 
+{#installing-third-party-packages}
 ## Installing third party packages
 
 ### Using bzlmod
@@ -77,6 +78,7 @@ transition. Still, some users of `pip_install` will need to replace their
 existing `requirements.txt` with a fully resolved set of dependencies using a
 tool such as `pip-tools` or the `compile_pip_requirements` repository rule.
 
+{#using-third-party-packages}
 ## Using third party packages as dependencies
 
 Each extracted wheel repo contains a `py_library` target representing
@@ -159,14 +161,15 @@ ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alia
 `-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
 ```
 
-The `requirement_cycles` argument allows you to work around these issues by
-specifying groups of packages which form cycles. `pip_parse` will transparently
-fix the cycles for you and provide the cyclic dependencies simultaneously.
+The `experimental_requirement_cycles` argument allows you to work around these
+issues by specifying groups of packages which form cycles. `pip_parse` will
+transparently fix the cycles for you and provide the cyclic dependencies
+simultaneously.
 
 ```
 pip_parse(
   ...
-  requirement_cycles = {
+  experimental_requirement_cycles = {
     "sphinx": [
       "sphinx",
       "sphinxcontrib-serializinghtml",
@@ -183,7 +186,7 @@ be a part of the `airflow` cycle. For instance --
 ```
 pip_parse(
   ...
-  requirement_cycles = {
+  experimental_requirement_cycles = {
     "airflow": [
       "apache-airflow",
       "apache-airflow-providers-common-sql",
