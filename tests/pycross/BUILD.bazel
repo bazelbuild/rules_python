@@ -15,20 +15,8 @@
 load("//python:defs.bzl", "py_binary", "py_test")
 load("//third_party/rules_pycross/pycross/private:wheel_library.bzl", "py_wheel_library")  # buildifier: disable=bzl-visibility
 
-py_binary(
-    name = "unix_patcher",
-    srcs = ["unix_patcher.py"],
-)
-
 py_wheel_library(
     name = "extracted_wheel_for_testing",
-    patch_args = [
-        "-p1",
-    ],
-    patch_tool_target = ":unix_patcher",
-    patches = [
-        "0001-Add-new-file-for-testing-patch-support.patch",
-    ],
     wheel = "@wheel_for_testing//file",
 )
 
@@ -39,6 +27,36 @@ py_test(
     ],
     data = [
         ":extracted_wheel_for_testing",
+    ],
+    deps = [
+        "//python/runfiles",
+    ],
+)
+
+py_wheel_library(
+    name = "patched_extracted_wheel_for_testing",
+    patch_args = [
+        "-p1",
+    ],
+    patch_tool = "patch",
+    patches = [
+        "0001-Add-new-file-for-testing-patch-support.patch",
+    ],
+    wheel = "@wheel_for_testing//file",
+    target_compatible_with = select({
+        # We don't have `patch` available on the Windows CI machines.
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+py_test(
+    name = "patched_py_wheel_library_test",
+    srcs = [
+        "patched_py_wheel_library_test.py",
+    ],
+    data = [
+        ":patched_extracted_wheel_for_testing",
     ],
     deps = [
         "//python/runfiles",
