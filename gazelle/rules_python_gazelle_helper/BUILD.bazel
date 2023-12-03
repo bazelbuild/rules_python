@@ -1,6 +1,0 @@
-# gazelle:ignore
-
-exports_files(
-    srcs = glob(["*.py"]),
-    visibility = ["//python:__pkg__"],
-)

@@ -18,13 +18,8 @@
 
 import sys
 
-# NOTE @aignas 2023-12-02: Use absolute imports with respect to WORKSPACE root.
-# With Python versions other than 3.11 doing import parse import std_modules
-# works fine, but with 3.11 we need to use absolute import paths, which could be
-# due to differences in the bootstrap template in 3.11, which is more strict.
-#
-# We are also using a unique name to avoid any name clashes
-from rules_python_gazelle_helper import parse, std_modules
+import parse
+import std_modules
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
