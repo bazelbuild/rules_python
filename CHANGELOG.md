@@ -34,7 +34,7 @@ A brief description of the categories of changes:
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
-  and above due to a bug in the helper entrypoint import paths.
+  and above due to a bug in the helper components not being on PYTHONPATH.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
