@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -242,6 +243,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		if !hasPyBinaryEntryPointFile {
+			sort.Strings(mainModules)
 			// Creating one py_binary target per main module when __main__.py doesn't exist.
 		mainModulesLoop:
 			for _, filename := range mainModules {
