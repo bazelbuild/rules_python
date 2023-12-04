@@ -13,4 +13,5 @@ proto_library(
     # https://bazel.build/reference/be/protocol-buffer#proto_library.strip_import_prefix
     strip_import_prefix = "/example.com",
     visibility = ["//visibility:public"],
+    deps = ["@com_google_protobuf//:any_proto"],
 )

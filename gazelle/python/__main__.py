@@ -18,8 +18,8 @@
 
 import sys
 
-import python.parse as parse
-import python.std_modules as std_modules
+import parse
+import std_modules
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
