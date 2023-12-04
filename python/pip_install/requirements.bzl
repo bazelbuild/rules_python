@@ -152,7 +152,6 @@ def compile_pip_requirements(
         requirement("build"),
         requirement("click"),
         requirement("colorama"),
-        requirement("packaging"),
         requirement("importlib_metadata"),
         requirement("more_itertools"),
         requirement("packaging"),
