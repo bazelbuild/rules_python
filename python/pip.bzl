@@ -11,154 +11,39 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Import pip requirements into Bazel."""
+"""Rules for pip integration.
+
+This contains a set of rules that are used to support inclusion of third-party
+dependencies via fully locked `requirements.txt` files. Some of the exported
+symbols should not be used and they are either undocumented here or marked as
+for internal use only.
+"""
 
 load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
-load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:full_version.bzl", "full_version")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
-load(":versions.bzl", "MINOR_MAPPING")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
+pip_parse = pip_repository
 
-def pip_install(requirements = None, name = "pip", **kwargs):
-    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
-
-    ```python
-    load("@rules_python//python:pip.bzl", "pip_install")
-
-    pip_install(
-        name = "pip_deps",
-        requirements = ":requirements.txt",
-    )
-
-    load("@pip_deps//:requirements.bzl", "install_deps")
-
-    install_deps()
-    ```
+def pip_install(requirements = None, name = "pip", allow_pip_install = False, **kwargs):
+    """Will be removed in 0.28.0
 
     Args:
         requirements (Label): A 'requirements.txt' pip requirements file.
         name (str, optional): A unique name for the created external repository (default 'pip').
-        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
+        allow_pip_install (bool, optional): change this to keep this rule working (default False).
+        **kwargs (dict): Additional arguments to the [`pip_parse`](#pip_parse) repository rule.
     """
 
-    # buildifier: disable=print
-    print("pip_install is deprecated. Please switch to pip_parse. pip_install will be removed in a future release.")
-    pip_parse(requirements = requirements, name = name, **kwargs)
-
-def pip_parse(requirements = None, requirements_lock = None, name = "pip_parsed_deps", **kwargs):
-    """Accepts a locked/compiled requirements file and installs the dependencies listed within.
-
-    Those dependencies become available in a generated `requirements.bzl` file.
-    You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
-
-    This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
-    In your WORKSPACE file:
-
-    ```python
-    load("@rules_python//python:pip.bzl", "pip_parse")
-
-    pip_parse(
-        name = "pip_deps",
-        requirements_lock = ":requirements.txt",
-    )
-
-    load("@pip_deps//:requirements.bzl", "install_deps")
-
-    install_deps()
-    ```
-
-    You can then reference installed dependencies from a `BUILD` file with:
-
-    ```python
-    load("@pip_deps//:requirements.bzl", "requirement")
-
-    py_library(
-        name = "bar",
-        ...
-        deps = [
-           "//my/other:dep",
-           requirement("requests"),
-           requirement("numpy"),
-        ],
-    )
-    ```
-
-    In addition to the `requirement` macro, which is used to access the generated `py_library`
-    target generated from a package's wheel, The generated `requirements.bzl` file contains
-    functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
-
-    [whl_ep]: https://packaging.python.org/specifications/entry-points/
-
-    ```python
-    load("@pip_deps//:requirements.bzl", "entry_point")
-
-    alias(
-        name = "pip-compile",
-        actual = entry_point(
-            pkg = "pip-tools",
-            script = "pip-compile",
-        ),
-    )
-    ```
-
-    Note that for packages whose name and script are the same, only the name of the package
-    is needed when calling the `entry_point` macro.
-
-    ```python
-    load("@pip_deps//:requirements.bzl", "entry_point")
-
-    alias(
-        name = "flake8",
-        actual = entry_point("flake8"),
-    )
-    ```
-
-    ## Vendoring the requirements.bzl file
-
-    In some cases you may not want to generate the requirements.bzl file as a repository rule
-    while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
-    such as a ruleset, you may want to include the requirements.bzl file rather than make your users
-    install the WORKSPACE setup to generate it.
-    See https://github.com/bazelbuild/rules_python/issues/608
-
-    This is the same workflow as Gazelle, which creates `go_repository` rules with
-    [`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
-
-    To do this, use the "write to source file" pattern documented in
-    https://blog.aspect.dev/bazel-can-write-to-the-source-folder
-    to put a copy of the generated requirements.bzl into your project.
-    Then load the requirements.bzl file directly rather than from the generated repository.
-    See the example in rules_python/examples/pip_parse_vendored.
-
-    Args:
-        requirements_lock (Label): A fully resolved 'requirements.txt' pip requirement file
-            containing the transitive set of your dependencies. If this file is passed instead
-            of 'requirements' no resolve will take place and pip_repository will create
-            individual repositories for each of your dependencies so that wheels are
-            fetched/built only for the targets specified by 'build/run/test'.
-            Note that if your lockfile is platform-dependent, you can use the `requirements_[platform]`
-            attributes.
-        requirements (Label): Deprecated. See requirements_lock.
-        name (str, optional): The name of the generated repository. The generated repositories
-            containing each requirement will be of the form `<name>_<requirement-name>`.
-        **kwargs (dict): Additional arguments to the [`pip_repository`](./pip_repository.md) repository rule.
-    """
-    pip_install_dependencies()
-
-    # Temporary compatibility shim.
-    # pip_install was previously document to use requirements while pip_parse was using requirements_lock.
-    # We would prefer everyone move to using requirements_lock, but we maintain a temporary shim.
-    reqs_to_use = requirements_lock if requirements_lock else requirements
-
-    pip_repository(
-        name = name,
-        requirements_lock = reqs_to_use,
-        **kwargs
-    )
+    if allow_pip_install:
+        pip_parse(requirements = requirements, name = name, **kwargs)
+    else:
+        fail("pip_install support has been disabled, please use pip_parse as a replacement.")
 
 def _multi_pip_parse_impl(rctx):
     rules_python = rctx.attr._rules_python_workspace.workspace_name
@@ -193,18 +78,28 @@ _process_requirements(
         )
         install_deps_calls.append(install_deps_call)
 
+    # NOTE @aignas 2023-10-31: I am not sure it is possible to render aliases
+    # for all of the packages using the `render_pkg_aliases` function because
+    # we need to know what the list of packages for each version is and then
+    # we would be creating directories for each.
+    macro_tmpl = "@%s_{}//:{}" % rctx.attr.name
+
     requirements_bzl = """\
 # Generated by python/pip.bzl
 
-load("@{rules_python}//python:pip.bzl", "whl_library_alias")
+load("@{rules_python}//python:pip.bzl", "whl_library_alias", "pip_utils")
 {load_statements}
 
 _wheel_names = []
 _version_map = dict()
 def _process_requirements(pkg_labels, python_version, repo_prefix):
     for pkg_label in pkg_labels:
-        workspace_name = Label(pkg_label).workspace_name
-        wheel_name = workspace_name[len(repo_prefix):]
+        wheel_name = Label(pkg_label).package
+        if not wheel_name:
+            # We are dealing with the cases where we don't have aliases.
+            workspace_name = Label(pkg_label).workspace_name
+            wheel_name = workspace_name[len(repo_prefix):]
+
         _wheel_names.append(wheel_name)
         if not wheel_name in _version_map:
             _version_map[wheel_name] = dict()
@@ -212,20 +107,17 @@ def _process_requirements(pkg_labels, python_version, repo_prefix):
 
 {process_requirements_calls}
 
-def _clean_name(name):
-    return name.replace("-", "_").replace(".", "_").lower()
-
 def requirement(name):
-    return "@{name}_" + _clean_name(name) + "//:pkg"
+    return "{macro_tmpl}".format(pip_utils.normalize_name(name), "pkg")
 
 def whl_requirement(name):
-    return "@{name}_" + _clean_name(name) + "//:whl"
+    return "{macro_tmpl}".format(pip_utils.normalize_name(name), "whl")
 
 def data_requirement(name):
-    return "@{name}_" + _clean_name(name) + "//:data"
+    return "{macro_tmpl}".format(pip_utils.normalize_name(name), "data")
 
 def dist_info_requirement(name):
-    return "@{name}_" + _clean_name(name) + "//:dist_info"
+    return "{macro_tmpl}".format(pip_utils.normalize_name(name), "dist_info")
 
 def entry_point(pkg, script = None):
     fail("Not implemented yet")
@@ -243,6 +135,7 @@ def install_deps(**whl_library_kwargs):
         name = rctx.attr.name,
         install_deps_calls = "\n".join(install_deps_calls),
         load_statements = "\n".join(load_statements),
+        macro_tmpl = macro_tmpl,
         process_requirements_calls = "\n".join(process_requirements_calls),
         rules_python = rules_python,
         default_version = rctx.attr.default_version,
@@ -295,7 +188,7 @@ alias(
     for [python_version, repo_prefix] in version_map:
         alias.append("""\
         "@{rules_python}//python/config_settings:is_python_{full_python_version}": "{actual}",""".format(
-            full_python_version = MINOR_MAPPING[python_version] if python_version in MINOR_MAPPING else python_version,
+            full_python_version = full_version(python_version),
             actual = "@{repo_prefix}{wheel_name}//:{alias_name}".format(
                 repo_prefix = repo_prefix,
                 wheel_name = wheel_name,
@@ -383,3 +276,8 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
         default_version = default_version,
         pip_parses = pip_parses,
     )
+
+# Extra utilities visible to rules_python users.
+pip_utils = struct(
+    normalize_name = normalize_name,
+)

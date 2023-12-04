@@ -8,8 +8,11 @@ bazel-out
 bazel-testlogs
 # Prevent the convenience symlinks within the examples from being
 # treated as directories with valid BUILD files for the main repo.
+# Any directory with a WORKSPACE in it should be added here, with
+# an entry like `bazel-{workspacename}`
 examples/bzlmod/bazel-bzlmod
 examples/bzlmod/other_module/bazel-other_module
 examples/bzlmod_build_file_generation/bazel-bzlmod_build_file_generation
 examples/pip_parse/bazel-pip_parse
 examples/py_proto_library/bazel-py_proto_library
+tests/ignore_root_user_error/bazel-ignore_root_user_error

@@ -19,8 +19,10 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe", "read_netrc", "read_user_netrc", "use_netrc")
+load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
+load("//python/private:full_version.bzl", "full_version")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load(
     "//python/private:toolchains_repo.bzl",
@@ -32,7 +34,6 @@ load("//python/private:which.bzl", "which_with_fail")
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
-    "MINOR_MAPPING",
     "PLATFORMS",
     "TOOL_VERSIONS",
     "get_release_info",
@@ -59,6 +60,7 @@ def py_repositories():
             "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
         ],
     )
+    pip_install_dependencies()
 
 ########
 # Remaining content of the file is only used to support toolchains.
@@ -232,6 +234,7 @@ def _python_repository_impl(rctx):
         # tests for the standard libraries.
         "lib/python{python_version}/**/test/**".format(python_version = python_short_version),
         "lib/python{python_version}/**/tests/**".format(python_version = python_short_version),
+        "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
     ]
 
     if rctx.attr.ignore_root_user_error:
@@ -241,7 +244,6 @@ def _python_repository_impl(rctx):
             # the definition of this filegroup will change, and depending rules will get invalidated."
             # See https://github.com/bazelbuild/rules_python/issues/1008 for unconditionally adding these to toolchains so we can stop ignoring them."
             "**/__pycache__/*.pyc",
-            "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
             "**/__pycache__/*.pyo",
         ]
 
@@ -257,6 +259,7 @@ def _python_repository_impl(rctx):
             "libs/**",
             "Scripts/**",
             "share/**",
+            "tcl/**",
         ]
     else:
         glob_include += [
@@ -534,8 +537,7 @@ def python_register_toolchains(
 
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
 
-    if python_version in MINOR_MAPPING:
-        python_version = MINOR_MAPPING[python_version]
+    python_version = full_version(python_version)
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 
@@ -554,11 +556,13 @@ def python_register_toolchains(
                 ))
             register_coverage_tool = False
 
+    loaded_platforms = []
     for platform in PLATFORMS.keys():
         sha256 = tool_versions[python_version]["sha256"].get(platform, None)
         if not sha256:
             continue
 
+        loaded_platforms.append(platform)
         (release_filename, urls, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
 
         # allow passing in a tool version
@@ -605,6 +609,7 @@ def python_register_toolchains(
         name = name,
         python_version = python_version,
         user_repository_name = name,
+        platforms = loaded_platforms,
     )
 
     # in bzlmod we write out our own toolchain repos

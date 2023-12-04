@@ -4,7 +4,10 @@ load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 # This rule adds a convenient way to update the requirements.txt
 # lockfile based on the requirements.in.
-compile_pip_requirements(name = "requirements")
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+)
 
 # The requirements.bzl file is generated with a reference to the interpreter for the host platform.
 # In order to check in a platform-agnostic file, we have to replace that reference with the symbol
@@ -16,7 +19,7 @@ genrule(
     cmd = " | ".join([
         "cat $<",
         # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
-        """sed -e '/^load.*.whl_library/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
+        """sed -e '/^load.*.pip.bzl/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
         # Replace the bazel 6.0.0 specific comment with something that bazel 5.4.0 would produce.
         # This enables this example to be run as a test under bazel 5.4.0.
         """sed -e 's#@//#//#'""",

@@ -21,6 +21,7 @@ licenses(["notice"])
 py_binary(
     name = "wheelmaker",
     srcs = ["wheelmaker.py"],
+    deps = ["@pypi__packaging//:lib"],
 )
 
 filegroup(

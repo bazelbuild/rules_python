@@ -20,11 +20,10 @@ load(
     "create_executable_rule",
     "py_executable_bazel_impl",
 )
-load(":semantics.bzl", "TOOLS_REPO")
 
 _PY_TEST_ATTRS = {
     "_collect_cc_coverage": attr.label(
-        default = "@" + TOOLS_REPO + "//tools/test:collect_cc_coverage",
+        default = "@bazel_tools//tools/test:collect_cc_coverage",
         executable = True,
         cfg = "exec",
     ),

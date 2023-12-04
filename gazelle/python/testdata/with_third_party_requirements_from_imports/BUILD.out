@@ -8,8 +8,8 @@ py_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
-        "@gazelle_python_test_google_cloud_aiplatform//:pkg",
-        "@gazelle_python_test_google_cloud_storage//:pkg",
+        "@gazelle_python_test//google_cloud_aiplatform",
+        "@gazelle_python_test//google_cloud_storage",
     ],
 )
 
@@ -20,6 +20,6 @@ py_binary(
     visibility = ["//:__subpackages__"],
     deps = [
         ":with_third_party_requirements_from_imports",
-        "@gazelle_python_test_google_cloud_aiplatform//:pkg",
+        "@gazelle_python_test//google_cloud_aiplatform",
     ],
 )

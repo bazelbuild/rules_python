@@ -37,6 +37,7 @@ def _validate_keys_match(description, dict1, dict2):
 
 def compile_pip_requirements(
         name,
+        src = None,
         extra_args = [],
         extra_deps = [],
         generate_hashes = True,
@@ -68,12 +69,17 @@ def compile_pip_requirements(
 
     Args:
         name: base name for generated targets, typically "requirements".
+        src: file containing inputs to dependency resolution. If not specified,
+            defaults to `pyproject.toml`. Supported formats are:
+            * a requirements text file, usually named `requirements.in`
+            * A `.toml` file, where the `project.dependencies` list is used as per
+              [PEP621](https://peps.python.org/pep-0621/).
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
-        requirements_in: file expressing desired dependencies.
+        requirements_in: file expressing desired dependencies. Deprecated, use src instead.
         requirements_txt: result of "compiling" the requirements.in file.
         requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
@@ -82,7 +88,11 @@ def compile_pip_requirements(
         visibility: passed to both the _test and .update rules.
         **kwargs: other bazel attributes passed to the "_test" rule.
     """
-    requirements_in = name + ".in" if requirements_in == None else requirements_in
+    if requirements_in and src:
+        fail("Only one of 'src' and 'requirements_in' attributes can be used")
+    else:
+        src = requirements_in or src or "pyproject.toml"
+
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
     if types.is_dict(requirements_txt):
@@ -99,7 +109,7 @@ def compile_pip_requirements(
         visibility = visibility,
     )
 
-    data = [name, requirements_in] + requirements_txt_data + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, src] + requirements_txt_data + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
     if intermediate_file:
         data += _generate_loc_select(intermediate_file, "{}")
         _validate_keys_match("requirements_txt and intermediate_file", intermediate_file, requirements_txt)
@@ -115,32 +125,44 @@ def compile_pip_requirements(
     loc = "$(rlocationpath {})"
 
     args = [
-        loc.format(requirements_in),
+        loc.format(src),
     ] + (_generate_loc_select(requirements_txt, loc) if types.is_dict(requirements_txt) else [loc.format(requirements_txt)]) + [
-        # String None is a placeholder for argv ordering.
-        loc.format(requirements_linux) if requirements_linux else "None",
-        loc.format(requirements_darwin) if requirements_darwin else "None",
-        loc.format(requirements_windows) if requirements_windows else "None",
-    ] + (_generate_loc_select(intermediate_file, loc) if intermediate_file else ["None"]) + (
-        _generate_config_select(intermediate_file) if intermediate_file else ["None"]
-    ) + [
-        loc.format(intermediate_file_patcher) if intermediate_file_patcher else "None",
         "//%s:%s.update" % (native.package_name(), name),
-    ] + (["--generate-hashes"] if generate_hashes else []) + extra_args
+        "--resolver=backtracking",
+        "--allow-unsafe",
+    ]
+    if generate_hashes:
+        args.append("--generate-hashes")
+    if intermediate_file:
+        args.append("--intermediate-config")
+        args.append(_generate_config_select(intermediate_file))
+        args.append("--intermediate-file")
+        args.append(_generate_loc_select(intermediate_file, loc))
+    if intermediate_file_patcher:
+        args.append("--intermediate-file-patcher={}".format(loc.format(intermediate_file_patcher)))
+    if requirements_linux:
+        args.append("--requirements-linux={}".format(loc.format(requirements_linux)))
+    if requirements_darwin:
+        args.append("--requirements-darwin={}".format(loc.format(requirements_darwin)))
+    if requirements_windows:
+        args.append("--requirements-windows={}".format(loc.format(requirements_windows)))
+    args.extend(extra_args)
 
     deps = [
         requirement("build"),
         requirement("click"),
         requirement("colorama"),
         requirement("packaging"),
+        requirement("importlib_metadata"),
+        requirement("more_itertools"),
+        requirement("packaging"),
         requirement("pep517"),
         requirement("pip"),
         requirement("pip_tools"),
+        requirement("pyproject_hooks"),
         requirement("setuptools"),
         requirement("tomli"),
-        requirement("importlib_metadata"),
         requirement("zipp"),
-        requirement("more_itertools"),
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 

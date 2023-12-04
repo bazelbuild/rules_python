@@ -16,6 +16,7 @@
 
 load("//python/private:stamp.bzl", "is_stamping_enabled")
 load(":py_package.bzl", "py_package_lib")
+load(":py_wheel_normalize_pep440.bzl", "normalize_pep440")
 
 PyWheelInfo = provider(
     doc = "Information about a wheel produced by `py_wheel`",
@@ -105,15 +106,38 @@ For example:
 Note that Bazel's output filename cannot include the stamp information, as outputs must be known
 during the analysis phase and the stamp data is available only during the action execution.
 
-The [`py_wheel`](/docs/packaging.md#py_wheel) macro produces a `.dist`-suffix target which creates a
+The [`py_wheel`](#py_wheel) macro produces a `.dist`-suffix target which creates a
 `dist/` folder containing the wheel with the stamped name, suitable for publishing.
 
-See [`py_wheel_dist`](/docs/packaging.md#py_wheel_dist) for more info.
+See [`py_wheel_dist`](#py_wheel_dist) for more info.
 """,
     ),
     "_stamp_flag": attr.label(
         doc = "A setting used to determine whether or not the `--stamp` flag is enabled",
         default = Label("//python/private:stamp"),
+    ),
+}
+
+_feature_flags = {
+    "incompatible_normalize_name": attr.bool(
+        default = True,
+        doc = """\
+Normalize the package distribution name according to latest
+Python packaging standards.
+
+See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+and https://packaging.python.org/en/latest/specifications/name-normalization/.
+
+Apart from the valid names according to the above, we also accept
+'{' and '}', which may be used as placeholders for stamping.
+""",
+    ),
+    "incompatible_normalize_version": attr.bool(
+        default = True,
+        doc = "Normalize the package version according to PEP440 standard. " +
+              "With this option set to True, if the user wants to pass any " +
+              "stamp variables, they have to be enclosed in '{}', e.g. " +
+              "'{BUILD_TIMESTAMP}'.",
     ),
 }
 
@@ -203,6 +227,42 @@ _DESCRIPTION_FILE_EXTENSION_TO_TYPE = {
 }
 _DEFAULT_DESCRIPTION_FILE_TYPE = "text/plain"
 
+def _escape_filename_distribution_name(name):
+    """Escape the distribution name component of a filename.
+
+    See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
+    and https://packaging.python.org/en/latest/specifications/name-normalization/.
+
+    Apart from the valid names according to the above, we also accept
+    '{' and '}', which may be used as placeholders for stamping.
+    """
+    escaped = ""
+    for character in name.elems():
+        if character.isalnum() or character in ["{", "}"]:
+            escaped += character.lower()
+        elif character in ["-", "_", "."]:
+            if escaped == "":
+                fail(
+                    "A valid name must start with a letter or number.",
+                    "Name '%s' does not." % name,
+                )
+            elif escaped.endswith("_"):
+                pass
+            else:
+                escaped += "_"
+        else:
+            fail(
+                "A valid name consists only of ASCII letters ",
+                "and numbers, period, underscore and hyphen.",
+                "Name '%s' has bad character '%s'." % (name, character),
+            )
+    if escaped.endswith("_"):
+        fail(
+            "A valid name must end with a letter or number.",
+            "Name '%s' does not." % name,
+        )
+    return escaped
+
 def _escape_filename_segment(segment):
     """Escape a segment of the wheel filename.
 
@@ -237,13 +297,25 @@ def _py_wheel_impl(ctx):
     python_tag = _replace_make_variables(ctx.attr.python_tag, ctx)
     version = _replace_make_variables(ctx.attr.version, ctx)
 
-    outfile = ctx.actions.declare_file("-".join([
-        _escape_filename_segment(ctx.attr.distribution),
-        _escape_filename_segment(version),
+    filename_segments = []
+
+    if ctx.attr.incompatible_normalize_name:
+        filename_segments.append(_escape_filename_distribution_name(ctx.attr.distribution))
+    else:
+        filename_segments.append(_escape_filename_segment(ctx.attr.distribution))
+
+    if ctx.attr.incompatible_normalize_version:
+        filename_segments.append(normalize_pep440(version))
+    else:
+        filename_segments.append(_escape_filename_segment(version))
+
+    filename_segments.extend([
         _escape_filename_segment(python_tag),
         _escape_filename_segment(abi),
         _escape_filename_segment(ctx.attr.platform),
-    ]) + ".whl")
+    ])
+
+    outfile = ctx.actions.declare_file("-".join(filename_segments) + ".whl")
 
     name_file = ctx.actions.declare_file(ctx.label.name + ".name")
 
@@ -272,6 +344,10 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile)
     args.add("--name_file", name_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
+    if not ctx.attr.incompatible_normalize_name:
+        args.add("--noincompatible_normalize_name")
+    if not ctx.attr.incompatible_normalize_version:
+        args.add("--noincompatible_normalize_version")
 
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):
@@ -423,6 +499,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
             ),
         },
         _distribution_attrs,
+        _feature_flags,
         _requirement_attrs,
         _entrypoint_attrs,
         _other_attrs,
@@ -432,7 +509,7 @@ tries to locate `.runfiles` directory which is not packaged in the wheel.
 py_wheel = rule(
     implementation = py_wheel_lib.implementation,
     doc = """\
-Internal rule used by the [py_wheel macro](/docs/packaging.md#py_wheel).
+Internal rule used by the [py_wheel macro](#py_wheel).
 
 These intentionally have the same name to avoid sharp edges with Bazel macros.
 For example, a `bazel query` for a user's `py_wheel` macro expands to `py_wheel` targets,

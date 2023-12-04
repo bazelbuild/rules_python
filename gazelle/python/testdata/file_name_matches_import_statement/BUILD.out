@@ -7,5 +7,5 @@ py_library(
         "rest_framework.py",
     ],
     visibility = ["//:__subpackages__"],
-    deps = ["@gazelle_python_test_djangorestframework//:pkg"],
+    deps = ["@gazelle_python_test//djangorestframework"],
 )

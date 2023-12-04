@@ -28,13 +28,12 @@ http_archive(
 )
 
 # Download the bazel_gazelle ruleset.
-
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "727f3e4edd96ea20c29e8c2ca9e8d2af724d8c7778e7923a854b2c80952bc405",
+    sha256 = "d3fa66a39028e97d76f9e2db8f1b0c11c099e8e01bf363a923074784e451f809",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.30.0/bazel-gazelle-v0.30.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.30.0/bazel-gazelle-v0.30.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.33.0/bazel-gazelle-v0.33.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.33.0/bazel-gazelle-v0.33.0.tar.gz",
     ],
 )
 
@@ -95,8 +94,19 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # You can instead check this `requirements.bzl` file into your repo.
 pip_parse(
     name = "pip",
-    # Generate user friendly alias labels for each dependency that we have.
-    incompatible_generate_aliases = True,
+
+    # Requirement groups allow Bazel to tolerate PyPi cycles by putting dependencies
+    # which are known to form cycles into groups together.
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
     # (Optional) You can provide a python_interpreter (path) or a python_interpreter_target (a Bazel target, that
     # acts as an executable). The latter can be anything that could be used as Python interpreter. E.g.:
     # 1. Python interpreter that you compile in the build file.

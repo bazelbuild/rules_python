@@ -1,3 +1,4 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":pip_install_utils.bzl", "srcs_module")
 
 package(default_visibility = ["//:__subpackages__"])
@@ -21,4 +22,27 @@ srcs_module(
     name = "srcs_module",
     srcs = "//python/pip_install:py_srcs",
     dest = ":srcs.bzl",
+)
+
+bzl_library(
+    name = "generate_whl_library_build_bazel_bzl",
+    srcs = ["generate_whl_library_build_bazel.bzl"],
+    deps = [
+        "//python/private:labels_bzl",
+        "//python/private:normalize_name_bzl",
+    ],
+)
+
+bzl_library(
+    name = "generate_group_library_build_bazel_bzl",
+    srcs = ["generate_group_library_build_bazel.bzl"],
+    deps = [
+        "//python/private:labels_bzl",
+        "//python/private:normalize_name_bzl",
+    ],
+)
+
+bzl_library(
+    name = "srcs_bzl",
+    srcs = ["srcs.bzl"],
 )

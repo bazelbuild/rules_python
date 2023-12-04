@@ -232,7 +232,6 @@ manifest:
     isort.wrap: isort
     isort.wrap_modes: isort
     lazy_object_proxy: lazy_object_proxy
-    lazy_object_proxy.cext: lazy_object_proxy
     lazy_object_proxy.compat: lazy_object_proxy
     lazy_object_proxy.simple: lazy_object_proxy
     lazy_object_proxy.slots: lazy_object_proxy
@@ -587,5 +586,4 @@ manifest:
     yamllint.rules.truthy: yamllint
   pip_repository:
     name: pip
-    use_pip_repository_aliases: true
-integrity: cee7684391c4a8a1ff219cd354deae61cdcdee70f2076789aabd5249f3c4eca9
+integrity: cd25503dc6b3d9e1c5f46715ba2d0499ecc8b3d654ebcbf9f4e52f2074290e0a

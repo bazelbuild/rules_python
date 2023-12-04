@@ -13,6 +13,7 @@
 # limitations under the License.
 """Various things common to Bazel and Google rule implementations."""
 
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":cc_helper.bzl", "cc_helper")
 load(":providers.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
@@ -20,7 +21,6 @@ load(
     ":semantics.bzl",
     "NATIVE_RULES_MIGRATION_FIX_CMD",
     "NATIVE_RULES_MIGRATION_HELP_URL",
-    "TOOLS_REPO",
 )
 
 _testing = testing
@@ -29,7 +29,7 @@ _coverage_common = coverage_common
 _py_builtins = py_internal
 PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
-TOOLCHAIN_TYPE = "@" + TOOLS_REPO + "//tools/python:toolchain_type"
+TOOLCHAIN_TYPE = "@bazel_tools//tools/python:toolchain_type"
 
 # Extensions without the dot
 _PYTHON_SOURCE_EXTENSIONS = ["py"]
@@ -266,6 +266,10 @@ def collect_imports(ctx, semantics):
         dep[PyInfo].imports
         for dep in ctx.attr.deps
         if PyInfo in dep
+    ] + [
+        dep[BuiltinPyInfo].imports
+        for dep in ctx.attr.deps
+        if BuiltinPyInfo in dep
     ])
 
 def collect_runfiles(ctx, files):
@@ -355,9 +359,9 @@ def create_py_info(ctx, *, direct_sources, imports):
     transitive_sources_depsets = []  # list of depsets
     transitive_sources_files = []  # list of Files
     for target in ctx.attr.deps:
-        # PyInfo may not be present for e.g. cc_library rules.
-        if PyInfo in target:
-            info = target[PyInfo]
+        # PyInfo may not be present e.g. cc_library rules.
+        if PyInfo in target or BuiltinPyInfo in target:
+            info = _get_py_info(target)
             transitive_sources_depsets.append(info.transitive_sources)
             uses_shared_libraries = uses_shared_libraries or info.uses_shared_libraries
             has_py2_only_sources = has_py2_only_sources or info.has_py2_only_sources
@@ -385,8 +389,8 @@ def create_py_info(ctx, *, direct_sources, imports):
         for target in ctx.attr.data:
             # TODO(b/234730058): Remove checking for PyInfo in data once depot
             # cleaned up.
-            if PyInfo in target:
-                info = target[PyInfo]
+            if PyInfo in target or BuiltinPyInfo in target:
+                info = _get_py_info(target)
                 uses_shared_libraries = info.uses_shared_libraries
             else:
                 files = target.files.to_list()
@@ -397,9 +401,7 @@ def create_py_info(ctx, *, direct_sources, imports):
             if uses_shared_libraries:
                 break
 
-    # TODO(b/203567235): Set `uses_shared_libraries` field, though the Bazel
-    # docs indicate it's unused in Bazel and may be removed.
-    py_info = PyInfo(
+    py_info_kwargs = dict(
         transitive_sources = depset(
             transitive = [deps_transitive_sources, direct_sources],
         ),
@@ -411,7 +413,16 @@ def create_py_info(ctx, *, direct_sources, imports):
         has_py3_only_sources = has_py3_only_sources,
         uses_shared_libraries = uses_shared_libraries,
     )
-    return py_info, deps_transitive_sources
+
+    # TODO(b/203567235): Set `uses_shared_libraries` field, though the Bazel
+    # docs indicate it's unused in Bazel and may be removed.
+    py_info = PyInfo(**py_info_kwargs)
+    builtin_py_info = BuiltinPyInfo(**py_info_kwargs)
+
+    return py_info, deps_transitive_sources, builtin_py_info
+
+def _get_py_info(target):
+    return target[PyInfo] if PyInfo in target else target[BuiltinPyInfo]
 
 def create_instrumented_files_info(ctx):
     return _coverage_common.instrumented_files_info(

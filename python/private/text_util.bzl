@@ -57,9 +57,20 @@ def _render_select(selects, *, no_match_error = None):
 
     return "select({})".format(args)
 
+def _render_list(items):
+    return "\n".join([
+        "[",
+        _indent("\n".join([
+            "{},".format(repr(item))
+            for item in items
+        ])),
+        "]",
+    ])
+
 render = struct(
-    indent = _indent,
     alias = _render_alias,
     dict = _render_dict,
+    indent = _indent,
+    list = _render_list,
     select = _render_select,
 )

@@ -25,7 +25,7 @@ def gazelle_python_manifest(
         pip_repository_name = "",
         pip_deps_repository_name = "",
         manifest = ":gazelle_python.yaml",
-        use_pip_repository_aliases = False,
+        use_pip_repository_aliases = None,
         **kwargs):
     """A macro for defining the updating and testing targets for the Gazelle manifest file.
 
@@ -36,7 +36,7 @@ def gazelle_python_manifest(
             the manifest generator.
         pip_repository_name: the name of the pip_install or pip_repository target.
         use_pip_repository_aliases: boolean flag to enable using user-friendly
-            python package aliases.
+            python package aliases. Defaults to True.
         pip_deps_repository_name: deprecated - the old pip_install target name.
         modules_mapping: the target for the generated modules_mapping.json file.
         manifest: the target for the Gazelle manifest file.
@@ -85,10 +85,22 @@ def gazelle_python_manifest(
         update_target_label,
     ]
 
-    if use_pip_repository_aliases:
+    # TODO @aignas 2023-10-31: When removing this code, cleanup the
+    # code in gazelle to only work with aliased targets.
+    if use_pip_repository_aliases == None:
+        update_args += [
+            "--omit-pip-repository-aliases-setting",
+            "true",
+        ]
+    elif use_pip_repository_aliases:
         update_args += [
             "--use-pip-repository-aliases",
             "true",
+        ]
+    else:
+        update_args += [
+            "--use-pip-repository-aliases",
+            "false",
         ]
 
     go_binary(

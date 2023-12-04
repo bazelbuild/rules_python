@@ -20,14 +20,14 @@ load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 local_repository(
-    name = "external_repository",
+    name = "compile_pip_requirements",
     path = "../compile_pip_requirements",
 )
 
 pip_parse(
     name = "pypi",
     python_interpreter_target = interpreter,
-    requirements_lock = "@external_repository//:requirements_lock.txt",
+    requirements_lock = "@compile_pip_requirements//:requirements_lock.txt",
 )
 
 load("@pypi//:requirements.bzl", "install_deps")

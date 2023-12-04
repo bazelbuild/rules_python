@@ -35,6 +35,7 @@ load(
     "create_py_info",
     "csv",
     "filter_to_py_srcs",
+    "target_platform_has_any_constraint",
     "union_attrs",
 )
 load(
@@ -55,6 +56,12 @@ load(
 _cc_common = cc_common
 
 _py_builtins = py_internal
+
+# Bazel 5.4 doesn't have config_common.toolchain_type
+_CC_TOOLCHAINS = [config_common.toolchain_type(
+    "@bazel_tools//tools/cpp:toolchain_type",
+    mandatory = False,
+)] if hasattr(config_common, "toolchain_type") else []
 
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
@@ -85,6 +92,11 @@ filename in `srcs`, `main` must be specified.
             default = "PY3",
             # NOTE: Some tests care about the order of these values.
             values = ["PY2", "PY3"],
+        ),
+        "_windows_constraints": attr.label_list(
+            default = [
+                "@platforms//os:windows",
+            ],
         ),
     },
     create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
@@ -194,8 +206,7 @@ def _validate_executable(ctx):
     check_native_allowed(ctx)
 
 def _compute_outputs(ctx, output_sources):
-    # TODO: This should use the configuration instead of the Bazel OS.
-    if _py_builtins.get_current_os_name() == "windows":
+    if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
         executable = ctx.actions.declare_file(ctx.label.name + ".exe")
     else:
         executable = ctx.actions.declare_file(ctx.label.name)
@@ -481,7 +492,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
         return struct(dso = None, runfiles = ctx.runfiles())
 
     dso = ctx.actions.declare_file(semantics.get_native_deps_dso_name(ctx))
-    share_native_deps = ctx.fragments.cpp.share_native_deps()
+    share_native_deps = py_internal.share_native_deps(ctx)
     cc_feature_config = cc_configure_features(
         ctx,
         cc_toolchain = cc_details.cc_toolchain,
@@ -564,7 +575,7 @@ def _create_shared_native_deps_dso(
         features = requested_features,
         is_test_target_partially_disabled_thin_lto = is_test and partially_disabled_thin_lto,
     )
-    return ctx.actions.declare_shareable_artifact("_nativedeps/%x.so" % dso_hash)
+    return py_internal.declare_shareable_artifact(ctx, "_nativedeps/%x.so" % dso_hash)
 
 # This is a minimal version of NativeDepsHelper.getSharedNativeDepsPath, see
 # com.google.devtools.build.lib.rules.nativedeps.NativeDepsHelper#getSharedNativeDepsPath
@@ -754,7 +765,7 @@ def _create_providers(
             PyCcLinkParamsProvider(cc_info = cc_info),
         )
 
-    py_info, deps_transitive_sources = create_py_info(
+    py_info, deps_transitive_sources, builtin_py_info = create_py_info(
         ctx,
         direct_sources = depset(direct_sources),
         imports = imports,
@@ -769,6 +780,7 @@ def _create_providers(
         )
 
     providers.append(py_info)
+    providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
     extra_legacy_providers, extra_providers = semantics.get_extra_providers(
@@ -810,7 +822,7 @@ def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
     return rule(
         # TODO: add ability to remove attrs, i.e. for imports attr
         attrs = dicts.add(EXECUTABLE_ATTRS, attrs),
-        toolchains = [TOOLCHAIN_TYPE] + (cc_helper.use_cpp_toolchain() if cc_helper else []),
+        toolchains = [TOOLCHAIN_TYPE] + _CC_TOOLCHAINS,
         fragments = fragments,
         **kwargs
     )

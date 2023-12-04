@@ -98,6 +98,7 @@ def main(args: Any) -> None:
 
     setup_namespace_pkg_compatibility(lib_dir)
 
+<<<<<<< HEAD
     patch_args = [args.patch_tool] + args.patch_arg
     patch_dir = args.patch_dir or "."
     for patch in (args.patch or []):
@@ -105,6 +106,33 @@ def main(args: Any) -> None:
             # TODO(philsc): Only print stdout/stderr on failure.
             subprocess.run(patch_args, stdin=stdin, check=True, cwd=args.directory / patch_dir)
 
+||||||| d8966b8
+=======
+    if args.patch:
+        if not args.patch_tool and not args.patch_tool_target:
+            raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
+
+        patch_args = [
+            args.patch_tool or Path.cwd() / args.patch_tool_target
+        ] + args.patch_arg
+        patch_dir = args.patch_dir or "."
+        for patch in args.patch:
+            with patch.open("r") as stdin:
+                try:
+                    subprocess.run(
+                        patch_args,
+                        stdin=stdin,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        cwd=args.directory / patch_dir,
+                    )
+                except subprocess.CalledProcessError as error:
+                    print(f"Patch {patch} failed to apply:")
+                    print(error.stdout.decode("utf-8"))
+                    raise
+
+>>>>>>> philsc/add-patch-support-to-py-wheel-library
 
 def parse_flags(argv) -> Any:
     parser = argparse.ArgumentParser(description="Extract a Python wheel.")
@@ -138,28 +166,41 @@ def parse_flags(argv) -> Any:
     parser.add_argument(
         "--patch",
         type=Path,
+        default=[],
         action="append",
         help="A patch file to apply.",
     )
 
     parser.add_argument(
         "--patch-arg",
-        type=Path,
+        type=str,
         default=[],
         action="append",
-        help="An argument for the patch_tool when applying the patches.",
+        help="An argument for the patch tool when applying the patches.",
     )
 
     parser.add_argument(
         "--patch-tool",
         type=str,
-        help="The tool to invoke when applying patches.",
+        help=(
+            "The tool from PATH to invoke when applying patches. "
+            "If set, --patch-tool-target is ignored."
+        ),
+    )
+
+    parser.add_argument(
+        "--patch-tool-target",
+        type=Path,
+        help=(
+            "The path to the tool to invoke when applying patches. "
+            "Ignored when --patch-tool is set."
+        ),
     )
 
     parser.add_argument(
         "--patch-dir",
         type=str,
-        help="The directory from which to invoke patch_tool.",
+        help="The directory from which to invoke the patch tool.",
     )
 
     return parser.parse_args(argv[1:])

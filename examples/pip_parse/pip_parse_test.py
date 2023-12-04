@@ -19,20 +19,27 @@ import subprocess
 import unittest
 from pathlib import Path
 
-from rules_python.python.runfiles import runfiles
+from python.runfiles import runfiles
 
 
 class PipInstallTest(unittest.TestCase):
     maxDiff = None
 
+    def _remove_leading_dirs(self, paths):
+        # Removes the first two directories (external/<reponame>)
+        # to normalize what workspace and bzlmod produce.
+        return [
+            '/'.join(v.split('/')[2:])
+            for v in paths
+        ]
+
     def test_entry_point(self):
-        env = os.environ.get("YAMLLINT_ENTRY_POINT")
-        self.assertIsNotNone(env)
+        entry_point_path = os.environ.get("YAMLLINT_ENTRY_POINT")
+        self.assertIsNotNone(entry_point_path)
 
         r = runfiles.Create()
 
-        # To find an external target, this must use `{workspace_name}/$(rootpath @external_repo//:target)`
-        entry_point = Path(r.Rlocation("rules_python_pip_parse_example/{}".format(env)))
+        entry_point = Path(r.Rlocation(entry_point_path))
         self.assertTrue(entry_point.exists())
 
         proc = subprocess.run(
@@ -41,34 +48,37 @@ class PipInstallTest(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.26.3")
+        self.assertEqual(proc.stdout.decode("utf-8").strip(), "yamllint 1.28.0")
 
     def test_data(self):
-        env = os.environ.get("WHEEL_DATA_CONTENTS")
-        self.assertIsNotNone(env)
+        actual = os.environ.get("WHEEL_DATA_CONTENTS")
+        self.assertIsNotNone(actual)
+        actual = self._remove_leading_dirs(actual.split(" "))
+
         self.assertListEqual(
-            env.split(" "),
+            actual,
             [
-                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/INSTALL.md",
-                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/LICENSE",
-                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/NEWS",
-                "external/pypi_s3cmd/data/share/doc/packages/s3cmd/README.md",
-                "external/pypi_s3cmd/data/share/man/man1/s3cmd.1",
+                "data/share/doc/packages/s3cmd/INSTALL.md",
+                "data/share/doc/packages/s3cmd/LICENSE",
+                "data/share/doc/packages/s3cmd/NEWS",
+                "data/share/doc/packages/s3cmd/README.md",
+                "data/share/man/man1/s3cmd.1",
             ],
         )
 
     def test_dist_info(self):
-        env = os.environ.get("WHEEL_DIST_INFO_CONTENTS")
-        self.assertIsNotNone(env)
+        actual = os.environ.get("WHEEL_DIST_INFO_CONTENTS")
+        self.assertIsNotNone(actual)
+        actual = self._remove_leading_dirs(actual.split(" "))
         self.assertListEqual(
-            env.split(" "),
+            actual,
             [
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/INSTALLER",
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/LICENSE",
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/METADATA",
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/RECORD",
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/WHEEL",
-                "external/pypi_requests/site-packages/requests-2.25.1.dist-info/top_level.txt",
+                "site-packages/requests-2.25.1.dist-info/INSTALLER",
+                "site-packages/requests-2.25.1.dist-info/LICENSE",
+                "site-packages/requests-2.25.1.dist-info/METADATA",
+                "site-packages/requests-2.25.1.dist-info/RECORD",
+                "site-packages/requests-2.25.1.dist-info/WHEEL",
+                "site-packages/requests-2.25.1.dist-info/top_level.txt",
             ],
         )
 

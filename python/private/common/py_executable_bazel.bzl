@@ -21,6 +21,7 @@ load(
     "create_binary_semantics_struct",
     "create_cc_details_struct",
     "create_executable_result_struct",
+    "target_platform_has_any_constraint",
     "union_attrs",
 )
 load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
@@ -31,7 +32,6 @@ load(
     "py_executable_base_impl",
 )
 load(":py_internal.bzl", "py_internal")
-load(":semantics.bzl", "TOOLS_REPO")
 
 _py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"
@@ -55,11 +55,11 @@ the `srcs` of Python targets as required.
         ),
         "_bootstrap_template": attr.label(
             allow_single_file = True,
-            default = "@" + TOOLS_REPO + "//tools/python:python_bootstrap_template.txt",
+            default = "@bazel_tools//tools/python:python_bootstrap_template.txt",
         ),
         "_launcher": attr.label(
             cfg = "target",
-            default = "@" + TOOLS_REPO + "//tools/launcher:launcher",
+            default = "@bazel_tools//tools/launcher:launcher",
             executable = True,
         ),
         "_py_interpreter": attr.label(
@@ -75,17 +75,17 @@ the `srcs` of Python targets as required.
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
         "_py_toolchain_type": attr.label(
-            default = "@" + TOOLS_REPO + "//tools/python:toolchain_type",
+            default = "@bazel_tools//tools/python:toolchain_type",
         ),
         "_windows_launcher_maker": attr.label(
-            default = "@" + TOOLS_REPO + "//tools/launcher:launcher_maker",
+            default = "@bazel_tools//tools/launcher:launcher_maker",
             cfg = "exec",
             executable = True,
         ),
         "_zipper": attr.label(
             cfg = "exec",
             executable = True,
-            default = "@" + TOOLS_REPO + "//tools/zip:zipper",
+            default = "@bazel_tools//tools/zip:zipper",
         ),
     },
 )
@@ -174,9 +174,7 @@ def _create_executable(
         runtime_details = runtime_details,
     )
 
-    # TODO: This should use the configuration instead of the Bazel OS.
-    # This is just legacy behavior.
-    is_windows = _py_builtins.get_current_os_name() == "windows"
+    is_windows = target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints)
 
     if is_windows:
         if not executable.extension == "exe":
@@ -204,7 +202,7 @@ def _create_executable(
 
     extra_files_to_build = []
 
-    # NOTE: --build_python_zip defauls to true on Windows
+    # NOTE: --build_python_zip defaults to true on Windows
     build_zip_enabled = ctx.fragments.py.build_python_zip
 
     # When --build_python_zip is enabled, then the zip file becomes
@@ -261,7 +259,7 @@ def _create_executable(
         # Double check this just to make sure.
         if not is_windows or not build_zip_enabled:
             fail(("Should not occur: The non-executable-zip and " +
-                  "non-boostrap-template case should have windows and zip " +
+                  "non-bootstrap-template case should have windows and zip " +
                   "both true, but got " +
                   "is_windows={is_windows} " +
                   "build_zip_enabled={build_zip_enabled}").format(
@@ -332,7 +330,7 @@ def _create_windows_exe_launcher(
     launch_info.add("binary_type=Python")
     launch_info.add(ctx.workspace_name, format = "workspace_name=%s")
     launch_info.add(
-        "1" if ctx.configuration.runfiles_enabled() else "0",
+        "1" if py_internal.runfiles_enabled(ctx) else "0",
         format = "symlink_runfiles_enabled=%s",
     )
     launch_info.add(python_binary_path, format = "python_bin_path=%s")

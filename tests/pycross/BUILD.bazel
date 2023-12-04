@@ -32,3 +32,33 @@ py_test(
         "//python/runfiles",
     ],
 )
+
+py_wheel_library(
+    name = "patched_extracted_wheel_for_testing",
+    patch_args = [
+        "-p1",
+    ],
+    patch_tool = "patch",
+    patches = [
+        "0001-Add-new-file-for-testing-patch-support.patch",
+    ],
+    target_compatible_with = select({
+        # We don't have `patch` available on the Windows CI machines.
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    wheel = "@wheel_for_testing//file",
+)
+
+py_test(
+    name = "patched_py_wheel_library_test",
+    srcs = [
+        "patched_py_wheel_library_test.py",
+    ],
+    data = [
+        ":patched_extracted_wheel_for_testing",
+    ],
+    deps = [
+        "//python/runfiles",
+    ],
+)

@@ -6,14 +6,12 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
 compile_pip_requirements(
     name = "requirements",
-    extra_args = ["--allow-unsafe"],
-    requirements_in = "requirements.in",
+    src = "requirements.in",
     requirements_txt = "requirements_lock.txt",
     requirements_windows = "requirements_windows.txt",
 )
@@ -45,9 +43,6 @@ gazelle_python_manifest(
     # NOTE: We can pass a list just like in `bzlmod_build_file_generation` example
     # but we keep a single target here for regression testing.
     requirements = "//:requirements_lock.txt",
-    # NOTE: we can use this flag in order to make our setup compatible with
-    # bzlmod.
-    use_pip_repository_aliases = True,
 )
 
 # Our gazelle target points to the python gazelle binary.
@@ -57,7 +52,6 @@ gazelle_python_manifest(
 # See https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.rst#example
 gazelle(
     name = "gazelle",
-    data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
 
@@ -71,6 +65,7 @@ py_library(
     deps = [
         "//random_number_generator",
         "@pip//flask",
+        "@pip//sphinx",
     ],
 )
 

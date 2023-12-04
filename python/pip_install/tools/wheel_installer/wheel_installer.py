@@ -155,6 +155,18 @@ def main() -> None:
 
     _configure_reproducible_wheels()
 
+    if args.whl_file:
+        whl = Path(args.whl_file)
+
+        name, extras_for_pkg = _parse_requirement_for_extra(args.requirement)
+        extras = {name: extras_for_pkg} if extras_for_pkg and name else dict()
+        _extract_wheel(
+            wheel_file=whl,
+            extras=extras,
+            enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
+        )
+        return
+
     pip_args = (
         [sys.executable, "-m", "pip"]
         + (["--isolated"] if args.isolated else [])
@@ -185,15 +197,10 @@ def main() -> None:
             if e.errno != errno.ENOENT:
                 raise
 
-    name, extras_for_pkg = _parse_requirement_for_extra(args.requirement)
-    extras = {name: extras_for_pkg} if extras_for_pkg and name else dict()
+    whl = Path(next(iter(glob.glob("*.whl"))))
 
-    whl = next(iter(glob.glob("*.whl")))
-    _extract_wheel(
-        wheel_file=whl,
-        extras=extras,
-        enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
-    )
+    with open("whl_file.json", "w") as f:
+        json.dump({"whl_file": f"{whl.resolve()}"}, f)
 
 
 if __name__ == "__main__":

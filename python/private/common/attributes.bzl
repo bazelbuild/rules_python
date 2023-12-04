@@ -13,15 +13,14 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(
     ":semantics.bzl",
     "DEPS_ATTR_ALLOW_RULES",
-    "PLATFORMS_LOCATION",
     "SRCS_ATTR_ALLOW_FILES",
-    "TOOLS_REPO",
 )
 
 # TODO: Load CcInfo from rules_cc
@@ -72,7 +71,7 @@ def copy_common_test_kwargs(kwargs):
 CC_TOOLCHAIN = {
     # NOTE: The `cc_helper.find_cpp_toolchain()` function expects the attribute
     # name to be this name.
-    "_cc_toolchain": attr.label(default = "@" + TOOLS_REPO + "//tools/cpp:current_cc_toolchain"),
+    "_cc_toolchain": attr.label(default = "@bazel_tools//tools/cpp:current_cc_toolchain"),
 }
 
 # The common "data" attribute definition.
@@ -129,7 +128,11 @@ COMMON_ATTRS = union_attrs(
 PY_SRCS_ATTRS = union_attrs(
     {
         "deps": attr.label_list(
-            providers = [[PyInfo], [_CcInfo]],
+            providers = [
+                [PyInfo],
+                [_CcInfo],
+                [BuiltinPyInfo],
+            ],
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,
@@ -188,11 +191,11 @@ environment when the test is executed by bazel test.
         # TODO(b/176993122): Remove when Bazel automatically knows to run on darwin.
         "_apple_constraints": attr.label_list(
             default = [
-                PLATFORMS_LOCATION + "/os:ios",
-                PLATFORMS_LOCATION + "/os:macos",
-                PLATFORMS_LOCATION + "/os:tvos",
-                PLATFORMS_LOCATION + "/os:visionos",
-                PLATFORMS_LOCATION + "/os:watchos",
+                "@platforms//os:ios",
+                "@platforms//os:macos",
+                "@platforms//os:tvos",
+                "@platforms//os:visionos",
+                "@platforms//os:watchos",
             ],
         ),
     },

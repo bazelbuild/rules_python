@@ -22,8 +22,9 @@ buildifier:
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
   bazel: 5.4.0
+  skip_in_bazel_downstream_pipeline: "Bazel 5 required"
 .minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
-  bazel: 6.0.0 # test minimum supported version of bazel for bzlmod tests
+  bazel: 6.2.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -62,6 +63,17 @@ buildifier:
     - //tests:version_3_8_test
     - //tests:version_3_9_test
     - //tests:version_default_test
+.pystar_base: &pystar_base
+  # TODO: Change to "7.x" once Bazel 7 is available
+  # https://github.com/bazelbuild/bazel/commit/f3aafea59ae021c6a12086cb2cd34c5fa782faf1
+  # is available in rolling.
+  bazel: "last_rc"
+  environment:
+    RULES_PYTHON_ENABLE_PYSTAR: "1"
+  test_flags:
+    # The doc check tests fail because the Starlark implementation makes the
+    # PyInfo and PyRuntimeInfo symbols become documented.
+    - "--test_tag_filters=-integration-test,-doc_check_test"
 tasks:
   gazelle_extension_min:
     <<: *minimum_supported_version
@@ -93,6 +105,28 @@ tasks:
     <<: *reusable_config
     name: Default test on Ubuntu
     platform: ubuntu2004
+  ubuntu_pystar_workspace:
+    <<: *reusable_config
+    <<: *pystar_base
+    name: "Default test: Ubuntu, Pystar, workspace"
+    platform: ubuntu2004
+  ubuntu_pystar_bzlmod:
+    <<: *reusable_config
+    <<: *common_bzlmod_flags
+    <<: *pystar_base
+    name: "Default test: Ubuntu, Pystar, bzlmod"
+    platform: ubuntu2004
+  mac_pystar_workspace:
+    <<: *reusable_config
+    <<: *pystar_base
+    name: "Default test: Mac, Pystar, workspace"
+    platform: macos
+  windows_pystar_workspace:
+    <<: *reusable_config
+    <<: *pystar_base
+    name: "Default test: Mac, Pystar, workspace"
+    platform: windows
+
   debian:
     <<: *reusable_config
     name: Default test on Debian
@@ -107,7 +141,6 @@ tasks:
     platform: windows
     test_flags:
       - "--test_tag_filters=-integration-test,-fix-windows"
-
   rbe_min:
     <<: *minimum_supported_version
     <<: *reusable_config
@@ -119,8 +152,9 @@ tasks:
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
+      - "--build_tag_filters=-docs"
     test_flags:
-      - "--test_tag_filters=-integration-test,-acceptance-test"
+      - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
@@ -262,34 +296,6 @@ tasks:
     name: multi_python_versions integration tests on Windows
     working_directory: examples/multi_python_versions
     platform: windows
-
-  integration_test_pip_install_ubuntu_min:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: pip_install integration tests on Ubuntu using minimum supported Bazel version
-    working_directory: examples/pip_install
-    platform: ubuntu2004
-  integration_test_pip_install_ubuntu:
-    <<: *reusable_build_test_all
-    name: pip_install integration tests on Ubuntu
-    working_directory: examples/pip_install
-    platform: ubuntu2004
-  integration_test_pip_install_debian:
-    <<: *reusable_build_test_all
-    name: pip_install integration tests on Debian
-    working_directory: examples/pip_install
-    platform: debian11
-  integration_test_pip_install_macos:
-    <<: *reusable_build_test_all
-    name: pip_install integration tests on macOS
-    working_directory: examples/pip_install
-    platform: macos
-  integration_test_pip_install_windows:
-    <<: *reusable_build_test_all
-    name: pip_install integration tests on Windows
-    working_directory: examples/pip_install
-    platform: windows
-
   integration_test_pip_parse_ubuntu_min:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
@@ -567,34 +573,34 @@ tasks:
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: ubuntu2004
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_ubuntu:
     name: compile_pip_requirements test from external repo on Ubuntu
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: ubuntu2004
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_debian:
     name: compile_pip_requirements test from external repo on Debian
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: debian11
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_macos:
     name: compile_pip_requirements test from external repo on macOS
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: macos
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_windows:
     name: compile_pip_requirements test from external repo on Windows
     working_directory: tests/compile_pip_requirements_test_from_external_workspace
     platform: windows
     shell_commands:
-    # Assert that @external_repository//:requirements_test does the right thing.
-    - "bazel test @external_repository//..."
+    # Assert that @compile_pip_requirements//:requirements_test does the right thing.
+    - "bazel test @compile_pip_requirements//..."
 

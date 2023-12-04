@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 # gazelle:python_extension enabled
 # gazelle:python_root
@@ -16,5 +16,14 @@ py_library(
         "foo/__init__.py",
     ],
     visibility = ["//:__subpackages__"],
-    deps = ["@root_pip_deps_rootboto3//:pkg"],
+    deps = ["@root_pip_deps//rootboto3"],
+)
+
+py_test(
+    name = "coarse_grained_test",
+    srcs = [
+        "bar/bar_test.py",
+        "foo/bar/bar_test.py",
+    ],
+    main = "__test__.py",
 )

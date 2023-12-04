@@ -49,19 +49,19 @@ def py_console_script_binary(
     """Generate a py_binary for a console_script entry_point.
 
     Args:
-        name: str, The name of the resulting target.
-        pkg: target, the package for which to generate the script.
-        entry_points_txt: optional target, the entry_points.txt file to parse
+        name: [`target-name`] The name of the resulting target.
+        pkg: {any}`simple label` the package for which to generate the script.
+        entry_points_txt: optional [`label`], the entry_points.txt file to parse
             for available console_script values. It may be a single file, or a
             group of files, but must contain a file named `entry_points.txt`.
             If not specified, defaults to the `dist_info` target in the same
             package as the `pkg` Label.
-        script: str, The console script name that the py_binary is going to be
+        script: [`str`], The console script name that the py_binary is going to be
             generated for. Defaults to the normalized name attribute.
-        binary_rule: callable, The rule/macro to use to instantiate
-            the target. It's expected to behave like `py_binary`.
-            Defaults to @rules_python//python:py_binary.bzl#py_binary.
-        **kwargs: Extra parameters forwarded to binary_rule.
+        binary_rule: {any}`rule callable`, The rule/macro to use to instantiate
+            the target. It's expected to behave like {any}`py_binary`.
+            Defaults to {any}`py_binary`.
+        **kwargs: Extra parameters forwarded to `binary_rule`.
     """
     main = "rules_python_entry_point_{}.py".format(name)
 

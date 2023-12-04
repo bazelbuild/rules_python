@@ -14,22 +14,20 @@
 
 ""
 
-load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//:version.bzl", "MINIMUM_BAZEL_VERSION")
 
 _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private:update_pip_deps'
     (
         "pypi__build",
-        "https://files.pythonhosted.org/packages/03/97/f58c723ff036a8d8b4d3115377c0a37ed05c1f68dd9a0d66dab5e82c5c1c/build-0.9.0-py3-none-any.whl",
-        "38a7a2b7a0bdc61a42a0a67509d88c71ecfc37b393baba770fae34e20929ff69",
+        "https://files.pythonhosted.org/packages/58/91/17b00d5fac63d3dca605f1b8269ba3c65e98059e1fd99d00283e42a454f0/build-0.10.0-py3-none-any.whl",
+        "af266720050a66c893a6096a2f410989eeac74ff9a68ba194b3f6473e8e26171",
     ),
     (
         "pypi__click",
-        "https://files.pythonhosted.org/packages/76/0a/b6c5f311e32aeb3b406e03c079ade51e905ea630fc19d1262a46249c1c86/click-8.0.1-py3-none-any.whl",
-        "fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6",
+        "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl",
+        "ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28",
     ),
     (
         "pypi__colorama",
@@ -38,8 +36,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__importlib_metadata",
-        "https://files.pythonhosted.org/packages/d7/31/74dcb59a601b95fce3b0334e8fc9db758f78e43075f22aeb3677dfb19f4c/importlib_metadata-1.4.0-py2.py3-none-any.whl",
-        "bdd9b7c397c273bcc9a11d6629a38487cd07154fa255a467bf704cd2c258e359",
+        "https://files.pythonhosted.org/packages/cc/37/db7ba97e676af155f5fcb1a35466f446eadc9104e25b83366e8088c9c926/importlib_metadata-6.8.0-py3-none-any.whl",
+        "3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb",
     ),
     (
         "pypi__installer",
@@ -48,13 +46,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__more_itertools",
-        "https://files.pythonhosted.org/packages/bd/3f/c4b3dbd315e248f84c388bd4a72b131a29f123ecacc37ffb2b3834546e42/more_itertools-8.13.0-py3-none-any.whl",
-        "c5122bffc5f104d37c1626b8615b511f3427aa5389b94d61e5ef8236bfbc3ddb",
+        "https://files.pythonhosted.org/packages/5a/cb/6dce742ea14e47d6f565589e859ad225f2a5de576d7696e0623b784e226b/more_itertools-10.1.0-py3-none-any.whl",
+        "64e0735fcfdc6f3464ea133afe8ea4483b1c5fe3a3d69852e6503b43a0b222e6",
     ),
     (
         "pypi__packaging",
-        "https://files.pythonhosted.org/packages/8f/7b/42582927d281d7cb035609cd3a543ffac89b74f3f4ee8e1c50914bcb57eb/packaging-22.0-py3-none-any.whl",
-        "957e2148ba0e1a3b282772e791ef1d8083648bc131c8ab0c1feba110ce1146c3",
+        "https://files.pythonhosted.org/packages/ab/c3/57f0601a2d4fe15de7a553c00adbc901425661bf048f2a22dfc500caf121/packaging-23.1-py3-none-any.whl",
+        "994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61",
     ),
     (
         "pypi__pep517",
@@ -63,18 +61,23 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/09/bd/2410905c76ee14c62baf69e3f4aa780226c1bbfc9485731ad018e35b0cb5/pip-22.3.1-py3-none-any.whl",
-        "908c78e6bc29b676ede1c4d57981d490cb892eb45cd8c214ab6298125119e077",
+        "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl",
+        "7ccf472345f20d35bdc9d1841ff5f313260c2c33fe417f48c30ac46cccabf5be",
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/5e/e8/f6d7d1847c7351048da870417724ace5c4506e816b38db02f4d7c675c189/pip_tools-6.12.1-py3-none-any.whl",
-        "f0c0c0ec57b58250afce458e2e6058b1f30a4263db895b7d72fd6311bf1dc6f7",
+        "https://files.pythonhosted.org/packages/e8/df/47e6267c6b5cdae867adbdd84b437393e6202ce4322de0a5e0b92960e1d6/pip_tools-7.3.0-py3-none-any.whl",
+        "8717693288720a8c6ebd07149c93ab0be1fced0b5191df9e9decd3263e20d85e",
+    ),
+    (
+        "pypi__pyproject_hooks",
+        "https://files.pythonhosted.org/packages/d5/ea/9ae603de7fbb3df820b23a70f6aff92bf8c7770043254ad8d2dc9d6bcba4/pyproject_hooks-1.0.0-py3-none-any.whl",
+        "283c11acd6b928d2f6a7c73fa0d01cb2bdc5f07c57a2eeb6e83d5e56b97976f8",
     ),
     (
         "pypi__setuptools",
-        "https://files.pythonhosted.org/packages/7c/5b/3d92b9f0f7ca1645cba48c080b54fe7d8b1033a4e5720091d1631c4266db/setuptools-60.10.0-py3-none-any.whl",
-        "782ef48d58982ddb49920c11a0c5c9c0b02e7d7d1c2ad0aa44e1a1e133051c96",
+        "https://files.pythonhosted.org/packages/4f/ab/0bcfebdfc3bfa8554b2b2c97a555569c4c1ebc74ea288741ea8326c51906/setuptools-68.1.2-py3-none-any.whl",
+        "3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b",
     ),
     (
         "pypi__tomli",
@@ -83,13 +86,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__wheel",
-        "https://files.pythonhosted.org/packages/bd/7c/d38a0b30ce22fc26ed7dbc087c6d00851fb3395e9d0dac40bec1f905030c/wheel-0.38.4-py3-none-any.whl",
-        "b60533f3f5d530e971d6737ca6d58681ee434818fab630c83a734bb10c083ce8",
+        "https://files.pythonhosted.org/packages/b8/8b/31273bf66016be6ad22bb7345c37ff350276cfd46e389a0c2ac5da9d9073/wheel-0.41.2-py3-none-any.whl",
+        "75909db2664838d015e3d9139004ee16711748a52c8f336b52882266540215d8",
     ),
     (
         "pypi__zipp",
-        "https://files.pythonhosted.org/packages/f4/50/cc72c5bcd48f6e98219fc4a88a5227e9e28b81637a99c49feba1d51f4d50/zipp-1.0.0-py2.py3-none-any.whl",
-        "8dda78f06bd1674bd8720df8a50bb47b6e1233c503a4eed8e7810686bde37656",
+        "https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl",
+        "679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0",
     ),
     # END: maintained by 'bazel run //tools/private:update_pip_deps'
 ]
@@ -132,13 +135,6 @@ def pip_install_dependencies():
 
     (However we call it from pip_install, making it optional for users to do so.)
     """
-
-    # We only support Bazel LTS and rolling releases.
-    # Give the user an obvious error to upgrade rather than some obscure missing symbol later.
-    # It's not guaranteed that users call this function, but it's used by all the pip fetch
-    # repository rules so it's likely that most users get the right error.
-    versions.check(MINIMUM_BAZEL_VERSION)
-
     for (name, url, sha256) in _RULE_DEPS:
         maybe(
             http_archive,

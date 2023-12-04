@@ -17,6 +17,7 @@ package python
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,58 +27,50 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
 )
 
 var (
+	parserCmd    *exec.Cmd
 	parserStdin  io.WriteCloser
 	parserStdout io.Reader
 	parserMutex  sync.Mutex
 )
 
 func startParserProcess(ctx context.Context) {
-	parseScriptRunfile, err := runfiles.Rlocation("rules_python_gazelle_plugin/python/parse")
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
+	// due to #691, we need a system interpreter to boostrap, part of which is
+	// to locate the hermetic interpreter.
+	parserCmd = exec.CommandContext(ctx, "python3", helperPath, "parse")
+	parserCmd.Stderr = os.Stderr
 
-	cmd := exec.CommandContext(ctx, parseScriptRunfile)
-
-	cmd.Stderr = os.Stderr
-
-	stdin, err := cmd.StdinPipe()
+	stdin, err := parserCmd.StdinPipe()
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)
 	}
 	parserStdin = stdin
 
-	stdout, err := cmd.StdoutPipe()
+	stdout, err := parserCmd.StdoutPipe()
 	if err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)
 	}
 	parserStdout = stdout
 
-	if err := cmd.Start(); err != nil {
+	if err := parserCmd.Start(); err != nil {
 		log.Printf("failed to initialize parser: %v\n", err)
 		os.Exit(1)
 	}
-
-	go func() {
-		if err := cmd.Wait(); err != nil {
-			log.Printf("failed to wait for parser: %v\n", err)
-			os.Exit(1)
-		}
-	}()
 }
 
 func shutdownParserProcess() {
 	if err := parserStdin.Close(); err != nil {
 		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
+	}
+
+	if err := parserCmd.Wait(); err != nil {
+		log.Printf("failed to wait for parser: %v\n", err)
 	}
 }
 
