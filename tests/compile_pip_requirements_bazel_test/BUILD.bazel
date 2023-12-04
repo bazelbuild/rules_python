@@ -1,0 +1,51 @@
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python//python:packaging.bzl", "py_wheel")
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+    requirements_txt = "requirements_lock.txt",
+    args = [
+        "--index-url",
+        "http://localhost:8989/simple/",
+    ],
+)
+
+py_wheel(
+    name = "pkg_a",
+    distribution = "pkg-a",
+    version = "1.0",
+    requires = ["pkg-b"],
+)
+
+py_wheel(
+    name = "pkg_b",
+    distribution = "pkg-b",
+    version = "1.1",
+    requires = ["pkg-c", "pkg-d"],
+)
+
+py_wheel(
+    name = "pkg_c",
+    distribution = "pkg-c",
+    version = "2.0",
+)
+
+py_wheel(
+    name = "pkg_d",
+    distribution = "pkg-d",
+    version = "3.0",
+)
+
+py_binary(
+    name = "pypiserver_runner",
+    srcs = ["pypiserver_runner.py"],
+    data = [
+        ":pkg-a",
+        ":pkg-b",
+        ":pkg-c",
+        ":pkg-d",
+        "@rules_python//tests:pypiserver",
+        "@rules_python//python/runfiles",
+    ],
+)

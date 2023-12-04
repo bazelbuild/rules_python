@@ -21,8 +21,8 @@ _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private:update_pip_deps'
     (
         "pypi__build",
-        "https://files.pythonhosted.org/packages/58/91/17b00d5fac63d3dca605f1b8269ba3c65e98059e1fd99d00283e42a454f0/build-0.10.0-py3-none-any.whl",
-        "af266720050a66c893a6096a2f410989eeac74ff9a68ba194b3f6473e8e26171",
+        "https://files.pythonhosted.org/packages/93/dd/b464b728b866aaa62785a609e0dd8c72201d62c5f7c53e7c20f4dceb085f/build-1.0.3-py3-none-any.whl",
+        "589bf99a67df7c9cf07ec0ac0e5e2ea5d4b37ac63301c4986d1acb126aa83f8f",
     ),
     (
         "pypi__click",
@@ -51,8 +51,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__packaging",
-        "https://files.pythonhosted.org/packages/ab/c3/57f0601a2d4fe15de7a553c00adbc901425661bf048f2a22dfc500caf121/packaging-23.1-py3-none-any.whl",
-        "994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61",
+        "https://files.pythonhosted.org/packages/ec/1a/610693ac4ee14fcdf2d9bf3c493370e4f2ef7ae2e19217d7a237ff42367d/packaging-23.2-py3-none-any.whl",
+        "8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7",
     ),
     (
         "pypi__pep517",
@@ -61,13 +61,18 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip",
-        "https://files.pythonhosted.org/packages/50/c2/e06851e8cc28dcad7c155f4753da8833ac06a5c704c109313b8d5a62968a/pip-23.2.1-py3-none-any.whl",
-        "7ccf472345f20d35bdc9d1841ff5f313260c2c33fe417f48c30ac46cccabf5be",
+        "https://files.pythonhosted.org/packages/47/6a/453160888fab7c6a432a6e25f8afe6256d0d9f2cbd25971021da6491d899/pip-23.3.1-py3-none-any.whl",
+        "55eb67bb6171d37447e82213be585b75fe2b12b359e993773aca4de9247a052b",
     ),
     (
         "pypi__pip_tools",
         "https://files.pythonhosted.org/packages/e8/df/47e6267c6b5cdae867adbdd84b437393e6202ce4322de0a5e0b92960e1d6/pip_tools-7.3.0-py3-none-any.whl",
         "8717693288720a8c6ebd07149c93ab0be1fced0b5191df9e9decd3263e20d85e",
+    ),
+    (
+        "pypi__pypiserver",
+        "https://files.pythonhosted.org/packages/34/95/6c70e2f7e8375354fd7b1db08405c93674f2e4ce4e714f379fadd06a92b1/pypiserver-2.0.1-py2.py3-none-any.whl",
+        "1dd98fb99d2da4199fb44c7284e57d69a9f7fda2c6c8dc01975c151c592677bf",
     ),
     (
         "pypi__pyproject_hooks",
@@ -76,8 +81,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__setuptools",
-        "https://files.pythonhosted.org/packages/4f/ab/0bcfebdfc3bfa8554b2b2c97a555569c4c1ebc74ea288741ea8326c51906/setuptools-68.1.2-py3-none-any.whl",
-        "3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b",
+        "https://files.pythonhosted.org/packages/bb/26/7945080113158354380a12ce26873dd6c1ebd88d47f5bc24e2c5bb38c16a/setuptools-68.2.2-py3-none-any.whl",
+        "b454a35605876da60632df1a60f736524eb73cc47bbc9f3f1ef1b644de74fd2a",
     ),
     (
         "pypi__tomli",
@@ -86,13 +91,13 @@ _RULE_DEPS = [
     ),
     (
         "pypi__wheel",
-        "https://files.pythonhosted.org/packages/b8/8b/31273bf66016be6ad22bb7345c37ff350276cfd46e389a0c2ac5da9d9073/wheel-0.41.2-py3-none-any.whl",
-        "75909db2664838d015e3d9139004ee16711748a52c8f336b52882266540215d8",
+        "https://files.pythonhosted.org/packages/fa/7f/4c07234086edbce4a0a446209dc0cb08a19bb206a3ea53b2f56a403f983b/wheel-0.41.3-py3-none-any.whl",
+        "488609bc63a29322326e05560731bf7bfea8e48ad646e1f5e40d366607de0942",
     ),
     (
         "pypi__zipp",
-        "https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl",
-        "679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0",
+        "https://files.pythonhosted.org/packages/d9/66/48866fc6b158c81cc2bfecc04c480f105c6040e8b077bc54c634b4a67926/zipp-3.17.0-py3-none-any.whl",
+        "0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31",
     ),
     # END: maintained by 'bazel run //tools/private:update_pip_deps'
 ]

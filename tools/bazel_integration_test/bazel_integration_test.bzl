@@ -84,7 +84,7 @@ _config = rule(
     attrs = _ATTRS,
 )
 
-def bazel_integration_test(name, override_bazel_version = None, bzlmod = False, dirname = None, **kwargs):
+def bazel_integration_test(name, override_bazel_version = None, bazel_commands = None, bzlmod = False, dirname = None, **kwargs):
     """Wrapper macro to set default srcs and run a py_test with config
 
     Args:
@@ -111,6 +111,7 @@ def bazel_integration_test(name, override_bazel_version = None, bzlmod = False, 
         name = "_%s_config" % name,
         workspace_files = workspace_files,
         bazel_binary = bazel_binary,
+        bazel_commands = bazel_commands,
         bzlmod = bzlmod,
     )
 
