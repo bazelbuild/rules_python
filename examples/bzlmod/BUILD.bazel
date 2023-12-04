@@ -25,10 +25,10 @@ compile_pip_requirements_3_9(
 # with pip-compile.
 compile_pip_requirements_3_10(
     name = "requirements_3_10",
+    timeout = "moderate",
     src = "requirements.in",
     requirements_txt = "requirements_lock_3_10.txt",
     requirements_windows = "requirements_windows_3_10.txt",
-    timeout = "moderate",
 )
 
 # The rules below are language specific rules defined in
