@@ -19,7 +19,6 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	pathpkg "path"
 	"path/filepath"
 	"strings"
 
@@ -255,24 +254,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	if cfg.PerFileGeneration() {
 		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
 		pyLibraryFilenames.Each(func(index int, filename interface{}) {
-			var pyLibraryTargetName string
-			if filename == pyLibraryEntrypointFilename {
-				if !nonEmptyInit {
-					return // ignore empty __init__.py.
-				}
-				if args.File.Pkg == "" {
-					// As per Python spec, an __init__.py file does not make sense without
-					// a package name, but someone can technically configure the Bazel
-					// workspace as the Python package (i.e. parent of the Bazel workspace
-					// is part of PYTHONPATH), in which case this should be the workspace
-					// name, but there is no mechanism to obtain that here. So let's just
-					// call it "__init__".
-					pyLibraryTargetName = "__init__"
-				} else {
-					pyLibraryTargetName = pathpkg.Base(args.File.Pkg)
-				}
-			} else {
-				pyLibraryTargetName = strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if filename == pyLibraryEntrypointFilename && !nonEmptyInit {
+				return // ignore empty __init__.py.
 			}
 			srcs := treeset.NewWith(godsutils.StringComparator, filename)
 			if hasInit && nonEmptyInit {

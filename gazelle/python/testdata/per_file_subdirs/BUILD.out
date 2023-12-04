@@ -6,5 +6,5 @@ py_library(
     name = "foo",
     srcs = ["foo.py"],
     visibility = ["//:__subpackages__"],
-    deps = ["//bar"],
+    deps = ["//bar:__init__"],
 )
