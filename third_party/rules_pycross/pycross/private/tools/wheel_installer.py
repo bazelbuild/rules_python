@@ -98,16 +98,6 @@ def main(args: Any) -> None:
 
     setup_namespace_pkg_compatibility(lib_dir)
 
-<<<<<<< HEAD
-    patch_args = [args.patch_tool] + args.patch_arg
-    patch_dir = args.patch_dir or "."
-    for patch in (args.patch or []):
-        with patch.open("r") as stdin:
-            # TODO(philsc): Only print stdout/stderr on failure.
-            subprocess.run(patch_args, stdin=stdin, check=True, cwd=args.directory / patch_dir)
-
-||||||| d8966b8
-=======
     if args.patch:
         if not args.patch_tool and not args.patch_tool_target:
             raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
@@ -132,7 +122,6 @@ def main(args: Any) -> None:
                     print(error.stdout.decode("utf-8"))
                     raise
 
->>>>>>> philsc/add-patch-support-to-py-wheel-library
 
 def parse_flags(argv) -> Any:
     parser = argparse.ArgumentParser(description="Extract a Python wheel.")
