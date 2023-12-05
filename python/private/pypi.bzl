@@ -34,13 +34,22 @@ def generate_package_alias(intermediate):
 
     info_per_config = intermediate[package]
     actual_select = {}
+    underlying_lib_select = {}
     target_compatible_with_select = {
         "//conditions:default": ["@platforms//:incompatible"],
     }
     for config, info in info_per_config.items():
         repo_name = generate_repo_name_for_extracted_wheel(package, info)
         actual_select[config] = "@{}//:library".format(repo_name)
+        underlying_lib_select[config] = "@{}//:underlying_library".format(repo_name)
         target_compatible_with_select[config] = []
+
+    native.alias(
+        name = "underlying_{}".format(package),
+        actual = select(underlying_lib_select),
+        target_compatible_with = select(target_compatible_with_select),
+        visibility = ["//visibility:public"],
+    )
 
     native.alias(
         name = package,
@@ -80,33 +89,35 @@ def _accumulate_transitive_deps_inner(intermediate, configs, package, already_ac
         if sets.length(pending_deps) > 0:
             fail("Failed to accumulate the transitive deps for {} in 1000 iterations!".format(package))
 
-def _accumulate_transitive_deps(intermediate, configs, package):
-    already_accumulated = {config: sets.make([package]) for config in configs}
-    _accumulate_transitive_deps_inner(intermediate, configs, package, already_accumulated)
+def _accumulate_transitive_deps(intermediate, all_configs, package):
+    already_accumulated = {config: sets.make([package]) for config in all_configs}
+    _accumulate_transitive_deps_inner(intermediate, all_configs, package, already_accumulated)
     return {config: sets.to_list(sets.remove(set, package)) for config, set in already_accumulated.items()}
 
 def to_alias_refs(alias_repo_name, deps):
-    return ["@{}//{}".format(alias_repo_name, dep) for dep in deps]
+    return ["@{}//{}:underlying_{}".format(alias_repo_name, dep, dep) for dep in deps]
 
-def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediate, configs, package):
+def wrapped_py_wheel_library(name, alias_repo_name, wheel_repo_name, intermediate, all_configs, package):
     kwargs = {}
     for arg_name, default in _FORWARDED_ARGS:
         _forward_arg(kwargs, intermediate, package, arg_name, default, _no_transform)
 
-    deps_dict = _accumulate_transitive_deps(intermediate, configs, package)
+    deps_dict = _accumulate_transitive_deps(intermediate, all_configs, package)
     deps = select({config: to_alias_refs(alias_repo_name, deps) for config, deps in deps_dict.items()})
 
-    # TODO(phil): Probably need to split this in order to support circular
-    # dependencies. An "underlying" library and a "high level" that depends on
-    # the transitive closure of underlying libraries. Need to find a good
-    # example of this though. torch, dvc[gs]==2.43.1, apache-airflow all
-    # require sdist support.
     py_wheel_library(
-        name = name,
+        name = "underlying_{}".format(name),
         wheel = "@{}//file".format(wheel_repo_name),
         enable_implicit_namespace_pkgs = True,
         # TODO(phil): Can we restrict visibility?
         visibility = ["//visibility:public"],
-        deps = deps,
         **kwargs
+    )
+
+    py_library(
+        name = name,
+        deps = deps + [
+            ":underlying_{}".format(name),
+        ],
+        visibility = ["//visibility:public"],
     )

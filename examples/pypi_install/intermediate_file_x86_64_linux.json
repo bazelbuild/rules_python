@@ -2,7 +2,7 @@
     "pkg-a": {
         "@//:x86_64_linux": {
             "url": "http://localhost:8989/packages/pkg_a-1.0-py3-none-any.whl",
-            "sha256": "41516d88caba997b8954aca43f3386d36ea505854cb069beba39db7fb490aa02",
+            "sha256": "d69d2e3d0ae4c2553808b3045997526e1cdd9cd326af69e764ae07ff8a5b8ab1",
             "deps": [
                 "pkg-b"
             ]

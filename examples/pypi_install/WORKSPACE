@@ -27,9 +27,9 @@ pypi_install(
     # repo-relative.
     # TODO(phil): Add test to make sure that the config settings are mutually
     # exclusive.
-    pip_installation_report = {
-        "@//:x86_64_linux": "//:intermediate_file_x86_64_linux.json",
-    },
+    pip_installation_report = [
+        "//:intermediate_file_x86_64_linux.json",
+    ],
 )
 
 load("@pypi_install//:packages.bzl", "load_pypi_packages")

@@ -36,6 +36,11 @@ compile_pip_requirements(
         "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },
     extra_args = [
+        # Since we may frequently tweak the wheels for development, we can't
+        # really rely on consistent hashes.
+        "--no-reuse-hashes",
+        # Point at the server run via:
+        # bazel run //wheels:pypiserver_runner
         "--index-url",
         "http://localhost:8989/simple/",
     ],

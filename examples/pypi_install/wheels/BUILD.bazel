@@ -10,7 +10,7 @@ load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
     ]),
 ),py_package(
     name = "{}_py_package".format(name),
-    packages = [name],
+    packages = ["wheels.src.{}".format(name)],
     deps = [":{}_py_library".format(name)],
 )) for name in (
     "pkg_a",
@@ -26,7 +26,7 @@ py_wheel(
     version = "1.0",
     requires = ["pkg-b"],
     deps = [":pkg_a_py_package"],
-    strip_path_prefixes = ["src"],
+    strip_path_prefixes = ["wheels/src"],
 )
 
 py_wheel(
@@ -35,7 +35,7 @@ py_wheel(
     version = "1.1",
     requires = ["pkg-c", "pkg-d"],
     deps = [":pkg_b_py_package"],
-    strip_path_prefixes = ["src"],
+    strip_path_prefixes = ["wheels/src"],
 )
 
 py_wheel(
@@ -43,7 +43,7 @@ py_wheel(
     distribution = "pkg-c",
     version = "2.0",
     deps = [":pkg_c_py_package"],
-    strip_path_prefixes = ["src"],
+    strip_path_prefixes = ["wheels/src"],
 )
 
 py_wheel(
@@ -52,7 +52,7 @@ py_wheel(
     version = "3.0",
     requires = ["pkg-b"],
     deps = [":pkg_d_py_package"],
-    strip_path_prefixes = ["src"],
+    strip_path_prefixes = ["wheels/src"],
 )
 
 py_binary(

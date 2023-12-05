@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:normalize_name.bzl", "normalize_name")
@@ -20,11 +21,7 @@ load(":pypi_util.bzl", "generate_repo_name_for_download", "generate_repo_name_fo
 
 def pypi_install(pip_installation_report = None, **kwargs):
     pip_install_dependencies()
-
-    pip_installation_report_swapped = {}
-    for config_setting, report in pip_installation_report.items():
-        pip_installation_report_swapped[report] = config_setting
-    _pypi_install(pip_installation_report = pip_installation_report_swapped, **kwargs)
+    _pypi_install(pip_installation_report = pip_installation_report, **kwargs)
 
 def _clean_info(info):
     result = dict(**info)
@@ -44,21 +41,18 @@ def _clean_intermediate(intermediate):
 def _pypi_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", "\n", executable = False)
     if repository_ctx.attr.pip_installation_report:
-        intermediate = _combine_intermediate_files(
+        intermediate, config_settings = _combine_intermediate_files(
             repository_ctx,
             repository_ctx.attr.pip_installation_report,
         )
     else:
         intermediate = {}
-
-    configs = []
-    for package in intermediate:
-        configs.extend(intermediate[package].keys())
+        config_settings = sets.make([])
 
     lines = ["INTERMEDIATE = {}".format(json.encode_indent(_clean_intermediate(intermediate))), ""]
     repository_ctx.file("intermediate.bzl", "\n".join(lines), executable = False)
 
-    lines = ["CONFIGS = {}".format(json.encode_indent(configs)), ""]
+    lines = ["CONFIGS = {}".format(json.encode_indent(sets.to_list(config_settings))), ""]
     repository_ctx.file("configs.bzl", "\n".join(lines), executable = False)
 
     lines = [
@@ -79,8 +73,7 @@ def _pypi_install_impl(repository_ctx):
 _pypi_install = repository_rule(
     implementation = _pypi_install_impl,
     attrs = {
-        # TODO(phil): Add support for a single installation report.
-        "pip_installation_report": attr.label_keyed_string_dict(
+        "pip_installation_report": attr.label_list(
             allow_files = True,
         ),
     },
@@ -88,10 +81,11 @@ _pypi_install = repository_rule(
 
 def _combine_intermediate_files(repository_ctx, installation_reports):
     combined = {}
+    all_configs = sets.make([])
 
     # TODO(phil): Figure out how to deal with a single intermediate file. What
     # "config" setting should that have?
-    for intermediate_label, config_setting in installation_reports.items():
+    for intermediate_label in installation_reports:
         intermediate = json.decode(repository_ctx.read(intermediate_label))
         for package in intermediate:
             config_settings = intermediate[package].keys()
@@ -99,6 +93,7 @@ def _combine_intermediate_files(repository_ctx, installation_reports):
                 fail("Expected 1 config setting for package %s in %s, but got %d." %
                      (package, intermediate_label, len(config_settings)))
             config_setting = config_settings[0]
+            sets.insert(all_configs, config_setting)
 
             info = combined.setdefault(package, {})
             if config_setting in info:
@@ -106,7 +101,7 @@ def _combine_intermediate_files(repository_ctx, installation_reports):
                      (package, intermediate_label))
             info[config_setting] = intermediate[package][config_setting]
 
-    return combined
+    return combined, all_configs
 
 def load_pypi_packages_internal(intermediate, intermediate_repo_name, alias_repo_name, **kwargs):
     # Only download a wheel/tarball once. We do this by tracking which SHA sums
@@ -160,7 +155,7 @@ def _wheel_library_repo_impl(repository_ctx):
         """    alias_repo_name="{}",""".format(repository_ctx.attr.alias_repo_name),
         """    wheel_repo_name="{}",""".format(repository_ctx.attr.wheel_repo_name),
         """    intermediate=INTERMEDIATE,""",
-        """    configs=CONFIGS,""",
+        """    all_configs=CONFIGS,""",
         """    package="{}",""".format(repository_ctx.attr.intermediate_package),
         """)""",
     ]
@@ -183,11 +178,6 @@ def _generate_package_aliases_impl(repository_ctx):
         fail("Expected intermediate.bzl to start with 'INTERMEDIATE = '. Did the implementation get out of sync?")
     intermediate = json.decode(bzl_intermediate[len("INTERMEDIATE = "):])
 
-    dep_tracked_lines = [
-        """load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")""",
-        """""",
-    ]
-
     for package in intermediate:
         lines = [
             """load("{}", "INTERMEDIATE")""".format(repository_ctx.attr.intermediate),
@@ -195,15 +185,6 @@ def _generate_package_aliases_impl(repository_ctx):
             """_generate_package_alias(INTERMEDIATE)""",
         ]
         repository_ctx.file("{}/BUILD.bazel".format(package), "\n".join(lines), executable = False)
-
-        dep_tracked_lines += [
-            """bool_flag(""",
-            """    name="{}",""".format(package),
-            """    build_setting_default = False,""",
-            """)""",
-        ]
-
-    repository_ctx.file("_package_already_included/BUILD.bazel", "\n".join(dep_tracked_lines), executable = False)
 
 generate_package_aliases = repository_rule(
     implementation = _generate_package_aliases_impl,
