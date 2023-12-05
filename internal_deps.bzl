@@ -173,14 +173,12 @@ def rules_python_internal_deps():
         ],
     )
 
-
     http_archive(
         name = "rules_proto",
-        sha256 = "903af49528dc37ad2adbb744b317da520f133bc1cbbecbdd2a6c546c9ead080b",
-        strip_prefix = "rules_proto-6.0.0-rc0",
-        url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc0/rules_proto-6.0.0-rc0.tar.gz",
+        sha256 = "904a8097fae42a690c8e08d805210e40cccb069f5f9a0f6727cf4faa7bed2c9c",
+        strip_prefix = "rules_proto-6.0.0-rc1",
+        url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc1/rules_proto-6.0.0-rc1.tar.gz",
     )
-
 
     http_archive(
         name = "com_google_protobuf",
