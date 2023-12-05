@@ -15,22 +15,18 @@
 import sys
 
 import pkg_resources
-import requests
-import requests.hello
 
+import pkg_a.foo
 
-def cognitojwt_version() -> str:
-    return pkg_resources.require("cognitojwt")[0].version
+def pkg_a_version() -> str:
+    return pkg_resources.require("pkg-a")[0].version
 
-def requests_version() -> str:
-    return requests.__version__
-
-def patched_hello() -> str:
-    return requests.hello.patched_function()
+def pkg_a_function() -> str:
+    return pkg_a.foo.original_function()
 
 def main(argv):
-    print(f"cognitojwt version: {cognitojwt_version()}")
-    print(f"requests version: {requests_version()}")
+    print(f"pkg_a version: {pkg_a_version()}")
+    print(f"pkg_a function: {pkg_a_function()}")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

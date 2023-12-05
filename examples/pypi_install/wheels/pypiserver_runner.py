@@ -1,3 +1,5 @@
+import shutil
+import sys
 import tempfile
 from pathlib import Path
 
@@ -24,6 +26,15 @@ def main():
             shutil.copy(r.Rlocation("rules_python_pypi_install_example/wheels/{}".format(wheel)), wheelhouse)
 
         sys.argv = [
-                # TODO(phil): Finish this.
-            "
+            "pypiserver",
+            "run",
+            "-p",
+            "8989",
+            str(wheelhouse),
+        ]
+        print("Running: " + " ".join(sys.argv))
         pypiserver_main()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

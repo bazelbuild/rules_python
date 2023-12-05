@@ -1,127 +1,37 @@
 {
-    "certifi": {
+    "pkg-a": {
         "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/9d/19/59961b522e6757f0c9097e4493fa906031b95b3ebe9360b2c3083561a6b4/certifi-2023.5.7-py3-none-any.whl",
-            "sha256": "c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716",
-            "deps": []
-        }
-    },
-    "cffi": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/2d/86/3ca57cddfa0419f6a95d1c8478f8f622ba597e3581fd501bbb915b20eb75/cffi-1.15.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-            "sha256": "5d598b938678ebf3c67377cdd45e09d431369c3b1a5b331058c338e201f12b27",
+            "url": "http://localhost:8989/packages/pkg_a-1.0-py3-none-any.whl",
+            "sha256": "41516d88caba997b8954aca43f3386d36ea505854cb069beba39db7fb490aa02",
             "deps": [
-                "pycparser"
+                "pkg-b"
             ]
         }
     },
-    "charset-normalizer": {
+    "pkg-b": {
         "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/33/97/9967fb2d364a9da38557e4af323abcd58cc05bdd8f77e9fd5ae4882772cc/charset_normalizer-3.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-            "sha256": "21fa558996782fc226b529fdd2ed7866c2c6ec91cee82735c98a197fae39f706",
-            "deps": []
-        }
-    },
-    "cognitojwt": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/a5/69/97faafdc4f1900fa1b525cedae0f98aa30b0bb086d076f8d66c68a18b1b2/cognitojwt-1.4.1-py3-none-any.whl",
-            "sha256": "8ee189f82289d140dc750c91e8772436b64b94d071507ace42efc22c525f42ce",
+            "url": "http://localhost:8989/packages/pkg_b-1.1-py3-none-any.whl",
+            "sha256": "a03f9ddf7d79dead3c9527f3028a531a1787f50b892e76344cfdba395c120bcc",
             "deps": [
-                "python-jose"
+                "pkg-c",
+                "pkg-d"
             ]
         }
     },
-    "cryptography": {
+    "pkg-c": {
         "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/1a/c7/b8193a0859fed883738ae99d33fe90edf05c7e3d0fdb1726f8f53d85859e/cryptography-41.0.2-cp37-abi3-manylinux_2_28_x86_64.whl",
-            "sha256": "49c3222bb8f8e800aead2e376cbef687bc9e3cb9b58b29a261210456a7783d83",
+            "url": "http://localhost:8989/packages/pkg_c-2.0-py3-none-any.whl",
+            "sha256": "76cdfc700082ad1baade0c79bd500e2551425e063ebe59caeb0ea5037a5fa669",
+            "deps": []
+        }
+    },
+    "pkg-d": {
+        "@//:x86_64_linux": {
+            "url": "http://localhost:8989/packages/pkg_d-3.0-py3-none-any.whl",
+            "sha256": "f8c16f8099eff9d0c0e409ea53471e7c56cdb700348ba314969fe490c3dce2f2",
             "deps": [
-                "cffi"
+                "pkg-b"
             ]
-        }
-    },
-    "ecdsa": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/09/d4/4f05f5d16a4863b30ba96c23b23e942da8889abfa1cdbabf2a0df12a4532/ecdsa-0.18.0-py2.py3-none-any.whl",
-            "sha256": "80600258e7ed2f16b9aa1d7c295bd70194109ad5a30fdee0eaeefef1d4c559dd",
-            "deps": [
-                "six"
-            ]
-        }
-    },
-    "idna": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/fc/34/3030de6f1370931b9dbb4dad48f6ab1015ab1d32447850b9fc94e60097be/idna-3.4-py3-none-any.whl",
-            "sha256": "90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2",
-            "deps": []
-        }
-    },
-    "pyasn1": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/14/e5/b56a725cbde139aa960c26a1a3ca4d4af437282e20b5314ee6a3501e7dfc/pyasn1-0.5.0-py2.py3-none-any.whl",
-            "sha256": "87a2121042a1ac9358cabcaf1d07680ff97ee6404333bacca15f76aa8ad01a57",
-            "deps": []
-        }
-    },
-    "pycparser": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/62/d5/5f610ebe421e85889f2e55e33b7f9a6795bd982198517d912eb1c76e1a53/pycparser-2.21-py2.py3-none-any.whl",
-            "sha256": "8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9",
-            "deps": []
-        }
-    },
-    "python-jose": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/bd/2d/e94b2f7bab6773c70efc70a61d66e312e1febccd9e0db6b9e0adf58cbad1/python_jose-3.3.0-py2.py3-none-any.whl",
-            "sha256": "9b1376b023f8b298536eedd47ae1089bcdb848f1535ab30555cd92002d78923a",
-            "deps": [
-                "cryptography",
-                "ecdsa",
-                "pyasn1",
-                "rsa"
-            ]
-        }
-    },
-    "requests": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/70/8e/0e2d847013cb52cd35b38c009bb167a1a26b2ce6cd6965bf26b47bc0bf44/requests-2.31.0-py3-none-any.whl",
-            "sha256": "58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f",
-            "deps": [
-                "certifi",
-                "charset-normalizer",
-                "idna",
-                "urllib3"
-            ],
-            "patches": [
-                "@//third_party:requests/0001-Add-a-dummy-patch-for-requests.patch"
-            ],
-            "patch_args": [
-                "-p1"
-            ],
-            "patch_dir": "site-packages"
-        }
-    },
-    "rsa": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl",
-            "sha256": "90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7",
-            "deps": [
-                "pyasn1"
-            ]
-        }
-    },
-    "six": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl",
-            "sha256": "8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254",
-            "deps": []
-        }
-    },
-    "urllib3": {
-        "@//:x86_64_linux": {
-            "url": "https://files.pythonhosted.org/packages/c5/05/c214b32d21c0b465506f95c4f28ccbcba15022e000b043b72b3df7728471/urllib3-1.26.16-py2.py3-none-any.whl",
-            "sha256": "8d36afa7616d8ab714608411b4a3b13e58f463aee519024578e062e141dce20f",
-            "deps": []
         }
     }
 }

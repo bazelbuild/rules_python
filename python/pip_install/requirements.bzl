@@ -132,21 +132,21 @@ def compile_pip_requirements(
         "--allow-unsafe",
     ]
     if generate_hashes:
-        args.append("--generate-hashes")
+        args += ["--generate-hashes"]
     if intermediate_file:
-        args.append("--intermediate-config")
-        args.append(_generate_config_select(intermediate_file))
-        args.append("--intermediate-file")
-        args.append(_generate_loc_select(intermediate_file, loc))
+        args += ["--intermediate-config"]
+        args += _generate_config_select(intermediate_file)
+        args += ["--intermediate-file"]
+        args += _generate_loc_select(intermediate_file, loc)
     if intermediate_file_patcher:
-        args.append("--intermediate-file-patcher={}".format(loc.format(intermediate_file_patcher)))
+        args += ["--intermediate-file-patcher={}".format(loc.format(intermediate_file_patcher))]
     if requirements_linux:
-        args.append("--requirements-linux={}".format(loc.format(requirements_linux)))
+        args += ["--requirements-linux={}".format(loc.format(requirements_linux))]
     if requirements_darwin:
-        args.append("--requirements-darwin={}".format(loc.format(requirements_darwin)))
+        args += ["--requirements-darwin={}".format(loc.format(requirements_darwin))]
     if requirements_windows:
-        args.append("--requirements-windows={}".format(loc.format(requirements_windows)))
-    args.extend(extra_args)
+        args += ["--requirements-windows={}".format(loc.format(requirements_windows))]
+    args += extra_args
 
     deps = [
         requirement("build"),

@@ -19,11 +19,13 @@ import main
 
 class ExampleTest(unittest.TestCase):
     def test_main(self):
-        self.assertEqual("1.4.1", main.cognitojwt_version())
-        self.assertEqual("2.31.0", main.requests_version())
+        self.assertEqual("1.0", main.pkg_a_version())
 
-    def test_patch(self):
-        self.assertEqual("Hello from a patch", main.patched_hello())
+    def test_original(self):
+        self.assertEqual("This is pkg_a", main.pkg_a_function())
+
+    #def test_patch(self):
+    #    self.assertEqual("Hello from a patch", main.patched_hello())
 
 
 if __name__ == "__main__":

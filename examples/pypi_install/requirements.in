@@ -1,8 +1,1 @@
-# Dependency which specifies at least one extra in its dependencies.
-cognitojwt
-
-# Common dependency whose functionality is easy to validate.
-requests
-
-# TODO(philsc): Get a package with circular dependencies.
-# We want to support those packages.
+pkg-a

@@ -217,7 +217,6 @@ def main(
     intermediate_file: Optional[str],
     intermediate_file_patcher: Optional[str],
     requirements_linux: Optional[str],
-    requirements_linux: Optional[str],
     requirements_darwin: Optional[str],
     requirements_windows: Optional[str],
     extra_args: Tuple[str, ...],

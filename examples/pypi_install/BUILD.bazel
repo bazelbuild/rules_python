@@ -5,8 +5,7 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     deps = [
-        "@pypi//cognitojwt",
-        "@pypi//requests",
+        "@pypi//pkg_a",
     ],
 )
 
@@ -19,7 +18,6 @@ py_test(
 # This rule adds a convenient way to update the requirements file.
 compile_pip_requirements(
     name = "requirements",
-    extra_args = ["--allow-unsafe"],
     intermediate_file = {
         "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
@@ -37,6 +35,10 @@ compile_pip_requirements(
     requirements_txt = {
         "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },
+    extra_args = [
+        "--index-url",
+        "http://localhost:8989/simple/",
+    ],
 )
 
 py_binary(
@@ -53,12 +55,12 @@ config_setting(
 )
 
 genquery(
-    name = "cognitojwt_deps",
-    expression = """filter(@pypi//, kind(".* rule", deps(@pypi//cognitojwt)))""",
+    name = "pkg_a_deps",
+    expression = """filter(@pypi//, kind(".* rule", deps(@pypi//pkg_a)))""",
     opts = [
         "--notool_deps",
     ],
-    scope = ["@pypi//cognitojwt"],
+    scope = ["@pypi//pkg_a"],
 )
 
 sh_test(

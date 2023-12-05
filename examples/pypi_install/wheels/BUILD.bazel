@@ -1,21 +1,32 @@
+load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-load("@rules_python//python:packaging.bzl", "py_wheel")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 
-compile_pip_requirements(
-    name = "requirements",
-    src = "requirements.in",
-    requirements_txt = "requirements_lock.txt",
-    args = [
-        "--index-url",
-        "http://localhost:8989/simple/",
-    ],
-)
+
+[(py_library(
+    name = "{}_py_library".format(name),
+    srcs = glob([
+        "src/{}/**/*.py".format(name),
+    ]),
+),py_package(
+    name = "{}_py_package".format(name),
+    packages = [name],
+    deps = [":{}_py_library".format(name)],
+)) for name in (
+    "pkg_a",
+    "pkg_b",
+    "pkg_c",
+    "pkg_d",
+)]
+
 
 py_wheel(
     name = "pkg_a",
     distribution = "pkg-a",
     version = "1.0",
     requires = ["pkg-b"],
+    deps = [":pkg_a_py_package"],
+    strip_path_prefixes = ["src"],
 )
 
 py_wheel(
@@ -23,18 +34,25 @@ py_wheel(
     distribution = "pkg-b",
     version = "1.1",
     requires = ["pkg-c", "pkg-d"],
+    deps = [":pkg_b_py_package"],
+    strip_path_prefixes = ["src"],
 )
 
 py_wheel(
     name = "pkg_c",
     distribution = "pkg-c",
     version = "2.0",
+    deps = [":pkg_c_py_package"],
+    strip_path_prefixes = ["src"],
 )
 
 py_wheel(
     name = "pkg_d",
     distribution = "pkg-d",
     version = "3.0",
+    requires = ["pkg-b"],
+    deps = [":pkg_d_py_package"],
+    strip_path_prefixes = ["src"],
 )
 
 py_binary(
