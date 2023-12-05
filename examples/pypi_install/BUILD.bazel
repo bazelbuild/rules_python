@@ -1,5 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
 py_binary(
     name = "main",
@@ -62,16 +63,25 @@ config_setting(
 genquery(
     name = "pkg_a_deps",
     expression = """filter(@pypi//, kind(".* rule", deps(@pypi//pkg_a)))""",
-    opts = [
-        "--notool_deps",
-    ],
+    opts = ["--notool_deps"],
     scope = ["@pypi//pkg_a"],
 )
 
-sh_test(
-    name = "cognitojwt_deps_test",
-    srcs = ["cognitojwt_deps_test.sh"],
-    data = [
-        ":cognitojwt_deps",
-    ],
+diff_test(
+    name = "pkg_a_deps_test",
+    file1 = ":pkg_a_deps",
+    file2 = "pkg_a_deps.txt",
+)
+
+genquery(
+    name = "pkg_d_deps",
+    expression = """filter(@pypi//, kind(".* rule", deps(@pypi//pkg_d)))""",
+    opts = ["--notool_deps"],
+    scope = ["@pypi//pkg_d"],
+)
+
+diff_test(
+    name = "pkg_d_deps_test",
+    file1 = ":pkg_d_deps",
+    file2 = "pkg_d_deps.txt",
 )

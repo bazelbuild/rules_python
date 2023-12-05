@@ -1,0 +1,3 @@
+@pypi//pkg_b:underlying_pkg_b
+@pypi//pkg_c:underlying_pkg_c
+@pypi//pkg_d:pkg_d
