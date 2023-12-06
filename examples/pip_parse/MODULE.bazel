@@ -13,6 +13,16 @@ python.toolchain(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-serializinghtml",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+        ],
+    },
     hub_name = "pypi",
     python_version = "3.9",
     requirements_lock = "//:requirements_lock.txt",
