@@ -31,6 +31,7 @@ toolchain(
 py_cc_toolchain(
     name = "fake_py_cc_toolchain_impl",
     headers = ":fake_headers",
+    libs = ":fake_libs",
     python_version = "3.999",
     tags = PREVENT_IMPLICIT_BUILDING_TAGS,
 )
@@ -41,6 +42,13 @@ cc_library(
     hdrs = ["fake_header.h"],
     data = ["data.txt"],
     includes = ["fake_include"],
+    tags = PREVENT_IMPLICIT_BUILDING_TAGS,
+)
+
+cc_library(
+    name = "fake_libs",
+    srcs = ["libpython3.so"],
+    data = ["libdata.txt"],
     tags = PREVENT_IMPLICIT_BUILDING_TAGS,
 )
 

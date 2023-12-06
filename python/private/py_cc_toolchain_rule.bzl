@@ -28,6 +28,12 @@ def _py_cc_toolchain_impl(ctx):
                 "DefaultInfo": ctx.attr.headers[DefaultInfo],
             },
         ),
+        libs = struct(
+            providers_map = {
+                "CcInfo": ctx.attr.libs[CcInfo],
+                "DefaultInfo": ctx.attr.libs[DefaultInfo],
+            },
+        ),
         python_version = ctx.attr.python_version,
     )
     return [platform_common.ToolchainInfo(
@@ -40,6 +46,12 @@ py_cc_toolchain = rule(
         "headers": attr.label(
             doc = ("Target that provides the Python headers. Typically this " +
                    "is a cc_library target."),
+            providers = [CcInfo],
+            mandatory = True,
+        ),
+        "libs": attr.label(
+            doc = ("Target that provides the Python runtime libraries for linking. " +
+                   "Typically this is a cc_library target of `.so` files."),
             providers = [CcInfo],
             mandatory = True,
         ),

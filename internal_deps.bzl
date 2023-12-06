@@ -57,9 +57,9 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "rules_testing",
-        sha256 = "8df0a8eb21739ea4b0a03f5dc79e68e245a45c076cfab404b940cc205cb62162",
-        strip_prefix = "rules_testing-0.4.0",
-        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.4.0/rules_testing-v0.4.0.tar.gz",
+        sha256 = "b84ed8546f1969d700ead4546de9f7637e0f058d835e47e865dcbb13c4210aed",
+        strip_prefix = "rules_testing-0.5.0",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.5.0/rules_testing-v0.5.0.tar.gz",
     )
 
     http_archive(
