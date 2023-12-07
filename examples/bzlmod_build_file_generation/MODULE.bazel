@@ -32,7 +32,7 @@ bazel_dep(name = "rules_python_gazelle_plugin", version = "0.0.0")
 # For usual setups you should remove this local_path_override block.
 local_path_override(
     module_name = "rules_python_gazelle_plugin",
-    path = "../../gazelle",
+    path = "../../../rules_python_gazelle_plugin",
 )
 
 # The following stanza defines the dependency for gazelle

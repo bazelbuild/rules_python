@@ -157,12 +157,20 @@ def rules_python_internal_deps():
     )
 
     http_archive(
-        name = "build_bazel_integration_testing",
+        name = "rules_bazel_integration_test",
+        sha256 = "6e65d497c68f5794349bfa004369e144063686ce1ebd0227717cd23285be45ef",
         urls = [
-            "https://github.com/bazelbuild/bazel-integration-testing/archive/165440b2dbda885f8d1ccb8d0f417e6cf8c54f17.zip",
+            "https://github.com/bazel-contrib/rules_bazel_integration_test/releases/download/v0.20.0/rules_bazel_integration_test.v0.20.0.tar.gz",
         ],
-        strip_prefix = "bazel-integration-testing-165440b2dbda885f8d1ccb8d0f417e6cf8c54f17",
-        sha256 = "2401b1369ef44cc42f91dc94443ef491208dbd06da1e1e10b702d8c189f098e3",
+    )
+
+    # Dependency of rules_bazel_integration_test.
+    http_archive(
+        name = "cgrindel_bazel_starlib",
+        sha256 = "9090280a9cff7322e7c22062506b3273a2e880ca464e520b5c77fdfbed4e8805",
+        urls = [
+            "https://github.com/cgrindel/bazel-starlib/releases/download/v0.18.1/bazel-starlib.v0.18.1.tar.gz",
+        ],
     )
 
     http_archive(

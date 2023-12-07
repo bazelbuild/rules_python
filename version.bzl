@@ -27,7 +27,7 @@ MINIMUM_BAZEL_VERSION = "5.4.0"
 # Ensures we don't break backwards-compatibility,
 # accidentally forcing users to update their LTS-supported bazel.
 # These are the versions used when testing nested workspaces with
-# bazel_integration_test.
+# rules_bazel_integration_test.
 SUPPORTED_BAZEL_VERSIONS = [
     BAZEL_VERSION,
     # TODO @aignas 2023-02-15: the integration tests currently support

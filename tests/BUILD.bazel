@@ -1,15 +1,39 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//tools/bazel_integration_test:bazel_integration_test.bzl", "bazel_integration_test")
+load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "default_test_runner")
+load(":integration_test.bzl", "rules_python_integration_test", "rules_python_integration_test_suite")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-bazel_integration_test(
+_LEGACY_FLAGS = [
+    "--noenable_bzlmod",
+]
+
+default_test_runner(
+    name = "legacy_test_runner",
+    bazel_cmds = [
+        "info {}".format(" ".join(_LEGACY_FLAGS)),
+        "test {} //...".format(" ".join(_LEGACY_FLAGS)),
+    ],
+)
+
+default_test_runner(
+    name = "simple_test_runner",
+)
+
+rules_python_integration_test(
     name = "pip_repository_entry_points_example",
     timeout = "long",
     # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
     tags = ["fix-windows"],
+)
+
+rules_python_integration_test_suite(
+    name = "integration_tests",
+    tests = [
+        ":pip_repository_entry_points_example",
+    ],
 )
 
 build_test(

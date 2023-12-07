@@ -11,57 +11,65 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load("//tools/bazel_integration_test:bazel_integration_test.bzl", "bazel_integration_test")
-
-package(default_visibility = ["//visibility:public"])
+load("//tests:integration_test.bzl", "rules_python_integration_test", "rules_python_integration_test_suite")
 
 licenses(["notice"])  # Apache 2.0
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "build_file_generation_example",
-    timeout = "long",
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "bzlmod_build_file_generation_example",
-    timeout = "long",
+    bzlmod = True,
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "pip_parse_example",
-    timeout = "long",
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "pip_parse_vendored_example",
-    timeout = "long",
     tags = ["fix-windows"],
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "pip_repository_annotations_example",
-    timeout = "long",
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "py_proto_library_example",
-    timeout = "long",
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "py_proto_library_example_bzlmod",
-    timeout = "long",
+    # Since we can't strip "_example" from the name to infer the workspace
+    # path, we have to specify it manually here.
+    workspace_path ="py_proto_library",
     bzlmod = True,
-    dirname = "py_proto_library",
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "multi_python_versions_example",
-    timeout = "long",
+    bzlmod = True,
 )
 
-bazel_integration_test(
+rules_python_integration_test(
     name = "bzlmod_example",
     bzlmod = True,
-    override_bazel_version = "6.2.0",
+)
+
+rules_python_integration_test_suite(
+    name = "integration_tests",
+    tests = [
+        ":build_file_generation_example",
+        ":bzlmod_build_file_generation_example",
+        ":pip_parse_example",
+        ":pip_parse_vendored_example",
+        ":pip_repository_annotations_example",
+        ":py_proto_library_example",
+        ":py_proto_library_example_bzlmod",
+        ":multi_python_versions_example",
+        ":bzlmod_example",
+    ],
 )
