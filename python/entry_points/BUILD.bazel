@@ -33,8 +33,9 @@ bzl_library(
 filegroup(
     name = "distribution",
     srcs = glob([
-        "BUILD.bazel",
         "*.bzl",
-    ]),
+    ]) + [
+        "BUILD.bazel",
+    ],
     visibility = ["//python:__subpackages__"],
 )

@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Helpers for running integration test."""
+
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
-    "bazel_integration_test",
     "bazel_integration_tests",
     "integration_test_utils",
 )
 
-def rules_python_integration_test(name, workspace_path=None, bzlmod=False, tags=None, **kwargs):
+def rules_python_integration_test(name, workspace_path = None, bzlmod = False, tags = None, **kwargs):
     workspace_path = workspace_path or name.removesuffix("_example")
     test_runner = "//tests:simple_test_runner" if bzlmod else "//tests:legacy_test_runner"
 

@@ -17,6 +17,7 @@ bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_depende
 
 # TODO(philsc): Can we load SUPPORTED_BAZEL_VERSIONS from version.bzl somehow?
 bazel_binaries = use_extension("@rules_bazel_integration_test//:extensions.bzl", "bazel_binaries", dev_dependency = True)
+
 # We no longer support Bazel 5.
 #bazel_binaries.download(version = "5.4.0")
 bazel_binaries.download(version = "6.2.0")
