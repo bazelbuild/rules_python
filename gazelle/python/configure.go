@@ -59,6 +59,7 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.IgnoreDependenciesDirective,
 		pythonconfig.ValidateImportStatementsDirective,
 		pythonconfig.GenerationMode,
+		pythonconfig.GenerationModePerFileIncludeInit,
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
@@ -149,6 +150,12 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 					pythonconfig.GenerationMode, d.Value)
 				log.Fatal(err)
 			}
+		case pythonconfig.GenerationModePerFileIncludeInit:
+			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))
+			if err != nil {
+				log.Fatal(err)
+			}
+			config.SetPerFileGenerationIncludeInit(v)
 		case pythonconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.BinaryNamingConvention:

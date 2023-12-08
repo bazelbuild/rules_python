@@ -259,7 +259,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				return // ignore empty __init__.py.
 			}
 			srcs := treeset.NewWith(godsutils.StringComparator, filename)
-			if hasInit && nonEmptyInit {
+			if cfg.PerFileGenerationIncludeInit() && hasInit && nonEmptyInit {
 				srcs.Add(pyLibraryEntrypointFilename)
 			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
