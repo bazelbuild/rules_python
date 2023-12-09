@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
+# gazelle:python_library_naming_convention py_default_library
+
 filegroup(
     name = "collided_main",
     srcs = ["collided_main.py"],
@@ -18,7 +20,7 @@ py_binary(
 )
 
 py_library(
-    name = "binary_without_entrypoint",
+    name = "py_default_library",
     srcs = [
         "__init__.py",
         "collided_main.py",
