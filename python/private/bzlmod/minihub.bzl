@@ -32,25 +32,29 @@ There is a single Pip hub repository, which creates the following repos:
 This is created to make use of the parallelism that can be achieved if fetching
 is done in separate threads, one for each external repository.
 """
+load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
 
-def whl_library(name, requirement, python_version, python_interpreter_target, **kwargs):
-    """Generate a number of third party repos for a particular wheel."""
+def whl_library(name, distribution, requirement, **kwargs):
+    """Generate a number of third party repos for a particular wheel.
+    """
     indexes = kwargs.get("indexes", ["https://pypi.org/simple"])
-    sha256s = requirement.split("--hash=sha256:")[1:]
-    distribution, _, version_and_tail = requirement.partition("==")
-    version, _, _ = version_and_tail.partition(" ")
+    sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
 
     # Defines targets:
     # * whl - depending on the platform, return the correct whl defined in "name_sha.whl"
     # * pkg - depending on the platform, return the correct py_library target in "name_sha"
     # * dist_info - depending on the platform, return the correct py_library target in "name_sha"
     # * data - depending on the platform, return the correct py_library target in "name_sha"
+    #
+    # Needs:
+    # * Select on the Python interpreter version
+    # * Select on the glibc/musllibc or ask the user to provide whether they want musllibc or glibc at init
+    # * Select on the platform
     whl_index(
         name = name,
+        distribution = distribution,
         sha256s = sha256s,
         indexes = indexes,
-        version = version,
-        python_version = python_version,  # used to get the right wheels
     )
 
     for sha256 in sha256s:
@@ -59,13 +63,38 @@ def whl_library(name, requirement, python_version, python_interpreter_target, **
         # http_file.
         whl_archive(
             name = "{}_{}.whl".format(name, sha256),
-            distribution = distribution,
-            url_file = "{name}//:_{sha256}_url".format(name = name, sha256 = sha256),
+            url_file = "@{name}//:_{sha256}_url".format(name = name, sha256 = sha256),
+            sha256 = sha256,
         )
 
         _whl_library(
             name = "{name}_{sha256}".format(name = name, sha256 = sha256),
-            file = "{name}_{sha256}//:whl".format(name = name, sha256 = sha256),
-            python_interpreter_target = python_interpreter_target,
+            file = "@{name}_{sha256}//:whl".format(name = name, sha256 = sha256),
+            requirement = requirement, # do we need this?
             **kwargs
         )
+
+def _whl_index_impl(_rctx):
+    fail("TODO")
+
+whl_index = repository_rule(
+    attrs = {
+        "distribution": attr.string(mandatory=True),
+        "indexes": attr.string_list(mandatory=True),
+        "sha256s": attr.string_list(mandatory=True),
+    },
+    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
+    implementation = _whl_index_impl,
+)
+
+def _whl_archive_impl(_rctx):
+    fail("TODO")
+
+whl_archive = repository_rule(
+    attrs = {
+        "sha256": attr.string(mandatory=False),
+        "url_file": attr.label(mandatory=True),
+    },
+    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
+    implementation = _whl_archive_impl,
+)

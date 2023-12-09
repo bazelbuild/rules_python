@@ -799,6 +799,10 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
+    "file": attr.label(
+        doc = "The label of the whl file to use",
+        allow_single_file = True,
+    ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
         default = [],

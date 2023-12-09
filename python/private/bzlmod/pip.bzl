@@ -22,13 +22,13 @@ load(
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
-    "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
+load(":minihub.bzl", "whl_library")
 load(":pip_repository.bzl", "pip_repository")
 
 def _whl_mods_impl(mctx):
@@ -150,6 +150,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
 
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
+            distribution = whl_name,
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
