@@ -74,8 +74,44 @@ def whl_library(name, distribution, requirement, **kwargs):
             **kwargs
         )
 
-def _whl_index_impl(_rctx):
-    fail("TODO")
+def _whl_index_impl(rctx):
+    files = []
+    want_shas = {sha: True for sha in rctx.attr.sha256s}
+    for i, index_url in enumerate(rctx.attr.indexes):
+        html = "index-{}.html".format(i)
+        result = rctx.download(
+            url=index_url + "/" + rctx.attr.distribution,
+            output=html,
+        )
+        if not result.success:
+            fail(result)
+
+        contents = rctx.read(html)
+        _, _, hrefs = contents.partition("<a href=\"")
+        for line in hrefs.split("<a href=\""):
+            url, _, tail = line.partition("#")
+            _, _, tail = tail.partition("=")
+            sha256, _, tail = tail.partition("\"")
+            if sha256 not in want_shas:
+                continue
+
+            files.append(struct(
+                url=url,
+                sha256=sha256,
+            ))
+
+    for file in files:
+        rctx.file("_{}_url".format(file.sha256), "{}\n".format(file.url))
+
+    build_contents = [
+        """exports_files(glob(["*_url"]))""",
+        """alias(name="pkg", actual="@{name}_{sha256}//:pkg", visibility=["//visibility:public"])""".format(
+            name=rctx.attr.name,
+            sha256=files[0].sha256,
+        ),
+        """exports_files(glob(["*_url"]))""",
+    ]
+    rctx.file("BUILD.bazel", "\n".join(build_contents))
 
 whl_index = repository_rule(
     attrs = {
