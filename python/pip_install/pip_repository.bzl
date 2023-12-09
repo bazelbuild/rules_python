@@ -683,18 +683,26 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    result = rctx.execute(
-        args,
-        environment = environment,
-        quiet = rctx.attr.quiet,
-        timeout = rctx.attr.timeout,
-    )
-    if result.return_code:
-        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
-    whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
-    if not rctx.delete("whl_file.json"):
-        fail("failed to delete the whl_file.json file")
+    whl_path = None
+    if rctx.attr.file:
+        whl_path = rctx.path(rctx.attr.file).realpath
+        if whl_path.basename.endswith("tar.gz"):
+            whl_path = None
+
+    if whl_path == None:
+        result = rctx.execute(
+            args,
+            environment = environment,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+        if result.return_code:
+            fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
+
+        whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
+        if not rctx.delete("whl_file.json"):
+            fail("failed to delete the whl_file.json file")
 
     if rctx.attr.whl_patches:
         patches = {}
@@ -801,7 +809,6 @@ whl_library_attrs = {
     ),
     "file": attr.label(
         doc = "The label of the whl file to use",
-        allow_single_file = True,
     ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
