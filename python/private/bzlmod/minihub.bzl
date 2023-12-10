@@ -32,9 +32,10 @@ There is a single Pip hub repository, which creates the following repos:
 This is created to make use of the parallelism that can be achieved if fetching
 is done in separate threads, one for each external repository.
 """
+
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
-load("//python/private:text_util.bzl", "render")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:text_util.bzl", "render")
 
 _this = str(Label("//:unknown"))
 
@@ -46,22 +47,22 @@ def _label(label):
 
 _os_in_tag = {
     "linux": "linux",
-    "manylinux": "linux",
-    "win": "windows",
     "macosx": "osx",
+    "manylinux": "linux",
     "musllinux": "linux",
+    "win": "windows",
 }
 
 _cpu_in_tag = {
-    "amd64": "x86_64",
-    "x86_64": "x86_64",
-    "i686": "x86_32",
-    "i386": "x86_32",
-    "s390x": "s390x",
-    "ppc64le": "ppc",
-    "arm64": "aarch64",
     "aarch64": "aarch64",
+    "amd64": "x86_64",
+    "arm64": "aarch64",
+    "i386": "x86_32",
+    "i686": "x86_32",
+    "ppc64le": "ppc",
+    "s390x": "s390x",
     "win32": "x86_32",
+    "x86_64": "x86_64",
 }
 
 def _parse_os_from_tag(platform_tag):
@@ -126,7 +127,7 @@ def whl_library(name, distribution, requirement, repo, **kwargs):
         _whl_library(
             name = "{name}_{sha256}".format(name = name, sha256 = sha256),
             file = _label("@{}//:whl".format(whl_repo)),
-            requirement = requirement, # do we need this?
+            requirement = requirement,  # do we need this?
             repo = repo,
             **kwargs
         )
@@ -137,8 +138,8 @@ def _whl_index_impl(rctx):
     for i, index_url in enumerate(rctx.attr.indexes):
         html = "index-{}.html".format(i)
         result = rctx.download(
-            url=index_url + "/" + rctx.attr.distribution,
-            output=html,
+            url = index_url + "/" + rctx.attr.distribution,
+            output = html,
         )
         if not result.success:
             fail(result)
@@ -155,21 +156,22 @@ def _whl_index_impl(rctx):
                 continue
 
             files.append(struct(
-                url=url,
-                sha256=sha256,
+                url = url,
+                sha256 = sha256,
             ))
 
     if not files:
         fail("Could not find any files for: {}".format(rctx.attr.distribution))
 
     for file in files:
-        rctx.file("urls/{}".format(file.sha256), "{}\n".format(file.url))
+        contents = json.encode(file)
+        rctx.file("urls/{}".format(file.sha256), contents)
 
     rctx.file("urls/BUILD.bazel", """exports_files(glob(["*"]), visibility={})""".format(
         render.list([
             "@@{}_{}_whl//:__pkg__".format(rctx.attr.name, file.sha256)
             for file in files
-        ])
+        ]),
     ))
 
     abi = "cp" + rctx.attr.repo.rpartition("_")[2]
@@ -180,9 +182,9 @@ def _whl_index_impl(rctx):
     select = {}
     for file in files:
         tmpl = "@{name}_{distribution}_{sha256}//:{{target}}".format(
-            name=rctx.attr.repo,
-            distribution=rctx.attr.distribution,
-            sha256=file.sha256,
+            name = rctx.attr.repo,
+            distribution = rctx.attr.distribution,
+            sha256 = file.sha256,
         )
 
         _, _, filename = file.url.strip().rpartition("/")
@@ -212,7 +214,7 @@ config_setting(
         "@platforms//os:{os}",
     ],
     visibility = ["//visibility:private"],
-)""".format(platform=platform, cpu=cpu, os=os)
+)""".format(platform = platform, cpu = cpu, os = os)
             if config_setting not in build_contents:
                 build_contents.append(config_setting)
 
@@ -221,21 +223,21 @@ config_setting(
 
     build_contents += [
         render.alias(
-            name=target,
-            actual=actual.format(target=target) if actual else render.select({k: v.format(target=target) for k, v in select.items()}),
-            visibility=["//visibility:public"],
+            name = target,
+            actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
+            visibility = ["//visibility:public"],
         )
-        for target in ["pkg", "whl", "data", "dist_info"]
+        for target in ["pkg", "whl", "data", "dist_info", "_whl", "_pkg"]
     ]
 
     rctx.file("BUILD.bazel", "\n\n".join(build_contents))
 
 whl_index = repository_rule(
     attrs = {
-        "distribution": attr.string(mandatory=True),
-        "indexes": attr.string_list(mandatory=True),
-        "repo": attr.string(mandatory=True),
-        "sha256s": attr.string_list(mandatory=True),
+        "distribution": attr.string(mandatory = True),
+        "indexes": attr.string_list(mandatory = True),
+        "repo": attr.string(mandatory = True),
+        "sha256s": attr.string_list(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_index_impl,
@@ -247,11 +249,11 @@ def _whl_archive_impl(rctx):
 
     # TODO @aignas 2023-12-09:  solve this without restarts
     url_file = rctx.path(rctx.attr.url_file)
-    url = rctx.read(url_file)
+    url = json.decode(rctx.read(url_file))["url"]
 
     _, _, filename = url.rpartition("/")
     filename = filename.strip()
-    result = rctx.download(url, output=filename, sha256=rctx.attr.sha256)
+    result = rctx.download(url, output = filename, sha256 = rctx.attr.sha256)
     if not result.success:
         fail(result)
 
@@ -265,13 +267,13 @@ filegroup(
     srcs=["{filename}"],
     visibility=["//visibility:public"],
 )
-""".format(filename=filename),
+""".format(filename = filename),
     )
 
 whl_archive = repository_rule(
     attrs = {
-        "sha256": attr.string(mandatory=False),
-        "url_file": attr.label(mandatory=True),
+        "sha256": attr.string(mandatory = False),
+        "url_file": attr.label(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_archive_impl,

@@ -81,7 +81,9 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
         whl_deps = repr(whl_file_deps),
         lib_public_label = PY_LIBRARY_PUBLIC_LABEL,
         lib_deps = repr(lib_dependencies),
-        visibility = repr(visibility),
+        #visibility = repr(visibility),
+        # TODO @aignas 2023-12-10: fix this
+        visibility = repr(["//visibility:public"]),
     )
 
 def generate_group_library_build_bazel(

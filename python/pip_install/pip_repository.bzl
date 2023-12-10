@@ -683,12 +683,14 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-
     whl_path = None
     if rctx.attr.file:
         whl_path = rctx.path(rctx.attr.file).realpath
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
+        else:
+            rctx.symlink(whl_path, whl_path.basename)
+            whl_path = rctx.path(whl_path.basename)
 
     if whl_path == None:
         result = rctx.execute(
