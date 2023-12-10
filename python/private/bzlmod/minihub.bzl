@@ -14,6 +14,8 @@
 
 """The overall design is:
 
+# Attempt 1
+
 There is a single Pip hub repository, which creates the following repos:
 * `whl_index` that downloads the SimpleAPI page for a particular package
   from the given indexes. It creates labels with URLs that can be used
@@ -31,6 +33,55 @@ There is a single Pip hub repository, which creates the following repos:
 
 This is created to make use of the parallelism that can be achieved if fetching
 is done in separate threads, one for each external repository.
+
+## Notes on the approach above
+
+Pros:
+* Really fast, no need to re-download the wheels when changing the contents of
+  `whl_library`.
+Cons:
+* The sha256 files in filenames makes things difficult to read/understand.
+* The cyclic dependency groups need extra work as the visibility between targets needs
+  to be ironed out.
+* The whl_annotations break, because users would need to specify weird repos in
+  their `use_repo` statements in the `MODULE.bazel` in order to make the
+  annotations useful. The need for forwarding the aliases based on the
+  annotations is real.
+* The index would be different for different lock files.
+
+# Approach 2
+
+* In case we use requirements:
+    * `pypi_metadata` spoke repo that exposes the following for each distribution name:
+      `metadata.json - contains shas and filenames
+    * `pypi_metadata` hub repo that has aliases for all repos in one place,
+      helps with label generation/visibility.
+    * `whl_lock` hub repo that uses labels from `pypi_metadata` hub to generate a
+      single lock file: `lock.json`.
+* In case we use `pdm` or `poetry` or `hatch` lock files:
+    * `whl_lock` repo that translates the file into `lock.json`.
+* `pip.bzl` extension materializes the `whl_lock//:lock.json` file and defines the `whl_library` repos:
+    * For each whl name that we are interested in, create a `http_file` repo for the wheel.
+    * Generate a `whl_library` by passing a `file` argument to the `http_file`.
+    * If the whl is multi-platform - whl_library minihub does not need to be created.
+    * If the whl is platform-specific - whl_library minihub needs to be created.
+
+Pros:
+* Solves `sha256` not being in repo names
+* Lock format can be the same for all
+* We may include whl metadata in the lock which means that we may have the dep graph
+  before creating the `whl_libraries`. If we have that, we can generate the cyclic dependency groups procedurally.
+Cons:
+* cyclic dependency groups for platform-specific wheels need a different approach than
+  what we have today.
+* whl_annotations for platform-specific wheels could be worked arround only in a subset
+  of cases. This is the analysis for each field:
+  * additive_build_content => What to do?
+  * copy_files => Apply to each platform-specific wheel and it will be OK and we will nede to generate aliases for them in the minihub.
+  * copy_executables => Apply to each platform-specific wheel and it will be OK and we will need to generate aliases for them in the minihub.
+  * data => Apply to each platform-specific wheel and it will be OK.
+  * data_exclude_glob => Apply to each platform-specific wheel and it will be OK.
+  * srcs_exclude_glob => Apply to each platform-specific wheel and it will be OK.
 """
 
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
