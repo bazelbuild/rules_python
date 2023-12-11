@@ -32,7 +32,6 @@ def whl_lock(requirements, **kwargs):
         for sha in sha256s:
             sha_by_pkg[distribution][sha] = True
 
-    # TODO @aignas 2023-12-10: make this global across all hub repos
     for distribution, shas in sha_by_pkg.items():
         pypi_distribution_metadata(
             name = "{}_metadata".format(distribution),

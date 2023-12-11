@@ -245,6 +245,30 @@ config_setting(
         for target in ["pkg", "whl", "data", "dist_info"]
     ]
 
+    # The overall architecture:
+    # * `whl_library_for_a_whl should generate only the private targets
+    # * `whl_minihub` should do the `group` to `private` indirection as needed.
+    #
+    # then the group visibility settings remain the same.
+    # then we can also set the private target visibility to something else than public
+    # e.g. the _sha265 targets can only be accessed by the minihub
+
+    # TODO @aignas 2023-12-11: the code here should be doing this
+    #
+    # if group_name:
+    #     group_repo = repo_prefix + "_groups"
+    #     library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
+    #     whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
+    #     impl_vis = "@{}{}//:__pkg__".format(
+    #         repo_prefix,
+    #         normalize_name(parse_whl_name(whl_name).distribution),
+    #     )
+
+    # else:
+    #     library_impl_label = PY_LIBRARY_IMPL_LABEL
+    #     whl_impl_label = WHEEL_FILE_IMPL_LABEL
+    #     impl_vis = "//visibility:private"
+
     build_contents += [
         render.alias(
             name = target,
@@ -271,7 +295,6 @@ def _whl_archive_impl(rctx):
     prefix, _, _ = rctx.attr.name.rpartition("_")
     prefix, _, _ = prefix.rpartition("_")
 
-    # TODO @aignas 2023-12-09:  solve this without restarts
     metadata = rctx.path(rctx.attr.metadata)
     files = json.decode(rctx.read(metadata))
     sha256 = rctx.attr.sha256

@@ -74,6 +74,8 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
         "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d))
         for d in group_members
     ]
+    # TODO @aignas 2023-12-10: fix this
+    visibility = ["//visibility:public"]
 
     return _GROUP_TEMPLATE.format(
         name = normalize_name(group_name),
@@ -81,9 +83,7 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
         whl_deps = repr(whl_file_deps),
         lib_public_label = PY_LIBRARY_PUBLIC_LABEL,
         lib_deps = repr(lib_dependencies),
-        #visibility = repr(visibility),
-        # TODO @aignas 2023-12-10: fix this
-        visibility = repr(["//visibility:public"]),
+        visibility = repr(visibility),
     )
 
 def generate_group_library_build_bazel(
