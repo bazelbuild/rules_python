@@ -58,6 +58,12 @@ def _render_select(selects, *, no_match_error = None):
     return "select({})".format(args)
 
 def _render_list(items):
+    if not items:
+        return "[]"
+
+    if len(items) == 1:
+        return "[{}]".format(repr(items[0]))
+
     return "\n".join([
         "[",
         _indent("\n".join([
