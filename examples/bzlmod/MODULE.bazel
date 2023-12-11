@@ -79,7 +79,7 @@ pip.whl_mods(
     hub_name = "whl_mods_hub",
     whl_name = "wheel",
 )
-use_repo(pip, "whl_mods_hub")
+use_repo(pip, "whl_mods_hub", "whl_lock")
 
 # To fetch pip dependencies, use pip.parse. We can pass in various options,
 # but typically we pass requirements and the Python version. The Python

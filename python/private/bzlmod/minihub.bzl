@@ -82,19 +82,19 @@ Cons:
   * data => Apply to each platform-specific wheel and it will be OK.
   * data_exclude_glob => Apply to each platform-specific wheel and it will be OK.
   * srcs_exclude_glob => Apply to each platform-specific wheel and it will be OK.
+
+## Notes on this approach
+
+* We need to define the `whl_lock` and related repos in a separate bzlmod
+  extension. This is not something we want, because we increase the API scope
+  which is not desirable.
+
 """
 
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
-
-_this = str(Label("//:unknown"))
-
-def _label(label):
-    """This function allows us to construct labels to pass to rules."""
-    prefix, _, _ = _this.partition("//")
-    prefix = prefix + "~pip~"
-    return Label(label.replace("@", prefix))
+load(":label.bzl", _label = "label")
 
 _os_in_tag = {
     "linux": "linux",
@@ -139,32 +139,11 @@ def _parse_platform_tag(platform_tag):
     cpu = _parse_cpu_from_tag(platform_tag)
     return os, cpu
 
-def whl_library(name, distribution, requirement, repo, **kwargs):
+def whl_library(name, metadata, **kwargs):
     """Generate a number of third party repos for a particular wheel.
     """
-    indexes = kwargs.get("indexes", ["https://pypi.org/simple"])
-    sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
-
-    # Defines targets:
-    # * whl - depending on the platform, return the correct whl defined in "name_sha.whl"
-    # * pkg - depending on the platform, return the correct py_library target in "name_sha"
-    # * dist_info - depending on the platform, return the correct py_library target in "name_sha"
-    # * data - depending on the platform, return the correct py_library target in "name_sha"
-    #
-    # Needs:
-    # * Select on the Python interpreter version
-    # * Select on the glibc/musllibc or ask the user to provide whether they want musllibc or glibc at init
-    # * Select on the platform
-    whl_index(
-        name = name,
-        distribution = distribution,
-        sha256s = sha256s,
-        indexes = indexes,
-        repo = repo,
-    )
-
-    for sha256 in sha256s:
-        whl_repo = "{}_{}_whl".format(name, sha256)
+    for filename, sha256 in metadata.items():
+        whl_repo = "{}_{}_whl".format(name, filename)
 
         # We would use http_file, but we are passing the URL to use via a file,
         # if the url is known (in case of using pdm lock), we could use an
@@ -178,8 +157,6 @@ def whl_library(name, distribution, requirement, repo, **kwargs):
         _whl_library(
             name = "{name}_{sha256}".format(name = name, sha256 = sha256),
             file = _label("@{}//:whl".format(whl_repo)),
-            requirement = requirement,  # do we need this?
-            repo = repo,
             **kwargs
         )
 

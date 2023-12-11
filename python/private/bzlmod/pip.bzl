@@ -22,13 +22,16 @@ load(
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
+    "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
-load(":minihub.bzl", "whl_library")
+#load(":minihub.bzl", "whl_library")
+load(":pypi_metadata.bzl", "whl_lock")
+load(":label.bzl", "label")
 load(":pip_repository.bzl", "pip_repository")
 
 def _whl_mods_impl(mctx):
@@ -150,7 +153,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
 
         whl_library(
             name = "%s_%s" % (pip_name, whl_name),
-            distribution = whl_name,
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
@@ -250,6 +252,7 @@ def _pip_impl(module_ctx):
     _overriden_whl_set = {}
     whl_overrides = {}
 
+    all_requirements = []
     for module in module_ctx.modules:
         for attr in module.tags.override:
             if not module.is_root:
@@ -275,6 +278,32 @@ def _pip_impl(module_ctx):
                     )
 
                 whl_overrides[whl_name][patch].whls.append(attr.file)
+
+    all_requirements = []
+    for module in module_ctx.modules:
+        for pip_attr in module.tags.parse:
+            for requirements_lock in [
+                pip_attr.requirements_lock,
+                pip_attr.requirements_linux,
+                pip_attr.requirements_darwin,
+                pip_attr.requirements_windows,
+            ]:
+                if not requirements_lock:
+                    continue
+
+                requirements_lock_content = module_ctx.read(requirements_lock)
+                parse_result = parse_requirements(requirements_lock_content)
+                requirements = parse_result.requirements
+                all_requirements.extend([line for _, line in requirements])
+
+    whl_lock(
+        name = "whl_lock",
+        requirements = all_requirements,
+        #indexes = kwargs.get("indexes"),
+    )
+
+    #lock_path = module_ctx.path(label("@whl_lock//:lock.json"))
+    #fail(lock_path)
 
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
