@@ -158,6 +158,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
                 p: json.encode(args)
                 for p, args in whl_overrides.get(whl_name, {}).items()
             },
+            target_platforms = pip_attr.target_platforms,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,

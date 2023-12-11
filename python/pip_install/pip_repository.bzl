@@ -35,6 +35,19 @@ COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
+_ALL_PLATFORMS = [
+    "linux_aarch64",
+    "linux_ppc64le",
+    "linux_s390x",
+    "linux_x86_64",
+    "linux_x86_32",
+    "osx_aarch64",
+    "osx_x86_64",
+    "windows_x86_64",
+    "windows_x86_32",
+    "windows_aarch64",
+]
+
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
 
@@ -345,6 +358,8 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.python_interpreter_target:
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
+    if rctx.attr.target_platforms:
+        config["target_platforms"] = rctx.attr.target_platforms
 
     if rctx.attr.incompatible_generate_aliases:
         macro_tmpl = "@%s//{}:{}" % rctx.attr.name
@@ -515,6 +530,25 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
 Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
 """,
     ),
+    "target_platforms": attr.string_list(
+        # TODO @aignas 2023-12-04: this is not the best way right now
+        # so if this approach is generally good, this can be refactored, by
+        # using the names of the config_setting labels.
+        default = [],
+        doc = """\
+A list of platforms that we will generate the conditional dependency graph for
+cross platform wheels by parsing the wheel metadata. This will generate the
+correct dependencies for packages like `sphinx` or `pylint`, which include
+`colorama` when installed and used on Windows platforms.
+
+An empty list means falling back to the legacy behaviour when we use the host
+platform is the target platform.
+
+WARNING: It may not work as expected in cases where the python interpreter
+implementation that is being used at runtime is different between different platforms.
+This has been tested for CPython only.
+""",
+    ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
     "timeout": attr.int(
         default = 600,
@@ -669,6 +703,15 @@ See the example in rules_python/examples/pip_parse_vendored.
 )
 
 def _whl_library_impl(rctx):
+    target_platforms = []
+    if len(rctx.attr.target_platforms) == 1 and rctx.attr.target_platforms[0] == "all":
+        target_platforms = _ALL_PLATFORMS
+    elif rctx.attr.target_platforms:
+        target_platforms = rctx.attr.target_platforms
+        for p in target_platforms:
+            if p not in _ALL_PLATFORMS:
+                fail("target_platforms must be a subset of {} but got {}".format(["all"] + _ALL_PLATFORMS, target_platforms))
+
     python_interpreter = _resolve_python_interpreter(rctx)
     args = [
         python_interpreter,
@@ -713,7 +756,10 @@ def _whl_library_impl(rctx):
         )
 
     result = rctx.execute(
-        args + ["--whl-file", whl_path],
+        args + [
+            "--whl-file",
+            whl_path,
+        ] + ["--platform={}".format(p) for p in target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
@@ -749,6 +795,7 @@ def _whl_library_impl(rctx):
         repo_prefix = rctx.attr.repo_prefix,
         whl_name = whl_path.basename,
         dependencies = metadata["deps"],
+        dependencies_by_platform = metadata["deps_by_platform"],
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,
@@ -815,7 +862,7 @@ whl_library_attrs = {
         doc = "Python requirement string describing the package to make available",
     ),
     "whl_patches": attr.label_keyed_string_dict(
-        doc = """"a label-keyed-string dict that has
+        doc = """a label-keyed-string dict that has
             json.encode(struct([whl_file], patch_strip]) as values. This
             is to maintain flexibility and correct bzlmod extension interface
             until we have a better way to define whl_library and move whl
