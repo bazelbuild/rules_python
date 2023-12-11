@@ -531,9 +531,6 @@ Prefix for the generated packages will be of the form `@<prefix><sanitized-packa
 """,
     ),
     "target_platforms": attr.string_list(
-        # TODO @aignas 2023-12-04: this is not the best way right now
-        # so if this approach is generally good, this can be refactored, by
-        # using the names of the config_setting labels.
         default = [],
         doc = """\
 A list of platforms that we will generate the conditional dependency graph for
