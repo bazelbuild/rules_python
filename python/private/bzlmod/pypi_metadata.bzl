@@ -15,15 +15,8 @@
 """PyPI metadata hub and spoke repos"""
 
 load("//python/private:normalize_name.bzl", "normalize_name")
-load(":label.bzl", "label")
-load("//python/private:text_util.bzl", "render")
 
-whl_lock = module_extension(
-    implementation = _pip_impl,
-    tag_classes = {
-)
-
-def whl_lock(name, requirements, **kwargs):
+def whl_lock(requirements, **kwargs):
     indexes = kwargs.get("indexes", ["https://pypi.org/simple"])
 
     sha_by_pkg = {}
@@ -31,7 +24,7 @@ def whl_lock(name, requirements, **kwargs):
         sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
         distribution, _, _ = requirement.partition("==")
         distribution, _, _ = distribution.partition("[")
-        distribution = normalize_name(distribution)
+        distribution = normalize_name(distribution.strip())
 
         if distribution not in sha_by_pkg:
             sha_by_pkg[distribution] = {}
@@ -42,66 +35,11 @@ def whl_lock(name, requirements, **kwargs):
     # TODO @aignas 2023-12-10: make this global across all hub repos
     for distribution, shas in sha_by_pkg.items():
         pypi_distribution_metadata(
-            name="{}_{}_metadata".format(name, distribution),
-            distribution=distribution,
-            sha256s=shas,
-            indexes=indexes,
+            name = "{}_metadata".format(distribution),
+            distribution = distribution,
+            sha256s = shas,
+            indexes = indexes,
         )
-
-    pypi_metadata(
-        name="{}_metadata".format(name),
-        distributions=sha_by_pkg.keys(),
-    )
-
-    _whl_lock(
-        name = name,
-        srcs = [
-            label("@{}_{}_metadata//:metadata.json".format(name, distribution))
-            for distribution in sha_by_pkg
-        ],
-    )
-
-def _whl_lock_impl(rctx):
-    lock = {}
-    for src in rctx.attr.srcs:
-        contents = json.decode(rctx.read(src))
-
-        _, _, distribution = str(src).partition(rctx.attr.name)
-        distribution, _, _ = distribution.rpartition("_metadata")
-        distribution = distribution.strip("_")
-        lock[distribution] = contents
-
-    rctx.file("lock.json", json.encode(lock))
-    rctx.file("BUILD.bazel", """exports_files(["lock.json"], visibility=["//visibility:public"])""")
-
-
-_whl_lock = repository_rule(
-    attrs = {
-        "srcs": attr.label_list(),
-    },
-    implementation = _whl_lock_impl,
-)
-
-def _pypi_metadata_impl(rctx):
-    aliases = {
-        distribution: "@@{}_{}_metadata//:metadata.json".format(
-            rctx.name.replace("_metadata", ""),
-            distribution,
-        )
-        for distribution in rctx.attr.distributions
-    }
-    build_contents = [
-        render.alias(name=name, actual=actual, visibility=["//visibility:public"])
-        for name, actual in aliases.items()
-    ]
-    rctx.file("BUILD.bazel", "\n\n".join(build_contents))
-
-pypi_metadata = repository_rule(
-    attrs = {
-        "distributions": attr.string_list(),
-    },
-    implementation = _pypi_metadata_impl,
-)
 
 def _pypi_distribution_metadata_impl(rctx):
     files = []
@@ -134,8 +72,8 @@ def _pypi_distribution_metadata_impl(rctx):
     if not files:
         fail("Could not find any files for: {}".format(rctx.attr.distribution))
 
-    rctx.file("metadata.json", json.encode(struct(files=files)))
-    rctx.file("BUILD.bazel", """exports_files(["metadata.json"], visibility=["//visibility:public"])""")
+    rctx.file("files.json", json.encode(struct(files = files)))
+    rctx.file("BUILD.bazel", """exports_files(["files.json"], visibility=["//visibility:public"])""")
 
 pypi_distribution_metadata = repository_rule(
     attrs = {

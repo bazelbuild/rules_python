@@ -22,17 +22,15 @@ load(
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
-    "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
-#load(":minihub.bzl", "whl_library")
-load(":pypi_metadata.bzl", "whl_lock")
-load(":label.bzl", "label")
+load(":minihub.bzl", "whl_library")
 load(":pip_repository.bzl", "pip_repository")
+load(":pypi_metadata.bzl", "whl_lock")
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -297,7 +295,6 @@ def _pip_impl(module_ctx):
                 all_requirements.extend([line for _, line in requirements])
 
     whl_lock(
-        name = "whl_lock",
         requirements = all_requirements,
         #indexes = kwargs.get("indexes"),
     )

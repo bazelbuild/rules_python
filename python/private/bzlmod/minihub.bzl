@@ -92,6 +92,7 @@ Cons:
 """
 
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
 load(":label.bzl", _label = "label")
@@ -139,89 +140,75 @@ def _parse_platform_tag(platform_tag):
     cpu = _parse_cpu_from_tag(platform_tag)
     return os, cpu
 
-def whl_library(name, metadata, **kwargs):
+def whl_library(name, requirement, **kwargs):
     """Generate a number of third party repos for a particular wheel.
     """
-    for filename, sha256 in metadata.items():
-        whl_repo = "{}_{}_whl".format(name, filename)
+    sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
+
+    distribution, _, _ = requirement.partition("==")
+    distribution, _, _ = distribution.partition("[")
+    distribution = normalize_name(distribution)
+
+    metadata = _label("@{}_metadata//:files.json".format(distribution))
+
+    whl_minihub(
+        name = name,
+        repo = kwargs.get("repo"),
+        distribution = distribution,
+        sha256s = sha256s,
+        metadata = metadata,
+    )
+
+    for sha256 in sha256s:
+        whl_name = "{}_{}".format(name, sha256[:6])
 
         # We would use http_file, but we are passing the URL to use via a file,
         # if the url is known (in case of using pdm lock), we could use an
         # http_file.
         whl_archive(
-            name = whl_repo,
-            url_file = _label("@{}//urls:{}".format(name, sha256)),
+            name = whl_name + "_whl",
+            metadata = metadata,
             sha256 = sha256,
         )
 
         _whl_library(
-            name = "{name}_{sha256}".format(name = name, sha256 = sha256),
-            file = _label("@{}//:whl".format(whl_repo)),
+            name = whl_name,
+            file = _label("@{}_whl//:whl".format(whl_name)),
+            requirement = requirement,
             **kwargs
         )
 
-def _whl_index_impl(rctx):
-    files = []
-    want_shas = {sha: True for sha in rctx.attr.sha256s}
-    for i, index_url in enumerate(rctx.attr.indexes):
-        html = "index-{}.html".format(i)
-        result = rctx.download(
-            url = index_url + "/" + rctx.attr.distribution,
-            output = html,
-        )
-        if not result.success:
-            fail(result)
-
-        contents = rctx.read(html)
-        rctx.delete(html)
-
-        _, _, hrefs = contents.partition("<a href=\"")
-        for line in hrefs.split("<a href=\""):
-            url, _, tail = line.partition("#")
-            _, _, tail = tail.partition("=")
-            sha256, _, tail = tail.partition("\"")
-            if sha256 not in want_shas:
-                continue
-
-            files.append(struct(
-                url = url,
-                sha256 = sha256,
-            ))
-
-    if not files:
-        fail("Could not find any files for: {}".format(rctx.attr.distribution))
-
-    for file in files:
-        contents = json.encode(file)
-        rctx.file("urls/{}".format(file.sha256), contents)
-
-    rctx.file("urls/BUILD.bazel", """exports_files(glob(["*"]), visibility={})""".format(
-        render.list([
-            "@@{}_{}_whl//:__pkg__".format(rctx.attr.name, file.sha256)
-            for file in files
-        ]),
-    ))
+def _whl_minihub_impl(rctx):
+    metadata = rctx.path(rctx.attr.metadata)
+    files = json.decode(rctx.read(metadata))
 
     abi = "cp" + rctx.attr.repo.rpartition("_")[2]
 
     build_contents = []
+    sha256s = {sha: True for sha in rctx.attr.sha256s}
 
     actual = None
     select = {}
-    for file in files:
+    for file in files["files"]:
+        sha256 = file["sha256"]
+        if sha256 not in sha256s:
+            continue
+
         tmpl = "@{name}_{distribution}_{sha256}//:{{target}}".format(
             name = rctx.attr.repo,
             distribution = rctx.attr.distribution,
-            sha256 = file.sha256,
+            sha256 = sha256[:6],
         )
 
-        _, _, filename = file.url.strip().rpartition("/")
+        _, _, filename = file["url"].strip().rpartition("/")
         if not filename.endswith(".whl"):
             select["//conditions:default"] = tmpl
             continue
 
         whl = parse_whl_name(filename)
-        if "py3" in whl.python_tag.split("."):
+
+        # prefer 'abi3' over 'py3'?
+        if "py3" in whl.python_tag or "abi3" in whl.python_tag:
             select["//conditions:default"] = tmpl
             break
 
@@ -255,20 +242,29 @@ config_setting(
             actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
             visibility = ["//visibility:public"],
         )
-        for target in ["pkg", "whl", "data", "dist_info", "_whl", "_pkg"]
+        for target in ["pkg", "whl", "data", "dist_info"]
+    ]
+
+    build_contents += [
+        render.alias(
+            name = target,
+            actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
+            visibility = ["@{}__groups//:__pkg__".format(rctx.attr.repo)],
+        )
+        for target in ["_whl", "_pkg"]
     ]
 
     rctx.file("BUILD.bazel", "\n\n".join(build_contents))
 
-whl_index = repository_rule(
+whl_minihub = repository_rule(
     attrs = {
         "distribution": attr.string(mandatory = True),
-        "indexes": attr.string_list(mandatory = True),
+        "metadata": attr.label(mandatory = True, allow_single_file = True),
         "repo": attr.string(mandatory = True),
         "sha256s": attr.string_list(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
-    implementation = _whl_index_impl,
+    implementation = _whl_minihub_impl,
 )
 
 def _whl_archive_impl(rctx):
@@ -276,12 +272,21 @@ def _whl_archive_impl(rctx):
     prefix, _, _ = prefix.rpartition("_")
 
     # TODO @aignas 2023-12-09:  solve this without restarts
-    url_file = rctx.path(rctx.attr.url_file)
-    url = json.decode(rctx.read(url_file))["url"]
+    metadata = rctx.path(rctx.attr.metadata)
+    files = json.decode(rctx.read(metadata))
+    sha256 = rctx.attr.sha256
+    url = None
+    for file in files["files"]:
+        if file["sha256"] == sha256:
+            url = file["url"]
+            break
+
+    if url == None:
+        fail("Could not find a file with sha256 '{}' within: {}".format(sha256, files))
 
     _, _, filename = url.rpartition("/")
     filename = filename.strip()
-    result = rctx.download(url, output = filename, sha256 = rctx.attr.sha256)
+    result = rctx.download(url, output = filename, sha256 = sha256)
     if not result.success:
         fail(result)
 
@@ -300,8 +305,8 @@ filegroup(
 
 whl_archive = repository_rule(
     attrs = {
+        "metadata": attr.label(mandatory = True, allow_single_file = True),
         "sha256": attr.string(mandatory = False),
-        "url_file": attr.label(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_archive_impl,

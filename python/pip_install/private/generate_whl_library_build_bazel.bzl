@@ -25,6 +25,7 @@ load(
     "WHEEL_FILE_PUBLIC_LABEL",
 )
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 
 _COPY_FILE_TEMPLATE = """\
 copy_file(
@@ -210,16 +211,15 @@ def generate_whl_library_build_bazel(
         group_repo = repo_prefix + "_groups"
         library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
         whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-
-        # TODO @aignas 2023-12-10: fix this
-        impl_vis = "//visibility:public"
+        impl_vis = "@{}{}//:__pkg__".format(
+            repo_prefix,
+            normalize_name(parse_whl_name(whl_name).distribution),
+        )
 
     else:
         library_impl_label = PY_LIBRARY_IMPL_LABEL
         whl_impl_label = WHEEL_FILE_IMPL_LABEL
-
-        # TODO @aignas 2023-12-10: fix this
-        impl_vis = "//visibility:public"
+        impl_vis = "//visibility:private"
 
     contents = "\n".join(
         [
