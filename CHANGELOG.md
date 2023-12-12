@@ -38,7 +38,7 @@ A brief description of the categories of changes:
 
 * (pip_parse) The repositories created by `whl_library` can now parse the `whl`
   METADATA and generate dependency closures irrespective of the host platform
-  the generation is done. This can be turned on by supplying
+  the generation is executed on. This can be turned on by supplying
   `target_platforms = ["all"]` to the `pip_parse` or the `bzlmod` equivalent.
   This may help in cases where fetching wheels for a different platform using
   `download_only = True` feature.

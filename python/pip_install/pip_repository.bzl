@@ -538,7 +538,7 @@ cross platform wheels by parsing the wheel metadata. This will generate the
 correct dependencies for packages like `sphinx` or `pylint`, which include
 `colorama` when installed and used on Windows platforms.
 
-An empty list means falling back to the legacy behaviour when we use the host
+An empty list means falling back to the legacy behaviour where the host
 platform is the target platform.
 
 WARNING: It may not work as expected in cases where the python interpreter
