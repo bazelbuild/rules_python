@@ -184,6 +184,8 @@ Python-specific directives are as follows:
 | Controls whether the Python import statements should be validated. Can be "true" or "false" | |
 | `# gazelle:python_generation_mode`| `package` |
 | Controls the target generation mode. Can be "file", "package", or "project" | |
+| `# gazelle:python_generation_mode_per_file_include_init`| `package` |
+| Controls whether `__init__.py` files are included as srcs in each generated target when target generation mode is "file". Can be "true", or "false" | |
 | `# gazelle:python_library_naming_convention`| `$package_name$` |
 | Controls the `py_library` naming convention. It interpolates \$package_name\$ with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
 | `# gazelle:python_binary_naming_convention` | `$package_name$_bin` |
