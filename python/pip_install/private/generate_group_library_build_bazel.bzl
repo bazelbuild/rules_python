@@ -74,8 +74,6 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
         "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d))
         for d in group_members
     ]
-    # TODO @aignas 2023-12-10: fix this
-    visibility = ["//visibility:public"]
 
     return _GROUP_TEMPLATE.format(
         name = normalize_name(group_name),

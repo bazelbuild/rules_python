@@ -154,6 +154,7 @@ def whl_library(name, requirement, **kwargs):
     whl_minihub(
         name = name,
         repo = kwargs.get("repo"),
+        group_name = kwargs.get("group_name"),
         distribution = distribution,
         sha256s = sha256s,
         metadata = metadata,
@@ -236,15 +237,6 @@ config_setting(
     if len(select) == 1 and "//conditions:default" in select:
         actual = repr(select["//conditions:default"])
 
-    build_contents += [
-        render.alias(
-            name = target,
-            actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
-            visibility = ["//visibility:public"],
-        )
-        for target in ["pkg", "whl", "data", "dist_info"]
-    ]
-
     # The overall architecture:
     # * `whl_library_for_a_whl should generate only the private targets
     # * `whl_minihub` should do the `group` to `private` indirection as needed.
@@ -253,29 +245,41 @@ config_setting(
     # then we can also set the private target visibility to something else than public
     # e.g. the _sha265 targets can only be accessed by the minihub
 
-    # TODO @aignas 2023-12-11: the code here should be doing this
-    #
-    # if group_name:
-    #     group_repo = repo_prefix + "_groups"
-    #     library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
-    #     whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-    #     impl_vis = "@{}{}//:__pkg__".format(
-    #         repo_prefix,
-    #         normalize_name(parse_whl_name(whl_name).distribution),
-    #     )
-
-    # else:
-    #     library_impl_label = PY_LIBRARY_IMPL_LABEL
-    #     whl_impl_label = WHEEL_FILE_IMPL_LABEL
-    #     impl_vis = "//visibility:private"
+    group_name = rctx.attr.group_name
+    if group_name:
+        group_repo = rctx.attr.repo + "__groups"
+        impl_vis = "@{}//:__pkg__".format(group_repo)
+        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), "pkg")
+        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), "whl")
+    else:
+        library_impl_label = "_pkg"
+        whl_impl_label = "_whl"
+        impl_vis = "//visibility:private"
 
     build_contents += [
         render.alias(
             name = target,
             actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
-            visibility = ["@{}__groups//:__pkg__".format(rctx.attr.repo)],
+            visibility = [visibility],
         )
-        for target in ["_whl", "_pkg"]
+        for target, visibility in {
+            "data": "//visibility:public",
+            "dist_info": "//visibility:public",
+            "_pkg": impl_vis,
+            "_whl": impl_vis,
+        }.items()
+    ]
+
+    build_contents += [
+        render.alias(
+            name = target,
+            actual = repr(actual),
+            visibility = ["//visibility:public"],
+        )
+        for target, actual in {
+            "pkg": library_impl_label,
+            "whl": whl_impl_label,
+        }.items()
     ]
 
     rctx.file("BUILD.bazel", "\n\n".join(build_contents))
@@ -283,6 +287,7 @@ config_setting(
 whl_minihub = repository_rule(
     attrs = {
         "distribution": attr.string(mandatory = True),
+        "group_name": attr.string(),
         "metadata": attr.label(mandatory = True, allow_single_file = True),
         "repo": attr.string(mandatory = True),
         "sha256s": attr.string_list(mandatory = True),

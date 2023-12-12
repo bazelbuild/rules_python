@@ -211,15 +211,10 @@ def generate_whl_library_build_bazel(
         group_repo = repo_prefix + "_groups"
         library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
         whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-        impl_vis = "@{}{}//:__pkg__".format(
-            repo_prefix,
-            normalize_name(parse_whl_name(whl_name).distribution),
-        )
 
     else:
         library_impl_label = PY_LIBRARY_IMPL_LABEL
         whl_impl_label = WHEEL_FILE_IMPL_LABEL
-        impl_vis = "//visibility:private"
 
     contents = "\n".join(
         [
@@ -240,7 +235,10 @@ def generate_whl_library_build_bazel(
                 entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
-                impl_vis = repr([impl_vis]),
+                impl_vis = repr(["@{}{}//:__pkg__".format(
+                    repo_prefix,
+                    normalize_name(parse_whl_name(whl_name).distribution),
+                )]),
             ),
         ] + additional_content,
     )
