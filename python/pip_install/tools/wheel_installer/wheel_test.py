@@ -220,6 +220,14 @@ class PlatformTest(unittest.TestCase):
                     wheel.Platform.from_tag(give),
                 )
 
+    def test_can_get_host(self):
+        host = wheel.Platform.host()
+        self.assertIsNotNone(host)
+
+    def test_can_get_all(self):
+        all_platforms = wheel.Platform.all()
+        self.assertTrue(len(all_platforms) != 0)
+
 
 if __name__ == "__main__":
     unittest.main()

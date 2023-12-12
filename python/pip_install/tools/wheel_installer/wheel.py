@@ -15,7 +15,9 @@
 """Utility class to inspect an extracted wheel directory"""
 
 import email
+import platform
 import re
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
@@ -81,12 +83,16 @@ class Platform:
     arch: Optional[Arch] = None
 
     @classmethod
-    def all() -> List["Platform"]:
-        return [Platform(os=os, arch=arch) for os in OS for arch in Arch]
+    def all(cls) -> List["Platform"]:
+        return [cls(os=os, arch=arch) for os in OS for arch in Arch]
 
     @classmethod
-    def host() -> List["Platform"]:
-        return [Platform(os=os, arch=arch) for os in OS for arch in Arch]
+    def host(cls) -> "Platform":
+        return [
+            cls(os=OS[sys.platform.lower()], arch=Arch[platform.machine()])
+            for os in OS
+            for arch in Arch
+        ]
 
     def __lt__(self, other: Any) -> bool:
         """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
