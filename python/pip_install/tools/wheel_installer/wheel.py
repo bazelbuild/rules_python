@@ -20,7 +20,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import installer
 from packaging.requirements import Requirement
@@ -28,9 +28,9 @@ from pip._vendor.packaging.utils import canonicalize_name
 
 
 class OS(Enum):
-    linux = "linux"
-    osx = "osx"
-    windows = "windows"
+    linux = 1
+    osx = 2
+    windows = 3
     darwin = osx
     win32 = windows
 
@@ -51,11 +51,11 @@ class OS(Enum):
 
 
 class Arch(Enum):
-    x86_64 = "x86_64"
-    x86_32 = "x86_32"
-    aarch64 = "aarch64"
-    ppc = "ppc"
-    s390x = "s390x"
+    x86_64 = 1
+    x86_32 = 2
+    aarch64 = 3
+    ppc = 4
+    s390x = 5
     amd64 = x86_64
     arm64 = aarch64
     i386 = x86_32
@@ -79,6 +79,30 @@ class Arch(Enum):
 class Platform:
     os: OS
     arch: Optional[Arch] = None
+
+    @classmethod
+    def all() -> List["Platform"]:
+        return [Platform(os=os, arch=arch) for os in OS for arch in Arch]
+
+    @classmethod
+    def host() -> List["Platform"]:
+        return [Platform(os=os, arch=arch) for os in OS for arch in Arch]
+
+    def __lt__(self, other: Any) -> bool:
+        """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
+        if not isinstance(other, Platform) or other is None:
+            return False
+
+        if self.arch is None and other.arch is not None:
+            return True
+
+        if self.arch is not None and other.arch is None:
+            return True
+
+        if self.arch is None and other.arch is None:
+            return self.os.value < other.os.value
+
+        return self.os.value < other.os.value and self.arch.value < other.arch.value
 
     def __str__(self) -> str:
         if self.arch is None:
@@ -201,7 +225,7 @@ class Deps:
         self.name: str = Deps._normalize(name)
         self._deps: Set[str] = set()
         self._select: Dict[Platform, Set[str]] = defaultdict(set)
-        self._want_extras: Set[str] = extras or {""}
+        self._want_extras: Set[str] = extras or {""}  # empty strings means no extras
         self._platforms: Set[Platform] = platforms or set()
 
     def _add(self, dep: str, platform: Optional[Platform]):
@@ -323,21 +347,22 @@ class Deps:
                 deps_select={},
             )
 
-        select_by_os = {
+        # Get all of the OS-specific dependencies applicable to all architectures
+        select = {
             p: deps for p, deps in self._select.items() if deps and p.arch is None
         }
-        # Order the most specific platforms first
-        select = {
-            p: deps | select_by_os.get(Platform(p.os), set())
-            for p, deps in self._select.items()
-            if deps and p.arch is not None
-        }
-        # Then add by OS
-        select.update(select_by_os)
+        # Now add them to all arch specific dependencies
+        select.update(
+            {
+                p: deps | select.get(Platform(p.os), set())
+                for p, deps in self._select.items()
+                if deps and p.arch is not None
+            }
+        )
 
         return FrozenDeps(
             deps=sorted(self._deps),
-            deps_select={str(p): sorted(deps) for p, deps in select.items()},
+            deps_select={str(p): sorted(deps) for p, deps in sorted(select.items())},
         )
 
 
