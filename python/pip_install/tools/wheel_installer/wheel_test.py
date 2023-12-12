@@ -20,9 +20,7 @@ class DepsTest(unittest.TestCase):
             "osx_x86_64",
             "windows_x86_64",
         }
-        deps = wheel.Deps(
-            "foo", platforms={wheel.Platform.from_string(p) for p in platforms}
-        )
+        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
         deps.add(
             "bar",
             "posix_dep; os_name=='posix'",
@@ -48,9 +46,7 @@ class DepsTest(unittest.TestCase):
             "osx_aarch64",
             "windows_x86_64",
         }
-        deps = wheel.Deps(
-            "foo", platforms={wheel.Platform.from_string(p) for p in platforms}
-        )
+        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
         deps.add(
             "bar",
             "posix_dep; os_name=='posix'",
@@ -78,9 +74,7 @@ class DepsTest(unittest.TestCase):
             "osx_aarch64",
             "windows_x86_64",
         }
-        deps = wheel.Deps(
-            "foo", platforms={wheel.Platform.from_string(p) for p in platforms}
-        )
+        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
         deps.add(
             "bar",
             "baz; implementation_name=='cpython'",
@@ -216,14 +210,14 @@ class PlatformTest(unittest.TestCase):
         for give, want in tests.items():
             with self.subTest(give=give, want=want):
                 self.assertEqual(
-                    wheel.Platform.from_string(want),
+                    wheel.Platform.from_string(want)[0],
                     wheel.Platform.from_tag(give),
                 )
 
     def test_can_get_host(self):
         host = wheel.Platform.host()
         self.assertIsNotNone(host)
-        self.assertEqual(host, wheel.Platform.from_string("host"))
+        self.assertEqual(host, wheel.Platform.from_string("host")[0])
 
     def test_can_get_all(self):
         all_platforms = wheel.Platform.all()

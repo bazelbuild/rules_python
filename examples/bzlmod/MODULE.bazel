@@ -102,7 +102,13 @@ pip.parse(
     python_version = "3.9",
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
-    target_platforms = ["all"],
+    # You can use one of the values below to specify the target platform
+    # to generate the dependency graph for.
+    target_platforms = [
+        "all",
+        "linux_*",
+        "host",
+    ],
     # These modifications were created above and we
     # are providing pip.parse with the label of the mod
     # and the name of the wheel.
@@ -126,7 +132,13 @@ pip.parse(
     python_version = "3.10",
     requirements_lock = "//:requirements_lock_3_10.txt",
     requirements_windows = "//:requirements_windows_3_10.txt",
-    target_platforms = ["all"],
+    # You can use one of the values below to specify the target platform
+    # to generate the dependency graph for.
+    target_platforms = [
+        "all",
+        "linux_*",
+        "host",
+    ],
     # These modifications were created above and we
     # are providing pip.parse with the label of the mod
     # and the name of the wheel.

@@ -98,6 +98,9 @@ def get_platforms(args: argparse.Namespace) -> Set:
         args: dict of parsed command line arguments
     """
     platforms = set()
+    if args.platform is None:
+        return platforms
+
     for ps in args.platform:
         if isinstance(ps, list):
             for p in ps:

@@ -22,7 +22,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import installer
 from packaging.requirements import Requirement
@@ -129,26 +129,27 @@ class Platform:
         )
 
     @classmethod
-    def from_string(cls, platform: str) -> List["Platform"]:
+    def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
         if platform == "host":
             return [cls.host()]
-
-        if "*" in platform:
-            os, _, _ = platform.partition("_")
-
-            return cls.all(OS[os])
 
         if platform == "all":
             return cls.all()
 
-        os, _, arch = platform.partition("_")
+        if isinstance(platform, str) and platform.endswith("*"):
+            os, _, _ = platform.partition("_")
 
-        return [
-            cls(
-                os=OS[os],
-                arch=Arch[arch],
-            )
-        ]
+            return cls.all(OS[os])
+
+        if isinstance(platform, str):
+            platform = [platform]
+
+        ret = []
+        for p in platform:
+            os, _, arch = p.partition("_")
+            ret.append(cls(os=OS[os], arch=Arch[arch]))
+
+        return ret
 
     # NOTE @aignas 2023-12-05: below is the minimum number of accessors that are defined in
     # https://peps.python.org/pep-0496/ to make rules_python generate dependencies.
