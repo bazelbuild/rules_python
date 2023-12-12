@@ -8,9 +8,5 @@ write_file(
 
 filegroup(
     name = "whl_orig",
-    srcs = glob(
-        ["*.whl"],
-        allow_empty = False,
-        exclude = ["*-patched-*.whl"],
-    ),
+    srcs = ["_whl"],
 )

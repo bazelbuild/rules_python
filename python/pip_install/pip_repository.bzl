@@ -684,13 +684,13 @@ def _whl_library_impl(rctx):
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
     whl_path = None
+    whl_label = None
     if rctx.attr.file:
-        whl_path = rctx.path(rctx.attr.file).realpath
+        whl_label = rctx.attr.file
+        whl_path = rctx.path(whl_label).realpath
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
-        else:
-            rctx.symlink(whl_path, whl_path.basename)
-            whl_path = rctx.path(whl_path.basename)
+            whl_label = None
 
     if whl_path == None:
         result = rctx.execute(
@@ -756,8 +756,9 @@ def _whl_library_impl(rctx):
         entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
+        name = metadata["name"],
         repo_prefix = rctx.attr.repo_prefix,
-        whl_name = whl_path.basename,
+        whl_name = whl_label or whl_path.basename,
         dependencies = metadata["deps"],
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
