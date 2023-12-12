@@ -316,7 +316,7 @@ class Deps:
             else:
                 self._add(req.name, Platform(plat.os))
 
-    def build(self, m=None) -> FrozenDeps:
+    def build(self) -> FrozenDeps:
         if not self._select:
             return FrozenDeps(
                 deps=sorted(self._deps),

@@ -58,7 +58,7 @@ class DepsTest(unittest.TestCase):
             "win_dep; os_name=='nt'",
         )
 
-        got = deps.build("foo")
+        got = deps.build()
 
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
