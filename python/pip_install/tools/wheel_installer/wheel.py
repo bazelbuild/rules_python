@@ -93,10 +93,21 @@ class Platform:
 
     @classmethod
     def host(cls) -> "Platform":
+        """Use the Python interpreter to detect the platform.
+
+        We extract `os` from sys.platform and `arch` from platform.machine
+        """
         return [
-            cls(os=OS[sys.platform.lower()], arch=Arch[platform.machine()])
-            for os in OS
-            for arch in Arch
+            cls(
+                os=OS[sys.platform.lower()],
+                # NOTE @aignas 2023-12-13: we use `x86_64` as a fallback value as this
+                # is the observed behaviour on Windows. It seems that there are experiments
+                # to provide wheels for windows arm64, but for now it is uncommon to have
+                # Python running on something else than `x86_64`.
+                #
+                # For the win arm64 wheels: https://github.com/cgohlke/win_arm64-wheels/
+                arch=Arch[platform.machine() or "x86_64"],
+            )
         ]
 
     def __lt__(self, other: Any) -> bool:

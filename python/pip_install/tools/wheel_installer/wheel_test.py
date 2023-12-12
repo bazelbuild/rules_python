@@ -217,6 +217,7 @@ class PlatformTest(unittest.TestCase):
     def test_can_get_host(self):
         host = wheel.Platform.host()
         self.assertIsNotNone(host)
+        self.assertEqual(1, len(wheel.Platform.from_string("host")))
         self.assertEqual(host, wheel.Platform.from_string("host")[0])
 
     def test_can_get_all(self):
