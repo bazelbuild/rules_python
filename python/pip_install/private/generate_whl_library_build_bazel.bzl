@@ -64,14 +64,14 @@ filegroup(
 )
 
 filegroup(
-    name = "{whl_file_impl_label}",
+    name = "{whl_file_label}",
     srcs = ["{whl_name}"],
     data = {whl_file_deps},
     visibility = {impl_vis},
 )
 
 py_library(
-    name = "{py_library_impl_label}",
+    name = "{py_library_label}",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude={srcs_exclude},
@@ -89,16 +89,6 @@ py_library(
     deps = {dependencies},
     tags = {tags},
     visibility = {impl_vis},
-)
-
-alias(
-   name = "{py_library_public_label}",
-   actual = "{py_library_actual_label}",
-)
-
-alias(
-   name = "{whl_file_public_label}",
-   actual = "{whl_file_actual_label}",
 )
 """
 
@@ -203,31 +193,14 @@ def generate_whl_library_build_bazel(
         for d in non_group_deps
     ]
 
-    # If this library is a member of a group, its public label aliases need to
-    # point to the group implementation rule not the implementation rules. We
-    # also need to mark the implementation rules as visible to the group
-    # implementation.
-    if group_name:
-        group_repo = repo_prefix + "_groups"
-        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
-        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-
-    else:
-        library_impl_label = PY_LIBRARY_IMPL_LABEL
-        whl_impl_label = WHEEL_FILE_IMPL_LABEL
-
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
-                py_library_public_label = PY_LIBRARY_PUBLIC_LABEL,
-                py_library_impl_label = PY_LIBRARY_IMPL_LABEL,
-                py_library_actual_label = library_impl_label,
+                py_library_label = PY_LIBRARY_IMPL_LABEL,
                 dependencies = repr(lib_dependencies),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
-                whl_file_public_label = WHEEL_FILE_PUBLIC_LABEL,
-                whl_file_impl_label = WHEEL_FILE_IMPL_LABEL,
-                whl_file_actual_label = whl_impl_label,
+                whl_file_label = WHEEL_FILE_IMPL_LABEL,
                 whl_file_deps = repr(whl_file_deps),
                 tags = repr(tags),
                 data_label = DATA_LABEL,

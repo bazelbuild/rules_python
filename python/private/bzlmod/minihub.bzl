@@ -92,6 +92,15 @@ Cons:
 """
 
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
+load(
+    "//python/private:labels.bzl",
+    "DATA_LABEL",
+    "DIST_INFO_LABEL",
+    "PY_LIBRARY_IMPL_LABEL",
+    "PY_LIBRARY_PUBLIC_LABEL",
+    "WHEEL_FILE_IMPL_LABEL",
+    "WHEEL_FILE_PUBLIC_LABEL",
+)
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
@@ -252,8 +261,8 @@ config_setting(
         library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), "pkg")
         whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), "whl")
     else:
-        library_impl_label = "_pkg"
-        whl_impl_label = "_whl"
+        library_impl_label = PY_LIBRARY_IMPL_LABEL
+        whl_impl_label = WHEEL_FILE_IMPL_LABEL
         impl_vis = "//visibility:private"
 
     build_contents += [
@@ -263,10 +272,10 @@ config_setting(
             visibility = [visibility],
         )
         for target, visibility in {
-            "data": "//visibility:public",
-            "dist_info": "//visibility:public",
-            "_pkg": impl_vis,
-            "_whl": impl_vis,
+            DATA_LABEL: "//visibility:public",
+            DIST_INFO_LABEL: "//visibility:public",
+            PY_LIBRARY_IMPL_LABEL: impl_vis,
+            WHEEL_FILE_IMPL_LABEL: impl_vis,
         }.items()
     ]
 
@@ -277,8 +286,8 @@ config_setting(
             visibility = ["//visibility:public"],
         )
         for target, actual in {
-            "pkg": library_impl_label,
-            "whl": whl_impl_label,
+            PY_LIBRARY_PUBLIC_LABEL: library_impl_label,
+            WHEEL_FILE_PUBLIC_LABEL: whl_impl_label,
         }.items()
     ]
 
