@@ -161,7 +161,7 @@ def main() -> None:
             wheel_file=whl,
             extras=extras,
             enable_implicit_namespace_pkgs=args.enable_implicit_namespace_pkgs,
-            platforms=set(args.platform or []),
+            platforms=arguments.get_platforms(args),
         )
         return
 

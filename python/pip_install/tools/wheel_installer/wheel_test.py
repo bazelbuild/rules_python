@@ -223,10 +223,17 @@ class PlatformTest(unittest.TestCase):
     def test_can_get_host(self):
         host = wheel.Platform.host()
         self.assertIsNotNone(host)
+        self.assertEqual(host, wheel.Platform.from_string("host"))
 
     def test_can_get_all(self):
         all_platforms = wheel.Platform.all()
-        self.assertTrue(len(all_platforms) != 0)
+        self.assertEqual(15, len(all_platforms))
+        self.assertEqual(all_platforms, wheel.Platform.from_string("all"))
+
+    def test_can_get_all_for_os(self):
+        linuxes = wheel.Platform.all(wheel.OS.linux)
+        self.assertEqual(5, len(linuxes))
+        self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
 
 
 if __name__ == "__main__":

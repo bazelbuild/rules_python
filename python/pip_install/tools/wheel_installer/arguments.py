@@ -15,7 +15,7 @@
 import argparse
 import json
 import pathlib
-from typing import Any
+from typing import Any, Dict, Set
 
 from python.pip_install.tools.wheel_installer import wheel
 
@@ -43,7 +43,7 @@ def parser(**kwargs: Any) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--platform",
-        action="append",
+        action="extend",
         type=wheel.Platform.from_string,
         help="Platforms to target dependencies. Can be used multiple times.",
     )
@@ -76,8 +76,9 @@ def parser(**kwargs: Any) -> argparse.ArgumentParser:
     return parser
 
 
-def deserialize_structured_args(args):
+def deserialize_structured_args(args: Dict[str, str]) -> Dict:
     """Deserialize structured arguments passed from the starlark rules.
+
     Args:
         args: dict of parsed command line arguments
     """
@@ -88,3 +89,20 @@ def deserialize_structured_args(args):
         else:
             args[arg_name] = []
     return args
+
+
+def get_platforms(args: argparse.Namespace) -> Set:
+    """Aggregate platforms into a single set.
+
+    Args:
+        args: dict of parsed command line arguments
+    """
+    platforms = set()
+    for ps in args.platform:
+        if isinstance(ps, list):
+            for p in ps:
+                platforms.add(p)
+        else:
+            platforms.add(ps)
+
+    return platforms

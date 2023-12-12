@@ -83,8 +83,13 @@ class Platform:
     arch: Optional[Arch] = None
 
     @classmethod
-    def all(cls) -> List["Platform"]:
-        return [cls(os=os, arch=arch) for os in OS for arch in Arch]
+    def all(cls, want_os: Optional[OS] = None) -> List["Platform"]:
+        return [
+            cls(os=os, arch=arch)
+            for os in OS
+            for arch in Arch
+            if not want_os or want_os == os
+        ]
 
     @classmethod
     def host(cls) -> "Platform":
@@ -124,13 +129,26 @@ class Platform:
         )
 
     @classmethod
-    def from_string(cls, platform: str) -> "Platform":
+    def from_string(cls, platform: str) -> List["Platform"]:
+        if platform == "host":
+            return [cls.host()]
+
+        if "*" in platform:
+            os, _, _ = platform.partition("_")
+
+            return cls.all(OS[os])
+
+        if platform == "all":
+            return cls.all()
+
         os, _, arch = platform.partition("_")
 
-        return cls(
-            os=OS[os],
-            arch=Arch[arch],
-        )
+        return [
+            cls(
+                os=OS[os],
+                arch=Arch[arch],
+            )
+        ]
 
     # NOTE @aignas 2023-12-05: below is the minimum number of accessors that are defined in
     # https://peps.python.org/pep-0496/ to make rules_python generate dependencies.

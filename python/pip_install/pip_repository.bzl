@@ -35,19 +35,6 @@ COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
-_ALL_PLATFORMS = [
-    "linux_aarch64",
-    "linux_ppc64le",
-    "linux_s390x",
-    "linux_x86_64",
-    "linux_x86_32",
-    "osx_aarch64",
-    "osx_x86_64",
-    "windows_x86_64",
-    "windows_x86_32",
-    "windows_aarch64",
-]
-
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
 
@@ -544,6 +531,14 @@ platform is the target platform.
 WARNING: It may not work as expected in cases where the python interpreter
 implementation that is being used at runtime is different between different platforms.
 This has been tested for CPython only.
+
+Special values: `all` (for generating deps for all platforms), `host` (for
+generating deps for the host platform only). `linux_*` and other `<os>_*` values.
+In the future we plan to set `all` as the default to this attribute.
+
+For specific target platforms use values of the form `<os>_<arch>` where `<os>`
+is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
+`aarch64`, `s390x` and `ppc64le`.
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
@@ -700,15 +695,6 @@ See the example in rules_python/examples/pip_parse_vendored.
 )
 
 def _whl_library_impl(rctx):
-    target_platforms = []
-    if len(rctx.attr.target_platforms) == 1 and rctx.attr.target_platforms[0] == "all":
-        target_platforms = _ALL_PLATFORMS
-    elif rctx.attr.target_platforms:
-        target_platforms = rctx.attr.target_platforms
-        for p in target_platforms:
-            if p not in _ALL_PLATFORMS:
-                fail("target_platforms must be a subset of {} but got {}".format(["all"] + _ALL_PLATFORMS, target_platforms))
-
     python_interpreter = _resolve_python_interpreter(rctx)
     args = [
         python_interpreter,
@@ -756,7 +742,7 @@ def _whl_library_impl(rctx):
         args + [
             "--whl-file",
             whl_path,
-        ] + ["--platform={}".format(p) for p in target_platforms],
+        ] + ["--platform={}".format(p) for p in rctx.attr.target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
