@@ -16,7 +16,7 @@
 
 import email
 import re
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -185,7 +185,10 @@ class Platform:
         }
 
 
-FrozenDeps = namedtuple("FrozenDeps", "deps deps_select")
+@dataclass(frozen=True)
+class FrozenDeps:
+    deps: list[str]
+    deps_select: dict[str, list[str]]
 
 
 class Deps:
