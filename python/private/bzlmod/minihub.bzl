@@ -91,7 +91,9 @@ Cons:
 
 """
 
+load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load(
     "//python/private:labels.bzl",
     "DATA_LABEL",
@@ -103,6 +105,8 @@ load(
 )
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
+load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:text_util.bzl", "render")
 load(":label.bzl", _label = "label")
 
@@ -169,6 +173,8 @@ def whl_library(name, requirement, **kwargs):
         metadata = metadata,
     )
 
+    whl_patches = kwargs.pop("whl_patches", None)
+
     for sha256 in sha256s:
         whl_name = "{}_{}".format(name, sha256[:6])
 
@@ -179,6 +185,8 @@ def whl_library(name, requirement, **kwargs):
             name = whl_name + "_whl",
             metadata = metadata,
             sha256 = sha256,
+            whl_patches = whl_patches,
+            # TODO @aignas 2023-12-12: do patching of the wheel here
         )
 
         _whl_library(
@@ -327,7 +335,27 @@ def _whl_archive_impl(rctx):
     if not result.success:
         fail(result)
 
-    rctx.symlink(filename, "whl")
+    whl_path = rctx.path(filename)
+
+    if rctx.attr.whl_patches:
+        patches = {}
+        for patch_file, json_args in rctx.attr.whl_patches.items():
+            patch_dst = struct(**json.decode(json_args))
+            if whl_path.basename in patch_dst.whls:
+                patches[patch_file] = patch_dst.patch_strip
+
+
+        whl_path = patch_whl(
+            rctx,
+            # TODO @aignas 2023-12-12: do not use system Python
+            python_interpreter = _resolve_python_interpreter(rctx),
+            whl_path = whl_path,
+            patches = patches,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+
+    rctx.symlink(whl_path, "whl")
 
     rctx.file(
         "BUILD.bazel",
@@ -337,14 +365,68 @@ filegroup(
     srcs=["{filename}"],
     visibility=["//visibility:public"],
 )
-""".format(filename = filename),
+""".format(filename = whl_path.basename),
     )
 
 whl_archive = repository_rule(
     attrs = {
         "metadata": attr.label(mandatory = True, allow_single_file = True),
+        "quiet": attr.bool(default=True),
         "sha256": attr.string(mandatory = False),
+        "timeout": attr.int(default=60),
+        "whl_patches": attr.label_keyed_string_dict(
+            doc = """"a label-keyed-string dict that has
+                json.encode(struct([whl_file], patch_strip]) as values. This
+                is to maintain flexibility and correct bzlmod extension interface
+                until we have a better way to define whl_library and move whl
+                patching to a separate place. INTERNAL USE ONLY.""",
+        ),
+        "python_interpreter": attr.string(),
+        "python_interpreter_target": attr.label(),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_archive_impl,
 )
+
+def _get_python_interpreter_attr(rctx):
+    """A helper function for getting the `python_interpreter` attribute or it's default
+
+    Args:
+        rctx (repository_ctx): Handle to the rule repository context.
+
+    Returns:
+        str: The attribute value or it's default
+    """
+    if rctx.attr.python_interpreter:
+        return rctx.attr.python_interpreter
+
+    if "win" in rctx.os.name:
+        return "python.exe"
+    else:
+        return "python3"
+
+def _resolve_python_interpreter(rctx):
+    """Helper function to find the python interpreter from the common attributes
+
+    Args:
+        rctx: Handle to the rule repository context.
+    Returns: Python interpreter path.
+    """
+    python_interpreter = _get_python_interpreter_attr(rctx)
+
+    if rctx.attr.python_interpreter_target != None:
+        python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
+
+        if BZLMOD_ENABLED:
+            (os, _) = get_host_os_arch(rctx)
+
+            # On Windows, the symlink doesn't work because Windows attempts to find
+            # Python DLLs where the symlink is, not where the symlink points.
+            if os == WINDOWS_NAME:
+                python_interpreter = python_interpreter.realpath
+    elif "/" not in python_interpreter:
+        found_python_interpreter = rctx.which(python_interpreter)
+        if not found_python_interpreter:
+            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
+        python_interpreter = found_python_interpreter
+    return python_interpreter
