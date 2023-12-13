@@ -248,7 +248,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						fqTarget.String(), actualPyBinaryKind, err)
 					continue
 				}
-				srcs.Remove(filename)
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 					addVisibility(visibility).
 					addSrc(filename).
