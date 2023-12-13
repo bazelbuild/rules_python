@@ -100,7 +100,9 @@ class Platform:
         return [
             cls(
                 os=OS[sys.platform.lower()],
-                arch=Arch[platform.machine().lower()],
+                # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
+                # is returning an empty string here, so lets default to x86_64
+                arch=Arch[platform.machine().lower() or "x86_64"],
             )
         ]
 
