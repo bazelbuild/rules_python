@@ -241,8 +241,8 @@ class Platform:
 
 @dataclass(frozen=True)
 class FrozenDeps:
-    deps: list[str]
-    deps_select: dict[str, list[str]]
+    deps: List[str]
+    deps_select: Dict[str, List[str]]
 
 
 class Deps:
