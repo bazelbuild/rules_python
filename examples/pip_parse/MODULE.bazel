@@ -26,5 +26,6 @@ pip.parse(
     hub_name = "pypi",
     python_version = "3.9",
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 use_repo(pip, "pypi")
