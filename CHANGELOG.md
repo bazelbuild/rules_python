@@ -36,6 +36,13 @@ A brief description of the categories of changes:
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
   and above due to a bug in the helper components not being on PYTHONPATH.
 
+* (pip_parse) The repositories created by `whl_library` can now parse the `whl`
+  METADATA and generate dependency closures irrespective of the host platform
+  the generation is executed on. This can be turned on by supplying
+  `experimental_target_platforms = ["all"]` to the `pip_parse` or the `bzlmod`
+  equivalent. This may help in cases where fetching wheels for a different
+  platform using `download_only = True` feature.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
