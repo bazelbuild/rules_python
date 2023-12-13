@@ -345,8 +345,8 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.python_interpreter_target:
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
-    if rctx.attr.target_platforms:
-        config["target_platforms"] = rctx.attr.target_platforms
+    if rctx.attr.experimental_target_platforms:
+        config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
     if rctx.attr.incompatible_generate_aliases:
         macro_tmpl = "@%s//{}:{}" % rctx.attr.name
@@ -476,6 +476,30 @@ Warning:
   as two separate cycles.
 """,
     ),
+    "experimental_target_platforms": attr.string_list(
+        default = [],
+        doc = """\
+A list of platforms that we will generate the conditional dependency graph for
+cross platform wheels by parsing the wheel metadata. This will generate the
+correct dependencies for packages like `sphinx` or `pylint`, which include
+`colorama` when installed and used on Windows platforms.
+
+An empty list means falling back to the legacy behaviour where the host
+platform is the target platform.
+
+WARNING: It may not work as expected in cases where the python interpreter
+implementation that is being used at runtime is different between different platforms.
+This has been tested for CPython only.
+
+Special values: `all` (for generating deps for all platforms), `host` (for
+generating deps for the host platform only). `linux_*` and other `<os>_*` values.
+In the future we plan to set `all` as the default to this attribute.
+
+For specific target platforms use values of the form `<os>_<arch>` where `<os>`
+is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
+`aarch64`, `s390x` and `ppc64le`.
+""",
+    ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
     ),
@@ -515,30 +539,6 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
     "repo_prefix": attr.string(
         doc = """
 Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
-""",
-    ),
-    "target_platforms": attr.string_list(
-        default = [],
-        doc = """\
-A list of platforms that we will generate the conditional dependency graph for
-cross platform wheels by parsing the wheel metadata. This will generate the
-correct dependencies for packages like `sphinx` or `pylint`, which include
-`colorama` when installed and used on Windows platforms.
-
-An empty list means falling back to the legacy behaviour where the host
-platform is the target platform.
-
-WARNING: It may not work as expected in cases where the python interpreter
-implementation that is being used at runtime is different between different platforms.
-This has been tested for CPython only.
-
-Special values: `all` (for generating deps for all platforms), `host` (for
-generating deps for the host platform only). `linux_*` and other `<os>_*` values.
-In the future we plan to set `all` as the default to this attribute.
-
-For specific target platforms use values of the form `<os>_<arch>` where `<os>`
-is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
-`aarch64`, `s390x` and `ppc64le`.
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
@@ -742,7 +742,7 @@ def _whl_library_impl(rctx):
         args + [
             "--whl-file",
             whl_path,
-        ] + ["--platform={}".format(p) for p in rctx.attr.target_platforms],
+        ] + ["--platform={}".format(p) for p in rctx.attr.experimental_target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
