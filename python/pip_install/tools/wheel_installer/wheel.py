@@ -84,18 +84,24 @@ class Platform:
 
     @classmethod
     def all(cls, want_os: Optional[OS] = None) -> List["Platform"]:
-        return [
-            cls(os=os, arch=arch)
-            for os in OS
-            for arch in Arch
-            if not want_os or want_os == os
-        ]
+        return sorted(
+            [
+                cls(os=os, arch=arch)
+                for os in OS
+                for arch in Arch
+                if not want_os or want_os == os
+            ]
+        )
 
     @classmethod
-    def host(cls) -> "Platform":
+    def host(cls) -> List["Platform"]:
         """Use the Python interpreter to detect the platform.
 
         We extract `os` from sys.platform and `arch` from platform.machine
+
+        Returns:
+            A list of parsed values which makes the signature the same as
+            `Platform.all` and `Platform.from_string`.
         """
         return [
             cls(
@@ -117,10 +123,18 @@ class Platform:
         if self.arch is not None and other.arch is None:
             return True
 
+        # Here we ensure that we sort by OS before sorting by arch
+
         if self.arch is None and other.arch is None:
             return self.os.value < other.os.value
 
-        return self.os.value < other.os.value and self.arch.value < other.arch.value
+        if self.os.value < other.os.value:
+            return True
+
+        if self.os.value == other.os.value:
+            return self.arch.value < other.arch.value
+
+        return False
 
     def __str__(self) -> str:
         if self.arch is None:
@@ -137,26 +151,22 @@ class Platform:
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
-        if platform == "host":
-            return [cls.host()]
-
-        if platform == "all":
-            return cls.all()
-
-        if isinstance(platform, str) and platform.endswith("*"):
-            os, _, _ = platform.partition("_")
-
-            return cls.all(OS[os])
-
-        if isinstance(platform, str):
-            platform = [platform]
-
-        ret = []
+        """Parse a string and return a list of platforms"""
+        platform = [platform] if isinstance(platform, str) else list(platform)
+        ret = set()
         for p in platform:
-            os, _, arch = p.partition("_")
-            ret.append(cls(os=OS[os], arch=Arch[arch]))
+            if p == "host":
+                ret.update(cls.host())
+            elif p == "all":
+                ret.update(cls.all())
+            elif p.endswith("*"):
+                os, _, _ = p.partition("_")
+                ret.update(cls.all(OS[os]))
+            else:
+                os, _, arch = p.partition("_")
+                ret.add(cls(os=OS[os], arch=Arch[arch]))
 
-        return ret
+        return sorted(ret)
 
     # NOTE @aignas 2023-12-05: below is the minimum number of accessors that are defined in
     # https://peps.python.org/pep-0496/ to make rules_python generate dependencies.
