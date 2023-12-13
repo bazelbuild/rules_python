@@ -109,7 +109,7 @@ class Platform:
     def __lt__(self, other: Any) -> bool:
         """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
         if not isinstance(other, Platform) or other is None:
-            return False
+            raise ValueError(f"cannot compare {other} with Platform")
 
         if self.arch is None and other.arch is not None:
             return True
