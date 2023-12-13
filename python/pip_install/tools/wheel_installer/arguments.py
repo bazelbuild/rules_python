@@ -103,8 +103,7 @@ def get_platforms(args: argparse.Namespace) -> Set:
 
     for ps in args.platform:
         if isinstance(ps, list):
-            for p in ps:
-                platforms.add(p)
+            platforms.update(ps)
         else:
             platforms.add(ps)
 
