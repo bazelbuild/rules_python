@@ -104,9 +104,8 @@ def _test_py_runtime_pair_and_binary(name):
     rt_util.helper_target(
         py_runtime,
         name = name + "_runtime",
-        interpreter = "fake_interpreter",
+        interpreter_path = "/fake_interpreter",
         python_version = "PY3",
-        files = ["file1.txt"],
     )
     rt_util.helper_target(
         py_runtime_pair,
@@ -129,7 +128,8 @@ def _test_py_runtime_pair_and_binary(name):
         impl = _test_py_runtime_pair_and_binary_impl,
         config_settings = {
             "//command_line_option:extra_toolchains": [
-                "//tests/py_runtime_pair:test_py_runtime_pair_and_binary_toolchain",
+                "//tests/py_runtime_pair:{}_toolchain".format(name),
+                "//tests/cc:all",
             ],
         },
     )
