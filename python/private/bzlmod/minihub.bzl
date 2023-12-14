@@ -39,10 +39,9 @@ is done in separate threads, one for each external repository.
 Pros:
 * Really fast, no need to re-download the wheels when changing the contents of
   `whl_library`.
+* The cyclic dependency groups just work with a few tweaks.
 Cons:
 * The sha256 files in filenames makes things difficult to read/understand.
-* The cyclic dependency groups need extra work as the visibility between targets needs
-  to be ironed out.
 * The whl_annotations break, because users would need to specify weird repos in
   their `use_repo` statements in the `MODULE.bazel` in order to make the
   annotations useful. The need for forwarding the aliases based on the
@@ -76,12 +75,12 @@ Cons:
   what we have today.
 * whl_annotations for platform-specific wheels could be worked arround only in a subset
   of cases. This is the analysis for each field:
-  * additive_build_content => What to do?
-  * copy_files => Apply to each platform-specific wheel and it will be OK and we will nede to generate aliases for them in the minihub.
-  * copy_executables => Apply to each platform-specific wheel and it will be OK and we will need to generate aliases for them in the minihub.
-  * data => Apply to each platform-specific wheel and it will be OK.
-  * data_exclude_glob => Apply to each platform-specific wheel and it will be OK.
-  * srcs_exclude_glob => Apply to each platform-specific wheel and it will be OK.
+  - [ ] additive_build_content => What to do?
+  - [.] copy_files => Apply to each platform-specific wheel and it will be OK and we will nede to generate aliases for them in the minihub.
+  - [.] copy_executables => Apply to each platform-specific wheel and it will be OK and we will need to generate aliases for them in the minihub.
+  - [x] data => Apply to each platform-specific wheel and it will be OK.
+  - [x] data_exclude_glob => Apply to each platform-specific wheel and it will be OK.
+  - [x] srcs_exclude_glob => Apply to each platform-specific wheel and it will be OK.
 
 ## Notes on this approach
 
@@ -105,9 +104,9 @@ load(
 )
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:text_util.bzl", "render")
+load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":label.bzl", _label = "label")
 
 _os_in_tag = {
@@ -344,7 +343,6 @@ def _whl_archive_impl(rctx):
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
 
-
         whl_path = patch_whl(
             rctx,
             # TODO @aignas 2023-12-12: do not use system Python
@@ -371,9 +369,11 @@ filegroup(
 whl_archive = repository_rule(
     attrs = {
         "metadata": attr.label(mandatory = True, allow_single_file = True),
-        "quiet": attr.bool(default=True),
+        "python_interpreter": attr.string(),
+        "python_interpreter_target": attr.label(),
+        "quiet": attr.bool(default = True),
         "sha256": attr.string(mandatory = False),
-        "timeout": attr.int(default=60),
+        "timeout": attr.int(default = 60),
         "whl_patches": attr.label_keyed_string_dict(
             doc = """"a label-keyed-string dict that has
                 json.encode(struct([whl_file], patch_strip]) as values. This
@@ -381,8 +381,6 @@ whl_archive = repository_rule(
                 until we have a better way to define whl_library and move whl
                 patching to a separate place. INTERNAL USE ONLY.""",
         ),
-        "python_interpreter": attr.string(),
-        "python_interpreter_target": attr.label(),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_archive_impl,
