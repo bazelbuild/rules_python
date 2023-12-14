@@ -185,7 +185,6 @@ def whl_library(name, requirement, **kwargs):
             metadata = metadata,
             sha256 = sha256,
             whl_patches = whl_patches,
-            # TODO @aignas 2023-12-12: do patching of the wheel here
         )
 
         _whl_library(
@@ -345,7 +344,6 @@ def _whl_archive_impl(rctx):
 
         whl_path = patch_whl(
             rctx,
-            # TODO @aignas 2023-12-12: do not use system Python
             python_interpreter = _resolve_python_interpreter(rctx),
             whl_path = whl_path,
             patches = patches,
