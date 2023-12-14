@@ -22,7 +22,7 @@ import json
 import os
 import sys
 from io import BytesIO
-from tokenize import COMMENT, tokenize
+from tokenize import COMMENT, NAME, OP, STRING, tokenize
 
 
 def parse_import_statements(content, filepath):
@@ -59,6 +59,30 @@ def parse_comments(content):
     return comments
 
 
+def parse_main(content):
+    g = tokenize(BytesIO(content.encode("utf-8")).readline)
+    for token_type, token_val, start, _, _ in g:
+        if token_type != NAME or token_val != "if" or start[1] != 0:
+            continue
+        try:
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != NAME or token_val != "__name__":
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != OP or token_val != "==":
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != STRING or token_val.strip("\"'") != '__main__':
+                continue
+            token_type, token_val, start, _, _ = next(g)
+            if token_type != OP or token_val != ":":
+                continue
+            return True
+        except StopIteration:
+            break
+    return False
+
+
 def parse(repo_root, rel_package_path, filename):
     rel_filepath = os.path.join(rel_package_path, filename)
     abs_filepath = os.path.join(repo_root, rel_filepath)
@@ -70,11 +94,16 @@ def parse(repo_root, rel_package_path, filename):
                 parse_import_statements, content, rel_filepath
             )
             comments_future = executor.submit(parse_comments, content)
+            main_future = executor.submit(parse_main, content)
         modules = modules_future.result()
         comments = comments_future.result()
+        has_main = main_future.result()
+
         output = {
+            "filename": filename,
             "modules": modules,
             "comments": comments,
+            "has_main": has_main,
         }
         return output
 
