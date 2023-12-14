@@ -266,6 +266,13 @@ exports_files(
     visibility = ["//:__subpackages__"],
 )
 
+exports_files(
+    ["python_bootstrap_template.txt"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
 # Used to determine the use of `--stamp` in Starlark rules
 stamp_build_setting(name = "stamp")
 
