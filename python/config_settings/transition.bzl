@@ -19,10 +19,10 @@ them to the desired target platform.
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
 load("//python:py_info.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load("//python:py_test.bzl", _py_test = "py_test")
 load("//python/config_settings/private:py_args.bzl", "py_args")
+load("//python/private:reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 
 def _transition_python_version_impl(_, attr):
     return {"//python/config_settings:python_version": str(attr.python_version)}

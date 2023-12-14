@@ -14,17 +14,10 @@
 """Tests for py_test."""
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
-load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:defs.bzl", "py_test")
-load(
-    "//tests/base_rules:py_executable_base_tests.bzl",
-    "create_executable_tests",
-)
-load("//tests/base_rules:util.bzl", pt_util = "util")
-load("//tests/support:test_platforms.bzl", "LINUX", "MAC")
-load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:versions.bzl", "TOOL_VERSIONS")
+load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
 
 _tests = []
 
