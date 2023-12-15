@@ -86,7 +86,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
     hub_name = pip_attr.hub_name
-    if python_interpreter_target == None:
+    if python_interpreter_target == None and not pip_attr.python_interpreter:
         python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
         if python_name not in INTERPRETER_LABELS.keys():
             fail((
@@ -357,13 +357,14 @@ Targets from different hubs should not be used together.
         "python_version": attr.string(
             mandatory = True,
             doc = """
-The Python version to use for resolving the pip dependencies, in Major.Minor
-format (e.g. "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
+The Python version the dependencies are targetting, in Major.Minor format
+(e.g., "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
 If not specified, then the default Python version (as set by the root module or
 rules_python) will be used.
 
-The version specified here must have a corresponding `python.toolchain()`
-configured.
+If an interpreter isn't explicitly provided (using `python_interpreter` or
+`python_interpreter_target`), then the version specified here must have
+a corresponding `python.toolchain()` configured.
 """,
         ),
         "whl_modifications": attr.label_keyed_string_dict(
