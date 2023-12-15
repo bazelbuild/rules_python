@@ -22,7 +22,7 @@ There is a single Pip hub repository, which creates the following repos:
   to download things. Args:
   * distribution - The name of the distribution.
   * version - The version of the package.
-* `whl_archive` that downloads a particular wheel for a package, it accepts
+* `pypi_archive` that downloads a particular wheel for a package, it accepts
   the following args:
   * sha256 - The sha256 to download.
   * url - The url to use. Optional.
@@ -152,7 +152,7 @@ def _parse_platform_tag(platform_tag):
     cpu = _parse_cpu_from_tag(platform_tag)
     return os, cpu
 
-def whl_library(name, requirement, **kwargs):
+def whl_library(name, *, requirement, files, **kwargs):
     """Generate a number of third party repos for a particular wheel.
     """
     sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
@@ -161,38 +161,25 @@ def whl_library(name, requirement, **kwargs):
     distribution, _, _ = distribution.partition("[")
     distribution = normalize_name(distribution)
 
-    metadata = _label("@{}_metadata//:files.json".format(distribution))
+    libs = {}
+    for sha256 in sha256s:
+        whl_name = "{}_{}".format(name, sha256[:6])
+        libs[sha256] = whl_name
+        _whl_library(
+            name = whl_name,
+            file = files.files[sha256],
+            requirement = requirement,
+            **kwargs
+        )
 
     whl_minihub(
         name = name,
         repo = kwargs.get("repo"),
         group_name = kwargs.get("group_name"),
-        distribution = distribution,
-        sha256s = sha256s,
-        metadata = metadata,
+        libs = libs,
+        metadata = files.metadata,
+        annotation = kwargs.get("annotation"),
     )
-
-    whl_patches = kwargs.pop("whl_patches", None)
-
-    for sha256 in sha256s:
-        whl_name = "{}_{}".format(name, sha256[:6])
-
-        # We would use http_file, but we are passing the URL to use via a file,
-        # if the url is known (in case of using pdm lock), we could use an
-        # http_file.
-        whl_archive(
-            name = whl_name + "_whl",
-            metadata = metadata,
-            sha256 = sha256,
-            whl_patches = whl_patches,
-        )
-
-        _whl_library(
-            name = whl_name,
-            file = _label("@{}_whl//:whl".format(whl_name)),
-            requirement = requirement,
-            **kwargs
-        )
 
 def _whl_minihub_impl(rctx):
     metadata = rctx.path(rctx.attr.metadata)
@@ -201,19 +188,23 @@ def _whl_minihub_impl(rctx):
     abi = "cp" + rctx.attr.repo.rpartition("_")[2]
 
     build_contents = []
-    sha256s = {sha: True for sha in rctx.attr.sha256s}
+    libs = rctx.attr.libs
 
     actual = None
     select = {}
-    for file in files["files"]:
-        sha256 = file["sha256"]
-        if sha256 not in sha256s:
-            continue
+    for sha256, repo_name in rctx.attr.libs.items():
 
-        tmpl = "@{name}_{distribution}_{sha256}//:{{target}}".format(
-            name = rctx.attr.repo,
-            distribution = rctx.attr.distribution,
-            sha256 = sha256[:6],
+        url = None
+        for file in files["files"]:
+            if file["sha256"] == sha256:
+                url = file["url"]
+                break
+
+        if not url:
+            fail("could not find")
+
+        tmpl = "@{repo_name}//:{{target}}".format(
+            repo_name = libs[sha256],
         )
 
         _, _, filename = file["url"].strip().rpartition("/")
@@ -271,18 +262,43 @@ config_setting(
         whl_impl_label = WHEEL_FILE_IMPL_LABEL
         impl_vis = "//visibility:private"
 
+    public_visibility = "//visibility:public"
+
+    alias_targets = {
+        DATA_LABEL: public_visibility,
+        DIST_INFO_LABEL: public_visibility,
+        PY_LIBRARY_IMPL_LABEL: impl_vis,
+        WHEEL_FILE_IMPL_LABEL: impl_vis,
+    }
+
+    if rctx.attr.annotation:
+        annotation = struct(**json.decode(rctx.read(rctx.attr.annotation)))
+
+        for dest in annotation.copy_files.values():
+            alias_targets["{}.copy".format(dest)] = public_visibility
+
+        for dest in annotation.copy_executables.values():
+            alias_targets["{}.copy".format(dest)] = public_visibility
+
+        # FIXME @aignas 2023-12-14: is this something that we want, looks a
+        # little bit hacky as we don't parse the visibility of the extra
+        # targets.
+        if annotation.additive_build_content:
+            targets_defined_in_additional_info = [
+                line.partition("=")[2].strip().strip("\"',")
+                for line in annotation.additive_build_content.split("\n")
+                if line.strip().startswith("name")
+            ]
+            for dest in targets_defined_in_additional_info:
+                alias_targets[dest] = public_visibility
+
     build_contents += [
         render.alias(
             name = target,
             actual = actual.format(target = target) if actual else render.select({k: v.format(target = target) for k, v in select.items()}),
             visibility = [visibility],
         )
-        for target, visibility in {
-            DATA_LABEL: "//visibility:public",
-            DIST_INFO_LABEL: "//visibility:public",
-            PY_LIBRARY_IMPL_LABEL: impl_vis,
-            WHEEL_FILE_IMPL_LABEL: impl_vis,
-        }.items()
+        for target, visibility in alias_targets.items()
     ]
 
     build_contents += [
@@ -301,11 +317,17 @@ config_setting(
 
 whl_minihub = repository_rule(
     attrs = {
-        "distribution": attr.string(mandatory = True),
+        "annotation": attr.label(
+            doc = (
+                "Optional json encoded file containing annotation to apply to the extracted wheel. " +
+                "See `package_annotation`"
+            ),
+            allow_files = True,
+        ),
         "group_name": attr.string(),
+        "libs": attr.string_dict(mandatory = True),
         "metadata": attr.label(mandatory = True, allow_single_file = True),
         "repo": attr.string(mandatory = True),
-        "sha256s": attr.string_list(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_minihub_impl,
@@ -315,17 +337,16 @@ def _whl_archive_impl(rctx):
     prefix, _, _ = rctx.attr.name.rpartition("_")
     prefix, _, _ = prefix.rpartition("_")
 
-    metadata = rctx.path(rctx.attr.metadata)
-    files = json.decode(rctx.read(metadata))
+    metadata = struct(**json.decode(rctx.read(rctx.path(rctx.attr.metadata))))
     sha256 = rctx.attr.sha256
     url = None
-    for file in files["files"]:
+    for file in metadata.files:
         if file["sha256"] == sha256:
             url = file["url"]
             break
 
     if url == None:
-        fail("Could not find a file with sha256 '{}' within: {}".format(sha256, files))
+        fail("Could not find a file with sha256 '{}' within: {}".format(sha256, metadata))
 
     _, _, filename = url.rpartition("/")
     filename = filename.strip()
@@ -335,13 +356,16 @@ def _whl_archive_impl(rctx):
 
     whl_path = rctx.path(filename)
 
-    if rctx.attr.whl_patches:
+    if rctx.attr.patches:
         patches = {}
-        for patch_file, json_args in rctx.attr.whl_patches.items():
+        for patch_file, json_args in rctx.attr.patches.items():
             patch_dst = struct(**json.decode(json_args))
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
 
+        # TODO @aignas 2023-12-14: re-parse the metadata to ensure that we have a
+        # non-stale version of it
+        # Something like: whl_path, metadata = patch_whl(
         whl_path = patch_whl(
             rctx,
             python_interpreter = _resolve_python_interpreter(rctx),
@@ -351,34 +375,34 @@ def _whl_archive_impl(rctx):
             timeout = rctx.attr.timeout,
         )
 
-    rctx.symlink(whl_path, "whl")
+    rctx.symlink(whl_path, "file")
 
     rctx.file(
         "BUILD.bazel",
         """\
 filegroup(
-    name="whl",
+    name="file",
     srcs=["{filename}"],
     visibility=["//visibility:public"],
 )
 """.format(filename = whl_path.basename),
     )
 
-whl_archive = repository_rule(
+pypi_archive = repository_rule(
     attrs = {
         "metadata": attr.label(mandatory = True, allow_single_file = True),
-        "python_interpreter": attr.string(),
-        "python_interpreter_target": attr.label(),
-        "quiet": attr.bool(default = True),
-        "sha256": attr.string(mandatory = False),
-        "timeout": attr.int(default = 60),
-        "whl_patches": attr.label_keyed_string_dict(
+        "patches": attr.label_keyed_string_dict(
             doc = """"a label-keyed-string dict that has
                 json.encode(struct([whl_file], patch_strip]) as values. This
                 is to maintain flexibility and correct bzlmod extension interface
                 until we have a better way to define whl_library and move whl
                 patching to a separate place. INTERNAL USE ONLY.""",
         ),
+        "python_interpreter": attr.string(),
+        "python_interpreter_target": attr.label(),
+        "quiet": attr.bool(default = True),
+        "sha256": attr.string(mandatory = False),
+        "timeout": attr.int(default = 60),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _whl_archive_impl,

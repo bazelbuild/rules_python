@@ -15,9 +15,12 @@
 """PyPI metadata hub and spoke repos"""
 
 load("//python/private:normalize_name.bzl", "normalize_name")
+load(":label.bzl", _label = "label")
+load(":minihub.bzl", "pypi_archive")
 
-def whl_lock(requirements, **kwargs):
+def whl_files_from_requirements(*, name, requirements, **kwargs):
     indexes = kwargs.get("indexes", ["https://pypi.org/simple"])
+    whl_overrides = kwargs.get("whl_overrides", {})
 
     sha_by_pkg = {}
     for requirement in requirements:
@@ -32,28 +35,69 @@ def whl_lock(requirements, **kwargs):
         for sha in sha256s:
             sha_by_pkg[distribution][sha] = True
 
+    ret = {}
     for distribution, shas in sha_by_pkg.items():
+        metadata = "{}_metadata__{}".format(name, distribution)
         pypi_distribution_metadata(
-            name = "{}_metadata".format(distribution),
+            name = metadata,
             distribution = distribution,
             sha256s = shas,
             indexes = indexes,
         )
 
-def _pypi_distribution_metadata_impl(rctx):
+        metadata = _label("@{}//:metadata.json".format(metadata))
+
+        files = {}
+        for sha256 in shas:
+            archive_name = "{}_{}_{}".format(name, distribution, sha256[:6])
+            files[sha256] = _label("@{}//:file".format(archive_name))
+
+            # We would use http_file, but we are passing the URL to use via a file,
+            # if the url is known (in case of using pdm lock), we could use an
+            # http_file.
+            pypi_archive(
+                name = archive_name,
+                metadata = metadata,
+                sha256 = sha256,
+                patches = {
+                    p: json.encode(args)
+                    for p, args in whl_overrides.get(distribution, {}).items()
+                },
+                # FIXME @aignas 2023-12-15: add usage of the DEFAULT_PYTHON_VERSION
+                # to get the hermetic interpreter
+            )
+
+        ret[distribution] = struct(
+            metadata = metadata,
+            files = files,
+        )
+
+    # return a {
+    #    <distribution>: struct(
+    #        metadata = <label for the PyPI simple index metadata>
+    #        files = {
+    #            <sha256>: <label> for the archive
+    #        }
+    #    )
+    # }
+    return ret
+
+def fetch_metadata(ctx, *, distribution, sha256s, indexes=["https://pypi.org/simple"]):
     files = []
-    want_shas = {sha: True for sha in rctx.attr.sha256s}
-    for i, index_url in enumerate(rctx.attr.indexes):
+    metadata = None
+
+    want_shas = {sha: True for sha in sha256s}
+    for i, index_url in enumerate(indexes):
         html = "index-{}.html".format(i)
-        result = rctx.download(
-            url = index_url + "/" + rctx.attr.distribution,
+        result = ctx.download(
+            url = index_url + "/" + distribution,
             output = html,
         )
         if not result.success:
             fail(result)
 
-        contents = rctx.read(html)
-        rctx.delete(html)
+        contents = ctx.read(html)
+        #ctx.delete(html)
 
         _, _, hrefs = contents.partition("<a href=\"")
         for line in hrefs.split("<a href=\""):
@@ -68,11 +112,62 @@ def _pypi_distribution_metadata_impl(rctx):
                 sha256 = sha256,
             ))
 
-    if not files:
-        fail("Could not find any files for: {}".format(rctx.attr.distribution))
+            # NOTE @aignas 2023-12-15: not sure why we would need it at this
+            # point, just showing that it is possible to get it as well.
+            metadata = metadata or _fetch_whl_metadata(ctx, url, line)
 
-    rctx.file("files.json", json.encode(struct(files = files)))
-    rctx.file("BUILD.bazel", """exports_files(["files.json"], visibility=["//visibility:public"])""")
+    if not files:
+        fail("Could not find any files for: {}".format(distribution))
+
+    return struct(
+        files=files,
+        metadata=metadata,
+    )
+
+def _fetch_whl_metadata(ctx, url, line):
+    """Fetch whl metadata if available
+
+    See https://peps.python.org/pep-0658/
+    See https://peps.python.org/pep-0714/
+    """
+    _, _, whl_metadata_sha256 = line.partition("data-core-metadata=\"sha256=")
+    whl_metadata_sha256, _, _ = whl_metadata_sha256.partition("\"")
+
+    if not whl_metadata_sha256:
+        return None
+
+    output = "whl_metadata.txt"
+    ctx.download(
+        url=url + ".metadata",
+        output=output,
+        sha256=whl_metadata_sha256,
+    )
+    contents = ctx.read(output)
+
+    requires_dist = []
+    provides_extras = []
+
+    for line in contents.split("\n"):
+        if line.startswith("Requires-Dist"):
+            requires_dist.append(line[len("Requires-Dist:"):].strip())
+        elif line.startswith("Provides-Extra"):
+            provides_extras.append(line[len("Provides-Extra:"):].strip())
+
+    return struct(
+        requires_dist = requires_dist,
+        provides_extras = provides_extras,
+    )
+
+def _pypi_distribution_metadata_impl(rctx):
+    metadata = fetch_metadata(
+        rctx,
+        distribution=rctx.attr.distribution,
+        sha256s=rctx.attr.sha256s,
+        indexes=rctx.attr.indexes,
+    )
+
+    rctx.file("metadata.json", json.encode(metadata))
+    rctx.file("BUILD.bazel", """exports_files(["metadata.json"], visibility=["//visibility:public"])""")
 
 pypi_distribution_metadata = repository_rule(
     attrs = {

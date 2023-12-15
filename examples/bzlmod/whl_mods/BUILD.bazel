@@ -13,6 +13,8 @@ py_test(
         "WHEEL_PKG_DIR": "pip_39_wheel",
     },
     main = "pip_whl_mods_test.py",
+    data = [
+    ],
     deps = [
         "@pip//requests:pkg",
         "@pip//wheel:pkg",

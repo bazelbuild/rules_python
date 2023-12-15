@@ -30,7 +30,7 @@ load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
 load(":minihub.bzl", "whl_library")
 load(":pip_repository.bzl", "pip_repository")
-load(":pypi_metadata.bzl", "whl_lock")
+load(":pypi_metadata.bzl", "whl_files_from_requirements")
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -81,7 +81,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -104,6 +104,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         hub_name,
         version_label(pip_attr.python_version),
     )
+
+    # how do we get rid of this?
+    # maybe we should resolve the extra_pip_args and the requirements lines per
+    # platform and do a more clever init.
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -172,6 +176,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             environment = pip_attr.environment,
             group_name = group_name,
             group_deps = group_deps,
+            files = files[whl_name],
         )
 
         if whl_name not in whl_map[hub_name]:
@@ -295,13 +300,11 @@ def _pip_impl(module_ctx):
                 requirements = parse_result.requirements
                 all_requirements.extend([line for _, line in requirements])
 
-    whl_lock(
+    files = whl_files_from_requirements(
+        name = "pypi_whl",
         requirements = all_requirements,
         #indexes = kwargs.get("indexes"),
     )
-
-    #lock_path = module_ctx.path(label("@whl_lock//:lock.json"))
-    #fail(lock_path)
 
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
@@ -347,7 +350,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, files)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
