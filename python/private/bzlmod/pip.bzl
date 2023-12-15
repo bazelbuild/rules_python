@@ -105,26 +105,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         version_label(pip_attr.python_version),
     )
 
-    # how do we get rid of this?
-    # maybe we should resolve the extra_pip_args and the requirements lines per
-    # platform and do a more clever init.
-    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
-
-    # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requrements_lock)
-    parse_result = parse_requirements(requirements_lock_content)
-    requirements = parse_result.requirements
-    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
-
-    if hub_name not in whl_map:
-        whl_map[hub_name] = {}
-
-    whl_modifications = {}
-    if pip_attr.whl_modifications != None:
-        for mod, whl_name in pip_attr.whl_modifications.items():
-            whl_modifications[whl_name] = mod
-
     requirement_cycles = {
         name: [normalize_name(whl_name) for whl_name in whls]
         for name, whls in pip_attr.experimental_requirement_cycles.items()
@@ -142,6 +122,23 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         repo_prefix = pip_name + "_",
         groups = pip_attr.experimental_requirement_cycles,
     )
+
+    # how do we get rid of this?
+    # maybe we should resolve the extra_pip_args and the requirements lines per
+    # platform and do a more clever init.
+    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
+
+    # Parse the requirements file directly in starlark to get the information
+    # needed for the whl_libary declarations below.
+    requirements_lock_content = module_ctx.read(requrements_lock)
+    parse_result = parse_requirements(requirements_lock_content)
+    requirements = parse_result.requirements
+    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
+
+    whl_modifications = {}
+    if pip_attr.whl_modifications != None:
+        for mod, whl_name in pip_attr.whl_modifications.items():
+            whl_modifications[whl_name] = mod
 
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
@@ -178,6 +175,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
             group_deps = group_deps,
             files = files[whl_name],
         )
+
+
+        if hub_name not in whl_map:
+            whl_map[hub_name] = {}
 
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
