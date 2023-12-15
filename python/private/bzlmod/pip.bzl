@@ -534,8 +534,8 @@ def _extension_extra_args():
 
     if bazel_features.external_deps.module_extension_has_os_arch_dependent:
         args = args | {
-            "arch_dependent": True,
-            "os_dependent": True,
+            "arch_dependent": False,
+            "os_dependent": False,
         }
 
     return args
