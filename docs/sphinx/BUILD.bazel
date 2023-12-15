@@ -55,6 +55,10 @@ sphinx_docs(
     formats = [
         "html",
     ],
+    renamed_srcs = {
+        "//:CHANGELOG.md": "changelog.md",
+        "//:CONTRIBUTING.md": "contributing.md",
+    },
     sphinx = ":sphinx-build",
     strip_prefix = package_name() + "/",
     tags = ["docs"],
