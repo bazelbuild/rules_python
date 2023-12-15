@@ -23,20 +23,9 @@ def _impl(rctx):
     prefix, _, _ = rctx.attr.name.rpartition("_")
     prefix, _, _ = prefix.rpartition("_")
 
-    metadata = struct(**json.decode(rctx.read(rctx.path(rctx.attr.metadata))))
-    sha256 = rctx.attr.sha256
-    url = None
-    for file in metadata.files:
-        if file["sha256"] == sha256:
-            url = file["url"]
-            break
-
-    if url == None:
-        fail("Could not find a file with sha256 '{}' within: {}".format(sha256, metadata))
-
-    _, _, filename = url.rpartition("/")
+    _, _, filename = rctx.attr.urls[0].rpartition("/")
     filename = filename.strip()
-    result = rctx.download(url, output = filename, sha256 = sha256)
+    result = rctx.download(url = rctx.attr.urls, output = filename, sha256 = rctx.attr.sha256)
     if not result.success:
         fail(result)
 
@@ -45,6 +34,7 @@ def _impl(rctx):
     if rctx.attr.patches:
         patches = {}
         for patch_file, json_args in rctx.attr.patches.items():
+            # TODO @aignas 2023-12-15: expect to just get patches
             patch_dst = struct(**json.decode(json_args))
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
@@ -74,9 +64,8 @@ filegroup(
 """.format(filename = whl_path.basename),
     )
 
-pypi_archive = repository_rule(
+pypi_file = repository_rule(
     attrs = {
-        "metadata": attr.label(mandatory = True, allow_single_file = True),
         "patches": attr.label_keyed_string_dict(
             doc = """"a label-keyed-string dict that has
                 json.encode(struct([whl_file], patch_strip]) as values. This
@@ -89,6 +78,7 @@ pypi_archive = repository_rule(
         "quiet": attr.bool(default = True),
         "sha256": attr.string(mandatory = False),
         "timeout": attr.int(default = 60),
+        "urls": attr.string_list(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _impl,

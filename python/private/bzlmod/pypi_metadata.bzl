@@ -16,9 +16,10 @@
 
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
-load(":pypi_archive.bzl", "pypi_archive")
+load(":pypi_archive.bzl", "pypi_file")
+load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 
-def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = {}):
+def whl_files_from_requirements(module_ctx, *, name, requirements, indexes, whl_overrides = {}):
     sha_by_pkg = {}
     for requirement in requirements:
         sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
@@ -32,40 +33,44 @@ def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = 
         for sha in sha256s:
             sha_by_pkg[distribution][sha] = True
 
+    metadata = fetch_metadata(
+        module_ctx,
+        sha256s_by_distribution = sha_by_pkg,
+        indexes = indexes,
+    )
+
     ret = {}
-    for distribution, shas in sha_by_pkg.items():
-        metadata = "{}_metadata__{}".format(name, distribution)
-        _distribution_metadata(
-            name = metadata,
-            distribution = distribution,
-            sha256s = shas,
-            indexes = indexes,
-        )
 
-        metadata = _label("@{}//:metadata.json".format(metadata))
-
+    for distribution, metadata in metadata.items():
         files = {}
-        for sha256 in shas:
-            archive_name = "{}_{}_{}".format(name, distribution, sha256[:6])
-            files[sha256] = _label("@{}//:file".format(archive_name))
+
+        for file in metadata.files:
+            _, _, filename = file.url.rpartition("/")
+            archive_name = "{}_{}_{}".format(name, distribution, file.sha256[:6])
 
             # We would use http_file, but we are passing the URL to use via a file,
             # if the url is known (in case of using pdm lock), we could use an
             # http_file.
-            pypi_archive(
+            pypi_file(
                 name = archive_name,
-                metadata = metadata,
-                sha256 = sha256,
+                sha256 = file.sha256,
                 patches = {
                     p: json.encode(args)
                     for p, args in whl_overrides.get(distribution, {}).items()
                 },
+                urls = [file.url],
                 # FIXME @aignas 2023-12-15: add usage of the DEFAULT_PYTHON_VERSION
                 # to get the hermetic interpreter
             )
 
-        ret[distribution] = struct(
-            metadata = metadata,
+            files[file.sha256] = struct(
+                filename = filename,
+                label = _label("@{}//:file".format(archive_name)),
+                sha256 = file.sha256,
+            )
+
+        ret[normalize_name(distribution)] = struct(
+            distribution = distribution,
             files = files,
         )
 
@@ -79,59 +84,68 @@ def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = 
     # }
     return ret
 
-def fetch_metadata(ctx, *, distribution, sha256s, indexes = ["https://pypi.org/simple"]):
-    files = []
-    metadata = None
+def fetch_metadata(ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org/simple"]):
+    ret = {}
+    index_tasks = {}
+    for distribution in sha256s_by_distribution.keys():
+        index_tasks[distribution] = {}
+        for i, index_url in enumerate(indexes):
+            html = "index-{}-{}.html".format(i, distribution)
+            future = ctx.download(
+                url = index_url + "/" + distribution,
+                output = html,
+                # NOTE @aignas 2023-12-15: this will only available in 7.1.0 and above
+                # See https://github.com/bazelbuild/bazel/issues/19674
+                block = False,
+            )
+            index_tasks[distribution][html] = future
 
-    want_shas = {sha: True for sha in sha256s}
-    index_futures = {}
-    for i, index_url in enumerate(indexes):
-        html = "index-{}.html".format(i)
-        future = ctx.download(
-            url = index_url + "/" + distribution,
-            output = html,
-            block = False,
+    for distribution, sha256s in sha256s_by_distribution.items():
+        want_shas = {sha: True for sha in sha256s}
+
+        files = []
+
+        for html, task in index_tasks[distribution].items():
+            result = task.wait()
+            if not result.success:
+                fail(result)
+
+            contents = ctx.read(html)
+            #ctx.delete(html)
+
+            _, _, hrefs = contents.partition("<a href=\"")
+            for line in hrefs.split("<a href=\""):
+                url, _, tail = line.partition("#")
+                _, _, tail = tail.partition("=")
+                sha256, _, tail = tail.partition("\"")
+                if sha256 not in want_shas:
+                    continue
+
+                # TODO @aignas 2023-12-15: consider returning a structure that is richer
+                files.append(struct(
+                    url = url,
+                    sha256 = sha256,
+                ))
+
+                # NOTE @aignas 2023-12-15: not sure why we would need it at this
+                # point, just showing that it is possible to get it as well.
+                #metadata = metadata or _fetch_whl_metadata(ctx, url, line)
+
+        if not files:
+            fail("Could not find any files for: {}".format(distribution))
+
+        got_shas = {f.sha256: True for f in files}
+        missing_shas = [sha for sha in want_shas if sha not in got_shas]
+
+        if missing_shas:
+            fail("Could not find any files for {} for shas: {}".format(distribution, missing_shas))
+
+        ret[distribution] = struct(
+            files = files,
         )
-        index_futures[html] = future
 
-    for html, task in index_futures.items():
-        result = task.wait()
-        if not result.success:
-            fail(result)
+    return ret
 
-        contents = ctx.read(html)
-        #ctx.delete(html)
-
-        _, _, hrefs = contents.partition("<a href=\"")
-        for line in hrefs.split("<a href=\""):
-            url, _, tail = line.partition("#")
-            _, _, tail = tail.partition("=")
-            sha256, _, tail = tail.partition("\"")
-            if sha256 not in want_shas:
-                continue
-
-            files.append(struct(
-                url = url,
-                sha256 = sha256,
-            ))
-
-            # NOTE @aignas 2023-12-15: not sure why we would need it at this
-            # point, just showing that it is possible to get it as well.
-            metadata = metadata or _fetch_whl_metadata(ctx, url, line)
-
-    if not files:
-        fail("Could not find any files for: {}".format(distribution))
-
-    got_shas = {f.sha256: True for f in files}
-    missing_shas = [sha for sha in want_shas if sha not in got_shas]
-
-    if missing_shas:
-        fail("Could not find any files for {} for shas: {}".format(distribution, missing_shas))
-
-    return struct(
-        files = files,
-        metadata = metadata,
-    )
 
 def _fetch_whl_metadata(ctx, url, line):
     """Fetch whl metadata if available

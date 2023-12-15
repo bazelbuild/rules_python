@@ -150,21 +150,37 @@ def _parse_platform_tag(platform_tag):
 def whl_library(name, *, requirement, files, **kwargs):
     """Generate a number of third party repos for a particular wheel.
     """
-    sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
+    distribution = files.distribution
+    needed_files = [
+        files.files[sha.strip()] for sha in requirement.split("--hash=sha256:")[1:]
+    ]
+    _, _, want_abi = kwargs.get("repo").rpartition("_")
+    want_abi = "cp" + want_abi
+    files = {}
+    for f in needed_files:
+        if not f.filename.endswith(".whl"):
+            files["sdist"] = f
+            continue
 
-    distribution, _, _ = requirement.partition("==")
-    distribution, _, _ = distribution.partition("[")
-    distribution = normalize_name(distribution)
+        parsed = parse_whl_name(f.filename)
+
+        if "musl" in parsed.platform_tag:
+            # currently unsupported
+            continue
+
+        if parsed.abi_tag in ["none", "abi3", want_abi]:
+            plat = parsed.platform_tag.split(".")[0]
+            files[plat] = f
 
     libs = {}
-    for sha256 in sha256s:
-        whl_name = "{}_{}".format(name, sha256[:6])
-        libs[sha256] = whl_name
+    for plat, f in files.items():
+        whl_name = "{}__{}".format(name, plat)
+        libs[plat] = f.filename
         _whl_library(
             name = whl_name,
-            file = files.files[sha256],
+            file = f.label,
             requirement = requirement,
-            **kwargs
+            **kwargs,
         )
 
     whl_minihub(
@@ -172,37 +188,22 @@ def whl_library(name, *, requirement, files, **kwargs):
         repo = kwargs.get("repo"),
         group_name = kwargs.get("group_name"),
         libs = libs,
-        metadata = files.metadata,
         annotation = kwargs.get("annotation"),
     )
 
 def _whl_minihub_impl(rctx):
-    metadata = rctx.path(rctx.attr.metadata)
-    files = json.decode(rctx.read(metadata))
-
     abi = "cp" + rctx.attr.repo.rpartition("_")[2]
+    _, repo, suffix = rctx.attr.name.rpartition(rctx.attr.repo)
+    prefix = repo + suffix
 
     build_contents = []
-    libs = rctx.attr.libs
 
     actual = None
     select = {}
-    for sha256, repo_name in rctx.attr.libs.items():
-        url = None
-        for file in files["files"]:
-            if file["sha256"] == sha256:
-                url = file["url"]
-                break
+    for plat, filename in rctx.attr.libs.items():
+        tmpl = "@{}__{}//:{{target}}".format(prefix, plat)
 
-        if not url:
-            fail("could not find")
-
-        tmpl = "@{repo_name}//:{{target}}".format(
-            repo_name = libs[sha256],
-        )
-
-        _, _, filename = file["url"].strip().rpartition("/")
-        if not filename.endswith(".whl"):
+        if plat == "sdist":
             select["//conditions:default"] = tmpl
             continue
 
@@ -236,6 +237,8 @@ config_setting(
 
     if len(select) == 1 and "//conditions:default" in select:
         actual = repr(select["//conditions:default"])
+
+    select = {k: v for k, v in sorted(select.items())}
 
     # The overall architecture:
     # * `whl_library_for_a_whl should generate only the private targets
@@ -320,7 +323,6 @@ whl_minihub = repository_rule(
         ),
         "group_name": attr.string(),
         "libs": attr.string_dict(mandatory = True),
-        "metadata": attr.label(mandatory = True, allow_single_file = True),
         "repo": attr.string(mandatory = True),
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",

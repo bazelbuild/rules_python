@@ -284,7 +284,7 @@ def _pip_impl(module_ctx):
                 whl_overrides[whl_name][patch].whls.append(attr.file)
 
     all_requirements = []
-    indexes = ["https://pypi.org/simple"]
+    indexes = ["https://pypi.python.org/simple"]
     for module in module_ctx.modules:
         for pip_attr in module.tags.parse:
             for requirements_lock in [
@@ -330,6 +330,7 @@ def _pip_impl(module_ctx):
                         indexes.append(index)
 
     files = whl_files_from_requirements(
+        module_ctx = module_ctx,
         name = "pypi_whl",
         requirements = all_requirements,
         indexes = indexes,
