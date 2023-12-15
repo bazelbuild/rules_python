@@ -16,3 +16,4 @@ examples/bzlmod_build_file_generation/bazel-bzlmod_build_file_generation
 examples/pip_parse/bazel-pip_parse
 examples/py_proto_library/bazel-py_proto_library
 tests/ignore_root_user_error/bazel-ignore_root_user_error
+tests/pip_repository_entry_points/bazel-pip_repository_entry_points

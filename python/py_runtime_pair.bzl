@@ -47,7 +47,8 @@ def py_runtime_pair(name, py2_runtime = None, py3_runtime = None, **attrs):
     ```python
     # In your BUILD file...
 
-    load("@rules_python//python:defs.bzl", "py_runtime_pair")
+    load("@rules_python//python:py_runtime.bzl", "py_runtime")
+    load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
 
     py_runtime(
         name = "my_py3_runtime",
