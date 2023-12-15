@@ -18,10 +18,7 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
 load(":minihub.bzl", "pypi_archive")
 
-def whl_files_from_requirements(*, name, requirements, **kwargs):
-    indexes = kwargs.get("indexes", ["https://pypi.org/simple"])
-    whl_overrides = kwargs.get("whl_overrides", {})
-
+def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = {}):
     sha_by_pkg = {}
     for requirement in requirements:
         sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
@@ -82,7 +79,7 @@ def whl_files_from_requirements(*, name, requirements, **kwargs):
     # }
     return ret
 
-def fetch_metadata(ctx, *, distribution, sha256s, indexes=["https://pypi.org/simple"]):
+def fetch_metadata(ctx, *, distribution, sha256s, indexes = ["https://pypi.org/simple"]):
     files = []
     metadata = None
 
@@ -119,9 +116,15 @@ def fetch_metadata(ctx, *, distribution, sha256s, indexes=["https://pypi.org/sim
     if not files:
         fail("Could not find any files for: {}".format(distribution))
 
+    got_shas = {f.sha256: True for f in files}
+    missing_shas = [sha for sha in want_shas if sha not in got_shas]
+
+    if missing_shas:
+        fail("Could not find any files for {} for shas: {}".format(distribution, missing_shas))
+
     return struct(
-        files=files,
-        metadata=metadata,
+        files = files,
+        metadata = metadata,
     )
 
 def _fetch_whl_metadata(ctx, url, line):
@@ -138,9 +141,9 @@ def _fetch_whl_metadata(ctx, url, line):
 
     output = "whl_metadata.txt"
     ctx.download(
-        url=url + ".metadata",
-        output=output,
-        sha256=whl_metadata_sha256,
+        url = url + ".metadata",
+        output = output,
+        sha256 = whl_metadata_sha256,
     )
     contents = ctx.read(output)
 
@@ -161,9 +164,9 @@ def _fetch_whl_metadata(ctx, url, line):
 def _pypi_distribution_metadata_impl(rctx):
     metadata = fetch_metadata(
         rctx,
-        distribution=rctx.attr.distribution,
-        sha256s=rctx.attr.sha256s,
-        indexes=rctx.attr.indexes,
+        distribution = rctx.attr.distribution,
+        sha256s = rctx.attr.sha256s,
+        indexes = rctx.attr.indexes,
     )
 
     rctx.file("metadata.json", json.encode(metadata))
