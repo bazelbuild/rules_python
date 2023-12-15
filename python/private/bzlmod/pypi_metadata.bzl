@@ -16,7 +16,7 @@
 
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
-load(":minihub.bzl", "pypi_archive")
+load(":pypi_archive.bzl", "pypi_archive")
 
 def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = {}):
     sha_by_pkg = {}
@@ -35,7 +35,7 @@ def whl_files_from_requirements(*, name, requirements, indexes, whl_overrides = 
     ret = {}
     for distribution, shas in sha_by_pkg.items():
         metadata = "{}_metadata__{}".format(name, distribution)
-        pypi_distribution_metadata(
+        _distribution_metadata(
             name = metadata,
             distribution = distribution,
             sha256s = shas,
@@ -84,12 +84,18 @@ def fetch_metadata(ctx, *, distribution, sha256s, indexes = ["https://pypi.org/s
     metadata = None
 
     want_shas = {sha: True for sha in sha256s}
+    index_futures = {}
     for i, index_url in enumerate(indexes):
         html = "index-{}.html".format(i)
-        result = ctx.download(
+        future = ctx.download(
             url = index_url + "/" + distribution,
             output = html,
+            block = False,
         )
+        index_futures[html] = future
+
+    for html, task in index_futures.items():
+        result = task.wait()
         if not result.success:
             fail(result)
 
@@ -161,7 +167,7 @@ def _fetch_whl_metadata(ctx, url, line):
         provides_extras = provides_extras,
     )
 
-def _pypi_distribution_metadata_impl(rctx):
+def _metadata_impl(rctx):
     metadata = fetch_metadata(
         rctx,
         distribution = rctx.attr.distribution,
@@ -172,11 +178,11 @@ def _pypi_distribution_metadata_impl(rctx):
     rctx.file("metadata.json", json.encode(metadata))
     rctx.file("BUILD.bazel", """exports_files(["metadata.json"], visibility=["//visibility:public"])""")
 
-pypi_distribution_metadata = repository_rule(
+_distribution_metadata = repository_rule(
     attrs = {
         "distribution": attr.string(),
         "indexes": attr.string_list(),
         "sha256s": attr.string_list(),
     },
-    implementation = _pypi_distribution_metadata_impl,
+    implementation = _metadata_impl,
 )
