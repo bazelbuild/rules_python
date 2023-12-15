@@ -176,7 +176,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
             files = files[whl_name],
         )
 
-
         if hub_name not in whl_map:
             whl_map[hub_name] = {}
 
@@ -285,6 +284,7 @@ def _pip_impl(module_ctx):
                 whl_overrides[whl_name][patch].whls.append(attr.file)
 
     all_requirements = []
+    indexes = ["https://pypi.org/simple"]
     for module in module_ctx.modules:
         for pip_attr in module.tags.parse:
             for requirements_lock in [
@@ -301,10 +301,38 @@ def _pip_impl(module_ctx):
                 requirements = parse_result.requirements
                 all_requirements.extend([line for _, line in requirements])
 
+                extra_pip_args = pip_attr.extra_pip_args + parse_result.options
+                next_is_index = False
+                for arg in extra_pip_args:
+                    arg = arg.strip()
+                    if next_is_index:
+                        next_is_index = False
+                        index = arg.strip("/")
+                        if index not in indexes:
+                            indexes.append(index)
+
+                        continue
+
+                    if arg in ["--index-url", "-i", "--extra-index-url"]:
+                        next_is_index = True
+                        continue
+
+                    if "=" not in arg:
+                        continue
+
+                    index = None
+                    for index_arg_prefix in ["--index-url=", "--extra-index-url="]:
+                        if arg.startswith(index_arg_prefix):
+                            index = arg[len(index_arg_prefix):]
+                            break
+
+                    if index and index not in indexes:
+                        indexes.append(index)
+
     files = whl_files_from_requirements(
         name = "pypi_whl",
         requirements = all_requirements,
-        #indexes = kwargs.get("indexes"),
+        indexes = indexes,
     )
 
     # Used to track all the different pip hubs and the spoke pip Python
