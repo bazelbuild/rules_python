@@ -32,7 +32,7 @@ def whl_files_from_requirements(module_ctx, *, name, requirements, indexes, whl_
         for sha in sha256s:
             sha_by_pkg[distribution][sha] = True
 
-    metadata = fetch_metadata(
+    metadata = _fetch_metadata(
         module_ctx,
         sha256s_by_distribution = sha_by_pkg,
         indexes = indexes,
@@ -83,34 +83,41 @@ def whl_files_from_requirements(module_ctx, *, name, requirements, indexes, whl_
     # }
     return ret
 
-def fetch_metadata(ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org/simple"]):
+def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org/simple"]):
+    download_kwargs = {}
+    has_non_blocking_downloads = True
+    if has_non_blocking_downloads:
+        # NOTE @aignas 2023-12-15: this will only available in 7.1.0 and above
+        # See https://github.com/bazelbuild/bazel/issues/19674
+        download_kwargs["block"] = False
+
     ret = {}
-    index_tasks = {}
+    downloads = {}
     for distribution in sha256s_by_distribution.keys():
-        index_tasks[distribution] = {}
+        downloads[distribution] = {}
         for i, index_url in enumerate(indexes):
-            html = "index-{}-{}.html".format(i, distribution)
-            future = ctx.download(
+            html = "{}-index-{}.html".format(distribution, i)
+            downloads[distribution][html] = module_ctx.download(
                 url = index_url + "/" + distribution,
                 output = html,
-                # NOTE @aignas 2023-12-15: this will only available in 7.1.0 and above
-                # See https://github.com/bazelbuild/bazel/issues/19674
-                block = False,
+                **download_kwargs
             )
-            index_tasks[distribution][html] = future
 
     for distribution, sha256s in sha256s_by_distribution.items():
         want_shas = {sha: True for sha in sha256s}
 
-        files = []
+        files = {}
 
-        for html, task in index_tasks[distribution].items():
-            result = task.wait()
+        for html, download in downloads[distribution].items():
+            if has_non_blocking_downloads:
+                result = download.wait()
+            else:
+                result = download
+
             if not result.success:
                 fail(result)
 
-            contents = ctx.read(html)
-            #ctx.delete(html)
+            contents = module_ctx.read(html)
 
             _, _, hrefs = contents.partition("<a href=\"")
             for line in hrefs.split("<a href=\""):
@@ -120,23 +127,20 @@ def fetch_metadata(ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org
                 if sha256 not in want_shas:
                     continue
 
-                # TODO @aignas 2023-12-15: consider returning a structure that is richer
-                files.append(struct(
+                files[sha256] = struct(
                     url = url,
                     sha256 = sha256,
-                ))
+                )
 
         if not files:
             fail("Could not find any files for: {}".format(distribution))
 
-        got_shas = {f.sha256: True for f in files}
-        missing_shas = [sha for sha in want_shas if sha not in got_shas]
-
+        missing_shas = [sha for sha in want_shas if sha not in files]
         if missing_shas:
-            fail("Could not find any files for {} for shas: {}".format(distribution, missing_shas))
+            fail("Could not find all of the {} files with shas: {}".format(distribution, missing_shas))
 
         ret[distribution] = struct(
-            files = files,
+            files = files.values(),
         )
 
     return ret
