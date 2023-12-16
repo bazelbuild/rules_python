@@ -25,7 +25,7 @@ _py_builtins = py_internal
 
 def _py_runtime_impl(ctx):
     interpreter_path = ctx.attr.interpreter_path or None  # Convert empty string to None
-    interpreter = ctx.file.interpreter
+    interpreter = ctx.attr.interpreter or None
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of the 'interpreter' or 'interpreter_path' attributes must be specified")
 
@@ -34,12 +34,33 @@ def _py_runtime_impl(ctx):
         for t in ctx.attr.files
     ])
 
+    runfiles = ctx.runfiles()
+
     hermetic = bool(interpreter)
     if not hermetic:
         if runtime_files:
             fail("if 'interpreter_path' is given then 'files' must be empty")
         if not paths.is_absolute(interpreter_path):
             fail("interpreter_path must be an absolute path")
+    else:
+        interpreter_di = ctx.attr.interpreter[DefaultInfo]
+
+        if _is_singleton_depset(interpreter_di.files):
+            interpreter = interpreter_di.files.to_list()[0]
+        elif interpreter_di.files_to_run and interpreter_di.files_to_run.executable:
+            interpreter = interpreter_di.files_to_run.executable
+            runfiles.merge(interpreter_di.default_runfiles)
+
+            runtime_files = depset(
+                direct = [interpreter_di.files_to_run.runfiles_manifest, interpreter_di.files_to_run.repo_mapping_manifest],
+                transitive = [
+                    interpreter_di.files,
+                    interpreter_di.default_runfiles.files,
+                    runtime_files,
+                ],
+            )
+        else:
+            fail("interpreter must be an executable target or must product exactly one file.")
 
     if ctx.attr.coverage_tool:
         coverage_di = ctx.attr.coverage_tool[DefaultInfo]
@@ -88,7 +109,7 @@ def _py_runtime_impl(ctx):
         BuiltinPyRuntimeInfo(**builtin_py_runtime_info_kwargs),
         DefaultInfo(
             files = runtime_files,
-            runfiles = ctx.runfiles(),
+            runfiles = runfiles,
         ),
     ]
 
@@ -186,10 +207,11 @@ runtime. For a platform runtime this attribute must not be set.
 """,
         ),
         "interpreter": attr.label(
-            allow_single_file = True,
+            allow_files = True,
             doc = """
 For an in-build runtime, this is the target to invoke as the interpreter. For a
-platform runtime this attribute must not be set.
+platform runtime this attribute must not be set. WIP: If the target is executable
+the runfiles may not be properly setup, see bazelbuild/rules_python/issues/1612
 """,
         ),
         "interpreter_path": attr.string(doc = """
