@@ -1944,8 +1944,8 @@
       }
     },
     "@@rules_python~override//python/extensions:pip.bzl%pip": {
-      "os:linux,arch:amd64": {
-        "bzlTransitiveDigest": "g1EdNGLAZhwfFL8WPpiUGEh6N/co6IQGsSTgUz3S0/Y=",
+      "general": {
+        "bzlTransitiveDigest": "q/ozt1g43YQKCeHlP+cHxDiI1ULoYigKw42ehXH6CH4=",
         "accumulatedFileDigests": {
           "@@//:requirements_lock_3_10.txt": "3aa4eac4a5659199235fbd74884023a767e5e387753b133fe6895d620fd457e2",
           "@@//whl_mods:appended_build_content.BUILD": "8e384e9b27c2b3e844108bce1f7c4b71a689c8d343dafc3d29d7db0cd781a9dc",
