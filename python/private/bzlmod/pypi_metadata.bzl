@@ -17,7 +17,6 @@
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
 load(":pypi_archive.bzl", "pypi_file")
-load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 
 def whl_files_from_requirements(module_ctx, *, name, requirements, indexes, whl_overrides = {}):
     sha_by_pkg = {}
@@ -127,10 +126,6 @@ def fetch_metadata(ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org
                     sha256 = sha256,
                 ))
 
-                # NOTE @aignas 2023-12-15: not sure why we would need it at this
-                # point, just showing that it is possible to get it as well.
-                #metadata = metadata or _fetch_whl_metadata(ctx, url, line)
-
         if not files:
             fail("Could not find any files for: {}".format(distribution))
 
@@ -145,58 +140,3 @@ def fetch_metadata(ctx, *, sha256s_by_distribution, indexes = ["https://pypi.org
         )
 
     return ret
-
-
-def _fetch_whl_metadata(ctx, url, line):
-    """Fetch whl metadata if available
-
-    See https://peps.python.org/pep-0658/
-    See https://peps.python.org/pep-0714/
-    """
-    _, _, whl_metadata_sha256 = line.partition("data-core-metadata=\"sha256=")
-    whl_metadata_sha256, _, _ = whl_metadata_sha256.partition("\"")
-
-    if not whl_metadata_sha256:
-        return None
-
-    output = "whl_metadata.txt"
-    ctx.download(
-        url = url + ".metadata",
-        output = output,
-        sha256 = whl_metadata_sha256,
-    )
-    contents = ctx.read(output)
-
-    requires_dist = []
-    provides_extras = []
-
-    for line in contents.split("\n"):
-        if line.startswith("Requires-Dist"):
-            requires_dist.append(line[len("Requires-Dist:"):].strip())
-        elif line.startswith("Provides-Extra"):
-            provides_extras.append(line[len("Provides-Extra:"):].strip())
-
-    return struct(
-        requires_dist = requires_dist,
-        provides_extras = provides_extras,
-    )
-
-def _metadata_impl(rctx):
-    metadata = fetch_metadata(
-        rctx,
-        distribution = rctx.attr.distribution,
-        sha256s = rctx.attr.sha256s,
-        indexes = rctx.attr.indexes,
-    )
-
-    rctx.file("metadata.json", json.encode(metadata))
-    rctx.file("BUILD.bazel", """exports_files(["metadata.json"], visibility=["//visibility:public"])""")
-
-_distribution_metadata = repository_rule(
-    attrs = {
-        "distribution": attr.string(),
-        "indexes": attr.string_list(),
-        "sha256s": attr.string_list(),
-    },
-    implementation = _metadata_impl,
-)
