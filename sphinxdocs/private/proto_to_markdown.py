@@ -1,0 +1,429 @@
+import argparse
+import io
+import itertools
+import pathlib
+import sys
+import textwrap
+from typing import Sequence, TypeVar
+
+from stardoc.proto import stardoc_output_pb2
+
+_AttributeType = stardoc_output_pb2.AttributeType
+
+_T = TypeVar("_T")
+
+
+def _anchor_id(text: str) -> str:
+    # MyST/Sphinx's markdown processing doesn't like dots in anchor ids.
+    return "#" + text.replace(".", "_").lower()
+
+
+# Create block attribute line.
+# See https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#block-attributes
+def _block_attrs(*attrs: str) -> str:
+    return "{" + " ".join(attrs) + "}\n"
+
+
+def _link(display: str, link: str = "", *, ref: str = "", classes: str = "") -> str:
+    if ref:
+        ref = f"[{ref}]"
+    if link:
+        link = f"({link})"
+    if classes:
+        classes = "{" + classes + "}"
+    return f"[{display}]{ref}{link}{classes}"
+
+
+def _span(display: str, classes: str = ".span") -> str:
+    return f"[{display}]{{" + classes + "}"
+
+
+def _link_here_icon(anchor: str) -> str:
+    # The headerlink class activates some special logic to show/hide
+    # text upon mouse-over; it's how headings show a clickable link.
+    return _link("¶", anchor, classes=".headerlink")
+
+
+def _inline_anchor(anchor: str) -> str:
+    return _span("", anchor)
+
+
+def _indent_block_text(text: str) -> str:
+    return text.strip().replace("\n", "\n  ")
+
+
+def _position_iter(values: Sequence[_T]) -> tuple[bool, bool, _T]:
+    for i, value in enumerate(values):
+        yield i == 0, i == len(values) - 1, value
+
+
+class MySTRenderer:
+    def __init__(self, module, out_stream, public_load_path):
+        self._module = module
+        self._out_stream = out_stream
+        self._public_load_path = public_load_path
+
+    def render(self):
+        self._render_module(self._module)
+
+    def _render_module(self, module):
+        if self._public_load_path:
+            bzl_path = self._public_load_path
+        else:
+            bzl_path = "//" + self._module.file.split("//")[1]
+        self._write(
+            f"# {bzl_path}\n",
+            "\n",
+            module.module_docstring.strip(),
+            "\n\n",
+        )
+
+        # Sort the objects by name
+        objects = itertools.chain(
+            ((r.rule_name, r, self._render_rule) for r in module.rule_info),
+            ((p.provider_name, p, self._render_provider) for p in module.provider_info),
+            ((f.function_name, f, self._render_func) for f in module.func_info),
+            ((a.aspect_name, a, self._render_aspect) for a in module.aspect_info),
+            (
+                (m.extension_name, m, self._render_module_extension)
+                for m in module.module_extension_info
+            ),
+            (
+                (r.rule_name, r, self._render_repository_rule)
+                for r in module.repository_rule_info
+            ),
+        )
+
+        objects = sorted(objects, key=lambda v: v[0].lower())
+
+        for _, obj, func in objects:
+            func(obj)
+            self._write("\n")
+
+    def _render_aspect(self, aspect):
+        aspect_anchor = _anchor_id(aspect.aspect_name)
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {aspect.aspect_name}\n\n",
+            "_Propagates on attributes:_ ",  # todo add link here
+            ", ".join(sorted(f"`{attr}`" for attr in aspect.aspect_attribute)),
+            "\n\n",
+            aspect.doc_string.strip(),
+            "\n\n",
+        )
+
+        if aspect.attribute:
+            self._render_attributes(aspect_anchor, aspect.attribute)
+        self._write("\n")
+
+    def _render_module_extension(self, mod_ext):
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {mod_ext.extension_name}\n\n",
+        )
+
+        self._write(mod_ext.doc_string.strip(), "\n\n")
+
+        mod_ext_anchor = _anchor_id(mod_ext.extension_name)
+        for tag in mod_ext.tag_class:
+            tag_name = f"{mod_ext.extension_name}.{tag.tag_name}"
+            tag_anchor = f"{mod_ext_anchor}_{tag.tag_name}"
+            self._write(
+                _block_attrs(".starlark-module-extension-tag-class"),
+                f"### {tag_name}\n\n",
+            )
+            self._render_signature(
+                tag_name,
+                tag_anchor,
+                tag.attribute,
+                get_name=lambda a: a.name,
+                get_default=lambda a: a.default_value,
+            )
+
+            self._write(tag.doc_string.strip(), "\n\n")
+            self._render_attributes(tag_anchor, tag.attribute)
+            self._write("\n")
+
+    def _render_repository_rule(self, repo_rule):
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {repo_rule.rule_name}\n\n",
+        )
+        repo_anchor = _anchor_id(repo_rule.rule_name)
+        self._render_signature(
+            repo_rule.rule_name,
+            repo_anchor,
+            repo_rule.attribute,
+            get_name=lambda a: a.name,
+            get_default=lambda a: a.default_value,
+        )
+        self._write(repo_rule.doc_string.strip(), "\n\n")
+        if repo_rule.attribute:
+            self._render_attributes(repo_anchor, repo_rule.attribute)
+        if repo_rule.environ:
+            self._write(
+                "**ENVIRONMENT VARIABLES** ",
+                _link_here_icon(repo_anchor + "_env"),
+                "\n",
+            )
+            for name in sorted(repo_rule.environ):
+                self._write(f"* `{name}`\n")
+        self._write("\n")
+
+    def _render_rule(self, rule):
+        rule_name = rule.rule_name
+        rule_anchor = _anchor_id(rule_name)
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {rule_name}\n\n",
+        )
+
+        self._render_signature(
+            rule_name,
+            rule_anchor,
+            rule.attribute,
+            get_name=lambda r: r.name,
+            get_default=lambda r: r.default_value,
+        )
+
+        self._write(rule.doc_string.strip(), "\n\n")
+        if rule.attribute:
+            self._render_attributes(rule_anchor, rule.attribute)
+
+    def _rule_attr_type_string(self, attr):
+        """
+            enum AttributeType {
+          UNKNOWN = 0;
+          // A special case of STRING; all rules have exactly one implicit
+          // attribute "name" of type NAME.
+          NAME = 1;
+          INT = 2;
+          LABEL = 3;
+          STRING = 4;
+          STRING_LIST = 5;
+          INT_LIST = 6;
+          LABEL_LIST = 7;
+          BOOLEAN = 8;
+          LABEL_STRING_DICT = 9;
+          STRING_DICT = 10;
+          STRING_LIST_DICT = 11;
+          OUTPUT = 12;
+          OUTPUT_LIST = 13;
+        }"""
+        if attr.type == _AttributeType.NAME:
+            return _link("Name", ref="target-name")
+        elif attr.type == _AttributeType.INT:
+            return _link("int", ref="int")
+        elif attr.type == _AttributeType.LABEL:
+            return _link("label", ref="attr-label")
+        elif attr.type == _AttributeType.STRING:
+            return _link("string", ref="str")
+        elif attr.type == _AttributeType.STRING_LIST:
+            return "list of " + _link("string", ref="str")
+        elif attr.type == _AttributeType.INT_LIST:
+            return "list of " + _link("int", ref="int")
+        elif attr.type == _AttributeType.LABEL_LIST:
+            return "list of " + _link("label", ref="attr-label") + "s"
+        elif attr.type == _AttributeType.BOOLEAN:
+            return _link("bool", ref="bool")
+        elif attr.type == _AttributeType.LABEL_STRING_DICT:
+            return "dict of {key} to {value}".format(
+                key=_link("label", ref="attr-label"), value=_link("string", ref="str")
+            )
+        elif attr.type == _AttributeType.STRING_DICT:
+            return "dict of {key} to {value}".format(
+                key=_link("string", ref="str"), value=_link("string", ref="str")
+            )
+        elif attr.type == _AttributeType.STRING_LIST_DICT:
+            return "dict of {key} to list of {value}".format(
+                key=_link("string", ref="str"), value=_link("string", ref="str")
+            )
+        elif attr.type == _AttributeType.OUTPUT:
+            return _link("label", ref="attr-label")
+        elif attr.type == _AttributeType.OUTPUT_LIST:
+            return "list of " + _link("label", ref="attr-label")
+        else:
+            # If we get here, it means the value was unknown for some reason.
+            # Rather than error, give some somewhat understandable value.
+            return _AttributeType.Name(attr.type)
+
+    def _render_func(self, func):
+        func_name = func.function_name
+        func_anchor = _anchor_id(func_name)
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {func_name}\n\n",
+        )
+
+        parameters = [param for param in func.parameter if param.name != "self"]
+
+        self._render_signature(
+            func_name,
+            func_anchor,
+            parameters,
+            get_name=lambda p: p.name,
+            get_default=lambda p: p.default_value,
+        )
+
+        self._write(func.doc_string.strip(), "\n\n")
+
+        if parameters:
+            self._write(
+                _block_attrs(f"{func_anchor}_parameters"),
+                "**PARAMETERS** ",
+                _link_here_icon(f"{func_anchor}_parameters"),
+                "\n\n",
+            )
+            entries = []
+            for param in parameters:
+                entries.append(
+                    [
+                        f"{func_anchor}_{param.name}",
+                        param.name,
+                        f"(_default `{param.default_value}`_) "
+                        if param.default_value
+                        else "",
+                        param.doc_string if param.doc_string else "_undocumente_",
+                    ]
+                )
+            self._render_field_list(entries)
+
+        if getattr(func, "return").doc_string:
+            return_doc = _indent_block_text(getattr(func, "return").doc_string)
+            self._write(
+                _block_attrs(f"{func_anchor}_returns"),
+                "RETURNS",
+                _link_here_icon(func_anchor + "_returns"),
+                "\n",
+                ": ",
+                return_doc,
+                "\n",
+            )
+        if func.deprecated.doc_string:
+            self._write(
+                "\n\n**DEPRECATED**\n\n", func.deprecated.doc_string.strip(), "\n"
+            )
+
+    def _render_provider(self, provider):
+        self._write(
+            _block_attrs(".starlark-object"),
+            f"## {provider.provider_name}\n\n",
+        )
+
+        provider_anchor = _anchor_id(provider.provider_name)
+        self._render_signature(
+            provider.provider_name,
+            provider_anchor,
+            provider.field_info,
+            get_name=lambda f: f.name,
+        )
+
+        self._write(provider.doc_string.strip(), "\n\n")
+
+        if provider.field_info:
+            self._write(
+                _block_attrs(provider_anchor),
+                "**FIELDS** ",
+                _link_here_icon(provider_anchor + "_fields"),
+                "\n",
+                "\n",
+            )
+            entries = []
+            for field in provider.field_info:
+                entries.append(
+                    [
+                        f"{provider_anchor}_{field.name}",
+                        field.name,
+                        field.doc_string,
+                    ]
+                )
+            self._render_field_list(entries)
+
+    def _render_attributes(self, base_anchor, attributes):
+        self._write(
+            _block_attrs(f"{base_anchor}_attributes"),
+            "**ATTRIBUTES** ",
+            _link_here_icon(f"{base_anchor}_attributes"),
+            "\n",
+        )
+        entries = []
+        for attr in attributes:
+            anchor = f"{base_anchor}_{attr.name}"
+            required = "required" if attr.mandatory else "optional"
+            attr_type = self._rule_attr_type_string(attr)
+            default = f", default `{attr.default_value}`" if attr.default_value else ""
+            # The text has to be indented to be associated with the block correctly.
+            entries.append(
+                [
+                    anchor,
+                    attr.name,
+                    f"_({required} {attr_type}{default})_\n",
+                    attr.doc_string,
+                ]
+            )
+        self._render_field_list(entries)
+
+    def _render_signature(
+        self, name, base_anchor, parameters, *, get_name, get_default=lambda v: None
+    ):
+        self._write(_block_attrs(".starlark-signature"), name, "(")
+        for _, is_last, param in _position_iter(parameters):
+            param_name = get_name(param)
+            self._write(_link(param_name, f"{base_anchor}_{param_name}"))
+            default_value = get_default(param)
+            if default_value:
+                self._write(f"={default_value}")
+            if not is_last:
+                self._write(",\n")
+        self._write(")\n\n")
+
+    def _render_field_list(self, entries):
+        for anchor, description, *body_pieces in entries:
+            body_pieces = [_block_attrs(anchor), *body_pieces]
+            self._write(
+                ":",
+                _span(description + _link_here_icon(anchor)),
+                ":\n  ",
+                # The text has to be indented to be associated with the block correctly.
+                "".join(body_pieces).strip().replace("\n", "\n  "),
+                "\n",
+            )
+
+    def _write(self, *lines):
+        self._out_stream.writelines(lines)
+
+
+def _convert(*, proto_path, output_path, footer_path, public_load_path):
+    if footer_path:
+        footer_content = pathlib.Path(footer_path).read_text()
+
+    module = stardoc_output_pb2.ModuleInfo.FromString(
+        pathlib.Path(proto_path).read_bytes()
+    )
+    with pathlib.Path(output_path).open("wt", encoding="utf8") as out_stream:
+        MySTRenderer(module, out_stream, public_load_path).render()
+        out_stream.write(footer_content)
+
+
+def _create_parser():
+    parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
+    parser.add_argument("--footer", dest="footer")
+    parser.add_argument("--proto", dest="proto")
+    parser.add_argument("--output", dest="output")
+    parser.add_argument("--public-load-path", dest="public_load_path")
+    return parser
+
+
+def main(args):
+    options = _create_parser().parse_args(args)
+    _convert(
+        proto_path=options.proto,
+        output_path=options.output,
+        footer_path=options.footer,
+        public_load_path=options.public_load_path,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

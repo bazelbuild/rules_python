@@ -45,6 +45,10 @@ A brief description of the categories of changes:
 * (bzlmod pip.parse) The `pip.parse(python_interpreter)` arg now works for
   specifying a local system interpreter.
 
+### Added
+
+* (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
