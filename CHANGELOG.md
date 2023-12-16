@@ -42,6 +42,8 @@ A brief description of the categories of changes:
   `experimental_target_platforms = ["all"]` to the `pip_parse` or the `bzlmod`
   equivalent. This may help in cases where fetching wheels for a different
   platform using `download_only = True` feature.
+* (bzlmod pip.parse) The `pip.parse(python_interpreter)` arg now works for
+  specifying a local system interpreter.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
