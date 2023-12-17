@@ -168,7 +168,7 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
     Returns:
         A dict of file paths and their contents.
     """
-    if not bzl_packages and whl_map:
+    if bzl_packages == None:
         bzl_packages = list(whl_map.keys())
 
     contents = {}
