@@ -14,13 +14,61 @@
 
 """PyPI metadata hub and spoke repos"""
 
+load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
 load(":pypi_archive.bzl", "pypi_file")
 
-def whl_files_from_requirements(module_ctx, *, name, requirements, indexes, whl_overrides = {}):
+def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
+    all_requirements = []
+    indexes = ["https://pypi.python.org/simple"]
+    for module in module_ctx.modules:
+        for pip_attr in module.tags.parse:
+            extra_args = pip_attr.extra_pip_args
+            for requirements_lock in [
+                pip_attr.requirements_lock,
+                pip_attr.requirements_linux,
+                pip_attr.requirements_darwin,
+                pip_attr.requirements_windows,
+            ]:
+                if not requirements_lock:
+                    continue
+
+                requirements_lock_content = module_ctx.read(requirements_lock)
+                parse_result = parse_requirements(requirements_lock_content)
+                requirements = parse_result.requirements
+                all_requirements.extend([line for _, line in requirements])
+
+                extra_pip_args = extra_args + parse_result.options
+                next_is_index = False
+                for arg in extra_pip_args:
+                    arg = arg.strip()
+                    if next_is_index:
+                        next_is_index = False
+                        index = arg.strip("/")
+                        if index not in indexes:
+                            indexes.append(index)
+
+                        continue
+
+                    if arg in ["--index-url", "-i", "--extra-index-url"]:
+                        next_is_index = True
+                        continue
+
+                    if "=" not in arg:
+                        continue
+
+                    index = None
+                    for index_arg_prefix in ["--index-url=", "--extra-index-url="]:
+                        if arg.startswith(index_arg_prefix):
+                            index = arg[len(index_arg_prefix):]
+                            break
+
+                    if index and index not in indexes:
+                        indexes.append(index)
+
     sha_by_pkg = {}
-    for requirement in requirements:
+    for requirement in all_requirements:
         sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
         distribution, _, _ = requirement.partition("==")
         distribution, _, _ = distribution.partition("[")
@@ -91,7 +139,6 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://
         # See https://github.com/bazelbuild/bazel/issues/19674
         download_kwargs["block"] = False
 
-    ret = {}
     downloads = {}
     for distribution in sha256s_by_distribution.keys():
         downloads[distribution] = {}
@@ -103,6 +150,7 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://
                 **download_kwargs
             )
 
+    ret = {}
     for distribution, sha256s in sha256s_by_distribution.items():
         want_shas = {sha: True for sha in sha256s}
 

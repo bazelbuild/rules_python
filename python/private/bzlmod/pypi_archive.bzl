@@ -39,9 +39,6 @@ def _impl(rctx):
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
 
-        # TODO @aignas 2023-12-14: re-parse the metadata to ensure that we have a
-        # non-stale version of it
-        # Something like: whl_path, metadata = patch_whl(
         whl_path = patch_whl(
             rctx,
             python_interpreter = _resolve_python_interpreter(rctx),
@@ -79,11 +76,13 @@ pypi_file = repository_rule(
         "sha256": attr.string(mandatory = False),
         "timeout": attr.int(default = 60),
         "urls": attr.string_list(mandatory = True),
+        # TODO @aignas 2023-12-16: an arg to keep or not the original wheel
     },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
     implementation = _impl,
 )
 
+# TODO @aignas 2023-12-16: expose getting interpreter
 def _get_python_interpreter_attr(rctx):
     """A helper function for getting the `python_interpreter` attribute or it's default
 
