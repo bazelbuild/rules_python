@@ -1,0 +1,58 @@
+load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "default_test_runner")
+load(":integration_test.bzl", "rules_python_integration_test", "rules_python_integration_test_suite")
+
+licenses(["notice"])
+
+_WORKSPACE_FLAGS = [
+    "--noenable_bzlmod",
+]
+
+_WORKSPACE_GAZELLE_PLUGIN_FLAGS = [
+    "--override_repository=rules_python_gazelle_plugin=../../../rules_python_gazelle_plugin",
+]
+
+_GAZELLE_PLUGIN_FLAGS = [
+    "--override_module=rules_python_gazelle_plugin=../../../rules_python_gazelle_plugin",
+]
+
+default_test_runner(
+    name = "workspace_test_runner",
+    bazel_cmds = [
+        "info {}".format(" ".join(_WORKSPACE_FLAGS)),
+        "test {} //...".format(" ".join(_WORKSPACE_FLAGS)),
+    ],
+)
+
+default_test_runner(
+    name = "workspace_test_runner_gazelle_plugin",
+    bazel_cmds = [
+        "info {}".format(" ".join(_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
+        "test {} //...".format(" ".join(_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
+    ],
+)
+
+default_test_runner(
+    name = "test_runner",
+)
+
+default_test_runner(
+    name = "test_runner_gazelle_plugin",
+    bazel_cmds = [
+        "info {}".format(" ".join(_GAZELLE_PLUGIN_FLAGS)),
+        "test {} //...".format(" ".join(_GAZELLE_PLUGIN_FLAGS)),
+    ],
+)
+
+rules_python_integration_test(
+    name = "pip_repository_entry_points_example",
+    timeout = "long",
+    # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
+    tags = ["fix-windows"],
+)
+
+rules_python_integration_test_suite(
+    name = "integration_tests",
+    tests = [
+        ":pip_repository_entry_points_example",
+    ],
+)
