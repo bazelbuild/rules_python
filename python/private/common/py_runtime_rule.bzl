@@ -122,6 +122,8 @@ interpreter.
 # Example
 
 ```
+load("@rules_python//python:py_runtime.bzl", "py_runtime")
+
 py_runtime(
     name = "python-2.7.12",
     files = glob(["python-2.7.12/**"]),

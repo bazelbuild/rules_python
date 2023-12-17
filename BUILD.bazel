@@ -24,6 +24,11 @@ exports_files([
     "version.bzl",
 ])
 
+exports_files(
+    glob(["*.md"]),
+    visibility = ["//docs:__subpackages__"],
+)
+
 filegroup(
     name = "distribution",
     srcs = [

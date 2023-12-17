@@ -17,11 +17,11 @@
 # against.
 # This version should be updated together with the version of Bazel
 # in .bazelversion.
-BAZEL_VERSION = "6.2.0"
+BAZEL_VERSION = "7.0.0"
 
 # NOTE: Keep in sync with .bazelci/presubmit.yml
 # This is the minimum supported bazel version, that we have some tests for.
-MINIMUM_BAZEL_VERSION = "5.4.0"
+MINIMUM_BAZEL_VERSION = "6.2.0"
 
 # Versions of Bazel which users should be able to use.
 # Ensures we don't break backwards-compatibility,

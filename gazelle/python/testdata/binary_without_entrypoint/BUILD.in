@@ -1,0 +1,6 @@
+# gazelle:python_library_naming_convention py_default_library
+
+filegroup(
+    name = "collided_main",
+    srcs = ["collided_main.py"],
+)

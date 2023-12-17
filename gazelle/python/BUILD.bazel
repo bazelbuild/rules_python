@@ -1,6 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle_binary")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load(":gazelle_test.bzl", "gazelle_test")
 
 go_library(
@@ -56,6 +56,15 @@ py_binary(
     imports = ["."],
     main = "__main__.py",
     visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "parse_test",
+    srcs = [
+        "parse.py",
+        "parse_test.py",
+    ],
+    imports = ["."],
 )
 
 filegroup(
