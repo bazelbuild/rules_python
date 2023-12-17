@@ -28,14 +28,14 @@ def rules_python_integration_test(name,
     workspace_path = workspace_path or name.removesuffix("_example")
     if bzlmod:
         if gazelle_plugin:
-            test_runner = "//tests:test_runner_gazelle_plugin"
+            test_runner = "//tests/integration_tests:test_runner_gazelle_plugin"
         else:
-            test_runner = "//tests:test_runner"
+            test_runner = "//tests/integration_tests:test_runner"
     else:
         if gazelle_plugin:
-            test_runner = "//tests:workspace_test_runner_gazelle_plugin"
+            test_runner = "//tests/integration_tests:workspace_test_runner_gazelle_plugin"
         else:
-            test_runner = "//tests:workspace_test_runner"
+            test_runner = "//tests/integration_tests:workspace_test_runner"
 
     bazel_integration_tests(
         name = name,
