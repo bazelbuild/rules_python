@@ -27,6 +27,17 @@ def rules_python_integration_test(
         gazelle_plugin = False,
         tags = None,
         **kwargs):
+    """Runs a bazel-in-bazel integration test.
+
+    Args:
+        name: Name of the test. This gets appended by the bazel version.
+        workspace_path: The directory name. Defaults to `name` without the
+            `_example` suffix.
+        bzlmod: Whether to use bzlmod. Defaults to using WORKSPACE.
+        gazelle_plugin: Whether the test uses the gazelle plugin.
+        tags: Test tags.
+        **kwargs: Passed to the upstream `bazel_integration_tests` rule.
+    """
     workspace_path = workspace_path or name.removesuffix("_example")
     if bzlmod:
         if gazelle_plugin:
