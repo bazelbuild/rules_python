@@ -133,7 +133,8 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://
 
             downloads[distribution][html] = download
 
-    for distribution, sha256s in sha256s_by_distribution.items():
+
+    for distribution in sha256s_by_distribution:
         for html, download in downloads[distribution].items():
             if not has_non_blocking_downloads:
                 continue
