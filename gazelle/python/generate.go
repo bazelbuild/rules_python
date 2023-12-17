@@ -220,7 +220,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	collisionErrors := singlylinkedlist.New()
 
 	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
-		deps, mainModules, err := parser.parse(srcs)
+		allDeps, mainModules, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -248,10 +248,13 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						fqTarget.String(), actualPyBinaryKind, err)
 					continue
 				}
+				binaryDeps := allDeps.Select(func(index int, value interface{}) bool {
+					return value.(module).Filepath == filepath.Join(args.Rel, filename)
+				})
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 					addVisibility(visibility).
 					addSrc(filename).
-					addModuleDependencies(deps).
+					addModuleDependencies(binaryDeps).
 					generateImportsAttribute().build()
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
@@ -261,7 +264,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(srcs).
-			addModuleDependencies(deps).
+			addModuleDependencies(allDeps).
 			generateImportsAttribute().
 			build()
 
