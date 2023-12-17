@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load("//tests/integration_tests:integration_test.bzl",
-     "rules_python_integration_test",
-     "rules_python_integration_test_suite")
+load(
+    "//tests/integration_tests:integration_test.bzl",
+    "rules_python_integration_test",
+    "rules_python_integration_test_suite",
+)
 
 licenses(["notice"])  # Apache 2.0
 
