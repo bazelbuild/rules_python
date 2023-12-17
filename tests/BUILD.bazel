@@ -6,11 +6,11 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-_LEGACY_FLAGS = [
+_WORKSPACE_FLAGS = [
     "--noenable_bzlmod",
 ]
 
-_LEGACY_GAZELLE_PLUGIN_FLAGS = [
+_WORKSPACE_GAZELLE_PLUGIN_FLAGS = [
     "--override_repository=rules_python_gazelle_plugin=../../../rules_python_gazelle_plugin",
 ]
 
@@ -19,18 +19,18 @@ _GAZELLE_PLUGIN_FLAGS = [
 ]
 
 default_test_runner(
-    name = "legacy_test_runner",
+    name = "workspace_test_runner",
     bazel_cmds = [
-        "info {}".format(" ".join(_LEGACY_FLAGS)),
-        "test {} //...".format(" ".join(_LEGACY_FLAGS)),
+        "info {}".format(" ".join(_WORKSPACE_FLAGS)),
+        "test {} //...".format(" ".join(_WORKSPACE_FLAGS)),
     ],
 )
 
 default_test_runner(
-    name = "legacy_test_runner_gazelle_plugin",
+    name = "workspace_test_runner_gazelle_plugin",
     bazel_cmds = [
-        "info {}".format(" ".join(_LEGACY_FLAGS + _LEGACY_GAZELLE_PLUGIN_FLAGS)),
-        "test {} //...".format(" ".join(_LEGACY_FLAGS + _LEGACY_GAZELLE_PLUGIN_FLAGS)),
+        "info {}".format(" ".join(_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
+        "test {} //...".format(" ".join(_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
     ],
 )
 

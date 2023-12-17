@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helpers for running integration test."""
+"""Helpers for running bazel-in-bazel integration tests."""
 
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
@@ -33,9 +33,9 @@ def rules_python_integration_test(name,
             test_runner = "//tests:test_runner"
     else:
         if gazelle_plugin:
-            test_runner = "//tests:legacy_test_runner_gazelle_plugin"
+            test_runner = "//tests:workspace_test_runner_gazelle_plugin"
         else:
-            test_runner = "//tests:legacy_test_runner"
+            test_runner = "//tests:workspace_test_runner"
 
     bazel_integration_tests(
         name = name,
