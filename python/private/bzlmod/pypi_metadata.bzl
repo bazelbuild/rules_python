@@ -21,7 +21,7 @@ load(":pypi_archive.bzl", "pypi_file")
 
 def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     all_requirements = []
-    indexes = ["https://pypi.python.org/simple"]
+    indexes = {"https://pypi.org/simple": True}
     for module in module_ctx.modules:
         for pip_attr in module.tags.parse:
             extra_args = pip_attr.extra_pip_args
@@ -40,32 +40,10 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 all_requirements.extend([line for _, line in requirements])
 
                 extra_pip_args = extra_args + parse_result.options
-                next_is_index = False
-                for arg in extra_pip_args:
-                    arg = arg.strip()
-                    if next_is_index:
-                        next_is_index = False
-                        index = arg.strip("/")
-                        if index not in indexes:
-                            indexes.append(index)
-
-                        continue
-
-                    if arg in ["--index-url", "-i", "--extra-index-url"]:
-                        next_is_index = True
-                        continue
-
-                    if "=" not in arg:
-                        continue
-
-                    index = None
-                    for index_arg_prefix in ["--index-url=", "--extra-index-url="]:
-                        if arg.startswith(index_arg_prefix):
-                            index = arg[len(index_arg_prefix):]
-                            break
-
-                    if index and index not in indexes:
-                        indexes.append(index)
+                indexes.update({
+                    index: True
+                    for index in _get_indexes_from_args(extra_pip_args)
+                })
 
     sha_by_pkg = {}
     for requirement in all_requirements:
@@ -83,7 +61,7 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     metadata = _fetch_metadata(
         module_ctx,
         sha256s_by_distribution = sha_by_pkg,
-        indexes = indexes,
+        indexes = indexes.keys(),
     )
 
     ret = {}
@@ -143,28 +121,34 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://
     for distribution in sha256s_by_distribution.keys():
         downloads[distribution] = {}
         for i, index_url in enumerate(indexes):
-            html = "{}-index-{}.html".format(distribution, i)
-            downloads[distribution][html] = module_ctx.download(
+            html = "pypi-{}-{}.html".format(distribution, i)
+            download = module_ctx.download(
                 url = index_url + "/" + distribution,
                 output = html,
                 **download_kwargs
             )
 
-    ret = {}
+            if not has_non_blocking_downloads and not download.success:
+                fail(download)
+
+            downloads[distribution][html] = download
+
     for distribution, sha256s in sha256s_by_distribution.items():
-        want_shas = {sha: True for sha in sha256s}
-
-        files = {}
-
         for html, download in downloads[distribution].items():
-            if has_non_blocking_downloads:
-                result = download.wait()
-            else:
-                result = download
+            if not has_non_blocking_downloads:
+                continue
 
+            result = download.wait()
             if not result.success:
                 fail(result)
 
+            downloads[distribution][html] = result
+
+    ret = {}
+    for distribution, want_shas in sha256s_by_distribution.items():
+        files = {}
+
+        for html, result in downloads[distribution].items():
             contents = module_ctx.read(html)
 
             _, _, hrefs = contents.partition("<a href=\"")
@@ -192,3 +176,33 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes = ["https://
         )
 
     return ret
+
+def _get_indexes_from_args(args):
+    indexes = {"https://pypi.org/simple": True}
+    next_is_index = False
+    for arg in args:
+        arg = arg.strip()
+        if next_is_index:
+            next_is_index = False
+            index = arg.strip("/")
+            if index not in indexes:
+                indexes.append(index)
+
+            continue
+
+        if arg in ["--index-url", "-i", "--extra-index-url"]:
+            next_is_index = True
+            continue
+
+        if "=" not in arg:
+            continue
+
+        index = None
+        for index_arg_prefix in ["--index-url=", "--extra-index-url="]:
+            if arg.startswith(index_arg_prefix):
+                index = arg[len(index_arg_prefix):]
+                break
+
+        indexes[index] = True
+
+    return indexes.keys()

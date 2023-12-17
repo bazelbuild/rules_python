@@ -4,7 +4,7 @@
 #
 #    bazel run //:requirements_3_9.update
 #
---extra-index-url https://pypi.python.org/simple/
+--extra-index-url https://pypi.org/simple/
 
 alabaster==0.7.13 \
     --hash=sha256:1ee19aca801bbabb5ba3f5f258e4422dfa86f82f3e9cefb0859b283cdd7f62a3 \
