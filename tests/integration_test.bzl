@@ -20,9 +20,22 @@ load(
     "integration_test_utils",
 )
 
-def rules_python_integration_test(name, workspace_path = None, bzlmod = False, tags = None, **kwargs):
+def rules_python_integration_test(name,
+                                  workspace_path = None,
+                                  bzlmod = False,
+                                  gazelle_plugin = False,
+                                  tags = None, **kwargs):
     workspace_path = workspace_path or name.removesuffix("_example")
-    test_runner = "//tests:simple_test_runner" if bzlmod else "//tests:legacy_test_runner"
+    if bzlmod:
+        if gazelle_plugin:
+            test_runner = "//tests:test_runner_gazelle_plugin"
+        else:
+            test_runner = "//tests:test_runner"
+    else:
+        if gazelle_plugin:
+            test_runner = "//tests:legacy_test_runner_gazelle_plugin"
+        else:
+            test_runner = "//tests:legacy_test_runner"
 
     bazel_integration_tests(
         name = name,

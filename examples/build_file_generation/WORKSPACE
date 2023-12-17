@@ -67,7 +67,7 @@ local_repository(
 
 local_repository(
     name = "rules_python_gazelle_plugin",
-    path = "../../../rules_python_gazelle_plugin",
+    path = "../../gazelle",
 )
 
 # Next we load the setup and toolchain from rules_python.
