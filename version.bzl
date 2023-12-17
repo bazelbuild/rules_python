@@ -30,9 +30,7 @@ MINIMUM_BAZEL_VERSION = "6.2.0"
 # rules_bazel_integration_test.
 SUPPORTED_BAZEL_VERSIONS = [
     BAZEL_VERSION,
-    # TODO @aignas 2023-02-15: the integration tests currently support
-    # only a single element in this array.
-    #MINIMUM_BAZEL_VERSION,
+    MINIMUM_BAZEL_VERSION,
 ]
 
 def bazel_version_to_binary_label(version):

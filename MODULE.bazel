@@ -19,13 +19,13 @@ bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_depende
 bazel_binaries = use_extension("@rules_bazel_integration_test//:extensions.bzl", "bazel_binaries", dev_dependency = True)
 
 # We no longer support Bazel 5.
-#bazel_binaries.download(version = "5.4.0")
 bazel_binaries.download(version = "6.2.0")
+bazel_binaries.download(version = "7.0.0")
 use_repo(
     bazel_binaries,
     "bazel_binaries",
-    #"build_bazel_bazel_5_4_0",
     "build_bazel_bazel_6_2_0",
+    "build_bazel_bazel_7_0_0",
 )
 
 internal_deps = use_extension("@rules_python//python/private/bzlmod:internal_deps.bzl", "internal_deps")
