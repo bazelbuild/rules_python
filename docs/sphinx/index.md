@@ -60,6 +60,8 @@ pypi-dependencies
 pip
 coverage
 gazelle
+Contributing <contributing>
+Changelog <changelog>
 api/index
 glossary
 genindex

@@ -21,8 +21,8 @@ buildifier:
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
-  bazel: 5.4.0
-  skip_in_bazel_downstream_pipeline: "Bazel 5 required"
+  bazel: 6.2.0
+  skip_in_bazel_downstream_pipeline: "Bazel 6 required"
 .minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
   bazel: 6.2.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
@@ -64,10 +64,7 @@ buildifier:
     - //tests:version_3_9_test
     - //tests:version_default_test
 .pystar_base: &pystar_base
-  # TODO: Change to "7.x" once Bazel 7 is available
-  # https://github.com/bazelbuild/bazel/commit/f3aafea59ae021c6a12086cb2cd34c5fa782faf1
-  # is available in rolling.
-  bazel: "last_rc"
+  bazel: "7.x"
   environment:
     RULES_PYTHON_ENABLE_PYSTAR: "1"
   test_flags:
