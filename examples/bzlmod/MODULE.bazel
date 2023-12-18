@@ -45,6 +45,9 @@ use_repo(python, "python_3_10", "python_3_9", "python_versions")
 # You are able to set a hub name, so that you can have different modifications of the same
 # wheel in different pip hubs.
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.experimental_target_platforms(
+    enabled = True,
+)
 
 # Call whl_mods.create for the requests package.
 pip.whl_mods(

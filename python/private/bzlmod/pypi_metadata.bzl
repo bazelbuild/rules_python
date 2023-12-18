@@ -47,6 +47,14 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     Returns:
         a dict with the fetched metadata to be used later when creating hub and spoke repos.
     """
+    for module in module_ctx.modules:
+        for attr in module.tags.experimental_target_platforms:
+            if not module.is_root:
+                fail("setting target platforms is only supported in root modules")
+
+            if not attr.enabled:
+                return None
+
     all_requirements = []
     indexes = {}
     for module in module_ctx.modules:

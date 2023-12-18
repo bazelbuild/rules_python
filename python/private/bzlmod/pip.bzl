@@ -458,6 +458,22 @@ cannot have a child module that uses the same `hub_name`.
     }
     return attrs
 
+_target_platforms = tag_class(
+    attrs = {
+        "enabled": attr.bool(
+            doc = """\
+Enable this feature in this root module by setting this to True.
+""",
+            mandatory = True,
+        ),
+    },
+    doc = """\
+Setup multi-platform support for PyPI hub repositories.
+NOTE: this feature is still very experimental and as a result may contain
+breaking changes more frequently than described in our breaking change policy.
+""",
+)
+
 # NOTE: the naming of 'override' is taken from the bzlmod native
 # 'archive_override', 'git_override' bzlmod functions.
 _override_tag = tag_class(
@@ -518,6 +534,7 @@ the BUILD files for wheels.
 """,
     implementation = _pip_impl,
     tag_classes = {
+        "experimental_target_platforms": _target_platforms,
         "override": _override_tag,
         "parse": tag_class(
             attrs = _pip_parse_ext_attrs(),
