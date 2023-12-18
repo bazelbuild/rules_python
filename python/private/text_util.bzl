@@ -20,11 +20,18 @@ def _indent(text, indent = " " * 4):
 
     return "\n".join([indent + line for line in text.splitlines()])
 
-def _render_alias(name, actual):
+def _render_alias(name, actual, *, visibility = None):
+    args = [
+        "name = \"{}\",".format(name),
+        "actual = {},".format(actual),
+    ]
+
+    if visibility:
+        args.append("visibility = {},".format(render.list(visibility)))
+
     return "\n".join([
         "alias(",
-        _indent("name = \"{}\",".format(name)),
-        _indent("actual = {},".format(actual)),
+    ] + [_indent(arg) for arg in args] + [
         ")",
     ])
 
