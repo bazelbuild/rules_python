@@ -30,19 +30,21 @@ class PipWhlModsTest(unittest.TestCase):
     def package_path(self) -> str:
         return "rules_python~override~pip~"
 
-    def wheel_pkg_dir(self) -> str:
-        env = os.environ.get("WHEEL_PKG_DIR")
-        self.assertIsNotNone(env)
-        return env
+    def wheel_pkg_dir(self) -> Path:
+        distinfo = os.environ.get("WHEEL_DISTINFO")
+        self.assertIsNotNone(distinfo)
+        return Path(distinfo.split(" ")[0]).parents[2]
+
+    def rlocation(self, runfiles, dir: Path, *segments):
+        absolute_path = dir
+        for segment in segments:
+            absolute_path = absolute_path / segment
+
+        return runfiles.Rlocation(str(absolute_path.relative_to(dir.parent)))
 
     def test_build_content_and_data(self):
         r = runfiles.Create()
-        rpath = r.Rlocation(
-                "{}{}/generated_file.txt".format(
-                    self.package_path(), 
-                    self.wheel_pkg_dir(),
-                    ),
-                )
+        rpath = self.rlocation(r, self.wheel_pkg_dir(), "generated_file.txt")
         generated_file = Path(rpath)
         self.assertTrue(generated_file.exists())
 
@@ -51,12 +53,7 @@ class PipWhlModsTest(unittest.TestCase):
 
     def test_copy_files(self):
         r = runfiles.Create()
-        rpath = r.Rlocation(
-                "{}{}/copied_content/file.txt".format(
-                    self.package_path(), 
-                    self.wheel_pkg_dir(),
-                    )
-                )
+        rpath = self.rlocation(r, self.wheel_pkg_dir(), "copied_content", "file.txt")
         copied_file = Path(rpath)
         self.assertTrue(copied_file.exists())
 
@@ -64,14 +61,14 @@ class PipWhlModsTest(unittest.TestCase):
         self.assertEqual(content, "Hello world from copied file")
 
     def test_copy_executables(self):
+        executable_name = (
+            "executable.exe" if platform.system() == "windows" else "executable.py"
+        )
+
         r = runfiles.Create()
-        rpath = r.Rlocation(
-                "{}{}/copied_content/executable{}".format(
-                    self.package_path(), 
-                    self.wheel_pkg_dir(),
-                    ".exe" if platform.system() == "windows" else ".py",
-                    )
-                )
+        rpath = self.rlocation(
+            r, self.wheel_pkg_dir(), "copied_content", executable_name
+        )
         executable = Path(rpath)
         self.assertTrue(executable.exists())
 
@@ -88,37 +85,37 @@ class PipWhlModsTest(unittest.TestCase):
         current_wheel_version = "0.40.0"
 
         r = runfiles.Create()
-        dist_info_dir = "{}{}/site-packages/wheel-{}.dist-info".format(
-                self.package_path(), 
-                self.wheel_pkg_dir(),
-                current_wheel_version,
-                )
+        wheel_pkg_dir = self.wheel_pkg_dir()
+        dist_info_dir = f"wheel-{current_wheel_version}.dist-info"
 
         # Note: `METADATA` is important as it's consumed by https://docs.python.org/3/library/importlib.metadata.html
         # `METADATA` is expected to be there to show dist-info files are included in the runfiles.
-        metadata_path = r.Rlocation("{}/METADATA".format(dist_info_dir))
+        metadata_path = Path(
+            self.rlocation(r, wheel_pkg_dir, "site-packages", dist_info_dir, "METADATA")
+        )
 
         # However, `WHEEL` was explicitly excluded, so it should be missing
-        wheel_path = r.Rlocation("{}/WHEEL".format(dist_info_dir))
+        wheel_path = Path(
+            self.rlocation(r, wheel_pkg_dir, "site-packages", dist_info_dir, "WHEEL")
+        )
 
-        self.assertTrue(Path(metadata_path).exists())
-        self.assertFalse(Path(wheel_path).exists())
+        self.assertTrue(
+            metadata_path.exists(), f"METADATA was not found in {metadata_path}"
+        )
+        self.assertTrue(wheel_path.exists(), f"WHEEL was not found in {wheel_path}")
 
-    def requests_pkg_dir(self) -> str:
-        env = os.environ.get("REQUESTS_PKG_DIR")
-        self.assertIsNotNone(env)
-        return env
+    def requests_pkg_dir(self) -> Path:
+        distinfo = os.environ.get("REQUESTS_DISTINFO")
+        self.assertIsNotNone(distinfo)
+        pkgdir = Path(distinfo.split(" ")[0]).parents[2]
+        return pkgdir
 
     def test_extra(self):
         # This test verifies that annotations work correctly for pip packages with extras
         # specified, in this case requests[security].
         r = runfiles.Create()
-        rpath = r.Rlocation(
-                "{}{}/generated_file.txt".format(
-                    self.package_path(), 
-                    self.requests_pkg_dir(),
-                    ),
-                )
+        rpath = self.rlocation(r, self.requests_pkg_dir(), "generated_file.txt")
+
         generated_file = Path(rpath)
         self.assertTrue(generated_file.exists())
 

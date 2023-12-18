@@ -8,13 +8,15 @@ exports_files(
 py_test(
     name = "pip_whl_mods_test",
     srcs = ["pip_whl_mods_test.py"],
+    data = [
+        "@pip//requests:dist_info",
+        "@pip//wheel:dist_info",
+    ],
     env = {
-        "REQUESTS_PKG_DIR": "pip_39_requests",
-        "WHEEL_PKG_DIR": "pip_39_wheel",
+        "REQUESTS_DISTINFO": "$(rlocationpaths @pip//requests:dist_info)",
+        "WHEEL_DISTINFO": "$(rlocationpaths @pip//wheel:dist_info)",
     },
     main = "pip_whl_mods_test.py",
-    data = [
-    ],
     deps = [
         "@pip//requests:pkg",
         "@pip//wheel:pkg",
