@@ -14,6 +14,7 @@
 
 """PyPI metadata hub and spoke repos"""
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
@@ -182,12 +183,8 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
 def _fetch_urls_from_index(module_ctx, index_url, need_to_download, fname_prefix = "pypi"):
     download_kwargs = {}
 
-    # TODO @aignas 2023-12-18: Use the following
-    # https://github.com/bazel-contrib/bazel_features/commit/52bf4a1b5ccb0e4733b8ce292076becf631d32f3
-    has_non_blocking_downloads = False
+    has_non_blocking_downloads = bazel_features.external_deps.download_has_block_param
     if has_non_blocking_downloads:
-        # NOTE @aignas 2023-12-15: this will only available in 7.1.0 and above
-        # See https://github.com/bazelbuild/bazel/issues/19674
         download_kwargs["block"] = False
 
     downloads = {}
