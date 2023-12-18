@@ -44,6 +44,8 @@ A brief description of the categories of changes:
   platform using `download_only = True` feature.
 * (bzlmod pip.parse) The `pip.parse(python_interpreter)` arg now works for
   specifying a local system interpreter.
+* (bzlmod pip.parse) Requirements files with duplicate entries for the same
+  package (e.g. one for the package, one for an extra) now work.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
