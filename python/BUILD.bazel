@@ -196,6 +196,7 @@ bzl_library(
     srcs = ["repositories.bzl"],
     deps = [
         ":versions_bzl",
+        "//python/private:auth_bzl",
         "//python/private:bazel_tools_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:coverage_deps_bzl",

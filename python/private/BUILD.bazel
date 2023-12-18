@@ -49,6 +49,14 @@ filegroup(
 )
 
 bzl_library(
+    name = "auth_bzl",
+    srcs = ["auth.bzl"],
+    deps = [
+        "//python:py_runtime_bzl",
+    ],
+)
+
+bzl_library(
     name = "autodetecting_toolchain_bzl",
     srcs = ["autodetecting_toolchain.bzl"],
     deps = [
