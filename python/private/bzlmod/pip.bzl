@@ -28,7 +28,7 @@ load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
-load(":minihub.bzl", "whl_library")
+load(":multiarch_whl_library.bzl", "multiarch_whl_library")
 load(":pip_repository.bzl", "pip_repository")
 load(":pypi_metadata.bzl", "whl_files_from_requirements")
 
@@ -150,7 +150,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
-        whl_library(
+        multiarch_whl_library(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
             repo = pip_name,
@@ -256,7 +256,6 @@ def _pip_impl(module_ctx):
     _overriden_whl_set = {}
     whl_overrides = {}
 
-    all_requirements = []
     for module in module_ctx.modules:
         for attr in module.tags.override:
             if not module.is_root:

@@ -12,85 +12,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The overall design is:
+"""This stores the `bzlmod` specific `multiarch_whl_library` that can make more
+assumptions about how the repositories are setup and we can also fetch some data
+from the PyPI via its simple API.
 
-# Attempt 1
+There is a single `multiarch_whl_library` repository that only does aliases by
+target platform to the available whls and/or the whl built from sdist by bazel.
+The main algorithm is as below:
+1. Fetch data from all known PyPI indexes about where the wheels live.
+2. Ensure that we have found info about all of the packages by checking that we know
+   URL for each artifact that is mentioned by its sha256 in the requirements file.
+3. Infer the compatible platforms for the artifacts by parsing the last entry
+   in the URL. This allows us to create a set of `whl_library` repos that (mostly)
+   do not depend on the host platform.
 
-There is a single Pip hub repository, which creates the following repos:
-* `whl_index` that downloads the SimpleAPI page for a particular package
-  from the given indexes. It creates labels with URLs that can be used
-  to download things. Args:
-  * distribution - The name of the distribution.
-  * version - The version of the package.
-* `pypi_archive` that downloads a particular wheel for a package, it accepts
-  the following args:
-  * sha256 - The sha256 to download.
-  * url - The url to use. Optional.
-  * url_file - The label that has the URL for downloading the wheel. Optional.
-    Mutually exclusive with the url arg.
-  * indexes - Indexes to query. Optional.
-* `whl_library` that extracts a particular wheel.
+Shortcomings of the design:
+- We need to wait for the module extension to pull metadata about existing packgaes
+  for multiple distributions and it scales as 'number of different packgaes' x
+  'number of indexes'. We do some optimizations that make the scaling better,
+  but without `MODULE.bazel.lock` we need to do this every time if we haven't
+  cached the repositories.
 
-This is created to make use of the parallelism that can be achieved if fetching
-is done in separate threads, one for each external repository.
+- whl annotation API may further break user workflows because the targets added
+  via `additive_build_content` is not added to the `pip_XY_foo` but rather to
+  `pip_XY_foo__plat` which suggests that we should have some way to tell the
+  `hub` repo to expose extra alias targets.
 
-## Notes on the approach above
+  The `additive_build_content`, `copy_files` and `copy_files` are applied to each
+  extracted `whl` but not exposed to the user via extra alias definition in the hub
+  repository.
 
-Pros:
-* Really fast, no need to re-download the wheels when changing the contents of
-  `whl_library`.
-* The cyclic dependency groups just work with a few tweaks.
-Cons:
-* The sha256 files in filenames makes things difficult to read/understand.
-* The whl_annotations break, because users would need to specify weird repos in
-  their `use_repo` statements in the `MODULE.bazel` in order to make the
-  annotations useful. The need for forwarding the aliases based on the
-  annotations is real.
-* The index would be different for different lock files.
+  The `data`, `data_exclude_glob` and `srcs_exclude_glob` are all forwarded to the
+  definition of the `py_library` target as expected.
 
-# Approach 2
+- The cyclic dependencies can-not be automatically resolved yet and we need to fetch
+  additional whl metadata unless we have the METADATA parsing in fewer places.
 
-* In case we use requirements:
-    * `pypi_metadata` spoke repo that exposes the following for each distribution name:
-      `metadata.json - contains shas and filenames
-    * `pypi_metadata` hub repo that has aliases for all repos in one place,
-      helps with label generation/visibility.
-    * `whl_lock` hub repo that uses labels from `pypi_metadata` hub to generate a
-      single lock file: `lock.json`.
-* In case we use `pdm` or `poetry` or `hatch` lock files:
-    * `whl_lock` repo that translates the file into `lock.json`.
-* `pip.bzl` extension materializes the `whl_lock//:lock.json` file and defines the `whl_library` repos:
-    * For each whl name that we are interested in, create a `http_file` repo for the wheel.
-    * Generate a `whl_library` by passing a `file` argument to the `http_file`.
-    * If the whl is multi-platform - whl_library minihub does not need to be created.
-    * If the whl is platform-specific - whl_library minihub needs to be created.
+- For now, the wheels are potentially extracted multiple times, but this could be
+  possible to improve if we unify selecting based on the target platform and python
+  version into a single `config_setting`.
 
-Pros:
-* Solves `sha256` not being in repo names
-* Lock format can be the same for all
-* We may include whl metadata in the lock which means that we may have the dep graph
-  before creating the `whl_libraries`. If we have that, we can generate the cyclic dependency groups procedurally.
-Cons:
-* cyclic dependency groups for platform-specific wheels need a different approach than
-  what we have today.
-* whl_annotations for platform-specific wheels could be worked arround only in a subset
-  of cases. This is the analysis for each field:
-  - [ ] additive_build_content => What to do?
-  - [.] copy_files => Apply to each platform-specific wheel and it will be OK and we will nede to generate aliases for them in the minihub.
-  - [.] copy_executables => Apply to each platform-specific wheel and it will be OK and we will need to generate aliases for them in the minihub.
-  - [x] data => Apply to each platform-specific wheel and it will be OK.
-  - [x] data_exclude_glob => Apply to each platform-specific wheel and it will be OK.
-  - [x] srcs_exclude_glob => Apply to each platform-specific wheel and it will be OK.
+Benefits of the design:
+- Really fast to iterate as the whls do not need to be re-downloaded if the
+  sha256 and the whl URL does not change.
 
-## Notes on this approach
+- We can use the same downloaded wheel in multiple `whl_library` instances that
+  are for different Python versions.
 
-* We need to define the `whl_lock` and related repos in a separate bzlmod
-  extension. This is not something we want, because we increase the API scope
-  which is not desirable.
+- The dependency closures are still isolated making this a relatively safe change
+  from the traditional `whl_library`.
 
+- This could be extended very easily to consume `poetry.lock` or `pdm.lock` files.
+
+- We can build `rules_oci` images without needed extra work if the `sdists` are for
+  pure Python `whls` without any extra effort or needing to specify `download = True`.
+
+- We can download the Simple API contents in parallel with changes landed for 7.1.0.
 """
 
-load("//python/pip_install:pip_repository.bzl", _whl_library = "whl_library")
+load("//python/pip_install:pip_repository.bzl", "whl_library")
 load(
     "//python/private:labels.bzl",
     "DATA_LABEL",
@@ -147,7 +127,7 @@ def _parse_platform_tag(platform_tag):
     cpu = _parse_cpu_from_tag(platform_tag)
     return os, cpu
 
-def whl_library(name, *, requirement, files, **kwargs):
+def multiarch_whl_library(name, *, requirement, files, **kwargs):
     """Generate a number of third party repos for a particular wheel.
 
     Args:
@@ -182,7 +162,7 @@ def whl_library(name, *, requirement, files, **kwargs):
     for plat, f in files.items():
         whl_name = "{}__{}".format(name, plat)
         libs[plat] = f.filename
-        _whl_library(
+        whl_library(
             name = whl_name,
             experimental_whl_file = f.label,
             requirement = requirement,
