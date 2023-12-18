@@ -149,10 +149,16 @@ def _parse_platform_tag(platform_tag):
 
 def whl_library(name, *, requirement, files, **kwargs):
     """Generate a number of third party repos for a particular wheel.
+
+    Args:
+        name(str): the name of the apparent repo that does the select on the target platform.
+        requirement(str): the requirement line that this repo corresponds to.
+        files(dict[str, PyPISource]): the list of file labels
+        **kwargs: extra arguments passed to the underlying `whl_library` repository rule.
     """
-    distribution = files.distribution
     needed_files = [
-        files.files[sha.strip()] for sha in requirement.split("--hash=sha256:")[1:]
+        files.files[sha.strip()]
+        for sha in requirement.split("--hash=sha256:")[1:]
     ]
     _, _, want_abi = kwargs.get("repo").rpartition("_")
     want_abi = "cp" + want_abi
@@ -178,9 +184,9 @@ def whl_library(name, *, requirement, files, **kwargs):
         libs[plat] = f.filename
         _whl_library(
             name = whl_name,
-            file = f.label,
+            experimental_whl_file = f.label,
             requirement = requirement,
-            **kwargs,
+            **kwargs
         )
 
     whl_minihub(

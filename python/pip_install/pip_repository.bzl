@@ -711,8 +711,8 @@ def _whl_library_impl(rctx):
 
     whl_path = None
     whl_label = None
-    if rctx.attr.file:
-        whl_label = rctx.attr.file
+    if rctx.attr.experimental_whl_file:
+        whl_label = rctx.attr.experimental_whl_file
         whl_path = rctx.path(whl_label).realpath
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
@@ -785,7 +785,6 @@ def _whl_library_impl(rctx):
         entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
-        name = metadata["name"],
         repo_prefix = rctx.attr.repo_prefix,
         whl_name = whl_label or whl_path.basename,
         dependencies = metadata["deps"],
@@ -799,6 +798,10 @@ def _whl_library_impl(rctx):
         ],
         entry_points = entry_points,
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+        impl_vis = None if not rctx.attr.experimental_whl_file else "@{}{}//:__pkg__".format(
+            rctx.attr.repo_prefix,
+            normalize_name(metadata["name"]),
+        ),
     )
     rctx.file("BUILD.bazel", build_file_contents)
 
@@ -840,8 +843,19 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
-    "file": attr.label(
-        doc = "The label of the whl file to use",
+    "experimental_whl_file": attr.label(
+        doc = """\
+The label of the whl file to use. This allows one to pass a whl file to be used, but at the same
+time it changes the assumed whl_library layout. With this parameter set, the pip repository layout
+becomes as following:
+* pip has aliases to wheel libraries based on the version of the toolchain in use.
+* downloaded whls and sdists are in separate `pypi_file` repos.
+* per each downloaded `whl` or `sdist` there is a `whl_library` that creates a `py_library` target.
+* there is a alias `whl_library` repo that allows selecting which implementation `whl_library` repo to use.
+
+In the future the `whl_library` alias repo might be merged into the main `pip` repo but for that to
+happen, the `dependency` closures need to be generated for the selected target python versions.
+""",
     ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",

@@ -19,16 +19,33 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load(":label.bzl", _label = "label")
 load(":pypi_archive.bzl", "pypi_file")
 
+def PyPISource(*, filename, label, sha256):
+    """Create a PyPISource struct.
+
+    Args:
+        filename(str): The filename of the source.
+        label(str or Label): The label to the source.
+        sha256(str): The sha256 of the source, useful for matching against the `requirements` line.
+
+    Returns:
+        struct with filename(str), label(Label) and sha256(str) attributes
+    """
+    return struct(
+        filename = filename,
+        label = _label(label) if type(label) == type("") else label,
+        sha256 = sha256,
+    )
+
 def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     """Fetch archives for all requirements files using the bazel downloader.
 
     Args:
-        module_ctx: TODO
-        name: prefix of the fetched archive repos
-        whl_overrides: patches to be applied after fetchnig
+        module_ctx: The module_ctx struct from the extension.
+        name: The prefix of the fetched archive repos.
+        whl_overrides: patches to be applied after fetching.
 
     Returns:
-        a dict with the fetched metadata to be used later when creating hub and spoke repos
+        a dict with the fetched metadata to be used later when creating hub and spoke repos.
     """
     all_requirements = []
     indexes = {}
@@ -98,9 +115,9 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 # to get the hermetic interpreter
             )
 
-            files[file.sha256] = struct(
+            files[file.sha256] = PyPISource(
                 filename = filename,
-                label = _label("@{}//:file".format(archive_name)),
+                label = "@{}//:file".format(archive_name),
                 sha256 = file.sha256,
             )
 
@@ -109,14 +126,6 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
             files = files,
         )
 
-    # return a {
-    #    <distribution>: struct(
-    #        metadata = <label for the PyPI simple index metadata>
-    #        files = {
-    #            <sha256>: <label> for the archive
-    #        }
-    #    )
-    # }
     return ret
 
 def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
