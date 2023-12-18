@@ -27,7 +27,7 @@ def _render_alias(name, actual, *, visibility = None):
     ]
 
     if visibility:
-        args.append("visibility = {}".format(render.list(visibility)))
+        args.append("visibility = {},".format(render.list(visibility)))
 
     return "\n".join([
         "alias(",

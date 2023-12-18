@@ -51,9 +51,7 @@ filegroup(
 bzl_library(
     name = "auth_bzl",
     srcs = ["auth.bzl"],
-    deps = [
-        "//python:py_runtime_bzl",
-    ],
+    deps = [":bazel_tools_bzl"],
 )
 
 bzl_library(
