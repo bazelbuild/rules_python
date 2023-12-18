@@ -14,8 +14,8 @@
 
 "TODO"
 
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "get_auth")
 load("//python:versions.bzl", "WINDOWS_NAME")
+load("//python/private:auth.bzl", "get_auth")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
