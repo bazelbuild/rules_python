@@ -466,6 +466,17 @@ Enable this feature in this root module by setting this to True.
 """,
             mandatory = True,
         ),
+        "extra_index_urls": attr.string_list(
+            doc = """\
+Extra index URLs to look up for remaining packages.
+""",
+        ),
+        "index_url": attr.string(
+            default = "https://pypi.org/simple",
+            doc = """\
+The PyPI index URL to fetch the majority of the packages from.
+""",
+        ),
     },
     doc = """\
 Setup multi-platform support for PyPI hub repositories.

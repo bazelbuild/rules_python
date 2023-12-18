@@ -49,59 +49,52 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
         a dict with the fetched metadata to be used later when creating hub and spoke repos.
     """
     enabled = False
+    indexes = []
     for module in module_ctx.modules:
         for attr in module.tags.experimental_target_platforms:
             if not module.is_root:
                 fail("setting target platforms is only supported in root modules")
 
             enabled = attr.enabled
+            for index in [attr.index_url] + attr.extra_index_urls:
+                if index not in indexes:
+                    indexes.append(index)
             break
 
     if not enabled:
         return None
 
-    all_requirements = []
-    indexes = {}
-    for module in module_ctx.modules:
-        for pip_attr in module.tags.parse:
-            extra_args = pip_attr.extra_pip_args
-            for requirements_lock in [
-                pip_attr.requirements_lock,
-                pip_attr.requirements_linux,
-                pip_attr.requirements_darwin,
-                pip_attr.requirements_windows,
-            ]:
-                if not requirements_lock:
-                    continue
-
-                requirements_lock_content = module_ctx.read(requirements_lock)
-                parse_result = parse_requirements(requirements_lock_content)
-                requirements = parse_result.requirements
-                all_requirements.extend([line for _, line in requirements])
-
-                extra_pip_args = extra_args + parse_result.options
-                indexes.update({
-                    index: True
-                    for index in _get_indexes_from_args(extra_pip_args)
-                })
+    requirements_files = [
+        requirements_lock
+        for module in module_ctx.modules
+        for pip_attr in module.tags.parse
+        for requirements_lock in [
+            pip_attr.requirements_lock,
+            pip_attr.requirements_linux,
+            pip_attr.requirements_darwin,
+            pip_attr.requirements_windows,
+        ]
+        if requirements_lock
+    ]
 
     sha256s_by_distribution = {}
-    for requirement in all_requirements:
-        sha256s = [sha.strip() for sha in requirement.split("--hash=sha256:")[1:]]
-        distribution, _, _ = requirement.partition("==")
-        distribution, _, _ = distribution.partition("[")
-        distribution = normalize_name(distribution.strip())
+    for requirements_lock in requirements_files:
+        requirements_lock_content = module_ctx.read(requirements_lock)
+        parse_result = parse_requirements(requirements_lock_content)
+        for distribution, line in parse_result.requirements:
+            sha256s = [sha.strip() for sha in line.split("--hash=sha256:")[1:]]
+            distribution = normalize_name(distribution)
 
-        if distribution not in sha256s_by_distribution:
-            sha256s_by_distribution[distribution] = {}
+            if distribution not in sha256s_by_distribution:
+                sha256s_by_distribution[distribution] = {}
 
-        for sha in sha256s:
-            sha256s_by_distribution[distribution][sha] = True
+            for sha in sha256s:
+                sha256s_by_distribution[distribution][sha] = True
 
     metadata = _fetch_metadata(
         module_ctx,
         sha256s_by_distribution = sha256s_by_distribution,
-        indexes = indexes.keys(),
+        indexes = indexes,
     )
 
     ret = {}
@@ -151,7 +144,16 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
 
     for i, index_url in enumerate(indexes):
         # Fetch from each index one by one so that we could do less work when fetching from the next index.
-        got_urls = _fetch_urls_from_index(module_ctx, index_url, want, "index-{}".format(i))
+        download_kwargs = {}
+
+        got_urls = _fetch_urls_from_index(
+            module_ctx,
+            index_url = index_url,
+            need_to_download = want,
+            fname_prefix = "index-{}".format(i),
+            block = bazel_features.external_deps.download_has_block_param,
+            **download_kwargs
+        )
 
         for distribution, shas in got_urls.items():
             if distribution not in got:
@@ -180,43 +182,39 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
         for distribution, urls in got.items()
     }
 
-def _fetch_urls_from_index(module_ctx, index_url, need_to_download, fname_prefix = "pypi"):
-    download_kwargs = {}
-
-    has_non_blocking_downloads = bazel_features.external_deps.download_has_block_param
-    if has_non_blocking_downloads:
+def _fetch_urls_from_index(module_ctx, *, index_url, need_to_download, fname_prefix, block = True, **download_kwargs):
+    if not block:
         download_kwargs["block"] = False
 
     downloads = {}
     for distribution in need_to_download:
         downloads[distribution] = {}
-        html = "{}-{}.html".format(fname_prefix, distribution)
+        fname = "{}-{}.html".format(fname_prefix, distribution)
         download = module_ctx.download(
             url = index_url + "/" + distribution,
-            output = html,
+            output = fname,
             **download_kwargs
         )
 
-        if not has_non_blocking_downloads and not download.success:
+        if not block:
+            downloads[distribution] = (download, fname)
+        elif not download.success:
             fail(download)
-
-        if has_non_blocking_downloads:
-            downloads[distribution] = (download, html)
         else:
-            downloads[distribution] = html
+            downloads[distribution] = fname
 
-    if has_non_blocking_downloads:
-        for distribution, (download, html) in downloads.items():
+    if not block:
+        for distribution, (download, fname) in downloads.items():
             result = download.wait()
             if not result.success:
                 fail(result)
 
-            downloads[distribution] = html
+            downloads[distribution] = fname
 
     got_urls = {}
-    for distribution, html in downloads.items():
+    for distribution, fname in downloads.items():
         got_urls[distribution] = {}
-        contents = module_ctx.read(html)
+        contents = module_ctx.read(fname)
         got_shas = _parse_simple_api(contents, need_to_download[distribution])
         for sha256, url in got_shas:
             got_urls[distribution][sha256] = url
@@ -237,33 +235,3 @@ def _parse_simple_api(html, want_shas):
         got.append((sha256, url))
 
     return got
-
-def _get_indexes_from_args(args):
-    indexes = {"https://pypi.org/simple": True}
-    next_is_index = False
-    for arg in args:
-        arg = arg.strip()
-        if next_is_index:
-            next_is_index = False
-            index = arg.strip("/")
-            if index not in indexes:
-                indexes.append(index)
-
-            continue
-
-        if arg in ["--index-url", "-i", "--extra-index-url"]:
-            next_is_index = True
-            continue
-
-        if "=" not in arg:
-            continue
-
-        index = None
-        for index_arg_prefix in ["--index-url=", "--extra-index-url="]:
-            if arg.startswith(index_arg_prefix):
-                index = arg[len(index_arg_prefix):]
-                break
-
-        indexes[index] = True
-
-    return indexes.keys()

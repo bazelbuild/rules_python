@@ -47,6 +47,12 @@ use_repo(python, "python_3_10", "python_3_9", "python_versions")
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.experimental_target_platforms(
     enabled = True,
+    # Specify PyPI indexes in the order of preference. If the package is not found in the first
+    # index, it will be looked up in the next one, which means that it makes it useful to order
+    # the index URLs by the number of packages it contains.
+    extra_index_urls = [],
+    # Specify the main PyPI index URL to use. This is value the default.
+    index_url = "https://pypi.org/simple",
 )
 
 # Call whl_mods.create for the requests package.
