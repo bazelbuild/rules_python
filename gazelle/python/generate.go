@@ -238,9 +238,13 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		if !hasPyBinaryEntryPointFile {
-			sort.Strings(mainModules)
 			// Creating one py_binary target per main module when __main__.py doesn't exist.
-			for _, filename := range mainModules {
+			mainFileNames := make([]string, 0, len(mainModules))
+			for name := range mainModules {
+				mainFileNames = append(mainFileNames, name)
+			}
+			sort.Strings(mainFileNames)
+			for _, filename := range mainFileNames {
 				pyBinaryTargetName := strings.TrimSuffix(filepath.Base(filename), ".py")
 				if err := ensureNoCollision(args.File, pyBinaryTargetName, actualPyBinaryKind); err != nil {
 					fqTarget := label.New("", args.Rel, pyBinaryTargetName)
@@ -248,13 +252,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						fqTarget.String(), actualPyBinaryKind, err)
 					continue
 				}
-				binaryDeps := allDeps.Select(func(index int, value interface{}) bool {
-					return value.(module).Filepath == filepath.Join(args.Rel, filename)
-				})
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 					addVisibility(visibility).
 					addSrc(filename).
-					addModuleDependencies(binaryDeps).
+					addModuleDependencies(mainModules[filename]).
 					generateImportsAttribute().build()
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
