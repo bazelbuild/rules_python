@@ -153,13 +153,14 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
     for i, index_url in enumerate(indexes):
         # Fetch from each index one by one so that we could do less work when fetching from the next index.
         download_kwargs = {}
+        if bazel_features.external_deps.download_has_block_param:
+            download_kwargs["block"] = False
 
         got_urls = _fetch_urls_from_index(
             module_ctx,
             index_url = index_url,
             need_to_download = want,
             fname_prefix = "index-{}".format(i),
-            block = bazel_features.external_deps.download_has_block_param,
             **download_kwargs
         )
 
@@ -190,10 +191,7 @@ def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
         for distribution, urls in got.items()
     }
 
-def _fetch_urls_from_index(module_ctx, *, index_url, need_to_download, fname_prefix, block = True, **download_kwargs):
-    if not block:
-        download_kwargs["block"] = False
-
+def _fetch_urls_from_index(module_ctx, *, index_url, need_to_download, fname_prefix, **download_kwargs):
     downloads = {}
     for distribution in need_to_download:
         downloads[distribution] = {}
@@ -204,14 +202,14 @@ def _fetch_urls_from_index(module_ctx, *, index_url, need_to_download, fname_pre
             **download_kwargs
         )
 
-        if not block:
+        if not download_kwargs.get("block", True):
             downloads[distribution] = (download, fname)
         elif not download.success:
             fail(download)
         else:
             downloads[distribution] = fname
 
-    if not block:
+    if not download_kwargs.get("block", True):
         for distribution, (download, fname) in downloads.items():
             result = download.wait()
             if not result.success:
