@@ -22,6 +22,7 @@ load(
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
+    "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:full_version.bzl", "full_version")
@@ -150,7 +151,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
-        multiarch_whl_library(
+        common_args = dict(
             name = "%s_%s" % (pip_name, whl_name),
             requirement = requirement_line,
             repo = pip_name,
@@ -173,8 +174,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
             environment = pip_attr.environment,
             group_name = group_name,
             group_deps = group_deps,
-            files = files[whl_name],
         )
+
+        if files:
+            multiarch_whl_library(files = files[whl_name], **common_args)
+        else:
+            whl_library(**common_args)
 
         if hub_name not in whl_map:
             whl_map[hub_name] = {}
@@ -282,6 +287,7 @@ def _pip_impl(module_ctx):
 
                 whl_overrides[whl_name][patch].whls.append(attr.file)
 
+    # TODO @aignas 2023-12-18: figure out how to make the behaviour switchable
     files = whl_files_from_requirements(
         module_ctx = module_ctx,
         name = "pypi_whl",
