@@ -4,7 +4,7 @@
 #
 #    bazel run //:requirements.update
 #
---extra-index-url https://pypi.python.org/simple/
+--extra-index-url https://pypi.org/simple/
 
 certifi==2023.7.22 \
     --hash=sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082 \

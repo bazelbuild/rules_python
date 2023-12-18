@@ -76,7 +76,9 @@ def _resolve_python_interpreter(rctx):
 
     Args:
         rctx: Handle to the rule repository context.
-    Returns: Python interpreter path.
+
+    Returns:
+        `path` object, for the resolved path to the Python interpreter.
     """
     python_interpreter = _get_python_interpreter_attr(rctx)
 
@@ -91,10 +93,13 @@ def _resolve_python_interpreter(rctx):
             if os == WINDOWS_NAME:
                 python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
+        # It's a plain command, e.g. "python3", to look up in the environment.
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
         python_interpreter = found_python_interpreter
+    else:
+        python_interpreter = rctx.path(python_interpreter)
     return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
