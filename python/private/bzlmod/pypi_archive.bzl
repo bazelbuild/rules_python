@@ -14,10 +14,14 @@
 
 "TODO"
 
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "get_auth")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
+
+_HTTP_FILE_DOC = """See documentation for the attribute with the same name
+in [http_file docs](https://bazel.build/rules/lib/repo/http#http_file document)."""
 
 def _impl(rctx):
     prefix, _, _ = rctx.attr.name.rpartition("_")
@@ -25,27 +29,30 @@ def _impl(rctx):
 
     _, _, filename = rctx.attr.urls[0].rpartition("/")
     filename = filename.strip()
-    result = rctx.download(url = rctx.attr.urls, output = filename, sha256 = rctx.attr.sha256)
+
+    urls = rctx.attr.urls
+    auth = get_auth(rctx, urls)
+
+    result = rctx.download(
+        url = urls,
+        output = filename,
+        sha256 = rctx.attr.sha256,
+        auth = auth,
+        canonical_id = rctx.attr.canonical_id,
+        integrity = rctx.attr.integrity,
+    )
     if not result.success:
         fail(result)
 
     whl_path = rctx.path(filename)
 
     if rctx.attr.patches:
-        patches = {}
-        for patch_file, json_args in rctx.attr.patches.items():
-            # TODO @aignas 2023-12-15: expect to just get patches
-            patch_dst = struct(**json.decode(json_args))
-            if whl_path.basename in patch_dst.whls:
-                patches[patch_file] = patch_dst.patch_strip
-
         whl_path = patch_whl(
             rctx,
             python_interpreter = _resolve_python_interpreter(rctx),
             whl_path = whl_path,
-            patches = patches,
+            patches = rctx.attr.patches,
             quiet = rctx.attr.quiet,
-            timeout = rctx.attr.timeout,
         )
 
     rctx.symlink(whl_path, "file")
@@ -61,24 +68,27 @@ filegroup(
 """.format(filename = whl_path.basename),
     )
 
+_pypi_file_attrs = {
+    "auth_patterns": attr.string_dict(doc = _HTTP_FILE_DOC),
+    "canonical_id": attr.string(doc = _HTTP_FILE_DOC),
+    "integrity": attr.string(doc = _HTTP_FILE_DOC),
+    "netrc": attr.string(doc = _HTTP_FILE_DOC),
+    "patches": attr.label_keyed_string_dict(
+        doc = """\
+A label-keyed-string dict that has patch_strip as the value and the patch to be applied as
+a label. The patches are applied in the same order as they are listed in the dictionary.
+""",
+    ),
+    "python_interpreter": attr.string(doc = "The python interpreter to use when patching"),
+    "python_interpreter_target": attr.label(doc = "The python interpreter target to use when patching"),
+    "quiet": attr.bool(doc = "Silence the stdout/stdeer during patching", default = True),
+    "sha256": attr.string(doc = _HTTP_FILE_DOC),
+    "urls": attr.string_list(doc = _HTTP_FILE_DOC),
+}
+
 pypi_file = repository_rule(
-    attrs = {
-        "patches": attr.label_keyed_string_dict(
-            doc = """"a label-keyed-string dict that has
-                json.encode(struct([whl_file], patch_strip]) as values. This
-                is to maintain flexibility and correct bzlmod extension interface
-                until we have a better way to define whl_library and move whl
-                patching to a separate place. INTERNAL USE ONLY.""",
-        ),
-        "python_interpreter": attr.string(),
-        "python_interpreter_target": attr.label(),
-        "quiet": attr.bool(default = True),
-        "sha256": attr.string(mandatory = False),
-        "timeout": attr.int(default = 60),
-        "urls": attr.string_list(mandatory = True),
-        # TODO @aignas 2023-12-16: an arg to keep or not the original wheel
-    },
-    doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
+    attrs = _pypi_file_attrs,
+    doc = """A rule for downloading a single file from a PyPI like index.""",
     implementation = _impl,
 )
 

@@ -157,10 +157,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
             repo = pip_name,
             repo_prefix = pip_name + "_",
             annotation = annotation,
-            whl_patches = {
-                p: json.encode(args)
-                for p, args in whl_overrides.get(whl_name, {}).items()
-            },
             experimental_target_platforms = pip_attr.experimental_target_platforms,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
@@ -177,9 +173,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         )
 
         if files:
-            multiarch_whl_library(files = files[whl_name], **common_args)
+            multiarch_whl_library(
+                files = files[whl_name],
+                # patching is done in whl_files_from_requirements
+                **common_args
+            )
         else:
-            whl_library(**common_args)
+            whl_library(
+                whl_patches = {
+                    p: json.encode(args)
+                    for p, args in whl_overrides.get(whl_name, {}).items()
+                },
+                **common_args
+            )
 
         if hub_name not in whl_map:
             whl_map[hub_name] = {}

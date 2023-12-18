@@ -106,15 +106,23 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
             _, _, filename = file.url.rpartition("/")
             archive_name = "{}_{}_{}".format(name, distribution, file.sha256[:6])
 
-            # We would use http_file, but we are passing the URL to use via a file,
+            # We could use http_file, but we want to also be able to patch the whl
+            # file, which is something http_file does not know how to do.
             # if the url is known (in case of using pdm lock), we could use an
             # http_file.
+
             pypi_file(
                 name = archive_name,
                 sha256 = file.sha256,
+                # FIXME @aignas 2023-12-18: consider if we should replace this
+                # with http_file + whl_library from pycross that philsc is
+                # working on. In the long term, it may be easier to maintain, especially
+                # since this implementation needs to copy functionality around credential
+                # helpers, etc to be useful.
                 patches = {
-                    p: json.encode(args)
-                    for p, args in whl_overrides.get(distribution, {}).items()
+                    patch_file: patch_dst.patch_strip
+                    for patch_file, patch_dst in whl_overrides.get(distribution, {}).items()
+                    if filename in patch_dst.whls
                 },
                 urls = [file.url],
                 # FIXME @aignas 2023-12-15: add usage of the DEFAULT_PYTHON_VERSION
