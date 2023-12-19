@@ -23,23 +23,15 @@ RUNFILES = runfiles.Create()
 class TestPyWheelLibrary(unittest.TestCase):
     def setUp(self):
         self.extraction_dir = Path(
-            RUNFILES.Rlocation("rules_python/tests/pycross/extracted_wheel_for_testing")
+            RUNFILES.Rlocation("rules_python/tests/pycross/patched_extracted_wheel_for_testing")
         )
         self.assertTrue(self.extraction_dir.exists(), self.extraction_dir)
         self.assertTrue(self.extraction_dir.is_dir(), self.extraction_dir)
 
-    def test_file_presence(self):
-        """Validate that the basic file layout looks good."""
-        for path in (
-            "bin/f2py",
-            "site-packages/numpy.libs/libgfortran-daac5196.so.5.0.0",
-            "site-packages/numpy/dtypes.py",
-            "site-packages/numpy/core/_umath_tests.cpython-311-aarch64-linux-gnu.so",
-        ):
-            print(self.extraction_dir / path)
-            self.assertTrue(
-                (self.extraction_dir / path).exists(), f"{path} does not exist"
-            )
+    def test_patched_file_contents(self):
+        """Validate that the patch got applied correctly."""
+        file = self.extraction_dir / "site-packages/numpy/file_added_via_patch.txt"
+        self.assertEqual(file.read_text(), "Hello from a patch!\n")
 
 
 if __name__ == "__main__":
