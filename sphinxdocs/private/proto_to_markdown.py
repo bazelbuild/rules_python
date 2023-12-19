@@ -4,7 +4,7 @@ import itertools
 import pathlib
 import sys
 import textwrap
-from typing import Sequence, TypeVar
+from typing import Callable, TextIO, TypeVar
 
 from stardoc.proto import stardoc_output_pb2
 
@@ -52,13 +52,18 @@ def _indent_block_text(text: str) -> str:
     return text.strip().replace("\n", "\n  ")
 
 
-def _position_iter(values: Sequence[_T]) -> tuple[bool, bool, _T]:
+def _position_iter(values: list[_T]) -> tuple[bool, bool, _T]:
     for i, value in enumerate(values):
         yield i == 0, i == len(values) - 1, value
 
 
 class MySTRenderer:
-    def __init__(self, module, out_stream, public_load_path):
+    def __init__(
+        self,
+        module: stardoc_output_pb2.ModuleInfo,
+        out_stream: TextIO,
+        public_load_path: str,
+    ):
         self._module = module
         self._out_stream = out_stream
         self._public_load_path = public_load_path
@@ -66,7 +71,7 @@ class MySTRenderer:
     def render(self):
         self._render_module(self._module)
 
-    def _render_module(self, module):
+    def _render_module(self, module: stardoc_output_pb2.ModuleInfo):
         if self._public_load_path:
             bzl_path = self._public_load_path
         else:
@@ -100,7 +105,7 @@ class MySTRenderer:
             func(obj)
             self._write("\n")
 
-    def _render_aspect(self, aspect):
+    def _render_aspect(self, aspect: stardoc_output_pb2.AspectInfo):
         aspect_anchor = _anchor_id(aspect.aspect_name)
         self._write(
             _block_attrs(".starlark-object"),
@@ -116,7 +121,7 @@ class MySTRenderer:
             self._render_attributes(aspect_anchor, aspect.attribute)
         self._write("\n")
 
-    def _render_module_extension(self, mod_ext):
+    def _render_module_extension(self, mod_ext: stardoc_output_pb2.ModuleExtensionInfo):
         self._write(
             _block_attrs(".starlark-object"),
             f"## {mod_ext.extension_name}\n\n",
@@ -144,7 +149,7 @@ class MySTRenderer:
             self._render_attributes(tag_anchor, tag.attribute)
             self._write("\n")
 
-    def _render_repository_rule(self, repo_rule):
+    def _render_repository_rule(self, repo_rule: stardoc_output_pb2.RepositoryRuleInfo):
         self._write(
             _block_attrs(".starlark-object"),
             f"## {repo_rule.rule_name}\n\n",
@@ -170,7 +175,7 @@ class MySTRenderer:
                 self._write(f"* `{name}`\n")
         self._write("\n")
 
-    def _render_rule(self, rule):
+    def _render_rule(self, rule: stardoc_output_pb2.RuleInfo):
         rule_name = rule.rule_name
         rule_anchor = _anchor_id(rule_name)
         self._write(
@@ -190,26 +195,7 @@ class MySTRenderer:
         if rule.attribute:
             self._render_attributes(rule_anchor, rule.attribute)
 
-    def _rule_attr_type_string(self, attr):
-        """
-            enum AttributeType {
-          UNKNOWN = 0;
-          // A special case of STRING; all rules have exactly one implicit
-          // attribute "name" of type NAME.
-          NAME = 1;
-          INT = 2;
-          LABEL = 3;
-          STRING = 4;
-          STRING_LIST = 5;
-          INT_LIST = 6;
-          LABEL_LIST = 7;
-          BOOLEAN = 8;
-          LABEL_STRING_DICT = 9;
-          STRING_DICT = 10;
-          STRING_LIST_DICT = 11;
-          OUTPUT = 12;
-          OUTPUT_LIST = 13;
-        }"""
+    def _rule_attr_type_string(self, attr: stardoc_output_pb2.AttributeInfo) -> str:
         if attr.type == _AttributeType.NAME:
             return _link("Name", ref="target-name")
         elif attr.type == _AttributeType.INT:
@@ -247,7 +233,7 @@ class MySTRenderer:
             # Rather than error, give some somewhat understandable value.
             return _AttributeType.Name(attr.type)
 
-    def _render_func(self, func):
+    def _render_func(self, func: stardoc_output_pb2.StarlarkFunctionInfo):
         func_name = func.function_name
         func_anchor = _anchor_id(func_name)
         self._write(
@@ -304,7 +290,7 @@ class MySTRenderer:
                 "\n\n**DEPRECATED**\n\n", func.deprecated.doc_string.strip(), "\n"
             )
 
-    def _render_provider(self, provider):
+    def _render_provider(self, provider: stardoc_output_pb2.ProviderInfo):
         self._write(
             _block_attrs(".starlark-object"),
             f"## {provider.provider_name}\n\n",
@@ -339,7 +325,9 @@ class MySTRenderer:
                 )
             self._render_field_list(entries)
 
-    def _render_attributes(self, base_anchor, attributes):
+    def _render_attributes(
+        self, base_anchor: str, attributes: list[stardoc_output_pb2.AttributeInfo]
+    ):
         self._write(
             _block_attrs(f"{base_anchor}_attributes"),
             "**ATTRIBUTES** ",
@@ -364,7 +352,13 @@ class MySTRenderer:
         self._render_field_list(entries)
 
     def _render_signature(
-        self, name, base_anchor, parameters, *, get_name, get_default=lambda v: None
+        self,
+        name: str,
+        base_anchor: str,
+        parameters: list[_T],
+        *,
+        get_name: Callable[_T, str],
+        get_default: Callable[_T, str] = lambda v: None,
     ):
         self._write(_block_attrs(".starlark-signature"), name, "(")
         for _, is_last, param in _position_iter(parameters):
@@ -377,7 +371,14 @@ class MySTRenderer:
                 self._write(",\n")
         self._write(")\n\n")
 
-    def _render_field_list(self, entries):
+    def _render_field_list(self, entries: list[list[str]]):
+        """Render a list of field lists.
+
+        Args:
+            entries: list of field list entries. Each element is 3
+                pieces: an anchor, field description, and one or more
+                text strings for the body of the field list entry.
+        """
         for anchor, description, *body_pieces in entries:
             body_pieces = [_block_attrs(anchor), *body_pieces]
             self._write(
@@ -389,18 +390,22 @@ class MySTRenderer:
                 "\n",
             )
 
-    def _write(self, *lines):
+    def _write(self, *lines: str):
         self._out_stream.writelines(lines)
 
 
-def _convert(*, proto_path, output_path, footer_path, public_load_path):
-    if footer_path:
-        footer_content = pathlib.Path(footer_path).read_text()
+def _convert(
+    *,
+    proto: pathlib.Path,
+    output: pathlib.Path,
+    footer: pathlib.Path,
+    public_load_path: str,
+):
+    if footer:
+        footer_content = footer.read_text()
 
-    module = stardoc_output_pb2.ModuleInfo.FromString(
-        pathlib.Path(proto_path).read_bytes()
-    )
-    with pathlib.Path(output_path).open("wt", encoding="utf8") as out_stream:
+    module = stardoc_output_pb2.ModuleInfo.FromString(proto.read_bytes())
+    with output.open("wt", encoding="utf8") as out_stream:
         MySTRenderer(module, out_stream, public_load_path).render()
         out_stream.write(footer_content)
 
@@ -417,9 +422,9 @@ def _create_parser():
 def main(args):
     options = _create_parser().parse_args(args)
     _convert(
-        proto_path=options.proto,
-        output_path=options.output,
-        footer_path=options.footer,
+        proto=options.proto,
+        output=options.output,
+        footer=options.footer,
         public_load_path=options.public_load_path,
     )
     return 0
