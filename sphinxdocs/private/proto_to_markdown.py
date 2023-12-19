@@ -26,6 +26,7 @@ _AttributeType = stardoc_output_pb2.AttributeType
 
 _T = TypeVar("_T")
 
+
 def _anchor_id(text: str) -> str:
     # MyST/Sphinx's markdown processing doesn't like dots in anchor ids.
     return "#" + text.replace(".", "_").lower()
@@ -63,6 +64,15 @@ def _inline_anchor(anchor: str) -> str:
 
 def _indent_block_text(text: str) -> str:
     return text.strip().replace("\n", "\n  ")
+
+
+def _join_csv_and(values: list[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+
+    values = list(values)
+    values[-1] = "and " + values[-1]
+    return ", ".join(values)
 
 
 def _position_iter(values: list[_T]) -> tuple[bool, bool, _T]:
@@ -371,14 +381,15 @@ class _MySTRenderer:
                 if len(provider_group.provider_name) == 1:
                     providers_parts.append(provider_group.provider_name[0])
                 else:
-                    providers_parts.extend([
-                            "all of ",
-                    ", ".join(provider_group.provider_name)
-                    ])
+                    providers_parts.extend(
+                        ["all of ", _join_csv_and(provider_group.provider_name)]
+                    )
             elif len(attr.provider_name_group) > 1:
                 providers_parts.append("any of \n")
                 for group in attr.provider_name_group:
-                    provider_parts.extend(["* ", ", ".join(group.provider_name), "\n"])
+                    providers_parts.extend(["* ", _join_csv_and(group.provider_name)])
+            if providers_parts:
+                providers_parts.append("\n")
 
             entries.append(
                 [
