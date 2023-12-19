@@ -320,6 +320,32 @@ def _test_system_interpreter_must_be_absolute_impl(env, target):
 
 _tests.append(_test_system_interpreter_must_be_absolute)
 
+def _test_interpreter_sh_binary_target(name):
+    native.sh_binary(
+        name = "built_interpreter",
+        srcs = [":pretend_binary"],
+    )
+
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        interpreter = ":built_interpreter",
+        python_version = "PY3",
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_interpreter_sh_binary_target_impl,
+    )
+
+def _test_interpreter_sh_binary_target_impl(env, target):
+    env.expect.that_target(target).provider(
+        PyRuntimeInfo,
+        factory = py_runtime_info_subject,
+    ).interpreter_path().equals(None)
+
+_tests.append(_test_interpreter_sh_binary_target)
+
 def py_runtime_test_suite(name):
     test_suite(
         name = name,
