@@ -26,7 +26,6 @@ _AttributeType = stardoc_output_pb2.AttributeType
 
 _T = TypeVar("_T")
 
-
 def _anchor_id(text: str) -> str:
     # MyST/Sphinx's markdown processing doesn't like dots in anchor ids.
     return "#" + text.replace(".", "_").lower()
@@ -207,7 +206,14 @@ class _MySTRenderer:
 
         self._write(rule.doc_string.strip(), "\n\n")
 
-        # todo: print advertised_providers
+        if len(rule.advertised_providers.provider_name) == 0:
+            self._write("_Provides_: no providers advertised.")
+        else:
+            self._write(
+                "_Provides_: ",
+                ", ".join(rule.advertised_providers.provider_name),
+            )
+        self._write("\n\n")
 
         if rule.attribute:
             self._render_attributes(rule_anchor, rule.attribute)
@@ -353,18 +359,34 @@ class _MySTRenderer:
         )
         entries = []
         for attr in attributes:
-            # todo: printer provider_name_group
             anchor = f"{base_anchor}_{attr.name}"
             required = "required" if attr.mandatory else "optional"
             attr_type = self._rule_attr_type_string(attr)
             default = f", default `{attr.default_value}`" if attr.default_value else ""
-            # The text has to be indented to be associated with the block correctly.
+            providers_parts = []
+            if attr.provider_name_group:
+                providers_parts.append("\n\n_Required providers_: ")
+            if len(attr.provider_name_group) == 1:
+                provider_group = attr.provider_name_group[0]
+                if len(provider_group.provider_name) == 1:
+                    providers_parts.append(provider_group.provider_name[0])
+                else:
+                    providers_parts.extend([
+                            "all of ",
+                    ", ".join(provider_group.provider_name)
+                    ])
+            elif len(attr.provider_name_group) > 1:
+                providers_parts.append("any of \n")
+                for group in attr.provider_name_group:
+                    provider_parts.extend(["* ", ", ".join(group.provider_name), "\n"])
+
             entries.append(
                 [
                     anchor,
                     attr.name,
                     f"_({required} {attr_type}{default})_\n",
                     attr.doc_string,
+                    *providers_parts,
                 ]
             )
         self._render_field_list(entries)
@@ -407,6 +429,9 @@ class _MySTRenderer:
                 "".join(body_pieces).strip().replace("\n", "\n  "),
                 "\n",
             )
+        # Ensure there is an empty line after the field list, otherwise
+        # the next line of content will fold into the field list
+        self._write("\n")
 
     def _write(self, *lines: str):
         self._out_stream.writelines(lines)
