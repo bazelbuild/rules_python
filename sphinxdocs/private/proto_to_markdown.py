@@ -407,9 +407,9 @@ def _convert(*, proto_path, output_path, footer_path, public_load_path):
 
 def _create_parser():
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
-    parser.add_argument("--footer", dest="footer")
-    parser.add_argument("--proto", dest="proto")
-    parser.add_argument("--output", dest="output")
+    parser.add_argument("--footer", dest="footer", type=pathlib.Path)
+    parser.add_argument("--proto", dest="proto", type=pathlib.Path)
+    parser.add_argument("--output", dest="output", type=pathlib.Path)
     parser.add_argument("--public-load-path", dest="public_load_path")
     return parser
 
