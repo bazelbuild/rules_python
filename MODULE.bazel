@@ -49,3 +49,12 @@ use_repo(
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 use_repo(python, "pythons_hub")
+
+# Necessary so that some toolchain is available so that the Python rules
+# work in some minimal capacity.
+# The @bazel_tools repo depends on rules_python, so expects rules_python
+# to register a toolchain. @bazel_tools can't register a Python toolchain
+# itself because @bazel_tools will typically come sooner in the module
+# graph BFS order (it is an implicit dep of every module), and would thus
+# override any toolchain rules_python registers.
+register_toolchains("@bazel_tools//tools/python:autodetecting_toolchain")
