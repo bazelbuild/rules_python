@@ -27,16 +27,28 @@ from python.runfiles import runfiles
 class PipWhlModsTest(unittest.TestCase):
     maxDiff = None
 
+    @staticmethod
+    def _get_bazel_pkg_dir_name(env_var: str) -> str:
+        a_file = Path(os.environ.get(env_var).split(" ")[0])
+        head = a_file
+        while head.parent.name:
+            head = head.parent
+
+        return head.name
+
+    @classmethod
+    def setUpClass(cls):
+        cls._wheel_pkg_dir = cls._get_bazel_pkg_dir_name("WHEEL_PKG")
+        cls._requests_pkg_dir = cls._get_bazel_pkg_dir_name("REQUESTS_PKG")
+
     def wheel_pkg_dir(self) -> Path:
-        distinfo = os.environ.get("WHEEL_DISTINFO")
-        self.assertIsNotNone(distinfo)
-        return Path(distinfo.split(" ")[0]).parents[2].name
+        return self._wheel_pkg
 
     def test_build_content_and_data(self):
         r = runfiles.Create()
         rpath = r.Rlocation(
             "{}/generated_file.txt".format(
-                self.wheel_pkg_dir(),
+                self._wheel_pkg_dir,
             ),
         )
         generated_file = Path(rpath)
@@ -49,7 +61,7 @@ class PipWhlModsTest(unittest.TestCase):
         r = runfiles.Create()
         rpath = r.Rlocation(
             "{}/copied_content/file.txt".format(
-                self.wheel_pkg_dir(),
+                self._wheel_pkg_dir,
             )
         )
         copied_file = Path(rpath)
@@ -66,7 +78,7 @@ class PipWhlModsTest(unittest.TestCase):
         r = runfiles.Create()
         rpath = r.Rlocation(
             "{}/copied_content/{}".format(
-                self.wheel_pkg_dir(),
+                self._wheel_pkg_dir,
                 executable_name,
             )
         )
@@ -87,7 +99,7 @@ class PipWhlModsTest(unittest.TestCase):
 
         r = runfiles.Create()
         dist_info_dir = "{}/site-packages/wheel-{}.dist-info".format(
-            self.wheel_pkg_dir(),
+            self._wheel_pkg_dir,
             current_wheel_version,
         )
 
@@ -98,13 +110,10 @@ class PipWhlModsTest(unittest.TestCase):
         # However, `WHEEL` was explicitly excluded, so it should be missing
         wheel_path = r.Rlocation("{}/WHEEL".format(dist_info_dir))
 
-        self.assertTrue(Path(metadata_path).exists())
-        self.assertFalse(Path(wheel_path).exists())
-
-    def requests_pkg_dir(self) -> Path:
-        distinfo = os.environ.get("REQUESTS_DISTINFO")
-        self.assertIsNotNone(distinfo)
-        return Path(distinfo.split(" ")[0]).parents[2].name
+        self.assertTrue(Path(metadata_path).exists(), f"Could not find {metadata_path}")
+        self.assertFalse(
+            Path(wheel_path).exists(), f"Expected to not find {wheel_path}"
+        )
 
     def test_extra(self):
         # This test verifies that annotations work correctly for pip packages with extras
@@ -112,7 +121,7 @@ class PipWhlModsTest(unittest.TestCase):
         r = runfiles.Create()
         rpath = r.Rlocation(
             "{}/generated_file.txt".format(
-                self.requests_pkg_dir(),
+                self._requests_pkg_dir,
             ),
         )
         generated_file = Path(rpath)
