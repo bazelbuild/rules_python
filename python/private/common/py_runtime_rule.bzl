@@ -25,7 +25,7 @@ _py_builtins = py_internal
 
 def _py_runtime_impl(ctx):
     interpreter_path = ctx.attr.interpreter_path or None  # Convert empty string to None
-    interpreter = ctx.attr.interpreter or None
+    interpreter = ctx.attr.interpreter
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of the 'interpreter' or 'interpreter_path' attributes must be specified")
 
@@ -43,22 +43,19 @@ def _py_runtime_impl(ctx):
         if not paths.is_absolute(interpreter_path):
             fail("interpreter_path must be an absolute path")
     else:
-        interpreter_di = ctx.attr.interpreter[DefaultInfo]
+        interpreter_di = interpreter[DefaultInfo]
 
         if _is_singleton_depset(interpreter_di.files):
             interpreter = interpreter_di.files.to_list()[0]
         elif interpreter_di.files_to_run and interpreter_di.files_to_run.executable:
             interpreter = interpreter_di.files_to_run.executable
-            runfiles.merge(interpreter_di.default_runfiles)
+            runfiles = runfiles.merge(interpreter_di.default_runfiles)
 
-            runtime_files = depset(
-                direct = [interpreter_di.files_to_run.runfiles_manifest, interpreter_di.files_to_run.repo_mapping_manifest],
-                transitive = [
-                    interpreter_di.files,
-                    interpreter_di.default_runfiles.files,
-                    runtime_files,
-                ],
-            )
+            runtime_files = depset(transitive = [
+                interpreter_di.files,
+                interpreter_di.default_runfiles.files,
+                runtime_files,
+            ])
         else:
             fail("interpreter must be an executable target or must product exactly one file.")
 
@@ -207,6 +204,9 @@ runtime. For a platform runtime this attribute must not be set.
 """,
         ),
         "interpreter": attr.label(
+            # We set `allow_files = True` because users should have
+            # the ability to set this attr to an executable target, such as
+            # a target created by `sh_binary`
             allow_files = True,
             doc = """
 For an in-build runtime, this is the target to invoke as the interpreter. For a
