@@ -283,7 +283,7 @@ class MySTRenderer:
                         f"(_default `{param.default_value}`_) "
                         if param.default_value
                         else "",
-                        param.doc_string if param.doc_string else "_undocumente_",
+                        param.doc_string if param.doc_string else "_undocumented_",
                     ]
                 )
             self._render_field_list(entries)
