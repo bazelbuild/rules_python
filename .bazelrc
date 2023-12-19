@@ -20,9 +20,8 @@ build --incompatible_default_to_explicit_init_py
 build --enable_runfiles
 startup --windows_enable_symlinks
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/bazelbuild/rules_python/issues/1469
-common --noexperimental_enable_bzlmod
+# Make Bazel 6 use bzlmod by default
+common --enable_bzlmod
 
 # Additional config to use for readthedocs builds.
 # See .readthedocs.yml for additional flags that can only be determined from
