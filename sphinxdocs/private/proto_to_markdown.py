@@ -1,3 +1,17 @@
+# Copyright 2023 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import argparse
 import io
 import itertools
@@ -57,7 +71,7 @@ def _position_iter(values: list[_T]) -> tuple[bool, bool, _T]:
         yield i == 0, i == len(values) - 1, value
 
 
-class MySTRenderer:
+class _MySTRenderer:
     def __init__(
         self,
         module: stardoc_output_pb2.ModuleInfo,
@@ -192,6 +206,9 @@ class MySTRenderer:
         )
 
         self._write(rule.doc_string.strip(), "\n\n")
+
+        # todo: print advertised_providers
+
         if rule.attribute:
             self._render_attributes(rule_anchor, rule.attribute)
 
@@ -336,6 +353,7 @@ class MySTRenderer:
         )
         entries = []
         for attr in attributes:
+            # todo: printer provider_name_group
             anchor = f"{base_anchor}_{attr.name}"
             required = "required" if attr.mandatory else "optional"
             attr_type = self._rule_attr_type_string(attr)
@@ -406,7 +424,7 @@ def _convert(
 
     module = stardoc_output_pb2.ModuleInfo.FromString(proto.read_bytes())
     with output.open("wt", encoding="utf8") as out_stream:
-        MySTRenderer(module, out_stream, public_load_path).render()
+        _MySTRenderer(module, out_stream, public_load_path).render()
         out_stream.write(footer_content)
 
 

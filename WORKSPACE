@@ -109,7 +109,7 @@ install_deps()
 # Install sphinx for doc generation.
 
 pip_parse(
-    name = "docs_deps",
+    name = "dev_pip",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -126,7 +126,7 @@ pip_parse(
     requirements_lock = "//docs/sphinx:requirements_linux.txt",
 )
 
-load("@docs_deps//:requirements.bzl", docs_install_deps = "install_deps")
+load("@dev_pip//:requirements.bzl", docs_install_deps = "install_deps")
 
 docs_install_deps()
 
