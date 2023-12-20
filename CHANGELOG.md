@@ -50,7 +50,7 @@ A brief description of the categories of changes:
 ### Added
 
 * (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
-- (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
+* (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
 
