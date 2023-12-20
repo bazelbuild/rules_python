@@ -52,6 +52,9 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
+* (bzlmod python.toolchain) Submodules can now (re)register the Python version
+  that rules_python has set as the default.
+  ([#1638](https://github.com/bazelbuild/rules_python/issues/1638))
 * (whl_library) Actually use the provided patches to patch the whl_library.
   On Windows the patching may result in files with CRLF line endings, as a result
   the RECORD file consistency requirement is lifted and now a warning is emitted
