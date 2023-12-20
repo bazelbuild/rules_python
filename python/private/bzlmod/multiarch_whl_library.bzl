@@ -83,49 +83,7 @@ load(
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
-
-_os_in_tag = {
-    "linux": "linux",
-    "macosx": "osx",
-    "manylinux": "linux",
-    "musllinux": "linux",
-    "win": "windows",
-}
-
-_cpu_in_tag = {
-    "aarch64": "aarch64",
-    "amd64": "x86_64",
-    "arm64": "aarch64",
-    "i386": "x86_32",
-    "i686": "x86_32",
-    "ppc64le": "ppc",
-    "s390x": "s390x",
-    "win32": "x86_32",
-    "x86_64": "x86_64",
-}
-
-def _parse_os_from_tag(platform_tag):
-    for prefix, os in _os_in_tag.items():
-        if platform_tag.startswith(prefix):
-            return os
-
-    fail("cannot get os from platform tag: {}".format(platform_tag))
-
-def _parse_cpu_from_tag(platform_tag):
-    if "universal2" in platform_tag:
-        return ("x86_64", "aarch64")
-
-    for suffix, cpu in _cpu_in_tag.items():
-        if platform_tag.endswith(suffix):
-            return (cpu,)
-
-    fail("cannot get cpu from platform tag: {}".format(platform_tag))
-
-def _parse_platform_tag(platform_tag):
-    os = _parse_os_from_tag(platform_tag)
-
-    cpu = _parse_cpu_from_tag(platform_tag)
-    return os, cpu
+load("//python/private:whl_target_platform.bzl", "whl_target_platform")
 
 def multiarch_whl_library(name, *, requirement, files, **kwargs):
     """Generate a number of third party repos for a particular wheel.
@@ -203,10 +161,8 @@ def _whl_minihub_impl(rctx):
         if abi != whl.abi_tag:
             continue
 
-        os, cpus = _parse_platform_tag(whl.platform_tag)
-
-        for cpu in cpus:
-            platform = "is_{}_{}".format(os, cpu)
+        for p in whl_target_platform(whl.platform_tag):
+            platform = "is_{}_{}".format(p.os, p.cpu)
             select[":" + platform] = tmpl
 
             config_setting = """\
@@ -217,7 +173,7 @@ config_setting(
         "@platforms//os:{os}",
     ],
     visibility = ["//visibility:private"],
-)""".format(platform = platform, cpu = cpu, os = os)
+)""".format(platform = platform, cpu = p.cpu, os = p.os)
             if config_setting not in build_contents:
                 build_contents.append(config_setting)
 
