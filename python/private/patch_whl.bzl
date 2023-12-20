@@ -73,11 +73,15 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         parsed_whl.platform_tag,
     ]))
 
+    record_patch = rctx.path("RECORD.patch")
+
     result = rctx.execute(
         [
             python_interpreter,
             "-m",
             "python.private.repack_whl",
+            "--record-patch",
+            record_patch,
             whl_input,
             whl_patched,
         ],
@@ -96,5 +100,20 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
                 return_code = result.return_code,
             ),
         )
+
+    if record_patch.exists:
+        record_patch_contents = rctx.read(record_patch)
+        warning_msg = """WARNING: the resultant RECORD file of the patch wheel is different
+
+    If you are patching on Windows, you may see this warning because of
+    a known issue (bazelbuild/rules_python#1639) with file endings.
+
+    If you would like to silence the warning, you can apply the patch that is stored in
+      {record_patch}. The contents of the file are below:
+{record_patch_contents}""".format(
+            record_patch = record_patch,
+            record_patch_contents = record_patch_contents,
+        )
+        print(warning_msg)  # buildifier: disable=print
 
     return rctx.path(whl_patched)
