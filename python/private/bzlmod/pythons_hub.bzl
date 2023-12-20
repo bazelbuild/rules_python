@@ -78,7 +78,7 @@ DEFAULT_PYTHON_VERSION = "{default_python_version}"
 """
 
 _line_for_hub_template = """\
-    "{name}": Label("@{name}_{platform}//:{path}"),
+    "{name}": Label("@{name}//:{path}"),
 """
 
 def _hub_repo_impl(rctx):
@@ -99,13 +99,12 @@ def _hub_repo_impl(rctx):
     (os, arch) = get_host_os_arch(rctx)
     platform = get_host_platform(os, arch)
     is_windows = (os == WINDOWS_NAME)
-    path = "python.exe" if is_windows else "bin/python3"
+    path = "python.exe" if is_windows else "python"
 
     # Create a dict that is later used to create
     # a symlink to a interpreter.
     interpreter_labels = "".join([_line_for_hub_template.format(
-        name = name,
-        platform = platform,
+        name = name + "_" + platform,
         path = path,
     ) for name in rctx.attr.toolchain_user_repository_names])
 
@@ -113,6 +112,21 @@ def _hub_repo_impl(rctx):
         "interpreters.bzl",
         _interpreters_bzl_template.format(
             interpreter_labels = interpreter_labels,
+            default_python_version = rctx.attr.default_python_version,
+        ),
+        executable = False,
+    )
+
+    # Create a dict that is later used to create
+    # a symlink to a interpreter.
+    host_interpreter_labels = "".join([_line_for_hub_template.format(
+        name = name,
+        path = "host_python",
+    ) for name in rctx.attr.toolchain_user_repository_names])
+    rctx.file(
+        "host_interpreters.bzl",
+        _interpreters_bzl_template.format(
+            interpreter_labels = host_interpreter_labels,
             default_python_version = rctx.attr.default_python_version,
         ),
         executable = False,

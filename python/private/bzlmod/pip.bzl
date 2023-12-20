@@ -15,7 +15,7 @@
 "pip module extension for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
+load("@pythons_hub//:host_interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
     "group_library",
@@ -87,6 +87,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
 
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
+    #
+    # TODO @aignas 2023-12-20: figure out how to set a parameter that is
+    # not platform specific
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None and not pip_attr.python_interpreter:
         python_name = "python_" + version_label(pip_attr.python_version, sep = "_")

@@ -157,7 +157,7 @@ def _toolchain_aliases_impl(rctx):
 package(default_visibility = ["//visibility:public"])
 load("@rules_python//python:versions.bzl", "gen_python_config_settings")
 gen_python_config_settings()
-exports_files(["defs.bzl"])
+exports_files(["defs.bzl", "host_python"])
 
 PLATFORMS = [
 {loaded_platforms}
@@ -168,7 +168,7 @@ alias(name = "libpython",       actual = select({{":" + item: "@{py_repository}_
 alias(name = "py3_runtime",     actual = select({{":" + item: "@{py_repository}_" + item + "//:py3_runtime" for item in PLATFORMS}}))
 alias(name = "python_headers",  actual = select({{":" + item: "@{py_repository}_" + item + "//:python_headers" for item in PLATFORMS}}))
 alias(name = "python_runtimes", actual = select({{":" + item: "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS}}))
-alias(name = "python3",         actual = select({{":" + item: "@{py_repository}_" + item + "//:" + ("python.exe" if "windows" in item else "bin/python3") for item in PLATFORMS}}))
+alias(name = "python3",         actual = select({{":" + item: "@{py_repository}_" + item + "//:python" for item in PLATFORMS}}))
 """.format(
         py_repository = rctx.attr.user_repository_name,
         loaded_platforms = "\n".join(["    \"{}\",".format(p) for p in rctx.attr.platforms]),
@@ -180,7 +180,17 @@ alias(name = "pip",             actual = select({{":" + item: "@{py_repository}_
             py_repository = rctx.attr.user_repository_name,
             host_platform = host_platform,
         )
+
     rctx.file("BUILD.bazel", build_contents)
+    host_python = rctx.path(
+        Label(
+            "@@{py_repository}_{host_platform}//:python".format(
+                py_repository = rctx.attr.name,
+                host_platform = host_platform,
+            ),
+        ),
+    )
+    rctx.symlink(host_python, "host_python")
 
     # Expose a Starlark file so rules can know what host platform we used and where to find an interpreter
     # when using repository_ctx.path, which doesn't understand aliases.
