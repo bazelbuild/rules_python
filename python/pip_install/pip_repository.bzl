@@ -24,10 +24,12 @@ load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "gener
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
+load("//python/private:whl_target_platform.bzl", "whl_target_platform")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -753,11 +755,22 @@ def _whl_library_impl(rctx):
             timeout = rctx.attr.timeout,
         )
 
+    target_platforms = rctx.attr.experimental_target_platforms
+    if target_platforms:
+        parsed_whl = parse_whl_name(whl_path.basename)
+        if parsed_whl.platform_tag != "any":
+            # NOTE @aignas 2023-12-04: if the wheel is a platform specific
+            # wheel, we only include deps for that target platform
+            target_platforms = [
+                "{}_{}".format(p.os, p.cpu)
+                for p in whl_target_platform(parsed_whl.platform_tag)
+            ]
+
     result = rctx.execute(
         args + [
             "--whl-file",
             whl_path,
-        ] + ["--platform={}".format(p) for p in rctx.attr.experimental_target_platforms],
+        ] + ["--platform={}".format(p) for p in target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,

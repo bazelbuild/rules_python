@@ -1,0 +1,3 @@
+load(":whl_target_platform_tests.bzl", "whl_target_platform_test_suite")
+
+whl_target_platform_test_suite(name = "whl_target_platform_tests")
