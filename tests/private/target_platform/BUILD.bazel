@@ -1,3 +1,0 @@
-load(":target_platform_tests.bzl", "target_platform_test_suite")
-
-target_platform_test_suite(name = "target_platform_tests")

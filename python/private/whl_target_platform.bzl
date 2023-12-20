@@ -39,7 +39,7 @@ _os_prefixes = {
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
 
-def target_platform(tag):
+def whl_target_platform(tag):
     """Parse the wheel platform tag and return (os, cpu) tuples.
 
     Args:

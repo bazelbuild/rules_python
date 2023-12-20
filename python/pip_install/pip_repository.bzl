@@ -27,9 +27,9 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
-load("//python/private:target_platform.bzl", "target_platform")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
+load("//python/private:whl_target_platform.bzl", "whl_target_platform")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -751,7 +751,7 @@ def _whl_library_impl(rctx):
         if parsed_whl.platform_tag != "any":
             target_platforms = [
                 "{}_{}".format(p.os, p.cpu)
-                for p in target_platform(parsed_whl.platform_tag)
+                for p in whl_target_platform(parsed_whl.platform_tag)
             ]
 
     result = rctx.execute(
