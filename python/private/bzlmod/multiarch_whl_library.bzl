@@ -99,6 +99,8 @@ def multiarch_whl_library(name, *, requirement, files, **kwargs):
         for sha in requirement.split("--hash=sha256:")[1:]
     ]
     _, _, want_abi = kwargs.get("repo").rpartition("_")
+
+    # TODO @aignas 2023-12-20: how can we get the ABI that we need for this particular repo? It would be better to not need to resolve it and just add it to the `target_platforms` list for the user to provide.
     want_abi = "cp" + want_abi
     files = {}
     for f in needed_files:
@@ -147,6 +149,9 @@ def _whl_minihub_impl(rctx):
     for plat, filename in rctx.attr.libs.items():
         tmpl = "@{}__{}//:{{target}}".format(prefix, plat)
 
+        # TODO @aignas 2023-12-20: check if we have 'download_only = True' passed
+        # to the `whl_library` and then remove the `sdist` from the select and
+        # add a no_match error message.
         if plat == "sdist":
             select["//conditions:default"] = tmpl
             continue
