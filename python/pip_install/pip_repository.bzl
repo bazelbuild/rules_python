@@ -729,7 +729,7 @@ def _whl_library_impl(rctx):
 
     if rctx.attr.whl_patches:
         patches = {}
-        for patch_file, json_args in patches.items():
+        for patch_file, json_args in rctx.attr.whl_patches.items():
             patch_dst = struct(**json.decode(json_args))
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
