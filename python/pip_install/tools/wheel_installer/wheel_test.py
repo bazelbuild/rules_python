@@ -201,16 +201,21 @@ etils[ecolab] ; extra == "lazy-imports"
 class PlatformTest(unittest.TestCase):
     def test_platform_from_string(self):
         tests = {
-            "win_amd64": "windows_x86_64",
-            "macosx_10_9_arm64": "osx_aarch64",
-            "manylinux1_i686.manylinux_2_17_i686": "linux_x86_32",
-            "musllinux_1_1_ppc64le": "linux_ppc",
+            "win_amd64": ["windows_x86_64"],
+            "macosx_10_9_arm64": ["osx_aarch64"],
+            "manylinux1_i686.manylinux_2_17_i686": ["linux_x86_32"],
+            "musllinux_1_1_ppc64le": ["linux_ppc"],
+            "macosx_10_9_universal2": ["osx_x86_64", "osx_aarch64"],
         }
 
-        for give, want in tests.items():
-            with self.subTest(give=give, want=want):
+        for give, want_platforms in tests.items():
+            with self.subTest(give=give, want_platforms=want_platforms):
                 self.assertEqual(
-                    wheel.Platform.from_string(want)[0],
+                    [
+                        w
+                        for want in want_platforms
+                        for w in wheel.Platform.from_string(want)
+                    ],
                     wheel.Platform.from_tag(give),
                 )
 

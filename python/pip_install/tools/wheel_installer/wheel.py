@@ -66,13 +66,15 @@ class Arch(Enum):
     ppc64le = ppc
 
     @staticmethod
-    def from_tag(tag: str) -> "Arch":
+    def from_tag(tag: str) -> List["Arch"]:
         for s, value in Arch.__members__.items():
             if s in tag:
-                return value
+                return [value]
 
         if tag == "win32":
-            return Arch.x86_32
+            return [Arch.x86_32]
+        elif tag.endswith("universal2") and tag.startswith("macosx"):
+            return [Arch.x86_64, Arch.aarch64]
         else:
             raise ValueError(f"unknown tag: {tag}")
 
@@ -144,10 +146,7 @@ class Platform:
 
     @classmethod
     def from_tag(cls, tag: str) -> "Platform":
-        return cls(
-            os=OS.from_tag(tag),
-            arch=Arch.from_tag(tag),
-        )
+        return [cls(os=OS.from_tag(tag), arch=arch) for arch in Arch.from_tag(tag)]
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
