@@ -20,6 +20,7 @@ A tool that invokes pypa/build to build the given sdist tarball.
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -97,6 +98,29 @@ def main(args: Any) -> None:
 
     setup_namespace_pkg_compatibility(lib_dir)
 
+    if args.patch:
+        if not args.patch_tool and not args.patch_tool_target:
+            raise ValueError("Specify one of 'patch_tool' or 'patch_tool_target'.")
+
+        patch_args = [
+            args.patch_tool or Path.cwd() / args.patch_tool_target
+        ] + args.patch_arg
+        for patch in args.patch:
+            with patch.open("r") as stdin:
+                try:
+                    subprocess.run(
+                        patch_args,
+                        stdin=stdin,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        cwd=args.directory,
+                    )
+                except subprocess.CalledProcessError as error:
+                    print(f"Patch {patch} failed to apply:")
+                    print(error.stdout.decode("utf-8"))
+                    raise
+
 
 def parse_flags(argv) -> Any:
     parser = argparse.ArgumentParser(description="Extract a Python wheel.")
@@ -125,6 +149,40 @@ def parse_flags(argv) -> Any:
         "--directory",
         type=Path,
         help="The output path.",
+    )
+
+    parser.add_argument(
+        "--patch",
+        type=Path,
+        default=[],
+        action="append",
+        help="A patch file to apply.",
+    )
+
+    parser.add_argument(
+        "--patch-arg",
+        type=str,
+        default=[],
+        action="append",
+        help="An argument for the patch tool when applying the patches.",
+    )
+
+    parser.add_argument(
+        "--patch-tool",
+        type=str,
+        help=(
+            "The tool from PATH to invoke when applying patches. "
+            "If set, --patch-tool-target is ignored."
+        ),
+    )
+
+    parser.add_argument(
+        "--patch-tool-target",
+        type=Path,
+        help=(
+            "The path to the tool to invoke when applying patches. "
+            "Ignored when --patch-tool is set."
+        ),
     )
 
     return parser.parse_args(argv[1:])

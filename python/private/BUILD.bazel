@@ -49,6 +49,12 @@ filegroup(
 )
 
 bzl_library(
+    name = "auth_bzl",
+    srcs = ["auth.bzl"],
+    deps = [":bazel_tools_bzl"],
+)
+
+bzl_library(
     name = "autodetecting_toolchain_bzl",
     srcs = ["autodetecting_toolchain.bzl"],
     deps = [
@@ -264,6 +270,13 @@ exports_files(
         "util.bzl",
     ],
     visibility = ["//:__subpackages__"],
+)
+
+exports_files(
+    ["python_bootstrap_template.txt"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
 )
 
 # Used to determine the use of `--stamp` in Starlark rules

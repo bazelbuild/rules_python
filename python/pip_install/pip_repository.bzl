@@ -76,7 +76,9 @@ def _resolve_python_interpreter(rctx):
 
     Args:
         rctx: Handle to the rule repository context.
-    Returns: Python interpreter path.
+
+    Returns:
+        `path` object, for the resolved path to the Python interpreter.
     """
     python_interpreter = _get_python_interpreter_attr(rctx)
 
@@ -91,10 +93,13 @@ def _resolve_python_interpreter(rctx):
             if os == WINDOWS_NAME:
                 python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
+        # It's a plain command, e.g. "python3", to look up in the environment.
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
         python_interpreter = found_python_interpreter
+    else:
+        python_interpreter = rctx.path(python_interpreter)
     return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
@@ -345,6 +350,8 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.python_interpreter_target:
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
+    if rctx.attr.experimental_target_platforms:
+        config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
     if rctx.attr.incompatible_generate_aliases:
         macro_tmpl = "@%s//{}:{}" % rctx.attr.name
@@ -472,6 +479,30 @@ Warning:
   If a dependency participates in multiple cycles, all of those cycles must be
   collapsed down to one. For instance `a <-> b` and `a <-> c` cannot be listed
   as two separate cycles.
+""",
+    ),
+    "experimental_target_platforms": attr.string_list(
+        default = [],
+        doc = """\
+A list of platforms that we will generate the conditional dependency graph for
+cross platform wheels by parsing the wheel metadata. This will generate the
+correct dependencies for packages like `sphinx` or `pylint`, which include
+`colorama` when installed and used on Windows platforms.
+
+An empty list means falling back to the legacy behaviour where the host
+platform is the target platform.
+
+WARNING: It may not work as expected in cases where the python interpreter
+implementation that is being used at runtime is different between different platforms.
+This has been tested for CPython only.
+
+Special values: `all` (for generating deps for all platforms), `host` (for
+generating deps for the host platform only). `linux_*` and other `<os>_*` values.
+In the future we plan to set `all` as the default to this attribute.
+
+For specific target platforms use values of the form `<os>_<arch>` where `<os>`
+is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
+`aarch64`, `s390x` and `ppc64le`.
 """,
     ),
     "extra_pip_args": attr.string_list(
@@ -647,7 +678,7 @@ alias(
 )
 ```
 
-## Vendoring the requirements.bzl file
+### Vendoring the requirements.bzl file
 
 In some cases you may not want to generate the requirements.bzl file as a repository rule
 while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
@@ -713,7 +744,10 @@ def _whl_library_impl(rctx):
         )
 
     result = rctx.execute(
-        args + ["--whl-file", whl_path],
+        args + [
+            "--whl-file",
+            whl_path,
+        ] + ["--platform={}".format(p) for p in rctx.attr.experimental_target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
@@ -749,6 +783,7 @@ def _whl_library_impl(rctx):
         repo_prefix = rctx.attr.repo_prefix,
         whl_name = whl_path.basename,
         dependencies = metadata["deps"],
+        dependencies_by_platform = metadata["deps_by_platform"],
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,
@@ -815,7 +850,7 @@ whl_library_attrs = {
         doc = "Python requirement string describing the package to make available",
     ),
     "whl_patches": attr.label_keyed_string_dict(
-        doc = """"a label-keyed-string dict that has
+        doc = """a label-keyed-string dict that has
             json.encode(struct([whl_file], patch_strip]) as values. This
             is to maintain flexibility and correct bzlmod extension interface
             until we have a better way to define whl_library and move whl

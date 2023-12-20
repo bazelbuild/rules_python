@@ -13,6 +13,7 @@ py_library(
     deps = [
         requirement("installer"),
         requirement("pip"),
+        requirement("packaging"),
         requirement("setuptools"),
     ],
 )
@@ -42,6 +43,18 @@ py_test(
     srcs = [
         "namespace_pkgs_test.py",
     ],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_test(
+    name = "wheel_test",
+    size = "small",
+    srcs = [
+        "wheel_test.py",
+    ],
+    data = ["//examples/wheel:minimal_with_py_package"],
     deps = [
         ":lib",
     ],

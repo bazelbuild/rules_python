@@ -12,8 +12,17 @@
   border-bottom: thin solid grey;
   padding-left: 0.5ex;
 }
+.starlark-object h3 {
+  background-color: #e7f2fa;
+  padding-left: 0.5ex;
+}
 
-.starlark-object>p, .starlark-object>dl {
+.starlark-module-extension-tag-class h3 {
+  background-color: #add8e6;
+  padding-left: 0.5ex;
+}
+
+.starlark-object>p, .starlark-object>dl, .starlark-object>section>* {
   /* Prevent the words from touching the border line */
   padding-left: 0.5ex;
 }

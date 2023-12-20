@@ -7,6 +7,8 @@
 [`Label`]: https://bazel.build/rules/lib/Label
 [`list`]: https://bazel.build/rules/lib/list
 [`str`]: https://bazel.build/rules/lib/string
+[str]: https://bazel.build/rules/lib/string
+[`int`]: https://bazel.build/rules/lib/int
 [`struct`]: https://bazel.build/rules/lib/builtins/struct
 [`Target`]: https://bazel.build/rules/lib/Target
 [target-name]: https://bazel.build/concepts/labels#target-names

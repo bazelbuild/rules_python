@@ -45,7 +45,17 @@ def sphinx_build_binary(name, py_binary_rule = py_binary, **kwargs):
         **kwargs
     )
 
-def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", extra_opts = [], **kwargs):
+def sphinx_docs(
+        name,
+        *,
+        srcs = [],
+        renamed_srcs = {},
+        sphinx,
+        config,
+        formats,
+        strip_prefix = "",
+        extra_opts = [],
+        **kwargs):
     """Generate docs using Sphinx.
 
     This generates three public targets:
@@ -62,6 +72,9 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
     Args:
         name: (str) name of the docs rule.
         srcs: (label list) The source files for Sphinx to process.
+        renamed_srcs: (label_keyed_string_dict) Doc source files for Sphinx that
+            are renamed. This is typically used for files elsewhere, such as top
+            level files in the repo.
         sphinx: (label) the Sphinx tool to use for building
             documentation. Because Sphinx supports various plugins, you must
             construct your own binary with the necessary dependencies. The
@@ -83,6 +96,7 @@ def sphinx_docs(name, *, srcs = [], sphinx, config, formats, strip_prefix = "", 
     _sphinx_docs(
         name = name,
         srcs = srcs,
+        renamed_srcs = renamed_srcs,
         sphinx = sphinx,
         config = config,
         formats = formats,
@@ -143,6 +157,12 @@ _sphinx_docs = rule(
                   "other options, but before the source/output args.",
         ),
         "formats": attr.string_list(doc = "Output formats for Sphinx to create."),
+        "renamed_srcs": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = "Doc source files for Sphinx that are renamed. This is " +
+                  "typically used for files elsewhere, such as top level " +
+                  "files in the repo.",
+        ),
         "sphinx": attr.label(
             executable = True,
             cfg = "exec",
@@ -188,6 +208,23 @@ def _create_sphinx_source_tree(ctx):
 
     for orig_file in ctx.files.srcs:
         _symlink_source(orig_file)
+
+    for src_target, dest in ctx.attr.renamed_srcs.items():
+        src_files = src_target.files.to_list()
+        if len(src_files) != 1:
+            fail("A single file must be specified to be renamed. Target {} " +
+                 "generate {} files: {}".format(
+                     src_target,
+                     len(src_files),
+                     src_files,
+                 ))
+        sphinx_src = ctx.actions.declare_file(paths.join(source_prefix, dest))
+        ctx.actions.symlink(
+            output = sphinx_src,
+            target_file = src_files[0],
+            progress_message = "Symlinking (renamed) Sphinx source %{input} to %{output}",
+        )
+        sphinx_source_files.append(sphinx_src)
 
     return sphinx_source_dir_path, source_conf_file, sphinx_source_files
 
