@@ -27,24 +27,30 @@ from python.runfiles import runfiles
 class PipWhlModsTest(unittest.TestCase):
     maxDiff = None
 
-    def package_path(self) -> str:
-        return "rules_python~override~pip~"
+    @staticmethod
+    def _get_bazel_pkg_dir_name(env_var: str) -> str:
+        a_file = Path(os.environ.get(env_var).split(" ")[0])
+        head = a_file
+        while head.parent.name:
+            head = head.parent
+
+        return head.name
+
+    @classmethod
+    def setUpClass(cls):
+        cls._wheel_pkg_dir = cls._get_bazel_pkg_dir_name("WHEEL_PKG")
+        cls._requests_pkg_dir = cls._get_bazel_pkg_dir_name("REQUESTS_PKG")
 
     def wheel_pkg_dir(self) -> Path:
-        distinfo = os.environ.get("WHEEL_DISTINFO")
-        self.assertIsNotNone(distinfo)
-        return Path(distinfo.split(" ")[0]).parents[2]
-
-    def rlocation(self, runfiles, dir: Path, *segments):
-        absolute_path = dir
-        for segment in segments:
-            absolute_path = absolute_path / segment
-
-        return runfiles.Rlocation(str(absolute_path.relative_to(dir.parent)))
+        return self._wheel_pkg
 
     def test_build_content_and_data(self):
         r = runfiles.Create()
-        rpath = self.rlocation(r, self.wheel_pkg_dir(), "generated_file.txt")
+        rpath = r.Rlocation(
+            "{}/generated_file.txt".format(
+                self._wheel_pkg_dir,
+            ),
+        )
         generated_file = Path(rpath)
         self.assertTrue(generated_file.exists())
 
@@ -53,7 +59,11 @@ class PipWhlModsTest(unittest.TestCase):
 
     def test_copy_files(self):
         r = runfiles.Create()
-        rpath = self.rlocation(r, self.wheel_pkg_dir(), "copied_content", "file.txt")
+        rpath = r.Rlocation(
+            "{}/copied_content/file.txt".format(
+                self._wheel_pkg_dir,
+            )
+        )
         copied_file = Path(rpath)
         self.assertTrue(copied_file.exists())
 
@@ -66,8 +76,11 @@ class PipWhlModsTest(unittest.TestCase):
         )
 
         r = runfiles.Create()
-        rpath = self.rlocation(
-            r, self.wheel_pkg_dir(), "copied_content", executable_name
+        rpath = r.Rlocation(
+            "{}/copied_content/{}".format(
+                self._wheel_pkg_dir,
+                executable_name,
+            )
         )
         executable = Path(rpath)
         self.assertTrue(executable.exists())
@@ -85,8 +98,10 @@ class PipWhlModsTest(unittest.TestCase):
         current_wheel_version = "0.40.0"
 
         r = runfiles.Create()
-        wheel_pkg_dir = self.wheel_pkg_dir()
-        dist_info_dir = f"wheel-{current_wheel_version}.dist-info"
+        dist_info_dir = "{}/site-packages/wheel-{}.dist-info".format(
+            self._wheel_pkg_dir,
+            current_wheel_version,
+        )
 
         # Note: `METADATA` is important as it's consumed by https://docs.python.org/3/library/importlib.metadata.html
         # `METADATA` is expected to be there to show dist-info files are included in the runfiles.
@@ -99,28 +114,41 @@ class PipWhlModsTest(unittest.TestCase):
             self.rlocation(r, wheel_pkg_dir, "site-packages", dist_info_dir, "WHEEL")
         )
 
-        self.assertTrue(
-            metadata_path.exists(), f"METADATA was not found in {metadata_path}"
+        self.assertTrue(Path(metadata_path).exists(), f"Could not find {metadata_path}")
+        self.assertFalse(
+            Path(wheel_path).exists(), f"Expected to not find {wheel_path}"
         )
-        self.assertTrue(wheel_path.exists(), f"WHEEL was not found in {wheel_path}")
-
-    def requests_pkg_dir(self) -> Path:
-        distinfo = os.environ.get("REQUESTS_DISTINFO")
-        self.assertIsNotNone(distinfo)
-        pkgdir = Path(distinfo.split(" ")[0]).parents[2]
-        return pkgdir
 
     def test_extra(self):
         # This test verifies that annotations work correctly for pip packages with extras
         # specified, in this case requests[security].
         r = runfiles.Create()
-        rpath = self.rlocation(r, self.requests_pkg_dir(), "generated_file.txt")
-
+        rpath = r.Rlocation(
+            "{}/generated_file.txt".format(
+                self._requests_pkg_dir,
+            ),
+        )
         generated_file = Path(rpath)
         self.assertTrue(generated_file.exists())
 
         content = generated_file.read_text().rstrip()
         self.assertEqual(content, "Hello world from requests")
+
+    def test_patches(self):
+        current_wheel_version = "2.25.1"
+
+        # This test verifies that the patches are applied to the wheel.
+        r = runfiles.Create()
+        metadata_path = "{}/site-packages/requests-{}.dist-info/METADATA".format(
+            self._requests_pkg_dir,
+            current_wheel_version,
+        )
+
+        metadata = Path(r.Rlocation(metadata_path))
+        self.assertIn(
+            "Summary: Python HTTP for Humans. Patched.",
+            metadata.read_text().splitlines(),
+        )
 
 
 if __name__ == "__main__":

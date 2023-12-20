@@ -176,3 +176,14 @@ local_path_override(
     module_name = "other_module",
     path = "other_module",
 )
+
+# =====
+# Config for testing duplicate packages in requirements
+# =====
+#
+pip.parse(
+    hub_name = "dupe_requirements",
+    python_version = "3.9",  # Must match whatever is marked is_default=True
+    requirements_lock = "//tests/dupe_requirements:requirements.txt",
+)
+use_repo(pip, "dupe_requirements")

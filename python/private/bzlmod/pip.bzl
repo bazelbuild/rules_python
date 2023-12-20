@@ -105,6 +105,34 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         hub_name,
         version_label(pip_attr.python_version),
     )
+    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
+
+    # Parse the requirements file directly in starlark to get the information
+    # needed for the whl_libary declarations below.
+    requirements_lock_content = module_ctx.read(requrements_lock)
+    parse_result = parse_requirements(requirements_lock_content)
+
+    # Replicate a surprising behavior that WORKSPACE builds allowed:
+    # Defining a repo with the same name multiple times, but only the last
+    # definition is respected.
+    # The requirement lines might have duplicate names because lines for extras
+    # are returned as just the base package name. e.g., `foo[bar]` results
+    # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
+    requirements = {
+        normalize_name(entry[0]): entry
+        # The WORKSPACE pip_parse sorted entries, so mimic that ordering.
+        for entry in sorted(parse_result.requirements)
+    }.values()
+
+    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
+
+    if hub_name not in whl_map:
+        whl_map[hub_name] = {}
+
+    whl_modifications = {}
+    if pip_attr.whl_modifications != None:
+        for mod, whl_name in pip_attr.whl_modifications.items():
+            whl_modifications[whl_name] = mod
 
     requirement_cycles = {
         name: [normalize_name(whl_name) for whl_name in whls]
