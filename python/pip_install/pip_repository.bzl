@@ -749,6 +749,8 @@ def _whl_library_impl(rctx):
     if target_platforms:
         parsed_whl = parse_whl_name(whl_path.basename)
         if parsed_whl.platform_tag != "any":
+            # NOTE @aignas 2023-12-04: if the wheel is a platform specific
+            # wheel, we only include deps for that target platform
             target_platforms = [
                 "{}_{}".format(p.os, p.cpu)
                 for p in whl_target_platform(parsed_whl.platform_tag)

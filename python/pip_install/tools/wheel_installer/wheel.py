@@ -36,21 +36,6 @@ class OS(Enum):
     darwin = osx
     win32 = windows
 
-    @staticmethod
-    def from_tag(tag: str) -> "OS":
-        if tag.startswith("linux"):
-            return OS.linux
-        elif tag.startswith("manylinux"):
-            return OS.linux
-        elif tag.startswith("musllinux"):
-            return OS.linux
-        elif tag.startswith("macos"):
-            return OS.osx
-        elif tag.startswith("win"):
-            return OS.windows
-        else:
-            raise ValueError(f"unknown tag: {tag}")
-
 
 class Arch(Enum):
     x86_64 = 1
@@ -64,19 +49,6 @@ class Arch(Enum):
     i686 = x86_32
     x86 = x86_32
     ppc64le = ppc
-
-    @staticmethod
-    def from_tag(tag: str) -> List["Arch"]:
-        for s, value in Arch.__members__.items():
-            if s in tag:
-                return [value]
-
-        if tag == "win32":
-            return [Arch.x86_32]
-        elif tag.endswith("universal2") and tag.startswith("macosx"):
-            return [Arch.x86_64, Arch.aarch64]
-        else:
-            raise ValueError(f"unknown tag: {tag}")
 
 
 @dataclass(frozen=True)
@@ -143,10 +115,6 @@ class Platform:
             return f"@platforms//os:{self.os.name.lower()}"
 
         return self.os.name.lower() + "_" + self.arch.name.lower()
-
-    @classmethod
-    def from_tag(cls, tag: str) -> "Platform":
-        return [cls(os=OS.from_tag(tag), arch=arch) for arch in Arch.from_tag(tag)]
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
@@ -461,17 +429,6 @@ class Wheel:
         extras_requested: Set[str] = None,
         platforms: Optional[Set[Platform]] = None,
     ) -> FrozenDeps:
-        if platforms:
-            # NOTE @aignas 2023-12-04: if the wheel is a platform specific wheel, we only include deps for that platform
-            _, _, platform_tag = self._path.name.rpartition("-")
-            platform_tag = platform_tag[:-4]  # strip .whl
-            if platform_tag != "any":
-                wheel_platforms = set(Platform.from_tag(platform_tag))
-                assert (
-                    wheel_platforms & platforms
-                ), f"BUG: wheel platforms '{wheel_platforms}' must overlap with '{platforms}'"
-                platforms = wheel_platforms
-
         dependency_set = Deps(
             self.name,
             extras=extras_requested,
