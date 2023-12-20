@@ -47,6 +47,10 @@ A brief description of the categories of changes:
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
 
+### Added
+
+* (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16

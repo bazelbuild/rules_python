@@ -109,7 +109,7 @@ install_deps()
 # Install sphinx for doc generation.
 
 pip_parse(
-    name = "docs_deps",
+    name = "dev_pip",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -126,7 +126,7 @@ pip_parse(
     requirements_lock = "//docs/sphinx:requirements_linux.txt",
 )
 
-load("@docs_deps//:requirements.bzl", docs_install_deps = "install_deps")
+load("@dev_pip//:requirements.bzl", docs_install_deps = "install_deps")
 
 docs_install_deps()
 
@@ -139,4 +139,10 @@ http_file(
     urls = [
         "https://files.pythonhosted.org/packages/50/67/3e966d99a07d60a21a21d7ec016e9e4c2642a86fea251ec68677daf71d4d/numpy-1.25.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
     ],
+)
+
+# rules_proto expects //external:python_headers to point at the python headers.
+bind(
+    name = "python_headers",
+    actual = "//python/cc:current_py_cc_headers",
 )

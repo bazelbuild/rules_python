@@ -19,11 +19,6 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
 
-_FUNC_TEMPLATE = Label("//sphinxdocs/private:func_template.vm")
-_HEADER_TEMPLATE = Label("//sphinxdocs/private:header_template.vm")
-_RULE_TEMPLATE = Label("//sphinxdocs/private:rule_template.vm")
-_PROVIDER_TEMPLATE = Label("//sphinxdocs/private:provider_template.vm")
-
 def sphinx_stardocs(name, docs, footer = None, **kwargs):
     """Generate Sphinx-friendly Markdown docs using Stardoc for bzl libraries.
 
@@ -83,58 +78,62 @@ def sphinx_stardocs(name, docs, footer = None, **kwargs):
     )
 
 def _sphinx_stardoc(*, name, out, footer = None, public_load_path = None, **kwargs):
-    if footer:
-        stardoc_name = "_{}_stardoc".format(name.lstrip("_"))
-        stardoc_out = "_{}_stardoc.out".format(name.lstrip("_"))
-    else:
-        stardoc_name = name
-        stardoc_out = out
+    stardoc_name = "_{}_stardoc".format(name.lstrip("_"))
+    stardoc_pb = stardoc_name + ".binaryproto"
 
     if not public_load_path:
         public_load_path = str(kwargs["input"])
 
-    header_name = "_{}_header".format(name.lstrip("_"))
-    _expand_stardoc_template(
-        name = header_name,
-        template = _HEADER_TEMPLATE,
-        substitutions = {
-            "%%BZL_LOAD_PATH%%": public_load_path,
-        },
-    )
-
     stardoc(
         name = stardoc_name,
-        func_template = _FUNC_TEMPLATE,
-        header_template = header_name,
-        rule_template = _RULE_TEMPLATE,
-        provider_template = _PROVIDER_TEMPLATE,
-        out = stardoc_out,
+        out = stardoc_pb,
+        format = "proto",
         **kwargs
     )
 
-    if footer:
-        native.genrule(
-            name = name,
-            srcs = [stardoc_out, footer],
-            outs = [out],
-            cmd = "cat $(SRCS) > $(OUTS)",
-            message = "SphinxStardoc: Adding footer to {}".format(name),
-            **copy_propagating_kwargs(kwargs)
-        )
-
-def _expand_stardoc_template_impl(ctx):
-    out = ctx.actions.declare_file(ctx.label.name + ".vm")
-    ctx.actions.expand_template(
-        template = ctx.file.template,
+    _stardoc_proto_to_markdown(
+        name = name,
+        src = stardoc_pb,
         output = out,
-        substitutions = ctx.attr.substitutions,
+        footer = footer,
+        public_load_path = public_load_path,
     )
-    return [DefaultInfo(files = depset([out]))]
 
-_expand_stardoc_template = rule(
-    implementation = _expand_stardoc_template_impl,
+def _stardoc_proto_to_markdown_impl(ctx):
+    args = ctx.actions.args()
+    args.use_param_file("@%s")
+    args.set_param_file_format("multiline")
+
+    inputs = [ctx.file.src]
+    args.add("--proto", ctx.file.src)
+    args.add("--output", ctx.outputs.output)
+
+    if ctx.file.footer:
+        args.add("--footer", ctx.file.footer)
+        inputs.append(ctx.file.footer)
+    if ctx.attr.public_load_path:
+        args.add("--public-load-path={}".format(ctx.attr.public_load_path))
+
+    ctx.actions.run(
+        executable = ctx.executable._proto_to_markdown,
+        arguments = [args],
+        inputs = inputs,
+        outputs = [ctx.outputs.output],
+        mnemonic = "SphinxStardocProtoToMd",
+        progress_message = "SphinxStardoc: converting proto to markdown: %{input} -> %{output}",
+    )
+
+_stardoc_proto_to_markdown = rule(
+    implementation = _stardoc_proto_to_markdown_impl,
     attrs = {
-        "substitutions": attr.string_dict(),
-        "template": attr.label(allow_single_file = True),
+        "footer": attr.label(allow_single_file = True),
+        "output": attr.output(mandatory = True),
+        "public_load_path": attr.string(),
+        "src": attr.label(allow_single_file = True, mandatory = True),
+        "_proto_to_markdown": attr.label(
+            default = "//sphinxdocs/private:proto_to_markdown",
+            executable = True,
+            cfg = "exec",
+        ),
     },
 )
