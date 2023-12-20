@@ -466,11 +466,11 @@ class Wheel:
             _, _, platform_tag = self._path.name.rpartition("-")
             platform_tag = platform_tag[:-4]  # strip .whl
             if platform_tag != "any":
-                platform = Platform.from_tag(platform_tag)
+                wheel_platforms = set(Platform.from_tag(platform_tag))
                 assert (
-                    platform in platforms
-                ), f"BUG: wheel platform '{platform}' must be one of '{platforms}'"
-                platforms = {platform}
+                    wheel_platforms & platforms
+                ), f"BUG: wheel platforms '{wheel_platforms}' must overlap with '{platforms}'"
+                platforms = wheel_platforms
 
         dependency_set = Deps(
             self.name,
