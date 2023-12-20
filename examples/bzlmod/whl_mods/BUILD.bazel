@@ -8,10 +8,6 @@ exports_files(
 py_test(
     name = "pip_whl_mods_test",
     srcs = ["pip_whl_mods_test.py"],
-    data = [
-        "@pip//requests:dist_info",
-        "@pip//wheel:dist_info",
-    ],
     env = {
         "REQUESTS_PKG": "$(rlocationpaths @pip//requests:pkg)",
         "WHEEL_PKG": "$(rlocationpaths @pip//wheel:pkg)",

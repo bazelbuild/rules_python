@@ -32,9 +32,19 @@ def PyPISource(*, filename, label, sha256):
     """
     return struct(
         filename = filename,
-        label = label,
+        label = _label(label) if type(label) == type("") else label,
         sha256 = sha256,
     )
+
+def _label(label):
+    """This function allows us to construct labels to pass to rules."""
+
+    # get the rules_python cannonical namename
+    prefix, _, _ = str(Label("//:MODULE.bazel")).partition("//")
+
+    # this depends on the implementation detail on the fact that we have `~` in the label
+    prefix = prefix + "~pip~"
+    return Label(label.replace("@", prefix))
 
 def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     """Fetch archives for all requirements files using the bazel downloader.
@@ -119,7 +129,7 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 # since this implementation needs to copy functionality around credential
                 # helpers, etc to be useful.
                 patches = {
-                    patch_file: patch_dst.patch_strip
+                    patch_file: str(patch_dst.patch_strip)
                     for patch_file, patch_dst in whl_overrides.get(distribution, {}).items()
                     if filename in patch_dst.whls
                 },

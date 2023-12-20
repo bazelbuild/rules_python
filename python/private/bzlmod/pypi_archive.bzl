@@ -51,18 +51,22 @@ def _impl(rctx):
             rctx,
             python_interpreter = _resolve_python_interpreter(rctx),
             whl_path = whl_path,
-            patches = rctx.attr.patches,
+            patches = {
+                p: int(strip)
+                for p, strip in rctx.attr.patches.items()
+            },
             quiet = rctx.attr.quiet,
         )
 
+    # NOTE @aignas 2023-12-20: this symlink is to ensure that the
+    # rctx.path(label) resolves to the right file.
     rctx.symlink(whl_path, "file")
 
     rctx.file(
         "BUILD.bazel",
         """\
-filegroup(
-    name="file",
-    srcs=["{filename}"],
+exports_files(
+    ["file", "{filename}"],
     visibility=["//visibility:public"],
 )
 """.format(filename = whl_path.basename),

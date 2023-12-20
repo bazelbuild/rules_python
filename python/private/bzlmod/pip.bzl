@@ -107,6 +107,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
     )
     requrements_lock = locked_requirements_label(module_ctx, pip_attr)
 
+    # TODO @aignas 2023-12-20: how do we get rid of this os specific file
+    # selection?
+
     # Parse the requirements file directly in starlark to get the information
     # needed for the whl_libary declarations below.
     requirements_lock_content = module_ctx.read(requrements_lock)
@@ -151,23 +154,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         repo_prefix = pip_name + "_",
         groups = pip_attr.experimental_requirement_cycles,
     )
-
-    # how do we get rid of this?
-    # maybe we should resolve the extra_pip_args and the requirements lines per
-    # platform and do a more clever init.
-    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
-
-    # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requrements_lock)
-    parse_result = parse_requirements(requirements_lock_content)
-    requirements = parse_result.requirements
-    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
-
-    whl_modifications = {}
-    if pip_attr.whl_modifications != None:
-        for mod, whl_name in pip_attr.whl_modifications.items():
-            whl_modifications[whl_name] = mod
 
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
@@ -325,6 +311,7 @@ def _pip_impl(module_ctx):
     files = whl_files_from_requirements(
         module_ctx = module_ctx,
         name = "pypi_whl",
+        whl_overrides = whl_overrides,
     )
 
     # Used to track all the different pip hubs and the spoke pip Python

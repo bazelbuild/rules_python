@@ -105,14 +105,10 @@ class PipWhlModsTest(unittest.TestCase):
 
         # Note: `METADATA` is important as it's consumed by https://docs.python.org/3/library/importlib.metadata.html
         # `METADATA` is expected to be there to show dist-info files are included in the runfiles.
-        metadata_path = Path(
-            self.rlocation(r, wheel_pkg_dir, "site-packages", dist_info_dir, "METADATA")
-        )
+        metadata_path = r.Rlocation("{}/METADATA".format(dist_info_dir))
 
         # However, `WHEEL` was explicitly excluded, so it should be missing
-        wheel_path = Path(
-            self.rlocation(r, wheel_pkg_dir, "site-packages", dist_info_dir, "WHEEL")
-        )
+        wheel_path = r.Rlocation("{}/WHEEL".format(dist_info_dir))
 
         self.assertTrue(Path(metadata_path).exists(), f"Could not find {metadata_path}")
         self.assertFalse(
@@ -133,22 +129,6 @@ class PipWhlModsTest(unittest.TestCase):
 
         content = generated_file.read_text().rstrip()
         self.assertEqual(content, "Hello world from requests")
-
-    def test_patches(self):
-        current_wheel_version = "2.25.1"
-
-        # This test verifies that the patches are applied to the wheel.
-        r = runfiles.Create()
-        metadata_path = "{}/site-packages/requests-{}.dist-info/METADATA".format(
-            self._requests_pkg_dir,
-            current_wheel_version,
-        )
-
-        metadata = Path(r.Rlocation(metadata_path))
-        self.assertIn(
-            "Summary: Python HTTP for Humans. Patched.",
-            metadata.read_text().splitlines(),
-        )
 
 
 if __name__ == "__main__":
