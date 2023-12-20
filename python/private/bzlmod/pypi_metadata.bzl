@@ -17,7 +17,6 @@
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load(":label.bzl", _label = "label")
 load(":pypi_archive.bzl", "pypi_file")
 
 def PyPISource(*, filename, label, sha256):
@@ -33,7 +32,7 @@ def PyPISource(*, filename, label, sha256):
     """
     return struct(
         filename = filename,
-        label = _label(label) if type(label) == type("") else label,
+        label = label,
         sha256 = sha256,
     )
 

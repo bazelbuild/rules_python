@@ -719,7 +719,7 @@ def _whl_library_impl(rctx):
     whl_path = None
     whl_label = None
     if rctx.attr.experimental_whl_file:
-        whl_label = rctx.attr.experimental_whl_file
+        whl_label = Label(rctx.attr.experimental_whl_file)
         whl_path = rctx.path(whl_label).realpath
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
@@ -861,7 +861,7 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
-    "experimental_whl_file": attr.label(
+    "experimental_whl_file": attr.string(
         doc = """\
 The label of the whl file to use. This allows one to pass a whl file to be used, but at the same
 time it changes the assumed whl_library layout. With this parameter set, the pip repository layout
