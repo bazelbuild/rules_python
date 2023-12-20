@@ -680,7 +680,7 @@ alias(
 )
 ```
 
-## Vendoring the requirements.bzl file
+### Vendoring the requirements.bzl file
 
 In some cases you may not want to generate the requirements.bzl file as a repository rule
 while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module

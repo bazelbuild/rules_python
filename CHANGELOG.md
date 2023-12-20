@@ -53,6 +53,13 @@ A brief description of the categories of changes:
   Copy the patch to your workspace and add it to the list if patches for the wheel
   file if you decide to do so.
 
+### Added
+
+* (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+* (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
+  attribute for every target in the package. This is enabled through a separate
+  directive `python_generation_mode_per_file_include_init`.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
