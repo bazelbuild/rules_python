@@ -218,7 +218,7 @@ dependencies are added to the `deps` attribute.
 A `py_test` target is added to the BUILD file when gazelle encounters
 a file named `__test__.py`.
 Often, Python unit test files are named with the suffix `_test`.
-For example, if we had a folder that is a package named "foo" we could have a Python file named `foo_test.py` 
+For example, if we had a folder that is a package named "foo" we could have a Python file named `foo_test.py`
 and gazelle would create a `py_test` block for the file.
 
 The following is an example of a `py_test` target that gazelle would add when
@@ -234,28 +234,35 @@ py_test(
 ```
 
 You can control the naming convention for test targets by adding a gazelle directive named
-`# gazelle:python_test_naming_convention`.  See the instructions in the section above that 
+`# gazelle:python_test_naming_convention`.  See the instructions in the section above that
 covers directives.
 
 ### Binaries
 
 When a `__main__.py` file is encountered, this indicates the entry point
-of a Python program.
+of a Python program. A `py_binary` target will be created, named `[package]_bin`.
 
-A `py_binary` target will be created, named `[package]_bin`.
+When no such entry point exists, Gazelle will look for a line like this in the top level in every module:
+
+```python
+if __name == "__main__":
+```
+
+Gazelle will create `py_binary` target will be created for every module with such line, with the target name
+being the same as module name.
 
 ## Developer Notes
 
-Gazelle extensions are written in Go. This gazelle plugin is a hybrid, as it uses Go to execute a 
-Python interpreter as a subprocess to parse Python source files. 
-See the gazelle documentation https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.md 
+Gazelle extensions are written in Go. This gazelle plugin is a hybrid, as it uses Go to execute a
+Python interpreter as a subprocess to parse Python source files.
+See the gazelle documentation https://github.com/bazelbuild/bazel-gazelle/blob/master/extend.md
 for more information on extending Gazelle.
 
-If you add new Go dependencies to the plugin source code, you need to "tidy" the go.mod file. 
-After changing that file, run `go mod tidy` or `bazel run @go_sdk//:bin/go -- mod tidy` 
-to update the go.mod and go.sum files. Then run `bazel run //:update_go_deps` to have gazelle 
-add the new dependenies to the deps.bzl file. The deps.bzl file is used as defined in our /WORKSPACE 
+If you add new Go dependencies to the plugin source code, you need to "tidy" the go.mod file.
+After changing that file, run `go mod tidy` or `bazel run @go_sdk//:bin/go -- mod tidy`
+to update the go.mod and go.sum files. Then run `bazel run //:update_go_deps` to have gazelle
+add the new dependenies to the deps.bzl file. The deps.bzl file is used as defined in our /WORKSPACE
 to include the external repos Bazel loads Go dependencies from.
 
-Then after editing Go code, run `bazel run //:gazelle` to generate/update the rules in the 
+Then after editing Go code, run `bazel run //:gazelle` to generate/update the rules in the
 BUILD.bazel files in our repo.
