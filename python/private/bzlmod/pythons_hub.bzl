@@ -129,21 +129,6 @@ def _hub_repo_impl(rctx):
         executable = False,
     )
 
-    # Create a dict that is later used to create
-    # a symlink to a interpreter.
-    host_interpreter_labels = "".join([_line_for_hub_template.format(
-        name = name,
-        path = "host_python",
-    ) for name in rctx.attr.toolchain_user_repository_names])
-    rctx.file(
-        "host_interpreters.bzl",
-        _interpreters_bzl_template.format(
-            interpreter_labels = host_interpreter_labels,
-            default_python_version = rctx.attr.default_python_version,
-        ),
-        executable = False,
-    )
-
 hub_repo = repository_rule(
     doc = """\
 This private rule create a repo with a BUILD file that contains a map of interpreter names

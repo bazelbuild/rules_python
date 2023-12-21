@@ -14,7 +14,7 @@
 
 "pip module extension for use with bzlmod"
 
-load("@pythons_hub//:host_interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
+load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
     "group_library",
@@ -109,29 +109,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         hub_name,
         version_label(pip_attr.python_version),
     )
-    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
-
-    # TODO @aignas 2023-12-20: how do we get rid of this os specific file
-    # selection?
-
-    # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requrements_lock)
-    parse_result = parse_requirements(requirements_lock_content)
-
-    # Replicate a surprising behavior that WORKSPACE builds allowed:
-    # Defining a repo with the same name multiple times, but only the last
-    # definition is respected.
-    # The requirement lines might have duplicate names because lines for extras
-    # are returned as just the base package name. e.g., `foo[bar]` results
-    # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
-    requirements = {
-        normalize_name(entry[0]): entry
-        # The WORKSPACE pip_parse sorted entries, so mimic that ordering.
-        for entry in sorted(parse_result.requirements)
-    }.values()
-
-    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
@@ -159,8 +136,50 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         groups = pip_attr.experimental_requirement_cycles,
     )
 
+    requirements_lock = {
+        # Parse the requirements file directly in starlark to get the information
+        # needed for the whl_libary declarations below.
+        os: parse_requirements(module_ctx.read(lock))
+        for os, lock in {
+            "default": pip_attr.requirements_lock,
+            "host": locked_requirements_label(module_ctx, pip_attr),
+            "linux": pip_attr.requirements_linux,
+            "osx": pip_attr.requirements_darwin,
+            "windows": pip_attr.requirements_windows,
+        }.items()
+        if lock
+    }
+
+    # Replicate a surprising behavior that WORKSPACE builds allowed:
+    # Defining a repo with the same name multiple times, but only the last
+    # definition is respected.
+    # The requirement lines might have duplicate names because lines for extras
+    # are returned as just the base package name. e.g., `foo[bar]` results
+    # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
+    requirements = {}
+    for os, parse_result in requirements_lock.items():
+        for whl_name, reqs in {
+            normalize_name(entry[0]): entry
+            # The WORKSPACE pip_parse sorted entries, so mimic that ordering.
+            for entry in sorted(parse_result.requirements)
+        }.values():
+            if whl_name not in requirements:
+                requirements[whl_name] = {}
+
+            requirements[whl_name][os] = reqs
+
+    extra_pip_args_per_os = {
+        os: pip_attr.extra_pip_args + parse_result.options
+        for os, parse_result in requirements_lock.items()
+    }
+    for os, extra_args in extra_pip_args_per_os.items():
+        if extra_pip_args_per_os["host"] != extra_args:
+            fail("the pip arguments in the requirements files should be the same")
+
+    extra_pip_args = extra_pip_args_per_os["host"]
+
     # Create a new wheel library for each of the different whls
-    for whl_name, requirement_line in requirements:
+    for whl_name, requirement_by_os in requirements.items():
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
         # to.
@@ -171,7 +190,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
 
         common_args = dict(
             name = "%s_%s" % (pip_name, whl_name),
-            requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
             annotation = annotation,
@@ -181,7 +199,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
             quiet = pip_attr.quiet,
             timeout = pip_attr.timeout,
             isolated = use_isolated(module_ctx, pip_attr),
-            extra_pip_args = extra_pip_args,
             download_only = pip_attr.download_only,
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
@@ -193,11 +210,15 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         if files:
             multiarch_whl_library(
                 files = files[whl_name],
+                requirement_by_os = requirement_by_os,
+                extra_pip_args = extra_pip_args,
                 # patching is done in whl_files_from_requirements
                 **common_args
             )
         else:
             whl_library(
+                requirement = requirement_by_os["host"],
+                extra_pip_args = extra_pip_args,
                 whl_patches = {
                     p: json.encode(args)
                     for p, args in whl_overrides.get(whl_name, {}).items()

@@ -85,47 +85,68 @@ load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
 load("//python/private:whl_target_platform.bzl", "whl_target_platform")
 
-def multiarch_whl_library(name, *, requirement, files, **kwargs):
+def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **kwargs):
     """Generate a number of third party repos for a particular wheel.
 
     Args:
         name(str): the name of the apparent repo that does the select on the target platform.
-        requirement(str): the requirement line that this repo corresponds to.
+        requirement_by_os(dict[str]): the requirement_by_os line that this repo corresponds to.
         files(dict[str, PyPISource]): the list of file labels
+        extra_pip_args(list[str]): The pip args by platform.
         **kwargs: extra arguments passed to the underlying `whl_library` repository rule.
     """
-    needed_files = [
-        files.files[sha.strip()]
-        for sha in requirement.split("--hash=sha256:")[1:]
-    ]
+    needed_shas = {}
+    for os, requirement in requirement_by_os.items():
+        if os == "host":
+            continue
+
+        for sha in requirement.split("--hash=sha256:")[1:]:
+            sha = sha.strip()
+            if sha not in needed_shas:
+                needed_shas[sha] = []
+
+            needed_shas[sha].append(os)
+
+    needed_files = {
+        files.files[sha]: plats
+        for sha, plats in needed_shas.items()
+    }
     _, _, want_abi = kwargs.get("repo").rpartition("_")
 
     # TODO @aignas 2023-12-20: how can we get the ABI that we need for this particular repo? It would be better to not need to resolve it and just add it to the `target_platforms` list for the user to provide.
     want_abi = "cp" + want_abi
     files = {}
-    for f in needed_files:
+    for f, oses in needed_files.items():
         if not f.filename.endswith(".whl"):
-            files["sdist"] = f
+            files["sdist"] = (f, requirement_by_os["host"])
             continue
 
         parsed = parse_whl_name(f.filename)
 
         if "musl" in parsed.platform_tag:
-            # currently unsupported
+            # buildifier: disable=print
+            print("TODO @aignas 2023-12-21: musl wheels are currently unsupported, how can we allow the user to control this? Maybe by target platforms?")
             continue
 
         if parsed.abi_tag in ["none", "abi3", want_abi]:
             plat = parsed.platform_tag.split(".")[0]
-            files[plat] = f
+            if plat == "any":
+                files[plat] = (f, requirement_by_os[oses[0]])
+            else:
+                # this assumes that the target_platform for a whl will have the same os, which is most often correct
+                target_platform = whl_target_platform(plat)[0]
+                files[plat] = (f, requirement_by_os.get(target_platform.os, requirement_by_os["default"]))
 
     libs = {}
-    for plat, f in files.items():
+    for plat, (f, r) in files.items():
         whl_name = "{}__{}".format(name, plat)
         libs[plat] = f.filename
         whl_library(
             name = whl_name,
             experimental_whl_file = f.label,
-            requirement = requirement,
+            # how can I create a single thing?
+            requirement = r,
+            extra_pip_args = extra_pip_args,
             **kwargs
         )
 
