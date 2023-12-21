@@ -124,8 +124,7 @@ def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **k
         parsed = parse_whl_name(f.filename)
 
         if "musl" in parsed.platform_tag:
-            # buildifier: disable=print
-            print("TODO @aignas 2023-12-21: musl wheels are currently unsupported, how can we allow the user to control this? Maybe by target platforms?")
+            # TODO @aignas 2023-12-21: musl wheels are currently unsupported, how can we allow the user to control this? Maybe by target platforms?
             continue
 
         if parsed.abi_tag in ["none", "abi3", want_abi]:
