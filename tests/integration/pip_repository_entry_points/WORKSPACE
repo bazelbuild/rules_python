@@ -2,7 +2,7 @@ workspace(name = "pip_entry_points_example")
 
 local_repository(
     name = "rules_python",
-    path = "../..",
+    path = "../../..",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")

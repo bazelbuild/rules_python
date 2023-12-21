@@ -130,6 +130,22 @@ class PipWhlModsTest(unittest.TestCase):
         content = generated_file.read_text().rstrip()
         self.assertEqual(content, "Hello world from requests")
 
+    def test_patches(self):
+        current_wheel_version = "2.25.1"
+
+        # This test verifies that the patches are applied to the wheel.
+        r = runfiles.Create()
+        metadata_path = "{}/site-packages/requests-{}.dist-info/METADATA".format(
+            self._requests_pkg_dir,
+            current_wheel_version,
+        )
+
+        metadata = Path(r.Rlocation(metadata_path))
+        self.assertIn(
+            "Summary: Python HTTP for Humans. Patched.",
+            metadata.read_text().splitlines(),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

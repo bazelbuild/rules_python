@@ -101,7 +101,7 @@ func newPython3Parser(
 
 // parseSingle parses a single Python file and returns the extracted modules
 // from the import statements as well as the parsed comments.
-func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, []string, error) {
+func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, error) {
 	pyFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFilenames.Add(pyFilename)
 	return p.parse(pyFilenames)
@@ -109,7 +109,7 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, []string, 
 
 // parse parses multiple Python files and returns the extracted modules from
 // the import statements as well as the parsed comments.
-func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, []string, error) {
+func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, error) {
 	parserMutex.Lock()
 	defer parserMutex.Unlock()
 
@@ -136,10 +136,10 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, []string,
 		return nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
-	var mainModules []string
+	mainModules := make(map[string]*treeset.Set, len(allRes))
 	for _, res := range allRes {
 		if res.HasMain {
-			mainModules = append(mainModules, res.FileName)
+			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
 		annotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
@@ -160,6 +160,9 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, []string,
 			}
 
 			modules.Add(m)
+			if res.HasMain {
+				mainModules[res.FileName].Add(m)
+			}
 		}
 	}
 

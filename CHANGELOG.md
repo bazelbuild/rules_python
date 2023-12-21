@@ -31,6 +31,9 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
+* (pip_install) the deprecated `pip_install` macro and related items have been
+  removed.
+
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
@@ -51,6 +54,12 @@ A brief description of the categories of changes:
   the lock file is introducing platform-specific deps (e.g. `colorama` may be
   present only in the `windows` specific requirements lock file because it
   is not used elsewhere.
+* (whl_library) Actually use the provided patches to patch the whl_library.
+  On Windows the patching may result in files with CRLF line endings, as a result
+  the RECORD file consistency requirement is lifted and now a warning is emitted
+  instead with a location to the patch that could be used to silence the warning.
+  Copy the patch to your workspace and add it to the list if patches for the wheel
+  file if you decide to do so.
 
 ### Added
 

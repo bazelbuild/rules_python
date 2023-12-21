@@ -122,8 +122,7 @@ pip_parse(
     },
     incompatible_generate_aliases = True,
     python_interpreter_target = interpreter,
-    requirements_darwin = "//docs/sphinx:requirements_darwin.txt",
-    requirements_lock = "//docs/sphinx:requirements_linux.txt",
+    requirements_lock = "//docs/sphinx:requirements.txt",
 )
 
 load("@dev_pip//:requirements.bzl", docs_install_deps = "install_deps")
