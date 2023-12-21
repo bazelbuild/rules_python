@@ -23,8 +23,6 @@ buildifier:
   # NOTE: Keep in sync with //:version.bzl
   bazel: 6.2.0
   skip_in_bazel_downstream_pipeline: "Bazel 6 required"
-##.minimum_supported_bzlmod_version: &minimum_supported_bzlmod_version
-##  bazel: 6.2.0 # test minimum supported version of bazel for bzlmod tests
 .reusable_config: &reusable_config
   build_targets:
     - "--"
@@ -44,11 +42,6 @@ buildifier:
     - "--noenabled_bzlmod"
   build_flags:
     - "--noenabled_bzlmod"
-##.common_bzlmod_flags: &common_bzlmod_flags
-##  test_flags:
-##    - "--experimental_enable_bzlmod"
-##  build_flags:
-##    - "--experimental_enable_bzlmod"
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
@@ -242,7 +235,7 @@ tasks:
     platform: windows
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
-    <<: *minimum_supported_bzlmod_version
+    <<: *minimum_supported_version
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod_build_file_generation
     name: "examples/bzlmod_build_file_generation: Ubuntu, minimum supported Bazel version"
