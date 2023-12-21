@@ -60,6 +60,11 @@ A brief description of the categories of changes:
   instead with a location to the patch that could be used to silence the warning.
   Copy the patch to your workspace and add it to the list if patches for the wheel
   file if you decide to do so.
+* (bzlmod pip.parse) Use the same interpreter label that may make the lock file
+  almost the same for all platforms. It will, however be different in cases where
+  the lock file is introducing platform-specific deps (e.g. `colorama` may be
+  present only in the `windows` specific requirements lock file because it
+  is not used elsewhere.
 
 ### Added
 
