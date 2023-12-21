@@ -31,6 +31,9 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
+* (pip_install) the deprecated `pip_install` macro and related items have been
+  removed.
+
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11

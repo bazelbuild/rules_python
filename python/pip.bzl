@@ -30,21 +30,6 @@ compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 pip_parse = pip_repository
 
-def pip_install(requirements = None, name = "pip", allow_pip_install = False, **kwargs):
-    """Will be removed in 0.28.0
-
-    Args:
-        requirements (Label): A 'requirements.txt' pip requirements file.
-        name (str, optional): A unique name for the created external repository (default 'pip').
-        allow_pip_install (bool, optional): change this to keep this rule working (default False).
-        **kwargs (dict): Additional arguments to the [`pip_parse`](#pip_parse) repository rule.
-    """
-
-    if allow_pip_install:
-        pip_parse(requirements = requirements, name = name, **kwargs)
-    else:
-        fail("pip_install support has been disabled, please use pip_parse as a replacement.")
-
 def _multi_pip_parse_impl(rctx):
     rules_python = rctx.attr._rules_python_workspace.workspace_name
     load_statements = []
