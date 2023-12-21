@@ -78,7 +78,7 @@ DEFAULT_PYTHON_VERSION = "{default_python_version}"
 """
 
 _line_for_hub_template = """\
-    "{name}": Label("@{name}//:{path}"),
+    "{key}": Label("@{name}_{platform}//:{path}"),
 """
 
 def _hub_repo_impl(rctx):
@@ -103,10 +103,22 @@ def _hub_repo_impl(rctx):
 
     # Create a dict that is later used to create
     # a symlink to a interpreter.
-    interpreter_labels = "".join([_line_for_hub_template.format(
-        name = name + "_" + platform,
-        path = path,
-    ) for name in rctx.attr.toolchain_user_repository_names])
+    interpreter_labels = "".join([
+        _line_for_hub_template.format(
+            key = name + ("" if platform_str != "host" else "_host"),
+            name = name,
+            platform = platform_str,
+            path = p,
+        )
+        for name in rctx.attr.toolchain_user_repository_names
+        for platform_str, p in {
+            # NOTE @aignas 2023-12-21: maintaining the `platform` specific key
+            # here may be unneeded in the long term, but I am not sure if there
+            # are other users that depend on it.
+            platform: path,
+            "host": "python",
+        }.items()
+    ])
 
     rctx.file(
         "interpreters.bzl",

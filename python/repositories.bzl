@@ -27,6 +27,7 @@ load("//python/private:full_version.bzl", "full_version")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load(
     "//python/private:toolchains_repo.bzl",
+    "host_toolchain",
     "multi_toolchain_aliases",
     "toolchain_aliases",
     "toolchains_repo",
@@ -584,6 +585,13 @@ def python_register_toolchains(
                 toolchain_repo_name = toolchain_repo_name,
                 platform = platform,
             ))
+
+    host_toolchain(
+        name = name + "_host",
+        python_version = python_version,
+        user_repository_name = name,
+        platforms = loaded_platforms,
+    )
 
     toolchain_aliases(
         name = name,
