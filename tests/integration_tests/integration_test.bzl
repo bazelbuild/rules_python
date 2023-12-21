@@ -58,16 +58,15 @@ def rules_python_integration_test(
             "//:distribution",
         ],
         tags = (tags or []) + [
-            # Upstream normally runs the tests with the `exclusive` tag. That
-            # tag also implies `local` by default. We don't really need the
-            # exclusion feature, but we do need the test to break the sandbox.
-            # Replicate that here.
-            # https://github.com/bazelbuild/bazel/issues/16871
+            # Upstream normally runs the tests with the `exclusive` tag.
+            # Duplicate that here. There's an argument to be made that we want
+            # these to be run in parallel, but it has the potential to
+            # overwhelm a system.
+            "exclusive",
+            # The default_test_runner() assumes it can write to the user's home
+            # directory for caching purposes. Give it access.
             "no-sandbox",
-            "no-remote",
             # The CI RBE setup can't successfully run these tests remotely.
-            # Similar to the comment above, the `exclusive` tag used to imply
-            # this, but this is a bit more explicit.
             "no-remote-exec",
         ],
         **kwargs
