@@ -65,6 +65,10 @@ def rules_python_integration_test(
             # https://github.com/bazelbuild/bazel/issues/16871
             "no-sandbox",
             "no-remote",
+            # The CI RBE setup can't successfully run these tests remotely.
+            # Similar to the comment above, the `exclusive` tag used to imply
+            # this, but this is a bit more explicit.
+            "no-remote-exec",
         ],
         **kwargs
     )
