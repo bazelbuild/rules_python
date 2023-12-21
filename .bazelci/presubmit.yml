@@ -471,13 +471,13 @@ tasks:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel
+    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
     working_directory: tests/integration/compile_pip_requirements
     platform: ubuntu2004
   integration_test_compile_pip_requirements_ubuntu_min_bzlmod:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel
+    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
     working_directory: tests/integration/compile_pip_requirements
     platform: ubuntu2004
 
