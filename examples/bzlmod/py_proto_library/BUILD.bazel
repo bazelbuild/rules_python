@@ -13,6 +13,6 @@ py_test(
     name = "message_test",
     srcs = ["message_test.py"],
     deps = [
-        "//py_proto_library/another_proto:message_proto_py_pb2",
+        "//py_proto_library/example.com/another_proto:message_proto_py_pb2",
     ],
 )

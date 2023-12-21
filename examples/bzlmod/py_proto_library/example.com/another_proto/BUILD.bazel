@@ -11,6 +11,6 @@ proto_library(
     name = "message_proto",
     srcs = ["message.proto"],
     # https://bazel.build/reference/be/protocol-buffer#proto_library.strip_import_prefix
-    strip_import_prefix = "/example.com",
+    strip_import_prefix = "/py_proto_library/example.com",
     deps = ["//py_proto_library/example.com/proto:pricetag_proto"],
 )
