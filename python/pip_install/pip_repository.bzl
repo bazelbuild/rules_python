@@ -22,7 +22,6 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
@@ -85,13 +84,12 @@ def _resolve_python_interpreter(rctx):
     if rctx.attr.python_interpreter_target != None:
         python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
 
-        if BZLMOD_ENABLED:
-            (os, _) = get_host_os_arch(rctx)
+        (os, _) = get_host_os_arch(rctx)
 
-            # On Windows, the symlink doesn't work because Windows attempts to find
-            # Python DLLs where the symlink is, not where the symlink points.
-            if os == WINDOWS_NAME:
-                python_interpreter = python_interpreter.realpath
+        # On Windows, the symlink doesn't work because Windows attempts to find
+        # Python DLLs where the symlink is, not where the symlink points.
+        if os == WINDOWS_NAME:
+            python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         # It's a plain command, e.g. "python3", to look up in the environment.
         found_python_interpreter = rctx.which(python_interpreter)
