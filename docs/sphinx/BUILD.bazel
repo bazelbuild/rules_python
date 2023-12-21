@@ -70,6 +70,7 @@ sphinx_docs(
 sphinx_inventory(
     name = "bazel_inventory",
     src = "bazel_inventory.txt",
+    visibility = ["//:__subpackages__"],
 )
 
 sphinx_stardocs(

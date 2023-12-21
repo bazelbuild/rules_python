@@ -1,0 +1,37 @@
+load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
+
+sphinx_docs(
+    name = "docs",
+    srcs = glob(
+        include = [
+            "*.md",
+        ],
+    ),
+    config = "conf.py",
+    formats = [
+        "html",
+    ],
+    renamed_srcs = {
+        "//docs/sphinx:bazel_inventory": "bazel_inventory.inv",
+    },
+    sphinx = ":sphinx-build",
+    strip_prefix = package_name() + "/",
+    # We only develop the docs using Linux/Mac, and there are deps that
+    # don't work for Windows, so just skip Windows.
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+sphinx_build_binary(
+    name = "sphinx-build",
+    tags = ["manual"],  # Only needed as part of sphinx doc building
+    deps = [
+        "//sphinxdocs/src/sphinx_stardoc",
+        "@dev_pip//myst_parser",
+        "@dev_pip//sphinx",
+        "@dev_pip//typing_extensions",  # Needed by sphinx_stardoc
+    ],
+)
