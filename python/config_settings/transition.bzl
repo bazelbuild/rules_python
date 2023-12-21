@@ -142,16 +142,29 @@ _COMMON_ATTRS = {
     ),
 }
 
+_PY_TEST_ATTRS = {
+    "_collect_cc_coverage": attr.label(
+        default = "@bazel_tools//tools/test:collect_cc_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
+    "_lcov_merger": attr.label(
+        default = configuration_field(fragment = "coverage", name = "output_generator"),
+        executable = True,
+        cfg = "exec",
+    ),
+}
+
 _transition_py_binary = rule(
     _transition_py_impl,
-    attrs = _COMMON_ATTRS,
+    attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     executable = True,
 )
 
 _transition_py_test = rule(
     _transition_py_impl,
-    attrs = _COMMON_ATTRS,
+    attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     test = True,
 )

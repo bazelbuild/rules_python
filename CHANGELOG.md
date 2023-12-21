@@ -46,6 +46,8 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
+* (coverage): `_lcov_merger` attr added in `_transition_py_test` and
+  coverage reports are now created when using the transition module.
 
 ### Added
 
