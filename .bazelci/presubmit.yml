@@ -370,13 +370,6 @@ tasks:
 
   # The proto example is workspace-only; bzlmod functionality is covered
   # by examples/bzlmod/py_proto_library
-  integration_test_py_proto_library_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *common_workspace_flags
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: Ubuntu, workspace, minimum Bazel"
-    working_directory: examples/py_proto_library
-    platform: ubuntu2004
   integration_test_py_proto_library_ubuntu_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -402,13 +395,6 @@ tasks:
     working_directory: examples/py_proto_library
     platform: windows
 
-  integration_test_pip_repository_annotations_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "examples/pip_repository_annotations: Ubuntu, workspace, minimum Bazel"
-    working_directory: examples/pip_repository_annotations
-    platform: ubuntu2004
   integration_test_pip_repository_annotations_ubuntu_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -521,13 +507,6 @@ tasks:
     - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
 
-  integration_test_pip_repository_entry_points_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Ubuntu, workspace, minimum Bazel"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: ubuntu2004
   integration_test_pip_repository_entry_points_ubuntu_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -553,13 +532,6 @@ tasks:
     working_directory: tests/integration/pip_repository_entry_points
     platform: windows
 
-  integration_test_ignore_root_user_error_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "ignore_root_user_error: Ubuntu, workspace, minimum Bazel"
-    working_directory: tests/integration/ignore_root_user_error
-    platform: ubuntu2004
   integration_test_ignore_root_user_error_ubuntu_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
