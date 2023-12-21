@@ -274,13 +274,6 @@ tasks:
     working_directory: examples/bzlmod_build_file_generation
     platform: windows
 
-  integration_test_multi_python_versions_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *common_workspace_flags
-    <<: *reusable_build_test_all
-    name: "examples/multi_python_versions: Ubuntu, workspace, minimum supported Bazel versoin"
-    working_directory: examples/multi_python_versions
-    platform: ubuntu2004
   integration_test_multi_python_versions_ubuntu_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -375,34 +368,8 @@ tasks:
   # We don't run pip_parse_vendored under Windows as the file checked in is
   # generated from a repository rule containing OS-specific rendered paths.
 
-  integration_test_py_proto_library_ubuntu_min_bzlmod:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: Ubuntu, bzlmod, minimum Bazel"
-    working_directory: examples/py_proto_library
-    platform: ubuntu2004
-  integration_test_py_proto_library_ubuntu:
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: Ubuntu, default"
-    working_directory: examples/py_proto_library
-    platform: ubuntu2004
-  integration_test_py_proto_library_debian:
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: Debian, default"
-    working_directory: examples/py_proto_library
-    platform: debian11
-  integration_test_py_proto_library_macos:
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: MacOS, default"
-    working_directory: examples/py_proto_library
-    platform: macos
-  integration_test_py_proto_library_windows:
-    <<: *reusable_build_test_all
-    name: "examples/py_proto_library: Windows, default"
-    working_directory: examples/py_proto_library
-    platform: windows
-
-  # Check the same using workspace as well
+  # The proto example is workspace-only; bzlmod functionality is covered
+  # by examples/bzlmod/py_proto_library
   integration_test_py_proto_library_ubuntu_min_workspace:
     <<: *minimum_supported_version
     <<: *common_workspace_flags
