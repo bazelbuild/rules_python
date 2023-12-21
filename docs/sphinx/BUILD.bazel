@@ -118,7 +118,6 @@ sphinx_build_binary(
 compile_pip_requirements(
     name = "requirements",
     src = "pyproject.toml",
-    requirements_darwin = "requirements_darwin.txt",
-    requirements_txt = "requirements_linux.txt",
+    requirements_txt = "requirements.txt",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
