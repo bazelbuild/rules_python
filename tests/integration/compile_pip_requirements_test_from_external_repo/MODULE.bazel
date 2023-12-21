@@ -1,4 +1,4 @@
-module(name = "compile_pip_requirements_test_from_external_workspace")
+module(name = "compile_pip_requirements_test_from_external_repo")
 
 bazel_dep(name = "rules_python", version = "0.0.0")
 local_path_override(
