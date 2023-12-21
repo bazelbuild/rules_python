@@ -55,6 +55,9 @@ A brief description of the categories of changes:
   instead with a location to the patch that could be used to silence the warning.
   Copy the patch to your workspace and add it to the list if patches for the wheel
   file if you decide to do so.
+* (coverage): coverage reports are now created when the version-aware
+  rules are used.
+  ([#1600](https://github.com/bazelbuild/rules_python/issues/1600))
 
 ### Added
 
