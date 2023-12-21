@@ -46,8 +46,9 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
-* (coverage): Test attributes added in transition module and coverage
-  reports are now created when using the transition module.
+* (coverage): coverage reports are now created when the version-aware
+  rules are used.
+  ([#1600](https://github.com/bazelbuild/rules_python/issues/1600))
 
 ### Added
 
