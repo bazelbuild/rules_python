@@ -143,11 +143,15 @@ _COMMON_ATTRS = {
 }
 
 _PY_TEST_ATTRS = {
+    # Magic attribute to help C++ coverage work. There's no
+    # docs about this; see TestActionBuilder.java
     "_collect_cc_coverage": attr.label(
         default = "@bazel_tools//tools/test:collect_cc_coverage",
         executable = True,
         cfg = "exec",
     ),
+    # Magic attribute to make coverage work. There's no
+    # docs about this; see TestActionBuilder.java
     "_lcov_merger": attr.label(
         default = configuration_field(fragment = "coverage", name = "output_generator"),
         executable = True,
