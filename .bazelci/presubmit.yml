@@ -230,7 +230,7 @@ tasks:
   integration_test_bzlmod_windows:
     <<: *reusable_build_test_all
     # coverage is not supported on Windows
-  name: "examples/bzlmod: Windows"
+    name: "examples/bzlmod: Windows"
     working_directory: examples/bzlmod
     platform: windows
 
