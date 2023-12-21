@@ -14,7 +14,6 @@
 
 "pip module extension for use with bzlmod"
 
-load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:host_interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
@@ -540,17 +539,6 @@ Apply any overrides (e.g. patches) to a given Python distribution defined by
 other tags in this extension.""",
 )
 
-def _extension_extra_args():
-    args = {}
-
-    if bazel_features.external_deps.module_extension_has_os_arch_dependent:
-        args = args | {
-            "arch_dependent": False,
-            "os_dependent": False,
-        }
-
-    return args
-
 pip = module_extension(
     doc = """\
 This extension is used to make dependencies from pip available.
@@ -595,7 +583,6 @@ extension.
 """,
         ),
     },
-    **_extension_extra_args()
 )
 
 def _whl_mods_repo_impl(rctx):
