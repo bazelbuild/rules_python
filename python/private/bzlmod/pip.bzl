@@ -109,7 +109,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     # needed for the whl_libary declarations below.
     requirements_lock_content = module_ctx.read(requrements_lock)
     parse_result = parse_requirements(requirements_lock_content)
-    requirements = parse_result.requirements
+
+    # Replicate a surprising behavior that WORKSPACE builds allowed:
+    # Defining a repo with the same name multiple times, but only the last
+    # definition is respected.
+    # The requirement lines might have duplicate names because lines for extras
+    # are returned as just the base package name. e.g., `foo[bar]` results
+    # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
+    requirements = {
+        normalize_name(entry[0]): entry
+        # The WORKSPACE pip_parse sorted entries, so mimic that ordering.
+        for entry in sorted(parse_result.requirements)
+    }.values()
+
     extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
     if hub_name not in whl_map:

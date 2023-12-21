@@ -220,7 +220,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	collisionErrors := singlylinkedlist.New()
 
 	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
-		deps, mainModules, err := parser.parse(srcs)
+		allDeps, mainModules, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -248,10 +248,13 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 						fqTarget.String(), actualPyBinaryKind, err)
 					continue
 				}
+				binaryDeps := allDeps.Select(func(index int, value interface{}) bool {
+					return value.(module).Filepath == filepath.Join(args.Rel, filename)
+				})
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 					addVisibility(visibility).
 					addSrc(filename).
-					addModuleDependencies(deps).
+					addModuleDependencies(binaryDeps).
 					generateImportsAttribute().build()
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
@@ -261,7 +264,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(srcs).
-			addModuleDependencies(deps).
+			addModuleDependencies(allDeps).
 			generateImportsAttribute().
 			build()
 
@@ -269,18 +272,16 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
 	}
 	if cfg.PerFileGeneration() {
+		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
 		pyLibraryFilenames.Each(func(index int, filename interface{}) {
-			if filename == pyLibraryEntrypointFilename {
-				stat, err := os.Stat(filepath.Join(args.Dir, filename.(string)))
-				if err != nil {
-					log.Fatalf("ERROR: %v\n", err)
-				}
-				if stat.Size() == 0 {
-					return // ignore empty __init__.py
-				}
+			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if filename == pyLibraryEntrypointFilename && !nonEmptyInit {
+				return // ignore empty __init__.py.
 			}
 			srcs := treeset.NewWith(godsutils.StringComparator, filename)
-			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if cfg.PerFileGenerationIncludeInit() && hasInit && nonEmptyInit {
+				srcs.Add(pyLibraryEntrypointFilename)
+			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
 		})
 	} else if !pyLibraryFilenames.Empty() {
@@ -463,6 +464,19 @@ func hasEntrypointFile(dir string) bool {
 		}
 	}
 	return false
+}
+
+// hasLibraryEntrypointFile returns if the given directory has the library
+// entrypoint file, and if it is non-empty.
+func hasLibraryEntrypointFile(dir string) (bool, bool) {
+	stat, err := os.Stat(filepath.Join(dir, pyLibraryEntrypointFilename))
+	if os.IsNotExist(err) {
+		return false, false
+	}
+	if err != nil {
+		log.Fatalf("ERROR: %v\n", err)
+	}
+	return true, stat.Size() != 0
 }
 
 // isEntrypointFile returns whether the given path is an entrypoint file. The

@@ -49,6 +49,12 @@ filegroup(
 )
 
 bzl_library(
+    name = "auth_bzl",
+    srcs = ["auth.bzl"],
+    deps = [":bazel_tools_bzl"],
+)
+
+bzl_library(
     name = "autodetecting_toolchain_bzl",
     srcs = ["autodetecting_toolchain.bzl"],
     deps = [

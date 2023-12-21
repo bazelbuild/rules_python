@@ -44,6 +44,15 @@ A brief description of the categories of changes:
   platform using `download_only = True` feature.
 * (bzlmod pip.parse) The `pip.parse(python_interpreter)` arg now works for
   specifying a local system interpreter.
+* (bzlmod pip.parse) Requirements files with duplicate entries for the same
+  package (e.g. one for the package, one for an extra) now work.
+
+### Added
+
+* (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+* (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
+  attribute for every target in the package. This is enabled through a separate
+  directive `python_generation_mode_per_file_include_init`.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 

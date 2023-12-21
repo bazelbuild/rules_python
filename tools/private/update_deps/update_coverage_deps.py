@@ -151,7 +151,7 @@ def _parse_args() -> argparse.Namespace:
 def main():
     args = _parse_args()
 
-    api_url = f"https://pypi.python.org/pypi/{args.name}/{args.version}/json"
+    api_url = f"https://pypi.org/pypi/{args.name}/{args.version}/json"
     req = request.Request(api_url)
     with request.urlopen(req) as response:
         data = json.loads(response.read().decode("utf-8"))

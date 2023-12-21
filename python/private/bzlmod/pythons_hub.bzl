@@ -29,7 +29,19 @@ def _have_same_length(*lists):
         fail("expected at least one list")
     return len({len(length): None for length in lists}) == 1
 
-def _python_toolchain_build_file_content(
+_HUB_BUILD_FILE_TEMPLATE = """\
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "interpreters_bzl",
+    srcs = ["interpreters.bzl"],
+    visibility = ["@rules_python//:__subpackages__"],
+)
+
+{toolchains}
+"""
+
+def _hub_build_file_content(
         prefixes,
         python_versions,
         set_python_version_constraints,
@@ -48,7 +60,7 @@ def _python_toolchain_build_file_content(
 
     # Iterate over the length of python_versions and call
     # build the toolchain content by calling python_toolchain_build_file_content
-    return "\n".join([python_toolchain_build_file_content(
+    toolchains = "\n".join([python_toolchain_build_file_content(
         prefix = prefixes[i],
         python_version = full_version(python_versions[i]),
         set_python_version_constraint = set_python_version_constraints[i],
@@ -56,7 +68,9 @@ def _python_toolchain_build_file_content(
         rules_python = rules_python,
     ) for i in range(len(python_versions))])
 
-_build_file_for_hub_template = """
+    return _HUB_BUILD_FILE_TEMPLATE.format(toolchains = toolchains)
+
+_interpreters_bzl_template = """
 INTERPRETER_LABELS = {{
 {interpreter_labels}
 }}
@@ -72,7 +86,7 @@ def _hub_repo_impl(rctx):
     # write them to the BUILD file.
     rctx.file(
         "BUILD.bazel",
-        _python_toolchain_build_file_content(
+        _hub_build_file_content(
             rctx.attr.toolchain_prefixes,
             rctx.attr.toolchain_python_versions,
             rctx.attr.toolchain_set_python_version_constraints,
@@ -97,7 +111,7 @@ def _hub_repo_impl(rctx):
 
     rctx.file(
         "interpreters.bzl",
-        _build_file_for_hub_template.format(
+        _interpreters_bzl_template.format(
             interpreter_labels = interpreter_labels,
             default_python_version = rctx.attr.default_python_version,
         ),

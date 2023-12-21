@@ -13,7 +13,9 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:proto.bzl", "py_proto_library")
 load("//python:py_binary.bzl", "py_binary")
+load("//python:py_library.bzl", "py_library")
 
 package(
     default_visibility = ["//sphinxdocs:__subpackages__"],
@@ -69,4 +71,29 @@ py_binary(
     srcs = ["inventory_builder.py"],
     # Only public because it's an implicit attribute
     visibility = ["//:__subpackages__"],
+)
+
+py_binary(
+    name = "proto_to_markdown",
+    srcs = ["proto_to_markdown.py"],
+    # Only public because it's an implicit attribute
+    visibility = ["//:__subpackages__"],
+    deps = [":proto_to_markdown_lib"],
+)
+
+py_library(
+    name = "proto_to_markdown_lib",
+    srcs = ["proto_to_markdown.py"],
+    # Only public because it's an implicit attribute
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":stardoc_output_proto_py_pb2",
+    ],
+)
+
+py_proto_library(
+    name = "stardoc_output_proto_py_pb2",
+    deps = [
+        "@io_bazel_stardoc//stardoc/proto:stardoc_output_proto",
+    ],
 )
