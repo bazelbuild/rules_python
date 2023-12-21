@@ -46,6 +46,12 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
+* (whl_library) Actually use the provided patches to patch the whl_library.
+  On Windows the patching may result in files with CRLF line endings, as a result
+  the RECORD file consistency requirement is lifted and now a warning is emitted
+  instead with a location to the patch that could be used to silence the warning.
+  Copy the patch to your workspace and add it to the list if patches for the wheel
+  file if you decide to do so.
 
 ### Added
 
