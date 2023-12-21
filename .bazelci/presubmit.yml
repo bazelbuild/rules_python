@@ -561,7 +561,7 @@ tasks:
     <<: *minimum_supported_version
     <<: *common_workspace_flags
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu, workspace, minimum Bazel"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
@@ -569,35 +569,35 @@ tasks:
   integration_compile_pip_requirements_test_from_external_repo_ubuntu_min_bzlmod:
     <<: *minimum_supported_version
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu, bzlmod, minimum Bazel"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_ubuntu:
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_debian:
     name: "compile_pip_requirements_test_from_external_repo: Debian"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: debian11
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_macos:
     name: "compile_pip_requirements_test_from_external_repo: macOS"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: macos
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
   integration_compile_pip_requirements_test_from_external_repo_windows:
     name: "compile_pip_requirements_test_from_external_repo: Windows"
-    working_directory: tests/compile_pip_requirements_test_from_external_repo
+    working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: windows
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
