@@ -39,9 +39,9 @@ buildifier:
     - "--test_tag_filters=-integration-test"
 .common_workspace_flags: &common_workspace_flags
   test_flags:
-    - "--noenabled_bzlmod"
+    - "--noenable_bzlmod"
   build_flags:
-    - "--noenabled_bzlmod"
+    - "--noenable_bzlmod"
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
