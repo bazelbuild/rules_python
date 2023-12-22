@@ -16,22 +16,23 @@
 A starlark implementation of the wheel platform tag parsing to get the target platform.
 """
 
-_cpu_aliases = {
-    "x86_64": "x86_64",
+# The order of the dictionaries is to keep definitions with their aliases next to each
+# other
+_CPU_ALIASES = {
     "x86_32": "x86_32",
-    "aarch64": "aarch64",
-    "ppc": "ppc",
-    "s390x": "s390x",
-    # aliases
-    "amd64": "x86_64",
-    "arm64": "aarch64",
     "i386": "x86_32",
     "i686": "x86_32",
     "x86": "x86_32",
+    "x86_64": "x86_64",
+    "amd64": "x86_64",
+    "aarch64": "aarch64",
+    "arm64": "aarch64",
+    "ppc": "ppc",
     "ppc64le": "ppc",
+    "s390x": "s390x",
 }  # buildifier: disable=unsorted-dict-items
 
-_os_prefixes = {
+_OS_PREFIXES = {
     "linux": "linux",
     "manylinux": "linux",
     "musllinux": "linux",
@@ -53,7 +54,7 @@ def whl_target_platform(tag):
     """
     cpus = _cpu_from_tag(tag)
 
-    for prefix, os in _os_prefixes.items():
+    for prefix, os in _OS_PREFIXES.ITEMS():
         if tag.startswith(prefix):
             return [
                 struct(os = os, cpu = cpu)
@@ -65,7 +66,7 @@ def whl_target_platform(tag):
 def _cpu_from_tag(tag):
     candidate = [
         cpu
-        for input, cpu in _cpu_aliases.items()
+        for input, cpu in _CPU_ALIASES.ITEMS()
         if tag.endswith(input)
     ]
     if candidate:
