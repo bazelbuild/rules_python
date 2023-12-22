@@ -54,7 +54,7 @@ def whl_target_platforms(tag):
     """
     cpus = _cpu_from_tag(tag)
 
-    for prefix, os in _OS_PREFIXES.ITEMS():
+    for prefix, os in _OS_PREFIXES.items():
         if tag.startswith(prefix):
             return [
                 struct(os = os, cpu = cpu)
@@ -66,7 +66,7 @@ def whl_target_platforms(tag):
 def _cpu_from_tag(tag):
     candidate = [
         cpu
-        for input, cpu in _CPU_ALIASES.ITEMS()
+        for input, cpu in _CPU_ALIASES.items()
         if tag.endswith(input)
     ]
     if candidate:
