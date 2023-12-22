@@ -47,7 +47,9 @@ def whl_target_platform(tag):
             ./parse_whl_name.bzl for more details.
 
     Returns:
-        A list of structs with os and cpu attributes.
+        A list of structs, with attributes:
+        * os: str, one of the _OS_PREFIXES values
+        * cpu: str, one of the _CPU_PREFIXES values
     """
     cpus = _cpu_from_tag(tag)
 
@@ -74,4 +76,4 @@ def _cpu_from_tag(tag):
     elif tag.endswith("universal2") and tag.startswith("macosx"):
         return ["x86_64", "aarch64"]
     else:
-        fail("unknown tag: {}".format(tag))
+        fail("Unrecognized tag: '{}': cannot determine CPU".format(tag))
