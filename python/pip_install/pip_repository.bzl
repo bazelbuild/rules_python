@@ -29,7 +29,7 @@ load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
-load("//python/private:whl_target_platform.bzl", "whl_target_platform")
+load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -753,7 +753,7 @@ def _whl_library_impl(rctx):
             # wheel, we only include deps for that target platform
             target_platforms = [
                 "{}_{}".format(p.os, p.cpu)
-                for p in whl_target_platform(parsed_whl.platform_tag)
+                for p in whl_target_platforms(parsed_whl.platform_tag)
             ]
 
     result = rctx.execute(

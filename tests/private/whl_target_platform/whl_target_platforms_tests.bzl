@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:whl_target_platform.bzl", "whl_target_platform")  # buildifier: disable=bzl-visibility
+load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -40,12 +40,12 @@ def _test_simple(env):
     }
 
     for give, want in tests.items():
-        got = whl_target_platform(give)
+        got = whl_target_platforms(give)
         env.expect.that_collection(got).contains_exactly(want)
 
 _tests.append(_test_simple)
 
-def whl_target_platform_test_suite(name):
+def whl_target_platforms_test_suite(name):
     """Create the test suite.
 
     Args:

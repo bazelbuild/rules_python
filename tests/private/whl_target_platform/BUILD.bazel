@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":whl_target_platform_tests.bzl", "whl_target_platform_test_suite")
+load(":whl_target_platforms_tests.bzl", "whl_target_platforms_test_suite")
 
-whl_target_platform_test_suite(name = "whl_target_platform_tests")
+whl_target_platforms_test_suite(name = "whl_target_platforms_tests")
