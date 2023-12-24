@@ -717,7 +717,12 @@ def _whl_library_impl(rctx):
     whl_path = None
     whl_label = None
     if rctx.attr.experimental_whl_file:
-        whl_label = rctx.attr.experimental_whl_file
+        whl_label = str(rctx.attr.experimental_whl_file)
+        # TODO @aignas 2023-12-24: resolve the label from the hub repo label to the spoke so that `.realpath` works correctly.
+        prefix, _, tail = whl_label.partition("//")
+        suffix, _, filename = tail.partition(":")
+        whl_label = Label("%s_%s//:%s" % (prefix, suffix, filename))
+
         whl_path = rctx.path(whl_label).realpath
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None

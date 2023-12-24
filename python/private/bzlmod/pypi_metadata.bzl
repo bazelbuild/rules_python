@@ -17,6 +17,7 @@
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 load(":pypi_archive.bzl", "pypi_file")
 
 def PyPISource(*, filename, label, sha256):
@@ -32,19 +33,9 @@ def PyPISource(*, filename, label, sha256):
     """
     return struct(
         filename = filename,
-        label = _label(label) if type(label) == type("") else label,
+        label = label,
         sha256 = sha256,
     )
-
-def _label(label):
-    """This function allows us to construct labels to pass to rules."""
-
-    # get the rules_python cannonical namename
-    prefix, _, _ = str(Label("//:MODULE.bazel")).partition("//")
-
-    # this depends on the implementation detail on the fact that we have `~` in the label
-    prefix = prefix + "~pip~"
-    return Label(label.replace("@", prefix))
 
 def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     """Fetch archives for all requirements files using the bazel downloader.
@@ -107,13 +98,14 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
     )
 
     ret = {}
+    repos = {}
 
-    for distribution, metadata in metadata.items():
+    for distribution, m in metadata.items():
         files = {}
 
-        for file in metadata.files:
+        for file in m.files:
             _, _, filename = file.url.rpartition("/")
-            archive_name = "{}_{}_{}".format(name, distribution, file.sha256[:6])
+            suffix = "{distribution}_{sha}".format(distribution=distribution, sha=file.sha256[:8])
 
             # We could use http_file, but we want to also be able to patch the whl
             # file, which is something http_file does not know how to do.
@@ -121,7 +113,7 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
             # http_file.
 
             pypi_file(
-                name = archive_name,
+                name = name + "_" + suffix,
                 sha256 = file.sha256,
                 # FIXME @aignas 2023-12-18: consider if we should replace this
                 # with http_file + whl_library from pycross that philsc is
@@ -152,16 +144,51 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
 
             files[file.sha256] = PyPISource(
                 filename = filename,
-                label = "@{}//:file".format(archive_name),
+                label = "@{name}//{suffix}:{filename}".format(
+                    name=name,
+                    suffix=suffix,
+                    filename="file",
+                ),
                 sha256 = file.sha256,
             )
+            repos[suffix] = "file"
 
         ret[normalize_name(distribution)] = struct(
             distribution = distribution,
             files = files,
         )
 
+    _pypi_metadata_hub(
+        name = name,
+        repo = name,
+        repos = repos,
+    )
+
     return ret
+
+def _hub_impl(rctx):
+    aliases = {
+        suffix: "@{}_{}//:{}".format(rctx.attr.repo, suffix, filename)
+        for suffix, filename in rctx.attr.repos.items()
+    }
+    for suffix, filename in rctx.attr.repos.items():
+        rctx.file(
+            "{}/BUILD.bazel".format(suffix),
+            render.alias(
+                name = filename,
+                actual = repr(aliases[suffix]),
+                visibility = ["//visibility:public"],
+            )
+        )
+
+_pypi_metadata_hub = repository_rule(
+    _hub_impl,
+    attrs = {
+        "repo": attr.string(mandatory = True),
+        "repos": attr.string_dict(mandatory = True),
+    }
+)
+
 
 def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
     # Create a copy that is mutable within this context and use it like a queue

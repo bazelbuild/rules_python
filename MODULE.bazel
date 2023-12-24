@@ -52,6 +52,17 @@ python.toolchain(
 )
 use_repo(python, "pythons_hub")
 
+pip = use_extension("//python/extensions:pip.bzl", "pip")
+
+# use the following repo, which contains references to things we download from
+# PyPI via the experimental rules, this makes it possible to pass regular labels
+# to the whl_library rule instantiation within the pip extension itself.
+#
+# However, I am not sure how this plays with `dev_dependency = True` and/or
+# `isolated = True`. It could be that it might fail.
+# TODO @aignas 2023-12-24: test this.
+use_repo(pip, "pypi_whl")
+
 # This call registers the Python toolchains.
 register_toolchains("@pythons_hub//:all")
 
