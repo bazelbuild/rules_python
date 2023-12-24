@@ -125,9 +125,21 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 sha256 = file.sha256,
                 # FIXME @aignas 2023-12-18: consider if we should replace this
                 # with http_file + whl_library from pycross that philsc is
-                # working on. In the long term, it may be easier to maintain, especially
-                # since this implementation needs to copy functionality around credential
-                # helpers, etc to be useful.
+                # working on.
+                #
+                # In the long term, it may be easier to maintain, especially
+                # since this implementation needs to copy functionality around
+                # credential helpers, etc to be useful.
+                #
+                # I tried to use `http_file` and do patching in a separate repository
+                # rule and it failed since the patching (and whl_library) depends on the
+                # correct filename of the downloaded file, which can be set via
+                # `downloaded_file_path`. However, that does not create a
+                # symlink called `file` next to the target, which means that
+                # the result becomes unusable in the repository_ctx.path
+                # function.  If the patching and extracting is done with build
+                # actions, like the `py_whl_library` is doing, then we could in
+                # theory just use `http_file`.
                 patches = {
                     patch_file: str(patch_dst.patch_strip)
                     for patch_file, patch_dst in whl_overrides.get(distribution, {}).items()
