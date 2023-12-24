@@ -150,6 +150,7 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 label = "@{name}//{suffix}:{filename}".format(
                     name = name,
                     suffix = suffix,
+                    # TODO @aignas 2023-12-24: support patched stuff
                     filename = repos[suffix],
                 ),
                 sha256 = file.sha256,

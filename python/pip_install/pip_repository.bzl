@@ -716,13 +716,19 @@ def _whl_library_impl(rctx):
 
     whl_path = None
     whl_label = None
-    if rctx.attr.experimental_whl_file:
-        whl_label = str(rctx.attr.experimental_whl_file)
-        prefix, _, tail = whl_label.partition("//")
-        suffix, _, filename = tail.partition(":")
-        whl_label = Label("%s_%s//:%s" % (prefix, suffix, filename))
+    if rctx.attr.experimental_whl_label:
+        # This label may be a hub repo if that is the case, resolve it to the
+        # spoke repo label. For reasons why see `../private/bzlmod/pypi_metadata.bzl`.
+        whl_label = rctx.attr.experimental_whl_label
+        repo_name = whl_label.repo_name
+        package = whl_label.package
+        filename = rctx.attr.experimental_whl_filename or whl_label.name
 
-        whl_path = rctx.path(whl_label).realpath
+        # Use this to support `http_file`-downloaded whls, which have set
+        # the option of `downloaded_file_path`.
+        build_label = Label("@@%s_%s//:%s" % (repo_name, package, "BUILD.bazel"))
+        whl_path = rctx.path(build_label).dirname.get_child(filename)
+
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
             whl_label = None
@@ -818,7 +824,7 @@ def _whl_library_impl(rctx):
         ],
         entry_points = entry_points,
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
-        impl_vis = None if not rctx.attr.experimental_whl_file else "@{}{}//:__pkg__".format(
+        impl_vis = None if not rctx.attr.experimental_whl_label else "@{}{}//:__pkg__".format(
             rctx.attr.repo_prefix,
             normalize_name(metadata["name"]),
         ),
@@ -863,7 +869,13 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
-    "experimental_whl_file": attr.label(
+    "experimental_whl_filename": attr.string(
+        doc = """\
+The filename that the label points to. Note, because of limitations of how the repository rules
+use labels, this allows an `http_file` to be used together with `downloaded_file_path` arg.
+""",
+    ),
+    "experimental_whl_label": attr.label(
         doc = """\
 The label of the whl file to use. This allows one to pass a whl file to be used, but at the same
 time it changes the assumed whl_library layout. With this parameter set, the pip repository layout

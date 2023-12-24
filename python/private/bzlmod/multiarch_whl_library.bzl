@@ -140,11 +140,14 @@ def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **k
     for plat, (f, r) in files.items():
         whl_name = "{}__{}".format(name, plat)
         libs[plat] = f.filename
+        req, hash, _ = r.partition("--hash=sha256:")
+        req = "{} {}{}".format(req.strip(), hash, f.sha256)
         whl_library(
             name = whl_name,
-            experimental_whl_file = f.label,
+            experimental_whl_label = f.label,
+            experimental_whl_filename = f.filename,
             # how can I create a single thing?
-            requirement = r,
+            requirement = req,
             extra_pip_args = extra_pip_args,
             **kwargs
         )
