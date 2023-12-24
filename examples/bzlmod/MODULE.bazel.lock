@@ -1993,7 +1993,7 @@
     },
     "@@rules_python~override//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "dt+rliXMFU3rnJvklzDv5AK2C5RYFshW+nnRC7mewhE=",
+        "bzlTransitiveDigest": "1ayKT7MQqaXFcAmt1/NC/GUg5MimdIevFgKdx5IxISQ=",
         "accumulatedFileDigests": {
           "@@//:requirements_lock_3_10.txt": "5054b53712a25e46631ef5929f1fe0b8524975bbb5ccabf08c873f03b4f6afa4",
           "@@//whl_mods:appended_build_content.BUILD": "8e384e9b27c2b3e844108bce1f7c4b71a689c8d343dafc3d29d7db0cd781a9dc",
