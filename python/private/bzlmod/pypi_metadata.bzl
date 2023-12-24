@@ -105,12 +105,18 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
 
         for file in m.files:
             _, _, filename = file.url.rpartition("/")
-            suffix = "{distribution}_{sha}".format(distribution=distribution, sha=file.sha256[:8])
+            suffix = "{distribution}_{sha}".format(distribution = distribution, sha = file.sha256[:8])
 
             # We could use http_file, but we want to also be able to patch the whl
             # file, which is something http_file does not know how to do.
             # if the url is known (in case of using pdm lock), we could use an
             # http_file.
+
+            patches = {
+                patch_file: str(patch_dst.patch_strip)
+                for patch_file, patch_dst in whl_overrides.get(distribution, {}).items()
+                if filename in patch_dst.whls
+            }
 
             pypi_file(
                 name = name + "_" + suffix,
@@ -132,26 +138,22 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 # function.  If the patching and extracting is done with build
                 # actions, like the `py_whl_library` is doing, then we could in
                 # theory just use `http_file`.
-                patches = {
-                    patch_file: str(patch_dst.patch_strip)
-                    for patch_file, patch_dst in whl_overrides.get(distribution, {}).items()
-                    if filename in patch_dst.whls
-                },
+                patches = patches,
                 urls = [file.url],
                 # FIXME @aignas 2023-12-15: add usage of the DEFAULT_PYTHON_VERSION
                 # to get the hermetic interpreter
             )
 
+            repos[suffix] = "file" if patches else filename
             files[file.sha256] = PyPISource(
                 filename = filename,
                 label = "@{name}//{suffix}:{filename}".format(
-                    name=name,
-                    suffix=suffix,
-                    filename="file",
+                    name = name,
+                    suffix = suffix,
+                    filename = repos[suffix],
                 ),
                 sha256 = file.sha256,
             )
-            repos[suffix] = "file"
 
         ret[normalize_name(distribution)] = struct(
             distribution = distribution,
@@ -178,7 +180,7 @@ def _hub_impl(rctx):
                 name = filename,
                 actual = repr(aliases[suffix]),
                 visibility = ["//visibility:public"],
-            )
+            ),
         )
 
 _pypi_metadata_hub = repository_rule(
@@ -186,9 +188,8 @@ _pypi_metadata_hub = repository_rule(
     attrs = {
         "repo": attr.string(mandatory = True),
         "repos": attr.string_dict(mandatory = True),
-    }
+    },
 )
-
 
 def _fetch_metadata(module_ctx, *, sha256s_by_distribution, indexes):
     # Create a copy that is mutable within this context and use it like a queue
