@@ -21,6 +21,9 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (runfiles) `rules_python.python.runfiles` now directly implements type hints
+  and drops support for python2 as a result.
+
 * (toolchains) `py_runtime`, `py_runtime_pair`, and `PyRuntimeInfo` now use the
   rules_python Starlark implementation, not the one built into Bazel. NOTE: This
   only applies to Bazel 6+; Bazel 5 still uses the builtin implementation.
