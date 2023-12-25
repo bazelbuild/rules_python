@@ -22,11 +22,11 @@ jobs:
       - uses: jpetrucciani/mypy-check@master
         with:
           requirements: 1.6.0
-          python_version: 3.11
+          python_version: 3.8
           path: 'python/runfiles'
       - uses: jpetrucciani/mypy-check@master
         with:
           requirements: 1.6.0
-          python_version: 3.11
+          python_version: 3.8
           path: 'tests/runfiles'
       
