@@ -106,6 +106,29 @@ def _files_to_pack(dir: pathlib.Path, want_record: str) -> list[pathlib.Path]:
     return got_files + extra_files + got_distinfos + extra_distinfos
 
 
+def _move_files(*, src: pathlib.Path, dest: pathlib.Path, excludes: list[pathlib.Path]):
+    """Move the files recursively to ensure that excludes are respected.
+
+    This ensure that excludes being in sub-directories relative to the CWD will still
+    be honoured.
+    """
+    for p in src.glob("*"):
+        if p in excludes:
+            logging.debug(f"Ignoring: {p}")
+            continue
+        rel_path = p.relative_to(src)
+        dst = dest / rel_path
+
+        is_relative_to_excludes = [x for x in excludes if x.is_relative_to(p)]
+        if is_relative_to_excludes:
+            _move_files(src=p, dest=dst, excludes=is_relative_to_excludes)
+            continue
+
+        dst.parent.mkdir(exist_ok=True)
+        p.rename(dst)
+        logging.debug(f"mv {p} -> {dst}")
+
+
 def main(sys_argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -134,17 +157,10 @@ def main(sys_argv):
         patched_wheel_dir = cwd / tmpdir
         logging.debug(f"Created a tmpdir: {patched_wheel_dir}")
 
-        excludes = [args.whl_path, patched_wheel_dir, args.output]
+        exclude_top_level = [args.whl_path, patched_wheel_dir]
 
         logging.debug("Moving whl contents to the newly created tmpdir")
-        for p in cwd.glob("*"):
-            if p in excludes:
-                logging.debug(f"Ignoring: {p}")
-                continue
-
-            rel_path = p.relative_to(cwd)
-            dst = p.rename(patched_wheel_dir / rel_path)
-            logging.debug(f"mv {p} -> {dst}")
+        _move_files(src=cwd, dest=patched_wheel_dir, excludes=exclude_top_level)
 
         distinfo_dir = next(iter(patched_wheel_dir.glob("*dist-info")))
         logging.debug(f"Found dist-info dir: {distinfo_dir}")

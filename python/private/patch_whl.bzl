@@ -49,8 +49,8 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, patched_whl_path =
 
     # extract files into the current directory for patching as rctx.patch
     # does not support patching in another directory.
-    whl_input = rctx.path(whl_path)
-    if not whl_input.exists:
+    whl_input = rctx.path(whl_path).realpath
+    if not whl_input.exists or False:
         fail("The given whl does not exist")
 
     # symlink to a zip file to use bazel's extract so that we can use bazel's

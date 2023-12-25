@@ -91,6 +91,9 @@ a label. The patches are applied in the same order as they are listed in the dic
     "quiet": attr.bool(doc = "Silence the stdout/stdeer during patching", default = True),
     "sha256": attr.string(doc = _HTTP_FILE_DOC),
     "urls": attr.string_list(doc = _HTTP_FILE_DOC),
+    "_tools": attr.label_list(
+        default = ["//python/private:repack_whl.py"],
+    ),
 }
 
 pypi_file = repository_rule(
