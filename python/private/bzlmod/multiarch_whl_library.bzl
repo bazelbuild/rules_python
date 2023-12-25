@@ -145,8 +145,6 @@ def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **k
         whl_library(
             name = whl_name,
             experimental_whl_label = f.label,
-            experimental_whl_filename = f.filename,
-            # how can I create a single thing?
             requirement = req,
             extra_pip_args = extra_pip_args,
             **kwargs

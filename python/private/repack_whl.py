@@ -134,7 +134,7 @@ def main(sys_argv):
         patched_wheel_dir = cwd / tmpdir
         logging.debug(f"Created a tmpdir: {patched_wheel_dir}")
 
-        excludes = [args.whl_path, patched_wheel_dir]
+        excludes = [args.whl_path, patched_wheel_dir, args.output]
 
         logging.debug("Moving whl contents to the newly created tmpdir")
         for p in cwd.glob("*"):
@@ -151,6 +151,7 @@ def main(sys_argv):
         record_path = distinfo_dir / "RECORD"
         record_contents = record_path.read_text() if record_path.exists() else ""
 
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         with _WhlFile(args.output, mode="w", distinfo_dir=distinfo_dir) as out:
             for p in _files_to_pack(patched_wheel_dir, record_contents):
                 rel_path = p.relative_to(patched_wheel_dir)

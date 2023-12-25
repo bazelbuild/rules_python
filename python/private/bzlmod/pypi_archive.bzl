@@ -28,14 +28,14 @@ def _impl(rctx):
     prefix, _, _ = prefix.rpartition("_")
 
     _, _, filename = rctx.attr.urls[0].rpartition("/")
-    filename = filename.strip()
+    output = "whl/{}".format(filename.strip())
 
     urls = rctx.attr.urls
     auth = get_auth(rctx, urls)
 
     result = rctx.download(
         url = urls,
-        output = filename,
+        output = output,
         sha256 = rctx.attr.sha256,
         auth = auth,
         canonical_id = rctx.attr.canonical_id,
@@ -44,13 +44,16 @@ def _impl(rctx):
     if not result.success:
         fail(result)
 
-    whl_path = rctx.path(filename)
+    whl_path = rctx.path(output)
+    if not whl_path.exists:
+        fail("BUG: the downloaded path does not exist, but the download was successfull")
 
     if rctx.attr.patches:
         whl_path = patch_whl(
             rctx,
             python_interpreter = _resolve_python_interpreter(rctx),
             whl_path = whl_path,
+            patched_whl_path = "patched/{}".format(whl_path.basename),
             patches = {
                 p: int(strip)
                 for p, strip in rctx.attr.patches.items()
@@ -60,13 +63,13 @@ def _impl(rctx):
 
     # NOTE @aignas 2023-12-20: this symlink is to ensure that the
     # rctx.path(label) resolves to the right file.
-    rctx.symlink(whl_path, "file")
+    rctx.symlink(whl_path, whl_path.basename)
 
     rctx.file(
         "BUILD.bazel",
         """\
 exports_files(
-    ["file", "{filename}"],
+    ["{filename}"],
     visibility=["//visibility:public"],
 )
 """.format(filename = whl_path.basename),

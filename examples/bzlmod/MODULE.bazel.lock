@@ -1993,7 +1993,7 @@
     },
     "@@rules_python~override//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "WX+U+zaLZ9UzQFueVnantlRxwywLGDrKKYZbdyLQxq4=",
+        "bzlTransitiveDigest": "5vkdHLrqwlG1ae3PAo526WU+MAOfJ9rtGr7Wyef9PlI=",
         "accumulatedFileDigests": {
           "@@//:requirements_lock_3_10.txt": "5054b53712a25e46631ef5929f1fe0b8524975bbb5ccabf08c873f03b4f6afa4",
           "@@//whl_mods:appended_build_content.BUILD": "8e384e9b27c2b3e844108bce1f7c4b71a689c8d343dafc3d29d7db0cd781a9dc",
@@ -2048,7 +2048,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_yamllint__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//yamllint_d01dde00:yamllint-1.32.0.tar.gz",
-              "experimental_whl_filename": "yamllint-1.32.0.tar.gz",
               "requirement": "yamllint==1.32.0 --hash=sha256:d01dde008c65de5b235188ab3110bebc59d18e5c65fc8a58267cd211cd9df34a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2093,7 +2092,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_alabaster__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//alabaster_1ee19aca:alabaster-0.7.13-py3-none-any.whl",
-              "experimental_whl_filename": "alabaster-0.7.13-py3-none-any.whl",
               "requirement": "alabaster==0.7.13 --hash=sha256:1ee19aca801bbabb5ba3f5f258e4422dfa86f82f3e9cefb0859b283cdd7f62a3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2137,7 +2135,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_docutils__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//docutils_96f387a2:docutils-0.20.1-py3-none-any.whl",
-              "experimental_whl_filename": "docutils-0.20.1-py3-none-any.whl",
               "requirement": "docutils==0.20.1 --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2169,7 +2166,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tabulate__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tabulate_0095b12b:tabulate-0.9.0.tar.gz",
-              "experimental_whl_filename": "tabulate-0.9.0.tar.gz",
               "requirement": "tabulate==0.9.0 --hash=sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2238,7 +2234,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_2fbfbca6:wrapt-1.15.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:2fbfbca668dd15b744418265a9607baa970c347eefd0db6a518aaf0cfbd153c0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2282,7 +2277,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tomli__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomli_939de3e7:tomli-2.0.1-py3-none-any.whl",
-              "experimental_whl_filename": "tomli-2.0.1-py3-none-any.whl",
               "requirement": "tomli==2.0.1 --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2314,7 +2308,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__manylinux_2_17_s390x",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_c0f31130:cffi-1.16.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:c0f31130ebc2d37cdd8e44605fb5fa7ad59049298b3f745c74fa74c62fbfcfc4",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -2364,7 +2357,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_f84fbc98:PyYAML-6.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:f84fbc98b019fef2ee9a1cb3ce93e3187a6df0b2538a651bfb890254ba9f90b5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2433,7 +2425,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_snowballstemmer__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//snowballstemmer_09b16deb:snowballstemmer-2.2.0.tar.gz",
-              "experimental_whl_filename": "snowballstemmer-2.2.0.tar.gz",
               "requirement": "snowballstemmer==2.2.0 --hash=sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2477,7 +2468,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_e61ceaab:PyYAML-6.0-cp39-cp39-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-macosx_11_0_arm64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:e61ceaab6f49fb8bdfaa0f92c4b57bcfbea54c09277b1b4f7ac376bfb7a7c174",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2509,7 +2499,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_python_dateutil__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_dateutil_961d03dc:python_dateutil-2.8.2-py2.py3-none-any.whl",
-              "experimental_whl_filename": "python_dateutil-2.8.2-py2.py3-none-any.whl",
               "requirement": "python-dateutil==2.8.2 --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2541,7 +2530,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_snowballstemmer__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//snowballstemmer_09b16deb:snowballstemmer-2.2.0.tar.gz",
-              "experimental_whl_filename": "snowballstemmer-2.2.0.tar.gz",
               "requirement": "snowballstemmer==2.2.0 --hash=sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2573,7 +2561,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__manylinux_2_17_ppc64le",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_b86851a3:cffi-1.16.0-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:b86851a328eedc692acf81fb05444bdf1891747c25af7529e39ddafaf68a4f3f",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -2648,7 +2635,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_2cd5df3d:PyYAML-6.0-cp310-cp310-win32.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-win32.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:2cd5df3de48857ed0544b34e2d40e9fac445930039f3cfe4bcc592a1f836d513",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2704,7 +2690,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_dee0ce50:wrapt-1.14.1-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-win32.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:dee0ce50c6a2dd9056c20db781e9c1cfd33e77d2d569f5d1d9321c641bb903d5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2748,7 +2733,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_lazy_object_proxy__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_eac3a9a5:lazy_object_proxy-1.8.0-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.8.0-cp39-cp39-win_amd64.whl",
               "requirement": "lazy-object-proxy==1.8.0 --hash=sha256:eac3a9a5ef13b332c059772fd40b4b1c3d45a3a2b05e33a361dee48e54a4dad0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2780,7 +2764,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_colorama__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//colorama_08695f5c:colorama-0.4.6.tar.gz",
-              "experimental_whl_filename": "colorama-0.4.6.tar.gz",
               "requirement": "colorama==0.4.6 --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2812,7 +2795,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_isort__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//isort_8bef7dde:isort-5.12.0.tar.gz",
-              "experimental_whl_filename": "isort-5.12.0.tar.gz",
               "requirement": "isort==5.12.0 --hash=sha256:8bef7dde241278824a6d83f44a544709b065191b95b6e50894bdc722fcba0504",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2844,7 +2826,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinx__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinx_1e09160a:sphinx-7.2.6-py3-none-any.whl",
-              "experimental_whl_filename": "sphinx-7.2.6-py3-none-any.whl",
               "requirement": "sphinx==7.2.6 --hash=sha256:1e09160a40b956dc623c910118fa636da93bd3ca0b9876a7b3df90f07d691560",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2907,7 +2888,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_d06730c6:wrapt-1.15.0.tar.gz",
-              "experimental_whl_filename": "wrapt-1.15.0.tar.gz",
               "requirement": "wrapt==1.15.0 --hash=sha256:d06730c6aed78cee4126234cf2d071e01b44b915e725a6cb439a879ec9754a3a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -2975,7 +2955,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_alabaster__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//alabaster_a27a4a08:alabaster-0.7.13.tar.gz",
-              "experimental_whl_filename": "alabaster-0.7.13.tar.gz",
               "requirement": "alabaster==0.7.13 --hash=sha256:a27a4a084d5e690e16e01e03ad2b2e552c61a65469419b907243193de1a84ae2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3019,7 +2998,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tomli__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomli_939de3e7:tomli-2.0.1-py3-none-any.whl",
-              "experimental_whl_filename": "tomli-2.0.1-py3-none-any.whl",
               "requirement": "tomli==2.0.1 --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3051,7 +3029,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_platformdirs__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//platformdirs_b46ffafa:platformdirs-2.6.0.tar.gz",
-              "experimental_whl_filename": "platformdirs-2.6.0.tar.gz",
               "requirement": "platformdirs==2.6.0 --hash=sha256:b46ffafa316e6b83b47489d240ce17173f123a9b9c83282141c3daf26ad9ac2e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3083,7 +3060,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_yamllint__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//yamllint_89bb5b5a:yamllint-1.28.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "yamllint-1.28.0-py2.py3-none-any.whl",
               "requirement": "yamllint==1.28.0 --hash=sha256:89bb5b5ac33b1ade059743cf227de73daa34d5e5a474b06a5e17fc16583b0cf2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3139,7 +3115,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinx__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinx_9a5160e1:sphinx-7.2.6.tar.gz",
-              "experimental_whl_filename": "sphinx-7.2.6.tar.gz",
               "requirement": "sphinx==7.2.6 --hash=sha256:9a5160e1ea90688d5963ba09a2dcd8bdd526620edbb65c328728f1b2228d5ab5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3178,7 +3153,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_64b1df0f:wrapt-1.15.0-py3-none-any.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-py3-none-any.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:64b1df0f83706b4ef4cfb4fb0e4c2669100fd7ecacfb59e091fad300d4e04640",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3221,8 +3195,7 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "name": "rules_python~override~pip~pip_39_requests__any",
-              "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_c210084e:file",
-              "experimental_whl_filename": "requests-2.25.1-py2.py3-none-any.whl",
+              "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_c210084e:requests-2.25.1-py2.py3-none-any.whl",
               "requirement": "requests==2.25.1 --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3317,7 +3290,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_six__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//six_8abb2f1d:six-1.16.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "six-1.16.0-py2.py3-none-any.whl",
               "requirement": "six==1.16.0 --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3457,7 +3429,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__macosx_10_9_universal2",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_777354ee:websockets-11.0.3-cp39-cp39-macosx_10_9_universal2.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-macosx_10_9_universal2.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:777354ee16f02f643a4c7f2b3eff8027a33c9861edc691a2003531f5da4f6bc8",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3525,7 +3496,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_chardet__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//chardet_f864054d:chardet-4.0.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "chardet-4.0.0-py2.py3-none-any.whl",
               "requirement": "chardet==4.0.0 --hash=sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3600,7 +3570,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_htmlhelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_htmlhelp_6c26a118:sphinxcontrib_htmlhelp-2.0.4.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_htmlhelp-2.0.4.tar.gz",
               "requirement": "sphinxcontrib-htmlhelp==2.0.4 --hash=sha256:6c26a118a05b76000738429b724a0568dbde5b72391a688577da08f11891092a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3676,7 +3645,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_jinja2__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//jinja2_31351a70:Jinja2-3.1.2.tar.gz",
-              "experimental_whl_filename": "Jinja2-3.1.2.tar.gz",
               "requirement": "jinja2==3.1.2 --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3757,7 +3725,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tomli__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomli_de526c12:tomli-2.0.1.tar.gz",
-              "experimental_whl_filename": "tomli-2.0.1.tar.gz",
               "requirement": "tomli==2.0.1 --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3813,7 +3780,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tomlkit__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomlkit_07de26b0:tomlkit-0.11.6-py3-none-any.whl",
-              "experimental_whl_filename": "tomlkit-0.11.6-py3-none-any.whl",
               "requirement": "tomlkit==0.11.6 --hash=sha256:07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3845,7 +3811,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__manylinux_2_17_s390x",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_cba8c411:PyYAML-6.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:cba8c411ef271aa037d7357a2bc8f9ee8b58b9965831d9e51baf703280dc73d3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3877,7 +3842,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_9dcdfd0e:MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:9dcdfd0eaf283af041973bff14a2e143b8bd64e069f4c383416ecd79a81aab58",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3909,7 +3873,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_certifi__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//certifi_c6c2e98f:certifi-2023.5.7-py3-none-any.whl",
-              "experimental_whl_filename": "certifi-2023.5.7-py3-none-any.whl",
               "requirement": "certifi==2023.5.7 --hash=sha256:c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3941,7 +3904,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pygments__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pygments_1daff049:Pygments-2.16.1.tar.gz",
-              "experimental_whl_filename": "Pygments-2.16.1.tar.gz",
               "requirement": "pygments==2.16.1 --hash=sha256:1daff0494820c69bc8941e407aa20f577374ee88364ee10a98fdbe0aece96e29",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -3985,7 +3947,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_77f396e6:PyYAML-6.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:77f396e6ef4c73fdc33a9157446466f1cff553d979bd00ecb64385760c6babdc",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4085,7 +4046,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_typing_extensions__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//typing_extensions_d91d5919:typing_extensions-4.6.3.tar.gz",
-              "experimental_whl_filename": "typing_extensions-4.6.3.tar.gz",
               "requirement": "typing-extensions==4.6.3 --hash=sha256:d91d5919357fe7f681a9f2b5b4cb2a5f1ef0a1e9f59c4d8ff0d3491e05c0ffd5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4239,7 +4199,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_imagesize__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//imagesize_69150444:imagesize-1.4.1.tar.gz",
-              "experimental_whl_filename": "imagesize-1.4.1.tar.gz",
               "requirement": "imagesize==1.4.1 --hash=sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4283,7 +4242,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pylint__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_18783cca:pylint-2.15.9.tar.gz",
-              "experimental_whl_filename": "pylint-2.15.9.tar.gz",
               "requirement": "pylint==2.15.9 --hash=sha256:18783cca3cfee5b83c6c5d10b3cdb66c6594520ffae61890858fe8d932e1c6b4",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4339,7 +4297,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__manylinux_2_17_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_65c1a9bc:MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:65c1a9bcdadc6c28eecee2c119465aebff8f7a584dd719facdd9e825ec61ab52",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4432,7 +4389,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_urllib3__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//urllib3_f8ecc1bb:urllib3-1.26.18.tar.gz",
-              "experimental_whl_filename": "urllib3-1.26.18.tar.gz",
               "requirement": "urllib3==1.26.18 --hash=sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4483,7 +4439,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_3580dd9c:websockets-11.0.3-cp39-cp39-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-macosx_11_0_arm64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:3580dd9c1ad0701169e4d6fc41e878ffe05e6bdcaf3c412f9d559389d0c9e016",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4515,7 +4470,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_21f6d9a0:wrapt-1.15.0-cp310-cp310-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-macosx_10_9_x86_64.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:21f6d9a0d5b3a207cdf7acf8e58d7d13d463e639f0c7e01d82cdb671e6cb7923",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4560,7 +4514,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__macosx_10_9_universal2",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_3ccc8a0c:websockets-11.0.3-cp310-cp310-macosx_10_9_universal2.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-macosx_10_9_universal2.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:3ccc8a0c387629aec40f2fc9fdcb4b9d5431954f934da3eaf16cdc94f67dbfac",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4702,7 +4655,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_s3cmd__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//s3cmd_49cd23d5:s3cmd-2.1.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "s3cmd-2.1.0-py2.py3-none-any.whl",
               "requirement": "s3cmd==2.1.0 --hash=sha256:49cd23d516b17974b22b611a95ce4d93fe326feaa07320bd1d234fed68cbccfa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4746,7 +4698,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_chardet__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//chardet_f864054d:chardet-4.0.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "chardet-4.0.0-py2.py3-none-any.whl",
               "requirement": "chardet==4.0.0 --hash=sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4815,7 +4766,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__macosx_10_9_universal2",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_cd0f502f:MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_universal2.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_universal2.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:cd0f502fe016460680cd20aaa5a76d241d6f35a1c3350c474bac1273803893fa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4847,7 +4797,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_68fb519c:PyYAML-6.0.tar.gz",
-              "experimental_whl_filename": "PyYAML-6.0.tar.gz",
               "requirement": "pyyaml==6.0 --hash=sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4904,7 +4853,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_54accd4b:wrapt-1.15.0-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:54accd4b8bc202966bafafd16e69da9d5640ff92389d33d28555c5fd4f25ccb7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -4960,7 +4908,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_serializinghtml__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_serializinghtml_9b36e503:sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl",
               "requirement": "sphinxcontrib-serializinghtml==1.1.9 --hash=sha256:9b36e503703ff04f20e9675771df105e58aa029cfcbc23b8ed716019b7416ae1",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5023,7 +4970,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_isort__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//isort_6db30c5d:isort-5.11.4.tar.gz",
-              "experimental_whl_filename": "isort-5.11.4.tar.gz",
               "requirement": "isort==5.11.4 --hash=sha256:6db30c5ded9815d813932c04c2f85a360bcdd35fed496f4d8f35495ef0a261b6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5068,7 +5014,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_90452ba7:cryptography-41.0.7-cp37-abi3-win_amd64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-win_amd64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:90452ba79b8788fa380dfb587cca692976ef4e757b194b093d845e8d99f612f2",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -5433,7 +5378,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_typing_extensions__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//typing_extensions_1511434b:typing_extensions-4.4.0.tar.gz",
-              "experimental_whl_filename": "typing_extensions-4.4.0.tar.gz",
               "requirement": "typing-extensions==4.4.0 --hash=sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5562,7 +5506,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_jinja2__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//jinja2_6088930b:Jinja2-3.1.2-py3-none-any.whl",
-              "experimental_whl_filename": "Jinja2-3.1.2-py3-none-any.whl",
               "requirement": "jinja2==3.1.2 --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5594,7 +5537,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pylint_print__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_print_a2b2599e:pylint_print-1.0.1-py3-none-any.whl",
-              "experimental_whl_filename": "pylint_print-1.0.1-py3-none-any.whl",
               "requirement": "pylint-print==1.0.1 --hash=sha256:a2b2599e7887b93e551db2624c523c1e6e9e58c3be8416cd98d41e4427e2669b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5650,7 +5592,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_jsmath__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_jsmath_2ec2eaeb:sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl",
               "requirement": "sphinxcontrib-jsmath==1.0.1 --hash=sha256:2ec2eaebfb78f3f2078e73666b1415417a116cc848b72e5172e596c871103178",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5730,7 +5671,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_devhelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_devhelp_63b41e0d:sphinxcontrib_devhelp-1.0.5.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_devhelp-1.0.5.tar.gz",
               "requirement": "sphinxcontrib-devhelp==1.0.5 --hash=sha256:63b41e0d38207ca40ebbeabcf4d8e51f76c03e78cd61abe118cf4435c73d4212",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5817,7 +5757,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_htmlhelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_htmlhelp_8001661c:sphinxcontrib_htmlhelp-2.0.4-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_htmlhelp-2.0.4-py3-none-any.whl",
               "requirement": "sphinxcontrib-htmlhelp==2.0.4 --hash=sha256:8001661c077a73c29beaf4a79968d0726103c5605e27db92b9ebed8bab1359e9",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -5868,7 +5807,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinx__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinx_1e09160a:sphinx-7.2.6-py3-none-any.whl",
-              "experimental_whl_filename": "sphinx-7.2.6-py3-none-any.whl",
               "requirement": "sphinx==7.2.6 --hash=sha256:1e09160a40b956dc623c910118fa636da93bd3ca0b9876a7b3df90f07d691560",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6005,7 +5943,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_525808b8:MarkupSafe-2.1.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:525808b8019e36eb524b8c68acdd63a37e75714eac50e988180b169d64480a00",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6074,7 +6011,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tabulate__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tabulate_0095b12b:tabulate-0.9.0.tar.gz",
-              "experimental_whl_filename": "tabulate-0.9.0.tar.gz",
               "requirement": "tabulate==0.9.0 --hash=sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6186,7 +6122,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_9cb4a35b:cffi-1.16.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:9cb4a35b3642fc5c005a6755a5d17c6c8b6bcb6981baf81cea8bfbc8903e8ba8",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -6211,7 +6146,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_e8c6cfb3:lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:e8c6cfb338b133fbdbc5cfaa10fe3c6aeea827db80c978dbd13bc9dd8526b7d4",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6280,7 +6214,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_daf496c5:PyYAML-6.0-cp310-cp310-win_amd64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-win_amd64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:daf496c58a8c52083df09b80c860005194014c3698698d1a57cbcfa182142a3a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6312,7 +6245,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_3232822c:wrapt-1.14.1-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:3232822c7d98d23895ccc443bbdf57c7412c5a65996c30442ebe6ed3df335383",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6344,7 +6276,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_bceab846:websockets-11.0.3-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:bceab846bac555aff6427d060f2fcfff71042dba6f5fca7dc4f75cac815e57ca",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6376,7 +6307,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__manylinux_2_17_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_841df4ca:cryptography-41.0.7-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:841df4caa01008bad253bce2a6f7b47f86dc9f08df4b433c404def869f590a15",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -6437,7 +6367,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_astroid__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//astroid_df164d5a:astroid-2.13.5.tar.gz",
-              "experimental_whl_filename": "astroid-2.13.5.tar.gz",
               "requirement": "astroid==2.13.5 --hash=sha256:df164d5ac811b9f44105a72b8f9d5edfb7b5b2d7e979b04ea377a77b3229114a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6490,7 +6419,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_s3cmd__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//s3cmd_966b0a49:s3cmd-2.1.0.tar.gz",
-              "experimental_whl_filename": "s3cmd-2.1.0.tar.gz",
               "requirement": "s3cmd==2.1.0 --hash=sha256:966b0a494a916fc3b4324de38f089c86c70ee90e8e1cae6d59102103a4c0cc03",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6570,7 +6498,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_applehelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_applehelp_094c4d56:sphinxcontrib_applehelp-1.0.7-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_applehelp-1.0.7-py3-none-any.whl",
               "requirement": "sphinxcontrib-applehelp==1.0.7 --hash=sha256:094c4d56209d1734e7d252f6e0b3ccc090bd52ee56807a5d9315b19c122ab15d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6686,7 +6613,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_idna__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//idna_b97d804b:idna-2.10-py2.py3-none-any.whl",
-              "experimental_whl_filename": "idna-2.10-py2.py3-none-any.whl",
               "requirement": "idna==2.10 --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6718,7 +6644,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_packaging__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//packaging_8c491190:packaging-23.2-py3-none-any.whl",
-              "experimental_whl_filename": "packaging-23.2-py3-none-any.whl",
               "requirement": "packaging==23.2 --hash=sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6762,7 +6687,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_b4038727:lazy_object_proxy-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.9.0-cp310-cp310-macosx_10_9_x86_64.whl",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:b40387277b0ed2d0602b8293b94d7257e17d1479e257b4de114ea11a8cb7f2d7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6794,7 +6718,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_qthelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_qthelp_bf76886e:sphinxcontrib_qthelp-1.0.6-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_qthelp-1.0.6-py3-none-any.whl",
               "requirement": "sphinxcontrib-qthelp==1.0.6 --hash=sha256:bf76886ee7470b934e363da7a954ea2825650013d367728588732c7350f49ea4",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6906,7 +6829,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_659fb580:lazy-object-proxy-1.9.0.tar.gz",
-              "experimental_whl_filename": "lazy-object-proxy-1.9.0.tar.gz",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:659fb5809fa4629b8a1ac5106f669cfc7bef26fbb389dda53b3e010d1ac4ebae",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -6974,7 +6896,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tomlkit__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomlkit_71b952e5:tomlkit-0.11.6.tar.gz",
-              "experimental_whl_filename": "tomlkit-0.11.6.tar.gz",
               "requirement": "tomlkit==0.11.6 --hash=sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7030,7 +6951,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_alabaster__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//alabaster_a27a4a08:alabaster-0.7.13.tar.gz",
-              "experimental_whl_filename": "alabaster-0.7.13.tar.gz",
               "requirement": "alabaster==0.7.13 --hash=sha256:a27a4a084d5e690e16e01e03ad2b2e552c61a65469419b907243193de1a84ae2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7074,7 +6994,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__manylinux_2_28_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_43f2552a:cryptography-41.0.7-cp37-abi3-manylinux_2_28_x86_64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-manylinux_2_28_x86_64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:43f2552a2378b44869fe8827aa19e69512e3245a219104438692385b0ee119d1",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -7124,7 +7043,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_astroid__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//astroid_6891f444:astroid-2.13.5-py3-none-any.whl",
-              "experimental_whl_filename": "astroid-2.13.5-py3-none-any.whl",
               "requirement": "astroid==2.13.5 --hash=sha256:6891f444625b6edb2ac798829b689e95297e100ddf89dbed5a8c610e34901501",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7168,7 +7086,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_6681ba9e:websockets-11.0.3-py3-none-any.whl",
-              "experimental_whl_filename": "websockets-11.0.3-py3-none-any.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:6681ba9e7f8f3b19440921e99efbb40fc89f26cd71bf539e45d8c8a25c976dc6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7237,7 +7154,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_2d903ad4:websockets-11.0.3-cp310-cp310-win32.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-win32.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:2d903ad4419f5b472de90cd2d40384573b25da71e33519a67797de17ef849b69",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7269,7 +7185,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_380a85cf:wrapt-1.14.1.tar.gz",
-              "experimental_whl_filename": "wrapt-1.14.1.tar.gz",
               "requirement": "wrapt==1.14.1 --hash=sha256:380a85cf89e0e69b7cfbe2ea9f765f004ff419f34194018a6827ac0e3edfed4d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7368,7 +7283,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_babel__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//babel_33e0952d:Babel-2.13.1.tar.gz",
-              "experimental_whl_filename": "Babel-2.13.1.tar.gz",
               "requirement": "babel==2.13.1 --hash=sha256:33e0952d7dd6374af8dbf6768cc4ddf3ccfefc244f9986d4074704f2fbd18900",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7400,7 +7314,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_af598ed3:MarkupSafe-2.1.3.tar.gz",
-              "experimental_whl_filename": "MarkupSafe-2.1.3.tar.gz",
               "requirement": "markupsafe==2.1.3 --hash=sha256:af598ed32d6ae86f1b747b82783958b1a4ab8f617b06fe68795c7f026abbdcad",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7468,7 +7381,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_applehelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_applehelp_39fdc8d7:sphinxcontrib_applehelp-1.0.7.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_applehelp-1.0.7.tar.gz",
               "requirement": "sphinxcontrib-applehelp==1.0.7 --hash=sha256:39fdc8d762d33b01a7d8f026a3b7d71563ea3b72787d5f00ad8465bd9d6dfbfa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7519,7 +7431,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_jsmath__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_jsmath_2ec2eaeb:sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl",
               "requirement": "sphinxcontrib-jsmath==1.0.1 --hash=sha256:2ec2eaebfb78f3f2078e73666b1415417a116cc848b72e5172e596c871103178",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7587,7 +7498,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_7622a89d:websockets-11.0.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:7622a89d696fc87af8e8d280d9b421db5133ef5b29d3f7a1ce9f1a7bf7fcfa11",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7631,7 +7541,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_setuptools__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//setuptools_a7620757:setuptools-65.6.3.tar.gz",
-              "experimental_whl_filename": "setuptools-65.6.3.tar.gz",
               "requirement": "setuptools==65.6.3 --hash=sha256:a7620757bf984b58deaf32fc8a4577a9bbc0850cf92c20e1ce41c38c19e5fb75",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7762,7 +7671,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_26458da5:wrapt-1.15.0-cp310-cp310-win32.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-win32.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:26458da5653aa5b3d8dc8b24192f574a58984c749401f98fff994d41d3f08da1",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7843,7 +7751,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_urllib3__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//urllib3_34b97092:urllib3-1.26.18-py2.py3-none-any.whl",
-              "experimental_whl_filename": "urllib3-1.26.18-py2.py3-none-any.whl",
               "requirement": "urllib3==1.26.18 --hash=sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7875,7 +7782,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_s3cmd__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//s3cmd_49cd23d5:s3cmd-2.1.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "s3cmd-2.1.0-py2.py3-none-any.whl",
               "requirement": "s3cmd==2.1.0 --hash=sha256:49cd23d516b17974b22b611a95ce4d93fe326feaa07320bd1d234fed68cbccfa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -7907,7 +7813,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_yamllint__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//yamllint_9e3d8ddd:yamllint-1.28.0.tar.gz",
-              "experimental_whl_filename": "yamllint-1.28.0.tar.gz",
               "requirement": "yamllint==1.28.0 --hash=sha256:9e3d8ddd16d0583214c5fdffe806c9344086721f107435f68bad990e5a88826b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8011,7 +7916,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_idna__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//idna_b307872f:idna-2.10.tar.gz",
-              "experimental_whl_filename": "idna-2.10.tar.gz",
               "requirement": "idna==2.10 --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8079,7 +7983,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_jinja2__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//jinja2_31351a70:Jinja2-3.1.2.tar.gz",
-              "experimental_whl_filename": "Jinja2-3.1.2.tar.gz",
               "requirement": "jinja2==3.1.2 --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8111,7 +8014,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_docutils__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//docutils_96f387a2:docutils-0.20.1-py3-none-any.whl",
-              "experimental_whl_filename": "docutils-0.20.1-py3-none-any.whl",
               "requirement": "docutils==0.20.1 --hash=sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8155,7 +8057,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_isort__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//isort_c033fd0e:isort-5.11.4-py3-none-any.whl",
-              "experimental_whl_filename": "isort-5.11.4-py3-none-any.whl",
               "requirement": "isort==5.11.4 --hash=sha256:c033fd0edb91000a7f09527fe5c75321878f98322a77ddcc81adbd83724afb7b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8187,7 +8088,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_tabulate__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tabulate_024ca478:tabulate-0.9.0-py3-none-any.whl",
-              "experimental_whl_filename": "tabulate-0.9.0-py3-none-any.whl",
               "requirement": "tabulate==0.9.0 --hash=sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8219,7 +8119,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_9df7ed3b:PyYAML-6.0-cp310-cp310-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-macosx_11_0_arm64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:9df7ed3b3d2e0ecfe09e14741b857df43adb5a3ddadc919a2d94fbdf78fea53c",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8275,7 +8174,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pygments__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pygments_13fc09fa:Pygments-2.16.1-py3-none-any.whl",
-              "experimental_whl_filename": "Pygments-2.16.1-py3-none-any.whl",
               "requirement": "pygments==2.16.1 --hash=sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8307,7 +8205,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pylint__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_9df0d07e:pylint-2.15.10-py3-none-any.whl",
-              "experimental_whl_filename": "pylint-2.15.10-py3-none-any.whl",
               "requirement": "pylint==2.15.10 --hash=sha256:9df0d07e8948a1c3ffa3b6e2d7e6e63d9fb457c5da5b961ed63106594780cc7e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8426,7 +8323,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_python_dateutil__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_dateutil_0123cacc:python-dateutil-2.8.2.tar.gz",
-              "experimental_whl_filename": "python-dateutil-2.8.2.tar.gz",
               "requirement": "python-dateutil==2.8.2 --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8470,7 +8366,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pylint__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_349c8cd3:pylint-2.15.9-py3-none-any.whl",
-              "experimental_whl_filename": "pylint-2.15.9-py3-none-any.whl",
               "requirement": "pylint==2.15.9 --hash=sha256:349c8cd36aede4d50a0754a8c0218b43323d13d5d88f4b2952ddfe3e169681eb",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8549,8 +8444,7 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "name": "rules_python~override~pip~pip_310_requests__any",
-              "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_c210084e:file",
-              "experimental_whl_filename": "requests-2.25.1-py2.py3-none-any.whl",
+              "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_c210084e:requests-2.25.1-py2.py3-none-any.whl",
               "requirement": "requests==2.25.1 --hash=sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8583,7 +8477,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_mccabe__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//mccabe_6c2d30ab:mccabe-0.7.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "mccabe-0.7.0-py2.py3-none-any.whl",
               "requirement": "mccabe==0.7.0 --hash=sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8639,7 +8532,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_snowballstemmer__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//snowballstemmer_c8e1716e:snowballstemmer-2.2.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "snowballstemmer-2.2.0-py2.py3-none-any.whl",
               "requirement": "snowballstemmer==2.2.0 --hash=sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8695,7 +8587,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_htmlhelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_htmlhelp_8001661c:sphinxcontrib_htmlhelp-2.0.4-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_htmlhelp-2.0.4-py3-none-any.whl",
               "requirement": "sphinxcontrib-htmlhelp==2.0.4 --hash=sha256:8001661c077a73c29beaf4a79968d0726103c5605e27db92b9ebed8bab1359e9",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8734,7 +8625,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_72153271:lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.9.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:721532711daa7db0d8b779b0bb0318fa87af1c10d7fe5e52ef30f8eff254d0cd",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8790,7 +8680,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_3fd4abcb:MarkupSafe-2.1.3-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-win_amd64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:3fd4abcb888d15a94f32b75d8fd18ee162ca0c064f35b11134be77050296d6ba",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8871,7 +8760,6 @@
             "attributes": {
               "name": "rules_python~override~pip~other_module_pip_311_absl_py__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//absl_py_0d3fe606:absl_py-1.4.0-py3-none-any.whl",
-              "experimental_whl_filename": "absl_py-1.4.0-py3-none-any.whl",
               "requirement": "absl-py==1.4.0 --hash=sha256:0d3fe606adfa4f7db64792dd4c7aee4ee0c38ab75dfd353b7a83ed3e957fcb47",
               "extra_pip_args": [],
               "repo": "other_module_pip_311",
@@ -8944,7 +8832,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_d67d839e:PyYAML-6.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:d67d839ede4ed1b28a4e8909735fc992a923cdb84e618544973d7dfc71540803",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -8988,7 +8875,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_mccabe__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//mccabe_348e0240:mccabe-0.7.0.tar.gz",
-              "experimental_whl_filename": "mccabe-0.7.0.tar.gz",
               "requirement": "mccabe==0.7.0 --hash=sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9117,7 +9003,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_setuptools__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//setuptools_57f6f22b:setuptools-65.6.3-py3-none-any.whl",
-              "experimental_whl_filename": "setuptools-65.6.3-py3-none-any.whl",
               "requirement": "setuptools==65.6.3 --hash=sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9149,7 +9034,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_zipp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//zipp_0e923e72:zipp-3.17.0-py3-none-any.whl",
-              "experimental_whl_filename": "zipp-3.17.0-py3-none-any.whl",
               "requirement": "zipp==3.17.0 --hash=sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9181,7 +9065,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_python_magic__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_magic_c212960a:python_magic-0.4.27-py2.py3-none-any.whl",
-              "experimental_whl_filename": "python_magic-0.4.27-py2.py3-none-any.whl",
               "requirement": "python-magic==0.4.27 --hash=sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9237,7 +9120,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_serializinghtml__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_serializinghtml_0c64ff89:sphinxcontrib_serializinghtml-1.1.9.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_serializinghtml-1.1.9.tar.gz",
               "requirement": "sphinxcontrib-serializinghtml==1.1.9 --hash=sha256:0c64ff898339e1fac29abd2bf5f11078f3ec413cfe9c046d3120d7ca65530b54",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9288,7 +9170,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_055d937d:PyYAML-6.0-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:055d937d65826939cb044fc8c9b08889e8c743fdc6a32b33e2390f66013e449b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9332,7 +9213,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_ffd7dcaf:websockets-11.0.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:ffd7dcaf744f25f82190856bc26ed81721508fc5cbf2a330751e135ff1283564",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9364,7 +9244,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_python_dateutil__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_dateutil_0123cacc:python-dateutil-2.8.2.tar.gz",
-              "experimental_whl_filename": "python-dateutil-2.8.2.tar.gz",
               "requirement": "python-dateutil==2.8.2 --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9396,7 +9275,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pathspec__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pathspec_3c95343a:pathspec-0.10.3-py3-none-any.whl",
-              "experimental_whl_filename": "pathspec-0.10.3-py3-none-any.whl",
               "requirement": "pathspec==0.10.3 --hash=sha256:3c95343af8b756205e2aba76e843ba9520a24dd84f68c22b9f93251507509dd6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9489,7 +9367,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_40e7bc81:wrapt-1.14.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:40e7bc81c9e2b2734ea4bc1aceb8a8f0ceaac7c5299bc5d69e37c44d9081d43b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9521,7 +9398,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_f0705c37:lazy_object_proxy-1.9.0-cp310-cp310-win32.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.9.0-cp310-cp310-win32.whl",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:f0705c376533ed2a9e5e97aacdbfe04cecd71e0aa84c7c0595d02ef93b6e4455",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9565,7 +9441,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_platformdirs__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//platformdirs_412dae91:platformdirs-3.5.1.tar.gz",
-              "experimental_whl_filename": "platformdirs-3.5.1.tar.gz",
               "requirement": "platformdirs==3.5.1 --hash=sha256:412dae91f52a6f84830f39a8078cecd0e866cb72294a5c66808e74d5e88d251f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9634,7 +9509,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_88fc51d9:websockets-11.0.3.tar.gz",
-              "experimental_whl_filename": "websockets-11.0.3.tar.gz",
               "requirement": "websockets==11.0.3 --hash=sha256:88fc51d9a26b10fc331be344f1781224a375b78488fc343620184e95a4b27016",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9666,7 +9540,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pylint__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_b3dc5ef7:pylint-2.15.10.tar.gz",
-              "experimental_whl_filename": "pylint-2.15.10.tar.gz",
               "requirement": "pylint==2.15.10 --hash=sha256:b3dc5ef7d33858f297ac0d06cc73862f01e4f2e74025ec3eff347ce0bc60baf5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9698,7 +9571,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_certifi__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//certifi_4ad3232f:certifi-2022.12.7-py3-none-any.whl",
-              "experimental_whl_filename": "certifi-2022.12.7-py3-none-any.whl",
               "requirement": "certifi==2022.12.7 --hash=sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9795,7 +9667,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_41d07d02:wrapt-1.15.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:41d07d029dd4157ae27beab04d22b8e261eddfc6ecd64ff7000b10dc8b3a5727",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9863,7 +9734,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_devhelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_devhelp_fe8009ae:sphinxcontrib_devhelp-1.0.5-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_devhelp-1.0.5-py3-none-any.whl",
               "requirement": "sphinxcontrib-devhelp==1.0.5 --hash=sha256:fe8009aed765188f08fcaadbb3ea0d90ce8ae2d76710b7e29ea7d047177dae2f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -9939,7 +9809,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_75760a47:wrapt-1.15.0-cp310-cp310-win_amd64.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-win_amd64.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:75760a47c06b5974aa5e01949bf7e66d2af4d08cb8c1d6516af5e39595397f5e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10031,7 +9900,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_yamllint__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//yamllint_d97a66e4:yamllint-1.32.0-py3-none-any.whl",
-              "experimental_whl_filename": "yamllint-1.32.0-py3-none-any.whl",
               "requirement": "yamllint==1.32.0 --hash=sha256:d97a66e48da820829d96077d76b8dfbe6c6140f106e558dae87e81ac4e6b30b7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10063,7 +9931,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_packaging__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//packaging_8c491190:packaging-23.2-py3-none-any.whl",
-              "experimental_whl_filename": "packaging-23.2-py3-none-any.whl",
               "requirement": "packaging==23.2 --hash=sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10131,7 +9998,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_b29ebffc:cffi-1.16.0-cp39-cp39-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-macosx_11_0_arm64.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:b29ebffcf550f9da55bec9e02ad430c992a87e5f512cd63388abb76f1036d8d2",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -10192,7 +10058,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_qthelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_qthelp_bf76886e:sphinxcontrib_qthelp-1.0.6-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_qthelp-1.0.6-py3-none-any.whl",
               "requirement": "sphinxcontrib-qthelp==1.0.6 --hash=sha256:bf76886ee7470b934e363da7a954ea2825650013d367728588732c7350f49ea4",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10243,7 +10108,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_alabaster__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//alabaster_1ee19aca:alabaster-0.7.13-py3-none-any.whl",
-              "experimental_whl_filename": "alabaster-0.7.13-py3-none-any.whl",
               "requirement": "alabaster==0.7.13 --hash=sha256:1ee19aca801bbabb5ba3f5f258e4422dfa86f82f3e9cefb0859b283cdd7f62a3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10299,7 +10163,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_colorama__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//colorama_4f1d9991:colorama-0.4.6-py2.py3-none-any.whl",
-              "experimental_whl_filename": "colorama-0.4.6-py2.py3-none-any.whl",
               "requirement": "colorama==0.4.6 --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10410,7 +10273,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_pycparser__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pycparser_8ee45429:pycparser-2.21-py2.py3-none-any.whl",
-              "experimental_whl_filename": "pycparser-2.21-py2.py3-none-any.whl",
               "requirement": "pycparser==2.21 --hash=sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -10447,7 +10309,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_serializinghtml__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_serializinghtml_9b36e503:sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl",
               "requirement": "sphinxcontrib-serializinghtml==1.1.9 --hash=sha256:9b36e503703ff04f20e9675771df105e58aa029cfcbc23b8ed716019b7416ae1",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10547,7 +10408,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_packaging__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//packaging_048fb0e9:packaging-23.2.tar.gz",
-              "experimental_whl_filename": "packaging-23.2.tar.gz",
               "requirement": "packaging==23.2 --hash=sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10592,7 +10452,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_pycparser__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pycparser_e644fdec:pycparser-2.21.tar.gz",
-              "experimental_whl_filename": "pycparser-2.21.tar.gz",
               "requirement": "pycparser==2.21 --hash=sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -10629,7 +10488,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_lazy_object_proxy__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_8f6ce211:lazy_object_proxy-1.8.0-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.8.0-cp39-cp39-win32.whl",
               "requirement": "lazy-object-proxy==1.8.0 --hash=sha256:8f6ce2118a90efa7f62dd38c7dbfffd42f468b180287b748626293bf12ed468f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10673,7 +10531,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_d67ac60a:websockets-11.0.3-cp310-cp310-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-macosx_10_9_x86_64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:d67ac60a307f760c6e65dad586f556dde58e683fab03323221a4e530ead6f74d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10729,7 +10586,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_babel__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//babel_7077a498:Babel-2.13.1-py3-none-any.whl",
-              "experimental_whl_filename": "Babel-2.13.1-py3-none-any.whl",
               "requirement": "babel==2.13.1 --hash=sha256:7077a4984b02b6727ac10f1f7294484f737443d7e2e66c5e4380e41a3ae0b4ed",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10761,7 +10617,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wheel__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wheel_d236b20e:wheel-0.40.0-py3-none-any.whl",
-              "experimental_whl_filename": "wheel-0.40.0-py3-none-any.whl",
               "requirement": "wheel==0.40.0 --hash=sha256:d236b20e7cb522daf2390fa84c55eea81c5c30190f90f29ae2ca1ad8355bf247",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10806,7 +10661,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_988635d1:wrapt-1.14.1-cp39-cp39-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-macosx_11_0_arm64.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:988635d122aaf2bdcef9e795435662bcd65b02f4f4c1ae37fbee7401c440b3a7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10862,7 +10716,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_astroid__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//astroid_10e0ad5f:astroid-2.12.13-py3-none-any.whl",
-              "experimental_whl_filename": "astroid-2.12.13-py3-none-any.whl",
               "requirement": "astroid==2.12.13 --hash=sha256:10e0ad5f7b79c435179d0d0f0df69998c4eef4597534aae44910db060baeb907",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10906,7 +10759,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_68fb519c:PyYAML-6.0.tar.gz",
-              "experimental_whl_filename": "PyYAML-6.0.tar.gz",
               "requirement": "pyyaml==6.0 --hash=sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -10998,7 +10850,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_fec21693:MarkupSafe-2.1.3-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-win32.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:fec21693218efe39aa7f8599346e90c705afa52c5b31ae019b2e57e8f6542bb2",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11042,7 +10893,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_docutils__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//docutils_f08a4e27:docutils-0.20.1.tar.gz",
-              "experimental_whl_filename": "docutils-0.20.1.tar.gz",
               "requirement": "docutils==0.20.1 --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11074,7 +10924,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_lazy_object_proxy__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_71d9ae8a:lazy_object_proxy-1.8.0-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.8.0-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "lazy-object-proxy==1.8.0 --hash=sha256:71d9ae8a82203511a6f60ca5a1b9f8ad201cac0fc75038b2dc5fa519589c9288",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11118,7 +10967,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_python_dateutil__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_dateutil_961d03dc:python_dateutil-2.8.2-py2.py3-none-any.whl",
-              "experimental_whl_filename": "python_dateutil-2.8.2-py2.py3-none-any.whl",
               "requirement": "python-dateutil==2.8.2 --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11162,7 +11010,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_pyjwt__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyjwt_59127c39:PyJWT-2.8.0-py3-none-any.whl",
-              "experimental_whl_filename": "PyJWT-2.8.0-py3-none-any.whl",
               "requirement": "pyjwt[crypto]==2.8.0 --hash=sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -11223,7 +11070,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_babel__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//babel_33e0952d:Babel-2.13.1.tar.gz",
-              "experimental_whl_filename": "Babel-2.13.1.tar.gz",
               "requirement": "babel==2.13.1 --hash=sha256:33e0952d7dd6374af8dbf6768cc4ddf3ccfefc244f9986d4074704f2fbd18900",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11255,7 +11101,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_40527857:PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:40527857252b61eacd1d9af500c3337ba8deb8fc298940291486c465c8b46ec0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11287,7 +11132,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_qthelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_qthelp_62b9d1a1:sphinxcontrib_qthelp-1.0.6.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_qthelp-1.0.6.tar.gz",
               "requirement": "sphinxcontrib-qthelp==1.0.6 --hash=sha256:62b9d1a186ab7f5ee3356d906f648cacb7a6bdb94d201ee7adf26db55092982d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11374,7 +11218,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_ed86a356:cffi-1.16.0-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-win32.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:ed86a35631f7bfbb28e108dd96773b9d5a6ce4811cf6ea468bb6a359b256b1e4",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -11411,7 +11254,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_devhelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_devhelp_63b41e0d:sphinxcontrib_devhelp-1.0.5.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_devhelp-1.0.5.tar.gz",
               "requirement": "sphinxcontrib-devhelp==1.0.5 --hash=sha256:63b41e0d38207ca40ebbeabcf4d8e51f76c03e78cd61abe118cf4435c73d4212",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11475,7 +11317,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_1d225628:websockets-11.0.3-cp310-cp310-win_amd64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-win_amd64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:1d2256283fa4b7f4c7d7d3e84dc2ece74d341bce57d5b9bf385df109c2a1a82f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11507,7 +11348,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wheel__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wheel_d236b20e:wheel-0.40.0-py3-none-any.whl",
-              "experimental_whl_filename": "wheel-0.40.0-py3-none-any.whl",
               "requirement": "wheel==0.40.0 --hash=sha256:d236b20e7cb522daf2390fa84c55eea81c5c30190f90f29ae2ca1ad8355bf247",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11552,7 +11392,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wheel__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wheel_cd1196f3:wheel-0.40.0.tar.gz",
-              "experimental_whl_filename": "wheel-0.40.0.tar.gz",
               "requirement": "wheel==0.40.0 --hash=sha256:cd1196f3faee2b31968d626e1731c94f99cbdb67cf5a46e4f5656cbee7738873",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11756,7 +11595,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_platformdirs__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//platformdirs_e2378146:platformdirs-3.5.1-py3-none-any.whl",
-              "experimental_whl_filename": "platformdirs-3.5.1-py3-none-any.whl",
               "requirement": "platformdirs==3.5.1 --hash=sha256:e2378146f1964972c03c085bb5662ae80b2b8c06226c54b2ff4aa9483e8a13a5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11872,7 +11710,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pygments__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pygments_13fc09fa:Pygments-2.16.1-py3-none-any.whl",
-              "experimental_whl_filename": "Pygments-2.16.1-py3-none-any.whl",
               "requirement": "pygments==2.16.1 --hash=sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11916,7 +11753,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_requests__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_27973dd4:requests-2.25.1.tar.gz",
-              "experimental_whl_filename": "requests-2.25.1.tar.gz",
               "requirement": "requests==2.25.1 --hash=sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -11986,7 +11822,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_d52a2513:wrapt-1.14.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:d52a25136894c63de15a35bc0bdc5adb4b0e173b9c0d07a2be9d3ca64a332735",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12018,7 +11853,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_10bbfe99:MarkupSafe-2.1.3-cp310-cp310-win32.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-win32.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:10bbfe99883db80bdbaff2dcf681dfc6533a614f700da1287707e8a5d78a8431",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12050,7 +11884,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__macosx_10_12_universal2",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_3c78451b:cryptography-41.0.7-cp37-abi3-macosx_10_12_universal2.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-macosx_10_12_universal2.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:3c78451b78313fa81607fa1b3f1ae0a5ddd8014c38a02d9db0616133987b9cdf",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -12087,7 +11920,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_six__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//six_1e61c374:six-1.16.0.tar.gz",
-              "experimental_whl_filename": "six-1.16.0.tar.gz",
               "requirement": "six==1.16.0 --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12119,7 +11951,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__macosx_10_12_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_928258ba:cryptography-41.0.7-cp37-abi3-macosx_10_12_x86_64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-macosx_10_12_x86_64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:928258ba5d6f8ae644e764d0f996d61a8777559f72dfeb2eea7e2fe0ad6e782d",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -12180,7 +12011,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_six__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//six_1e61c374:six-1.16.0.tar.gz",
-              "experimental_whl_filename": "six-1.16.0.tar.gz",
               "requirement": "six==1.16.0 --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12237,7 +12067,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_lazy_object_proxy__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_ea806fd4:lazy_object_proxy-1.9.0-cp310-cp310-win_amd64.whl",
-              "experimental_whl_filename": "lazy_object_proxy-1.9.0-cp310-cp310-win_amd64.whl",
               "requirement": "lazy-object-proxy==1.9.0 --hash=sha256:ea806fd4c37bf7e7ad82537b0757999264d5f70c45468447bb2b91afdbe73a6e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12305,7 +12134,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_dee60e1d:wrapt-1.14.1-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-win_amd64.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:dee60e1de1898bde3b238f18340eec6148986da0455d8ba7848d50470a7a32fb",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12386,7 +12214,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_importlib_metadata__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//importlib_metadata_3ebb78df:importlib_metadata-6.8.0-py3-none-any.whl",
-              "experimental_whl_filename": "importlib_metadata-6.8.0-py3-none-any.whl",
               "requirement": "importlib-metadata==6.8.0 --hash=sha256:3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12430,7 +12257,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pathspec__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pathspec_2798de80:pathspec-0.11.1.tar.gz",
-              "experimental_whl_filename": "pathspec-0.11.1.tar.gz",
               "requirement": "pathspec==0.11.1 --hash=sha256:2798de800fa92780e33acca925945e9a19a133b715067cf165b8866c15a31687",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12510,7 +12336,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_snowballstemmer__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//snowballstemmer_c8e1716e:snowballstemmer-2.2.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "snowballstemmer-2.2.0-py2.py3-none-any.whl",
               "requirement": "snowballstemmer==2.2.0 --hash=sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12603,7 +12428,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_imagesize__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//imagesize_69150444:imagesize-1.4.1.tar.gz",
-              "experimental_whl_filename": "imagesize-1.4.1.tar.gz",
               "requirement": "imagesize==1.4.1 --hash=sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12647,7 +12471,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_applehelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_applehelp_39fdc8d7:sphinxcontrib_applehelp-1.0.7.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_applehelp-1.0.7.tar.gz",
               "requirement": "sphinxcontrib-applehelp==1.0.7 --hash=sha256:39fdc8d762d33b01a7d8f026a3b7d71563ea3b72787d5f00ad8465bd9d6dfbfa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12771,7 +12594,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_docutils__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//docutils_f08a4e27:docutils-0.20.1.tar.gz",
-              "experimental_whl_filename": "docutils-0.20.1.tar.gz",
               "requirement": "docutils==0.20.1 --hash=sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -12983,7 +12805,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_imagesize__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//imagesize_0d8d18d0:imagesize-1.4.1-py2.py3-none-any.whl",
-              "experimental_whl_filename": "imagesize-1.4.1-py2.py3-none-any.whl",
               "requirement": "imagesize==1.4.1 --hash=sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13015,7 +12836,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_f9835960:cryptography-41.0.7-cp37-abi3-win32.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-win32.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:f983596065a18a2183e7f79ab3fd4c475205b839e02cbc0efbbf9666c4b3083d",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -13076,7 +12896,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wheel__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wheel_cd1196f3:wheel-0.40.0.tar.gz",
-              "experimental_whl_filename": "wheel-0.40.0.tar.gz",
               "requirement": "wheel==0.40.0 --hash=sha256:cd1196f3faee2b31968d626e1731c94f99cbdb67cf5a46e4f5656cbee7738873",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13121,7 +12940,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_idna__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//idna_b307872f:idna-2.10.tar.gz",
-              "experimental_whl_filename": "idna-2.10.tar.gz",
               "requirement": "idna==2.10 --hash=sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13153,7 +12971,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_mccabe__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//mccabe_6c2d30ab:mccabe-0.7.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "mccabe-0.7.0-py2.py3-none-any.whl",
               "requirement": "mccabe==0.7.0 --hash=sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13185,7 +13002,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_jsmath__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_jsmath_a9925e4a:sphinxcontrib-jsmath-1.0.1.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib-jsmath-1.0.1.tar.gz",
               "requirement": "sphinxcontrib-jsmath==1.0.1 --hash=sha256:a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13242,7 +13058,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_certifi__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//certifi_35824b4c:certifi-2022.12.7.tar.gz",
-              "experimental_whl_filename": "certifi-2022.12.7.tar.gz",
               "requirement": "certifi==2022.12.7 --hash=sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13357,7 +13172,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_s3cmd__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//s3cmd_966b0a49:s3cmd-2.1.0.tar.gz",
-              "experimental_whl_filename": "s3cmd-2.1.0.tar.gz",
               "requirement": "s3cmd==2.1.0 --hash=sha256:966b0a494a916fc3b4324de38f089c86c70ee90e8e1cae6d59102103a4c0cc03",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13401,7 +13215,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_babel__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//babel_7077a498:Babel-2.13.1-py3-none-any.whl",
-              "experimental_whl_filename": "Babel-2.13.1-py3-none-any.whl",
               "requirement": "babel==2.13.1 --hash=sha256:7077a4984b02b6727ac10f1f7294484f737443d7e2e66c5e4380e41a3ae0b4ed",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13493,7 +13306,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pathspec__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pathspec_d8af70af:pathspec-0.11.1-py3-none-any.whl",
-              "experimental_whl_filename": "pathspec-0.11.1-py3-none-any.whl",
               "requirement": "pathspec==0.11.1 --hash=sha256:d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13549,7 +13361,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_wrapt__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_ce42618f:wrapt-1.15.0-cp310-cp310-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "wrapt-1.15.0-cp310-cp310-macosx_11_0_arm64.whl",
               "requirement": "wrapt==1.15.0 --hash=sha256:ce42618f67741d4697684e501ef02f29e758a123aa2d669e2d964ff734ee00ee",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13605,7 +13416,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_pyjwt__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyjwt_57e28d15:PyJWT-2.8.0.tar.gz",
-              "experimental_whl_filename": "PyJWT-2.8.0.tar.gz",
               "requirement": "pyjwt[crypto]==2.8.0 --hash=sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -13642,7 +13452,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_6b2b5695:MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:6b2b56950d93e41f33b4223ead100ea0fe11f8e6ee5f641eb753ce4b77a7042b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13674,7 +13483,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_colorama__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//colorama_4f1d9991:colorama-0.4.6-py2.py3-none-any.whl",
-              "experimental_whl_filename": "colorama-0.4.6-py2.py3-none-any.whl",
               "requirement": "colorama==0.4.6 --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13833,7 +13641,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_chardet__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//chardet_0d6f53a1:chardet-4.0.0.tar.gz",
-              "experimental_whl_filename": "chardet-4.0.0.tar.gz",
               "requirement": "chardet==4.0.0 --hash=sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13865,7 +13672,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_dill__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//dill_a07ffd23:dill-0.3.6-py3-none-any.whl",
-              "experimental_whl_filename": "dill-0.3.6-py3-none-any.whl",
               "requirement": "dill==0.3.6 --hash=sha256:a07ffd2351b8c678dfc4a856a3005f8067aea51d6ba6c700796a4d9e280f39f0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13933,7 +13739,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_urllib3__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//urllib3_34b97092:urllib3-1.26.18-py2.py3-none-any.whl",
-              "experimental_whl_filename": "urllib3-1.26.18-py2.py3-none-any.whl",
               "requirement": "urllib3==1.26.18 --hash=sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -13985,7 +13790,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__manylinux_2_5_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_279e5de4:websockets-11.0.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:279e5de4671e79a9ac877427f4ac4ce93751b8823f276b681d04b2156713b9dd",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14089,7 +13893,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pathspec__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pathspec_56200de4:pathspec-0.10.3.tar.gz",
-              "experimental_whl_filename": "pathspec-0.10.3.tar.gz",
               "requirement": "pathspec==0.10.3 --hash=sha256:56200de4077d9d0791465aa9095a01d421861e405b5096955051deefd697d6f6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14133,7 +13936,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_htmlhelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_htmlhelp_6c26a118:sphinxcontrib_htmlhelp-2.0.4.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_htmlhelp-2.0.4.tar.gz",
               "requirement": "sphinxcontrib-htmlhelp==2.0.4 --hash=sha256:6c26a118a05b76000738429b724a0568dbde5b72391a688577da08f11891092a",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14223,7 +14025,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_e09031c8:MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-macosx_10_9_x86_64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:e09031c87a1e51556fdcb46e5bd4f59dfb743061cf93c4d6831bf894f125eb57",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14376,7 +14177,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_jsmath__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_jsmath_a9925e4a:sphinxcontrib-jsmath-1.0.1.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib-jsmath-1.0.1.tar.gz",
               "requirement": "sphinxcontrib-jsmath==1.0.1 --hash=sha256:a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14432,7 +14232,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_packaging__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//packaging_048fb0e9:packaging-23.2.tar.gz",
-              "experimental_whl_filename": "packaging-23.2.tar.gz",
               "requirement": "packaging==23.2 --hash=sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14489,7 +14288,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_jinja2__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//jinja2_6088930b:Jinja2-3.1.2-py3-none-any.whl",
-              "experimental_whl_filename": "Jinja2-3.1.2-py3-none-any.whl",
               "requirement": "jinja2==3.1.2 --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14521,7 +14319,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_15777355:MarkupSafe-2.1.3-cp310-cp310-win_amd64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-win_amd64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:1577735524cdad32f9f694208aa75e422adba74f1baee7551620e43a3141f559",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14577,7 +14374,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_python_magic__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_magic_c212960a:python_magic-0.4.27-py2.py3-none-any.whl",
-              "experimental_whl_filename": "python_magic-0.4.27-py2.py3-none-any.whl",
               "requirement": "python-magic==0.4.27 --hash=sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14658,7 +14454,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_requests__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//requests_27973dd4:requests-2.25.1.tar.gz",
-              "experimental_whl_filename": "requests-2.25.1.tar.gz",
               "requirement": "requests==2.25.1 --hash=sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -14715,7 +14510,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_bcb3ef43:cffi-1.16.0.tar.gz",
-              "experimental_whl_filename": "cffi-1.16.0.tar.gz",
               "requirement": "cffi==1.16.0 --hash=sha256:bcb3ef43e58665bbda2fb198698fcae6776483e0c4a631aa5647806c25e02cc0",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -14752,7 +14546,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_582215a0:cffi-1.16.0-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:582215a0e9adbe0e379761260553ba11c58943e4bbe9c36430c4ca6ac74b15ed",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -14825,7 +14618,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_282c2cb3:MarkupSafe-2.1.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:282c2cb35b5b673bbcadb33a585408104df04f14b2d9b01d4c345a3b92861c2c",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15078,7 +14870,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_typing_extensions__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//typing_extensions_16fa4864:typing_extensions-4.4.0-py3-none-any.whl",
-              "experimental_whl_filename": "typing_extensions-4.4.0-py3-none-any.whl",
               "requirement": "typing-extensions==4.4.0 --hash=sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15134,7 +14925,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_websockets__macosx_11_0_arm64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_84d27a48:websockets-11.0.3-cp310-cp310-macosx_11_0_arm64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp310-cp310-macosx_11_0_arm64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:84d27a4832cc1a0ee07cdcf2b0629a8a72db73f4cf6de6f0904f6661227f256f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15202,7 +14992,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_dill__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//dill_a07ffd23:dill-0.3.6-py3-none-any.whl",
-              "experimental_whl_filename": "dill-0.3.6-py3-none-any.whl",
               "requirement": "dill==0.3.6 --hash=sha256:a07ffd2351b8c678dfc4a856a3005f8067aea51d6ba6c700796a4d9e280f39f0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15234,7 +15023,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinx__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinx_9a5160e1:sphinx-7.2.6.tar.gz",
-              "experimental_whl_filename": "sphinx-7.2.6.tar.gz",
               "requirement": "sphinx==7.2.6 --hash=sha256:9a5160e1ea90688d5963ba09a2dcd8bdd526620edbb65c328728f1b2228d5ab5",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15273,7 +15061,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_mccabe__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//mccabe_348e0240:mccabe-0.7.0.tar.gz",
-              "experimental_whl_filename": "mccabe-0.7.0.tar.gz",
               "requirement": "mccabe==0.7.0 --hash=sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15426,7 +15213,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_chardet__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//chardet_0d6f53a1:chardet-4.0.0.tar.gz",
-              "experimental_whl_filename": "chardet-4.0.0.tar.gz",
               "requirement": "chardet==4.0.0 --hash=sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15482,7 +15268,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_dill__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//dill_e5db55f3:dill-0.3.6.tar.gz",
-              "experimental_whl_filename": "dill-0.3.6.tar.gz",
               "requirement": "dill==0.3.6 --hash=sha256:e5db55f3687856d8fbdab002ed78544e1c4559a130302693d839dfe8f93f2373",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15514,7 +15299,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__macosx_10_9_universal2",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_8023faf4:MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_universal2.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_universal2.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:8023faf4e01efadfa183e863fefde0046de576c6f14659e8782065bcece22198",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15595,7 +15379,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_88fc51d9:websockets-11.0.3.tar.gz",
-              "experimental_whl_filename": "websockets-11.0.3.tar.gz",
               "requirement": "websockets==11.0.3 --hash=sha256:88fc51d9a26b10fc331be344f1781224a375b78488fc343620184e95a4b27016",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15663,7 +15446,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_certifi__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//certifi_0f0d56dc:certifi-2023.5.7.tar.gz",
-              "experimental_whl_filename": "certifi-2023.5.7.tar.gz",
               "requirement": "certifi==2023.5.7 --hash=sha256:0f0d56dc5a6ad56fd4ba36484d6cc34451e1c6548c61daad8c320169f91eddc7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15782,7 +15564,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_astroid__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//astroid_1493fe8b:astroid-2.12.13.tar.gz",
-              "experimental_whl_filename": "astroid-2.12.13.tar.gz",
               "requirement": "astroid==2.12.13 --hash=sha256:1493fe8bd3dfd73dc35bd53c9d5b6e49ead98497c47b2307662556a5692d29d7",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15814,7 +15595,6 @@
             "attributes": {
               "name": "rules_python~override~pip~other_module_pip_311_absl_py__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//absl_py_d2c244d0:absl-py-1.4.0.tar.gz",
-              "experimental_whl_filename": "absl-py-1.4.0.tar.gz",
               "requirement": "absl-py==1.4.0 --hash=sha256:d2c244d01048ba476e7c080bd2c6df5e141d211de80223460d5b3b8a2a58433d",
               "extra_pip_args": [],
               "repo": "other_module_pip_311",
@@ -15851,7 +15631,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_isort__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//isort_f84c2818:isort-5.12.0-py3-none-any.whl",
-              "experimental_whl_filename": "isort-5.12.0-py3-none-any.whl",
               "requirement": "isort==5.12.0 --hash=sha256:f84c2818376e66cf843d497486ea8fed8700b340f308f076c6fb1229dff318b6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -15931,7 +15710,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_b5b9ecca:PyYAML-6.0-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-win32.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:b5b9eccad747aabaaffbc6064800670f0c297e52c12754eb1d976c57e4f74dcb",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16048,7 +15826,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_lazy_object_proxy__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//lazy_object_proxy_c219a002:lazy-object-proxy-1.8.0.tar.gz",
-              "experimental_whl_filename": "lazy-object-proxy-1.8.0.tar.gz",
               "requirement": "lazy-object-proxy==1.8.0 --hash=sha256:c219a00245af0f6fa4e95901ed28044544f50152840c5b6a3e7b2568db34d156",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16080,7 +15857,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_wrapt__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//wrapt_9cca3c2c:wrapt-1.14.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "wrapt-1.14.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "wrapt==1.14.1 --hash=sha256:9cca3c2cdadb362116235fdbd411735de4328c61425b0aa9f872fd76d02c4e86",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16162,7 +15938,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_sphinxcontrib_devhelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_devhelp_fe8009ae:sphinxcontrib_devhelp-1.0.5-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_devhelp-1.0.5-py3-none-any.whl",
               "requirement": "sphinxcontrib-devhelp==1.0.5 --hash=sha256:fe8009aed765188f08fcaadbb3ea0d90ce8ae2d76710b7e29ea7d047177dae2f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16201,7 +15976,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_6f1a3f10:websockets-11.0.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:6f1a3f10f836fab6ca6efa97bb952300b20ae56b409414ca85bff2ad241d2a61",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16233,7 +16007,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_3686dffb:cffi-1.16.0-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-win_amd64.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:3686dffb02459559c74dd3d81748269ffb0eb027c39a6fc99502de37d501faa8",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -16306,7 +16079,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_qthelp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_qthelp_62b9d1a1:sphinxcontrib_qthelp-1.0.6.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_qthelp-1.0.6.tar.gz",
               "requirement": "sphinxcontrib-qthelp==1.0.6 --hash=sha256:62b9d1a186ab7f5ee3356d906f648cacb7a6bdb94d201ee7adf26db55092982d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16345,7 +16117,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tomlkit__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomlkit_8c726c4c:tomlkit-0.11.8-py3-none-any.whl",
-              "experimental_whl_filename": "tomlkit-0.11.8-py3-none-any.whl",
               "requirement": "tomlkit==0.11.8 --hash=sha256:8c726c4c202bdb148667835f68d68780b9a003a9ec34167b6c673b38eff2a171",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16452,7 +16223,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_68e78619:MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:68e78619a61ecf91e76aa3e6e8e33fc4894a2bebe93410754bd28fce0a8a4f9f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16484,7 +16254,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tomlkit__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomlkit_9330fc7f:tomlkit-0.11.8.tar.gz",
-              "experimental_whl_filename": "tomlkit-0.11.8.tar.gz",
               "requirement": "tomlkit==0.11.8 --hash=sha256:9330fc7faa1db67b541b28e62018c17d20be733177d290a13b24c62d1614e0c3",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16528,7 +16297,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_colorama__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//colorama_08695f5c:colorama-0.4.6.tar.gz",
-              "experimental_whl_filename": "colorama-0.4.6.tar.gz",
               "requirement": "colorama==0.4.6 --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16560,7 +16328,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__win32",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_c7f3cb90:websockets-11.0.3-cp39-cp39-win32.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-win32.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:c7f3cb904cce8e1be667c7e6fef4516b98d1a6a0635a58a57528d577ac18a128",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16592,7 +16359,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_zipp__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//zipp_84e64a1c:zipp-3.17.0.tar.gz",
-              "experimental_whl_filename": "zipp-3.17.0.tar.gz",
               "requirement": "zipp==3.17.0 --hash=sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16686,7 +16452,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_idna__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//idna_b97d804b:idna-2.10-py2.py3-none-any.whl",
-              "experimental_whl_filename": "idna-2.10-py2.py3-none-any.whl",
               "requirement": "idna==2.10 --hash=sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16718,7 +16483,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_markupsafe__manylinux_2_17_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_05fb2117:MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "markupsafe==2.1.3 --hash=sha256:05fb21170423db021895e1ea1e1f3ab3adb85d1c2333cbc2310f2a26bc77272e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16774,7 +16538,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tabulate__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tabulate_024ca478:tabulate-0.9.0-py3-none-any.whl",
-              "experimental_whl_filename": "tabulate-0.9.0-py3-none-any.whl",
               "requirement": "tabulate==0.9.0 --hash=sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16854,7 +16617,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_serializinghtml__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_serializinghtml_0c64ff89:sphinxcontrib_serializinghtml-1.1.9.tar.gz",
-              "experimental_whl_filename": "sphinxcontrib_serializinghtml-1.1.9.tar.gz",
               "requirement": "sphinxcontrib-serializinghtml==1.1.9 --hash=sha256:0c64ff898339e1fac29abd2bf5f11078f3ec413cfe9c046d3120d7ca65530b54",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16906,7 +16668,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_d4db7c7a:PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16950,7 +16711,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_six__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//six_8abb2f1d:six-1.16.0-py2.py3-none-any.whl",
-              "experimental_whl_filename": "six-1.16.0-py2.py3-none-any.whl",
               "requirement": "six==1.16.0 --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -16994,7 +16754,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_c792ea4e:websockets-11.0.3-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-win_amd64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:c792ea4eabc0159535608fc5658a74d1a81020eb35195dd63214dcf07556f67e",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17038,7 +16797,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_python_magic__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_magic_c1ba14b0:python-magic-0.4.27.tar.gz",
-              "experimental_whl_filename": "python-magic-0.4.27.tar.gz",
               "requirement": "python-magic==0.4.27 --hash=sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17082,7 +16840,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__manylinux_2_12_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_dc9b18bf:cffi-1.16.0-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:dc9b18bf40cc75f66f40a7379f6a9513244fe33c0e8aa72e2d56b0196a7ef872",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -17168,7 +16925,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pyyaml__win_amd64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_b3d26784:PyYAML-6.0-cp39-cp39-win_amd64.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp39-cp39-win_amd64.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:b3d267842bf12586ba6c734f89d1f5b871df0273157918b0ccefa29deb05c21c",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17200,7 +16956,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__manylinux_2_17_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_5a1b41bc:cryptography-41.0.7-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:5a1b41bc97f1ad230a41657d9155113c7521953869ae57ac39ac7f1bb471469a",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -17286,7 +17041,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pylint_print__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_print_a2b2599e:pylint_print-1.0.1-py3-none-any.whl",
-              "experimental_whl_filename": "pylint_print-1.0.1-py3-none-any.whl",
               "requirement": "pylint-print==1.0.1 --hash=sha256:a2b2599e7887b93e551db2624c523c1e6e9e58c3be8416cd98d41e4427e2669b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17342,7 +17096,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pylint_print__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_print_30aa207e:pylint-print-1.0.1.tar.gz",
-              "experimental_whl_filename": "pylint-print-1.0.1.tar.gz",
               "requirement": "pylint-print==1.0.1 --hash=sha256:30aa207e9718ebf4ceb47fb87012092e6d8743aab932aa07aa14a73e750ad3d0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17398,7 +17151,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_6681ba9e:websockets-11.0.3-py3-none-any.whl",
-              "experimental_whl_filename": "websockets-11.0.3-py3-none-any.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:6681ba9e7f8f3b19440921e99efbb40fc89f26cd71bf539e45d8c8a25c976dc6",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17466,7 +17218,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__macosx_10_9_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_8c82f119:websockets-11.0.3-cp39-cp39-macosx_10_9_x86_64.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-macosx_10_9_x86_64.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:8c82f11964f010053e13daafdc7154ce7385ecc538989a354ccc7067fd7028fd",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17645,7 +17396,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pyyaml__manylinux_2_17_s390x",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pyyaml_a80a7804:PyYAML-6.0-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl",
-              "experimental_whl_filename": "PyYAML-6.0-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl",
               "requirement": "pyyaml==6.0 --hash=sha256:a80a78046a72361de73f8f395f1f1e49f956c6be882eed58505a15f3e430962b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17775,7 +17525,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cffi__manylinux_2_17_x86_64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cffi_8f8e7091:cffi-1.16.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-              "experimental_whl_filename": "cffi-1.16.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
               "requirement": "cffi==1.16.0 --hash=sha256:8f8e709127c6c77446a8c0a8c8bf3c8ee706a06cd44b1e827c3e6a2ee6b8c098",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -17812,7 +17561,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_python_magic__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//python_magic_c1ba14b0:python-magic-0.4.27.tar.gz",
-              "experimental_whl_filename": "python-magic-0.4.27.tar.gz",
               "requirement": "python-magic==0.4.27 --hash=sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17869,7 +17617,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_13f93ce9:cryptography-41.0.7.tar.gz",
-              "experimental_whl_filename": "cryptography-41.0.7.tar.gz",
               "requirement": "cryptography==41.0.7 --hash=sha256:13f93ce9bea8016c253b34afc6bd6a75993e5c40672ed5405a9c832f0d4a00bc",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -17894,7 +17641,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_markupsafe__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//markupsafe_af598ed3:MarkupSafe-2.1.3.tar.gz",
-              "experimental_whl_filename": "MarkupSafe-2.1.3.tar.gz",
               "requirement": "markupsafe==2.1.3 --hash=sha256:af598ed32d6ae86f1b747b82783958b1a4ab8f617b06fe68795c7f026abbdcad",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -17926,7 +17672,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_tomli__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//tomli_de526c12:tomli-2.0.1.tar.gz",
-              "experimental_whl_filename": "tomli-2.0.1.tar.gz",
               "requirement": "tomli==2.0.1 --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18019,7 +17764,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_pylint_print__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pylint_print_30aa207e:pylint-print-1.0.1.tar.gz",
-              "experimental_whl_filename": "pylint-print-1.0.1.tar.gz",
               "requirement": "pylint-print==1.0.1 --hash=sha256:30aa207e9718ebf4ceb47fb87012092e6d8743aab932aa07aa14a73e750ad3d0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18051,7 +17795,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_dill__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//dill_e5db55f3:dill-0.3.6.tar.gz",
-              "experimental_whl_filename": "dill-0.3.6.tar.gz",
               "requirement": "dill==0.3.6 --hash=sha256:e5db55f3687856d8fbdab002ed78544e1c4559a130302693d839dfe8f93f2373",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18131,7 +17874,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_websockets__manylinux_2_5_i686",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//websockets_df41b9bc:websockets-11.0.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
-              "experimental_whl_filename": "websockets-11.0.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
               "requirement": "websockets==11.0.3 --hash=sha256:df41b9bc27c2c25b486bae7cf42fccdc52ff181c8c387bfd026624a491c2671b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18187,7 +17929,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_sphinxcontrib_applehelp__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//sphinxcontrib_applehelp_094c4d56:sphinxcontrib_applehelp-1.0.7-py3-none-any.whl",
-              "experimental_whl_filename": "sphinxcontrib_applehelp-1.0.7-py3-none-any.whl",
               "requirement": "sphinxcontrib-applehelp==1.0.7 --hash=sha256:094c4d56209d1734e7d252f6e0b3ccc090bd52ee56807a5d9315b19c122ab15d",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18238,7 +17979,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_urllib3__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//urllib3_f8ecc1bb:urllib3-1.26.18.tar.gz",
-              "experimental_whl_filename": "urllib3-1.26.18.tar.gz",
               "requirement": "urllib3==1.26.18 --hash=sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18306,7 +18046,6 @@
             "attributes": {
               "name": "rules_python~override~pip~dupe_requirements_39_cryptography__manylinux_2_28_aarch64",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//cryptography_5429ec73:cryptography-41.0.7-cp37-abi3-manylinux_2_28_aarch64.whl",
-              "experimental_whl_filename": "cryptography-41.0.7-cp37-abi3-manylinux_2_28_aarch64.whl",
               "requirement": "cryptography==41.0.7 --hash=sha256:5429ec739a29df2e29e15d082f1d9ad683701f0ec7709ca479b3ff2708dae65a",
               "extra_pip_args": [],
               "repo": "dupe_requirements_39",
@@ -18543,7 +18282,7 @@
                 "pyyaml_b5b9ecca": "PyYAML-6.0-cp39-cp39-win32.whl",
                 "pyyaml_b3d26784": "PyYAML-6.0-cp39-cp39-win_amd64.whl",
                 "pyyaml_68fb519c": "PyYAML-6.0.tar.gz",
-                "requests_c210084e": "file",
+                "requests_c210084e": "requests-2.25.1-py2.py3-none-any.whl",
                 "requests_27973dd4": "requests-2.25.1.tar.gz",
                 "s3cmd_49cd23d5": "s3cmd-2.1.0-py2.py3-none-any.whl",
                 "s3cmd_966b0a49": "s3cmd-2.1.0.tar.gz",
@@ -18900,7 +18639,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_pygments__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//pygments_1daff049:Pygments-2.16.1.tar.gz",
-              "experimental_whl_filename": "Pygments-2.16.1.tar.gz",
               "requirement": "pygments==2.16.1 --hash=sha256:1daff0494820c69bc8941e407aa20f577374ee88364ee10a98fdbe0aece96e29",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -18956,7 +18694,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_imagesize__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//imagesize_0d8d18d0:imagesize-1.4.1-py2.py3-none-any.whl",
-              "experimental_whl_filename": "imagesize-1.4.1-py2.py3-none-any.whl",
               "requirement": "imagesize==1.4.1 --hash=sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -19072,7 +18809,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_platformdirs__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//platformdirs_1a89a123:platformdirs-2.6.0-py3-none-any.whl",
-              "experimental_whl_filename": "platformdirs-2.6.0-py3-none-any.whl",
               "requirement": "platformdirs==2.6.0 --hash=sha256:1a89a12377800c81983db6be069ec068eee989748799b946cce2a6e80dcc54ca",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -19116,7 +18852,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_310_typing_extensions__any",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//typing_extensions_88a4153d:typing_extensions-4.6.3-py3-none-any.whl",
-              "experimental_whl_filename": "typing_extensions-4.6.3-py3-none-any.whl",
               "requirement": "typing-extensions==4.6.3 --hash=sha256:88a4153d8505aabbb4e13aacb7c486c2b4a33ca3b3f807914a9b4c844c471c26",
               "extra_pip_args": [
                 "--extra-index-url",
@@ -19196,7 +18931,6 @@
             "attributes": {
               "name": "rules_python~override~pip~pip_39_importlib_metadata__sdist",
               "experimental_whl_label": "@@rules_python~override~pip~pypi_whl//importlib_metadata_dbace789:importlib_metadata-6.8.0.tar.gz",
-              "experimental_whl_filename": "importlib_metadata-6.8.0.tar.gz",
               "requirement": "importlib-metadata==6.8.0 --hash=sha256:dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743",
               "extra_pip_args": [
                 "--extra-index-url",

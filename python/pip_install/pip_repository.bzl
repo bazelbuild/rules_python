@@ -719,15 +719,14 @@ def _whl_library_impl(rctx):
     if rctx.attr.experimental_whl_label:
         # This label may be a hub repo if that is the case, resolve it to the
         # spoke repo label. For reasons why see `../private/bzlmod/pypi_metadata.bzl`.
+        #
+        # This assumes that whls are only downloaded with the pypi_file repo rule.
         whl_label = rctx.attr.experimental_whl_label
-        repo_name = whl_label.repo_name
-        package = whl_label.package
-        filename = rctx.attr.experimental_whl_filename or whl_label.name
-
-        # Use this to support `http_file`-downloaded whls, which have set
-        # the option of `downloaded_file_path`.
-        build_label = Label("@@%s_%s//:%s" % (repo_name, package, "BUILD.bazel"))
-        whl_path = rctx.path(build_label).dirname.get_child(filename)
+        whl_path = rctx.path(Label("@@{hub_repo_name}_{dist}//:{filename}".format(
+            hub_repo_name = whl_label.repo_name,
+            dist = whl_label.package,
+            filename = whl_label.name,
+        )))
 
         if whl_path.basename.endswith("tar.gz"):
             whl_path = None
@@ -868,12 +867,6 @@ whl_library_attrs = {
             "See `package_annotation`"
         ),
         allow_files = True,
-    ),
-    "experimental_whl_filename": attr.string(
-        doc = """\
-The filename that the label points to. Note, because of limitations of how the repository rules
-use labels, this allows an `http_file` to be used together with `downloaded_file_path` arg.
-""",
     ),
     "experimental_whl_label": attr.label(
         doc = """\

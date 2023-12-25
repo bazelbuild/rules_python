@@ -31,7 +31,7 @@ load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 
 _rules_python_root = Label("//:BUILD.bazel")
 
-def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
+def patch_whl(rctx, *, python_interpreter, whl_path, patches, patched_whl_path = None, **kwargs):
     """Patch a whl file and repack it to ensure that the RECORD metadata stays correct.
 
     Args:
@@ -40,6 +40,7 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         whl_path: The whl file name to be patched.
         patches: a label-keyed-int dict that has the patch files as keys and
             the patch_strip as the value.
+        patched_whl_path: the filename of the patched file.
         **kwargs: extras passed to rctx.execute.
 
     Returns:
@@ -49,12 +50,17 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
     # extract files into the current directory for patching as rctx.patch
     # does not support patching in another directory.
     whl_input = rctx.path(whl_path)
+    if not whl_input.exists:
+        fail("The given whl does not exist")
 
     # symlink to a zip file to use bazel's extract so that we can use bazel's
     # repository_ctx patch implementation. The whl file may be in a different
     # external repository.
-    whl_file_zip = whl_input.basename + ".zip"
+    whl_file_zip = rctx.path(whl_input.basename + ".zip")
     rctx.symlink(whl_input, whl_file_zip)
+    if not whl_file_zip.exists:
+        fail("The symlink was not created")
+
     rctx.extract(whl_file_zip)
     if not rctx.delete(whl_file_zip):
         fail("Failed to remove the symlink after extracting")
@@ -63,15 +69,16 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         rctx.patch(patch_file, strip = patch_strip)
 
     # Generate an output filename, which we will be returning
-    parsed_whl = parse_whl_name(whl_input.basename)
-    whl_patched = "{}.whl".format("-".join([
-        parsed_whl.distribution,
-        parsed_whl.version,
-        (parsed_whl.build_tag or "") + "patched",
-        parsed_whl.python_tag,
-        parsed_whl.abi_tag,
-        parsed_whl.platform_tag,
-    ]))
+    if not patched_whl_path:
+        parsed_whl = parse_whl_name(whl_input.basename)
+        patched_whl_path = "{}.whl".format("-".join([
+            parsed_whl.distribution,
+            parsed_whl.version,
+            (parsed_whl.build_tag or "") + "patched",
+            parsed_whl.python_tag,
+            parsed_whl.abi_tag,
+            parsed_whl.platform_tag,
+        ]))
 
     record_patch = rctx.path("RECORD.patch")
 
@@ -83,7 +90,7 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
             "--record-patch",
             record_patch,
             whl_input,
-            whl_patched,
+            patched_whl_path,
         ],
         environment = {
             "PYTHONPATH": str(rctx.path(_rules_python_root).dirname),
@@ -116,4 +123,4 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         )
         print(warning_msg)  # buildifier: disable=print
 
-    return rctx.path(whl_patched)
+    return rctx.path(patched_whl_path)

@@ -144,17 +144,16 @@ def whl_files_from_requirements(module_ctx, *, name, whl_overrides = {}):
                 # to get the hermetic interpreter
             )
 
-            repos[suffix] = "file" if patches else filename
             files[file.sha256] = PyPISource(
                 filename = filename,
                 label = "@{name}//{suffix}:{filename}".format(
                     name = name,
                     suffix = suffix,
-                    # TODO @aignas 2023-12-24: support patched stuff
-                    filename = repos[suffix],
+                    filename = filename,
                 ),
                 sha256 = file.sha256,
             )
+            repos[suffix] = filename
 
         ret[normalize_name(distribution)] = struct(
             distribution = distribution,
