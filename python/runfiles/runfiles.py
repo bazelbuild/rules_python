@@ -187,14 +187,13 @@ class Runfiles:
             #   which also should not be mapped.
             return self._strategy.RlocationChecked(path)
 
+        assert source_repo is not None
+
         # target_repo is an apparent repository name. Look up the corresponding
         # canonical repository name with respect to the current repository,
         # identified by its canonical name.
-        if source_repo is not None:
-            target_canonical = self._repo_mapping[(source_repo, target_repo)]
-            return self._strategy.RlocationChecked(target_canonical + "/" + remainder)
-
-        return None
+        target_canonical = self._repo_mapping[(source_repo, target_repo)]
+        return self._strategy.RlocationChecked(target_canonical + "/" + remainder)
 
     def EnvVars(self) -> Dict[str, str]:
         """Returns environment variables for subprocesses.
