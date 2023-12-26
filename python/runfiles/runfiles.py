@@ -187,7 +187,9 @@ class Runfiles:
             #   which also should not be mapped.
             return self._strategy.RlocationChecked(path)
 
-        assert source_repo is not None, f"BUG: if the `source_repo` is None, we should never go past the `if` statement above"
+        assert (
+            source_repo is not None
+        ), "BUG: if the `source_repo` is None, we should never go past the `if` statement above"
 
         # target_repo is an apparent repository name. Look up the corresponding
         # canonical repository name with respect to the current repository,
