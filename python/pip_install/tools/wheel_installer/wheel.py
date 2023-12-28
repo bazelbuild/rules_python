@@ -228,6 +228,8 @@ class Deps:
     def __init__(
         self,
         name: str,
+        *,
+        requires_dist: Optional[List[str]],
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
     ):
@@ -236,6 +238,18 @@ class Deps:
         self._select: Dict[Platform, Set[str]] = defaultdict(set)
         self._want_extras: Set[str] = extras or {""}  # empty strings means no extras
         self._platforms: Set[Platform] = platforms or set()
+
+        reqs = sorted(
+            [Requirement(wheel_req) for wheel_req in requires_dist],
+            key=lambda x: f"{x.name}:{sorted(x.extras)}",
+        )
+
+        # Resolve any extra extras due to self-edges
+        self._want_extras = self._resolve_extras(reqs)
+
+        # process self-edges first to resolve the extras used
+        for req in reqs:
+            self._add_req(req)
 
     def _add(self, dep: str, platform: Optional[Platform]):
         dep = Deps._normalize(dep)
@@ -253,16 +267,6 @@ class Deps:
     @staticmethod
     def _normalize(name: str) -> str:
         return re.sub(r"[-_.]+", "_", name).lower()
-
-    def add(self, *wheel_reqs: str) -> None:
-        reqs = [Requirement(wheel_req) for wheel_req in wheel_reqs]
-
-        # Resolve any extra extras due to self-edges
-        self._want_extras = self._resolve_extras(reqs)
-
-        # process self-edges first to resolve the extras used
-        for req in reqs:
-            self._add_req(req)
 
     def _resolve_extras(self, reqs: List[Requirement]) -> Set[str]:
         """Resolve extras which are due to depending on self[some_other_extra].
@@ -429,15 +433,12 @@ class Wheel:
         extras_requested: Set[str] = None,
         platforms: Optional[Set[Platform]] = None,
     ) -> FrozenDeps:
-        dependency_set = Deps(
+        return Deps(
             self.name,
             extras=extras_requested,
             platforms=platforms,
-        )
-        for wheel_req in self.metadata.get_all("Requires-Dist", []):
-            dependency_set.add(wheel_req)
-
-        return dependency_set.build()
+            requires_dist=self.metadata.get_all("Requires-Dist", []),
+        ).build()
 
     def unzip(self, directory: str) -> None:
         installation_schemes = {

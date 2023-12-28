@@ -54,9 +54,13 @@ py_test(
     srcs = [
         "wheel_test.py",
     ],
-    data = ["//examples/wheel:minimal_with_py_package"],
+    data = [
+        "//examples/wheel:minimal_with_py_package",
+        "@testdata_etils_metadata//file",
+    ],
     deps = [
         ":lib",
+        "//python/runfiles",
     ],
 )
 
