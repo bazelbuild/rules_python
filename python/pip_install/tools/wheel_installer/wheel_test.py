@@ -54,8 +54,10 @@ class DepsTest(unittest.TestCase):
             "foo",
             requires_dist=[
                 "bar",
+                "an_osx_dep; sys_platform=='darwin'",
                 "posix_dep; os_name=='posix'",
                 "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+                "not_m1_dep; sys_platform=='darwin' and platform_machine!='arm64'",
                 "win_dep; os_name=='nt'",
             ],
             platforms=set(wheel.Platform.from_string(platforms)),
@@ -66,9 +68,10 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
-                "osx_aarch64": ["m1_dep", "posix_dep"],
+                "osx_aarch64": ["an_osx_dep", "m1_dep", "posix_dep"],
+                "osx_x86_64": ["an_osx_dep", "not_m1_dep", "posix_dep"],
                 "@platforms//os:linux": ["posix_dep"],
-                "@platforms//os:osx": ["posix_dep"],
+                "@platforms//os:osx": ["an_osx_dep", "posix_dep"],
                 "@platforms//os:windows": ["win_dep"],
             },
             got.deps_select,
