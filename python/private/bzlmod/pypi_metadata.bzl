@@ -246,7 +246,10 @@ def _fetch_urls_from_index(module_ctx, *, index_url, need_to_download, fname_pre
         downloads[distribution] = {}
         fname = "{}-{}.html".format(fname_prefix, distribution)
         download = module_ctx.download(
-            url = index_url + "/" + distribution,
+            # NOTE @aignas 2023-12-29: the trailing slash is important, because
+            # curl would do a redirect and some private registries may break if
+            # the authentication is required and the trailing slash is not present.
+            url = "{}/{}/".format(index_url.rstrip("/"), distribution),
             output = fname,
             **download_kwargs
         )
