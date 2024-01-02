@@ -46,11 +46,15 @@ def _print_warn(msg):
 def _python_register_toolchains(name, toolchain_attr, module):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
+    # Only the root module should have a say on whether or not to ignore the root user 
+    # error. This can be achieved by taking the ignore_root_user_error for the root 
+    # module. For all other modules, the ignore_root_user_error attr is set to True. 
+    ignore_root_user_error = not (module.is_root and toolchain_attr.ignore_root_user_error)
     python_register_toolchains(
         name = name,
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
-        ignore_root_user_error = toolchain_attr.ignore_root_user_error,
+        ignore_root_user_error = ignore_root_user_error,
     )
     return struct(
         python_version = toolchain_attr.python_version,
