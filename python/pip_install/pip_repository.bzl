@@ -562,7 +562,12 @@ Prefix for the generated packages will be of the form `@<prefix><sanitized-packa
 
 pip_repository_attrs = {
     "annotations": attr.string_dict(
-        doc = "Optional annotations to apply to packages",
+        doc = """\
+Optional annotations to apply to packages. Keys should be package names, with
+capitalization matching the input requirements file, and values should be
+generated using the `package_name` macro. For example usage, see [this WORKSPACE
+file](https://github.com/bazelbuild/rules_python/blob/main/examples/pip_repository_annotations/WORKSPACE).
+""",
     ),
     "incompatible_generate_aliases": attr.bool(
         default = True,
