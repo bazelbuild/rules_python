@@ -43,13 +43,9 @@ def _left_pad_zero(index, length):
 def _print_warn(msg):
     print("WARNING:", msg)
 
-def _python_register_toolchains(name, toolchain_attr, module):
+def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
-    # Only the root module should have a say on whether or not to ignore the root user 
-    # error. This can be achieved by taking the ignore_root_user_error for the root 
-    # module. For all other modules, the ignore_root_user_error attr is set to True. 
-    ignore_root_user_error = not (module.is_root and toolchain_attr.ignore_root_user_error)
     python_register_toolchains(
         name = name,
         python_version = toolchain_attr.python_version,
@@ -76,6 +72,12 @@ def _python_impl(module_ctx):
     # Map of string Major.Minor to the toolchain_info struct
     global_toolchain_versions = {}
 
+    ignore_root_user_error = None
+    # if the root module does not register any toolchain then the 
+    # ignore_root_user_error takes its default value: False
+    if not module_ctx.modules[0].tags.toolchain:
+        ignore_root_user_error = False
+
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
@@ -88,16 +90,28 @@ def _python_impl(module_ctx):
                 _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
             module_toolchain_versions.append(toolchain_version)
 
-            # Only the root module and rules_python are allowed to specify the default
-            # toolchain for a couple reasons:
-            # * It prevents submodules from specifying different defaults and only
-            #   one of them winning.
-            # * rules_python needs to set a soft default in case the root module doesn't,
-            #   e.g. if the root module doesn't use Python itself.
-            # * The root module is allowed to override the rules_python default.
+
             if mod.is_root:
+                # Only the root module and rules_python are allowed to specify the default
+                # toolchain for a couple reasons:
+                # * It prevents submodules from specifying different defaults and only
+                #   one of them winning.
+                # * rules_python needs to set a soft default in case the root module doesn't,
+                #   e.g. if the root module doesn't use Python itself.
+                # * The root module is allowed to override the rules_python default.
+
                 # A single toolchain is treated as the default because it's unambiguous.
                 is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
+
+                # Also only the root module should be able to decide ignore_root_user_error. 
+                # Modules being depended upon don't know the final environment, so they aren't 
+                # in the right position to know or decide what the correct setting is.
+
+                # If an inconsistency in the ignore_root_user_error among multiple toolchains is detected, fail.
+                if ignore_root_user_error != None and toolchain_attr.ignore_root_user_error != ignore_root_user_error:
+                    fail("Toolchains in the root module must have consistent 'ignore_root_user_error' attributes")
+                
+                ignore_root_user_error = toolchain_attr.ignore_root_user_error
             elif mod.name == "rules_python" and not default_toolchain:
                 # We don't do the len() check because we want the default that rules_python
                 # sets to be clearly visible.
@@ -132,6 +146,7 @@ def _python_impl(module_ctx):
                     toolchain_name,
                     toolchain_attr,
                     module = mod,
+                    ignore_root_user_error = ignore_root_user_error,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
 
