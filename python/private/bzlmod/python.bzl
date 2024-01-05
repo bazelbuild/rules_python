@@ -73,7 +73,8 @@ def _python_impl(module_ctx):
     global_toolchain_versions = {}
 
     ignore_root_user_error = None
-    # if the root module does not register any toolchain then the 
+
+    # if the root module does not register any toolchain then the
     # ignore_root_user_error takes its default value: False
     if not module_ctx.modules[0].tags.toolchain:
         ignore_root_user_error = False
@@ -90,7 +91,6 @@ def _python_impl(module_ctx):
                 _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
             module_toolchain_versions.append(toolchain_version)
 
-
             if mod.is_root:
                 # Only the root module and rules_python are allowed to specify the default
                 # toolchain for a couple reasons:
@@ -103,14 +103,14 @@ def _python_impl(module_ctx):
                 # A single toolchain is treated as the default because it's unambiguous.
                 is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
 
-                # Also only the root module should be able to decide ignore_root_user_error. 
-                # Modules being depended upon don't know the final environment, so they aren't 
+                # Also only the root module should be able to decide ignore_root_user_error.
+                # Modules being depended upon don't know the final environment, so they aren't
                 # in the right position to know or decide what the correct setting is.
 
                 # If an inconsistency in the ignore_root_user_error among multiple toolchains is detected, fail.
                 if ignore_root_user_error != None and toolchain_attr.ignore_root_user_error != ignore_root_user_error:
                     fail("Toolchains in the root module must have consistent 'ignore_root_user_error' attributes")
-                
+
                 ignore_root_user_error = toolchain_attr.ignore_root_user_error
             elif mod.name == "rules_python" and not default_toolchain:
                 # We don't do the len() check because we want the default that rules_python
