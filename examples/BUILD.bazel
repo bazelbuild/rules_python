@@ -11,55 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-load(
-    "//tests/integration:integration_test.bzl",
-    "rules_python_integration_test",
-)
 
 licenses(["notice"])  # Apache 2.0
-
-rules_python_integration_test(
-    name = "build_file_generation_example",
-    gazelle_plugin = True,
-)
-
-rules_python_integration_test(
-    name = "bzlmod_build_file_generation_example",
-    bzlmod = True,
-    gazelle_plugin = True,
-)
-
-rules_python_integration_test(
-    name = "pip_parse_example",
-)
-
-rules_python_integration_test(
-    name = "pip_parse_vendored_example",
-    bzlmod = False,
-    tags = ["fix-windows"],
-)
-
-rules_python_integration_test(
-    name = "pip_repository_annotations_example",
-    bzlmod = False,
-)
-
-rules_python_integration_test(
-    name = "py_proto_library_example",
-)
-
-rules_python_integration_test(
-    name = "py_proto_library_example_workspace",
-    bzlmod = False,
-    # Since we can't strip "_example" from the name to infer the workspace
-    # path, we have to specify it manually here.
-    workspace_path = "py_proto_library",
-)
-
-rules_python_integration_test(
-    name = "multi_python_versions_example",
-)
-
-rules_python_integration_test(
-    name = "bzlmod_example",
-)

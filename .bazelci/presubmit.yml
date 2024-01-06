@@ -421,19 +421,19 @@ tasks:
     working_directory: examples/pip_repository_annotations
     platform: windows
 
-  integration_test_compile_pip_requirements_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
-    working_directory: tests/integration/compile_pip_requirements
+  integration_test_bazelinbazel_ubuntu:
+    name: "tests/integration bazel-in-bazel: Ubuntu"
     platform: ubuntu2004
-  integration_test_compile_pip_requirements_ubuntu_min_bzlmod:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
-    working_directory: tests/integration/compile_pip_requirements
-    platform: ubuntu2004
+    build_flags:
+      - "--build_tag_filters=integration-test"
+    test_flags:
+      - "--test_tag_filters=integration-test"
+      - "--jobs=2"
+      # The integration tests are so expensive that only a few can be run concurrently
+      # without harming overall reliability and runtime.
+      - "--local_test_jobs=2"
+    build_targets: ["..."]
+    test_targets: ["..."]
 
   integration_test_compile_pip_requirements_ubuntu:
     <<: *reusable_build_test_all
@@ -533,12 +533,6 @@ tasks:
     working_directory: tests/integration/pip_repository_entry_points
     platform: windows
 
-  integration_test_ignore_root_user_error_ubuntu_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "ignore_root_user_error: Ubuntu, workspace"
-    working_directory: tests/integration/ignore_root_user_error
-    platform: ubuntu2004
   integration_test_ignore_root_user_error_debian_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
