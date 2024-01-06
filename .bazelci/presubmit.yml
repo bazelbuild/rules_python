@@ -43,6 +43,18 @@ buildifier:
     - "--noenable_bzlmod"
   build_flags:
     - "--noenable_bzlmod"
+.common_bazelinbazel_config: &common_bazel_in_bazel_config
+    build_flags:
+      - "--build_tag_filters=integration-test"
+    test_flags:
+      - "--test_tag_filters=integration-test"
+      - "--jobs=2"
+      # The integration tests are so expensive that only a few can be run concurrently
+      # without harming overall reliability and runtime.
+      - "--local_test_jobs=2"
+    build_targets: ["..."]
+    test_targets: ["..."]
+
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
@@ -422,18 +434,13 @@ tasks:
     platform: windows
 
   integration_test_bazelinbazel_ubuntu:
+    <<: *common_bazelinbazel_config
     name: "tests/integration bazel-in-bazel: Ubuntu"
     platform: ubuntu2004
-    build_flags:
-      - "--build_tag_filters=integration-test"
-    test_flags:
-      - "--test_tag_filters=integration-test"
-      - "--jobs=2"
-      # The integration tests are so expensive that only a few can be run concurrently
-      # without harming overall reliability and runtime.
-      - "--local_test_jobs=2"
-    build_targets: ["..."]
-    test_targets: ["..."]
+  integration_test_bazelinbazel_debian:
+    <<: *common_bazelinbazel_config
+    name: "tests/integration bazel-in-bazel: Debian"
+    platform: debian11
 
   integration_test_compile_pip_requirements_ubuntu:
     <<: *reusable_build_test_all
@@ -508,18 +515,6 @@ tasks:
     - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
 
-  integration_test_pip_repository_entry_points_ubuntu_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Ubuntu, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: ubuntu2004
-  integration_test_pip_repository_entry_points_debian_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Debian, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: debian11
   integration_test_pip_repository_entry_points_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -533,12 +528,6 @@ tasks:
     working_directory: tests/integration/pip_repository_entry_points
     platform: windows
 
-  integration_test_ignore_root_user_error_debian_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "ignore_root_user_error: Debian, workspace"
-    working_directory: tests/integration/ignore_root_user_error
-    platform: debian11
   integration_test_ignore_root_user_error_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
