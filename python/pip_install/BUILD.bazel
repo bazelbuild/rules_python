@@ -31,10 +31,12 @@ bzl_library(
         "//python/pip_install/private:srcs_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:normalize_name_bzl",
+        "//python/private:parse_whl_name_bzl",
         "//python/private:patch_whl_bzl",
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:toolchains_repo_bzl",
         "//python/private:which_bzl",
+        "//python/private:whl_target_platforms_bzl",
         "@bazel_skylib//lib:sets",
     ],
 )

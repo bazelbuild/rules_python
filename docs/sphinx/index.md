@@ -61,6 +61,7 @@ pip
 coverage
 gazelle
 Contributing <contributing>
+support
 Changelog <changelog>
 api/index
 glossary

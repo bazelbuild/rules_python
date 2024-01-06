@@ -114,6 +114,11 @@ def main(sys_argv):
         help="The original wheel file that we have patched.",
     )
     parser.add_argument(
+        "--record-patch",
+        type=pathlib.Path,
+        help="The output path that we are going to write the RECORD file patch to.",
+    )
+    parser.add_argument(
         "output",
         type=pathlib.Path,
         help="The output path that we are going to write a new file to.",
@@ -163,8 +168,10 @@ def main(sys_argv):
         got_record,
         out.distinfo_path("RECORD"),
     )
-    logging.exception(f"Please also patch the RECORD file with:\n{record_diff}")
-    return 1
+    args.record_patch.write_text(record_diff)
+    logging.warning(
+        f"Please apply patch to the RECORD file ({args.record_patch}):\n{record_diff}"
+    )
 
 
 if __name__ == "__main__":

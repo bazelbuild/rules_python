@@ -21,6 +21,9 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (runfiles) `rules_python.python.runfiles` now directly implements type hints
+  and drops support for python2 as a result.
+
 * (toolchains) `py_runtime`, `py_runtime_pair`, and `PyRuntimeInfo` now use the
   rules_python Starlark implementation, not the one built into Bazel. NOTE: This
   only applies to Bazel 6+; Bazel 5 still uses the builtin implementation.
@@ -30,6 +33,9 @@ A brief description of the categories of changes:
   cycle. `pip_parse` will break the cycle for you transparently. This behavior
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
+
+* (pip_install) the deprecated `pip_install` macro and related items have been
+  removed.
 
 ### Fixed
 
@@ -46,6 +52,18 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
+* (bzlmod python.toolchain) Submodules can now (re)register the Python version
+  that rules_python has set as the default.
+  ([#1638](https://github.com/bazelbuild/rules_python/issues/1638))
+* (whl_library) Actually use the provided patches to patch the whl_library.
+  On Windows the patching may result in files with CRLF line endings, as a result
+  the RECORD file consistency requirement is lifted and now a warning is emitted
+  instead with a location to the patch that could be used to silence the warning.
+  Copy the patch to your workspace and add it to the list if patches for the wheel
+  file if you decide to do so.
+* (coverage): coverage reports are now created when the version-aware
+  rules are used.
+  ([#1600](https://github.com/bazelbuild/rules_python/issues/1600))
 
 ### Added
 

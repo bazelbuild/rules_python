@@ -131,9 +131,7 @@ def requirement(pkg):
 
 def pip_install_dependencies():
     """
-    Fetch dependencies these rules depend on. Workspaces that use the pip_install rule can call this.
-
-    (However we call it from pip_install, making it optional for users to do so.)
+    Fetch dependencies these rules depend on. Workspaces that use the pip_parse rule can call this.
     """
     for (name, url, sha256) in _RULE_DEPS:
         maybe(

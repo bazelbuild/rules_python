@@ -13,7 +13,10 @@ py_binary(
     name = "main",
     srcs = ["main.py"],
     visibility = ["//:__subpackages__"],
-    deps = ["@pip//:pandas"],
+    deps = [
+        ":py_default_library",
+        "@pip//:pandas",
+    ],
 )
 
 py_binary(
