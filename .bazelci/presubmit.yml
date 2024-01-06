@@ -32,6 +32,7 @@ buildifier:
     - "@rules_python//examples/wheel/..."
   build_flags:
     - "--keep_going"
+    - "--build_tag_filters=-integration-test"
   test_targets:
     - "--"
     - "..."
@@ -602,4 +603,12 @@ tasks:
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
-
+  integration_generic_integration_tests:
+    name: "integration_tests: Ubuntu"
+    platform: ubuntu
+    build_flags:
+      - "--build_tag_filters=integration-test"
+    test_flags:
+      - "--test_tag_filters=integration-test"
+    build_targets: ["..."]
+    test_targets: ["..."]

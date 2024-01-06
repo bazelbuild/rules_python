@@ -68,12 +68,14 @@ def rules_python_integration_test(
             "//:distribution",
         ],
     )
+    kwargs.setdefault("size", "large")
     bazel_integration_tests(
         name = name,
         workspace_path = workspace_path,
         test_runner = test_runner,
         bazel_versions = bazel_binaries.versions.all,
         workspace_files = [name + "_workspace_files"],
+        # Override the tags so that the `manual` tag isn't applied.
         tags = (tags or []) + [
             # Upstream normally runs the tests with the `exclusive` tag.
             # Duplicate that here. There's an argument to be made that we want
@@ -85,6 +87,8 @@ def rules_python_integration_test(
             "no-sandbox",
             # The CI RBE setup can't successfully run these tests remotely.
             "no-remote-exec",
+            # A special tag is used so CI can run them as a separate job.
+            "integration-test",
         ],
         **kwargs
     )
@@ -95,14 +99,15 @@ def rules_python_integration_test_suite(name, tests):
     The upstream bazel_integration_tests tags the tests as `manual` so we have
     to wrap those tests in a test_suite().
     """
-    native.test_suite(
-        name = "integration_tests",
-        tests = [
-            test
-            for test_label in tests
-            for test in integration_test_utils.bazel_integration_test_names(
-                test_label,
-                bazel_binaries.versions.all,
-            )
-        ],
-    )
+    pass
+    ##native.test_suite(
+    ##    name = "integration_tests",
+    ##    tests = [
+    ##        test
+    ##        for test_label in tests
+    ##        for test in integration_test_utils.bazel_integration_test_names(
+    ##            test_label,
+    ##            bazel_binaries.versions.all,
+    ##        )
+    ##    ],
+    ##)
