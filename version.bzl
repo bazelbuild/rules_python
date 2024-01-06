@@ -28,6 +28,8 @@ MINIMUM_BAZEL_VERSION = "6.2.0"
 # accidentally forcing users to update their LTS-supported bazel.
 # These are the versions used when testing nested workspaces with
 # rules_bazel_integration_test.
+#
+# Keep in sync with MODULE.bazel's bazel_binaries config
 SUPPORTED_BAZEL_VERSIONS = [
     BAZEL_VERSION,
     MINIMUM_BAZEL_VERSION,
