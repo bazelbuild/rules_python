@@ -80,7 +80,9 @@ def rules_python_integration_test(
         tags = (tags or []) + [
             # These tests are very heavy weight, so much so that only a couple
             # can be run in parallel without harming their reliability,
-            # overall runtime, and the system's stability.
+            # overall runtime, and the system's stability. Unfortunately,
+            # there doesn't appear to be a way to tell Bazel to limit their
+            # concurrency, only disable it entirely with exclusive.
             "exclusive",
             # The default_test_runner() assumes it can write to the user's home
             # directory for caching purposes. Give it access.
