@@ -84,8 +84,11 @@ bazel_binaries = use_extension(
     dev_dependency = True,
 )
 
-# Keep in sync with version.bzl
-bazel_binaries.download(version_file = "//.bazelversion")
+# Keep in sync with //:version.bzl
+bazel_binaries.local(
+    name = "self",
+    path = "tests/integration/bazel_from_env",
+)
 bazel_binaries.download(version = "6.4.0")
 bazel_binaries.download(version = "rolling")
 use_repo(
@@ -94,7 +97,7 @@ use_repo(
     # These don't appear necessary, but are reported as direct dependencies
     # that should be use_repo()'d, so we add them as requested
     "bazel_binaries_bazelisk",
-    "build_bazel_bazel_.bazelversion_.bazelversion",
     "build_bazel_bazel_6_4_0",
     "build_bazel_bazel_rolling",
+    "build_bazel_bazel_self",
 )

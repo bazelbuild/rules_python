@@ -49,14 +49,31 @@ def rules_python_integration_test(
     else:
         test_runner = "//tests/integration:workspace_test_runner"
 
+    # Because glob expansion happens at loading time, the bazel-* symlinks
+    # in the workspaces can recursively expand to tens-of-thousands of entries,
+    # which consumes lots of CPU and RAM and can render the system unusable.
+    # To help prevent that, cap the size of the glob expansion.
+    workspace_files = integration_test_utils.glob_workspace_files(workspace_path)
+    if len(workspace_files) > 1000:
+        fail("Workspace {} has too many files. This likely means a bazel-* " +
+             "symlink is being followed when it should be ignored.")
+
+    # bazel_integration_tests creates a separate file group target of the workspace
+    # files for each bazel version, even though the file groups are the same
+    # for each one.
+    # To avoid that, manually create a single filegroup once and re-use it.
+    native.filegroup(
+        name = name + "_workspace_files",
+        srcs = workspace_files + [
+            "//:distribution",
+        ],
+    )
     bazel_integration_tests(
         name = name,
         workspace_path = workspace_path,
         test_runner = test_runner,
         bazel_versions = bazel_binaries.versions.all,
-        workspace_files = integration_test_utils.glob_workspace_files(workspace_path) + [
-            "//:distribution",
-        ],
+        workspace_files = [name + "_workspace_files"],
         tags = (tags or []) + [
             # Upstream normally runs the tests with the `exclusive` tag.
             # Duplicate that here. There's an argument to be made that we want
