@@ -610,5 +610,6 @@ tasks:
       - "--build_tag_filters=integration-test"
     test_flags:
       - "--test_tag_filters=integration-test"
+      - "--jobs=2"
     build_targets: ["..."]
     test_targets: ["..."]
