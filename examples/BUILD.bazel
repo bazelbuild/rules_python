@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 load(
-    "//tests/integration_tests:integration_test.bzl",
+    "//tests/integration:integration_test.bzl",
     "rules_python_integration_test",
     "rules_python_integration_test_suite",
 )

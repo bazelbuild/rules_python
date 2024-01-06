@@ -22,6 +22,7 @@ load("@rules_bazel_integration_test//bazel_integration_test:repo_defs.bzl", "baz
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")  # buildifier: disable=bzl-visibility
+load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 
 def rules_python_internal_setup():
     """Setup for rules_python tests and tools."""
