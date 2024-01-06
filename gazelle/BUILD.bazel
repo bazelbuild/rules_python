@@ -28,6 +28,7 @@ filegroup(
     name = "distribution",
     srcs = [
         ":BUILD.bazel",
+        ":MODULE.bazel",
         ":README.md",
         ":WORKSPACE",
         ":def.bzl",
