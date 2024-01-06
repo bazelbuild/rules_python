@@ -23,7 +23,7 @@ load(
 def rules_python_integration_test(
         name,
         workspace_path = None,
-        bzlmod = False,
+        bzlmod = True,
         gazelle_plugin = False,
         tags = None,
         **kwargs):
@@ -33,7 +33,8 @@ def rules_python_integration_test(
         name: Name of the test. This gets appended by the bazel version.
         workspace_path: The directory name. Defaults to `name` without the
             `_example` suffix.
-        bzlmod: Whether to use bzlmod. Defaults to using WORKSPACE.
+        bzlmod: bool, default True. If true, run with bzlmod enabled, otherwise
+            disable bzlmod.
         gazelle_plugin: Whether the test uses the gazelle plugin.
         tags: Test tags.
         **kwargs: Passed to the upstream `bazel_integration_tests` rule.
@@ -68,7 +69,7 @@ def rules_python_integration_test(
             "//:distribution",
         ],
     )
-    kwargs.setdefault("size", "large")
+    kwargs.setdefault("size", "enormous")
     bazel_integration_tests(
         name = name,
         workspace_path = workspace_path,
@@ -77,12 +78,10 @@ def rules_python_integration_test(
         workspace_files = [name + "_workspace_files"],
         # Override the tags so that the `manual` tag isn't applied.
         tags = (tags or []) + [
-            # Upstream normally runs the tests with the `exclusive` tag.
-            # Duplicate that here. There's an argument to be made that we want
-            # these to be run in parallel, but it has the potential to
-            # overwhelm a system.
-            ##"exclusive",
-            "external",
+            # These tests are very heavy weight, so much so that only a couple
+            # can be run in parallel without harming their reliability,
+            # overall runtime, and the system's stability.
+            "exclusive",
             # The default_test_runner() assumes it can write to the user's home
             # directory for caching purposes. Give it access.
             "no-sandbox",
@@ -93,22 +92,3 @@ def rules_python_integration_test(
         ],
         **kwargs
     )
-
-def rules_python_integration_test_suite(name, tests):
-    """Exposes a test_suite for the specified rules_python_integration_test's.
-
-    The upstream bazel_integration_tests tags the tests as `manual` so we have
-    to wrap those tests in a test_suite().
-    """
-    pass
-    ##native.test_suite(
-    ##    name = "integration_tests",
-    ##    tests = [
-    ##        test
-    ##        for test_label in tests
-    ##        for test in integration_test_utils.bazel_integration_test_names(
-    ##            test_label,
-    ##            bazel_binaries.versions.all,
-    ##        )
-    ##    ],
-    ##)
