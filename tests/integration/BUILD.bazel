@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "default_test_runner")
-load(":integration_test.bzl", "rules_python_integration_test", "rules_python_integration_test_suite")
+load(":integration_test.bzl", "rules_python_integration_test")
 
 licenses(["notice"])
 

@@ -14,7 +14,6 @@
 load(
     "//tests/integration:integration_test.bzl",
     "rules_python_integration_test",
-    "rules_python_integration_test_suite",
 )
 
 licenses(["notice"])  # Apache 2.0
