@@ -81,7 +81,7 @@ def rules_python_integration_test(
             # Duplicate that here. There's an argument to be made that we want
             # these to be run in parallel, but it has the potential to
             # overwhelm a system.
-            "exclusive",
+            ##"exclusive",
             # The default_test_runner() assumes it can write to the user's home
             # directory for caching purposes. Give it access.
             "no-sandbox",
