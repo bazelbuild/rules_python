@@ -24,7 +24,7 @@ The Runfiles API is available from two sources, a direct Bazel target, and a [py
 2. Import the runfiles library:
 
     ```python
-        from rules_python.python.runfiles import Runfiles
+        from python.runfiles import Runfiles
     ```
 
 ## Pypi imports
