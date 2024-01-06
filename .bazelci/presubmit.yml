@@ -43,7 +43,7 @@ buildifier:
     - "--noenable_bzlmod"
   build_flags:
     - "--noenable_bzlmod"
-.common_bazelinbazel_config: &common_bazel_in_bazel_config
+.common_bazelinbazel_config: &common_bazelinbazel_config
     build_flags:
       - "--build_tag_filters=integration-test"
     test_flags:
