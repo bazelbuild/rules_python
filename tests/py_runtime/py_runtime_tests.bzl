@@ -320,6 +320,121 @@ def _test_system_interpreter_must_be_absolute_impl(env, target):
 
 _tests.append(_test_system_interpreter_must_be_absolute)
 
+def _interpreter_version_info_test(name, interpreter_version_info, impl, expect_failure = True):
+    if config.enable_pystar:
+        py_runtime_kwargs = {
+            "interpreter_version_info": interpreter_version_info,
+        }
+        attr_values = {}
+    else:
+        py_runtime_kwargs = {}
+        attr_values = _SKIP_TEST
+
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        python_version = "PY3",
+        interpreter_path = "/py",
+        **py_runtime_kwargs
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = impl,
+        expect_failure = expect_failure,
+        attr_values = attr_values,
+    )
+
+def _test_interpreter_version_info_must_define_major_and_minor_only_major(name):
+    _interpreter_version_info_test(
+        name,
+        {
+            "major": "3",
+        },
+        lambda env, target: (
+            env.expect.that_target(target).failures().contains_predicate(
+                matching.str_matches("must have at least two keys, 'major' and 'minor'"),
+            )
+        ),
+    )
+
+_tests.append(_test_interpreter_version_info_must_define_major_and_minor_only_major)
+
+def _test_interpreter_version_info_must_define_major_and_minor_only_minor(name):
+    _interpreter_version_info_test(
+        name,
+        {
+            "minor": "3",
+        },
+        lambda env, target: (
+            env.expect.that_target(target).failures().contains_predicate(
+                matching.str_matches("must have at least two keys, 'major' and 'minor'"),
+            )
+        ),
+    )
+
+_tests.append(_test_interpreter_version_info_must_define_major_and_minor_only_minor)
+
+def _test_interpreter_version_info_no_extraneous_keys(name):
+    _interpreter_version_info_test(
+        name,
+        {
+            "major": "3",
+            "minor": "3",
+            "something": "foo",
+        },
+        lambda env, target: (
+            env.expect.that_target(target).failures().contains_predicate(
+                matching.str_matches("unexpected keys [\"something\"]"),
+            )
+        ),
+    )
+
+_tests.append(_test_interpreter_version_info_no_extraneous_keys)
+
+def _test_interpreter_version_info_sets_values_to_none_if_not_given(name):
+    _interpreter_version_info_test(
+        name,
+        {
+            "major": "3",
+            "micro": "10",
+            "minor": "3",
+        },
+        lambda env, target: (
+            env.expect.that_target(target).provider(
+                PyRuntimeInfo,
+                factory = py_runtime_info_subject,
+            ).interpreter_version_info().serial().equals(None)
+        ),
+        expect_failure = False,
+    )
+
+_tests.append(_test_interpreter_version_info_sets_values_to_none_if_not_given)
+
+def _test_interpreter_version_info_parses_values_to_struct(name):
+    _interpreter_version_info_test(
+        name,
+        {
+            "major": "3",
+            "micro": "10",
+            "minor": "6",
+            "releaselevel": "alpha",
+            "serial": "1",
+        },
+        impl = _test_interpreter_version_info_parses_values_to_struct_impl,
+        expect_failure = False,
+    )
+
+def _test_interpreter_version_info_parses_values_to_struct_impl(env, target):
+    version_info = env.expect.that_target(target).provider(PyRuntimeInfo, factory = py_runtime_info_subject).interpreter_version_info()
+    version_info.major().equals(3)
+    version_info.minor().equals(6)
+    version_info.micro().equals(10)
+    version_info.releaselevel().equals("alpha")
+    version_info.serial().equals(1)
+
+_tests.append(_test_interpreter_version_info_parses_values_to_struct)
+
 def py_runtime_test_suite(name):
     test_suite(
         name = name,
