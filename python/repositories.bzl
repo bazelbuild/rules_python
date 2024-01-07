@@ -584,6 +584,10 @@ def python_register_toolchains(
                 toolchain_repo_name = toolchain_repo_name,
                 platform = platform,
             ))
+            native.register_toolchains("@{toolchain_repo_name}//:{platform}_py_cc_toolchain".format(
+                toolchain_repo_name = toolchain_repo_name,
+                platform = platform,
+            ))
 
     toolchain_aliases(
         name = name,

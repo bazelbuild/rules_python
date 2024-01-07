@@ -64,6 +64,9 @@ A brief description of the categories of changes:
 * (coverage): coverage reports are now created when the version-aware
   rules are used.
   ([#1600](https://github.com/bazelbuild/rules_python/issues/1600))
+* (toolchains) Workspace builds register the py cc toolchain (bzlmod already
+  was). This makes e.g. `//python/cc:current_py_cc_headers` Just Work.
+  ([#1669](https://github.com/bazelbuild/rules_python/issues/1669))
 
 ### Added
 
