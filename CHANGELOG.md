@@ -53,6 +53,13 @@ A brief description of the categories of changes:
   method to make imports more ergonomic. Users should only need to import the
   `Runfiles` object to locate runfiles.
 
+* (toolchains) `PyRuntimeInfo` now includes a `interpreter_version_info` field
+  that contains the static version information for the given interpreter.
+  This can be set via `py_runtime` when registering an interpreter toolchain,
+  and will done automatically for the builtin interpreter versions registered via
+  `python_register_toolchains`.
+  Note that this only available on the Starlark implementation of the provider.
+
 ## [0.28.0] - 2024-01-07
 
 [0.28.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.28.0
