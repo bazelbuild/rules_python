@@ -17,34 +17,6 @@ class DepsTest(unittest.TestCase):
         platforms = {
             "linux_x86_64",
             "osx_x86_64",
-            "windows_x86_64",
-        }
-        deps = wheel.Deps(
-            "foo",
-            requires_dist=[
-                "bar",
-                "posix_dep; os_name=='posix'",
-                "win_dep; os_name=='nt'",
-            ],
-            platforms=set(wheel.Platform.from_string(platforms)),
-        )
-
-        got = deps.build()
-
-        self.assertEqual(["bar"], got.deps)
-        self.assertEqual(
-            {
-                "@platforms//os:linux": ["posix_dep"],
-                "@platforms//os:osx": ["posix_dep"],
-                "@platforms//os:windows": ["win_dep"],
-            },
-            got.deps_select,
-        )
-
-    def test_can_add_platform_specific_deps(self):
-        platforms = {
-            "linux_x86_64",
-            "osx_x86_64",
             "osx_aarch64",
             "windows_x86_64",
         }
@@ -54,8 +26,6 @@ class DepsTest(unittest.TestCase):
                 "bar",
                 "an_osx_dep; sys_platform=='darwin'",
                 "posix_dep; os_name=='posix'",
-                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
-                "not_m1_dep; sys_platform=='darwin' and platform_machine!='arm64'",
                 "win_dep; os_name=='nt'",
             ],
             platforms=set(wheel.Platform.from_string(platforms)),
@@ -66,11 +36,57 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
-                "osx_aarch64": ["an_osx_dep", "m1_dep", "posix_dep"],
-                "osx_x86_64": ["an_osx_dep", "not_m1_dep", "posix_dep"],
                 "@platforms//os:linux": ["posix_dep"],
                 "@platforms//os:osx": ["an_osx_dep", "posix_dep"],
                 "@platforms//os:windows": ["win_dep"],
+            },
+            got.deps_select,
+        )
+
+    def test_deps_are_added_to_more_specialized_platforms(self):
+        platforms = {
+            "osx_x86_64",
+            "osx_aarch64",
+        }
+        got = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+                "mac_dep; sys_platform=='darwin'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
+        ).build()
+
+        self.assertEqual(
+            wheel.FrozenDeps(
+                deps=[],
+                deps_select={
+                    "osx_aarch64": ["m1_dep", "mac_dep"],
+                    "@platforms//os:osx": ["mac_dep"],
+                },
+            ),
+            got,
+        )
+
+    def test_deps_from_more_specialized_platforms_are_propagated(self):
+        platforms = {
+            "osx_x86_64",
+            "osx_aarch64",
+        }
+        got = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "a_mac_dep; sys_platform=='darwin'",
+                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
+        ).build()
+
+        self.assertEqual([], got.deps)
+        self.assertEqual(
+            {
+                "osx_aarch64": ["a_mac_dep", "m1_dep"],
+                "@platforms//os:osx": ["a_mac_dep"],
             },
             got.deps_select,
         )
@@ -82,7 +98,7 @@ class DepsTest(unittest.TestCase):
             "osx_aarch64",
             "windows_x86_64",
         }
-        deps = wheel.Deps(
+        got = wheel.Deps(
             "foo",
             requires_dist=[
                 "bar",
@@ -90,9 +106,7 @@ class DepsTest(unittest.TestCase):
                 "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
             ],
             platforms=set(wheel.Platform.from_string(platforms)),
-        )
-
-        got = deps.build()
+        ).build()
 
         self.assertEqual(["bar", "baz"], got.deps)
         self.assertEqual(

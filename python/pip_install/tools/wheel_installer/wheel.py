@@ -86,7 +86,12 @@ class Platform:
             )
         ]
 
-    def __iter__(self) -> Iterator["Platform"]:
+    def all_specializations(self) -> Iterator["Platform"]:
+        """Return the platform itself and all its unambiguous specializations.
+
+        For more info about specializations see
+        https://bazel.build/docs/configurable-attributes
+        """
         yield self
         if self.arch is None:
             for arch in Arch:
@@ -242,13 +247,15 @@ class Deps:
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
 
+        # Sort so that the dictionary order in the final order is deterministic
+        # because Python retains insertion order. That way the build() method
+        # and unit-tests can be simpler.
         reqs = sorted(
-            [Requirement(wheel_req) for wheel_req in requires_dist],
+            (Requirement(wheel_req) for wheel_req in requires_dist),
             key=lambda x: f"{x.name}:{sorted(x.extras)}",
         )
 
-        # Resolve any extra extras due to self-edges, empty string means not extras
-        want_extras = self._resolve_extras(reqs, extras or {""})
+        want_extras = self._resolve_extras(reqs, extras)
 
         # Then add all of the requirements in order
         self._deps: Set[str] = set()
@@ -271,17 +278,24 @@ class Deps:
         # Add the platform-specific dep
         self._select[platform].add(dep)
 
-        # Add the dep to more specific constraints
-        for p in platform:
+        all_specializations = list(platform.all_specializations())
+
+        # Add the dep to specializations of the given platform if they
+        # exist in the select statement.
+        for p in all_specializations:
             if p not in self._select:
                 continue
 
             self._select[p].add(dep)
 
-        # Add deps to the matching platform from the more generic constraint deps
-        # that already exist
+        if len(self._select[platform]) != 1:
+            return
+
+        # We are adding a new item to the select and we need to ensure that
+        # existing dependencies from less specialized platforms are propagated
+        # to the newly added dependency set.
         for p, deps in self._select.items():
-            if platform not in p:
+            if p == platform or platform not in p.all_specializations():
                 continue
 
             self._select[platform].update(self._select[p])
@@ -290,7 +304,9 @@ class Deps:
     def _normalize(name: str) -> str:
         return re.sub(r"[-_.]+", "_", name).lower()
 
-    def _resolve_extras(self, reqs: List[Requirement], extras: Set[str]) -> Set[str]:
+    def _resolve_extras(
+        self, reqs: List[Requirement], extras: Optional[Set[str]]
+    ) -> Set[str]:
         """Resolve extras which are due to depending on self[some_other_extra].
 
         Some packages may have cyclic dependencies resulting from extras being used, one example is
@@ -304,6 +320,12 @@ class Deps:
         but in order for it to become platform dependent we would have to have
         separate targets for each extra in extras.
         """
+
+        # Resolve any extra extras due to self-edges, empty string means no
+        # extras The empty string in the set is just a way to make the handling
+        # of no extras and a single extra easier and having a set of {"", "foo"}
+        # is equivalent to having {"foo"}.
+        extras = extras or {""}
 
         self_reqs = []
         for req in reqs:
@@ -382,9 +404,7 @@ class Deps:
     def build(self) -> FrozenDeps:
         return FrozenDeps(
             deps=sorted(self._deps),
-            deps_select={
-                str(p): sorted(deps) for p, deps in sorted(self._select.items())
-            },
+            deps_select={str(p): sorted(deps) for p, deps in self._select.items()},
         )
 
 
