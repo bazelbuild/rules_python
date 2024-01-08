@@ -34,8 +34,8 @@ A brief description of the categories of changes:
 * (pip_install) the deprecated `pip_install` macro and related items have been
   removed.
 
-* (toolchains) `py_runtime` can now take an executable target. Note: runfiles from
-  the target are not supported yet.
+* (toolchains) `py_runtime` can now take an executable target. Note: runfiles
+  from the target are not supported yet.
 
 ### Fixed
 

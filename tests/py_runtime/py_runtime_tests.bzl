@@ -321,9 +321,10 @@ def _test_system_interpreter_must_be_absolute_impl(env, target):
 _tests.append(_test_system_interpreter_must_be_absolute)
 
 def _test_interpreter_sh_binary_target(name):
-    native.sh_binary(
+    rt_util.helper_target(
+        native.sh_binary,
         name = "built_interpreter",
-        srcs = [":pretend_binary"],
+        srcs = ["pretend_binary"],
     )
 
     rt_util.helper_target(

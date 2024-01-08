@@ -57,7 +57,7 @@ def _py_runtime_impl(ctx):
                 runtime_files,
             ])
         else:
-            fail("interpreter must be an executable target or must product exactly one file.")
+            fail("interpreter must be an executable target or must produce exactly one file.")
 
     if ctx.attr.coverage_tool:
         coverage_di = ctx.attr.coverage_tool[DefaultInfo]
@@ -204,14 +204,28 @@ runtime. For a platform runtime this attribute must not be set.
 """,
         ),
         "interpreter": attr.label(
-            # We set `allow_files = True` because users should have
-            # the ability to set this attr to an executable target, such as
-            # a target created by `sh_binary`
+            # We set `allow_files = True` to allow specifying executable
+            # targets from rules that have more than one default output,
+            # e.g. sh_binary.
             allow_files = True,
             doc = """
-For an in-build runtime, this is the target to invoke as the interpreter. For a
-platform runtime this attribute must not be set. WIP: If the target is executable
-the runfiles may not be properly setup, see bazelbuild/rules_python/issues/1612
+For an in-build runtime, this is the target to invoke as the interpreter. It
+can be either of:
+
+* A single file, which will be the interpreter binary. It's assumed such
+  interpreters are either self-contained single-file executables or any
+  supporting files are specified in `files`.
+* An executable target. The target's executable will be the interpreter binary.
+  Any other default outputs (`target.files`) and plain files runfiles
+  (`runfiles.files`) will be automatically included as if specified in the
+  `files` attribute.
+
+  NOTE: the runfiles of the target may not yet be properly respected/propagated
+  to consumers of the toolchain/interpreter, see
+  bazelbuild/rules_python/issues/1612
+
+For a platform runtime (i.e. `interpreter_path` being set) this attribute must
+not be set.
 """,
         ),
         "interpreter_path": attr.string(doc = """
