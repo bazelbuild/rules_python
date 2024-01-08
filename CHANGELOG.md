@@ -70,6 +70,9 @@ A brief description of the categories of changes:
 * (toolchains) Workspace builds register the py cc toolchain (bzlmod already
   was). This makes e.g. `//python/cc:current_py_cc_headers` Just Work.
   ([#1669](https://github.com/bazelbuild/rules_python/issues/1669))
+* (bzlmod python.toolchain) The value of `ignore_root_user_error` is now decided
+  by the root module only.
+  ([#1658](https://github.com/bazelbuild/rules_python/issues/1658))
 
 ### Added
 
