@@ -40,6 +40,10 @@ A brief description of the categories of changes:
 * (toolchains) `py_runtime` can now take an executable target. Note: runfiles
   from the target are not supported yet.
 
+* (gazelle) When `python_generation_mode` is set to `file`, create one `py_binary`
+  target for each file with `if __name__ == "__main__"` instead of just one
+  `py_binary` for the whole module.
+
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
