@@ -1,7 +1,5 @@
 import unittest
-from pathlib import Path
 
-from python import runfiles
 from python.pip_install.tools.wheel_installer import wheel
 
 
@@ -121,43 +119,22 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar", "req_dep", "ssl_lib"], got.deps)
         self.assertEqual({}, got.deps_select)
 
-    def test_handle_etils(self):
-        # given
-        rfiles = runfiles.Create()
-        metadata = Path(rfiles.Rlocation("testdata_etils_metadata/file/METADATA"))
-
-        requires_dist = [
-            requires.partition(":")[2].strip()
-            for requires in [
-                line
-                for line in metadata.read_text().split("\n")
-                if line.startswith("Requires-Dist: ")
-            ]
-        ]
-        deps = wheel.Deps("etils", requires_dist=requires_dist, extras={"all"})
+    def test_self_dependencies_can_come_in_any_order(self):
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "bar",
+                "baz; extra == 'feat'",
+                "foo[feat2]; extra == 'all'",
+                "foo[feat]; extra == 'feat2'",
+                "zdep; extra == 'all'",
+            ],
+            extras={"all"},
+        )
 
         got = deps.build()
-        want = [
-            "absl_py",
-            "dm_tree",
-            "fsspec",
-            "gcsfs",
-            "importlib_resources",
-            "jax",
-            "jupyter",
-            "mediapy",
-            "numpy",
-            "packaging",
-            "protobuf",
-            "s3fs",
-            "simple_parsing",
-            "tensorflow",
-            "tqdm",
-            "typing_extensions",
-            "zipp",
-        ]
 
-        self.assertEqual(want, got.deps)
+        self.assertEqual(["bar", "baz", "zdep"], got.deps)
         self.assertEqual({}, got.deps_select)
 
 

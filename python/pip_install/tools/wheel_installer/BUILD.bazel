@@ -56,12 +56,8 @@ py_test(
     ],
     data = [
         "//examples/wheel:minimal_with_py_package",
-        "@testdata_etils_metadata//file",
     ],
-    deps = [
-        ":lib",
-        "//python/runfiles",
-    ],
+    deps = [":lib"],
 )
 
 py_test(

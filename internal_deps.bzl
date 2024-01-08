@@ -221,13 +221,3 @@ def rules_python_internal_deps():
         ],
         sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
     )
-
-    # Needed for tests for parsing whl METADATA
-    http_file(
-        name = "testdata_etils_metadata",
-        urls = [
-            "https://files.pythonhosted.org/packages/cf/10/55adb8074b0211f8cfad76e73da86d4306e45567a5e6a905b4444fd7a751/etils-1.6.0-py3-none-any.whl.metadata",
-        ],
-        downloaded_file_path = "METADATA",
-        sha256 = "36664d2cbd2f057f642c2293046523fa8b3d6170d0796e95f5b592147266a445",
-    )
