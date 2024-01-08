@@ -45,9 +45,7 @@ def _py_runtime_impl(ctx):
     else:
         interpreter_di = interpreter[DefaultInfo]
 
-        if _is_singleton_depset(interpreter_di.files):
-            interpreter = interpreter_di.files.to_list()[0]
-        elif interpreter_di.files_to_run and interpreter_di.files_to_run.executable:
+        if interpreter_di.files_to_run and interpreter_di.files_to_run.executable:
             interpreter = interpreter_di.files_to_run.executable
             runfiles = runfiles.merge(interpreter_di.default_runfiles)
 
@@ -56,6 +54,8 @@ def _py_runtime_impl(ctx):
                 interpreter_di.default_runfiles.files,
                 runtime_files,
             ])
+        elif _is_singleton_depset(interpreter_di.files):
+            interpreter = interpreter_di.files.to_list()[0]
         else:
             fail("interpreter must be an executable target or must produce exactly one file.")
 

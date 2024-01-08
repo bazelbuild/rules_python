@@ -30,16 +30,20 @@ _SKIP_TEST = {
 }
 
 def _simple_binary_impl(ctx):
-    output = ctx.actions.declare_file(ctx.label.name)
-    ctx.actions.write(output, "", is_executable = True)
+    executable = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(executable, "", is_executable = True)
     return [DefaultInfo(
-        executable = output,
+        executable = executable,
+        files = depset([executable] + ctx.files.extra_default_outputs),
         runfiles = ctx.runfiles(ctx.files.data),
     )]
 
 _simple_binary = rule(
     implementation = _simple_binary_impl,
-    attrs = {"data": attr.label_list(allow_files = True)},
+    attrs = {
+        "extra_default_outputs": attr.label_list(allow_files = True),
+        "data": attr.label_list(allow_files = True),
+    },
     executable = True,
 )
 
@@ -239,6 +243,95 @@ def _test_in_build_interpreter_impl(env, target):
 
 _tests.append(_test_in_build_interpreter)
 
+def _test_interpreter_binary_with_multiple_outputs(name):
+    rt_util.helper_target(
+        _simple_binary,
+        name = name + "_built_interpreter",
+        extra_default_outputs = ["extra_default_output.txt"],
+        data = ["runfile.txt"],
+    )
+
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        interpreter = name + "_built_interpreter",
+        python_version = "PY3",
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_interpreter_binary_with_multiple_outputs_impl,
+    )
+
+def _test_interpreter_binary_with_multiple_outputs_impl(env, target):
+    target = env.expect.that_target(target)
+    py_runtime_info = target.provider(
+        PyRuntimeInfo,
+        factory = py_runtime_info_subject,
+    )
+    py_runtime_info.interpreter().short_path_equals("{package}/{test_name}_built_interpreter")
+    py_runtime_info.files().contains_exactly([
+        "{package}/extra_default_output.txt",
+        "{package}/runfile.txt",
+        "{package}/{test_name}_built_interpreter",
+    ])
+
+    target.default_outputs().contains_exactly([
+        "{package}/extra_default_output.txt",
+        "{package}/runfile.txt",
+        "{package}/{test_name}_built_interpreter",
+    ])
+
+    target.runfiles().contains_exactly([
+        "{workspace}/{package}/runfile.txt",
+        "{workspace}/{package}/{test_name}_built_interpreter",
+    ])
+
+_tests.append(_test_interpreter_binary_with_multiple_outputs)
+
+def _test_interpreter_binary_with_single_output_and_runfiles(name):
+    rt_util.helper_target(
+        _simple_binary,
+        name = name + "_built_interpreter",
+        data = ["runfile.txt"],
+    )
+
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_subject",
+        interpreter = name + "_built_interpreter",
+        python_version = "PY3",
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_interpreter_binary_with_single_output_and_runfiles_impl,
+    )
+
+def _test_interpreter_binary_with_single_output_and_runfiles_impl(env, target):
+    target = env.expect.that_target(target)
+    py_runtime_info = target.provider(
+        PyRuntimeInfo,
+        factory = py_runtime_info_subject,
+    )
+    py_runtime_info.interpreter().short_path_equals("{package}/{test_name}_built_interpreter")
+    py_runtime_info.files().contains_exactly([
+        "{package}/runfile.txt",
+        "{package}/{test_name}_built_interpreter",
+    ])
+
+    target.default_outputs().contains_exactly([
+        "{package}/runfile.txt",
+        "{package}/{test_name}_built_interpreter",
+    ])
+
+    target.runfiles().contains_exactly([
+        "{workspace}/{package}/runfile.txt",
+        "{workspace}/{package}/{test_name}_built_interpreter",
+    ])
+
+_tests.append(_test_interpreter_binary_with_single_output_and_runfiles)
+
 def _test_must_have_either_inbuild_or_system_interpreter(name):
     if br_util.is_bazel_6_or_higher():
         py_runtime_kwargs = {}
@@ -319,33 +412,6 @@ def _test_system_interpreter_must_be_absolute_impl(env, target):
     )
 
 _tests.append(_test_system_interpreter_must_be_absolute)
-
-def _test_interpreter_sh_binary_target(name):
-    rt_util.helper_target(
-        native.sh_binary,
-        name = "built_interpreter",
-        srcs = ["pretend_binary"],
-    )
-
-    rt_util.helper_target(
-        py_runtime,
-        name = name + "_subject",
-        interpreter = ":built_interpreter",
-        python_version = "PY3",
-    )
-    analysis_test(
-        name = name,
-        target = name + "_subject",
-        impl = _test_interpreter_sh_binary_target_impl,
-    )
-
-def _test_interpreter_sh_binary_target_impl(env, target):
-    env.expect.that_target(target).provider(
-        PyRuntimeInfo,
-        factory = py_runtime_info_subject,
-    ).interpreter_path().equals(None)
-
-_tests.append(_test_interpreter_sh_binary_target)
 
 def py_runtime_test_suite(name):
     test_suite(
