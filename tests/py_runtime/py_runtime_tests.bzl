@@ -41,8 +41,8 @@ def _simple_binary_impl(ctx):
 _simple_binary = rule(
     implementation = _simple_binary_impl,
     attrs = {
-        "extra_default_outputs": attr.label_list(allow_files = True),
         "data": attr.label_list(allow_files = True),
+        "extra_default_outputs": attr.label_list(allow_files = True),
     },
     executable = True,
 )
