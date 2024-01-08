@@ -19,7 +19,26 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
 ### Changed
+
+### Fixed
+
+### Added
+
+## [0.28.0] - 2024-01-07
+
+[0.28.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.28.0
+
+### Changed
+
+* **BREAKING** (pip_install) the deprecated `pip_install` macro and related
+  items have been removed.
+
+* **BREAKING** Support for Bazel 5 has been officially dropped. This release
+  was only partially tested with Bazel 5 and may or may not work with Bazel 5.
+  Subequent versions will no longer be tested under Bazel 5.
 
 * (runfiles) `rules_python.python.runfiles` now directly implements type hints
   and drops support for python2 as a result.
@@ -34,11 +53,9 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
-* (pip_install) the deprecated `pip_install` macro and related items have been
-  removed.
-
 * (toolchains) `py_runtime` can now take an executable target. Note: runfiles
   from the target are not supported yet.
+  ([#1612](https://github.com/bazelbuild/rules_python/issues/1612))
 
 ### Fixed
 
@@ -74,11 +91,12 @@ A brief description of the categories of changes:
 ### Added
 
 * (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+* (docs) Support and backwards compatibility policies have been documented.
+  See https://rules-python.readthedocs.io/en/latest/support.html
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
 
