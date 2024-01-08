@@ -53,6 +53,10 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
+* (toolchains) `py_runtime` can now take an executable target. Note: runfiles
+  from the target are not supported yet.
+  ([#1612](https://github.com/bazelbuild/rules_python/issues/1612))
+
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11
