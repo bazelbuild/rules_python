@@ -29,7 +29,20 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (bzlmod pip.parse) Use a platform-independent reference to the interpreter
+  pip uses. This reduces (but doesn't eliminate) the amount of
+  platform-specific content in `MODULE.bazel.lock` files; Follow
+  [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
+  platform-specific content in `MODULE.bazel.lock` files.
+
 ### Added
+
+* (toolchains) `python_register_toolchains` now also generates a repository
+  that is suffixed with `_host`, that has a single label `:python` that is a
+  symlink to the python interpreter for the host platform. The intended use is
+  mainly in `repository_rule`, which are always run using `host` platform
+  Python. This means that `WORKSPACE` users can now copy the `requirements.bzl`
+  file for vendoring as seen in the updated `pip_parse_vendored` example.
 
 ## [0.28.0] - 2024-01-07
 
@@ -60,6 +73,10 @@ A brief description of the categories of changes:
 * (toolchains) `py_runtime` can now take an executable target. Note: runfiles
   from the target are not supported yet.
   ([#1612](https://github.com/bazelbuild/rules_python/issues/1612))
+
+* (gazelle) When `python_generation_mode` is set to `file`, create one `py_binary`
+  target for each file with `if __name__ == "__main__"` instead of just one
+  `py_binary` for the whole module.
 
 ### Fixed
 

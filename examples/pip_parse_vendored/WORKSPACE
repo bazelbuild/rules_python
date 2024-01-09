@@ -14,14 +14,13 @@ python_register_toolchains(
     python_version = "3.9",
 )
 
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 # This repository isn't referenced, except by our test that asserts the requirements.bzl is updated.
 # It also wouldn't be needed by users of this ruleset.
 pip_parse(
     name = "pip",
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
     requirements_lock = "//:requirements.txt",
 )
 
