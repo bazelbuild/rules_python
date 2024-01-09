@@ -21,10 +21,6 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
-* (runfiles) `rules_python.python.runfiles.Runfiles` now has a static `Create`
-  method to make imports more ergonomic. Users should only need to import the
-  `Runfiles` object to locate runfiles.
-
 ### Changed
 
 ### Fixed
@@ -43,6 +39,10 @@ A brief description of the categories of changes:
   mainly in `repository_rule`, which are always run using `host` platform
   Python. This means that `WORKSPACE` users can now copy the `requirements.bzl`
   file for vendoring as seen in the updated `pip_parse_vendored` example.
+
+* (runfiles) `rules_python.python.runfiles.Runfiles` now has a static `Create`
+  method to make imports more ergonomic. Users should only need to import the
+  `Runfiles` object to locate runfiles.
 
 ## [0.28.0] - 2024-01-07
 
