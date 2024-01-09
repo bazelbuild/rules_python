@@ -19,7 +19,26 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
 ### Changed
+
+### Fixed
+
+### Added
+
+## [0.28.0] - 2024-01-07
+
+[0.28.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.28.0
+
+### Changed
+
+* **BREAKING** (pip_install) the deprecated `pip_install` macro and related
+  items have been removed.
+
+* **BREAKING** Support for Bazel 5 has been officially dropped. This release
+  was only partially tested with Bazel 5 and may or may not work with Bazel 5.
+  Subequent versions will no longer be tested under Bazel 5.
 
 * (runfiles) `rules_python.python.runfiles` now directly implements type hints
   and drops support for python2 as a result.
@@ -34,8 +53,9 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
-* (pip_install) the deprecated `pip_install` macro and related items have been
-  removed.
+* (toolchains) `py_runtime` can now take an executable target. Note: runfiles
+  from the target are not supported yet.
+  ([#1612](https://github.com/bazelbuild/rules_python/issues/1612))
 
 ### Fixed
 
@@ -52,6 +72,9 @@ A brief description of the categories of changes:
   specifying a local system interpreter.
 * (bzlmod pip.parse) Requirements files with duplicate entries for the same
   package (e.g. one for the package, one for an extra) now work.
+* (bzlmod python.toolchain) Submodules can now (re)register the Python version
+  that rules_python has set as the default.
+  ([#1638](https://github.com/bazelbuild/rules_python/issues/1638))
 * (whl_library) Actually use the provided patches to patch the whl_library.
   On Windows the patching may result in files with CRLF line endings, as a result
   the RECORD file consistency requirement is lifted and now a warning is emitted
@@ -61,15 +84,19 @@ A brief description of the categories of changes:
 * (coverage): coverage reports are now created when the version-aware
   rules are used.
   ([#1600](https://github.com/bazelbuild/rules_python/issues/1600))
+* (toolchains) Workspace builds register the py cc toolchain (bzlmod already
+  was). This makes e.g. `//python/cc:current_py_cc_headers` Just Work.
+  ([#1669](https://github.com/bazelbuild/rules_python/issues/1669))
 
 ### Added
 
 * (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+* (docs) Support and backwards compatibility policies have been documented.
+  See https://rules-python.readthedocs.io/en/latest/support.html
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
 

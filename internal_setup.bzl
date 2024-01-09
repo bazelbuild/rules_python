@@ -15,8 +15,10 @@
 """Setup for rules_python tests and tools."""
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-load("@build_bazel_integration_testing//tools:repositories.bzl", "bazel_binaries")
+load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@rules_bazel_integration_test//bazel_integration_test:deps.bzl", "bazel_integration_test_rules_dependencies")
+load("@rules_bazel_integration_test//bazel_integration_test:repo_defs.bzl", "bazel_binaries")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
@@ -30,12 +32,13 @@ def rules_python_internal_setup():
     # Because we don't use the pip_install rule, we have to call this to fetch its deps
     pip_install_dependencies()
 
-    # Depend on the Bazel binaries for running bazel-in-bazel tests
-    bazel_binaries(versions = SUPPORTED_BAZEL_VERSIONS)
-
     bazel_skylib_workspace()
 
     rules_proto_dependencies()
     rules_proto_toolchains()
 
     protobuf_deps()
+
+    bazel_integration_test_rules_dependencies()
+    bazel_starlib_dependencies()
+    bazel_binaries(versions = SUPPORTED_BAZEL_VERSIONS)

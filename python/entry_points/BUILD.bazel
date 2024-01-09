@@ -34,6 +34,8 @@ filegroup(
     name = "distribution",
     srcs = glob([
         "*.bzl",
-    ]),
+    ]) + [
+        "BUILD.bazel",
+    ],
     visibility = ["//python:__subpackages__"],
 )
