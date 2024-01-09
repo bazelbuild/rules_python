@@ -34,6 +34,7 @@ py_library(
         "../..",
     ],
     visibility = ["//visibility:public"],
+    deps = ["//src/rules_python:__init__"],
 )
 
 # This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh

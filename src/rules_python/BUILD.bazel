@@ -1,0 +1,9 @@
+load("//python:py_library.bzl", "py_library")
+
+py_library(
+    name = "__init__",
+    srcs = ["__init__.py"],
+    imports = [".."],
+    visibility = ["//:__subpackages__"],
+    deps = ["//src:__init__"],
+)
