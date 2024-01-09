@@ -76,7 +76,7 @@ environment variables for them:
 
 ```python
 import subprocess
-from rules_python.python.runfiles import Runfiles
+from python.runfiles import Runfiles
 
 r = Runfiles.Create()
 env = {}
