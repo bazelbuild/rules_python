@@ -225,23 +225,17 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			log.Fatalf("ERROR: %v\n", err)
 		}
 
-		// Check if a target with the same name we are generating already
-		// exists, and if it is of a different kind from the one we are
-		// generating. If so, we have to throw an error since Gazelle won't
-		// generate it correctly.
-		if err := ensureNoCollision(args.File, pyLibraryTargetName, actualPyLibraryKind); err != nil {
-			fqTarget := label.New("", args.Rel, pyLibraryTargetName)
-			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
-				"Use the '# gazelle:%s' directive to change the naming convention.",
-				fqTarget.String(), actualPyLibraryKind, err, pythonconfig.LibraryNamingConvention)
-			collisionErrors.Add(err)
-		}
-
 		if !hasPyBinaryEntryPointFile {
 			// Creating one py_binary target per main module when __main__.py doesn't exist.
 			mainFileNames := make([]string, 0, len(mainModules))
 			for name := range mainModules {
 				mainFileNames = append(mainFileNames, name)
+
+				// Remove the file from srcs if we're doing per-file library generation so
+				// that we don't also generate a py_library target for it.
+				if cfg.PerFileGeneration() {
+					srcs.Remove(name)
+				}
 			}
 			sort.Strings(mainFileNames)
 			for _, filename := range mainFileNames {
@@ -260,6 +254,23 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
 			}
+		}
+
+		// If we're doing per-file generation, srcs could be empty at this point, meaning we shouldn't make a py_library.
+		if srcs.Empty() {
+			return
+		}
+
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
+		if err := ensureNoCollision(args.File, pyLibraryTargetName, actualPyLibraryKind); err != nil {
+			fqTarget := label.New("", args.Rel, pyLibraryTargetName)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+				"Use the '# gazelle:%s' directive to change the naming convention.",
+				fqTarget.String(), actualPyLibraryKind, err, pythonconfig.LibraryNamingConvention)
+			collisionErrors.Add(err)
 		}
 
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).

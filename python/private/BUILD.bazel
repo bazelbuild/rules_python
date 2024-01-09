@@ -239,12 +239,9 @@ bzl_library(
 )
 
 bzl_library(
-    name = "whl_target_platform_bzl",
-    srcs = ["whl_target_platform.bzl"],
-    visibility = [
-        "//docs:__subpackages__",
-        "//python:__subpackages__",
-    ],
+    name = "whl_target_platforms_bzl",
+    srcs = ["whl_target_platforms.bzl"],
+    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(

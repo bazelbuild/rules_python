@@ -25,7 +25,7 @@
 
 set -euxo pipefail
 
-DIR="$(dirname $0)/../.."
+DIR="$(dirname $0)/.."
 cd $DIR
 
 # The sed -i.bak pattern is compatible between macos and linux

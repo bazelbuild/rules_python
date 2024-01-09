@@ -43,7 +43,7 @@ def _left_pad_zero(index, length):
 def _print_warn(msg):
     print("WARNING:", msg)
 
-def _python_register_toolchains(name, toolchain_attr, version_constraint):
+def _python_register_toolchains(name, toolchain_attr, module):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
@@ -51,23 +51,25 @@ def _python_register_toolchains(name, toolchain_attr, version_constraint):
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
         ignore_root_user_error = toolchain_attr.ignore_root_user_error,
-        set_python_version_constraint = version_constraint,
     )
     return struct(
         python_version = toolchain_attr.python_version,
-        set_python_version_constraint = str(version_constraint),
         name = name,
+        module = struct(name = module.name, is_root = module.is_root),
     )
 
 def _python_impl(module_ctx):
-    # The toolchain info structs to register, in the order to register them in.
+    # The toolchain_info structs to register, in the order to register them in.
+    # NOTE: The last element is special: it is treated as the default toolchain,
+    # so there is special handling to ensure the last entry is the correct one.
     toolchains = []
 
     # We store the default toolchain separately to ensure it is the last
     # toolchain added to toolchains.
+    # This is a toolchain_info struct.
     default_toolchain = None
 
-    # Map of string Major.Minor to the toolchain name and module name
+    # Map of string Major.Minor to the toolchain_info struct
     global_toolchain_versions = {}
 
     for mod in module_ctx.modules:
@@ -81,28 +83,6 @@ def _python_impl(module_ctx):
             if toolchain_version in module_toolchain_versions:
                 _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
             module_toolchain_versions.append(toolchain_version)
-
-            # Ignore version collisions in the global scope because there isn't
-            # much else that can be done. Modules don't know and can't control
-            # what other modules do, so the first in the dependency graph wins.
-            if toolchain_version in global_toolchain_versions:
-                # If the python version is explicitly provided by the root
-                # module, they should not be warned for choosing the same
-                # version that rules_python provides as default.
-                first = global_toolchain_versions[toolchain_version]
-                if mod.name != "rules_python" or not first.is_root:
-                    _warn_duplicate_global_toolchain_version(
-                        toolchain_version,
-                        first = first,
-                        second_toolchain_name = toolchain_name,
-                        second_module_name = mod.name,
-                    )
-                continue
-            global_toolchain_versions[toolchain_version] = struct(
-                toolchain_name = toolchain_name,
-                module_name = mod.name,
-                is_root = mod.is_root,
-            )
 
             # Only the root module and rules_python are allowed to specify the default
             # toolchain for a couple reasons:
@@ -121,29 +101,60 @@ def _python_impl(module_ctx):
             else:
                 is_default = False
 
-            # We have already found one default toolchain, and we can only have
-            # one.
             if is_default and default_toolchain != None:
                 _fail_multiple_default_toolchains(
                     first = default_toolchain.name,
                     second = toolchain_name,
                 )
 
-            toolchain_info = _python_register_toolchains(
-                toolchain_name,
-                toolchain_attr,
-                version_constraint = not is_default,
-            )
+            # Ignore version collisions in the global scope because there isn't
+            # much else that can be done. Modules don't know and can't control
+            # what other modules do, so the first in the dependency graph wins.
+            if toolchain_version in global_toolchain_versions:
+                # If the python version is explicitly provided by the root
+                # module, they should not be warned for choosing the same
+                # version that rules_python provides as default.
+                first = global_toolchain_versions[toolchain_version]
+                if mod.name != "rules_python" or not first.module.is_root:
+                    _warn_duplicate_global_toolchain_version(
+                        toolchain_version,
+                        first = first,
+                        second_toolchain_name = toolchain_name,
+                        second_module_name = mod.name,
+                    )
+                toolchain_info = None
+            else:
+                toolchain_info = _python_register_toolchains(
+                    toolchain_name,
+                    toolchain_attr,
+                    module = mod,
+                )
+                global_toolchain_versions[toolchain_version] = toolchain_info
 
             if is_default:
-                default_toolchain = toolchain_info
-            else:
+                # This toolchain is setting the default, but the actual
+                # registration was performed previously, by a different module.
+                if toolchain_info == None:
+                    default_toolchain = global_toolchain_versions[toolchain_version]
+
+                    # Remove it because later code will add it at the end to
+                    # ensure it is last in the list.
+                    toolchains.remove(default_toolchain)
+                else:
+                    default_toolchain = toolchain_info
+            elif toolchain_info:
                 toolchains.append(toolchain_info)
 
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
     if default_toolchain == None:
         fail("No default Python toolchain configured. Is rules_python missing `is_default=True`?")
+    elif default_toolchain.python_version not in global_toolchain_versions:
+        fail('Default version "{python_version}" selected by module ' +
+             '"{module_name}", but no toolchain with that version registered'.format(
+                 python_version = default_toolchain.python_version,
+                 module_name = default_toolchain.module.name,
+             ))
 
     # The last toolchain in the BUILD file is set as the default
     # toolchain. We need the default last.
@@ -162,7 +173,12 @@ def _python_impl(module_ctx):
             for index, toolchain in enumerate(toolchains)
         ],
         toolchain_python_versions = [t.python_version for t in toolchains],
-        toolchain_set_python_version_constraints = [t.set_python_version_constraint for t in toolchains],
+        # The last toolchain is the default; it can't have version constraints
+        # Despite the implication of the arg name, the values are strs, not bools
+        toolchain_set_python_version_constraints = [
+            "True" if i != len(toolchains) - 1 else "False"
+            for i in range(len(toolchains))
+        ],
         toolchain_user_repository_names = [t.name for t in toolchains],
     )
 
@@ -171,8 +187,8 @@ def _python_impl(module_ctx):
     multi_toolchain_aliases(
         name = "python_versions",
         python_versions = {
-            version: entry.toolchain_name
-            for version, entry in global_toolchain_versions.items()
+            version: toolchain.name
+            for version, toolchain in global_toolchain_versions.items()
         },
     )
 
@@ -189,8 +205,8 @@ def _warn_duplicate_global_toolchain_version(version, first, second_toolchain_na
         "Toolchain '{first_toolchain}' from module '{first_module}' " +
         "already registered Python version {version} and has precedence"
     ).format(
-        first_toolchain = first.toolchain_name,
-        first_module = first.module_name,
+        first_toolchain = first.name,
+        first_module = first.module.name,
         second_module = second_module_name,
         second_toolchain = second_toolchain_name,
         version = version,

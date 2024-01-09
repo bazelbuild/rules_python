@@ -21,7 +21,7 @@ buildifier:
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
-  bazel: 6.2.0
+  bazel: 6.4.0
   skip_in_bazel_downstream_pipeline: "Bazel 6 required"
 .reusable_config: &reusable_config
   build_targets:
@@ -32,6 +32,7 @@ buildifier:
     - "@rules_python//examples/wheel/..."
   build_flags:
     - "--keep_going"
+    - "--build_tag_filters=-integration-test"
   test_targets:
     - "--"
     - "..."
@@ -42,6 +43,18 @@ buildifier:
     - "--noenable_bzlmod"
   build_flags:
     - "--noenable_bzlmod"
+.common_bazelinbazel_config: &common_bazelinbazel_config
+    build_flags:
+      - "--build_tag_filters=integration-test"
+    test_flags:
+      - "--test_tag_filters=integration-test"
+      - "--jobs=2"
+      # The integration tests are so expensive that only a few can be run concurrently
+      # without harming overall reliability and runtime.
+      - "--local_test_jobs=2"
+    build_targets: ["..."]
+    test_targets: ["..."]
+
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
@@ -420,19 +433,14 @@ tasks:
     working_directory: examples/pip_repository_annotations
     platform: windows
 
-  integration_test_compile_pip_requirements_ubuntu_min_workspace:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
-    working_directory: tests/integration/compile_pip_requirements
+  integration_test_bazelinbazel_ubuntu:
+    <<: *common_bazelinbazel_config
+    name: "tests/integration bazel-in-bazel: Ubuntu"
     platform: ubuntu2004
-  integration_test_compile_pip_requirements_ubuntu_min_bzlmod:
-    <<: *minimum_supported_version
-    <<: *reusable_build_test_all
-    name: "compile_pip_requirements: Ubuntu using minimum Bazel"
-    working_directory: tests/integration/compile_pip_requirements
-    platform: ubuntu2004
+  integration_test_bazelinbazel_debian:
+    <<: *common_bazelinbazel_config
+    name: "tests/integration bazel-in-bazel: Debian"
+    platform: debian11
 
   integration_test_compile_pip_requirements_ubuntu:
     <<: *reusable_build_test_all
@@ -507,18 +515,6 @@ tasks:
     - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
 
-  integration_test_pip_repository_entry_points_ubuntu_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Ubuntu, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: ubuntu2004
-  integration_test_pip_repository_entry_points_debian_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Debian, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: debian11
   integration_test_pip_repository_entry_points_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -532,18 +528,6 @@ tasks:
     working_directory: tests/integration/pip_repository_entry_points
     platform: windows
 
-  integration_test_ignore_root_user_error_ubuntu_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "ignore_root_user_error: Ubuntu, workspace"
-    working_directory: tests/integration/ignore_root_user_error
-    platform: ubuntu2004
-  integration_test_ignore_root_user_error_debian_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "ignore_root_user_error: Debian, workspace"
-    working_directory: tests/integration/ignore_root_user_error
-    platform: debian11
   integration_test_ignore_root_user_error_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
@@ -602,4 +586,3 @@ tasks:
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."
-

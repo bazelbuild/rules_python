@@ -250,8 +250,20 @@ When no such entry point exists, Gazelle will look for a line like this in the t
 if __name == "__main__":
 ```
 
-Gazelle will create `py_binary` target will be created for every module with such line, with the target name
-being the same as module name.
+Gazelle will create a `py_binary` target for every module with such a line, with
+the target name the same as the module name.
+
+If `python_generation_mode` is set to `file`, then instead of one `py_binary`
+target per module, Gazelle will create one `py_binary` target for each file with
+such a line, and the name of the target will match the name of the script.
+
+Note that it's possible for another script to depend on a `py_binary` target and
+import from the `py_binary`'s scripts. This can have possible negative effects on
+Bazel analysis time and runfiles size compared to depending on a `py_library`
+target. The simplest way to avoid these negative effects is to extract library
+code into a separate script without a `main` line. Gazelle will then create a
+`py_library` target for that library code, and other scripts can depend on that
+`py_library` target.
 
 ## Developer Notes
 

@@ -62,6 +62,18 @@ def _test_current_toolchain_headers_impl(env, target):
 
 _tests.append(_test_current_toolchain_headers)
 
+def _test_toolchain_is_registered_by_default(name):
+    analysis_test(
+        name = name,
+        impl = _test_toolchain_is_registered_by_default_impl,
+        target = "//python/cc:current_py_cc_headers",
+    )
+
+def _test_toolchain_is_registered_by_default_impl(env, target):
+    env.expect.that_target(target).has_provider(CcInfo)
+
+_tests.append(_test_toolchain_is_registered_by_default)
+
 def current_py_cc_headers_test_suite(name):
     test_suite(
         name = name,
