@@ -99,7 +99,7 @@ def _hub_repo_impl(rctx):
     (os, arch) = get_host_os_arch(rctx)
     platform = get_host_platform(os, arch)
     is_windows = (os == WINDOWS_NAME)
-    path = "python.exe" if is_windows else "python"
+    path = "python.exe" if is_windows else "bin/python3"
 
     # Create a dict that is later used to create
     # a symlink to a interpreter.
