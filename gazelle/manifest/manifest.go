@@ -144,7 +144,4 @@ type Manifest struct {
 type PipRepository struct {
 	// The name of the pip_parse or pip_repository target.
 	Name string
-	// UsePipRepositoryAliases allows to use aliases generated pip_repository
-	// when passing incompatible_generate_aliases = True.
-	UsePipRepositoryAliases *bool `yaml:"use_pip_repository_aliases,omitempty"`
 }
