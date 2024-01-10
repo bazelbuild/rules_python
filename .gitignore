@@ -45,3 +45,5 @@ user.bazelrc
 
 # Python cache
 **/__pycache__/
+
+MODULE.bazel.lock
