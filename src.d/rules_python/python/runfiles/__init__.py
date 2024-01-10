@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-# todo: i think this needs to be special cased for workspace builds
-sys.modules["python.runfiles"] = rules_python.python.runfiles
+from .runfiles import *

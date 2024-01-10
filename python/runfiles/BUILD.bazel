@@ -12,50 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_library")
-load("//python:packaging.bzl", "py_wheel")
+alias(
+    name = "runfiles",
+    actual = "//src.d/rules_python/python/runfiles:runfiles",
+    visibility = ["//visibility:public"],
+)
 
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
     visibility = ["//python:__pkg__"],
-)
-
-py_library(
-    name = "runfiles",
-    srcs = [
-        "__init__.py",
-        "runfiles.py",
-    ],
-    data = ["py.typed"],
-    imports = [
-        # Add the repo root so `import python.runfiles.runfiles` works. This makes it agnostic
-        # to the --experimental_python_import_all_repositories setting.
-        "../..",
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["//src/rules_python:__init__"],
-)
-
-# This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh
-# We ought to have an automated integration test for it, too.
-# see https://github.com/bazelbuild/rules_python/issues/1002
-py_wheel(
-    name = "wheel",
-    # From https://pypi.org/classifiers/
-    classifiers = [
-        "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: Apache Software License",
-    ],
-    description_file = "README.rst",
-    dist_folder = "dist",
-    distribution = "bazel_runfiles",
-    homepage = "https://github.com/bazelbuild/rules_python",
-    python_requires = ">=3.7",
-    strip_path_prefixes = ["python"],
-    twine = "@publish_deps_twine//:pkg",
-    # this can be replaced by building with --stamp --embed_label=1.2.3
-    version = "{BUILD_EMBED_LABEL}",
-    visibility = ["//visibility:public"],
-    deps = [":runfiles"],
 )

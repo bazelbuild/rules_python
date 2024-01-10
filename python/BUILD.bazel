@@ -24,6 +24,7 @@ that @rules_python//python is only concerned with the core rules.
 """
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load(":py_library.bzl", "py_library")
 load(":current_py_toolchain.bzl", "current_py_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -319,4 +320,11 @@ exports_files([
 
 current_py_toolchain(
     name = "current_py_toolchain",
+)
+
+# Internal shim, not for public consumption.
+py_library(
+    name = "__init__",
+    srcs = ["__init__.py"],
+    visibility = ["//:__subpackages__"],
 )
