@@ -23,6 +23,10 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
+  from `pip_parse` and `gazelle` got removed. They have been flipped to `True`
+  in 0.27.0 release.
+
 ### Fixed
 
 * (bzlmod pip.parse) Use a platform-independent reference to the interpreter

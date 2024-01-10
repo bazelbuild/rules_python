@@ -353,13 +353,10 @@ def _pip_repository_impl(rctx):
     if rctx.attr.experimental_target_platforms:
         config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
-    if rctx.attr.incompatible_generate_aliases:
-        macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
-        for path, contents in aliases.items():
-            rctx.file(path, contents)
-    else:
-        macro_tmpl = "@%s_{}//:{}" % rctx.attr.name
+    macro_tmpl = "@%s//{}:{}" % rctx.attr.name
+    aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+    for path, contents in aliases.items():
+        rctx.file(path, contents)
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
@@ -562,23 +559,6 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
-    "incompatible_generate_aliases": attr.bool(
-        default = True,
-        doc = """\
-If true, extra aliases will be created in the main `hub` repo - i.e. the repo
-where the `requirements.bzl` is located. This means that for a Python package
-`PyYAML` initialized within a `pip` `hub_repo` there will be the following
-aliases generated:
-- `@pip//pyyaml` will point to `@pip_pyyaml//:pkg`
-- `@pip//pyyaml:data` will point to `@pip_pyyaml//:data`
-- `@pip//pyyaml:dist_info` will point to `@pip_pyyaml//:dist_info`
-- `@pip//pyyaml:pkg` will point to `@pip_pyyaml//:pkg`
-- `@pip//pyyaml:whl` will point to `@pip_pyyaml//:whl`
-
-This is to keep the dependencies coming from PyPI to have more ergonomic label
-names and support smooth transition to `bzlmod`.
-""",
-    ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Mac OS",
@@ -623,27 +603,46 @@ In your WORKSPACE file:
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
-    name = "pip_deps",
+    name = "pypi",
     requirements_lock = ":requirements.txt",
 )
 
-load("@pip_deps//:requirements.bzl", "install_deps")
+load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()
 ```
 
-You can then reference installed dependencies from a `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with the alias targets generated in the same repo, for example, for `PyYAML` we would have the following:
+- `@pypi//pyyaml` and `@pypi//pyyaml:pkg` both point to the `py_library`
+  created after extracting the `PyYAML` package.
+- `@pypi//pyyaml:data` points to the extra data included in the package.
+- `@pypi//pyyaml:dist_info` points to the `dist-info` files in the package.
+- `@pypi//pyyaml:whl` points to the wheel file that was extracted.
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "requirement")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       "@pypi//numpy",
+       "@pypi//requests",
+    ],
+)
+```
+
+or
+
+```starlark
+load("@pypi//:requirements.bzl", "requirement")
 
 py_library(
     name = "bar",
     ...
     deps = [
        "//my/other:dep",
-       requirement("requests"),
        requirement("numpy"),
+       requirement("requests"),
     ],
 )
 ```
@@ -655,7 +654,7 @@ functionality for exposing [entry points][whl_ep] as `py_binary` targets as well
 [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
+load("@pypi//:requirements.bzl", "entry_point")
 
 alias(
     name = "pip-compile",
@@ -670,7 +669,7 @@ Note that for packages whose name and script are the same, only the name of the 
 is needed when calling the `entry_point` macro.
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
+load("@pip//:requirements.bzl", "entry_point")
 
 alias(
     name = "flake8",
