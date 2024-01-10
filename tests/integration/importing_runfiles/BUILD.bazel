@@ -1,0 +1,7 @@
+load("@rules_python//python:py_test.bzl", "py_test")
+
+py_test(
+    name = "importing_runfiles_test",
+    srcs = ["importing_runfiles_test.py"],
+    deps = ["@rules_python//python/runfiles"],
+)

@@ -15,10 +15,13 @@
 load("//python:defs.bzl", "py_library")
 load("//python:packaging.bzl", "py_wheel")
 
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
-    visibility = ["//python:__pkg__"],
 )
 
 py_library(
@@ -35,7 +38,7 @@ py_library(
         "../..",
     ],
     visibility = ["//visibility:public"],
-    deps = ["//src/rules_python:__init__"],
+    deps = ["//src.d/rules_python:__init__"],
 )
 
 # This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh

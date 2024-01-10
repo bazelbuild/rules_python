@@ -14,4 +14,5 @@
 
 # Intentionally empty.
 # rules_python should be treated as a namespace package, though it
-# doesn't quite function as one in practice.
+# doesn't always quite function as one in practice, due to automatic
+# generation of __init__.py files still being a thing.

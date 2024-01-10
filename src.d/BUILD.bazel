@@ -5,3 +5,10 @@ py_library(
     srcs = ["__init__.py"],
     visibility = ["//:__subpackages__"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//src.d/rules_python:distribution",
+    ],
+)

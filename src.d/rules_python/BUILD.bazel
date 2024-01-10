@@ -3,7 +3,18 @@ load("//python:py_library.bzl", "py_library")
 py_library(
     name = "__init__",
     srcs = ["__init__.py"],
-    imports = [".."],
+    # do not sort
+    imports = [
+        "..",  # makes import rules_python work
+        ".",  # makes legacy import python work
+    ],
     visibility = ["//:__subpackages__"],
     deps = ["//src:__init__"],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//src.d/rules_python/python:distribution",
+    ],
 )

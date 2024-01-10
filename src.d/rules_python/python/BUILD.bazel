@@ -12,7 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import rules_python.python
+load("//python:py_library.bzl", "py_library")
 
-sys.modules['python'] = rules_python.python
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
+py_library(
+    name = "__init__",
+    srcs = ["__init__.py"],
+    deps = ["//src.d/rules_python:__init__"],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//src.d/rules_python/python/runfiles:distribution",
+    ],
+)
