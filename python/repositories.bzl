@@ -597,13 +597,6 @@ def python_register_toolchains(
         platforms = loaded_platforms,
     )
 
-    host_toolchain(
-        name = name + "_host",
-        python_version = python_version,
-        user_repository_name = name,
-        platforms = loaded_platforms,
-    )
-
     toolchain_aliases(
         name = name,
         python_version = python_version,
