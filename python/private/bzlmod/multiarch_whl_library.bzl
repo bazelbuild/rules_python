@@ -83,7 +83,7 @@ load(
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:text_util.bzl", "render")
-load("//python/private:whl_target_platform.bzl", "whl_target_platform")
+load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 
 def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **kwargs):
     """Generate a number of third party repos for a particular wheel.
@@ -133,7 +133,7 @@ def multiarch_whl_library(name, *, requirement_by_os, files, extra_pip_args, **k
                 files[plat] = (f, requirement_by_os[oses[0]])
             else:
                 # this assumes that the target_platform for a whl will have the same os, which is most often correct
-                target_platform = whl_target_platform(plat)[0]
+                target_platform = whl_target_platforms(plat)[0]
                 files[plat] = (f, requirement_by_os.get(target_platform.os, requirement_by_os["default"]))
 
     libs = {}
@@ -187,7 +187,7 @@ def _whl_minihub_impl(rctx):
         if abi != whl.abi_tag:
             continue
 
-        for p in whl_target_platform(whl.platform_tag):
+        for p in whl_target_platforms(whl.platform_tag):
             platform = "is_{}_{}".format(p.os, p.cpu)
             select[":" + platform] = tmpl
 
