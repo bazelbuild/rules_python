@@ -212,7 +212,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
-	visibility := "//visibility:public"
+	visibility := fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)
 
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)
@@ -247,7 +247,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					continue
 				}
 				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
-					addVisibility(visibility).
 					addSrc(filename).
 					addModuleDependencies(mainModules[filename]).
 					generateImportsAttribute().build()
@@ -274,7 +273,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		}
 
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
-			addVisibility(visibility).
 			addSrcs(srcs).
 			addModuleDependencies(allDeps).
 			generateImportsAttribute().
@@ -322,7 +320,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			setMain(pyBinaryEntrypointFilename).
-			addVisibility(visibility).
 			addSrc(pyBinaryEntrypointFilename).
 			addModuleDependencies(deps).
 			generateImportsAttribute()
@@ -354,7 +351,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
-			addVisibility(visibility).
 			setTestonly().
 			generateImportsAttribute()
 
