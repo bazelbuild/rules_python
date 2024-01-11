@@ -212,7 +212,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
-	visibility := fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)
 
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)
