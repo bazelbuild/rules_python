@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-##import sys
-##
-### todo: I think, for workspace builds, we need do something like:
-### if name == rules_python.python
-###   import from src-d/rules_python somehow
-### todo: i think we need to skip this for workspace builds?
-##import rules_python.python
-##
-##sys.modules["python"] = rules_python.python
 import sys
 import importlib
 
+# Normally this file should never be imported; the sys.path will have
+# src-d/rules_python earlier in the import path. But, ChromeOS has a hack in
+# their toolchain's sitecustomize.py that causes the rules_python/__init__.py
+# file to be ignored, and thus the module patching it does doesn't happen. To
+# work around that, perform equivalent module patching here. See
+# tests/integration/importing_runfiles/import_faked_rules_python_test.py for
+# details.
 rules_python_python = importlib.import_module("rules_python.src-d.rules_python.python")
 
 rules_python_python.__name__ = "rules_python.python"

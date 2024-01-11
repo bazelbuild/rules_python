@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-# todo: i think this needs to be special cased for workspace builds
-sys.modules["python.runfiles"] = rules_python.python.runfiles
+raise ImportError(
+        "Import of rules_python/python/runfiles/__init__.py triggered: "
+        "this should not occur; check that sys.path is correctly set."
+)

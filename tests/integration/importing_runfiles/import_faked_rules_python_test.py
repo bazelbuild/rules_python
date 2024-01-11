@@ -1,3 +1,17 @@
+# Copyright 2024 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import unittest
 import sys
 import types
@@ -7,6 +21,13 @@ import importlib.machinery
 import os.path
 import pathlib
 
+# This is a simplified version of a hack ChromeOS does in their toolchain's
+# sitecustomize.py module. It basically pre-populates fake modules for
+# repos in order to make `import reponame` work with bzlmod.
+# Unfortunately, this has the side effect of causing the rules_python repo-root
+# level __init__.py to be ignored, which means the module patching it does
+# is skipped.
+# See https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/bazel/python/toolchains/sitecustomize.py;drc=b9ec11186e43095c44b5f4da533eb84302df77f6
 class FakeRulesPython(types.ModuleType):
     def __init__(self, *, repo_root):
         super().__init__(name="rules_python")
@@ -23,18 +44,15 @@ class FakeRulesPython(types.ModuleType):
 
     def __getattr__(self, item):
         """Dispatches the getattr to the real module."""
-        #print("==getattr: ", item)
-        v = getattr(self._mod, item)
-        #print("==getattr: ", item, "->", v)
-        return v
+        return getattr(self._mod, item)
 
-class ImportingRunfilestest(unittest.TestCase):
+class ImportingRunfilesTest(unittest.TestCase):
     def test_import_rules_python(self):
         assert "rules_python" not in sys.modules
 
         import rules_python as real_rules_python
-        import rules_python.python.runfiles.runfiles
-        rf = rules_python.python.runfiles.runfiles.Create()
+        from rules_python.python.runfiles import runfiles as real_runfiles
+        rf = real_runfiles.Create()
         runfiles_root = rf._python_runfiles_root
 
         # With bzlmod, the ('', 'rules_python') entry is present (maps

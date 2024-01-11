@@ -42,6 +42,7 @@ filegroup(
         "BUILD.bazel",
         "MODULE.bazel",
         "WORKSPACE",
+        "__init__.py",
         "internal_deps.bzl",
         "internal_setup.bzl",
         "version.bzl",
