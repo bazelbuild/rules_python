@@ -385,6 +385,11 @@ def _pip_impl(module_ctx):
 
             _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, files)
 
+    # TODO @aignas 2024-01-11: the ideal design would have the whl minihubs
+    # passed in the pip_repository and the selection by version is happening
+    # inside the `whl_minihub` alias. However that requires per-python-version
+    # whl METADATA parsing.
+
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
             name = hub_name,
