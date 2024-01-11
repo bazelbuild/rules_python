@@ -32,7 +32,7 @@ py_library(
     ],
     data = ["py.typed"],
     visibility = ["//visibility:public"],
-    deps = ["//src.d/rules_python/python:__init__"],
+    deps = ["//src-d/rules_python/python:__init__"],
 )
 
 # This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh

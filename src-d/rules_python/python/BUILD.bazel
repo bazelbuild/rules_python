@@ -21,12 +21,12 @@ package(
 py_library(
     name = "__init__",
     srcs = ["__init__.py"],
-    deps = ["//src.d/rules_python:__init__"],
+    deps = ["//src-d/rules_python:__init__"],
 )
 
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//src.d/rules_python/python/runfiles:distribution",
+        "//src-d/rules_python/python/runfiles:distribution",
     ],
 )

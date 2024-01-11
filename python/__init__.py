@@ -12,12 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+##import sys
+##
+### todo: I think, for workspace builds, we need do something like:
+### if name == rules_python.python
+###   import from src-d/rules_python somehow
+### todo: i think we need to skip this for workspace builds?
+##import rules_python.python
+##
+##sys.modules["python"] = rules_python.python
 import sys
+import importlib
 
-# todo: I think, for workspace builds, we need do something like:
-# if name == rules_python.python
-#   import from src.d/rules_python somehow
-# todo: i think we need to skip this for workspace builds?
-import rules_python.python
+rules_python_python = importlib.import_module("rules_python.src-d.rules_python.python")
 
-sys.modules["python"] = rules_python.python
+rules_python_python.__name__ = "rules_python.python"
+rules_python_python.__package__ = "rules_python.python"
+rules_python_python.__spec__.name = "rules_python.python"
+rules_python_python.__spec__.name = "rules_python.python"
+
+sys.modules["rules_python.python"] = rules_python_python

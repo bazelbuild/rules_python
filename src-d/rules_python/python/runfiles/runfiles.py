@@ -14,7 +14,7 @@
 
 """Runfiles lookup library for Bazel-built Python binaries and tests.
 
-See @rules_python//src.d/rules_python/python/runfiles/README.rst for usage instructions.
+See @rules_python//src-d/rules_python/python/runfiles/README.rst for usage instructions.
 """
 import inspect
 import os
@@ -279,7 +279,7 @@ def _FindPythonRunfilesRoot() -> str:
     # the current file is being run. This path coincides with what the Bazel
     # Python stub sets up as sys.path[0]. Since that entry can be changed at
     # runtime, we rederive it here.
-    for _ in range("rules_python/src.d/rules_python/python/runfiles/runfiles.py".count("/") + 1):
+    for _ in range("rules_python/src-d/rules_python/python/runfiles/runfiles.py".count("/") + 1):
         root = os.path.dirname(root)
     return root
 

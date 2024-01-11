@@ -13,6 +13,6 @@ py_library(
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//src.d/rules_python:distribution",
+        "//src-d/rules_python:distribution",
     ],
 )

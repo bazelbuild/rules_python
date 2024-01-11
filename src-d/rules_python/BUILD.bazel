@@ -12,12 +12,12 @@ py_library(
         "..",  # makes import rules_python work
         ".",  # makes legacy import python work
     ],
-    deps = ["//src.d:__init__"],
+    deps = ["//src-d:__init__"],
 )
 
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//src.d/rules_python/python:distribution",
+        "//src-d/rules_python/python:distribution",
     ],
 )

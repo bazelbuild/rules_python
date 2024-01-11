@@ -16,3 +16,8 @@
 # rules_python should be treated as a namespace package, though it
 # doesn't always quite function as one in practice, due to automatic
 # generation of __init__.py files still being a thing.
+
+##if __name__ == "rules_python.src-d.rules_python":
+##    __name__ = "rules_python"
+##    __package__ = "rules_python"
+##    ##__spec__.name = "rules_python"

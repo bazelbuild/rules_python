@@ -27,7 +27,7 @@ py_test(
 )
 
 py_test(
-    name = "import_both_test",
-    srcs = ["import_both_test.py"],
+    name = "import_faked_rules_python_test",
+    srcs = ["import_faked_rules_python_test.py"],
     deps = ["@rules_python//python/runfiles"],
 )

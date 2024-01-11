@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-alias(
+load("//python:py_library.bzl", "py_library")
+
+##alias(
+##    name = "runfiles",
+##    actual = "//src-d/rules_python/python/runfiles:runfiles",
+##    visibility = ["//visibility:public"],
+##)
+py_library(
     name = "runfiles",
-    actual = "//src.d/rules_python/python/runfiles:runfiles",
+    srcs = ["//python:__init__.py"],
     visibility = ["//visibility:public"],
+    deps = ["//src-d/rules_python/python/runfiles"],
 )
-#py_library(
-#    name = "runfiles",
-#    deps = ["//src.d/rules_python/python/runfiles"],
-#)
 
 filegroup(
     name = "distribution",

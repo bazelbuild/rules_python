@@ -13,23 +13,16 @@
 # limitations under the License.
 
 # it might be possible to use __loader__ to find and load
-# src.d/rules_python/__init__.py and replace ourselves?
+# src-d/rules_python/__init__.py and replace ourselves?
 
-rules_python = __import__("rules_python.src-d.rules_python")
+import sys
+import importlib
+
+rules_python = importlib.import_module("rules_python.src-d.rules_python")
+
+rules_python.__name__ = "rules_python"
+rules_python.__package__ = "rules_python"
+rules_python.__spec__.name = "rules_python"
+rules_python.__spec__.name = "rules_python"
 
 sys.modules["rules_python"] = rules_python
-
-##import pdb; pdb.set_trace()
-##del sys.modules[__name__]
-##__path__ = [__path__[0] + "/src.d"]
-##__import__(__name__)
-##ms = importlib.machinery.ModuleSpec(
-##        "rules_python",
-##        __loader__,
-##        origin = __path__[0] + "/src.d/rules_python/__init__.py",
-##        is_package = True
-##)
-##mod = importlib.util.module_from_spec(ms)
-##sys.modules["rules_python"] = mod
-#import pdb; pdb.set_trace()
-#__path__.append(__path__[0] + '/src.d/rules_python')
