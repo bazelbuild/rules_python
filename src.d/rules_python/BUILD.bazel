@@ -1,5 +1,9 @@
 load("//python:py_library.bzl", "py_library")
 
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
 py_library(
     name = "__init__",
     srcs = ["__init__.py"],
@@ -8,8 +12,7 @@ py_library(
         "..",  # makes import rules_python work
         ".",  # makes legacy import python work
     ],
-    visibility = ["//:__subpackages__"],
-    deps = ["//src:__init__"],
+    deps = ["//src.d:__init__"],
 )
 
 filegroup(

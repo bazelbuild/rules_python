@@ -17,6 +17,10 @@ alias(
     actual = "//src.d/rules_python/python/runfiles:runfiles",
     visibility = ["//visibility:public"],
 )
+#py_library(
+#    name = "runfiles",
+#    deps = ["//src.d/rules_python/python/runfiles"],
+#)
 
 filegroup(
     name = "distribution",

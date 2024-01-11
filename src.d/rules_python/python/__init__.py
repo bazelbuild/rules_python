@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if __name__ = "python":
+if __name__ == "python":
     import rules_python.python
+    import sys
     sys.modules[__name__] = rules_python.python

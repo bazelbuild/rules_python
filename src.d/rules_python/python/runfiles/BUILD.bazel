@@ -31,14 +31,8 @@ py_library(
         "runfiles.py",
     ],
     data = ["py.typed"],
-    imports = [
-        # TODO: update this
-        # Add the repo root so `import python.runfiles.runfiles` works. This makes it agnostic
-        # to the --experimental_python_import_all_repositories setting.
-        "../..",
-    ],
     visibility = ["//visibility:public"],
-    deps = ["//src.d/rules_python:__init__"],
+    deps = ["//src.d/rules_python/python:__init__"],
 )
 
 # This can be manually tested by running tests/runfiles/runfiles_wheel_integration_test.sh

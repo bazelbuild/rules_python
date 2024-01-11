@@ -1,9 +1,13 @@
 load("//python:py_library.bzl", "py_library")
 
+package(
+    default_visibility = ["//:__subpackages__"],
+)
+
 py_library(
     name = "__init__",
     srcs = ["__init__.py"],
-    visibility = ["//:__subpackages__"],
+    deps = ["//:__init__"],
 )
 
 filegroup(

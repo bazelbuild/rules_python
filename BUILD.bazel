@@ -19,6 +19,13 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
+load("//python:py_library.bzl", "py_library")
+
+py_library(
+    name = "__init__",
+    srcs = ["__init__.py"],
+)
+
 exports_files([
     "LICENSE",
     "version.bzl",
