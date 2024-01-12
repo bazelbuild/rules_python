@@ -4,5 +4,4 @@ py_binary(
     name = "simple_binary_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
 )

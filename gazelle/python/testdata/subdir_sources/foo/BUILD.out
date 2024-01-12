@@ -8,5 +8,4 @@ py_library(
         "baz/baz.py",
         "foo.py",
     ],
-    visibility = ["//:__subpackages__"],
 )

@@ -8,14 +8,12 @@ py_library(
         "package1/module1.py",
         "package1/module2.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
 py_binary(
     name = "relative_imports_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [
         ":relative_imports",
         "//package2",

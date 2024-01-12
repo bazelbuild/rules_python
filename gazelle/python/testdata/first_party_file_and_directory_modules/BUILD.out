@@ -8,14 +8,12 @@ py_library(
         "baz.py",
         "foo.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
 py_binary(
     name = "first_party_file_and_directory_modules_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [
         ":first_party_file_and_directory_modules",
         "//foo",

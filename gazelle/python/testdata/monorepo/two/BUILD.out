@@ -7,7 +7,6 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "two",
     srcs = ["__init__.py"],
-    visibility = ["//two:__subpackages__"],
     deps = [
         "//one/foo",
         "@two_pip_deps//twoboto3",

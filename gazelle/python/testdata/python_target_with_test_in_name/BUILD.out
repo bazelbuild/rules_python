@@ -3,7 +3,6 @@ load("@rules_python//python:defs.bzl", "py_library", "py_test")
 py_library(
     name = "python_target_with_test_in_name",
     srcs = ["__init__.py"],
-    visibility = ["//:__subpackages__"],
 )
 
 py_test(

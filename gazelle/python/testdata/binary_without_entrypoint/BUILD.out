@@ -12,7 +12,6 @@ filegroup(
 py_binary(
     name = "main",
     srcs = ["main.py"],
-    visibility = ["//:__subpackages__"],
     deps = [
         ":py_default_library",
         "@pip//:pandas",
@@ -22,7 +21,6 @@ py_binary(
 py_binary(
     name = "main2",
     srcs = ["main2.py"],
-    visibility = ["//:__subpackages__"],
     deps = [":py_default_library"],
 )
 
@@ -34,7 +32,6 @@ py_library(
         "main.py",
         "main2.py",
     ],
-    visibility = ["//:__subpackages__"],
     deps = [
         "@pip//:numpy",
         "@pip//:pandas",

@@ -7,7 +7,6 @@ py_library(
         "a.py",
         "b.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
 py_test(

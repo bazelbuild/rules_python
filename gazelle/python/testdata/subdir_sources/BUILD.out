@@ -4,7 +4,6 @@ py_binary(
     name = "subdir_sources_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [
         "//foo",
         "//one/two",

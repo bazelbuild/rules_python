@@ -7,7 +7,6 @@ py_binary(
     name = "one_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//one:__subpackages__"],
     deps = [
         "//one/bar",
         "//one/bar/baz:modified_name_baz",

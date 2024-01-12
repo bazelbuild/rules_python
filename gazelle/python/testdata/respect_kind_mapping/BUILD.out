@@ -9,7 +9,6 @@ py_library(
         "__init__.py",
         "foo.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
 my_test(

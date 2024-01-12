@@ -6,7 +6,6 @@ py_library(
         "__init__.py",
         "bar.py",
     ],
-    visibility = ["//:__subpackages__"],
     deps = [
         "@gazelle_python_test//google_cloud_aiplatform",
         "@gazelle_python_test//google_cloud_storage",
@@ -17,7 +16,6 @@ py_binary(
     name = "with_third_party_requirements_from_imports_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [
         ":with_third_party_requirements_from_imports",
         "@gazelle_python_test//google_cloud_aiplatform",

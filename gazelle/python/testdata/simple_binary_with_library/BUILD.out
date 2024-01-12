@@ -7,7 +7,6 @@ py_library(
         "bar.py",
         "foo.py",
     ],
-    visibility = ["//:__subpackages__"],
 )
 
 # This target should be kept unmodified by Gazelle.
@@ -22,6 +21,5 @@ py_binary(
     name = "simple_binary_with_library_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [":simple_binary_with_library"],
 )

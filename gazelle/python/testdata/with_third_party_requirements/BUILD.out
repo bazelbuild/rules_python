@@ -7,7 +7,6 @@ py_library(
         "bar.py",
         "foo.py",
     ],
-    visibility = ["//:__subpackages__"],
     deps = [
         "@gazelle_python_test//baz",
         "@gazelle_python_test//boto3",
@@ -19,6 +18,5 @@ py_binary(
     name = "with_third_party_requirements_bin",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = ["@gazelle_python_test//baz"],
 )

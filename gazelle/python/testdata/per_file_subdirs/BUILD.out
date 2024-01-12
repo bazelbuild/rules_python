@@ -5,6 +5,5 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "foo",
     srcs = ["foo.py"],
-    visibility = ["//:__subpackages__"],
     deps = ["//bar:__init__"],
 )

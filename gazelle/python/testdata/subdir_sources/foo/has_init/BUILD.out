@@ -6,5 +6,4 @@ py_library(
         "__init__.py",
         "python/my_module.py",
     ],
-    visibility = ["//:__subpackages__"],
 )

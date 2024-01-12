@@ -7,14 +7,12 @@ load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 py_library(
     name = "my_naming_convention_library",
     srcs = ["__init__.py"],
-    visibility = ["//:__subpackages__"],
 )
 
 py_binary(
     name = "my_naming_convention_binary",
     srcs = ["__main__.py"],
     main = "__main__.py",
-    visibility = ["//:__subpackages__"],
     deps = [":my_naming_convention_library"],
 )
 
