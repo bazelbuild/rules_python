@@ -704,6 +704,8 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
+        # todo: I think what's happening is the "python" package is serving
+        # a dual purpose: giving runfiles, and giving these internal tools
         "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
@@ -721,6 +723,21 @@ def _whl_library_impl(rctx):
         timeout = rctx.attr.timeout,
     )
     if result.return_code:
+        fail((
+            "whl_library {name} wheel_installer failed:\n" +
+            "  command: {cmd}\n" +
+            "  env:\n{env}\n" +
+            "  return code: {return_code}\n" +
+            "===== stdout start ====\n{stdout}\n===== stdout end===\n" +
+            "===== stderr start ====\n{stderr}\n===== stderr end===\n"
+        ).format(
+            name = rctx.attr.name,
+            cmd = " ".join([str(a) for a in args]),
+            env = "\n".join(["{}={}".format(k, v) for k, v in environment.items()]),
+            return_code = result.return_code,
+            stdout = result.stdout,
+            stderr = result.stderr,
+        ))
         fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
@@ -874,6 +891,7 @@ whl_library_attrs = {
         # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
         default = [
             Label("//:BUILD.bazel"),
+            Label("//src-d:BUILD.bazel"),
         ] + [
             # Includes all the external dependencies from repositories.bzl
             Label("@" + repo + "//:BUILD.bazel")

@@ -32,7 +32,7 @@ py_console_script_binary_in_a_macro(
 )
 
 build_test(
-    name = "build_entry_point",
+    name = "twine_entry_point_build_test",
     targets = [
         ":twine",
     ],

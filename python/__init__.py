@@ -22,7 +22,10 @@ import importlib
 # work around that, perform equivalent module patching here. See
 # tests/integration/importing_runfiles/import_faked_rules_python_test.py for
 # details.
-rules_python_python = importlib.import_module("rules_python.src-d.rules_python.python")
+try:
+    rules_python_python = importlib.import_module("rules_python.src-d.rules_python.python")
+except ImportError as e:
+    raise ImportError("Unable to import from src-d with sys.path=\n%s" % "\n".join(sys.path)) from e
 
 rules_python_python.__name__ = "rules_python.python"
 rules_python_python.__package__ = "rules_python.python"
