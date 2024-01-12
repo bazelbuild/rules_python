@@ -30,7 +30,7 @@ rules_python = importlib.import_module("rules_python.src-d.rules_python")
 # The module was imported as another name, so fix that up here.
 rules_python.__name__ = "rules_python"
 rules_python.__package__ = "rules_python"
-rules_python.__spec__.name = "rules_python"
-rules_python.__spec__.name = "rules_python"
+if rules_python.__spec__ is not None:
+    rules_python.__spec__.name = "rules_python"
 
 sys.modules["rules_python"] = rules_python

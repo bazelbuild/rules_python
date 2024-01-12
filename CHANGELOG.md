@@ -34,6 +34,8 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files; Follow
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
   platform-specific content in `MODULE.bazel.lock` files.
+* (bzlmod runfiles) The runfiles library can now be imported using
+  `import rules_python.python.runfiles`, as is possible with wORKSPACE builds.
 
 ### Added
 
