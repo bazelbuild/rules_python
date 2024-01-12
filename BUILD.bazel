@@ -20,12 +20,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-py_library(
-    name = "__init__",
-    srcs = ["__init__.py"],
-    visibility = ["//:__subpackages__"],
-)
-
 exports_files([
     "LICENSE",
     "version.bzl",
@@ -55,6 +49,12 @@ filegroup(
     visibility = [
         "//:__subpackages__",
     ],
+)
+
+py_library(
+    name = "__init__",
+    srcs = ["__init__.py"],
+    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(
