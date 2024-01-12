@@ -45,7 +45,7 @@ py_wheel(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",
     ],
-    description_file = "README.rst",
+    description_file = "README.md",
     dist_folder = "dist",
     distribution = "bazel_runfiles",
     homepage = "https://github.com/bazelbuild/rules_python",

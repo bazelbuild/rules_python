@@ -23,6 +23,10 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
+  from `pip_parse` and `gazelle` got removed. They have been flipped to `True`
+  in 0.27.0 release.
+
 ### Fixed
 
 * (bzlmod pip.parse) Use a platform-independent reference to the interpreter
@@ -39,6 +43,10 @@ A brief description of the categories of changes:
   mainly in `repository_rule`, which are always run using `host` platform
   Python. This means that `WORKSPACE` users can now copy the `requirements.bzl`
   file for vendoring as seen in the updated `pip_parse_vendored` example.
+
+* (runfiles) `rules_python.python.runfiles.Runfiles` now has a static `Create`
+  method to make imports more ergonomic. Users should only need to import the
+  `Runfiles` object to locate runfiles.
 
 ## [0.28.0] - 2024-01-07
 

@@ -394,9 +394,6 @@ The labels are JSON config files describing the modifications.
     # don't allow users to override it.
     attrs.pop("repo_prefix")
 
-    # incompatible_generate_aliases is always True in bzlmod
-    attrs.pop("incompatible_generate_aliases")
-
     return attrs
 
 def _whl_mod_attrs():
@@ -522,9 +519,8 @@ the BUILD files for wheels.
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
 This tag class reuses most of the pip attributes that are found in
 @rules_python//python/pip_install:pip_repository.bzl.
-The exceptions are it does not use the args 'repo_prefix',
-and 'incompatible_generate_aliases'.  We set the repository prefix
-for the user and the alias arg is always True in bzlmod.
+The exception is it does not use the arg 'repo_prefix'.  We set the repository
+prefix for the user and the alias arg is always True in bzlmod.
 """,
         ),
         "whl_mods": tag_class(
