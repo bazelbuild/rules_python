@@ -13,13 +13,12 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:py_library.bzl", "py_library")
 load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
-
-load("//python:py_library.bzl", "py_library")
 
 py_library(
     name = "__init__",

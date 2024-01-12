@@ -724,9 +724,9 @@ def _whl_library_impl(rctx):
     )
     if result.return_code:
         fail((
-            "whl_library {name} wheel_installer failed:\n" +
+            "whl_library '{name}' wheel_installer failed:\n" +
             "  command: {cmd}\n" +
-            "  env:\n{env}\n" +
+            "  environment:\n{env}\n" +
             "  return code: {return_code}\n" +
             "===== stdout start ====\n{stdout}\n===== stdout end===\n" +
             "===== stderr start ====\n{stderr}\n===== stderr end===\n"
@@ -738,7 +738,6 @@ def _whl_library_impl(rctx):
             stdout = result.stdout,
             stderr = result.stderr,
         ))
-        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
     if not rctx.delete("whl_file.json"):
