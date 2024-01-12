@@ -703,8 +703,6 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        # todo: I think what's happening is the "python" package is serving
-        # a dual purpose: giving runfiles, and giving these internal tools
         "python.pip_install.tools.wheel_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
