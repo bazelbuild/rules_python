@@ -16,7 +16,10 @@ load("//python:py_library.bzl", "py_library")
 
 py_library(
     name = "runfiles",
-    srcs = ["//python:__init__"],
+    srcs = [
+        "__init__.py",
+        "runfiles.py",
+    ],
     visibility = ["//visibility:public"],
     deps = ["//src-d/rules_python/python/runfiles"],
 )

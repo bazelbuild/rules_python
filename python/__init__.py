@@ -11,25 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import sys
-import importlib
-
-# Normally this file should never be imported; the sys.path will have
-# src-d/rules_python earlier in the import path. But, ChromeOS has a hack in
-# their toolchain's sitecustomize.py that causes the rules_python/__init__.py
-# file to be ignored, and thus the module patching it does doesn't happen. To
-# work around that, perform equivalent module patching here. See
-# tests/integration/importing_runfiles/import_faked_rules_python_test.py for
-# details.
-try:
-    rules_python_python = importlib.import_module("rules_python.src-d.rules_python.python")
-except ImportError as e:
-    raise ImportError("Unable to import from src-d with sys.path=\n%s" % "\n".join(sys.path)) from e
-
-rules_python_python.__name__ = "rules_python.python"
-rules_python_python.__package__ = "rules_python.python"
-rules_python_python.__spec__.name = "rules_python.python"
-rules_python_python.__spec__.name = "rules_python.python"
-
-sys.modules["rules_python.python"] = rules_python_python

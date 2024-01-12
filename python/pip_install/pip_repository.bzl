@@ -891,7 +891,6 @@ whl_library_attrs = {
         # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
         default = [
             Label("//:BUILD.bazel"),
-            Label("//src-d:BUILD.bazel"),
         ] + [
             # Includes all the external dependencies from repositories.bzl
             Label("@" + repo + "//:BUILD.bazel")

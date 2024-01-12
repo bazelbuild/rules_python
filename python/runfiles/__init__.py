@@ -12,7 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-raise ImportError(
-        "Import of rules_python/python/runfiles/__init__.py triggered: "
-        "this should not occur; check that sys.path is correctly set."
-)
+from .runfiles import *
