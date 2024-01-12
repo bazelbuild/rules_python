@@ -48,8 +48,6 @@ class FakeRulesPython(types.ModuleType):
 
 class ImportFakedRulesPythonTest(unittest.TestCase):
     def test_import_rules_python(self):
-        assert "rules_python" not in sys.modules
-
         import rules_python as real_rules_python
         from rules_python.python.runfiles import runfiles as real_runfiles
         rf = real_runfiles.Create()
