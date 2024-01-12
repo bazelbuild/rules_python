@@ -27,9 +27,7 @@ def _dist_info(pkg):
     rules_python does not know anything about the hub repos that the user has
     available.
 
-    NOTE: Works with `incompatible_generate_aliases` and without by assuming the
-    following formats:
-        * @pypi_pylint//:pkg
+    NOTE: Works with assuming the following label formats:
         * @pypi//pylint
         * @pypi//pylint:pkg
         * Label("@pypi//pylint:pkg")
@@ -70,7 +68,6 @@ def py_console_script_binary(
 
     py_console_script_gen(
         name = "_{}_gen".format(name),
-        # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
         entry_points_txt = entry_points_txt or _dist_info(pkg),
         out = main,
         console_script = script,

@@ -14,7 +14,6 @@ python_register_toolchains(
     python_version = "3.9",
 )
 
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -24,6 +23,19 @@ pip_parse(
     # can be passed
     # environment = {"HTTPS_PROXY": "http://my.proxy.fun/"},
     name = "pypi",
+
+    # Requirement groups allow Bazel to tolerate PyPi cycles by putting dependencies
+    # which are known to form cycles into groups together.
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
     # (Optional) You can provide extra parameters to pip.
     # Here, make pip output verbose (this is usable with `quiet = False`).
     # extra_pip_args = ["-v"],
@@ -39,11 +51,12 @@ pip_parse(
     # 3. Wrapper script, like in the autodetecting python toolchain.
     #
     # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
 
     # (Optional) You can set quiet to False if you want to see pip output.
     #quiet = False,
     requirements_lock = "//:requirements_lock.txt",
+    requirements_windows = "//:requirements_windows.txt",
 )
 
 load("@pypi//:requirements.bzl", "install_deps")

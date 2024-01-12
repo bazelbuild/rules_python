@@ -2,8 +2,6 @@ package pythonconfig
 
 import (
 	"testing"
-
-	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 )
 
 func TestDistributionSanitizing(t *testing.T) {
@@ -19,7 +17,7 @@ func TestDistributionSanitizing(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := pythonconfig.SanitizeDistribution(tc.input)
+			got := SanitizeDistribution(tc.input)
 			if tc.want != got {
 				t.Fatalf("expected %q, got %q", tc.want, got)
 			}

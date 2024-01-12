@@ -14,18 +14,21 @@
 
 ""
 
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:which.bzl", "which_with_fail")
+load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
 
@@ -74,25 +77,29 @@ def _resolve_python_interpreter(rctx):
 
     Args:
         rctx: Handle to the rule repository context.
-    Returns: Python interpreter path.
+
+    Returns:
+        `path` object, for the resolved path to the Python interpreter.
     """
     python_interpreter = _get_python_interpreter_attr(rctx)
 
     if rctx.attr.python_interpreter_target != None:
         python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
 
-        if BZLMOD_ENABLED:
-            (os, _) = get_host_os_arch(rctx)
+        (os, _) = get_host_os_arch(rctx)
 
-            # On Windows, the symlink doesn't work because Windows attempts to find
-            # Python DLLs where the symlink is, not where the symlink points.
-            if os == WINDOWS_NAME:
-                python_interpreter = python_interpreter.realpath
+        # On Windows, the symlink doesn't work because Windows attempts to find
+        # Python DLLs where the symlink is, not where the symlink points.
+        if os == WINDOWS_NAME:
+            python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
+        # It's a plain command, e.g. "python3", to look up in the environment.
         found_python_interpreter = rctx.which(python_interpreter)
         if not found_python_interpreter:
             fail("python interpreter `{}` not found in PATH".format(python_interpreter))
         python_interpreter = found_python_interpreter
+    else:
+        python_interpreter = rctx.path(python_interpreter)
     return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
@@ -276,10 +283,42 @@ def _pip_repository_impl(rctx):
 
     packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
 
-    bzl_packages = dict(sorted([[name, normalize_name(name)] for name, _ in parsed_requirements_txt.requirements]))
+    bzl_packages = sorted([normalize_name(name) for name, _ in parsed_requirements_txt.requirements])
+
+    # Normalize cycles first
+    requirement_cycles = {
+        name: sorted(sets.to_list(sets.make(deps)))
+        for name, deps in rctx.attr.experimental_requirement_cycles.items()
+    }
+
+    # Check for conflicts between cycles _before_ we normalize package names so
+    # that reported errors use the names the user specified
+    for i in range(len(requirement_cycles)):
+        left_group = requirement_cycles.keys()[i]
+        left_deps = requirement_cycles.values()[i]
+        for j in range(len(requirement_cycles) - (i + 1)):
+            right_deps = requirement_cycles.values()[1 + i + j]
+            right_group = requirement_cycles.keys()[1 + i + j]
+            for d in left_deps:
+                if d in right_deps:
+                    fail("Error: Requirement %s cannot be repeated between cycles %s and %s; please merge the cycles." % (d, left_group, right_group))
+
+    # And normalize the names as used in the cycle specs
+    #
+    # NOTE: We must check that a listed dependency is actually in the actual
+    # requirements set for the current platform so that we can support cycles in
+    # platform-conditional requirements. Otherwise we'll blindly generate a
+    # label referencing a package which may not be installed on the current
+    # platform.
+    requirement_cycles = {
+        normalize_name(name): sorted([normalize_name(d) for d in group if normalize_name(d) in bzl_packages])
+        for name, group in requirement_cycles.items()
+    }
 
     imports = [
-        'load("@rules_python//python/pip_install:pip_repository.bzl", "whl_library")',
+        # NOTE: Maintain the order consistent with `buildifier`
+        'load("@rules_python//python:pip.bzl", "pip_utils")',
+        'load("@rules_python//python/pip_install:pip_repository.bzl", "group_library", "whl_library")',
     ]
 
     annotations = {}
@@ -311,33 +350,33 @@ def _pip_repository_impl(rctx):
 
     if rctx.attr.python_interpreter_target:
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
+    if rctx.attr.experimental_target_platforms:
+        config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
-    if rctx.attr.incompatible_generate_aliases:
-        macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-        aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages.values())
-        for path, contents in aliases.items():
-            rctx.file(path, contents)
-    else:
-        macro_tmpl = "@%s_{}//:{}" % rctx.attr.name
+    macro_tmpl = "@%s//{}:{}" % rctx.attr.name
+    aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+    for path, contents in aliases.items():
+        rctx.file(path, contents)
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "pkg")
-            for p in bzl_packages.values()
+            for p in bzl_packages
         ]),
+        "%%ALL_REQUIREMENT_GROUPS%%": _format_dict(_repr_dict(requirement_cycles)),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": _format_dict(_repr_dict({
-            name: macro_tmpl.format(p, "whl")
-            for name, p in bzl_packages.items()
+            p: macro_tmpl.format(p, "whl")
+            for p in bzl_packages
         })),
         "%%ANNOTATIONS%%": _format_dict(_repr_dict(annotations)),
         "%%CONFIG%%": _format_dict(_repr_dict(config)),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
-        "%%IMPORTS%%": "\n".join(sorted(imports)),
+        "%%IMPORTS%%": "\n".join(imports),
         "%%MACRO_TMPL%%": macro_tmpl,
         "%%NAME%%": rctx.attr.name,
         "%%PACKAGES%%": _format_repr_list(
@@ -382,6 +421,86 @@ style env vars are ignored, but env vars that control requests and urllib3
 can be passed.
         """,
         default = {},
+    ),
+    "experimental_requirement_cycles": attr.string_list_dict(
+        default = {},
+        doc = """\
+A mapping of dependency cycle names to a list of requirements which form that cycle.
+
+Requirements which form cycles will be installed together and taken as
+dependencies together in order to ensure that the cycle is always satisified.
+
+Example:
+  `sphinx` depends on `sphinxcontrib-serializinghtml`
+  When listing both as requirements, ala
+
+  ```
+  py_binary(
+    name = "doctool",
+    ...
+    deps = [
+      "@pypi//sphinx:pkg",
+      "@pypi//sphinxcontrib_serializinghtml",
+     ]
+  )
+  ```
+
+  Will produce a Bazel error such as
+
+  ```
+  ERROR: .../external/pypi_sphinxcontrib_serializinghtml/BUILD.bazel:44:6: in alias rule @pypi_sphinxcontrib_serializinghtml//:pkg: cycle in dependency graph:
+      //:doctool (...)
+      @pypi//sphinxcontrib_serializinghtml:pkg (...)
+  .-> @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  |   @pypi_sphinxcontrib_serializinghtml//:_pkg (...)
+  |   @pypi_sphinx//:pkg (...)
+  |   @pypi_sphinx//:_pkg (...)
+  `-- @pypi_sphinxcontrib_serializinghtml//:pkg (...)
+  ```
+
+  Which we can resolve by configuring these two requirements to be installed together as a cycle
+
+  ```
+  pip_parse(
+    ...
+    experimental_requirement_cycles = {
+      "sphinx": [
+        "sphinx",
+        "sphinxcontrib-serializinghtml",
+      ]
+    },
+  )
+  ```
+
+Warning:
+  If a dependency participates in multiple cycles, all of those cycles must be
+  collapsed down to one. For instance `a <-> b` and `a <-> c` cannot be listed
+  as two separate cycles.
+""",
+    ),
+    "experimental_target_platforms": attr.string_list(
+        default = [],
+        doc = """\
+A list of platforms that we will generate the conditional dependency graph for
+cross platform wheels by parsing the wheel metadata. This will generate the
+correct dependencies for packages like `sphinx` or `pylint`, which include
+`colorama` when installed and used on Windows platforms.
+
+An empty list means falling back to the legacy behaviour where the host
+platform is the target platform.
+
+WARNING: It may not work as expected in cases where the python interpreter
+implementation that is being used at runtime is different between different platforms.
+This has been tested for CPython only.
+
+Special values: `all` (for generating deps for all platforms), `host` (for
+generating deps for the host platform only). `linux_*` and other `<os>_*` values.
+In the future we plan to set `all` as the default to this attribute.
+
+For specific target platforms use values of the form `<os>_<arch>` where `<os>`
+is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
+`aarch64`, `s390x` and `ppc64le`.
+""",
     ),
     "extra_pip_args": attr.string_list(
         doc = "Extra arguments to pass on to pip. Must not contain spaces.",
@@ -440,23 +559,6 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
-    "incompatible_generate_aliases": attr.bool(
-        default = True,
-        doc = """\
-If true, extra aliases will be created in the main `hub` repo - i.e. the repo
-where the `requirements.bzl` is located. This means that for a Python package
-`PyYAML` initialized within a `pip` `hub_repo` there will be the following
-aliases generated:
-- `@pip//pyyaml` will point to `@pip_pyyaml//:pkg`
-- `@pip//pyyaml:data` will point to `@pip_pyyaml//:data`
-- `@pip//pyyaml:dist_info` will point to `@pip_pyyaml//:dist_info`
-- `@pip//pyyaml:pkg` will point to `@pip_pyyaml//:pkg`
-- `@pip//pyyaml:whl` will point to `@pip_pyyaml//:whl`
-
-This is to keep the dependencies coming from PyPI to have more ergonomic label
-names and support smooth transition to `bzlmod`.
-""",
-    ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Mac OS",
@@ -495,34 +597,52 @@ pip_repository = repository_rule(
 Those dependencies become available in a generated `requirements.bzl` file.
 You can instead check this `requirements.bzl` file into your repo, see the "vendoring" section below.
 
-This macro wraps the [`pip_repository`](./pip_repository.md) rule that invokes `pip`.
 In your WORKSPACE file:
 
 ```starlark
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
-    name = "pip_deps",
+    name = "pypi",
     requirements_lock = ":requirements.txt",
 )
 
-load("@pip_deps//:requirements.bzl", "install_deps")
+load("@pypi//:requirements.bzl", "install_deps")
 
 install_deps()
 ```
 
-You can then reference installed dependencies from a `BUILD` file with:
+You can then reference installed dependencies from a `BUILD` file with the alias targets generated in the same repo, for example, for `PyYAML` we would have the following:
+- `@pypi//pyyaml` and `@pypi//pyyaml:pkg` both point to the `py_library`
+  created after extracting the `PyYAML` package.
+- `@pypi//pyyaml:data` points to the extra data included in the package.
+- `@pypi//pyyaml:dist_info` points to the `dist-info` files in the package.
+- `@pypi//pyyaml:whl` points to the wheel file that was extracted.
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "requirement")
+py_library(
+    name = "bar",
+    ...
+    deps = [
+       "//my/other:dep",
+       "@pypi//numpy",
+       "@pypi//requests",
+    ],
+)
+```
+
+or
+
+```starlark
+load("@pypi//:requirements.bzl", "requirement")
 
 py_library(
     name = "bar",
     ...
     deps = [
        "//my/other:dep",
-       requirement("requests"),
        requirement("numpy"),
+       requirement("requests"),
     ],
 )
 ```
@@ -534,7 +654,7 @@ functionality for exposing [entry points][whl_ep] as `py_binary` targets as well
 [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
+load("@pypi//:requirements.bzl", "entry_point")
 
 alias(
     name = "pip-compile",
@@ -549,7 +669,7 @@ Note that for packages whose name and script are the same, only the name of the 
 is needed when calling the `entry_point` macro.
 
 ```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
+load("@pip//:requirements.bzl", "entry_point")
 
 alias(
     name = "flake8",
@@ -557,7 +677,7 @@ alias(
 )
 ```
 
-## Vendoring the requirements.bzl file
+### Vendoring the requirements.bzl file
 
 In some cases you may not want to generate the requirements.bzl file as a repository rule
 while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
@@ -608,7 +728,7 @@ def _whl_library_impl(rctx):
 
     if rctx.attr.whl_patches:
         patches = {}
-        for patch_file, json_args in patches.items():
+        for patch_file, json_args in rctx.attr.whl_patches.items():
             patch_dst = struct(**json.decode(json_args))
             if whl_path.basename in patch_dst.whls:
                 patches[patch_file] = patch_dst.patch_strip
@@ -622,8 +742,22 @@ def _whl_library_impl(rctx):
             timeout = rctx.attr.timeout,
         )
 
+    target_platforms = rctx.attr.experimental_target_platforms
+    if target_platforms:
+        parsed_whl = parse_whl_name(whl_path.basename)
+        if parsed_whl.platform_tag != "any":
+            # NOTE @aignas 2023-12-04: if the wheel is a platform specific
+            # wheel, we only include deps for that target platform
+            target_platforms = [
+                "{}_{}".format(p.os, p.cpu)
+                for p in whl_target_platforms(parsed_whl.platform_tag)
+            ]
+
     result = rctx.execute(
-        args + ["--whl-file", whl_path],
+        args + [
+            "--whl-file",
+            whl_path,
+        ] + ["--platform={}".format(p) for p in target_platforms],
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
@@ -659,6 +793,9 @@ def _whl_library_impl(rctx):
         repo_prefix = rctx.attr.repo_prefix,
         whl_name = whl_path.basename,
         dependencies = metadata["deps"],
+        dependencies_by_platform = metadata["deps_by_platform"],
+        group_name = rctx.attr.group_name,
+        group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,
         tags = [
             "pypi_name=" + metadata["name"],
@@ -707,6 +844,13 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
+    "group_deps": attr.string_list(
+        doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
+        default = [],
+    ),
+    "group_name": attr.string(
+        doc = "Name of the group, if any.",
+    ),
     "repo": attr.string(
         mandatory = True,
         doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
@@ -716,7 +860,7 @@ whl_library_attrs = {
         doc = "Python requirement string describing the package to make available",
     ),
     "whl_patches": attr.label_keyed_string_dict(
-        doc = """"a label-keyed-string dict that has
+        doc = """a label-keyed-string dict that has
             json.encode(struct([whl_file], patch_strip]) as values. This
             is to maintain flexibility and correct bzlmod extension interface
             until we have a better way to define whl_library and move whl
@@ -781,6 +925,29 @@ def package_annotation(
         data_exclude_glob = data_exclude_glob,
         srcs_exclude_glob = srcs_exclude_glob,
     ))
+
+def _group_library_impl(rctx):
+    build_file_contents = generate_group_library_build_bazel(
+        repo_prefix = rctx.attr.repo_prefix,
+        groups = rctx.attr.groups,
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
+group_library = repository_rule(
+    attrs = {
+        "groups": attr.string_list_dict(
+            doc = "A mapping of group names to requirements within that group.",
+        ),
+        "repo_prefix": attr.string(
+            doc = "Prefix used for the whl_library created components of each group",
+        ),
+    },
+    implementation = _group_library_impl,
+    doc = """
+Create a package containing only wrapper py_library and whl_library rules for implementing dependency groups.
+This is an implementation detail of dependency groups and should not be used alone.
+    """,
+)
 
 # pip_repository implementation
 

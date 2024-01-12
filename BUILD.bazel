@@ -24,6 +24,11 @@ exports_files([
     "version.bzl",
 ])
 
+exports_files(
+    glob(["*.md"]),
+    visibility = ["//docs:__subpackages__"],
+)
+
 filegroup(
     name = "distribution",
     srcs = [
@@ -39,9 +44,7 @@ filegroup(
         "@rules_python_gazelle_plugin//:distribution",
     ],
     visibility = [
-        "//examples:__pkg__",
-        "//tests:__pkg__",
-        "//tests/toolchains:__pkg__",
+        "//:__subpackages__",
     ],
 )
 

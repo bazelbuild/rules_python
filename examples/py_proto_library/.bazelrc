@@ -1,0 +1,2 @@
+# The equivalent bzlmod behavior is covered by examples/bzlmod/py_proto_library
+common --noenable_bzlmod

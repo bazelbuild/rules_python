@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from tabulate import tabulate
-
+import sphinx  # noqa
 
 def main(table):
     return tabulate(table)

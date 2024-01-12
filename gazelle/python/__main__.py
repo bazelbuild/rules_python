@@ -16,13 +16,14 @@
 # STDIN receives parse requests, one per line. It outputs the parsed modules and
 # comments from all the files from each request.
 
+import sys
+
 import parse
 import std_modules
-import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        sys.exit("Please provide subcommand, either print or std_modules")
+        sys.exit("Please provide subcommand, either parse or std_modules")
     if sys.argv[1] == "parse":
         sys.exit(parse.main(sys.stdin, sys.stdout))
     elif sys.argv[1] == "std_modules":

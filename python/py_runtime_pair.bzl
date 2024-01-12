@@ -15,10 +15,10 @@
 """Public entry point for py_runtime_pair."""
 
 load("@bazel_tools//tools/python:toolchain.bzl", _bazel_tools_impl = "py_runtime_pair")
-load("@rules_python_internal//:rules_python_config.bzl", "config")
 load("//python/private:py_runtime_pair_macro.bzl", _starlark_impl = "py_runtime_pair")
+load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")
 
-_py_runtime_pair = _bazel_tools_impl if not config.enable_pystar else _starlark_impl
+_py_runtime_pair = _starlark_impl if IS_BAZEL_6_OR_HIGHER else _bazel_tools_impl
 
 # NOTE: This doc is copy/pasted from the builtin py_runtime_pair rule so our
 # doc generator gives useful API docs.
@@ -47,7 +47,8 @@ def py_runtime_pair(name, py2_runtime = None, py3_runtime = None, **attrs):
     ```python
     # In your BUILD file...
 
-    load("@rules_python//python:defs.bzl", "py_runtime_pair")
+    load("@rules_python//python:py_runtime.bzl", "py_runtime")
+    load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
 
     py_runtime(
         name = "my_py3_runtime",

@@ -60,5 +60,5 @@ py_console_script_binary(
 ```
 
 [specification]: https://packaging.python.org/en/latest/specifications/entry-points/
-[`py_console_script_binary.binary_rule`]: #py_console_script_binary-binary_rule
+[`py_console_script_binary.binary_rule`]: #py_console_script_binary_binary_rule
 

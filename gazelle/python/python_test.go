@@ -162,7 +162,7 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		cmd.Dir = workspaceRoot
 		helperScript, err := runfiles.Rlocation("rules_python_gazelle_plugin/python/helper")
 		if err != nil {
-			t.Fatalf("failed to initialize Python heler: %v", err)
+			t.Fatalf("failed to initialize Python helper: %v", err)
 		}
 		cmd.Env = append(os.Environ(), "GAZELLE_PYTHON_HELPER="+helperScript)
 		if err := cmd.Run(); err != nil {

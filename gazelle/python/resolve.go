@@ -61,11 +61,17 @@ func (py *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []reso
 	provides := make([]resolve.ImportSpec, 0, len(srcs)+1)
 	for _, src := range srcs {
 		ext := filepath.Ext(src)
-		if ext == ".py" {
-			pythonProjectRoot := cfg.PythonProjectRoot()
-			provide := importSpecFromSrc(pythonProjectRoot, f.Pkg, src)
-			provides = append(provides, provide)
+		if ext != ".py" {
+			continue
 		}
+		if cfg.PerFileGeneration() && len(srcs) > 1 && src == pyLibraryEntrypointFilename {
+			// Do not provide import spec from __init__.py when it is being included as
+			// part of another module.
+			continue
+		}
+		pythonProjectRoot := cfg.PythonProjectRoot()
+		provide := importSpecFromSrc(pythonProjectRoot, f.Pkg, src)
+		provides = append(provides, provide)
 	}
 	if len(provides) == 0 {
 		return nil
@@ -172,7 +178,7 @@ func (py *Resolver) Resolve(
 						if override.Repo == from.Repo {
 							override.Repo = ""
 						}
-						dep := override.String()
+						dep := override.Rel(from.Repo, from.Pkg).String()
 						deps.Add(dep)
 						if explainDependency == dep {
 							log.Printf("Explaining dependency (%s): "+

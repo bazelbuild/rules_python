@@ -9,24 +9,6 @@ compile_pip_requirements(
     srcs = ["requirements.in"],
 )
 
-# The requirements.bzl file is generated with a reference to the interpreter for the host platform.
-# In order to check in a platform-agnostic file, we have to replace that reference with the symbol
-# loaded from our python toolchain.
-genrule(
-    name = "make_platform_agnostic",
-    srcs = ["@pip//:requirements.bzl"],
-    outs = ["requirements.clean.bzl"],
-    cmd = " | ".join([
-        "cat $<",
-        # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
-        """sed -e '/^load.*.whl_library/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
-        # Replace the bazel 6.0.0 specific comment with something that bazel 5.4.0 would produce.
-        # This enables this example to be run as a test under bazel 5.4.0.
-        """sed -e 's#@//#//#'""",
-        """sed 's#"@python39_.*//:bin/python3"#interpreter#' >$@""",
-    ]),
-)
-
 write_file(
     name = "gen_update",
     out = "update.sh",
@@ -35,14 +17,14 @@ write_file(
         "#!/usr/bin/env bash",
         # Bazel gives us a way to access the source folder!
         "cd $BUILD_WORKSPACE_DIRECTORY",
-        "cp -fv bazel-bin/requirements.clean.bzl requirements.bzl",
+        "cp -fv bazel-pip_parse_vendored/external/pip/requirements.bzl requirements.bzl",
     ],
 )
 
 sh_binary(
     name = "vendor_requirements",
     srcs = ["update.sh"],
-    data = [":make_platform_agnostic"],
+    data = ["@pip//:requirements.bzl"],
 )
 
 # Similarly ensures that the requirements.bzl file is updated
@@ -51,5 +33,5 @@ diff_test(
     name = "test_vendored",
     failure_message = "Please run:  bazel run //:vendor_requirements",
     file1 = "requirements.bzl",
-    file2 = ":make_platform_agnostic",
+    file2 = "@pip//:requirements.bzl",
 )

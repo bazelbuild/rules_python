@@ -33,6 +33,8 @@ py_binary(
     srcs = ["main.py"],
     deps = [
         "@pypi//requests:pkg",
+        "@pypi//sphinx:pkg",
+        "@pypi//sphinxcontrib_serializinghtml:pkg",
     ],
 )
 
@@ -55,6 +57,7 @@ compile_pip_requirements(
     name = "requirements",
     srcs = ["requirements.in"],
     requirements_txt = "requirements_lock.txt",
+    requirements_windows = "requirements_windows.txt",
 )
 
 # Test the use of all pip_parse utilities in a single py_test
