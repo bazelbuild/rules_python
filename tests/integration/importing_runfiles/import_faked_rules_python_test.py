@@ -19,7 +19,6 @@ import importlib
 import importlib.util
 import importlib.machinery
 import os.path
-import pathlib
 
 # This is a simplified version of a hack ChromeOS does in their toolchain's
 # sitecustomize.py module. It basically pre-populates fake modules for
@@ -46,7 +45,8 @@ class FakeRulesPython(types.ModuleType):
         """Dispatches the getattr to the real module."""
         return getattr(self._mod, item)
 
-class ImportingRunfilesTest(unittest.TestCase):
+
+class ImportFakedRulesPythonTest(unittest.TestCase):
     def test_import_rules_python(self):
         assert "rules_python" not in sys.modules
 
@@ -62,7 +62,8 @@ class ImportingRunfilesTest(unittest.TestCase):
         rules_python_dirname = rf._repo_mapping.get(('', 'rules_python'), 'rules_python')
         repo_root = os.path.join(runfiles_root, rules_python_dirname)
 
-        # Clear out all the imports from using the runfiles
+        # Clear out all the imports from using the runfiles. We don't want
+        # them to interfere with the real imports
         for name in list(sys.modules.keys()):
             if name == "rules_python" or name.startswith("rules_python."):
                 del sys.modules[name]
@@ -73,6 +74,7 @@ class ImportingRunfilesTest(unittest.TestCase):
 
         import rules_python
 
+        # If these were the same, then the point of the test would be defeated.
         self.assertIsNot(rules_python, real_rules_python)
 
         import rules_python.python
@@ -90,4 +92,3 @@ class ImportingRunfilesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

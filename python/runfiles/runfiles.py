@@ -51,4 +51,7 @@ elif __name__ == "rules_python.python.runfiles.runfiles":
     canonical_runfiles = importlib.import_module("rules_python.src-d.rules_python.python")
     sys.modules[__name__] = canonical_runfiles
 else:
-    raise ImportError("how did we get here?")
+    raise ImportError(
+        "Unexpected import of rules_python/python/runfiles/runfiles.py "
+        f"under the name {__name__}. Check sys.path for correctness."
+    )

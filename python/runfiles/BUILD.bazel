@@ -14,6 +14,12 @@
 
 load("//python:py_library.bzl", "py_library")
 
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]),
+    visibility = ["//python:__pkg__"],
+)
+
 py_library(
     name = "runfiles",
     srcs = [
@@ -22,10 +28,4 @@ py_library(
     ],
     visibility = ["//visibility:public"],
     deps = ["//src-d/rules_python/python/runfiles"],
-)
-
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//python:__pkg__"],
 )

@@ -12,14 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# it might be possible to use __loader__ to find and load
-# src-d/rules_python/__init__.py and replace ourselves?
-
 import sys
 import importlib
 
+# This file gets imported when both of these are true:
+#  * bzlmod is disabled
+#  * `import rules_python` happens for the first time
+# This is because the runfiles root is before rules_python/src-d in sys.path,
+# and the repo directory name is "rules_python", thus making it importable.
+# To work around this case, import the src-d code as a normal submodule,
+# then patch up imports to make it look like nothing happened.
+#
+# When bzlmod is enabled, the directory name changes (it isn't importable),
+# the src-d directory is used instead, and this file is never executed.
 rules_python = importlib.import_module("rules_python.src-d.rules_python")
 
+# The module was imported as another name, so fix that up here.
 rules_python.__name__ = "rules_python"
 rules_python.__package__ = "rules_python"
 rules_python.__spec__.name = "rules_python"
