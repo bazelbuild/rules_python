@@ -21,12 +21,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: jpetrucciani/mypy-check@master
         with:
-          requirements: 1.6.0
           python_version: 3.8
-          path: 'xxpython/runfiles'
+          path: 'src-d/rules_python/python/runfiles'
       - uses: jpetrucciani/mypy-check@master
         with:
-          requirements: 1.6.0
           python_version: 3.8
           path: 'tests/runfiles'
-      
