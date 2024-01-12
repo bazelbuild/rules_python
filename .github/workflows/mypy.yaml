@@ -23,7 +23,7 @@ jobs:
         with:
           requirements: 1.6.0
           python_version: 3.8
-          path: 'src-d/rules_python/python/runfiles'
+          path: 'xxpython/runfiles'
       - uses: jpetrucciani/mypy-check@master
         with:
           requirements: 1.6.0
