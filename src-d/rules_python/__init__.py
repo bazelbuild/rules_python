@@ -1,4 +1,4 @@
-# Copyright 2019 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:py_library.bzl", "py_library")
-
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//python:__pkg__"],
-)
-
-py_library(
-    name = "runfiles",
-    srcs = [
-        "__init__.py",
-        "runfiles.py",
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["//src-d/rules_python/python/runfiles"],
-)
+# Intentionally empty.
+# rules_python should be treated as a namespace package, though it
+# doesn't always quite function as one in practice, due to automatic
+# generation of __init__.py files still being a thing.

@@ -1,0 +1,2 @@
+# Disable MODULE lock files
+common --lockfile_mode=off

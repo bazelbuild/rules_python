@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from typing import Any, List, Optional
 
-from python.runfiles import runfiles
+from rules_python.python.runfiles import runfiles
 
 
 class RunfilesTest(unittest.TestCase):
