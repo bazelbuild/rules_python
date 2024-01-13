@@ -24,8 +24,11 @@ A brief description of the categories of changes:
 ### Changed
 
 * **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
-  from `pip_parse` and `gazelle` got removed. They have been flipped to `True`
+  from `pip_parse` and `gazelle` got removed. They had been flipped to `True`
   in 0.27.0 release.
+* **BREAKING** (wheel) The `incompatible_normalize_name` and
+  `incompatible_normalize_version` flags have been removed. They had been
+  flipped to `True` in 0.27.0 release.
 
 ### Fixed
 
@@ -36,6 +39,9 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files.
 * (bzlmod runfiles) The runfiles library can now be imported using
   `import rules_python.python.runfiles`, as is possible with wORKSPACE builds.
+  ([#1679](https://github.com/bazelbuild/rules_python/issues/1679))
+* (wheel) The stamp variables inside the distribution name are no longer
+  lower-cased when normalizing under PEP440 conventions.
 
 ### Added
 
