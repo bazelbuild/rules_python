@@ -308,7 +308,16 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
                 "ignore_root_user_error": attr.bool(
                     default = False,
-                    doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
+                    doc = """\
+If False, the Python runtime installation will be made read only. This improves
+the ability for Bazel to cache it, but prevents the interpreter from creating
+pyc files for the standard library dynamically at runtime as they are loaded.
+
+If True, the Python runtime installation is read-write. This allows the
+interpreter to create pyc files for the standard library, but, because they are
+created as needed, it adversely affects Bazel's ability to cache the runtime and
+can result in spurious build failures.
+""",
                     mandatory = False,
                 ),
                 "is_default": attr.bool(
