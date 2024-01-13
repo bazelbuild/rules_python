@@ -120,7 +120,6 @@ pip_parse(
             "sphinxcontrib-applehelp",
         ],
     },
-    incompatible_generate_aliases = True,
     python_interpreter_target = interpreter,
     requirements_lock = "//docs/sphinx:requirements.txt",
 )

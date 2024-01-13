@@ -42,8 +42,6 @@ func main() {
 		manifestGeneratorHashPath string
 		requirementsPath          string
 		pipRepositoryName         string
-		usePipRepositoryAliases   bool
-		omitUsePipRepositoryAliases   bool
 		modulesMappingPath        string
 		outputPath                string
 		updateTarget              string
@@ -64,16 +62,6 @@ func main() {
 		"pip-repository-name",
 		"",
 		"The name of the pip_install or pip_repository target.")
-	flag.BoolVar(
-		&usePipRepositoryAliases,
-		"use-pip-repository-aliases",
-		true,
-		"Whether to use the pip-repository aliases, which are generated when passing 'incompatible_generate_aliases = True'.")
-	flag.BoolVar(
-		&omitUsePipRepositoryAliases,
-		"omit-pip-repository-aliases-setting",
-		false,
-		"Whether to omit use-pip-repository-aliases flag serialization into the manifest.")
 	flag.StringVar(
 		&modulesMappingPath,
 		"modules-mapping",
@@ -115,12 +103,6 @@ func main() {
 	header := generateHeader(updateTarget)
 	repository := manifest.PipRepository{
 		Name:                    pipRepositoryName,
-	}
-
-	if omitUsePipRepositoryAliases {
-		repository.UsePipRepositoryAliases = nil
-	} else {
-		repository.UsePipRepositoryAliases = &usePipRepositoryAliases
 	}
 
 	manifestFile := manifest.NewFile(&manifest.Manifest{

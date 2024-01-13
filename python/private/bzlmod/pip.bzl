@@ -87,8 +87,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     # we programmatically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None and not pip_attr.python_interpreter:
-        python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
-        if python_name not in INTERPRETER_LABELS.keys():
+        python_name = "python_{}_host".format(
+            version_label(pip_attr.python_version, sep = "_"),
+        )
+        if python_name not in INTERPRETER_LABELS:
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
                 "python_version={version}: Make sure a corresponding " +
@@ -392,9 +394,6 @@ The labels are JSON config files describing the modifications.
     # don't allow users to override it.
     attrs.pop("repo_prefix")
 
-    # incompatible_generate_aliases is always True in bzlmod
-    attrs.pop("incompatible_generate_aliases")
-
     return attrs
 
 def _whl_mod_attrs():
@@ -520,9 +519,8 @@ the BUILD files for wheels.
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
 This tag class reuses most of the pip attributes that are found in
 @rules_python//python/pip_install:pip_repository.bzl.
-The exceptions are it does not use the args 'repo_prefix',
-and 'incompatible_generate_aliases'.  We set the repository prefix
-for the user and the alias arg is always True in bzlmod.
+The exception is it does not use the arg 'repo_prefix'.  We set the repository
+prefix for the user and the alias arg is always True in bzlmod.
 """,
         ),
         "whl_mods": tag_class(

@@ -19,7 +19,59 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
 ### Changed
+
+* **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
+  from `pip_parse` and `gazelle` got removed. They had been flipped to `True`
+  in 0.27.0 release.
+* **BREAKING** (wheel) The `incompatible_normalize_name` and
+  `incompatible_normalize_version` flags have been removed. They had been
+  flipped to `True` in 0.27.0 release.
+
+### Fixed
+
+* (bzlmod pip.parse) Use a platform-independent reference to the interpreter
+  pip uses. This reduces (but doesn't eliminate) the amount of
+  platform-specific content in `MODULE.bazel.lock` files; Follow
+  [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
+  platform-specific content in `MODULE.bazel.lock` files.
+* (wheel) The stamp variables inside the distribution name are no longer
+  lower-cased when normalizing under PEP440 conventions.
+
+### Added
+
+* (toolchains) `python_register_toolchains` now also generates a repository
+  that is suffixed with `_host`, that has a single label `:python` that is a
+  symlink to the python interpreter for the host platform. The intended use is
+  mainly in `repository_rule`, which are always run using `host` platform
+  Python. This means that `WORKSPACE` users can now copy the `requirements.bzl`
+  file for vendoring as seen in the updated `pip_parse_vendored` example.
+
+* (runfiles) `rules_python.python.runfiles.Runfiles` now has a static `Create`
+  method to make imports more ergonomic. Users should only need to import the
+  `Runfiles` object to locate runfiles.
+
+* (toolchains) `PyRuntimeInfo` now includes a `interpreter_version_info` field
+  that contains the static version information for the given interpreter.
+  This can be set via `py_runtime` when registering an interpreter toolchain,
+  and will done automatically for the builtin interpreter versions registered via
+  `python_register_toolchains`.
+  Note that this only available on the Starlark implementation of the provider.
+
+## [0.28.0] - 2024-01-07
+
+[0.28.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.28.0
+
+### Changed
+
+* **BREAKING** (pip_install) the deprecated `pip_install` macro and related
+  items have been removed.
+
+* **BREAKING** Support for Bazel 5 has been officially dropped. This release
+  was only partially tested with Bazel 5 and may or may not work with Bazel 5.
+  Subequent versions will no longer be tested under Bazel 5.
 
 * (runfiles) `rules_python.python.runfiles` now directly implements type hints
   and drops support for python2 as a result.
@@ -34,8 +86,13 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
-* (pip_install) the deprecated `pip_install` macro and related items have been
-  removed.
+* (toolchains) `py_runtime` can now take an executable target. Note: runfiles
+  from the target are not supported yet.
+  ([#1612](https://github.com/bazelbuild/rules_python/issues/1612))
+
+* (gazelle) When `python_generation_mode` is set to `file`, create one `py_binary`
+  target for each file with `if __name__ == "__main__"` instead of just one
+  `py_binary` for the whole module.
 
 ### Fixed
 
@@ -71,11 +128,12 @@ A brief description of the categories of changes:
 ### Added
 
 * (docs) bzlmod extensions are now documented on rules-python.readthedocs.io
+* (docs) Support and backwards compatibility policies have been documented.
+  See https://rules-python.readthedocs.io/en/latest/support.html
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.27.0] - 2023-11-16
 

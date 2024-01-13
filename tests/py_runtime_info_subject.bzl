@@ -31,6 +31,7 @@ def py_runtime_info_subject(info, *, meta):
     # buildifier: disable=uninitialized
     public = struct(
         # go/keep-sorted start
+        actual = info,
         bootstrap_template = lambda *a, **k: _py_runtime_info_subject_bootstrap_template(self, *a, **k),
         coverage_files = lambda *a, **k: _py_runtime_info_subject_coverage_files(self, *a, **k),
         coverage_tool = lambda *a, **k: _py_runtime_info_subject_coverage_tool(self, *a, **k),
