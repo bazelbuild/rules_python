@@ -242,9 +242,14 @@ the target platform. For an in-build runtime this attribute must not be set.
 """),
         "interpreter_version_info": attr.string_dict(
             doc = """
-This is the version of the interpreter that this runtime provides.
-The struct can contain the five components of the version number: major, minor, micro, releaselevel, and serial.
-This should match the format given by `sys.version_info`, however for simplicity, the micro, releaselevel and serial values may be omitted.
+Version information about the interpreter this runtime provides. The
+supported keys match the names for `sys.version_info`. While the input
+values are strings, most are converted to ints. The supported keys are:
+  * major: int, the major version number
+  * minor: int, the minor version number
+  * micro: optional int, the micro version number
+  * releaselevel: optional str, the release level
+  * serial: optional int, the serial number of the release"
             """,
             mandatory = False,
         ),

@@ -97,7 +97,9 @@ def _PyRuntimeInfo_init(
         )
 
         if len(_interpreter_version_info.keys()) > 0:
-            fail("unexpected keys {} in interpreter_version_info".format(str(_interpreter_version_info.keys())))
+            fail("unexpected keys {} in interpreter_version_info".format(
+                str(_interpreter_version_info.keys()),
+            ))
 
     return {
         "bootstrap_template": bootstrap_template,
@@ -155,9 +157,16 @@ the same conventions as the standard CPython interpreter.
             "Otherwise, this is `None`."
         ),
         "interpreter_version_info": (
-            "This is the version of the interpreter that this runtime provides. " +
-            "The struct can contain the five components of the version number: major, minor, micro, releaselevel, and serial. " +
-            "This should match the format given by `sys.version_info`, however for simplicity, the micro, releaselevel and serial values may be omitted."
+            "Version information about the interpreter this runtime provides. " +
+            "It should match the format given by `sys.version_info`, however " +
+            "for simplicity, the micro, releaselevel, and serial values are " +
+            "optional." +
+            "A struct with the following fields:\n" +
+            "  * major: int, the major version number\n" +
+            "  * minor: int, the minor version number\n" +
+            "  * micro: optional int, the micro version number\n" +
+            "  * releaselevel: optional str, the release level\n" +
+            "  * serial: optional int, the serial number of the release"
         ),
         "python_version": (
             "Indicates whether this runtime uses Python major version 2 or 3. " +
