@@ -59,6 +59,13 @@ def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_e
     )
 
 def _python_impl(module_ctx):
+    if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
+        debug_info = {
+            "toolchains_registered": [],
+        }
+    else:
+        debug_info = None
+
     # The toolchain_info structs to register, in the order to register them in.
     # NOTE: The last element is special: it is treated as the default toolchain,
     # so there is special handling to ensure the last entry is the correct one.
@@ -149,6 +156,11 @@ def _python_impl(module_ctx):
                     ignore_root_user_error = ignore_root_user_error,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
+                if debug_info:
+                    debug_info["toolchains_registered"].append({
+                        "name": toolchain_name,
+                        "ignore_root_user_error": ignore_root_user_error,
+                    })
 
             if is_default:
                 # This toolchain is setting the default, but the actual
@@ -211,6 +223,12 @@ def _python_impl(module_ctx):
         },
     )
 
+    if debug_info != None:
+        _debug_repo(
+            name = "rules_python_bzlmod_debug",
+            debug_info = json.encode_indent(debug_info),
+        )
+
 def _fail_duplicate_module_toolchain_version(version, module):
     fail(("Duplicate module toolchain version: module '{module}' attempted " +
           "to use version '{version}' multiple times in itself").format(
@@ -238,6 +256,14 @@ def _fail_multiple_default_toolchains(first, second):
         first = first,
         second = second,
     ))
+
+def _get_bazel_specific_kwargs():
+    if native.bazel_version >= "6.4.0":
+        return {
+            "environ": ["RULES_PYTHON_BZLMOD_DEBUG"],
+        }
+    else:
+        return {}
 
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
@@ -297,5 +323,24 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
             },
         ),
+    },
+    **_get_bazel_specific_kwargs()
+)
+
+_DEBUG_BUILD_CONTENT = """
+package(
+    default_visibility = ["//visibility:public"],
+)
+exports_files(["debug_info.json"])
+"""
+
+def _debug_repo_impl(repo_ctx):
+    repo_ctx.file("BUILD.bazel", _DEBUG_BUILD_CONTENT)
+    repo_ctx.file("debug_info.json", repo_ctx.attr.debug_info)
+
+_debug_repo = repository_rule(
+    implementation = _debug_repo_impl,
+    attrs = {
+        "debug_info": attr.string(),
     },
 )
