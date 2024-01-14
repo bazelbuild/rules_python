@@ -169,6 +169,35 @@ class PlatformTest(unittest.TestCase):
         self.assertEqual(5, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
 
+    def test_linux_specializations(self):
+        any_linux = wheel.Platform(os=wheel.OS.linux)
+        all_specializations = list(any_linux.all_specializations())
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
+    def test_osx_specializations(self):
+        any_osx = wheel.Platform(os=wheel.OS.osx)
+        all_specializations = list(any_osx.all_specializations())
+        # NOTE @aignas 2024-01-14: even though in practice we would only have
+        # Python on osx aarch64 and osx x86_64, we return all arch posibilities
+        # to make the code simpler.
+        want = [
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
 
 if __name__ == "__main__":
     unittest.main()
