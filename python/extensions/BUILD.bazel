@@ -35,5 +35,8 @@ bzl_library(
     name = "python_bzl",
     srcs = ["python.bzl"],
     visibility = ["//:__subpackages__"],
-    deps = ["//python/private/bzlmod:python_bzl"],
+    deps = [
+        "//python/private:util_bzl",
+        "//python/private/bzlmod:python_bzl",
+    ],
 )
