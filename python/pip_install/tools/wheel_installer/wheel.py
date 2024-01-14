@@ -36,6 +36,11 @@ class OS(Enum):
     darwin = osx
     win32 = windows
 
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the interpreter operating system."
+        return cls[sys.platform.lower()]
+
 
 class Arch(Enum):
     x86_64 = 1
@@ -79,7 +84,7 @@ class Platform:
         """
         return [
             cls(
-                os=OS[sys.platform.lower()],
+                os=OS.interpreter(),
                 # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
                 # is returning an empty string here, so lets default to x86_64
                 arch=Arch[platform.machine().lower() or "x86_64"],
