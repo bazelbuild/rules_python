@@ -1,4 +1,5 @@
 import unittest
+from random import shuffle
 
 from python.pip_install.tools.wheel_installer import wheel
 
@@ -197,6 +198,26 @@ class PlatformTest(unittest.TestCase):
             wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.s390x),
         ]
         self.assertEqual(want, all_specializations)
+
+    def test_platform_sort(self):
+        platforms = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+        shuffle(platforms)
+        platforms.sort()
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+
+        self.assertEqual(want, platforms)
 
 
 if __name__ == "__main__":

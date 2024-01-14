@@ -63,6 +63,21 @@ class Arch(Enum):
         return cls[platform.machine().lower() or "x86_64"]
 
 
+def _as_int(value: Optional[Union[OS, Arch]]) -> int:
+    """Convert one of the enums above to an int for easier sorting algorithms.
+
+    Args:
+        value: The value of an enum or None.
+
+    Returns:
+        -1 if we get None, otherwise, the numeric value of the given enum.
+    """
+    if value is None:
+        return -1
+
+    return int(value.value)
+
+
 @dataclass(frozen=True)
 class Platform:
     os: OS
@@ -107,24 +122,13 @@ class Platform:
         if not isinstance(other, Platform) or other is None:
             raise ValueError(f"cannot compare {other} with Platform")
 
-        if self.arch is None and other.arch is not None:
-            return True
+        self_arch, self_os = _as_int(self.arch), _as_int(self.os)
+        other_arch, other_os = _as_int(other.arch), _as_int(other.os)
 
-        if self.arch is not None and other.arch is None:
-            return True
-
-        # Here we ensure that we sort by OS before sorting by arch
-
-        if self.arch is None and other.arch is None:
-            return self.os.value < other.os.value
-
-        if self.os.value < other.os.value:
-            return True
-
-        if self.os.value == other.os.value:
-            return self.arch.value < other.arch.value
-
-        return False
+        if self_os == other_os:
+            return self_arch < other_arch
+        else:
+            return self_os < other_os
 
     def __str__(self) -> str:
         if self.arch is None:
