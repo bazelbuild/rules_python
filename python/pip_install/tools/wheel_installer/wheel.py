@@ -55,6 +55,13 @@ class Arch(Enum):
     x86 = x86_32
     ppc64le = ppc
 
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the currently running interpreter architecture."
+        # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
+        # is returning an empty string here, so lets default to x86_64
+        return cls[platform.machine().lower() or "x86_64"]
+
 
 @dataclass(frozen=True)
 class Platform:
@@ -82,14 +89,7 @@ class Platform:
             A list of parsed values which makes the signature the same as
             `Platform.all` and `Platform.from_string`.
         """
-        return [
-            cls(
-                os=OS.interpreter(),
-                # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
-                # is returning an empty string here, so lets default to x86_64
-                arch=Arch[platform.machine().lower() or "x86_64"],
-            )
-        ]
+        return [cls(os=OS.interpreter(), arch=Arch.interpreter())]
 
     def all_specializations(self) -> Iterator["Platform"]:
         """Return the platform itself and all its unambiguous specializations.
