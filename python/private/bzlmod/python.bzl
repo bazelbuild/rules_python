@@ -260,7 +260,6 @@ def _fail_multiple_default_toolchains(first, second):
 
 def _get_bazel_version_specific_kwargs():
     kwargs = {}
-    supports_environ = False
 
     if IS_BAZEL_6_4_OR_HIGHER:
         kwargs["environ"] = ["RULES_PYTHON_BZLMOD_DEBUG"]
