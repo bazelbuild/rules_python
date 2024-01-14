@@ -152,6 +152,43 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar", "baz", "zdep"], got.deps)
         self.assertEqual({}, got.deps_select)
 
+    def test_can_get_deps_based_on_specific_python_version(self):
+        requires_dist = [
+            "bar",
+            "baz; python_version < '3.8'",
+            "posix_dep; os_name=='posix' and python_version >= '3.8'",
+        ]
+
+        py38_deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=[
+                wheel.Platform(
+                    os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=8
+                ),
+            ],
+        ).build()
+        py37_deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=[
+                wheel.Platform(
+                    os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=7
+                ),
+            ],
+        ).build()
+
+        self.assertEqual(["bar", "baz"], py37_deps.deps)
+        self.assertEqual({}, py37_deps.deps_select)
+        self.assertEqual(["bar"], py38_deps.deps)
+        self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
+
+
+class MinorVersionTest(unittest.TestCase):
+    def test_host(self):
+        host = wheel.MinorVersion.host()
+        self.assertIsNotNone(host)
+
 
 class PlatformTest(unittest.TestCase):
     def test_can_get_host(self):
