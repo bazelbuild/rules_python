@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@rules_python//python:py_test.bzl", "py_test")
-load("@rules_python//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("@rules_python//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 py_test(
     name = "foo_test",

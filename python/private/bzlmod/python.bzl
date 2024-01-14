@@ -16,6 +16,7 @@
 
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
+load("//python/private:util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 load(":pythons_hub.bzl", "hub_repo")
 
 # This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
@@ -158,8 +159,8 @@ def _python_impl(module_ctx):
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
                     debug_info["toolchains_registered"].append({
-                        "name": toolchain_name,
                         "ignore_root_user_error": ignore_root_user_error,
+                        "name": toolchain_name,
                     })
 
             if is_default:
@@ -257,13 +258,14 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _get_bazel_specific_kwargs():
-    if native.bazel_version >= "6.4.0":
-        return {
-            "environ": ["RULES_PYTHON_BZLMOD_DEBUG"],
-        }
-    else:
-        return {}
+def _get_bazel_version_specific_kwargs():
+    kwargs = {}
+    supports_environ = False
+
+    if IS_BAZEL_6_4_OR_HIGHER:
+        kwargs["environ"] = ["RULES_PYTHON_BZLMOD_DEBUG"]
+
+    return kwargs
 
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
@@ -333,7 +335,7 @@ can result in spurious build failures.
             },
         ),
     },
-    **_get_bazel_specific_kwargs()
+    **_get_bazel_version_specific_kwargs()
 )
 
 _DEBUG_BUILD_CONTENT = """
