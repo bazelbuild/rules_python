@@ -41,6 +41,9 @@ class OS(Enum):
         "Return the interpreter operating system."
         return cls[sys.platform.lower()]
 
+    def __str__(self) -> str:
+        return self.name.lower()
+
 
 class Arch(Enum):
     x86_64 = 1
@@ -61,6 +64,9 @@ class Arch(Enum):
         # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
         # is returning an empty string here, so lets default to x86_64
         return cls[platform.machine().lower() or "x86_64"]
+
+    def __str__(self) -> str:
+        return self.name.lower()
 
 
 def _as_int(value: Optional[Union[OS, Arch]]) -> int:
@@ -132,9 +138,9 @@ class Platform:
 
     def __str__(self) -> str:
         if self.arch is None:
-            return f"@platforms//os:{self.os.name.lower()}"
+            return f"@platforms//os:{self.os}"
 
-        return self.os.name.lower() + "_" + self.arch.name.lower()
+        return f"{self.os}_{self.arch}"
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
