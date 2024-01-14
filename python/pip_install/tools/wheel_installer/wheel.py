@@ -84,10 +84,20 @@ def _as_int(value: Optional[Union[OS, Arch]]) -> int:
     return int(value.value)
 
 
+class MinorVersion(int):
+    @classmethod
+    def host(cls) -> "MinorVersion":
+        version = platform.python_version()
+        _, _, tail = version.partition(".")
+        minor, _, _ = tail.partition(".")
+        return cls(minor)
+
+
 @dataclass(frozen=True)
 class Platform:
     os: OS
     arch: Optional[Arch] = None
+    minor_version: MinorVersion = MinorVersion.host()
 
     @classmethod
     def all(cls, want_os: Optional[OS] = None) -> List["Platform"]:
@@ -235,11 +245,12 @@ class Platform:
             "platform_system": self.platform_system,
             "platform_release": "",  # unset
             "platform_version": "",  # unset
+            "python_version": f"3.{self.minor_version}",
+            # FIXME @aignas 2024-01-14: is putting zero last a good idea?
+            "implementation_version": f"3.{self.minor_version}.0",
+            "python_full_version": f"3.{self.minor_version}.0",
             # we assume that the following are the same as the interpreter used to setup the deps:
-            # "implementation_version": "X.Y.Z",
             # "implementation_name": "cpython"
-            # "python_version": "X.Y",
-            # "python_full_version": "X.Y.Z",
             # "platform_python_implementation: "CPython",
         }
 
@@ -400,8 +411,9 @@ class Deps:
             ]
         )
         match_arch = "platform_machine" in marker_str
+        match_version = "version" in marker_str
 
-        if not (match_os or match_arch):
+        if not (match_os or match_arch or match_version):
             if any(req.marker.evaluate({"extra": extra}) for extra in extras):
                 self._add(req.name, None)
             return
@@ -414,8 +426,10 @@ class Deps:
 
             if match_arch:
                 self._add(req.name, plat)
-            else:
+            elif match_os:
                 self._add(req.name, Platform(plat.os))
+            elif match_version:
+                self._add(req.name, None)
 
     def build(self) -> FrozenDeps:
         return FrozenDeps(
