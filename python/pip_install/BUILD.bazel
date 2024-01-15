@@ -26,14 +26,18 @@ bzl_library(
         ":requirements_parser_bzl",
         "//python:repositories_bzl",
         "//python:versions_bzl",
+        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
         "//python/pip_install/private:generate_whl_library_build_bazel_bzl",
         "//python/pip_install/private:srcs_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:normalize_name_bzl",
+        "//python/private:parse_whl_name_bzl",
         "//python/private:patch_whl_bzl",
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:toolchains_repo_bzl",
         "//python/private:which_bzl",
+        "//python/private:whl_target_platforms_bzl",
+        "@bazel_skylib//lib:sets",
     ],
 )
 
@@ -65,6 +69,7 @@ filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
+        "pip_repository_requirements.bzl.tmpl",
         "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
@@ -20,4 +22,21 @@ filegroup(
     name = "distribution",
     srcs = glob(["**"]),
     visibility = ["//python:__pkg__"],
+)
+
+bzl_library(
+    name = "pip_bzl",
+    srcs = ["pip.bzl"],
+    visibility = ["//:__subpackages__"],
+    deps = ["//python/private/bzlmod:pip_bzl"],
+)
+
+bzl_library(
+    name = "python_bzl",
+    srcs = ["python.bzl"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//python/private:util_bzl",
+        "//python/private/bzlmod:python_bzl",
+    ],
 )

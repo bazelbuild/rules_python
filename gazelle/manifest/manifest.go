@@ -133,18 +133,15 @@ type Manifest struct {
 	// ModulesMapping is the mapping from importable modules to which Python
 	// wheel name provides these modules.
 	ModulesMapping ModulesMapping `yaml:"modules_mapping"`
-	// PipDepsRepositoryName is the name of the pip_install repository target.
+	// PipDepsRepositoryName is the name of the pip_parse repository target.
 	// DEPRECATED
 	PipDepsRepositoryName string `yaml:"pip_deps_repository_name,omitempty"`
-	// PipRepository contains the information for pip_install or pip_repository
+	// PipRepository contains the information for pip_parse or pip_repository
 	// target.
 	PipRepository *PipRepository `yaml:"pip_repository,omitempty"`
 }
 
 type PipRepository struct {
-	// The name of the pip_install or pip_repository target.
+	// The name of the pip_parse or pip_repository target.
 	Name string
-	// UsePipRepositoryAliases allows to use aliases generated pip_repository
-	// when passing incompatible_generate_aliases = True.
-	UsePipRepositoryAliases *bool `yaml:"use_pip_repository_aliases,omitempty"`
 }

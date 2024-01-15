@@ -157,7 +157,6 @@ bzl_library(
     deps = [
         "//python/private:util_bzl",
         "//python/private/common:py_runtime_macro_bzl",
-        "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
 
@@ -167,7 +166,7 @@ bzl_library(
     deps = [
         "//python/private:bazel_tools_bzl",
         "//python/private:py_runtime_pair_macro_bzl",
-        "@rules_python_internal//:rules_python_config_bzl",
+        "//python/private:util_bzl",
     ],
 )
 
@@ -176,8 +175,8 @@ bzl_library(
     srcs = ["py_runtime_info.bzl"],
     deps = [
         "//python/private:reexports_bzl",
+        "//python/private:util_bzl",
         "//python/private/common:providers_bzl",
-        "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
 
@@ -197,6 +196,8 @@ bzl_library(
     srcs = ["repositories.bzl"],
     deps = [
         ":versions_bzl",
+        "//python/pip_install:repositories_bzl",
+        "//python/private:auth_bzl",
         "//python/private:bazel_tools_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:coverage_deps_bzl",

@@ -19,7 +19,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.tools.wheel_installer import wheel_installer
+from python.pip_install.tools.wheel_installer import wheel, wheel_installer
 
 
 class TestRequirementExtrasParsing(unittest.TestCase):
@@ -55,31 +55,6 @@ class TestRequirementExtrasParsing(unittest.TestCase):
                 )
 
 
-# TODO @aignas 2023-07-21: migrate to starlark
-# class BazelTestCase(unittest.TestCase):
-#     def test_generate_entry_point_contents(self):
-#         got = wheel_installer._generate_entry_point_contents("sphinx.cmd.build", "main")
-#         want = """#!/usr/bin/env python3
-# import sys
-# from sphinx.cmd.build import main
-# if __name__ == "__main__":
-#     sys.exit(main())
-# """
-#         self.assertEqual(got, want)
-#
-#     def test_generate_entry_point_contents_with_shebang(self):
-#         got = wheel_installer._generate_entry_point_contents(
-#             "sphinx.cmd.build", "main", shebang="#!/usr/bin/python"
-#         )
-#         want = """#!/usr/bin/python
-# import sys
-# from sphinx.cmd.build import main
-# if __name__ == "__main__":
-#     sys.exit(main())
-# """
-#         self.assertEqual(got, want)
-
-
 class TestWhlFilegroup(unittest.TestCase):
     def setUp(self) -> None:
         self.wheel_name = "example_minimal_package-0.0.1-py3-none-any.whl"
@@ -92,10 +67,11 @@ class TestWhlFilegroup(unittest.TestCase):
 
     def test_wheel_exists(self) -> None:
         wheel_installer._extract_wheel(
-            self.wheel_path,
+            Path(self.wheel_path),
             installation_dir=Path(self.wheel_dir),
             extras={},
             enable_implicit_namespace_pkgs=False,
+            platforms=[],
         )
 
         want_files = [
@@ -119,6 +95,7 @@ class TestWhlFilegroup(unittest.TestCase):
             version="0.0.1",
             name="example-minimal-package",
             deps=[],
+            deps_by_platform={},
             entry_points=[],
         )
         self.assertEqual(want, metadata_file_content)

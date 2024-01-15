@@ -765,7 +765,7 @@ def _create_providers(
             PyCcLinkParamsProvider(cc_info = cc_info),
         )
 
-    py_info, deps_transitive_sources = create_py_info(
+    py_info, deps_transitive_sources, builtin_py_info = create_py_info(
         ctx,
         direct_sources = depset(direct_sources),
         imports = imports,
@@ -780,6 +780,7 @@ def _create_providers(
         )
 
     providers.append(py_info)
+    providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
     extra_legacy_providers, extra_providers = semantics.get_extra_providers(

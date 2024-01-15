@@ -25,6 +25,7 @@ compile_pip_requirements_3_9(
 # with pip-compile.
 compile_pip_requirements_3_10(
     name = "requirements_3_10",
+    timeout = "moderate",
     src = "requirements.in",
     requirements_txt = "requirements_lock_3_10.txt",
     requirements_windows = "requirements_windows_3_10.txt",
@@ -39,6 +40,7 @@ py_library(
     name = "lib",
     srcs = ["lib.py"],
     deps = [
+        requirement("sphinx"),
         requirement("pylint"),
         requirement("tabulate"),
         requirement("python-dateutil"),

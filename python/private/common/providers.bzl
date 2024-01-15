@@ -13,14 +13,15 @@
 # limitations under the License.
 """Providers for Python rules."""
 
-load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")
 
 # TODO: load CcInfo from rules_cc
 _CcInfo = CcInfo
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
-DEFAULT_BOOTSTRAP_TEMPLATE = "@bazel_tools//tools/python:python_bootstrap_template.txt"
+DEFAULT_BOOTSTRAP_TEMPLATE = Label("//python/private:python_bootstrap_template.txt")
+
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
 
 # Helper to make the provider definitions not crash under Bazel 5.4:
@@ -31,7 +32,7 @@ _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
 # This isn't actually used under Bazel 5.4, so just stub out the values
 # to get past the loading phase.
 def _define_provider(doc, fields, **kwargs):
-    if not config.enable_pystar:
+    if not IS_BAZEL_6_OR_HIGHER:
         return provider("Stub, not used", fields = []), None
     return provider(doc = doc, fields = fields, **kwargs)
 
@@ -44,7 +45,8 @@ def _PyRuntimeInfo_init(
         coverage_files = None,
         python_version,
         stub_shebang = None,
-        bootstrap_template = None):
+        bootstrap_template = None,
+        interpreter_version_info = None):
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of interpreter or interpreter_path must be specified")
 
@@ -81,6 +83,24 @@ def _PyRuntimeInfo_init(
     if not stub_shebang:
         stub_shebang = DEFAULT_STUB_SHEBANG
 
+    if interpreter_version_info:
+        if not ("major" in interpreter_version_info and "minor" in interpreter_version_info):
+            fail("interpreter_version_info must have at least two keys, 'major' and 'minor'")
+
+        _interpreter_version_info = dict(**interpreter_version_info)
+        interpreter_version_info = struct(
+            major = int(_interpreter_version_info.pop("major")),
+            minor = int(_interpreter_version_info.pop("minor")),
+            micro = int(_interpreter_version_info.pop("micro")) if "micro" in _interpreter_version_info else None,
+            releaselevel = str(_interpreter_version_info.pop("releaselevel")) if "releaselevel" in _interpreter_version_info else None,
+            serial = int(_interpreter_version_info.pop("serial")) if "serial" in _interpreter_version_info else None,
+        )
+
+        if len(_interpreter_version_info.keys()) > 0:
+            fail("unexpected keys {} in interpreter_version_info".format(
+                str(_interpreter_version_info.keys()),
+            ))
+
     return {
         "bootstrap_template": bootstrap_template,
         "coverage_files": coverage_files,
@@ -88,6 +108,7 @@ def _PyRuntimeInfo_init(
         "files": files,
         "interpreter": interpreter,
         "interpreter_path": interpreter_path,
+        "interpreter_version_info": interpreter_version_info,
         "python_version": python_version,
         "stub_shebang": stub_shebang,
     }
@@ -134,6 +155,18 @@ the same conventions as the standard CPython interpreter.
             "If this is a platform runtime, this field is the absolute " +
             "filesystem path to the interpreter on the target platform. " +
             "Otherwise, this is `None`."
+        ),
+        "interpreter_version_info": (
+            "Version information about the interpreter this runtime provides. " +
+            "It should match the format given by `sys.version_info`, however " +
+            "for simplicity, the micro, releaselevel, and serial values are " +
+            "optional." +
+            "A struct with the following fields:\n" +
+            "  * major: int, the major version number\n" +
+            "  * minor: int, the minor version number\n" +
+            "  * micro: optional int, the micro version number\n" +
+            "  * releaselevel: optional str, the release level\n" +
+            "  * serial: optional int, the serial number of the release"
         ),
         "python_version": (
             "Indicates whether this runtime uses Python major version 2 or 3. " +
