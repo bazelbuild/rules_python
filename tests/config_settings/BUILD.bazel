@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":construct_config_settings_test.bzl", "construct_config_settings_test_suite")
+load(":construct_config_settings_tests.bzl", "construct_config_settings_test_suite")
 
 construct_config_settings_test_suite(
     name = "construct_config_settings_tests",

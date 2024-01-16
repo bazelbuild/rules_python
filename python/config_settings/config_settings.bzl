@@ -68,31 +68,3 @@ def construct_config_settings(name, python_versions):
             match_any = matches_minor_version_names,
             visibility = ["//visibility:public"],
         )
-
-    ##for flag_value in allowed_flag_values:
-    ##    flag_value_constraint_setting = "_python_version_flag_equals_" + flag_value
-    ##    native.config_setting(
-    ##        name = flag_value_constraint_setting,
-    ##        flag_values = {":python_version": flag_value},
-    ##        visibility = ["//visibility:public"],
-    ##    )
-
-    ##flag_values_that_enable_version = {
-    ##    full_version: [full_version]
-    ##    for full_version in python_versions
-    ##}
-
-    ##for minor_version, full_version in minor_mapping.items():
-    ##    flag_values_that_enable_version[full_version].append(minor_version)
-
-    ##for full_version, flag_values in flag_values_that_enable_version.items():
-    ##    python_version_constraint_setting = "is_python_" + full_version
-    ##    flag_value_constraints = [
-    ##        ":python_version_flag_equals_" + flag_value
-    ##        for flag_value in flag_values
-    ##    ]
-    ##    selects.config_setting_group(
-    ##        name = python_version_constraint_setting,
-    ##        match_any = flag_value_constraints,
-    ##        visibility = ["//visibility:public"],
-    ##    )
