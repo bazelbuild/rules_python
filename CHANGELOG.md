@@ -60,7 +60,9 @@ A brief description of the categories of changes:
   `python_register_toolchains`.
   Note that this only available on the Starlark implementation of the provider.
 
-* (config_settings) The `python_version` flag now accepts minor Python versions.
+* (config_settings) Added `//python/config_settings:is_python_X.Y` config
+  settings to match on minor Python version. These settings match any `X.Y`
+  version instead of just an exact `X.Y.Z` version.
 
 ## [0.28.0] - 2024-01-07
 
