@@ -11,24 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tests for construction of Python version matching config settings."""
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
-load("@rules_testing//lib:truth.bzl", "subjects")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:versions.bzl", "TOOL_VERSIONS")
-load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
+load("@rules_testing//lib:truth.bzl", "subjects")
 
 _tests = []
 
 def _subject_impl(ctx):
+    _ = ctx  # @unused
     return [DefaultInfo()]
 
 _subject = rule(
     implementation = _subject_impl,
     attrs = {
-        "match_minor": attr.string(),
         "match_micro": attr.string(),
+        "match_minor": attr.string(),
         "no_match": attr.string(),
     },
 )

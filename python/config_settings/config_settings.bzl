@@ -22,6 +22,8 @@ def construct_config_settings(name, python_versions):
     """Constructs a set of configs for all Python versions.
 
     Args:
+        name: str, unused; only specified to satisfy buildifier lint checks
+            and allow programatic modification of the target.
         python_versions: list of all (x.y.z) Python versions supported by rules_python.
     """
 
