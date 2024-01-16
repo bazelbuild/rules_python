@@ -80,21 +80,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _envsubst(module_ctx, template_string, varnames):
-    for varname in varnames:
-        value = module_ctx.os.environ.get(varname, "")
-        template_string = template_string.replace("$%s" % varname, value)
-        template_string = template_string.replace("${%s}" % varname, value)
-        segments = template_string.split("${%s:-" % varname)
-        template_string = segments.pop(0)
-        for segment in segments:
-            default_value, separator, rest = segment.rpartition("}")
-            if not separator:
-                fail("Environment substitution expression " +
-                     "\"${%s:-\" is missing the final \"}\"" % varname)
-            template_string += (value if value else default_value) + rest
-    return template_string
-
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     python_interpreter_target = pip_attr.python_interpreter_target
 
@@ -137,10 +122,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         for entry in sorted(parse_result.requirements)
     }.values()
 
-    extra_pip_args = [
-        _envsubst(module_ctx, arg, pip_attr.envsubst)
-        for arg in pip_attr.extra_pip_args
-    ] + parse_result.options
+    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
 
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
@@ -199,6 +181,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
+            envsubst = pip_attr.envsubst,
             group_name = group_name,
             group_deps = group_deps,
         )
@@ -362,16 +345,6 @@ def _pip_impl(module_ctx):
 
 def _pip_parse_ext_attrs():
     attrs = dict({
-        "envsubst": attr.string_list(
-            mandatory = False,
-            doc = """\
-A list of environment variables to substitute (e.g. `["PIP_INDEX_URL",
-"PIP_RETRIES"]`). The corresponding variables are expanded in `extra_pip_args`
-using the syntax `$VARNAME` or `${VARNAME}` (expanding to empty string if unset)
-or `${VARNAME:-default}` (expanding to default if the variable is unset or empty
-in the environment).
-""",
-        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """
