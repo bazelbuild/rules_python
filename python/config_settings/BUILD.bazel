@@ -11,6 +11,6 @@ filegroup(
 )
 
 construct_config_settings(
-    minor_mapping = MINOR_MAPPING,
+    name = "construct_config_settings",
     python_versions = TOOL_VERSIONS.keys(),
 )
