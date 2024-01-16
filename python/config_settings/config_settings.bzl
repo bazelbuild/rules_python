@@ -31,11 +31,13 @@ def construct_config_settings(name, python_versions):
     for micro_version in python_versions:
         minor, _, _ = micro_version.rpartition(".")
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
-        allowed_flag_values.append(minor)
         allowed_flag_values.append(micro_version)
+
+    allowed_flag_values.extend(minor_to_micro_versions.keys())
 
     string_flag(
         name = "python_version",
+        # TODO: The default here should somehow match the MODULE config
         build_setting_default = python_versions[0],
         values = sorted(allowed_flag_values),
         visibility = ["//visibility:public"],
