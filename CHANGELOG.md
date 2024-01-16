@@ -60,6 +60,10 @@ A brief description of the categories of changes:
   `python_register_toolchains`.
   Note that this only available on the Starlark implementation of the provider.
 
+* (config_settings) Added `//python/config_settings:is_python_X.Y` config
+  settings to match on minor Python version. These settings match any `X.Y`
+  version instead of just an exact `X.Y.Z` version.
+
 ## [0.28.0] - 2024-01-07
 
 [0.28.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.28.0
@@ -233,8 +237,6 @@ Breaking changes:
 
 * (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
   to find out how `rules_python` would normalize a PyPI distribution name.
-
-[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
 
 ## [0.26.0] - 2023-10-06
 
