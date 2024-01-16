@@ -16,6 +16,7 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
+load("@rules_testing//lib:util.bzl", rt_util = "util")
 
 _tests = []
 
