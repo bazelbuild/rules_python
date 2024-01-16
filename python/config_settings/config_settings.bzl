@@ -44,7 +44,7 @@ def construct_config_settings(name, python_versions):
     )
 
     for minor_version, micro_versions in minor_to_micro_versions.items():
-        # This matches the raw flag value, e.g. --///python/config_settings:python_version=3.8
+        # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
         # It's private because matching the concept of e.g. "3.8" value is done
         # using the `is_python_X.Y` config setting group, which is aware of the
         # minor versions that could match instead.
@@ -65,8 +65,19 @@ def construct_config_settings(name, python_versions):
             )
             matches_minor_version_names.append(is_micro_version_name)
 
+        # This is prefixed with an underscore to prevent confusion due to how
+        # config_setting_group is implemented and how our micro-version targets
+        # are named. config_setting_group will generate targets like
+        # "is_python_3.10_1" (where the `_N` suffix is len(match_any).
+        # Meanwhile, the micro-version tarets are named "is_python_3.10.1" --
+        # just a single dot vs underscore character difference.
         selects.config_setting_group(
-            name = "is_python_" + minor_version,
+            name = "_is_python_" + minor_version,
             match_any = matches_minor_version_names,
+        )
+
+        native.alias(
+            name = "is_python_" + minor_version,
+            actual = "_is_python_" + minor_version,
             visibility = ["//visibility:public"],
         )
