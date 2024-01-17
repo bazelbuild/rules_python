@@ -38,8 +38,10 @@ def construct_config_settings(name, python_versions):
     string_flag(
         name = "python_version",
         # TODO: The default here should somehow match the MODULE config
-        build_setting_default = python_versions[0],
-        values = sorted(allowed_flag_values),
+        # NOTE @aignas 2024-01-17: python_versions[0] as default makes the
+        # default wheel selection on bzlmod not work.
+        build_setting_default = "",
+        values = [""] + sorted(allowed_flag_values),
         visibility = ["//visibility:public"],
     )
 
@@ -53,7 +55,6 @@ def construct_config_settings(name, python_versions):
             name = equals_minor_version_name,
             flag_values = {":python_version": minor_version},
         )
-
         matches_minor_version_names = [equals_minor_version_name]
 
         for micro_version in micro_versions:
