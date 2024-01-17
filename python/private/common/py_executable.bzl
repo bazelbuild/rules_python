@@ -200,6 +200,13 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         providers = modern_providers,
     )
 
+def _get_build_info(ctx, cc_toolchain):
+    build_info_files = py_internal.cc_toolchain_build_info_files(cc_toolchain)
+    if cc_helper.is_stamping_enabled(ctx):
+        return build_info_files.non_redacted_build_info_files.to_list()
+    else:
+        return build_info_files.redacted_build_info_files.to_list()
+
 def _validate_executable(ctx):
     if ctx.attr.python_version != "PY3":
         fail("It is not allowed to use Python 2")
@@ -509,6 +516,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
             is_test = is_test,
             requested_features = cc_feature_config.requested_features,
             feature_configuration = cc_feature_config.feature_configuration,
+            cc_toolchain = cc_details.cc_toolchain,
         )
         ctx.actions.symlink(
             output = dso,
@@ -517,19 +525,22 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
         )
     else:
         linked_lib = dso
-    _cc_common.link(
+
+    # The regular cc_common.link API can't be used because several
+    # args are private-use only; see # private comments
+    py_internal.link(
         name = ctx.label.name,
         actions = ctx.actions,
         linking_contexts = [cc_info.linking_context],
         output_type = "dynamic_library",
-        never_link = True,
-        native_deps = True,
+        never_link = True,  # private
+        native_deps = True,  # private
         feature_configuration = cc_feature_config.feature_configuration,
         cc_toolchain = cc_details.cc_toolchain,
-        test_only_target = is_test,
+        test_only_target = is_test,  # private
         stamp = 1 if is_stamping_enabled(ctx, semantics) else 0,
-        main_output = linked_lib,
-        use_shareable_artifact_factory = True,
+        main_output = linked_lib,  # private
+        use_shareable_artifact_factory = True,  # private
         # NOTE: Only flags not captured by cc_info.linking_context need to
         # be manually passed
         user_link_flags = semantics.get_native_deps_user_link_flags(ctx),
@@ -546,7 +557,7 @@ def _create_shared_native_deps_dso(
         is_test,
         feature_configuration,
         requested_features):
-    linkstamps = cc_info.linking_context.linkstamps()
+    linkstamps = py_internal.linking_context_linkstamps(cc_info.linking_context)
 
     partially_disabled_thin_lto = (
         _cc_common.is_enabled(
@@ -570,8 +581,11 @@ def _create_shared_native_deps_dso(
             for input in cc_info.linking_context.linker_inputs.to_list()
             for flag in input.user_link_flags
         ],
-        linkstamps = [linkstamp.file() for linkstamp in linkstamps.to_list()],
-        build_info_artifacts = _cc_common.get_build_info(ctx) if linkstamps else [],
+        linkstamps = [
+            py_internal.linkstamp_file(linkstamp)
+            for linkstamp in linkstamps.to_list()
+        ],
+        build_info_artifacts = _get_build_info(ctx, cc_toolchain) if linkstamps else [],
         features = requested_features,
         is_test_target_partially_disabled_thin_lto = is_test and partially_disabled_thin_lto,
     )
