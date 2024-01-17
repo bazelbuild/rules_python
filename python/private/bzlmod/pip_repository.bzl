@@ -63,7 +63,7 @@ pip_repository_attrs = {
     "default_version": attr.string(
         mandatory = True,
         doc = """\
-This is the default python version in the format of X.Y.Z. This should match
+This is the default python version in the format of X.Y. This should match
 what is setup by the 'python' extension using the 'is_default = True'
 setting.""",
     ),
