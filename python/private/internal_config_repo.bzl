@@ -18,8 +18,6 @@ such as globals available to Bazel versions, or propagating user environment
 settings for rules to later use.
 """
 
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
-
 _ENABLE_PYSTAR_ENVVAR_NAME = "RULES_PYTHON_ENABLE_PYSTAR"
 _ENABLE_PYSTAR_DEFAULT = "0"
 
