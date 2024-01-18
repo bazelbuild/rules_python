@@ -34,6 +34,12 @@ A brief description of the categories of changes:
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
 
+* (pip_parse) Added the `envsubst` parameter, which enables environment variable
+  substitutions in the `extra_pip_args` attribute.
+
+* (pip_repository) Added the `envsubst` parameter, which enables environment
+  variable substitutions in the `extra_pip_args` attribute.
+
 * (pip_install) the deprecated `pip_install` macro and related items have been
   removed.
 
