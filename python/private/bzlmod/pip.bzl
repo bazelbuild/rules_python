@@ -25,16 +25,28 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
 
+def _parse_version(version):
+    major, _, version = version.partition(".")
+    minor, _, version = version.partition(".")
+    patch, _, version = version.partition(".")
+    build, _, version = version.partition(".")
+
+    return struct(
+        # use semver vocabulary here
+        major = major,
+        minor = minor,
+        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
+        build = build,
+    )
+
 def _major_minor_version(version):
-    version = full_version(version)
-    major_minor, _, _ = version.rpartition(".")
-    return major_minor
+    version = _parse_version(version)
+    return "{}.{}".format(version.major, version.minor)
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.

@@ -29,7 +29,9 @@ def construct_config_settings(name, python_versions):
 
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     minor_to_micro_versions = {}
-    allowed_flag_values = []
+
+    # Add the legacy value that is used in non-version aware toolchains
+    allowed_flag_values = ["PY3"]
     for micro_version in python_versions:
         minor, _, _ = micro_version.rpartition(".")
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
@@ -37,11 +39,10 @@ def construct_config_settings(name, python_versions):
 
     string_flag(
         name = "python_version",
-        # TODO: The default here should somehow match the MODULE config
-        # NOTE @aignas 2024-01-17: python_versions[0] as default makes the
-        # default wheel selection on bzlmod not work.
-        build_setting_default = "",
-        values = [""] + sorted(allowed_flag_values),
+        # Default to the legacy value that non-version aware toolchains use
+        # when setting the `python_version` attribute on `py_*` rules.
+        build_setting_default = allowed_flag_values[0],
+        values = sorted(allowed_flag_values),
         visibility = ["//visibility:public"],
     )
 
