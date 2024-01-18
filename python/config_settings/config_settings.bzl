@@ -30,8 +30,7 @@ def construct_config_settings(name, python_versions):
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     minor_to_micro_versions = {}
 
-    # Add the legacy value that is used in non-version aware toolchains
-    allowed_flag_values = ["PY3"]
+    allowed_flag_values = []
     for micro_version in python_versions:
         minor, _, _ = micro_version.rpartition(".")
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
