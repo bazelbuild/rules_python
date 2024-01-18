@@ -39,10 +39,12 @@ def construct_config_settings(name, python_versions):
 
     string_flag(
         name = "python_version",
-        # Default to the legacy value that non-version aware toolchains use
-        # when setting the `python_version` attribute on `py_*` rules.
-        build_setting_default = allowed_flag_values[0],
-        values = sorted(allowed_flag_values),
+        # TODO: The default here should somehow match the MODULE config. Until
+        # then, use the empty string to indicate an unknown version. This
+        # also prevents version-unaware targets from inadvertently matching
+        # a select condition when they shouldn't.
+        build_setting_default = "",
+        values = [""] + sorted(allowed_flag_values),
         visibility = ["//visibility:public"],
     )
 
