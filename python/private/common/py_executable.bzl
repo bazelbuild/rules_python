@@ -556,7 +556,8 @@ def _create_shared_native_deps_dso(
         cc_info,
         is_test,
         feature_configuration,
-        requested_features):
+        requested_features,
+        cc_toolchain):
     linkstamps = py_internal.linking_context_linkstamps(cc_info.linking_context)
 
     partially_disabled_thin_lto = (
