@@ -1,12 +1,12 @@
 import unittest
+from random import shuffle
 
 from python.pip_install.tools.wheel_installer import wheel
 
 
 class DepsTest(unittest.TestCase):
     def test_simple(self):
-        deps = wheel.Deps("foo")
-        deps.add("bar")
+        deps = wheel.Deps("foo", requires_dist=["bar"])
 
         got = deps.build()
 
@@ -18,13 +18,18 @@ class DepsTest(unittest.TestCase):
         platforms = {
             "linux_x86_64",
             "osx_x86_64",
+            "osx_aarch64",
             "windows_x86_64",
         }
-        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
-        deps.add(
-            "bar",
-            "posix_dep; os_name=='posix'",
-            "win_dep; os_name=='nt'",
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "bar",
+                "an_osx_dep; sys_platform=='darwin'",
+                "posix_dep; os_name=='posix'",
+                "win_dep; os_name=='nt'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
         )
 
         got = deps.build()
@@ -33,36 +38,56 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(
             {
                 "@platforms//os:linux": ["posix_dep"],
-                "@platforms//os:osx": ["posix_dep"],
+                "@platforms//os:osx": ["an_osx_dep", "posix_dep"],
                 "@platforms//os:windows": ["win_dep"],
             },
             got.deps_select,
         )
 
-    def test_can_add_platform_specific_deps(self):
+    def test_deps_are_added_to_more_specialized_platforms(self):
         platforms = {
-            "linux_x86_64",
             "osx_x86_64",
             "osx_aarch64",
-            "windows_x86_64",
         }
-        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
-        deps.add(
-            "bar",
-            "posix_dep; os_name=='posix'",
-            "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
-            "win_dep; os_name=='nt'",
+        got = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+                "mac_dep; sys_platform=='darwin'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
+        ).build()
+
+        self.assertEqual(
+            wheel.FrozenDeps(
+                deps=[],
+                deps_select={
+                    "osx_aarch64": ["m1_dep", "mac_dep"],
+                    "@platforms//os:osx": ["mac_dep"],
+                },
+            ),
+            got,
         )
 
-        got = deps.build()
+    def test_deps_from_more_specialized_platforms_are_propagated(self):
+        platforms = {
+            "osx_x86_64",
+            "osx_aarch64",
+        }
+        got = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "a_mac_dep; sys_platform=='darwin'",
+                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
+        ).build()
 
-        self.assertEqual(["bar"], got.deps)
+        self.assertEqual([], got.deps)
         self.assertEqual(
             {
-                "osx_aarch64": ["m1_dep", "posix_dep"],
-                "@platforms//os:linux": ["posix_dep"],
-                "@platforms//os:osx": ["posix_dep"],
-                "@platforms//os:windows": ["win_dep"],
+                "osx_aarch64": ["a_mac_dep", "m1_dep"],
+                "@platforms//os:osx": ["a_mac_dep"],
             },
             got.deps_select,
         )
@@ -74,14 +99,15 @@ class DepsTest(unittest.TestCase):
             "osx_aarch64",
             "windows_x86_64",
         }
-        deps = wheel.Deps("foo", platforms=set(wheel.Platform.from_string(platforms)))
-        deps.add(
-            "bar",
-            "baz; implementation_name=='cpython'",
-            "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
-        )
-
-        got = deps.build()
+        got = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "bar",
+                "baz; implementation_name=='cpython'",
+                "m1_dep; sys_platform=='darwin' and platform_machine=='arm64'",
+            ],
+            platforms=set(wheel.Platform.from_string(platforms)),
+        ).build()
 
         self.assertEqual(["bar", "baz"], got.deps)
         self.assertEqual(
@@ -92,12 +118,15 @@ class DepsTest(unittest.TestCase):
         )
 
     def test_self_is_ignored(self):
-        deps = wheel.Deps("foo", extras={"ssl"})
-        deps.add(
-            "bar",
-            "req_dep; extra == 'requests'",
-            "foo[requests]; extra == 'ssl'",
-            "ssl_lib; extra == 'ssl'",
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "bar",
+                "req_dep; extra == 'requests'",
+                "foo[requests]; extra == 'ssl'",
+                "ssl_lib; extra == 'ssl'",
+            ],
+            extras={"ssl"},
         )
 
         got = deps.build()
@@ -105,96 +134,22 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar", "req_dep", "ssl_lib"], got.deps)
         self.assertEqual({}, got.deps_select)
 
-    def test_handle_etils(self):
-        deps = wheel.Deps("etils", extras={"all"})
-        requires = """
-etils[array-types] ; extra == "all"
-etils[eapp] ; extra == "all"
-etils[ecolab] ; extra == "all"
-etils[edc] ; extra == "all"
-etils[enp] ; extra == "all"
-etils[epath] ; extra == "all"
-etils[epath-gcs] ; extra == "all"
-etils[epath-s3] ; extra == "all"
-etils[epy] ; extra == "all"
-etils[etqdm] ; extra == "all"
-etils[etree] ; extra == "all"
-etils[etree-dm] ; extra == "all"
-etils[etree-jax] ; extra == "all"
-etils[etree-tf] ; extra == "all"
-etils[enp] ; extra == "array-types"
-pytest ; extra == "dev"
-pytest-subtests ; extra == "dev"
-pytest-xdist ; extra == "dev"
-pyink ; extra == "dev"
-pylint>=2.6.0 ; extra == "dev"
-chex ; extra == "dev"
-torch ; extra == "dev"
-optree ; extra == "dev"
-dataclass_array ; extra == "dev"
-sphinx-apitree[ext] ; extra == "docs"
-etils[dev,all] ; extra == "docs"
-absl-py ; extra == "eapp"
-simple_parsing ; extra == "eapp"
-etils[epy] ; extra == "eapp"
-jupyter ; extra == "ecolab"
-numpy ; extra == "ecolab"
-mediapy ; extra == "ecolab"
-packaging ; extra == "ecolab"
-etils[enp] ; extra == "ecolab"
-etils[epy] ; extra == "ecolab"
-etils[epy] ; extra == "edc"
-numpy ; extra == "enp"
-etils[epy] ; extra == "enp"
-fsspec ; extra == "epath"
-importlib_resources ; extra == "epath"
-typing_extensions ; extra == "epath"
-zipp ; extra == "epath"
-etils[epy] ; extra == "epath"
-gcsfs ; extra == "epath-gcs"
-etils[epath] ; extra == "epath-gcs"
-s3fs ; extra == "epath-s3"
-etils[epath] ; extra == "epath-s3"
-typing_extensions ; extra == "epy"
-absl-py ; extra == "etqdm"
-tqdm ; extra == "etqdm"
-etils[epy] ; extra == "etqdm"
-etils[array_types] ; extra == "etree"
-etils[epy] ; extra == "etree"
-etils[enp] ; extra == "etree"
-etils[etqdm] ; extra == "etree"
-dm-tree ; extra == "etree-dm"
-etils[etree] ; extra == "etree-dm"
-jax[cpu] ; extra == "etree-jax"
-etils[etree] ; extra == "etree-jax"
-tensorflow ; extra == "etree-tf"
-etils[etree] ; extra == "etree-tf"
-etils[ecolab] ; extra == "lazy-imports"
-"""
-
-        deps.add(*requires.strip().split("\n"))
+    def test_self_dependencies_can_come_in_any_order(self):
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=[
+                "bar",
+                "baz; extra == 'feat'",
+                "foo[feat2]; extra == 'all'",
+                "foo[feat]; extra == 'feat2'",
+                "zdep; extra == 'all'",
+            ],
+            extras={"all"},
+        )
 
         got = deps.build()
-        want = [
-            "absl_py",
-            "dm_tree",
-            "fsspec",
-            "gcsfs",
-            "importlib_resources",
-            "jax",
-            "jupyter",
-            "mediapy",
-            "numpy",
-            "packaging",
-            "s3fs",
-            "simple_parsing",
-            "tensorflow",
-            "tqdm",
-            "typing_extensions",
-            "zipp",
-        ]
 
-        self.assertEqual(want, got.deps)
+        self.assertEqual(["bar", "baz", "zdep"], got.deps)
         self.assertEqual({}, got.deps_select)
 
 
@@ -214,6 +169,76 @@ class PlatformTest(unittest.TestCase):
         linuxes = wheel.Platform.all(wheel.OS.linux)
         self.assertEqual(5, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
+
+    def test_linux_specializations(self):
+        any_linux = wheel.Platform(os=wheel.OS.linux)
+        all_specializations = list(any_linux.all_specializations())
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
+    def test_osx_specializations(self):
+        any_osx = wheel.Platform(os=wheel.OS.osx)
+        all_specializations = list(any_osx.all_specializations())
+        # NOTE @aignas 2024-01-14: even though in practice we would only have
+        # Python on osx aarch64 and osx x86_64, we return all arch posibilities
+        # to make the code simpler.
+        want = [
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
+    def test_platform_sort(self):
+        platforms = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+        shuffle(platforms)
+        platforms.sort()
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+
+        self.assertEqual(want, platforms)
+
+    def test_wheel_os_alias(self):
+        self.assertEqual("osx", str(wheel.OS.osx))
+        self.assertEqual(str(wheel.OS.darwin), str(wheel.OS.osx))
+
+    def test_wheel_arch_alias(self):
+        self.assertEqual("x86_64", str(wheel.Arch.x86_64))
+        self.assertEqual(str(wheel.Arch.amd64), str(wheel.Arch.x86_64))
+
+    def test_wheel_platform_alias(self):
+        give = wheel.Platform(
+            os=wheel.OS.darwin,
+            arch=wheel.Arch.amd64,
+        )
+        alias = wheel.Platform(
+            os=wheel.OS.osx,
+            arch=wheel.Arch.x86_64,
+        )
+
+        self.assertEqual("osx_x86_64", str(give))
+        self.assertEqual(str(alias), str(give))
 
 
 if __name__ == "__main__":

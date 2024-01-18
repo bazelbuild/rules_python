@@ -27,6 +27,7 @@ load("//python/private:full_version.bzl", "full_version")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load(
     "//python/private:toolchains_repo.bzl",
+    "host_toolchain",
     "multi_toolchain_aliases",
     "toolchain_aliases",
     "toolchains_repo",
@@ -101,7 +102,8 @@ def _python_repository_impl(rctx):
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
-    python_short_version = python_version.rpartition(".")[0]
+    python_version_info = python_version.split(".")
+    python_short_version = "{0}.{1}".format(*python_version_info)
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
@@ -334,6 +336,11 @@ py_runtime(
     files = [":files"],
 {coverage_attr}
     interpreter = "{python_path}",
+    interpreter_version_info = {{
+        "major": "{interpreter_version_info_major}",
+        "minor": "{interpreter_version_info_minor}",
+        "micro": "{interpreter_version_info_micro}",
+    }},
     python_version = "PY3",
 )
 
@@ -355,6 +362,9 @@ py_cc_toolchain(
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
         coverage_attr = coverage_attr_text,
+        interpreter_version_info_major = python_version_info[0],
+        interpreter_version_info_minor = python_version_info[1],
+        interpreter_version_info_micro = python_version_info[2],
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -588,6 +598,13 @@ def python_register_toolchains(
                 toolchain_repo_name = toolchain_repo_name,
                 platform = platform,
             ))
+
+    host_toolchain(
+        name = name + "_host",
+        python_version = python_version,
+        user_repository_name = name,
+        platforms = loaded_platforms,
+    )
 
     toolchain_aliases(
         name = name,

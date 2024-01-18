@@ -101,28 +101,5 @@ class TestWhlFilegroup(unittest.TestCase):
         self.assertEqual(want, metadata_file_content)
 
 
-class TestWheelPlatform(unittest.TestCase):
-    def test_wheel_os_alias(self):
-        self.assertEqual("OS.osx", str(wheel.OS.osx))
-        self.assertEqual(str(wheel.OS.darwin), str(wheel.OS.osx))
-
-    def test_wheel_arch_alias(self):
-        self.assertEqual("Arch.x86_64", str(wheel.Arch.x86_64))
-        self.assertEqual(str(wheel.Arch.amd64), str(wheel.Arch.x86_64))
-
-    def test_wheel_platform_alias(self):
-        give = wheel.Platform(
-            os=wheel.OS.darwin,
-            arch=wheel.Arch.amd64,
-        )
-        alias = wheel.Platform(
-            os=wheel.OS.osx,
-            arch=wheel.Arch.x86_64,
-        )
-
-        self.assertEqual("osx_x86_64", str(give))
-        self.assertEqual(str(alias), str(give))
-
-
 if __name__ == "__main__":
     unittest.main()

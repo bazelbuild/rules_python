@@ -84,8 +84,6 @@ python_register_toolchains(
     python_version = "3.9",
 )
 
-# Load the interpreter and pip_parse rules.
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 # This macro wraps the `pip_repository` rule that invokes `pip`, with `incremental` set.
@@ -114,7 +112,7 @@ pip_parse(
     # 3. Wrapper script, like in the autodetecting python toolchain.
     #
     # Here, we use the interpreter constant that resolves to the host interpreter from the default Python toolchain.
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
     # Set the location of the lock file.
     requirements_lock = "//:requirements_lock.txt",
     requirements_windows = "//:requirements_windows.txt",

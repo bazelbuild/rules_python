@@ -16,6 +16,7 @@
 
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
+load("//python/private:util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 load(":pythons_hub.bzl", "hub_repo")
 
 # This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
@@ -43,14 +44,14 @@ def _left_pad_zero(index, length):
 def _print_warn(msg):
     print("WARNING:", msg)
 
-def _python_register_toolchains(name, toolchain_attr, module):
+def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
         name = name,
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
-        ignore_root_user_error = toolchain_attr.ignore_root_user_error,
+        ignore_root_user_error = ignore_root_user_error,
     )
     return struct(
         python_version = toolchain_attr.python_version,
@@ -59,6 +60,13 @@ def _python_register_toolchains(name, toolchain_attr, module):
     )
 
 def _python_impl(module_ctx):
+    if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
+        debug_info = {
+            "toolchains_registered": [],
+        }
+    else:
+        debug_info = None
+
     # The toolchain_info structs to register, in the order to register them in.
     # NOTE: The last element is special: it is treated as the default toolchain,
     # so there is special handling to ensure the last entry is the correct one.
@@ -72,6 +80,13 @@ def _python_impl(module_ctx):
     # Map of string Major.Minor to the toolchain_info struct
     global_toolchain_versions = {}
 
+    ignore_root_user_error = None
+
+    # if the root module does not register any toolchain then the
+    # ignore_root_user_error takes its default value: False
+    if not module_ctx.modules[0].tags.toolchain:
+        ignore_root_user_error = False
+
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
@@ -84,16 +99,27 @@ def _python_impl(module_ctx):
                 _fail_duplicate_module_toolchain_version(toolchain_version, mod.name)
             module_toolchain_versions.append(toolchain_version)
 
-            # Only the root module and rules_python are allowed to specify the default
-            # toolchain for a couple reasons:
-            # * It prevents submodules from specifying different defaults and only
-            #   one of them winning.
-            # * rules_python needs to set a soft default in case the root module doesn't,
-            #   e.g. if the root module doesn't use Python itself.
-            # * The root module is allowed to override the rules_python default.
             if mod.is_root:
+                # Only the root module and rules_python are allowed to specify the default
+                # toolchain for a couple reasons:
+                # * It prevents submodules from specifying different defaults and only
+                #   one of them winning.
+                # * rules_python needs to set a soft default in case the root module doesn't,
+                #   e.g. if the root module doesn't use Python itself.
+                # * The root module is allowed to override the rules_python default.
+
                 # A single toolchain is treated as the default because it's unambiguous.
                 is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
+
+                # Also only the root module should be able to decide ignore_root_user_error.
+                # Modules being depended upon don't know the final environment, so they aren't
+                # in the right position to know or decide what the correct setting is.
+
+                # If an inconsistency in the ignore_root_user_error among multiple toolchains is detected, fail.
+                if ignore_root_user_error != None and toolchain_attr.ignore_root_user_error != ignore_root_user_error:
+                    fail("Toolchains in the root module must have consistent 'ignore_root_user_error' attributes")
+
+                ignore_root_user_error = toolchain_attr.ignore_root_user_error
             elif mod.name == "rules_python" and not default_toolchain:
                 # We don't do the len() check because we want the default that rules_python
                 # sets to be clearly visible.
@@ -128,8 +154,14 @@ def _python_impl(module_ctx):
                     toolchain_name,
                     toolchain_attr,
                     module = mod,
+                    ignore_root_user_error = ignore_root_user_error,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
+                if debug_info:
+                    debug_info["toolchains_registered"].append({
+                        "ignore_root_user_error": ignore_root_user_error,
+                        "name": toolchain_name,
+                    })
 
             if is_default:
                 # This toolchain is setting the default, but the actual
@@ -192,6 +224,12 @@ def _python_impl(module_ctx):
         },
     )
 
+    if debug_info != None:
+        _debug_repo(
+            name = "rules_python_bzlmod_debug",
+            debug_info = json.encode_indent(debug_info),
+        )
+
 def _fail_duplicate_module_toolchain_version(version, module):
     fail(("Duplicate module toolchain version: module '{module}' attempted " +
           "to use version '{version}' multiple times in itself").format(
@@ -219,6 +257,14 @@ def _fail_multiple_default_toolchains(first, second):
         first = first,
         second = second,
     ))
+
+def _get_bazel_version_specific_kwargs():
+    kwargs = {}
+
+    if IS_BAZEL_6_4_OR_HIGHER:
+        kwargs["environ"] = ["RULES_PYTHON_BZLMOD_DEBUG"]
+
+    return kwargs
 
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
@@ -263,7 +309,16 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
                 "ignore_root_user_error": attr.bool(
                     default = False,
-                    doc = "Whether the check for root should be ignored or not. This causes cache misses with .pyc files.",
+                    doc = """\
+If False, the Python runtime installation will be made read only. This improves
+the ability for Bazel to cache it, but prevents the interpreter from creating
+pyc files for the standard library dynamically at runtime as they are loaded.
+
+If True, the Python runtime installation is read-write. This allows the
+interpreter to create pyc files for the standard library, but, because they are
+created as needed, it adversely affects Bazel's ability to cache the runtime and
+can result in spurious build failures.
+""",
                     mandatory = False,
                 ),
                 "is_default": attr.bool(
@@ -278,5 +333,24 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 ),
             },
         ),
+    },
+    **_get_bazel_version_specific_kwargs()
+)
+
+_DEBUG_BUILD_CONTENT = """
+package(
+    default_visibility = ["//visibility:public"],
+)
+exports_files(["debug_info.json"])
+"""
+
+def _debug_repo_impl(repo_ctx):
+    repo_ctx.file("BUILD.bazel", _DEBUG_BUILD_CONTENT)
+    repo_ctx.file("debug_info.json", repo_ctx.attr.debug_info)
+
+_debug_repo = repository_rule(
+    implementation = _debug_repo_impl,
+    attrs = {
+        "debug_info": attr.string(),
     },
 )

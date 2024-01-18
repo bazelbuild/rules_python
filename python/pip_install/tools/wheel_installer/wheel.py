@@ -22,7 +22,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import installer
 from packaging.requirements import Requirement
@@ -35,6 +35,14 @@ class OS(Enum):
     windows = 3
     darwin = osx
     win32 = windows
+
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the interpreter operating system."
+        return cls[sys.platform.lower()]
+
+    def __str__(self) -> str:
+        return self.name.lower()
 
 
 class Arch(Enum):
@@ -49,6 +57,31 @@ class Arch(Enum):
     i686 = x86_32
     x86 = x86_32
     ppc64le = ppc
+
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the currently running interpreter architecture."
+        # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
+        # is returning an empty string here, so lets default to x86_64
+        return cls[platform.machine().lower() or "x86_64"]
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+
+def _as_int(value: Optional[Union[OS, Arch]]) -> int:
+    """Convert one of the enums above to an int for easier sorting algorithms.
+
+    Args:
+        value: The value of an enum or None.
+
+    Returns:
+        -1 if we get None, otherwise, the numeric value of the given enum.
+    """
+    if value is None:
+        return -1
+
+    return int(value.value)
 
 
 @dataclass(frozen=True)
@@ -77,44 +110,37 @@ class Platform:
             A list of parsed values which makes the signature the same as
             `Platform.all` and `Platform.from_string`.
         """
-        return [
-            cls(
-                os=OS[sys.platform.lower()],
-                # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
-                # is returning an empty string here, so lets default to x86_64
-                arch=Arch[platform.machine().lower() or "x86_64"],
-            )
-        ]
+        return [cls(os=OS.interpreter(), arch=Arch.interpreter())]
+
+    def all_specializations(self) -> Iterator["Platform"]:
+        """Return the platform itself and all its unambiguous specializations.
+
+        For more info about specializations see
+        https://bazel.build/docs/configurable-attributes
+        """
+        yield self
+        if self.arch is None:
+            for arch in Arch:
+                yield Platform(os=self.os, arch=arch)
 
     def __lt__(self, other: Any) -> bool:
         """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
         if not isinstance(other, Platform) or other is None:
             raise ValueError(f"cannot compare {other} with Platform")
 
-        if self.arch is None and other.arch is not None:
-            return True
+        self_arch, self_os = _as_int(self.arch), _as_int(self.os)
+        other_arch, other_os = _as_int(other.arch), _as_int(other.os)
 
-        if self.arch is not None and other.arch is None:
-            return True
-
-        # Here we ensure that we sort by OS before sorting by arch
-
-        if self.arch is None and other.arch is None:
-            return self.os.value < other.os.value
-
-        if self.os.value < other.os.value:
-            return True
-
-        if self.os.value == other.os.value:
-            return self.arch.value < other.arch.value
-
-        return False
+        if self_os == other_os:
+            return self_arch < other_arch
+        else:
+            return self_os < other_os
 
     def __str__(self) -> str:
         if self.arch is None:
-            return f"@platforms//os:{self.os.name.lower()}"
+            return f"@platforms//os:{self.os}"
 
-        return self.os.name.lower() + "_" + self.arch.name.lower()
+        return f"{self.os}_{self.arch}"
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
@@ -228,57 +254,94 @@ class Deps:
     def __init__(
         self,
         name: str,
+        *,
+        requires_dist: Optional[List[str]],
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
     ):
         self.name: str = Deps._normalize(name)
+        self._platforms: Set[Platform] = platforms or set()
+
+        # Sort so that the dictionary order in the FrozenDeps is deterministic
+        # without the final sort because Python retains insertion order. That way
+        # the sorting by platform is limited within the Platform class itself and
+        # the unit-tests for the Deps can be simpler.
+        reqs = sorted(
+            (Requirement(wheel_req) for wheel_req in requires_dist),
+            key=lambda x: f"{x.name}:{sorted(x.extras)}",
+        )
+
+        want_extras = self._resolve_extras(reqs, extras)
+
+        # Then add all of the requirements in order
         self._deps: Set[str] = set()
         self._select: Dict[Platform, Set[str]] = defaultdict(set)
-        self._want_extras: Set[str] = extras or {""}  # empty strings means no extras
-        self._platforms: Set[Platform] = platforms or set()
+        for req in reqs:
+            self._add_req(req, want_extras)
 
     def _add(self, dep: str, platform: Optional[Platform]):
         dep = Deps._normalize(dep)
 
-        # Packages may create dependency cycles when specifying optional-dependencies / 'extras'.
-        # Example: github.com/google/etils/blob/a0b71032095db14acf6b33516bca6d885fe09e35/pyproject.toml#L32.
+        # Self-edges are processed in _resolve_extras
         if dep == self.name:
             return
 
-        if platform:
-            self._select[platform].add(dep)
-        else:
+        if not platform:
             self._deps.add(dep)
+            return
+
+        # Add the platform-specific dep
+        self._select[platform].add(dep)
+
+        # Add the dep to specializations of the given platform if they
+        # exist in the select statement.
+        for p in platform.all_specializations():
+            if p not in self._select:
+                continue
+
+            self._select[p].add(dep)
+
+        if len(self._select[platform]) != 1:
+            return
+
+        # We are adding a new item to the select and we need to ensure that
+        # existing dependencies from less specialized platforms are propagated
+        # to the newly added dependency set.
+        for p, deps in self._select.items():
+            # Check if the existing platform overlaps with the given platform
+            if p == platform or platform not in p.all_specializations():
+                continue
+
+            self._select[platform].update(self._select[p])
 
     @staticmethod
     def _normalize(name: str) -> str:
         return re.sub(r"[-_.]+", "_", name).lower()
 
-    def add(self, *wheel_reqs: str) -> None:
-        reqs = [Requirement(wheel_req) for wheel_req in wheel_reqs]
-
-        # Resolve any extra extras due to self-edges
-        self._want_extras = self._resolve_extras(reqs)
-
-        # process self-edges first to resolve the extras used
-        for req in reqs:
-            self._add_req(req)
-
-    def _resolve_extras(self, reqs: List[Requirement]) -> Set[str]:
+    def _resolve_extras(
+        self, reqs: List[Requirement], extras: Optional[Set[str]]
+    ) -> Set[str]:
         """Resolve extras which are due to depending on self[some_other_extra].
 
         Some packages may have cyclic dependencies resulting from extras being used, one example is
-        `elint`, where we have one set of extras as aliases for other extras
+        `etils`, where we have one set of extras as aliases for other extras
         and we have an extra called 'all' that includes all other extras.
+
+        Example: github.com/google/etils/blob/a0b71032095db14acf6b33516bca6d885fe09e35/pyproject.toml#L32.
 
         When the `requirements.txt` is generated by `pip-tools`, then it is likely that
         this step is not needed, but for other `requirements.txt` files this may be useful.
 
-        NOTE @aignas 2023-12-08: the extra resolution is not platform dependent, but
-        in order for it to become platform dependent we would have to have separate targets for each extra in
-        self._want_extras.
+        NOTE @aignas 2023-12-08: the extra resolution is not platform dependent,
+        but in order for it to become platform dependent we would have to have
+        separate targets for each extra in extras.
         """
-        extras = self._want_extras
+
+        # Resolve any extra extras due to self-edges, empty string means no
+        # extras The empty string in the set is just a way to make the handling
+        # of no extras and a single extra easier and having a set of {"", "foo"}
+        # is equivalent to having {"foo"}.
+        extras = extras or {""}
 
         self_reqs = []
         for req in reqs:
@@ -311,29 +374,34 @@ class Deps:
 
         return extras
 
-    def _add_req(self, req: Requirement) -> None:
-        extras = self._want_extras
-
+    def _add_req(self, req: Requirement, extras: Set[str]) -> None:
         if req.marker is None:
             self._add(req.name, None)
             return
 
         marker_str = str(req.marker)
 
+        if not self._platforms:
+            if any(req.marker.evaluate({"extra": extra}) for extra in extras):
+                self._add(req.name, None)
+            return
+
         # NOTE @aignas 2023-12-08: in order to have reasonable select statements
         # we do have to have some parsing of the markers, so it begs the question
         # if packaging should be reimplemented in Starlark to have the best solution
         # for now we will implement it in Python and see what the best parsing result
         # can be before making this decision.
-        if not self._platforms or not any(
+        match_os = any(
             tag in marker_str
             for tag in [
                 "os_name",
                 "sys_platform",
-                "platform_machine",
                 "platform_system",
             ]
-        ):
+        )
+        match_arch = "platform_machine" in marker_str
+
+        if not (match_os or match_arch):
             if any(req.marker.evaluate({"extra": extra}) for extra in extras):
                 self._add(req.name, None)
             return
@@ -344,34 +412,15 @@ class Deps:
             ):
                 continue
 
-            if "platform_machine" in marker_str:
+            if match_arch:
                 self._add(req.name, plat)
             else:
                 self._add(req.name, Platform(plat.os))
 
     def build(self) -> FrozenDeps:
-        if not self._select:
-            return FrozenDeps(
-                deps=sorted(self._deps),
-                deps_select={},
-            )
-
-        # Get all of the OS-specific dependencies applicable to all architectures
-        select = {
-            p: deps for p, deps in self._select.items() if deps and p.arch is None
-        }
-        # Now add them to all arch specific dependencies
-        select.update(
-            {
-                p: deps | select.get(Platform(p.os), set())
-                for p, deps in self._select.items()
-                if deps and p.arch is not None
-            }
-        )
-
         return FrozenDeps(
             deps=sorted(self._deps),
-            deps_select={str(p): sorted(deps) for p, deps in sorted(select.items())},
+            deps_select={str(p): sorted(deps) for p, deps in self._select.items()},
         )
 
 
@@ -429,15 +478,12 @@ class Wheel:
         extras_requested: Set[str] = None,
         platforms: Optional[Set[Platform]] = None,
     ) -> FrozenDeps:
-        dependency_set = Deps(
+        return Deps(
             self.name,
             extras=extras_requested,
             platforms=platforms,
-        )
-        for wheel_req in self.metadata.get_all("Requires-Dist", []):
-            dependency_set.add(wheel_req)
-
-        return dependency_set.build()
+            requires_dist=self.metadata.get_all("Requires-Dist", []),
+        ).build()
 
     def unzip(self, directory: str) -> None:
         installation_schemes = {

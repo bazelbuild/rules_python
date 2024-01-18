@@ -25,7 +25,7 @@ _py_builtins = py_internal
 
 def _py_runtime_impl(ctx):
     interpreter_path = ctx.attr.interpreter_path or None  # Convert empty string to None
-    interpreter = ctx.file.interpreter
+    interpreter = ctx.attr.interpreter
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of the 'interpreter' or 'interpreter_path' attributes must be specified")
 
@@ -34,12 +34,30 @@ def _py_runtime_impl(ctx):
         for t in ctx.attr.files
     ])
 
+    runfiles = ctx.runfiles()
+
     hermetic = bool(interpreter)
     if not hermetic:
         if runtime_files:
             fail("if 'interpreter_path' is given then 'files' must be empty")
         if not paths.is_absolute(interpreter_path):
             fail("interpreter_path must be an absolute path")
+    else:
+        interpreter_di = interpreter[DefaultInfo]
+
+        if interpreter_di.files_to_run and interpreter_di.files_to_run.executable:
+            interpreter = interpreter_di.files_to_run.executable
+            runfiles = runfiles.merge(interpreter_di.default_runfiles)
+
+            runtime_files = depset(transitive = [
+                interpreter_di.files,
+                interpreter_di.default_runfiles.files,
+                runtime_files,
+            ])
+        elif _is_singleton_depset(interpreter_di.files):
+            interpreter = interpreter_di.files.to_list()[0]
+        else:
+            fail("interpreter must be an executable target or must produce exactly one file.")
 
     if ctx.attr.coverage_tool:
         coverage_di = ctx.attr.coverage_tool[DefaultInfo]
@@ -61,6 +79,8 @@ def _py_runtime_impl(ctx):
 
     python_version = ctx.attr.python_version
 
+    interpreter_version_info = ctx.attr.interpreter_version_info
+
     # TODO: Uncomment this after --incompatible_python_disable_py2 defaults to true
     # if ctx.fragments.py.disable_py2 and python_version == "PY2":
     #     fail("Using Python 2 is not supported and disabled; see " +
@@ -75,10 +95,16 @@ def _py_runtime_impl(ctx):
         python_version = python_version,
         stub_shebang = ctx.attr.stub_shebang,
         bootstrap_template = ctx.file.bootstrap_template,
+        interpreter_version_info = interpreter_version_info,
     )
     builtin_py_runtime_info_kwargs = dict(py_runtime_info_kwargs)
+
+    # Pop this property as it does not exist on BuiltinPyRuntimeInfo
+    builtin_py_runtime_info_kwargs.pop("interpreter_version_info")
+
     if not IS_BAZEL_7_OR_HIGHER:
         builtin_py_runtime_info_kwargs.pop("bootstrap_template")
+
     return [
         PyRuntimeInfo(**py_runtime_info_kwargs),
         # Return the builtin provider for better compatibility.
@@ -88,7 +114,7 @@ def _py_runtime_impl(ctx):
         BuiltinPyRuntimeInfo(**builtin_py_runtime_info_kwargs),
         DefaultInfo(
             files = runtime_files,
-            runfiles = ctx.runfiles(),
+            runfiles = runfiles,
         ),
     ]
 
@@ -186,16 +212,47 @@ runtime. For a platform runtime this attribute must not be set.
 """,
         ),
         "interpreter": attr.label(
-            allow_single_file = True,
+            # We set `allow_files = True` to allow specifying executable
+            # targets from rules that have more than one default output,
+            # e.g. sh_binary.
+            allow_files = True,
             doc = """
-For an in-build runtime, this is the target to invoke as the interpreter. For a
-platform runtime this attribute must not be set.
+For an in-build runtime, this is the target to invoke as the interpreter. It
+can be either of:
+
+* A single file, which will be the interpreter binary. It's assumed such
+  interpreters are either self-contained single-file executables or any
+  supporting files are specified in `files`.
+* An executable target. The target's executable will be the interpreter binary.
+  Any other default outputs (`target.files`) and plain files runfiles
+  (`runfiles.files`) will be automatically included as if specified in the
+  `files` attribute.
+
+  NOTE: the runfiles of the target may not yet be properly respected/propagated
+  to consumers of the toolchain/interpreter, see
+  bazelbuild/rules_python/issues/1612
+
+For a platform runtime (i.e. `interpreter_path` being set) this attribute must
+not be set.
 """,
         ),
         "interpreter_path": attr.string(doc = """
 For a platform runtime, this is the absolute path of a Python interpreter on
 the target platform. For an in-build runtime this attribute must not be set.
 """),
+        "interpreter_version_info": attr.string_dict(
+            doc = """
+Version information about the interpreter this runtime provides. The
+supported keys match the names for `sys.version_info`. While the input
+values are strings, most are converted to ints. The supported keys are:
+  * major: int, the major version number
+  * minor: int, the minor version number
+  * micro: optional int, the micro version number
+  * releaselevel: optional str, the release level
+  * serial: optional int, the serial number of the release"
+            """,
+            mandatory = False,
+        ),
         "python_version": attr.string(
             default = "PY3",
             values = ["PY2", "PY3"],

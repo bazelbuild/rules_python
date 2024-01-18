@@ -10,4 +10,7 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
-construct_config_settings(python_versions = TOOL_VERSIONS.keys())
+construct_config_settings(
+    name = "construct_config_settings",
+    python_versions = TOOL_VERSIONS.keys(),
+)

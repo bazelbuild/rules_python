@@ -25,11 +25,28 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
+
+def _parse_version(version):
+    major, _, version = version.partition(".")
+    minor, _, version = version.partition(".")
+    patch, _, version = version.partition(".")
+    build, _, version = version.partition(".")
+
+    return struct(
+        # use semver vocabulary here
+        major = major,
+        minor = minor,
+        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
+        build = build,
+    )
+
+def _major_minor_version(version):
+    version = _parse_version(version)
+    return "{}.{}".format(version.major, version.minor)
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -87,8 +104,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     # we programmatically find it.
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None and not pip_attr.python_interpreter:
-        python_name = "python_" + version_label(pip_attr.python_version, sep = "_")
-        if python_name not in INTERPRETER_LABELS.keys():
+        python_name = "python_{}_host".format(
+            version_label(pip_attr.python_version, sep = "_"),
+        )
+        if python_name not in INTERPRETER_LABELS:
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
                 "python_version={version}: Make sure a corresponding " +
@@ -189,7 +208,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
 
-        whl_map[hub_name][whl_name][full_version(pip_attr.python_version)] = pip_name + "_"
+        whl_map[hub_name][whl_name][_major_minor_version(pip_attr.python_version)] = pip_name + "_"
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -340,7 +359,7 @@ def _pip_impl(module_ctx):
             name = hub_name,
             repo_name = hub_name,
             whl_map = whl_map,
-            default_version = full_version(DEFAULT_PYTHON_VERSION),
+            default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
         )
 
 def _pip_parse_ext_attrs():
@@ -392,9 +411,6 @@ The labels are JSON config files describing the modifications.
     # Like the pip_repository rule, we end up setting this manually so
     # don't allow users to override it.
     attrs.pop("repo_prefix")
-
-    # incompatible_generate_aliases is always True in bzlmod
-    attrs.pop("incompatible_generate_aliases")
 
     return attrs
 
@@ -521,9 +537,8 @@ the BUILD files for wheels.
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
 This tag class reuses most of the pip attributes that are found in
 @rules_python//python/pip_install:pip_repository.bzl.
-The exceptions are it does not use the args 'repo_prefix',
-and 'incompatible_generate_aliases'.  We set the repository prefix
-for the user and the alias arg is always True in bzlmod.
+The exception is it does not use the arg 'repo_prefix'.  We set the repository
+prefix for the user and the alias arg is always True in bzlmod.
 """,
         ),
         "whl_mods": tag_class(
