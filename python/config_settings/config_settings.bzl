@@ -29,6 +29,7 @@ def construct_config_settings(name, python_versions):
 
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     minor_to_micro_versions = {}
+
     allowed_flag_values = []
     for micro_version in python_versions:
         minor, _, _ = micro_version.rpartition(".")
@@ -37,9 +38,12 @@ def construct_config_settings(name, python_versions):
 
     string_flag(
         name = "python_version",
-        # TODO: The default here should somehow match the MODULE config
-        build_setting_default = python_versions[0],
-        values = sorted(allowed_flag_values),
+        # TODO: The default here should somehow match the MODULE config. Until
+        # then, use the empty string to indicate an unknown version. This
+        # also prevents version-unaware targets from inadvertently matching
+        # a select condition when they shouldn't.
+        build_setting_default = "",
+        values = [""] + sorted(allowed_flag_values),
         visibility = ["//visibility:public"],
     )
 
@@ -53,7 +57,6 @@ def construct_config_settings(name, python_versions):
             name = equals_minor_version_name,
             flag_values = {":python_version": minor_version},
         )
-
         matches_minor_version_names = [equals_minor_version_name]
 
         for micro_version in micro_versions:

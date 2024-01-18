@@ -29,6 +29,10 @@ A brief description of the categories of changes:
 * **BREAKING** (wheel) The `incompatible_normalize_name` and
   `incompatible_normalize_version` flags have been removed. They had been
   flipped to `True` in 0.27.0 release.
+* (bzlmod) The pip hub repository now uses the newly introduced config settings
+  using the `X.Y` python version notation. This improves cross module
+  interoperability and allows to share wheels built by interpreters using
+  different patch versions.
 
 ### Fixed
 
