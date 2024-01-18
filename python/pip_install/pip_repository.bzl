@@ -23,6 +23,7 @@ load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "gen
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
@@ -182,32 +183,6 @@ def use_isolated(ctx, attr):
 
     return use_isolated
 
-def _envsubst(template_string, varnames, environ):
-    """Helper function to substitute environment variables.
-
-    Supports `$VARNAME`, `${VARNAME}` and `${VARNAME:-default}`
-    syntaxes in the `template_string`, looking up each `VARNAME`
-    listed in the `varnames` list in the environment defined by the
-    `environ` dict. Typically called with `environ = rctx.os.environ`.
-    """
-
-    if not varnames:
-        return template_string
-
-    for varname in varnames:
-        value = environ.get(varname, "")
-        template_string = template_string.replace("$%s" % varname, value)
-        template_string = template_string.replace("${%s}" % varname, value)
-        segments = template_string.split("${%s:-" % varname)
-        template_string = segments.pop(0)
-        for segment in segments:
-            default_value, separator, rest = segment.rpartition("}")
-            if not separator:
-                fail("Environment substitution expression " +
-                     "\"${%s:-\" is missing the final \"}\"" % varname)
-            template_string += (value if value else default_value) + rest
-    return template_string
-
 def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
@@ -229,7 +204,7 @@ def _parse_optional_attrs(rctx, args):
         args += [
             "--extra_pip_args",
             json.encode(struct(arg = [
-                _envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
+                envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
                 for pip_arg in rctx.attr.extra_pip_args
             ])),
         ]
@@ -364,7 +339,7 @@ def _pip_repository_impl(rctx):
             tokenized_options.append(p)
 
     options = [
-        _envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
+        envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
         for pip_arg in tokenized_options + rctx.attr.extra_pip_args
     ]
 
