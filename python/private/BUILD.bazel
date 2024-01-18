@@ -78,6 +78,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "envsubst_bzl",
+    srcs = ["envsubst.bzl"],
+)
+
+bzl_library(
     name = "full_version_bzl",
     srcs = ["full_version.bzl"],
     deps = ["//python:versions_bzl"],
