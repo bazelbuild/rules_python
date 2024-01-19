@@ -30,3 +30,6 @@ common --enable_bzlmod
 build:rtd --stamp
 # Some bzl files contain repos only available under bzlmod
 build:rtd --enable_bzlmod
+
+# Disabled due to https://github.com/bazelbuild/bazel/issues/20942
+build --lockfile_mode=off
