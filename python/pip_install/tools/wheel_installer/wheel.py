@@ -186,12 +186,13 @@ class Platform:
                 ret.update(cls.host())
                 continue
 
-            head, _, arch = p.rpartition("_")
-            abi, _, os = head.rpartition("_")
-
-            if not abi and arch == "*" and os.startswith("cp"):
-                abi = os
-                os = "*"
+            abi, _, tail = p.partition("_")
+            os, _, arch = tail.partition("_")
+            if not abi.startswith("cp"):
+                # The first item is not an abi
+                abi, os, arch = "", abi, os
+            elif not arch and os == "*":
+                arch = "*"
 
             minor_version = MinorVersion(abi[len("cp3") :]) if abi else None
 

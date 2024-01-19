@@ -262,6 +262,15 @@ class PlatformTest(unittest.TestCase):
         self.assertEqual(1, len(wheel.Platform.from_string("host")))
         self.assertEqual(host, wheel.Platform.from_string("host"))
 
+    def test_can_get_specific_from_string(self):
+        got = wheel.Platform.from_string("cp33_linux_x86_64")
+        want = wheel.Platform(
+            os=wheel.OS.linux,
+            arch=wheel.Arch.x86_64,
+            minor_version=3
+        )
+        self.assertEqual(want, got[0])
+
     def test_can_get_all_for_py_version(self):
         cp39 = wheel.Platform.all(minor_version=9)
         self.assertEqual(15, len(cp39), f"Got {cp39}")

@@ -111,6 +111,7 @@ pip.parse(
         "cp39_linux_*",
         "cp39_*",
         "linux_*",
+        "linux_x86_64",
         # The following will get the interpreter version from the one passed to pip.parse
         "host",
     ],
