@@ -232,8 +232,11 @@ def generate_whl_library_build_bazel(
         if p.startswith("@"):
             continue
 
-        head, _, cpu = p.rpartition("_")
-        abi, _, os = head.partition("_")
+        abi, _, tail = p.partition("_")
+        os, _, cpu = tail.partition("_")
+        if not abi.startswith("cp"):
+            # The first item is not an abi
+            abi, os, cpu = "", abi, os
 
         constraint_values = [
             "@platforms//cpu:{}".format(cpu),
