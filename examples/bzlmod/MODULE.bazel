@@ -107,8 +107,11 @@ pip.parse(
     # You can use one of the values below to specify the target platform
     # to generate the dependency graph for.
     experimental_target_platforms = [
-        "all",
+        "cp39_linux_x86_64",
+        "cp39_linux_*",
+        "cp39_*",
         "linux_*",
+        # The following will get the interpreter version from the one passed to pip.parse
         "host",
     ],
     hub_name = "pip",
@@ -137,8 +140,7 @@ pip.parse(
     # You can use one of the values below to specify the target platform
     # to generate the dependency graph for.
     experimental_target_platforms = [
-        "all",
-        "linux_*",
+        "cp310_*",
         "host",
     ],
     hub_name = "pip",

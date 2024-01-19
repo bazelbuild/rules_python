@@ -184,18 +184,26 @@ class Platform:
         for p in platform:
             if p == "host":
                 ret.update(cls.host())
-            # FIXME @aignas 2024-01-19: Should we support supporting all python versions? Users usually
-            # know the set of python versions they want to target, so this magic string may be a bad idea
-            # after all.
-            elif p == "all":
-                ret.update(cls.all())
-            # TODO @aignas 2024-01-19: Add parsing of `cp3y_os_arch` format
-            elif p.endswith("*"):
-                os, _, _ = p.partition("_")
-                ret.update(cls.all(OS[os]))
+                continue
+
+            head, _, arch = p.rpartition("_")
+            abi, _, os = head.rpartition("_")
+
+            if not abi and arch == "*" and os.startswith("cp"):
+                abi = os
+                os = "*"
+
+            minor_version = MinorVersion(abi[len("cp3") :]) if abi else None
+
+            if arch != "*":
+                ret.add(cls(os=OS[os], arch=Arch[arch], minor_version=minor_version))
             else:
-                os, _, arch = p.partition("_")
-                ret.add(cls(os=OS[os], arch=Arch[arch]))
+                ret.update(
+                    cls.all(
+                        want_os=OS[os] if os != "*" else None,
+                        minor_version=minor_version,
+                    )
+                )
 
         return sorted(ret)
 

@@ -232,19 +232,25 @@ def generate_whl_library_build_bazel(
         if p.startswith("@"):
             continue
 
-        os, _, cpu = p.partition("_")
+        head, _, cpu = p.rpartition("_")
+        abi, _, os = head.partition("_")
+
+        constraint_values = [
+            "@platforms//cpu:{}".format(cpu),
+            "@platforms//os:{}".format(os),
+        ]
+        if abi:
+            minor_version = int(abi[len("cp3"):])
+            constraint_values.append("@rules_python//python/config_settings:is_python_3.{}".format(minor_version))
 
         additional_content.append(
             """\
 config_setting(
     name = "is_{os}_{cpu}",
-    constraint_values = [
-        "@platforms//cpu:{cpu}",
-        "@platforms//os:{os}",
-    ],
+    constraint_values = {},
     visibility = ["//visibility:private"],
 )
-""".format(os = os, cpu = cpu),
+""".format(render.indent(render.list(constraint_values)).strip()),
         )
 
     lib_dependencies = _render_list_and_select(
