@@ -97,13 +97,13 @@ class MinorVersion(int):
 class Platform:
     os: Optional[OS] = None
     arch: Optional[Arch] = None
-    minor_version: MinorVersion = MinorVersion.host()
+    minor_version: Optional[MinorVersion] = None
 
     @classmethod
     def all(
         cls,
         want_os: Optional[OS] = None,
-        minor_version: MinorVersion = MinorVersion.host(),
+        minor_version: Optional[MinorVersion] = None,
     ) -> List["Platform"]:
         return sorted(
             [
@@ -158,14 +158,12 @@ class Platform:
             return self_os < other_os
 
     def __str__(self) -> str:
-        if self.arch is None:
-            return f"@platforms//os:{self.os}"
-
-        return f"{self.os}_{self.arch}"
-
-    def _to_string(self, include_version: bool = False):
-        if not include_version:
-            return str(self)
+        if self.minor_version is None:
+            assert self.os is not None, "if minor_version is None, OS must be specified"
+            if self.arch is None:
+                return f"@platforms//os:{self.os}"
+            else:
+                return f"{self.os}_{self.arch}"
 
         if self.arch is None and self.os is None:
             return f"@rules_python//python/config_settings:is_python_3.{self.minor_version}"
@@ -186,8 +184,12 @@ class Platform:
         for p in platform:
             if p == "host":
                 ret.update(cls.host())
+            # FIXME @aignas 2024-01-19: Should we support supporting all python versions? Users usually
+            # know the set of python versions they want to target, so this magic string may be a bad idea
+            # after all.
             elif p == "all":
                 ret.update(cls.all())
+            # TODO @aignas 2024-01-19: Add parsing of `cp3y_os_arch` format
             elif p.endswith("*"):
                 os, _, _ = p.partition("_")
                 ret.update(cls.all(OS[os]))
@@ -263,6 +265,9 @@ class Platform:
             return ""
 
     def env_markers(self, extra: str) -> Dict[str, str]:
+        # If it is None, use the host version
+        minor_version = self.minor_version or MinorVersion.host()
+
         return {
             "extra": extra,
             "os_name": self.os_name,
@@ -271,12 +276,12 @@ class Platform:
             "platform_system": self.platform_system,
             "platform_release": "",  # unset
             "platform_version": "",  # unset
-            "python_version": f"3.{self.minor_version}",
+            "python_version": f"3.{minor_version}",
             # FIXME @aignas 2024-01-14: is putting zero last a good idea? Maybe we should
             # use `20` or something else to avoid having wheird issues where the full version is used for
             # matching and the author decides to only support 3.y.5 upwards.
-            "implementation_version": f"3.{self.minor_version}.0",
-            "python_full_version": f"3.{self.minor_version}.0",
+            "implementation_version": f"3.{minor_version}.0",
+            "python_full_version": f"3.{minor_version}.0",
             # we assume that the following are the same as the interpreter used to setup the deps:
             # "implementation_name": "cpython"
             # "platform_python_implementation: "CPython",
@@ -456,8 +461,10 @@ class Deps:
 
             if match_arch:
                 self._add(req.name, plat)
-            elif match_os:
+            elif match_os and self._add_version_select:
                 self._add(req.name, Platform(plat.os, minor_version=plat.minor_version))
+            elif match_os:
+                self._add(req.name, Platform(plat.os))
             elif match_version and self._add_version_select:
                 self._add(req.name, Platform(minor_version=plat.minor_version))
             elif match_version:
@@ -466,10 +473,7 @@ class Deps:
     def build(self) -> FrozenDeps:
         return FrozenDeps(
             deps=sorted(self._deps),
-            deps_select={
-                p._to_string(include_version=self._add_version_select): sorted(deps)
-                for p, deps in self._select.items()
-            },
+            deps_select={str(p): sorted(deps) for p, deps in self._select.items()},
         )
 
 
