@@ -749,6 +749,10 @@ def _whl_library_impl(rctx):
             # NOTE @aignas 2023-12-04: if the wheel is a platform specific
             # wheel, we only include deps for that target platform
             target_platforms = [
+                # TODO @aignas 2024-01-19: include the Python version tag
+                # which usually is cp3y where y is the minor version, this
+                # would allow us to be fully deterministic no matter the python
+                # version we use.
                 "{}_{}".format(p.os, p.cpu)
                 for p in whl_target_platforms(parsed_whl.platform_tag)
             ]

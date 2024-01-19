@@ -95,15 +95,19 @@ class MinorVersion(int):
 
 @dataclass(frozen=True)
 class Platform:
-    os: OS
+    os: Optional[OS] = None
     arch: Optional[Arch] = None
     minor_version: MinorVersion = MinorVersion.host()
 
     @classmethod
-    def all(cls, want_os: Optional[OS] = None) -> List["Platform"]:
+    def all(
+        cls,
+        want_os: Optional[OS] = None,
+        minor_version: MinorVersion = MinorVersion.host(),
+    ) -> List["Platform"]:
         return sorted(
             [
-                cls(os=os, arch=arch)
+                cls(os=os, arch=arch, minor_version=minor_version)
                 for os in OS
                 for arch in Arch
                 if not want_os or want_os == os
@@ -131,7 +135,14 @@ class Platform:
         yield self
         if self.arch is None:
             for arch in Arch:
-                yield Platform(os=self.os, arch=arch)
+                yield Platform(os=self.os, arch=arch, minor_version=self.minor_version)
+        if self.os is None:
+            for os in OS:
+                yield Platform(os=os, arch=self.arch, minor_version=self.minor_version)
+        if self.arch is None and self.os is None:
+            for os in OS:
+                for arch in Arch:
+                    yield Platform(os=os, arch=arch, minor_version=self.minor_version)
 
     def __lt__(self, other: Any) -> bool:
         """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
@@ -246,7 +257,9 @@ class Platform:
             "platform_release": "",  # unset
             "platform_version": "",  # unset
             "python_version": f"3.{self.minor_version}",
-            # FIXME @aignas 2024-01-14: is putting zero last a good idea?
+            # FIXME @aignas 2024-01-14: is putting zero last a good idea? Maybe we should
+            # use `20` or something else to avoid having wheird issues where the full version is used for
+            # matching and the author decides to only support 3.y.5 upwards.
             "implementation_version": f"3.{self.minor_version}.0",
             "python_full_version": f"3.{self.minor_version}.0",
             # we assume that the following are the same as the interpreter used to setup the deps:
@@ -269,9 +282,11 @@ class Deps:
         requires_dist: Optional[List[str]],
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
+        add_version_select: bool = False,
     ):
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
+        self._add_version_select = add_version_select
 
         # Sort so that the dictionary order in the FrozenDeps is deterministic
         # without the final sort because Python retains insertion order. That way
@@ -428,6 +443,8 @@ class Deps:
                 self._add(req.name, plat)
             elif match_os:
                 self._add(req.name, Platform(plat.os))
+            elif match_version and self._add_version_select:
+                self._add(req.name, Platform(minor_version=plat.minor_version))
             elif match_version:
                 self._add(req.name, None)
 

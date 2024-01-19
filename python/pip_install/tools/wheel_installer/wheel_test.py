@@ -183,6 +183,35 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], py38_deps.deps)
         self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
 
+    def test_can_get_version_select(self):
+        requires_dist = [
+            "bar",
+            "baz; python_version < '3.8'",
+            "posix_dep; os_name=='posix' and python_version >= '3.8'",
+        ]
+
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=[
+                wheel.Platform(
+                    os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=minor
+                )
+                for minor in [8, 9]
+            ],
+            add_version_select=True,
+        ).build()
+
+        self.assertEqual(["bar"], deps.deps)
+        self.assertEqual(
+            {
+                "cp37_linux": ["posix_dep", "baz"],
+                "cp37": ["baz"],
+                "@platforms//os:linux": ["posix_dep"],
+            },
+            deps.deps_select,
+        )
+
 
 class MinorVersionTest(unittest.TestCase):
     def test_host(self):
@@ -206,6 +235,37 @@ class PlatformTest(unittest.TestCase):
         linuxes = wheel.Platform.all(wheel.OS.linux)
         self.assertEqual(5, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
+
+    def test_specific_version_specializations(self):
+        any_py33 = wheel.Platform(minor_version=3)
+
+        # When
+        all_specializations = list(any_py33.all_specializations())
+
+        want = (
+            [any_py33]
+            + [
+                wheel.Platform(arch=arch, minor_version=any_py33.minor_version)
+                for arch in wheel.Arch
+            ]
+            + [
+                wheel.Platform(os=os, minor_version=any_py33.minor_version)
+                for os in wheel.OS
+            ]
+            + wheel.Platform.all(minor_version=any_py33.minor_version)
+        )
+        self.assertEqual(want, all_specializations)
+
+    def test_aarch64_specializations(self):
+        any_aarch64 = wheel.Platform(arch=wheel.Arch.aarch64)
+        all_specializations = list(any_aarch64.all_specializations())
+        want = [
+            wheel.Platform(os=None, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.windows, arch=wheel.Arch.aarch64),
+        ]
+        self.assertEqual(want, all_specializations)
 
     def test_linux_specializations(self):
         any_linux = wheel.Platform(os=wheel.OS.linux)
