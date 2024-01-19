@@ -163,6 +163,21 @@ class Platform:
 
         return f"{self.os}_{self.arch}"
 
+    def _to_string(self, include_version: bool = False):
+        if not include_version:
+            return str(self)
+
+        if self.arch is None and self.os is None:
+            return f"@rules_python//python/config_settings:is_python_3.{self.minor_version}"
+
+        if self.arch is None:
+            return f"cp3{self.minor_version}_{self.os}_anyarch"
+
+        if self.os is None:
+            return f"cp3{self.minor_version}_anyos_{self.arch}"
+
+        return f"cp3{self.minor_version}_{self.os}_{self.arch}"
+
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
         """Parse a string and return a list of platforms"""
@@ -442,7 +457,7 @@ class Deps:
             if match_arch:
                 self._add(req.name, plat)
             elif match_os:
-                self._add(req.name, Platform(plat.os))
+                self._add(req.name, Platform(plat.os, minor_version=plat.minor_version))
             elif match_version and self._add_version_select:
                 self._add(req.name, Platform(minor_version=plat.minor_version))
             elif match_version:
@@ -451,7 +466,10 @@ class Deps:
     def build(self) -> FrozenDeps:
         return FrozenDeps(
             deps=sorted(self._deps),
-            deps_select={str(p): sorted(deps) for p, deps in self._select.items()},
+            deps_select={
+                p._to_string(include_version=self._add_version_select): sorted(deps)
+                for p, deps in self._select.items()
+            },
         )
 
 

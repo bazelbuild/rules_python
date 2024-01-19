@@ -187,7 +187,8 @@ class DepsTest(unittest.TestCase):
         requires_dist = [
             "bar",
             "baz; python_version < '3.8'",
-            "posix_dep; os_name=='posix' and python_version >= '3.8'",
+            "posix_dep; os_name=='posix'",
+            "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
         ]
 
         deps = wheel.Deps(
@@ -197,19 +198,22 @@ class DepsTest(unittest.TestCase):
                 wheel.Platform(
                     os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=minor
                 )
-                for minor in [8, 9]
+                for minor in [7, 8, 9]
             ],
             add_version_select=True,
-        ).build()
+        )
+        print(dict(deps._select))
+        got = deps.build()
 
-        self.assertEqual(["bar"], deps.deps)
+        self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
-                "cp37_linux": ["posix_dep", "baz"],
-                "cp37": ["baz"],
-                "@platforms//os:linux": ["posix_dep"],
+                "@rules_python//python/config_settings:is_python_3.7": ["baz"],
+                "cp37_linux_anyarch": ["baz", "posix_dep"],
+                "cp38_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
+                "cp39_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
             },
-            deps.deps_select,
+            got.deps_select,
         )
 
 
