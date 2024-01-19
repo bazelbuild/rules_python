@@ -41,6 +41,7 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files; Follow
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
   platform-specific content in `MODULE.bazel.lock` files.
+
 * (wheel) The stamp variables inside the distribution name are no longer
   lower-cased when normalizing under PEP440 conventions.
 
@@ -67,6 +68,15 @@ A brief description of the categories of changes:
 * (config_settings) Added `//python/config_settings:is_python_X.Y` config
   settings to match on minor Python version. These settings match any `X.Y`
   version instead of just an exact `X.Y.Z` version.
+
+* *EXPERIMENTAL* (whl_library) The repository rule can now be told how to
+  interpret the `whl` `METADATA` file and what target platforms to support,
+  e.g. we can tell it to support `cp39_linux_x86` and `cp311_osx_aarch64`
+  within a single `whl_library` repository where it will fetch the right
+  dependencies for those packages. For example if the `requirements` closure is
+  different on `3.11` (e.g. many packages use the built-in `tomllib` or `tomli`
+  on older Python versions), then the `deps` will have a select which will
+  include the right dependencies for the right target versions.
 
 ## [0.28.0] - 2024-01-07
 
