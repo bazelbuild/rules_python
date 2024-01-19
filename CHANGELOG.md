@@ -69,14 +69,12 @@ A brief description of the categories of changes:
   settings to match on minor Python version. These settings match any `X.Y`
   version instead of just an exact `X.Y.Z` version.
 
-* *EXPERIMENTAL* (whl_library) The repository rule can now be told how to
-  interpret the `whl` `METADATA` file and what target platforms to support,
-  e.g. we can tell it to support `cp39_linux_x86` and `cp311_osx_aarch64`
-  within a single `whl_library` repository where it will fetch the right
-  dependencies for those packages. For example if the `requirements` closure is
-  different on `3.11` (e.g. many packages use the built-in `tomllib` or `tomli`
-  on older Python versions), then the `deps` will have a select which will
-  include the right dependencies for the right target versions.
+* *EXPERIMENTAL* (whl_library) The whl_library now can parse the `whl`
+  `METADATA` correctly irrespectively of the python interpreter version used to
+  run the tool. This means that for wheel-only setups people can use the system
+  interpreter when creating the external code repositories. In the future the
+  code can be modified to add select statements on the python version in the
+  version aware toolchains.
 
 ## [0.28.0] - 2024-01-07
 
