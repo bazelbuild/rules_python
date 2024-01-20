@@ -247,6 +247,23 @@ class DepsTest(unittest.TestCase):
             got.deps_select,
         )
 
+    def test_deps_spanning_all_target_py_versions_are_added_to_common(self):
+        requires_dist = [
+            "bar",
+            "baz (<2,>=1.11) ; python_version < '3.8'",
+            "baz (<2,>=1.14) ; python_version >= '3.8'",
+        ]
+
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=wheel.Platform.from_string(["cp37_*", "cp38_*", "cp39_*"]),
+        )
+        got = deps.build()
+
+        self.assertEqual(["bar", "baz"], got.deps)
+        self.assertEqual({}, got.deps_select)
+
 
 class MinorVersionTest(unittest.TestCase):
     def test_host(self):
@@ -260,6 +277,11 @@ class PlatformTest(unittest.TestCase):
         self.assertIsNotNone(host)
         self.assertEqual(1, len(wheel.Platform.from_string("host")))
         self.assertEqual(host, wheel.Platform.from_string("host"))
+
+    def test_can_get_linux_x86_64_without_py_version(self):
+        got = wheel.Platform.from_string("linux_x86_64")
+        want = wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64)
+        self.assertEqual(want, got[0])
 
     def test_can_get_specific_from_string(self):
         got = wheel.Platform.from_string("cp33_linux_x86_64")

@@ -190,17 +190,23 @@ class Platform:
                 continue
 
             abi, _, tail = p.partition("_")
-            os, _, arch = tail.partition("_")
             if not abi.startswith("cp"):
                 # The first item is not an abi
-                abi, os, arch = "", abi, os
-            elif not arch and os == "*":
-                arch = "*"
+                tail = p
+                abi = ""
+            os, _, arch = tail.partition("_")
+            arch = arch or "*"
 
             minor_version = int(abi[len("cp3") :]) if abi else None
 
             if arch != "*":
-                ret.add(cls(os=OS[os], arch=Arch[arch], minor_version=minor_version))
+                ret.add(
+                    cls(
+                        os=OS[os] if os != "*" else None,
+                        arch=Arch[arch],
+                        minor_version=minor_version,
+                    )
+                )
             else:
                 ret.update(
                     cls.all(
@@ -331,9 +337,9 @@ class Deps:
         """
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
-        unique_minor_versions = {p.minor_version for p in platforms or {}}
-        self._add_version_select = platforms and len(unique_minor_versions) > 2
-        if None in unique_minor_versions and len(unique_minor_versions) > 2:
+        self._target_versions = {p.minor_version for p in platforms or {}}
+        self._add_version_select = platforms and len(self._target_versions) > 2
+        if None in self._target_versions and len(self._target_versions) > 2:
             raise ValueError(
                 f"all python versions need to be specified explicitly, got: {platforms}"
             )
@@ -377,18 +383,39 @@ class Deps:
 
             self._select[p].add(dep)
 
-        if len(self._select[platform]) != 1:
+        if len(self._select[platform]) == 1:
+            # We are adding a new item to the select and we need to ensure that
+            # existing dependencies from less specialized platforms are propagated
+            # to the newly added dependency set.
+            for p, deps in self._select.items():
+                # Check if the existing platform overlaps with the given platform
+                if p == platform or platform not in p.all_specializations():
+                    continue
+
+                self._select[platform].update(self._select[p])
+
+    def _merge_to_common(self, dep):
+        if len(self._target_versions) < 2:
             return
 
-        # We are adding a new item to the select and we need to ensure that
-        # existing dependencies from less specialized platforms are propagated
-        # to the newly added dependency set.
-        for p, deps in self._select.items():
-            # Check if the existing platform overlaps with the given platform
-            if p == platform or platform not in p.all_specializations():
-                continue
+        platforms = [Platform(minor_version=v) for v in self._target_versions]
 
-            self._select[platform].update(self._select[p])
+        # If the dep is targeting all target python versions, lets add it to
+        # the common dependency list to simplify the select statements.
+        for p in platforms:
+            if p not in self._select:
+                return
+
+            if dep not in self._select[p]:
+                return
+
+        # All of the python version-specific branches have the dep, so lets add
+        # it to the common deps.
+        self._deps.add(dep)
+        for p in platforms:
+            self._select[p].remove(dep)
+            if not self._select[p]:
+                self._select.pop(p)
 
     @staticmethod
     def _normalize(name: str) -> str:
@@ -499,6 +526,9 @@ class Deps:
                 self._add(req.name, Platform(minor_version=plat.minor_version))
             elif match_version:
                 self._add(req.name, None)
+
+        # Merge to common if possible after processing all platforms
+        self._merge_to_common(req.name)
 
     def build(self) -> FrozenDeps:
         return FrozenDeps(
