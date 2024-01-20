@@ -240,7 +240,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
-                "@rules_python//python/config_settings:is_python_3.7": ["baz"],
+                "@//python/config_settings:is_python_3.7": ["baz"],
                 "cp37_linux_anyarch": ["baz", "posix_dep"],
                 "cp38_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
                 "cp39_linux_anyarch": ["posix_dep", "posix_dep_with_version"],

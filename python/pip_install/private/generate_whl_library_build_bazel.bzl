@@ -104,8 +104,6 @@ alias(
 
 def _plat_label(plat):
     if plat.startswith("@"):
-        return plat
-    elif plat.startswith("//"):
         return str(Label(plat))
     else:
         return ":is_" + plat
@@ -240,11 +238,10 @@ def generate_whl_library_build_bazel(
         # p can be one of the following formats:
         # * @platforms//os:{value}
         # * @platforms//cpu:{value}
-        # * //python/config_settings:is_python_3.{minor_version}
+        # * @//python/config_settings:is_python_3.{minor_version}
         # * {os}_{cpu}
         # * cp3{minor_version}_{os}_{cpu}
-
-        if p.startswith("@") or p.startswith("//"):
+        if p.startswith("@"):
             continue
 
         abi, _, tail = p.partition("_")
@@ -262,10 +259,10 @@ def generate_whl_library_build_bazel(
             constraint_values.append(str(Label("//python/config_settings:is_python_3.{}".format(minor_version))))
             plat.append(abi)
         if os:
-            constraint_values.append("@platforms//os:{}".format(os))
+            constraint_values.append("@@platforms//os:{}".format(os))
             plat.append(os)
         if arch:
-            constraint_values.append("@platforms//cpu:{}".format(arch))
+            constraint_values.append("@@platforms//cpu:{}".format(arch))
             plat.append(arch)
 
         additional_content.append(

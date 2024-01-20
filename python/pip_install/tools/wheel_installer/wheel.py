@@ -161,7 +161,7 @@ class Platform:
                 return f"{self.os}_{self.arch}"
 
         if self.arch is None and self.os is None:
-            return f"//python/config_settings:is_python_3.{self.minor_version}"
+            return f"@//python/config_settings:is_python_3.{self.minor_version}"
 
         if self.arch is None:
             return f"cp3{self.minor_version}_{self.os}_anyarch"

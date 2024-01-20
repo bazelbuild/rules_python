@@ -44,7 +44,7 @@ filegroup(
         "@pypi_foo//:whl",
     ] + select(
         {
-            "@platforms//os:windows": ["@pypi_colorama//:whl"],
+            "@@platforms//os:windows": ["@pypi_colorama//:whl"],
             "//conditions:default": [],
         },
     ),
@@ -72,7 +72,7 @@ py_library(
         "@pypi_foo//:pkg",
     ] + select(
         {
-            "@platforms//os:windows": ["@pypi_colorama//:pkg"],
+            "@@platforms//os:windows": ["@pypi_colorama//:pkg"],
             "//conditions:default": [],
         },
     ),
@@ -94,7 +94,7 @@ alias(
         repo_prefix = "pypi_",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
-        dependencies_by_platform = {"@platforms//os:windows": ["colorama"]},
+        dependencies_by_platform = {"@@platforms//os:windows": ["colorama"]},
         data_exclude = [],
         tags = ["tag1", "tag2"],
         entry_points = {},
@@ -130,8 +130,8 @@ filegroup(
     ] + select(
         {
             "@@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:whl"],
-            "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
-            "@platforms//os:windows": ["@pypi_win_dep//:whl"],
+            "@@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
+            "@@platforms//os:windows": ["@pypi_win_dep//:whl"],
             ":is_cp310_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
             ":is_cp39_anyos_aarch64": ["@pypi_py39_arm_dep//:whl"],
             ":is_cp39_linux_anyarch": ["@pypi_py39_linux_dep//:whl"],
@@ -164,8 +164,8 @@ py_library(
     ] + select(
         {
             "@@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:pkg"],
-            "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
-            "@platforms//os:windows": ["@pypi_win_dep//:pkg"],
+            "@@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
+            "@@platforms//os:windows": ["@pypi_win_dep//:pkg"],
             ":is_cp310_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
             ":is_cp39_anyos_aarch64": ["@pypi_py39_arm_dep//:pkg"],
             ":is_cp39_linux_anyarch": ["@pypi_py39_linux_dep//:pkg"],
@@ -191,8 +191,8 @@ config_setting(
     name = "is_cp310_linux_ppc",
     constraint_values = [
         "@@//python/config_settings:is_python_3.10",
-        "@platforms//cpu:ppc",
-        "@platforms//os:linux",
+        "@@platforms//cpu:ppc",
+        "@@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
 )
@@ -201,7 +201,7 @@ config_setting(
     name = "is_cp39_aarch64",
     constraint_values = [
         "@@//python/config_settings:is_python_3.9",
-        "@platforms//cpu:aarch64",
+        "@@platforms//cpu:aarch64",
     ],
     visibility = ["//visibility:private"],
 )
@@ -210,7 +210,7 @@ config_setting(
     name = "is_cp39_linux",
     constraint_values = [
         "@@//python/config_settings:is_python_3.9",
-        "@platforms//os:linux",
+        "@@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
 )
@@ -218,8 +218,8 @@ config_setting(
 config_setting(
     name = "is_linux_x86_64",
     constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
+        "@@platforms//cpu:x86_64",
+        "@@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
 )
@@ -229,9 +229,9 @@ config_setting(
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {
-            "//python/config_settings:is_python_3.9": ["py39_dep"],
-            "@platforms//cpu:aarch64": ["arm_dep"],
-            "@platforms//os:windows": ["win_dep"],
+            "@//python/config_settings:is_python_3.9": ["py39_dep"],
+            "@@platforms//cpu:aarch64": ["arm_dep"],
+            "@@platforms//os:windows": ["win_dep"],
             "cp310_linux_ppc": ["py310_linux_ppc_dep"],
             "cp39_anyos_aarch64": ["py39_arm_dep"],
             "cp39_linux_anyarch": ["py39_linux_dep"],
@@ -450,7 +450,7 @@ filegroup(
     srcs = ["foo.whl"],
     data = ["@pypi_bar_baz//:whl"] + select(
         {
-            "@platforms//os:linux": ["@pypi_box//:whl"],
+            "@@platforms//os:linux": ["@pypi_box//:whl"],
             ":is_linux_x86_64": [
                 "@pypi_box//:whl",
                 "@pypi_box_amd64//:whl",
@@ -479,7 +479,7 @@ py_library(
     imports = ["site-packages"],
     deps = ["@pypi_bar_baz//:pkg"] + select(
         {
-            "@platforms//os:linux": ["@pypi_box//:pkg"],
+            "@@platforms//os:linux": ["@pypi_box//:pkg"],
             ":is_linux_x86_64": [
                 "@pypi_box//:pkg",
                 "@pypi_box_amd64//:pkg",
@@ -504,8 +504,8 @@ alias(
 config_setting(
     name = "is_linux_x86_64",
     constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
+        "@@platforms//cpu:x86_64",
+        "@@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
 )
@@ -517,7 +517,7 @@ config_setting(
         dependencies_by_platform = {
             "linux_x86_64": ["box", "box-amd64"],
             "windows_x86_64": ["fox"],
-            "@platforms//os:linux": ["box"],  # buildifier: disable=unsorted-dict-items to check that we sort inside the test
+            "@@platforms//os:linux": ["box"],  # buildifier: disable=unsorted-dict-items to check that we sort inside the test
         },
         tags = [],
         entry_points = {},
