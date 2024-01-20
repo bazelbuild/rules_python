@@ -125,6 +125,18 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
 
     # Add the default, which means that we will be just using the dependencies in
     # `deps` for platforms that are not handled in a special way by the packages
+    #
+    # FIXME @aignas 2024-01-20: However, python version is a config setting and
+    # we need to ensure that the default case works well by targetting the
+    # default python version as opposed to just being empty.
+    #
+    # The default being empty works well with constraint_values, but config_settings
+    # is a different story. We could in theory handle this by adding the `default` as
+    # `Platform.host` and returning the deps for the host as the default. This means
+    # that we would always. A better solution is to pass the default value to the deps
+    # generation code, so that we could generate select statement for the
+    # `default_version` cpython for all constraint_values. This means an extra param
+    # needed to the whl_library as the `default_version` is not passed in yet.
     deps_by_platform["//conditions:default"] = []
     deps_by_platform = render.select(deps_by_platform, value_repr = render.list)
 

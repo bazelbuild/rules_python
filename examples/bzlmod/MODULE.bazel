@@ -111,10 +111,7 @@ pip.parse(
         "cp39_linux_x86_64",
         "cp39_linux_*",
         "cp39_*",
-        # And adding more just to test the version specific select statements
-        # do not break the build
-        "cp310_*",
-        "cp311_*",
+        # NOTE: Adding multiple version right now does not work yet.
     ],
     hub_name = "pip",
     python_version = "3.9",
