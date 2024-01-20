@@ -190,8 +190,8 @@ config_setting(
 selects.config_setting_group(
     name = "is_cp310_linux_ppc",
     match_all = [
+        ":is_linux_ppc",
         "@//python/config_settings:is_python_3.10",
-        "@//python/pip_install/private:is_linux_ppc",
     ],
     visibility = ["//visibility:private"],
 )
@@ -205,8 +205,8 @@ config_setting(
 selects.config_setting_group(
     name = "is_cp39_anyos_aarch64",
     match_all = [
+        ":is_anyos_aarch64",
         "@//python/config_settings:is_python_3.9",
-        "@//python/pip_install/private:is_anyos_aarch64",
     ],
     visibility = ["//visibility:private"],
 )
@@ -220,8 +220,8 @@ config_setting(
 selects.config_setting_group(
     name = "is_cp39_linux_anyarch",
     match_all = [
+        ":is_linux_anyarch",
         "@//python/config_settings:is_python_3.9",
-        "@//python/pip_install/private:is_linux_anyarch",
     ],
     visibility = ["//visibility:private"],
 )

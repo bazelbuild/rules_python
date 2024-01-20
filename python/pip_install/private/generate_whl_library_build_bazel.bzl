@@ -208,10 +208,7 @@ selects.config_setting_group(
     visibility = ["//visibility:private"],
 )""".format(
                     name = _plat_label(plat).lstrip(":"),
-                    values = render.indent(render.list(sorted([
-                        str(Label(c))
-                        for c in settings
-                    ]))).strip(),
+                    values = render.indent(render.list(sorted(settings))).strip(),
                 ),
             )
 
