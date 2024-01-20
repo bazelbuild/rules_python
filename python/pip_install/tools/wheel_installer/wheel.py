@@ -84,26 +84,21 @@ def _as_int(value: Optional[Union[OS, Arch]]) -> int:
     return int(value.value)
 
 
-class MinorVersion(int):
-    @classmethod
-    def host(cls) -> "MinorVersion":
-        version = platform.python_version()
-        _, _, tail = version.partition(".")
-        minor, _, _ = tail.partition(".")
-        return cls(minor)
+def host_interpreter_minor_version() -> int:
+    return sys.version_info.minor
 
 
 @dataclass(frozen=True)
 class Platform:
     os: Optional[OS] = None
     arch: Optional[Arch] = None
-    minor_version: Optional[MinorVersion] = None
+    minor_version: Optional[int] = None
 
     @classmethod
     def all(
         cls,
         want_os: Optional[OS] = None,
-        minor_version: Optional[MinorVersion] = None,
+        minor_version: Optional[int] = None,
     ) -> List["Platform"]:
         return sorted(
             [
@@ -194,7 +189,7 @@ class Platform:
             elif not arch and os == "*":
                 arch = "*"
 
-            minor_version = MinorVersion(abi[len("cp3") :]) if abi else None
+            minor_version = int(abi[len("cp3") :]) if abi else None
 
             if arch != "*":
                 ret.add(cls(os=OS[os], arch=Arch[arch], minor_version=minor_version))
@@ -275,7 +270,7 @@ class Platform:
 
     def env_markers(self, extra: str) -> Dict[str, str]:
         # If it is None, use the host version
-        minor_version = self.minor_version or MinorVersion.host()
+        minor_version = self.minor_version or host_interpreter_minor_version()
 
         return {
             "extra": extra,
@@ -287,7 +282,7 @@ class Platform:
             "platform_version": "",  # unset
             "python_version": f"3.{minor_version}",
             # FIXME @aignas 2024-01-14: is putting zero last a good idea? Maybe we should
-            # use `20` or something else to avoid having wheird issues where the full version is used for
+            # use `20` or something else to avoid having weird issues where the full version is used for
             # matching and the author decides to only support 3.y.5 upwards.
             "implementation_version": f"3.{minor_version}.0",
             "python_full_version": f"3.{minor_version}.0",
@@ -304,18 +299,38 @@ class FrozenDeps:
 
 
 class Deps:
+    """Deps is a dependency builder that has a build() method to return FrozenDeps."""
+
     def __init__(
         self,
         name: str,
+        requires_dist: List[str],
         *,
-        requires_dist: Optional[List[str]],
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
         add_version_select: bool = False,
     ):
+        """Create a new instance and parse the requires_dist
+
+        Args:
+            name (str): The name of the whl distribution
+            requires_dist (list[Str]): The Requires-Dist from the METADATA of the whl
+                distribution.
+            extras (set[str], optional): The list of requested extras, defaults to None.
+            platforms (set[Platform], optional): The list of target platforms, defaults to None.
+            add_version_select (bool): A switch to target version-aware
+                toolchains that. If `false` then the each target platform must
+                have the same `minor_version`. Defaults to False.
+        """
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
         self._add_version_select = add_version_select
+        if (
+            not self._add_version_select
+            and platforms
+            and len({p.minor_version for p in platforms}) > 2
+        ):
+            raise ValueError("All platforms must have the same target minor_version")
 
         # Sort so that the dictionary order in the FrozenDeps is deterministic
         # without the final sort because Python retains insertion order. That way

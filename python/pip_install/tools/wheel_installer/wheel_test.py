@@ -251,7 +251,7 @@ class DepsTest(unittest.TestCase):
 
 class MinorVersionTest(unittest.TestCase):
     def test_host(self):
-        host = wheel.MinorVersion.host()
+        host = wheel.host_interpreter_minor_version()
         self.assertIsNotNone(host)
 
 
@@ -265,9 +265,7 @@ class PlatformTest(unittest.TestCase):
     def test_can_get_specific_from_string(self):
         got = wheel.Platform.from_string("cp33_linux_x86_64")
         want = wheel.Platform(
-            os=wheel.OS.linux,
-            arch=wheel.Arch.x86_64,
-            minor_version=3
+            os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=3
         )
         self.assertEqual(want, got[0])
 

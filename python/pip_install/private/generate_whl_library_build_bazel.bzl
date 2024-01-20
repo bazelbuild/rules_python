@@ -229,6 +229,13 @@ def generate_whl_library_build_bazel(
     }
 
     for p in dependencies_by_platform:
+        # p can be one of the following formats:
+        # * @platforms//os:{value}
+        # * @platforms//cpu:{value}
+        # * //python/config_settings:is_python_3.{minor_version}
+        # * {os}_{cpu}
+        # * cp3{minor_version}_{os}_{cpu}
+
         if p.startswith("@"):
             continue
 
@@ -244,7 +251,7 @@ def generate_whl_library_build_bazel(
         ]
         if abi:
             minor_version = int(abi[len("cp3"):])
-            constraint_values.append("@rules_python//python/config_settings:is_python_3.{}".format(minor_version))
+            constraint_values.append(str(Label("//python/config_settings:is_python_3.{}".format(minor_version))))
 
         additional_content.append(
             """\
