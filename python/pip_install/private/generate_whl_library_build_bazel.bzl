@@ -256,13 +256,13 @@ def generate_whl_library_build_bazel(
         constraint_values = []
         if abi:
             minor_version = int(abi[len("cp3"):])
-            constraint_values.append(str(Label("//python/config_settings:is_python_3.{}".format(minor_version))))
+            constraint_values.append("//python/config_settings:is_python_3.{}".format(minor_version))
             plat.append(abi)
         if os:
-            constraint_values.append("@@platforms//os:{}".format(os))
+            constraint_values.append("@platforms//os:{}".format(os))
             plat.append(os)
         if arch:
-            constraint_values.append("@@platforms//cpu:{}".format(arch))
+            constraint_values.append("@platforms//cpu:{}".format(arch))
             plat.append(arch)
 
         additional_content.append(
@@ -274,7 +274,7 @@ config_setting(
 )
 """.format(
                 name = _plat_label("_".join(plat)).lstrip(":"),
-                values = render.indent(render.list(sorted(constraint_values))).strip(),
+                values = render.indent(render.list(sorted([str(Label(c)) for c in constraint_values]))).strip(),
             ),
         )
 
