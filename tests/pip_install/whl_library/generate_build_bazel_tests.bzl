@@ -98,6 +98,7 @@ def _test_dep_selects(env):
     want = """\
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@bazel_skylib//lib:selects.bzl", "selects")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -178,29 +179,49 @@ alias(
 )
 
 config_setting(
-    name = "is_cp310_linux_ppc",
+    name = "is_linux_ppc",
     constraint_values = [
-        "@//python/config_settings:is_python_3.10",
         "@platforms//cpu:ppc",
         "@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
 )
 
-config_setting(
-    name = "is_cp39_aarch64",
-    constraint_values = [
-        "@//python/config_settings:is_python_3.9",
-        "@platforms//cpu:aarch64",
+selects.config_setting_group(
+    name = "is_cp310_linux_ppc",
+    match_all = [
+        "@//python/config_settings:is_python_3.10",
+        "@//python/pip_install/private:is_linux_ppc",
     ],
     visibility = ["//visibility:private"],
 )
 
 config_setting(
-    name = "is_cp39_linux",
-    constraint_values = [
+    name = "is_anyos_aarch64",
+    constraint_values = ["@platforms//cpu:aarch64"],
+    visibility = ["//visibility:private"],
+)
+
+selects.config_setting_group(
+    name = "is_cp39_anyos_aarch64",
+    match_all = [
         "@//python/config_settings:is_python_3.9",
-        "@platforms//os:linux",
+        "@//python/pip_install/private:is_anyos_aarch64",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "is_linux_anyarch",
+    constraint_values = ["@platforms//os:linux"],
+    visibility = ["//visibility:private"],
+)
+
+selects.config_setting_group(
+    name = "is_cp39_linux_anyarch",
+    match_all = [
+        "@//python/config_settings:is_python_3.9",
+        "@//python/pip_install/private:is_linux_anyarch",
     ],
     visibility = ["//visibility:private"],
 )

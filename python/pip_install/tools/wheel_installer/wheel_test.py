@@ -233,7 +233,6 @@ class DepsTest(unittest.TestCase):
                 )
                 for minor in [7, 8, 9]
             ],
-            add_version_select=True,
         )
         got = deps.build()
 

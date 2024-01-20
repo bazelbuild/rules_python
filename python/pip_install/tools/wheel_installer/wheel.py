@@ -94,6 +94,12 @@ class Platform:
     arch: Optional[Arch] = None
     minor_version: Optional[int] = None
 
+    def __post_init__(self):
+        if not self.os and not self.arch and not self.minor_version:
+            raise ValueError(
+                "At least one of os, arch, minor_version must be specified"
+            )
+
     @classmethod
     def all(
         cls,
@@ -154,7 +160,9 @@ class Platform:
 
     def __str__(self) -> str:
         if self.minor_version is None:
-            assert self.os is not None, "if minor_version is None, OS must be specified"
+            assert (
+                self.os is not None
+            ), f"if minor_version is None, OS must be specified, got {repr(self)}"
             if self.arch is None:
                 return f"@platforms//os:{self.os}"
             else:
@@ -308,7 +316,6 @@ class Deps:
         *,
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
-        add_version_select: bool = False,
     ):
         """Create a new instance and parse the requires_dist
 
@@ -317,20 +324,19 @@ class Deps:
             requires_dist (list[Str]): The Requires-Dist from the METADATA of the whl
                 distribution.
             extras (set[str], optional): The list of requested extras, defaults to None.
-            platforms (set[Platform], optional): The list of target platforms, defaults to None.
-            add_version_select (bool): A switch to target version-aware
-                toolchains that. If `false` then the each target platform must
-                have the same `minor_version`. Defaults to False.
+            platforms (set[Platform], optional): The list of target platforms, defaults to
+                None. If the list of platforms has multiple `minor_version` values, it
+                will change the code to generate the select statements using
+                `@rules_python//python/config_settings:is_python_3.y` conditions.
         """
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
-        self._add_version_select = add_version_select
-        if (
-            not self._add_version_select
-            and platforms
-            and len({p.minor_version for p in platforms}) > 2
-        ):
-            raise ValueError("All platforms must have the same target minor_version")
+        unique_minor_versions = {p.minor_version for p in platforms or {}}
+        self._add_version_select = platforms and len(unique_minor_versions) > 2
+        if None in unique_minor_versions and len(unique_minor_versions) > 2:
+            raise ValueError(
+                f"all python versions need to be specified explicitly, got: {platforms}"
+            )
 
         # Sort so that the dictionary order in the FrozenDeps is deterministic
         # without the final sort because Python retains insertion order. That way

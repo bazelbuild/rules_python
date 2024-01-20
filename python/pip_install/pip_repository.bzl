@@ -498,6 +498,9 @@ is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
 `aarch64`, `s390x` and `ppc64le`.
 
 You can also target a specific Python version by using `cp3<minor_version>_<os>_<arch>`.
+If multiple python versions are specified as target platforms, then select statements
+of the `lib` and `whl` targets will include usage of version aware toolchain config 
+settings like `@rules_python//python/config_settings:is_python_3.y`.
 
 Special values: `host` (for generating deps for the host platform only) and
 `<prefix>_*` values. For example, `cp39_*`, `linux_*`, `cp39_linux_*`.
