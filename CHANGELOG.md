@@ -21,6 +21,14 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+### Changed
+
+### Fixed
+
+### Added
+
+* (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
