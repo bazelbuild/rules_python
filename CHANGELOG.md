@@ -69,12 +69,12 @@ A brief description of the categories of changes:
   settings to match on minor Python version. These settings match any `X.Y`
   version instead of just an exact `X.Y.Z` version.
 
-* *EXPERIMENTAL* (whl_library) The whl_library now can parse the `whl`
-  `METADATA` correctly irrespectively of the python interpreter version used to
-  run the tool. This means that for wheel-only setups people can use the system
-  interpreter when creating the external code repositories. In the future the
-  code can be modified to add select statements on the python version in the
-  version aware toolchains.
+* (whl_library) *experimental_target_platforms* now supports specifying the
+  Python version explicitly and the output `BUILD.bazel` file will be correct
+  irrespective of the python interpreter that is generating the file and
+  extracting the `whl` distribution. This could help wheel-only setups where
+  the host Python interpreter can be used to extract all of the wheels for
+  the target platforms.
 
 ## [0.28.0] - 2024-01-07
 
