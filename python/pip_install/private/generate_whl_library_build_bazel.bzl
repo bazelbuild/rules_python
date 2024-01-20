@@ -102,18 +102,26 @@ alias(
 )
 """
 
+def _plat_label(plat):
+    if plat.startswith("@"):
+        return plat
+    elif plat.startswith("//"):
+        return str(Label(plat))
+    else:
+        return ":is_" + plat
+
 def _render_list_and_select(deps, deps_by_platform, tmpl):
-    deps = render.list([tmpl.format(d) for d in deps])
+    deps = render.list([tmpl.format(d) for d in sorted(deps)])
 
     if not deps_by_platform:
         return deps
 
     deps_by_platform = {
-        p if p.startswith("@") else ":is_" + p: [
+        _plat_label(p): [
             tmpl.format(d)
-            for d in deps
+            for d in sorted(deps)
         ]
-        for p, deps in deps_by_platform.items()
+        for p, deps in sorted(deps_by_platform.items())
     }
 
     # Add the default, which means that we will be just using the dependencies in
@@ -236,31 +244,41 @@ def generate_whl_library_build_bazel(
         # * {os}_{cpu}
         # * cp3{minor_version}_{os}_{cpu}
 
-        if p.startswith("@"):
+        if p.startswith("@") or p.startswith("//"):
             continue
 
         abi, _, tail = p.partition("_")
-        os, _, cpu = tail.partition("_")
         if not abi.startswith("cp"):
-            # The first item is not an abi
-            abi, os, cpu = "", abi, os
+            tail = p
+            abi = ""
+        os, _, arch = tail.partition("_")
+        os = "" if os == "anyos" else os
+        arch = "" if arch == "anyarch" else arch
 
-        constraint_values = [
-            "@platforms//cpu:{}".format(cpu),
-            "@platforms//os:{}".format(os),
-        ]
+        plat = []
+        constraint_values = []
         if abi:
             minor_version = int(abi[len("cp3"):])
             constraint_values.append(str(Label("//python/config_settings:is_python_3.{}".format(minor_version))))
+            plat.append(abi)
+        if os:
+            constraint_values.append("@platforms//os:{}".format(os))
+            plat.append(os)
+        if arch:
+            constraint_values.append("@platforms//cpu:{}".format(arch))
+            plat.append(arch)
 
         additional_content.append(
             """\
 config_setting(
-    name = "is_{os}_{cpu}",
-    constraint_values = {},
+    name = "{name}",
+    constraint_values = {values},
     visibility = ["//visibility:private"],
 )
-""".format(render.indent(render.list(constraint_values)).strip()),
+""".format(
+                name = _plat_label("_".join(plat)).lstrip(":"),
+                values = render.indent(render.list(sorted(constraint_values))).strip(),
+            ),
         )
 
     lib_dependencies = _render_list_and_select(
