@@ -187,7 +187,7 @@ Python-specific directives are as follows:
 | `# gazelle:python_generation_mode_per_file_include_init`| `package` |
 | Controls whether `__init__.py` files are included as srcs in each generated target when target generation mode is "file". Can be "true", or "false" | |
 | `# gazelle:python_library_naming_convention`| `$package_name$` |
-| Controls the `py_library` naming convention. It interpolates \$package_name\$ with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
+| Controls the `py_library` naming convention. It interpolates `$package_name$` with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
 | `# gazelle:python_binary_naming_convention` | `$package_name$_bin` |
 | Controls the `py_binary` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
 | `# gazelle:python_test_naming_convention` | `$package_name$_test` |
