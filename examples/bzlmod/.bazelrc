@@ -1,4 +1,4 @@
-common --experimental_enable_bzlmod
+common --enable_bzlmod
 
 coverage --java_runtime_version=remotejdk_11
 
@@ -8,3 +8,6 @@ test --test_output=errors --enable_runfiles
 build --enable_runfiles
 
 startup --windows_enable_symlinks
+
+# Set the default version of python_version config
+common --@rules_python//python/config_settings:python_version=3.9.18

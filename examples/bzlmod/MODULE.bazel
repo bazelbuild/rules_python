@@ -112,6 +112,8 @@ pip.parse(
         "cp39_linux_*",
         "cp39_*",
         # NOTE: Adding multiple version right now does not work yet.
+        "cp310_*",
+        "cp311_*",
     ],
     hub_name = "pip",
     python_version = "3.9",
