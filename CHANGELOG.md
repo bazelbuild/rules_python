@@ -21,6 +21,10 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+## 0.29.0 - 2024-01-22
+
+[0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
+
 ### Changed
 
 * **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
