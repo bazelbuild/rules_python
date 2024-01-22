@@ -36,6 +36,14 @@ class OS(Enum):
     darwin = osx
     win32 = windows
 
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the interpreter operating system."
+        return cls[sys.platform.lower()]
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
 
 class Arch(Enum):
     x86_64 = 1
@@ -49,6 +57,31 @@ class Arch(Enum):
     i686 = x86_32
     x86 = x86_32
     ppc64le = ppc
+
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the currently running interpreter architecture."
+        # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
+        # is returning an empty string here, so lets default to x86_64
+        return cls[platform.machine().lower() or "x86_64"]
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+
+def _as_int(value: Optional[Union[OS, Arch]]) -> int:
+    """Convert one of the enums above to an int for easier sorting algorithms.
+
+    Args:
+        value: The value of an enum or None.
+
+    Returns:
+        -1 if we get None, otherwise, the numeric value of the given enum.
+    """
+    if value is None:
+        return -1
+
+    return int(value.value)
 
 
 @dataclass(frozen=True)
@@ -77,14 +110,7 @@ class Platform:
             A list of parsed values which makes the signature the same as
             `Platform.all` and `Platform.from_string`.
         """
-        return [
-            cls(
-                os=OS[sys.platform.lower()],
-                # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
-                # is returning an empty string here, so lets default to x86_64
-                arch=Arch[platform.machine().lower() or "x86_64"],
-            )
-        ]
+        return [cls(os=OS.interpreter(), arch=Arch.interpreter())]
 
     def all_specializations(self) -> Iterator["Platform"]:
         """Return the platform itself and all its unambiguous specializations.
@@ -102,30 +128,19 @@ class Platform:
         if not isinstance(other, Platform) or other is None:
             raise ValueError(f"cannot compare {other} with Platform")
 
-        if self.arch is None and other.arch is not None:
-            return True
+        self_arch, self_os = _as_int(self.arch), _as_int(self.os)
+        other_arch, other_os = _as_int(other.arch), _as_int(other.os)
 
-        if self.arch is not None and other.arch is None:
-            return True
-
-        # Here we ensure that we sort by OS before sorting by arch
-
-        if self.arch is None and other.arch is None:
-            return self.os.value < other.os.value
-
-        if self.os.value < other.os.value:
-            return True
-
-        if self.os.value == other.os.value:
-            return self.arch.value < other.arch.value
-
-        return False
+        if self_os == other_os:
+            return self_arch < other_arch
+        else:
+            return self_os < other_os
 
     def __str__(self) -> str:
         if self.arch is None:
-            return f"@platforms//os:{self.os.name.lower()}"
+            return f"@platforms//os:{self.os}"
 
-        return self.os.name.lower() + "_" + self.arch.name.lower()
+        return f"{self.os}_{self.arch}"
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:

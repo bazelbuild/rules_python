@@ -118,28 +118,7 @@ See [`py_wheel_dist`](#py_wheel_dist) for more info.
     ),
 }
 
-_feature_flags = {
-    "incompatible_normalize_name": attr.bool(
-        default = True,
-        doc = """\
-Normalize the package distribution name according to latest
-Python packaging standards.
-
-See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
-and https://packaging.python.org/en/latest/specifications/name-normalization/.
-
-Apart from the valid names according to the above, we also accept
-'{' and '}', which may be used as placeholders for stamping.
-""",
-    ),
-    "incompatible_normalize_version": attr.bool(
-        default = True,
-        doc = "Normalize the package version according to PEP440 standard. " +
-              "With this option set to True, if the user wants to pass any " +
-              "stamp variables, they have to be enclosed in '{}', e.g. " +
-              "'{BUILD_TIMESTAMP}'.",
-    ),
-}
+_feature_flags = {}
 
 _requirement_attrs = {
     "extra_requires": attr.string_list_dict(
@@ -237,9 +216,16 @@ def _escape_filename_distribution_name(name):
     '{' and '}', which may be used as placeholders for stamping.
     """
     escaped = ""
+    _inside_stamp_var = False
     for character in name.elems():
-        if character.isalnum() or character in ["{", "}"]:
-            escaped += character.lower()
+        if character == "{":
+            _inside_stamp_var = True
+            escaped += character
+        elif character == "}":
+            _inside_stamp_var = False
+            escaped += character
+        elif character.isalnum():
+            escaped += character if _inside_stamp_var else character.lower()
         elif character in ["-", "_", "."]:
             if escaped == "":
                 fail(
@@ -297,23 +283,13 @@ def _py_wheel_impl(ctx):
     python_tag = _replace_make_variables(ctx.attr.python_tag, ctx)
     version = _replace_make_variables(ctx.attr.version, ctx)
 
-    filename_segments = []
-
-    if ctx.attr.incompatible_normalize_name:
-        filename_segments.append(_escape_filename_distribution_name(ctx.attr.distribution))
-    else:
-        filename_segments.append(_escape_filename_segment(ctx.attr.distribution))
-
-    if ctx.attr.incompatible_normalize_version:
-        filename_segments.append(normalize_pep440(version))
-    else:
-        filename_segments.append(_escape_filename_segment(version))
-
-    filename_segments.extend([
+    filename_segments = [
+        _escape_filename_distribution_name(ctx.attr.distribution),
+        normalize_pep440(version),
         _escape_filename_segment(python_tag),
         _escape_filename_segment(abi),
         _escape_filename_segment(ctx.attr.platform),
-    ])
+    ]
 
     outfile = ctx.actions.declare_file("-".join(filename_segments) + ".whl")
 
@@ -344,10 +320,6 @@ def _py_wheel_impl(ctx):
     args.add("--out", outfile)
     args.add("--name_file", name_file)
     args.add_all(ctx.attr.strip_path_prefixes, format_each = "--strip_path_prefix=%s")
-    if not ctx.attr.incompatible_normalize_name:
-        args.add("--noincompatible_normalize_name")
-    if not ctx.attr.incompatible_normalize_version:
-        args.add("--noincompatible_normalize_version")
 
     # Pass workspace status files if stamping is enabled
     if is_stamping_enabled(ctx.attr):

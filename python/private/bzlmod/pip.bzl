@@ -24,13 +24,30 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:version_label.bzl", "version_label")
 load(":multiarch_whl_library.bzl", "multiarch_whl_library")
 load(":pip_repository.bzl", "pip_repository")
 load(":pypi_metadata.bzl", "whl_files_from_requirements")
+
+def _parse_version(version):
+    major, _, version = version.partition(".")
+    minor, _, version = version.partition(".")
+    patch, _, version = version.partition(".")
+    build, _, version = version.partition(".")
+
+    return struct(
+        # use semver vocabulary here
+        major = major,
+        minor = minor,
+        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
+        build = build,
+    )
+
+def _major_minor_version(version):
+    version = _parse_version(version)
+    return "{}.{}".format(version.major, version.minor)
 
 def _whl_mods_impl(mctx):
     """Implementation of the pip.whl_mods tag class.
@@ -232,7 +249,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, files):
         if whl_name not in whl_map[hub_name]:
             whl_map[hub_name][whl_name] = {}
 
-        whl_map[hub_name][whl_name][full_version(pip_attr.python_version)] = pip_name + "_"
+        whl_map[hub_name][whl_name][_major_minor_version(pip_attr.python_version)] = pip_name + "_"
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -395,7 +412,7 @@ def _pip_impl(module_ctx):
             name = hub_name,
             repo_name = hub_name,
             whl_map = whl_map,
-            default_version = full_version(DEFAULT_PYTHON_VERSION),
+            default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
         )
 
 def _pip_parse_ext_attrs():

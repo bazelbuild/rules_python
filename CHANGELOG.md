@@ -21,11 +21,22 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+## 0.29.0 - 2024-01-22
+
+[0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
+
 ### Changed
 
 * **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
-  from `pip_parse` and `gazelle` got removed. They have been flipped to `True`
+  from `pip_parse` and `gazelle` got removed. They had been flipped to `True`
   in 0.27.0 release.
+* **BREAKING** (wheel) The `incompatible_normalize_name` and
+  `incompatible_normalize_version` flags have been removed. They had been
+  flipped to `True` in 0.27.0 release.
+* (bzlmod) The pip hub repository now uses the newly introduced config settings
+  using the `X.Y` python version notation. This improves cross module
+  interoperability and allows to share wheels built by interpreters using
+  different patch versions.
 
 ### Fixed
 
@@ -34,6 +45,8 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files; Follow
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
   platform-specific content in `MODULE.bazel.lock` files.
+* (wheel) The stamp variables inside the distribution name are no longer
+  lower-cased when normalizing under PEP440 conventions.
 
 ### Added
 
@@ -47,6 +60,17 @@ A brief description of the categories of changes:
 * (runfiles) `rules_python.python.runfiles.Runfiles` now has a static `Create`
   method to make imports more ergonomic. Users should only need to import the
   `Runfiles` object to locate runfiles.
+
+* (toolchains) `PyRuntimeInfo` now includes a `interpreter_version_info` field
+  that contains the static version information for the given interpreter.
+  This can be set via `py_runtime` when registering an interpreter toolchain,
+  and will done automatically for the builtin interpreter versions registered via
+  `python_register_toolchains`.
+  Note that this only available on the Starlark implementation of the provider.
+
+* (config_settings) Added `//python/config_settings:is_python_X.Y` config
+  settings to match on minor Python version. These settings match any `X.Y`
+  version instead of just an exact `X.Y.Z` version.
 
 ## [0.28.0] - 2024-01-07
 
@@ -112,6 +136,9 @@ A brief description of the categories of changes:
 * (toolchains) Workspace builds register the py cc toolchain (bzlmod already
   was). This makes e.g. `//python/cc:current_py_cc_headers` Just Work.
   ([#1669](https://github.com/bazelbuild/rules_python/issues/1669))
+* (bzlmod python.toolchain) The value of `ignore_root_user_error` is now decided
+  by the root module only.
+  ([#1658](https://github.com/bazelbuild/rules_python/issues/1658))
 
 ### Added
 
@@ -218,8 +245,6 @@ Breaking changes:
 
 * (utils) Added a `pip_utils` struct with a `normalize_name` function to allow users
   to find out how `rules_python` would normalize a PyPI distribution name.
-
-[0.27.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.27.0
 
 ## [0.26.0] - 2023-10-06
 

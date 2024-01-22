@@ -46,4 +46,6 @@ user.bazelrc
 # Python cache
 **/__pycache__/
 
+# MODULE.bazel.lock is ignored for now as per recommendation from upstream.
+# See https://github.com/bazelbuild/bazel/issues/20369
 MODULE.bazel.lock

@@ -1,4 +1,5 @@
 import unittest
+from random import shuffle
 
 from python.pip_install.tools.wheel_installer import wheel
 
@@ -168,6 +169,76 @@ class PlatformTest(unittest.TestCase):
         linuxes = wheel.Platform.all(wheel.OS.linux)
         self.assertEqual(5, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
+
+    def test_linux_specializations(self):
+        any_linux = wheel.Platform(os=wheel.OS.linux)
+        all_specializations = list(any_linux.all_specializations())
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
+    def test_osx_specializations(self):
+        any_osx = wheel.Platform(os=wheel.OS.osx)
+        all_specializations = list(any_osx.all_specializations())
+        # NOTE @aignas 2024-01-14: even though in practice we would only have
+        # Python on osx aarch64 and osx x86_64, we return all arch posibilities
+        # to make the code simpler.
+        want = [
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_32),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.ppc),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.s390x),
+        ]
+        self.assertEqual(want, all_specializations)
+
+    def test_platform_sort(self):
+        platforms = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+        shuffle(platforms)
+        platforms.sort()
+        want = [
+            wheel.Platform(os=wheel.OS.linux, arch=None),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=None),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.x86_64),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
+        ]
+
+        self.assertEqual(want, platforms)
+
+    def test_wheel_os_alias(self):
+        self.assertEqual("osx", str(wheel.OS.osx))
+        self.assertEqual(str(wheel.OS.darwin), str(wheel.OS.osx))
+
+    def test_wheel_arch_alias(self):
+        self.assertEqual("x86_64", str(wheel.Arch.x86_64))
+        self.assertEqual(str(wheel.Arch.amd64), str(wheel.Arch.x86_64))
+
+    def test_wheel_platform_alias(self):
+        give = wheel.Platform(
+            os=wheel.OS.darwin,
+            arch=wheel.Arch.amd64,
+        )
+        alias = wheel.Platform(
+            os=wheel.OS.osx,
+            arch=wheel.Arch.x86_64,
+        )
+
+        self.assertEqual("osx_x86_64", str(give))
+        self.assertEqual(str(alias), str(give))
 
 
 if __name__ == "__main__":

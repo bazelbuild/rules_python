@@ -79,6 +79,8 @@ def _py_runtime_impl(ctx):
 
     python_version = ctx.attr.python_version
 
+    interpreter_version_info = ctx.attr.interpreter_version_info
+
     # TODO: Uncomment this after --incompatible_python_disable_py2 defaults to true
     # if ctx.fragments.py.disable_py2 and python_version == "PY2":
     #     fail("Using Python 2 is not supported and disabled; see " +
@@ -93,10 +95,16 @@ def _py_runtime_impl(ctx):
         python_version = python_version,
         stub_shebang = ctx.attr.stub_shebang,
         bootstrap_template = ctx.file.bootstrap_template,
+        interpreter_version_info = interpreter_version_info,
     )
     builtin_py_runtime_info_kwargs = dict(py_runtime_info_kwargs)
+
+    # Pop this property as it does not exist on BuiltinPyRuntimeInfo
+    builtin_py_runtime_info_kwargs.pop("interpreter_version_info")
+
     if not IS_BAZEL_7_OR_HIGHER:
         builtin_py_runtime_info_kwargs.pop("bootstrap_template")
+
     return [
         PyRuntimeInfo(**py_runtime_info_kwargs),
         # Return the builtin provider for better compatibility.
@@ -232,6 +240,19 @@ not be set.
 For a platform runtime, this is the absolute path of a Python interpreter on
 the target platform. For an in-build runtime this attribute must not be set.
 """),
+        "interpreter_version_info": attr.string_dict(
+            doc = """
+Version information about the interpreter this runtime provides. The
+supported keys match the names for `sys.version_info`. While the input
+values are strings, most are converted to ints. The supported keys are:
+  * major: int, the major version number
+  * minor: int, the minor version number
+  * micro: optional int, the micro version number
+  * releaselevel: optional str, the release level
+  * serial: optional int, the serial number of the release"
+            """,
+            mandatory = False,
+        ),
         "python_version": attr.string(
             default = "PY3",
             values = ["PY2", "PY3"],
