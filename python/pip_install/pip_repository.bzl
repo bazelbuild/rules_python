@@ -722,7 +722,7 @@ def _whl_library_impl(rctx):
         # This assumes that whls are only downloaded with the pypi_file repo rule.
         whl_label = rctx.attr.experimental_whl_label
         whl_path = rctx.path(Label("@@{hub_repo_name}_{dist}//:{filename}".format(
-            hub_repo_name = whl_label.repo_name,
+            hub_repo_name = whl_label.workspace_name,
             dist = whl_label.package,
             filename = whl_label.name,
         )))
