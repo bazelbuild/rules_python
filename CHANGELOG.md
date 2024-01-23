@@ -23,6 +23,10 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (toolchains) Windows hosts always ignore pyc files in the downloaded runtimes.
+  This fixes issues due to pyc files being created at runtime and affecting the
+  definition of what files were considered part of the runtime.
+
 ### Fixed
 
 ### Added
