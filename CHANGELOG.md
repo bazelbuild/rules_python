@@ -27,6 +27,12 @@ A brief description of the categories of changes:
   This fixes issues due to pyc files being created at runtime and affecting the
   definition of what files were considered part of the runtime.
 
+### Fixed
+
+### Added
+
+* (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
