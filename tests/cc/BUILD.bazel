@@ -21,6 +21,12 @@ package(default_visibility = ["//:__subpackages__"])
 
 exports_files(["fake_header.h"])
 
+filegroup(
+    name = "libpython",
+    srcs = ["libpython-fake.so"],
+    tags = PREVENT_IMPLICIT_BUILDING_TAGS,
+)
+
 toolchain(
     name = "fake_py_cc_toolchain",
     tags = PREVENT_IMPLICIT_BUILDING_TAGS,
