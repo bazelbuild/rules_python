@@ -21,6 +21,14 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+### Changed
+
+* For Bazel 7, the core rules and providers are now implemented in rules_python
+  directly and the rules bundled with Bazel are not used. Bazel 6 and earlier
+  continue to use the Bazel builtin symbols. Of particular note, this means,
+  under Bazel 7, the builtin global symbol `PyInfo` is **not** the same as what
+  is loaded from rules_python.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
