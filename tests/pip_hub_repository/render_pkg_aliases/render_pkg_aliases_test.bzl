@@ -19,6 +19,18 @@ load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")  # buildif
 
 _tests = []
 
+def _test_empty(env):
+    actual = render_pkg_aliases(
+        bzl_packages = None,
+        repo_name = "pypi",
+    )
+
+    want = {}
+
+    env.expect.that_dict(actual).contains_exactly(want)
+
+_tests.append(_test_empty)
+
 def _test_legacy_aliases(env):
     actual = render_pkg_aliases(
         bzl_packages = ["foo"],

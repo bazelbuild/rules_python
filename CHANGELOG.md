@@ -29,6 +29,8 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (bzlmod) pip.parse now does not fail with an empty `requirements.txt`.
+
 ### Added
 
 * (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
