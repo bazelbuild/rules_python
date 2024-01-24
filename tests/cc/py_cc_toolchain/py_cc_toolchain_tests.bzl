@@ -15,7 +15,7 @@
 """Tests for py_cc_toolchain."""
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
-load("@rules_testing//lib:truth.bzl", "matching")
+load("@rules_testing//lib:truth.bzl", "matching", "subjects")
 load("//tests:cc_info_subject.bzl", "cc_info_subject")
 load("//tests:default_info_subject.bzl", "default_info_subject")
 load("//tests:py_cc_toolchain_info_subject.bzl", "PyCcToolchainInfoSubject")
@@ -72,6 +72,19 @@ def _py_cc_toolchain_test_impl(env, target):
     )
     default_info.runfiles().contains_predicate(
         matching.str_matches("*/cc/data.txt"),
+    )
+
+    libs_providers = toolchain.libs().providers_map()
+    libs_providers.keys().contains_exactly(["CcInfo", "DefaultInfo"])
+
+    cc_info = libs_providers.get("CcInfo", factory = cc_info_subject)
+
+    cc_info.linking_context().linker_inputs().has_size(2)
+
+    default_info = libs_providers.get("DefaultInfo", factory = subjects.default_info)
+    default_info.runfiles().contains("{workspace}/tests/cc/libdata.txt")
+    default_info.runfiles().contains_predicate(
+        matching.str_matches("/libpython3."),
     )
 
 _tests.append(_py_cc_toolchain_test)

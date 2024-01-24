@@ -353,6 +353,7 @@ py_runtime_pair(
 py_cc_toolchain(
     name = "py_cc_toolchain",
     headers = ":python_headers",
+    libs = ":libpython",
     python_version = "{python_version}",
 )
 """.format(
