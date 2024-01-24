@@ -36,6 +36,8 @@ def construct_config_settings(name, python_versions):
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
         allowed_flag_values.append(micro_version)
 
+    allowed_flag_values.extend(list(minor_to_micro_versions))
+
     string_flag(
         name = "python_version",
         # TODO: The default here should somehow match the MODULE config. Until
