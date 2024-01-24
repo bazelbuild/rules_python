@@ -23,6 +23,22 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (toolchains) Windows hosts always ignore pyc files in the downloaded runtimes.
+  This fixes issues due to pyc files being created at runtime and affecting the
+  definition of what files were considered part of the runtime.
+
+### Fixed
+
+### Added
+
+* (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
+
+## 0.29.0 - 2024-01-22
+
+[0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
+
+### Changed
+
 * **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
   from `pip_parse` and `gazelle` got removed. They had been flipped to `True`
   in 0.27.0 release.
