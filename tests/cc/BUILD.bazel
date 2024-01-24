@@ -51,6 +51,7 @@ cc_library(
     tags = PREVENT_IMPLICIT_BUILDING_TAGS,
 )
 
+# buildifier: disable=native-cc
 cc_library(
     name = "fake_libs",
     srcs = ["libpython3.so"],
