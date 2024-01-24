@@ -212,6 +212,7 @@ bzl_library(
     deps = [
         ":which_bzl",
         "//python:versions_bzl",
+        "@bazel_skylib//lib:selects",
     ],
 )
 
