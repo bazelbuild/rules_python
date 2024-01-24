@@ -528,6 +528,13 @@ def Main():
   else:
     cov_tool = None
 
+  # Some older Python versions on macOS (namely Python 3.7) may unintentionally
+  # leave this environment variable set after starting the interpreter, which
+  # causes problems with Python subprocesses correctly locating sys.executable,
+  # which subsequently causes failure to launch on Python 3.11 and later.
+  if '__PYVENV_LAUNCHER__' in os.environ:
+    del os.environ['__PYVENV_LAUNCHER__']
+
   new_env.update((key, val) for key, val in os.environ.items() if key not in new_env)
 
   workspace = None

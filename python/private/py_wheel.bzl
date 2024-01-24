@@ -122,12 +122,26 @@ _feature_flags = {}
 
 _requirement_attrs = {
     "extra_requires": attr.string_list_dict(
-        doc = "List of optional requirements for this package",
+        doc = ("A mapping of [extras](https://peps.python.org/pep-0508/#extras) options to lists of requirements (similar to `requires`). This attribute " +
+               "is mutually exclusive with `extra_requires_file`."),
+    ),
+    "extra_requires_files": attr.label_keyed_string_dict(
+        doc = ("A mapping of requirements files (similar to `requires_file`) to the name of an [extras](https://peps.python.org/pep-0508/#extras) option " +
+               "This attribute is mutually exclusive with `extra_requires`."),
+        allow_files = True,
     ),
     "requires": attr.string_list(
         doc = ("List of requirements for this package. See the section on " +
                "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
-               "for details and examples of the format of this argument."),
+               "for details and examples of the format of this argument. This " +
+               "attribute is mutually exclusive with `requires_file`."),
+    ),
+    "requires_file": attr.label(
+        doc = ("A file containing a list of requirements for this package. See the section on " +
+               "[Declaring required dependency](https://setuptools.readthedocs.io/en/latest/userguide/dependency_management.html#declaring-dependencies) " +
+               "for details and examples of the format of this argument. This " +
+               "attribute is mutually exclusive with `requires`."),
+        allow_single_file = True,
     ),
 }
 
@@ -365,15 +379,50 @@ def _py_wheel_impl(ctx):
 
     if ctx.attr.python_requires:
         metadata_contents.append("Requires-Python: %s" % ctx.attr.python_requires)
-    for requirement in ctx.attr.requires:
-        metadata_contents.append("Requires-Dist: %s" % requirement)
 
+    if ctx.attr.requires and ctx.attr.requires_file:
+        fail("`requires` and `requires_file` are mutually exclusive. Please update {}".format(ctx.label))
+
+    for requires in ctx.attr.requires:
+        metadata_contents.append("Requires-Dist: %s" % requires)
+    if ctx.attr.requires_file:
+        # The @ prefixed paths will be resolved by the PyWheel action.
+        # Expanding each line containing a constraint in place of this
+        # directive.
+        metadata_contents.append("Requires-Dist: @%s" % ctx.file.requires_file.path)
+        other_inputs.append(ctx.file.requires_file)
+
+    if ctx.attr.extra_requires and ctx.attr.extra_requires_files:
+        fail("`extra_requires` and `extra_requires_files` are mutually exclusive. Please update {}".format(ctx.label))
     for option, option_requirements in sorted(ctx.attr.extra_requires.items()):
         metadata_contents.append("Provides-Extra: %s" % option)
         for requirement in option_requirements:
             metadata_contents.append(
                 "Requires-Dist: %s; extra == '%s'" % (requirement, option),
             )
+    extra_requires_files = {}
+    for option_requires_target, option in ctx.attr.extra_requires_files.items():
+        if option in extra_requires_files:
+            fail("Duplicate `extra_requires_files` option '{}' found on target {}".format(option, ctx.label))
+        option_requires_files = option_requires_target[DefaultInfo].files.to_list()
+        if len(option_requires_files) != 1:
+            fail("Labels in `extra_requires_files` must result in a single file, but {label} provides {files} from {owner}".format(
+                label = ctx.label,
+                files = option_requires_files,
+                owner = option_requires_target.label,
+            ))
+        extra_requires_files.update({option: option_requires_files[0]})
+
+    for option, option_requires_file in sorted(extra_requires_files.items()):
+        metadata_contents.append("Provides-Extra: %s" % option)
+        metadata_contents.append(
+            # The @ prefixed paths will be resolved by the PyWheel action.
+            # Expanding each line containing a constraint in place of this
+            # directive and appending the extra option.
+            "Requires-Dist: @%s; extra == '%s'" % (option_requires_file.path, option),
+        )
+        other_inputs.append(option_requires_file)
+
     ctx.actions.write(
         output = metadata_file,
         content = "\n".join(metadata_contents) + "\n",
@@ -425,6 +474,7 @@ def _py_wheel_impl(ctx):
         )
 
     ctx.actions.run(
+        mnemonic = "PyWheel",
         inputs = depset(direct = other_inputs, transitive = [inputs_to_package]),
         outputs = [outfile, name_file],
         arguments = [args],
