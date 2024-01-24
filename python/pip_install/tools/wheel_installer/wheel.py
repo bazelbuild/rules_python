@@ -394,7 +394,7 @@ class Deps:
 
                 self._select[platform].update(self._select[p])
 
-    def _merge_to_common(self, dep):
+    def _maybe_add_common_dep(self, dep):
         if len(self._target_versions) < 2:
             return
 
@@ -528,7 +528,7 @@ class Deps:
                 self._add(req.name, None)
 
         # Merge to common if possible after processing all platforms
-        self._merge_to_common(req.name)
+        self._maybe_add_common_dep(req.name)
 
     def build(self) -> FrozenDeps:
         return FrozenDeps(
