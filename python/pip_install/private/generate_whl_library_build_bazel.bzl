@@ -126,17 +126,12 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
     # Add the default, which means that we will be just using the dependencies in
     # `deps` for platforms that are not handled in a special way by the packages
     #
-    # FIXME @aignas 2024-01-20: However, python version is a config setting and
-    # we need to ensure that the default case works well by targetting the
-    # default python version as opposed to just being empty.
-    #
-    # The default being empty works well with constraint_values, but config_settings
-    # is a different story. We could in theory handle this by adding the `default` as
-    # `Platform.host` and returning the deps for the host as the default. This means
-    # that we would always. A better solution is to pass the default value to the deps
-    # generation code, so that we could generate select statement for the
-    # `default_version` cpython for all constraint_values. This means an extra param
-    # needed to the whl_library as the `default_version` is not passed in yet.
+    # FIXME @aignas 2024-01-24: This currently works as expected only if the default
+    # value of the @rules_python//python/config_settings:python_version is set in
+    # the `.bazelrc`. If it is unset, then the we don't get the expected behaviour
+    # in cases where we are using a simple `py_binary` using the default toolchain
+    # without forcing any transitions. If the `python_version` config setting is set
+    # via .bazelrc, then everything works correctly.
     deps_by_platform["//conditions:default"] = []
     deps_by_platform = render.select(deps_by_platform, value_repr = render.list)
 
