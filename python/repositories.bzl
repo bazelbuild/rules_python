@@ -218,7 +218,7 @@ def _python_repository_impl(rctx):
         "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
     ]
 
-    if rctx.attr.ignore_root_user_error:
+    if rctx.attr.ignore_root_user_error or "windows" in rctx.os.name:
         glob_exclude += [
             # These pycache files are created on first use of the associated python files.
             # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
