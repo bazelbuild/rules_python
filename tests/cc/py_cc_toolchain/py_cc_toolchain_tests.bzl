@@ -82,7 +82,7 @@ def _py_cc_toolchain_test_impl(env, target):
     cc_info.linking_context().linker_inputs().has_size(2)
 
     default_info = libs_providers.get("DefaultInfo", factory = subjects.default_info)
-    default_info.runfiles().contains("_main/tests/cc/libdata.txt")
+    default_info.runfiles().contains("{workspace}/tests/cc/libdata.txt")
     default_info.runfiles().contains_predicate(
         matching.str_matches("/libpython3."),
     )
