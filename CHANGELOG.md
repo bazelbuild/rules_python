@@ -35,6 +35,13 @@ A brief description of the categories of changes:
 
 * (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
 
+* (toolchain) Allow setting `x.y` as the `python_version` parameter in
+  `py_binary` and `py_test` with transitions. This allows the users to
+  use the same rule import for testing with specific Python versions and
+  rely on toolchain configuration and how the latest version takes precedence
+  if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
+  that set the default `python_version` string flag in that way.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
