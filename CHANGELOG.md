@@ -33,6 +33,15 @@ A brief description of the categories of changes:
 
 * (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
 
+* (whl_library) *experimental_target_platforms* now supports specifying the
+  Python version explicitly and the output `BUILD.bazel` file will be correct
+  irrespective of the python interpreter that is generating the file and
+  extracting the `whl` distribution. Multiple python target version can be
+  specified and the code generation will generate version specific dependency
+  closures but that is not yet ready to be used and may break the build if
+  the default python version is not selected using
+  `common --@rules_python//python/config_settings:python_version=X.Y.Z`.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
@@ -84,13 +93,6 @@ A brief description of the categories of changes:
 * (config_settings) Added `//python/config_settings:is_python_X.Y` config
   settings to match on minor Python version. These settings match any `X.Y`
   version instead of just an exact `X.Y.Z` version.
-
-* (whl_library) *experimental_target_platforms* now supports specifying the
-  Python version explicitly and the output `BUILD.bazel` file will be correct
-  irrespective of the python interpreter that is generating the file and
-  extracting the `whl` distribution. This could help wheel-only setups where
-  the host Python interpreter can be used to extract all of the wheels for
-  the target platforms.
 
 ## [0.28.0] - 2024-01-07
 
