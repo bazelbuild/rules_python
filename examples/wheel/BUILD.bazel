@@ -278,6 +278,7 @@ write_file(
 --index-url https://pypi.com
 
 tomli>=2.0.0
+starlark  # Example comment
 """.splitlines(),
 )
 
@@ -290,7 +291,7 @@ write_file(
 
 pyyaml>=6.0.0,!=6.0.1
 toml; (python_version == "3.11" or python_version == "3.12") and python_version != "3.8"
-wheel; python_version == "3.11" or python_version == "3.12"
+wheel; python_version == "3.11" or python_version == "3.12"  # Example comment
 """.splitlines(),
 )
 

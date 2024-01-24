@@ -531,13 +531,23 @@ def main() -> None:
                 if not reqs_text or reqs_text.startswith(("#", "-")):
                     continue
 
-                req = Requirement(reqs_text)
+                # Strip any comments
+                reqs_text, _, _ = reqs_text.partition("#")
+
+                req = Requirement(reqs_text.strip())
                 if req.marker:
-                    reqs.append(
-                        f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
-                    )
+                    if extra:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
+                        )
+                    else:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
+                        )
                 else:
-                    reqs.append(f"Requires-Dist: {req.name}{req.specifier}; {extra}")
+                    reqs.append(
+                        f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
+                    )
 
             metadata = metadata.replace(meta_line, "\n".join(reqs))
 

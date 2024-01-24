@@ -458,7 +458,8 @@ Tag: cp38-abi3-{os_string}_{arch}
             print(requires)
             self.assertEqual(
                 [
-                    "Requires-Dist: tomli>=2.0.0;",
+                    "Requires-Dist: tomli>=2.0.0",
+                    "Requires-Dist: starlark",
                     "Requires-Dist: pyyaml!=6.0.1,>=6.0.0; extra == 'example'",
                     'Requires-Dist: toml; ((python_version == "3.11" or python_version == "3.12") and python_version != "3.8") and extra == \'example\'',
                     'Requires-Dist: wheel; (python_version == "3.11" or python_version == "3.12") and extra == \'example\'',
