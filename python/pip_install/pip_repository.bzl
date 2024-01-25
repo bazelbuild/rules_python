@@ -493,13 +493,19 @@ WARNING: It may not work as expected in cases where the python interpreter
 implementation that is being used at runtime is different between different platforms.
 This has been tested for CPython only.
 
-Special values: `all` (for generating deps for all platforms), `host` (for
-generating deps for the host platform only). `linux_*` and other `<os>_*` values.
-In the future we plan to set `all` as the default to this attribute.
-
 For specific target platforms use values of the form `<os>_<arch>` where `<os>`
 is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
 `aarch64`, `s390x` and `ppc64le`.
+
+You can also target a specific Python version by using `cp3<minor_version>_<os>_<arch>`.
+If multiple python versions are specified as target platforms, then select statements
+of the `lib` and `whl` targets will include usage of version aware toolchain config 
+settings like `@rules_python//python/config_settings:is_python_3.y`.
+
+Special values: `host` (for generating deps for the host platform only) and
+`<prefix>_*` values. For example, `cp39_*`, `linux_*`, `cp39_linux_*`.
+
+NOTE: this is not for cross-compiling Python wheels but rather for parsing the `whl` METADATA correctly.
 """,
     ),
     "extra_pip_args": attr.string_list(
@@ -749,7 +755,7 @@ def _whl_library_impl(rctx):
             # NOTE @aignas 2023-12-04: if the wheel is a platform specific
             # wheel, we only include deps for that target platform
             target_platforms = [
-                "{}_{}".format(p.os, p.cpu)
+                "{}_{}_{}".format(parsed_whl.abi_tag, p.os, p.cpu)
                 for p in whl_target_platforms(parsed_whl.platform_tag)
             ]
 
