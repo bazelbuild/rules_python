@@ -207,12 +207,19 @@ bzl_library(
 )
 
 bzl_library(
+    name = "toolchain_defs_bzl",
+    srcs = ["toolchain_defs.bzl"],
+    deps = [
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
     name = "toolchains_repo_bzl",
     srcs = ["toolchains_repo.bzl"],
     deps = [
         ":which_bzl",
         "//python:versions_bzl",
-        "@bazel_skylib//lib:selects",
     ],
 )
 
