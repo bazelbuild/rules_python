@@ -58,18 +58,15 @@ def python_toolchain_build_file_content(
     # We create a list of toolchain content from iterating over
     # the enumeration of PLATFORMS.  We enumerate PLATFORMS in
     # order to get us an index to increment the increment.
-    return "".join([
-        """
-load("@rules_python//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
-
+    return "\n\n".join([
+        """\
 py_toolchain_suite(
     user_repository_name = "{user_repository_name}_{platform}",
     prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
     python_version = "{python_version}",
     set_python_version_constraint = "{set_python_version_constraint}",
-)
-""".format(
+)""".format(
             compatible_with = meta.compatible_with,
             platform = platform,
             set_python_version_constraint = set_python_version_constraint,
@@ -89,7 +86,12 @@ def _toolchains_repo_impl(rctx):
 # python_register_toolchains macro so you don't normally need to interact with
 # these targets.
 
-"""
+load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
+
+""".format(
+        rules_python = rctx.attr._rules_python_workspace.workspace_name,
+    )
+
     toolchains = python_toolchain_build_file_content(
         prefix = "",
         python_version = rctx.attr.python_version,
