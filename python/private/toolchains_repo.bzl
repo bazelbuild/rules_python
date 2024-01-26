@@ -60,9 +60,9 @@ def python_toolchain_build_file_content(
     # order to get us an index to increment the increment.
     return "".join([
         """
-load("@rules_python//python/private:toolchain_defs.bzl", "toolchain_defs")
+load("@rules_python//python/private:toolchain_suite.bzl", "toolchain_suite")
 
-toolchain_defs(
+toolchain_suite(
     user_repository_name = "{user_repository_name}_{platform}",
     prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
