@@ -30,7 +30,7 @@ def _have_same_length(*lists):
 
 _HUB_BUILD_FILE_TEMPLATE = """\
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@@{rules_python}//python/private:toolchain_defs.bzl", "toolchain_defs")
+load("@@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
 
 bzl_library(
     name = "interpreters_bzl",

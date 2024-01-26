@@ -73,6 +73,6 @@ bzl_library(
     deps = [
         "//python:versions_bzl",
         "//python/private:full_version_bzl",
-        "//python/private:toolchain_defs_bzl",
+        "//python/private:py_toolchain_suite_bzl",
     ],
 )

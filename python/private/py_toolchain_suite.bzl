@@ -19,7 +19,7 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 _py_toolchain_type = Label("@bazel_tools//tools/python:toolchain_type")
 _py_cc_toolchain_type = Label("//python/cc:toolchain_type")
 
-def toolchain_defs(*, prefix, user_repository_name, python_version, set_python_version_constraint, **kwargs):
+def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, **kwargs):
     """For internal use only.
 
     Args:
