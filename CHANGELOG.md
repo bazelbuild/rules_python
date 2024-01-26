@@ -35,12 +35,22 @@ A brief description of the categories of changes:
 
 * (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
 
+* (whl_library) *experimental_target_platforms* now supports specifying the
+  Python version explicitly and the output `BUILD.bazel` file will be correct
+  irrespective of the python interpreter that is generating the file and
+  extracting the `whl` distribution. Multiple python target version can be
+  specified and the code generation will generate version specific dependency
+  closures but that is not yet ready to be used and may break the build if
+  the default python version is not selected using
+  `common --@rules_python//python/config_settings:python_version=X.Y.Z`.
+
 * (toolchain) Allow setting `x.y` as the `python_version` parameter in
   `py_binary` and `py_test` with transitions. This allows the users to
   use the same rule import for testing with specific Python versions and
   rely on toolchain configuration and how the latest version takes precedence
   if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
   that set the default `python_version` string flag in that way.
+
 
 ## 0.29.0 - 2024-01-22
 
@@ -66,6 +76,7 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files; Follow
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
   platform-specific content in `MODULE.bazel.lock` files.
+
 * (wheel) The stamp variables inside the distribution name are no longer
   lower-cased when normalizing under PEP440 conventions.
 
