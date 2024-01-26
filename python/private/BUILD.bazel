@@ -207,8 +207,8 @@ bzl_library(
 )
 
 bzl_library(
-    name = "toolchain_suite_bzl",
-    srcs = ["toolchain_suite.bzl"],
+    name = "toolchain_defs_bzl",
+    srcs = ["toolchain_defs.bzl"],
     deps = [
         "@bazel_skylib//lib:selects",
     ],
