@@ -2,7 +2,7 @@ load("@python_versions//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_
 load("@python_versions//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@python_versions//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
-load("@rules_python//python/config_settings:transition.bzl", cross_py_binary = "py_binary", cross_py_test = "py_test")
+load("@rules_python//python/config_settings:transition.bzl", py_versioned_binary = "py_binary", py_versioned_test = "py_test")
 
 py_binary(
     name = "version_default",
@@ -28,7 +28,7 @@ py_binary_3_11(
     main = "version.py",
 )
 
-cross_py_binary(
+py_versioned_binary(
     name = "version_3_10_cross",
     srcs = ["version.py"],
     main = "version.py",
@@ -60,7 +60,7 @@ py_test_3_10(
     deps = ["//libs/my_lib"],
 )
 
-cross_py_test(
+py_versioned_test(
     name = "my_lib_cross_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
@@ -89,7 +89,7 @@ py_test_3_10(
     main = "version_test.py",
 )
 
-cross_py_test(
+py_versioned_test(
     name = "version_cross_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.10"},
@@ -128,7 +128,7 @@ py_test_3_10(
     main = "cross_version_test.py",
 )
 
-cross_py_test(
+py_versioned_test(
     name = "version_3_10_takes_3_9_subprocess_test_2",
     srcs = ["cross_version_test.py"],
     data = [":version_3_9"],
