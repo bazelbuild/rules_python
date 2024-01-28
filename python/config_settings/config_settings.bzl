@@ -17,6 +17,7 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("//python:versions.bzl", "MINOR_MAPPING")
 
 def construct_config_settings(name, python_versions):
     """Constructs a set of configs for all Python versions.
@@ -61,14 +62,39 @@ def construct_config_settings(name, python_versions):
         )
         matches_minor_version_names = [equals_minor_version_name]
 
+        default_micro_version = MINOR_MAPPING.get(minor_version)
+
         for micro_version in micro_versions:
             is_micro_version_name = "is_python_" + micro_version
+            if not default_micro_version:
+                native.config_setting(
+                    name = is_micro_version_name,
+                    flag_values = {":python_version": micro_version},
+                    visibility = ["//visibility:public"],
+                )
+                matches_minor_version_names.append(is_micro_version_name)
+                continue
+
+            # Ensure that is_python_3.9.8 is matched if python_version is set
+            # to 3.9 if MINOR_MAPPING points to 3.9.8
+            equals_micro_name = "_python_version_flag_equals_" + micro_version
             native.config_setting(
-                name = is_micro_version_name,
+                name = equals_micro_name,
                 flag_values = {":python_version": micro_version},
+            )
+            selects.config_setting_group(
+                name = "_" + is_micro_version_name,
+                match_any = [
+                    equals_micro_name,
+                    equals_minor_version_name,
+                ],
+            )
+            native.alias(
+                name = is_micro_version_name,
+                actual = "_is_python_" + minor_version,
                 visibility = ["//visibility:public"],
             )
-            matches_minor_version_names.append(is_micro_version_name)
+            matches_minor_version_names.append(equals_micro_name)
 
         # This is prefixed with an underscore to prevent confusion due to how
         # config_setting_group is implemented and how our micro-version targets

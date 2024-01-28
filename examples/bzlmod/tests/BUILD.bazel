@@ -2,6 +2,7 @@ load("@python_versions//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_
 load("@python_versions//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@python_versions//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_python//python:versions.bzl", "MINOR_MAPPING")
 load("@rules_python//python/config_settings:transition.bzl", py_versioned_binary = "py_binary", py_versioned_test = "py_test")
 
 py_binary(
@@ -29,7 +30,7 @@ py_binary_3_11(
 )
 
 py_versioned_binary(
-    name = "version_3_10_cross",
+    name = "version_3_10_versioned",
     srcs = ["version.py"],
     main = "version.py",
     python_version = "3.10",
@@ -61,11 +62,16 @@ py_test_3_10(
 )
 
 py_versioned_test(
-    name = "my_lib_cross_test",
+    name = "my_lib_versioned_test",
     srcs = ["my_lib_test.py"],
     main = "my_lib_test.py",
     python_version = "3.10",
-    deps = ["//libs/my_lib"],
+    deps = select({
+        # Ensure that we are compatible with the full version select statement, if we
+        # are not then the dep will not be present and the test will fail.
+        "@rules_python//python/config_settings:is_python_" + MINOR_MAPPING["3.10"]: ["//libs/my_lib"],
+        "//conditions:default": [],
+    }),
 )
 
 py_test(
@@ -90,7 +96,7 @@ py_test_3_10(
 )
 
 py_versioned_test(
-    name = "version_cross_test",
+    name = "version_versioned_test",
     srcs = ["version_test.py"],
     env = {"VERSION_CHECK": "3.10"},
     main = "version_test.py",
@@ -106,38 +112,38 @@ py_test_3_11(
 
 py_test(
     name = "version_default_takes_3_10_subprocess_test",
-    srcs = ["cross_version_test.py"],
+    srcs = ["versioned_version_test.py"],
     data = [":version_3_10"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.10",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_10)",
         "VERSION_CHECK": "3.9",
     },
-    main = "cross_version_test.py",
+    main = "versioned_version_test.py",
 )
 
 py_test_3_10(
     name = "version_3_10_takes_3_9_subprocess_test",
-    srcs = ["cross_version_test.py"],
+    srcs = ["versioned_version_test.py"],
     data = [":version_3_9"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.9",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_9)",
         "VERSION_CHECK": "3.10",
     },
-    main = "cross_version_test.py",
+    main = "versioned_version_test.py",
 )
 
 py_versioned_test(
     name = "version_3_10_takes_3_9_subprocess_test_2",
-    srcs = ["cross_version_test.py"],
+    srcs = ["versioned_version_test.py"],
     data = [":version_3_9"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.9",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_9)",
         "VERSION_CHECK": "3.10",
     },
-    main = "cross_version_test.py",
+    main = "versioned_version_test.py",
     python_version = "3.10",
 )
 
