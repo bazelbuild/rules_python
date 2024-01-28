@@ -369,6 +369,19 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.12.1": {
+        "url": "20240107/cpython-{python_version}+20240107-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "f93f8375ca6ac0a35d58ff007043cbd3a88d9609113f1cb59cf7c8d215f064af",
+            "aarch64-unknown-linux-gnu": "236533ef20e665007a111c2f36efb59c87ae195ad7dca223b6dc03fb07064f0b",
+            "ppc64le-unknown-linux-gnu": "78051f0d1411ee62bc2af5edfccf6e8400ac4ef82887a2affc19a7ace6a05267",
+            "s390x-unknown-linux-gnu": "60631211c701f8d2c56e5dd7b154e68868128a019b9db1d53a264f56c0d4aee2",
+            "x86_64-apple-darwin": "eca96158c1568dedd9a0b3425375637a83764d1fa74446438293089a8bfac1f8",
+            "x86_64-pc-windows-msvc": "fd5a9e0f41959d0341246d3643f2b8794f638adc0cec8dd5e1b6465198eae08a",
+            "x86_64-unknown-linux-gnu": "74e330b8212ca22fd4d9a2003b9eec14892155566738febc8e5e572f267b9472",
+        },
+        "strip_prefix": "python",
+    },
 }
 
 # buildifier: disable=unsorted-dict-items
@@ -377,7 +390,7 @@ MINOR_MAPPING = {
     "3.9": "3.9.18",
     "3.10": "3.10.13",
     "3.11": "3.11.6",
-    "3.12": "3.12.0",
+    "3.12": "3.12.1",
 }
 
 PLATFORMS = {
@@ -455,7 +468,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
 
     Args:
         platform: The platform string for the interpreter
-        python_version: The version of the intterpreter to get
+        python_version: The version of the interpreter to get
         base_url: The URL to prepend to the 'url' attr in the tool_versions dict
         tool_versions: A dict listing the interpreter versions, their SHAs and URL
 
