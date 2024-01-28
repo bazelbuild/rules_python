@@ -44,6 +44,9 @@ A brief description of the categories of changes:
   the default python version is not selected using
   `common --@rules_python//python/config_settings:python_version=X.Y.Z`.
 
+* New Python versions available: `3.11.7`, `3.12.1` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20240107.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
