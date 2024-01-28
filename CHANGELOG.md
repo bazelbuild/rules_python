@@ -44,13 +44,15 @@ A brief description of the categories of changes:
   the default python version is not selected using
   `common --@rules_python//python/config_settings:python_version=X.Y.Z`.
 
+* New Python versions available: `3.11.7`, `3.12.1` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20240107.
+
 * (toolchain) Allow setting `x.y` as the `python_version` parameter in
   `py_binary` and `py_test` with transitions. This allows the users to
   use the same rule import for testing with specific Python versions and
   rely on toolchain configuration and how the latest version takes precedence
   if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
   that set the default `python_version` string flag in that way.
-
 
 ## 0.29.0 - 2024-01-22
 
