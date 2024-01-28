@@ -356,6 +356,19 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.11.7": {
+        "url": "20240107/cpython-{python_version}+20240107-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "b042c966920cf8465385ca3522986b12d745151a72c060991088977ca36d3883",
+            "aarch64-unknown-linux-gnu": "b102eaf865eb715aa98a8a2ef19037b6cc3ae7dfd4a632802650f29de635aa13",
+            "ppc64le-unknown-linux-gnu": "b44e1b74afe75c7b19143413632c4386708ae229117f8f950c2094e9681d34c7",
+            "s390x-unknown-linux-gnu": "49520e3ff494708020f306e30b0964f079170be83e956be4504f850557378a22",
+            "x86_64-apple-darwin": "a0e615eef1fafdc742da0008425a9030b7ea68a4ae4e73ac557ef27b112836d4",
+            "x86_64-pc-windows-msvc": "67077e6fa918e4f4fd60ba169820b00be7c390c497bf9bc9cab2c255ea8e6f3e",
+            "x86_64-unknown-linux-gnu": "4a51ce60007a6facf64e5495f4cf322e311ba9f39a8cd3f3e4c026eae488e140",
+        },
+        "strip_prefix": "python",
+    },
     "3.12.0": {
         "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
         "sha256": {
@@ -389,7 +402,7 @@ MINOR_MAPPING = {
     "3.8": "3.8.18",
     "3.9": "3.9.18",
     "3.10": "3.10.13",
-    "3.11": "3.11.6",
+    "3.11": "3.11.7",
     "3.12": "3.12.1",
 }
 
