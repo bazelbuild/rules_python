@@ -48,6 +48,7 @@ fi
 # container.
 docker run \
   --rm \
+  --platform="${DOCKER_PLATFORM}" \
   --tty \
   --env BUILD_WORKSPACE_DIRECTORY="${BUILD_WORKSPACE_DIRECTORY}" \
   --network="host" \
