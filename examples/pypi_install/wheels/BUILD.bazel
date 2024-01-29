@@ -17,6 +17,7 @@ load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
     "pkg_b",
     "pkg_c",
     "pkg_d",
+    "pkg_e",
 )]
 
 
@@ -33,7 +34,11 @@ py_wheel(
     name = "pkg_b",
     distribution = "pkg-b",
     version = "1.1",
-    requires = ["pkg-c", "pkg-d"],
+    requires = [
+        "pkg-c",
+        "pkg-d",
+        'pkg-e ; platform_machine == "aarch64"',
+    ],
     deps = [":pkg_b_py_package"],
     strip_path_prefixes = ["wheels/src"],
 )
@@ -55,6 +60,15 @@ py_wheel(
     strip_path_prefixes = ["wheels/src"],
 )
 
+# aarch64-specific.
+py_wheel(
+    name = "pkg_e",
+    distribution = "pkg-e",
+    version = "4.0",
+    deps = [":pkg_e_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
 py_binary(
     name = "pypiserver_runner",
     srcs = ["pypiserver_runner.py"],
@@ -66,6 +80,7 @@ py_binary(
         ":pkg_b",
         ":pkg_c",
         ":pkg_d",
+        ":pkg_e",
         "@rules_python//python/runfiles",
     ],
 )

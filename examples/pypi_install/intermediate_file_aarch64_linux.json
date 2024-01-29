@@ -11,7 +11,7 @@
     "pkg-b": {
         "@//:aarch64_linux": {
             "url": "http://localhost:8989/packages/pkg_b-1.1-py3-none-any.whl",
-            "sha256": "a03f9ddf7d79dead3c9527f3028a531a1787f50b892e76344cfdba395c120bcc",
+            "sha256": "0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3",
             "deps": [
                 "pkg-c",
                 "pkg-d"

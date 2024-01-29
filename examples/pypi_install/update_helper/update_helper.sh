@@ -57,4 +57,4 @@ docker run \
   "$@"
 
 # Fix permissions.
-sudo chown -R "${USER}:${USER}" bazel-bin/
+sudo chown -R "${USER}:${USER}" "${BUILD_WORKSPACE_DIRECTORY}/bazel-bin/" || :

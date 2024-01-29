@@ -10,7 +10,7 @@ pkg-a==1.0 \
     --hash=sha256:d69d2e3d0ae4c2553808b3045997526e1cdd9cd326af69e764ae07ff8a5b8ab1
     # via -r requirements.in
 pkg-b==1.1 \
-    --hash=sha256:a03f9ddf7d79dead3c9527f3028a531a1787f50b892e76344cfdba395c120bcc
+    --hash=sha256:0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3
     # via
     #   pkg-a
     #   pkg-d
