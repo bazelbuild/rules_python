@@ -14,6 +14,7 @@ WHEELS = (
     "pkg_b-1.1-py3-none-any.whl",
     "pkg_c-2.0-py3-none-any.whl",
     "pkg_d-3.0-py3-none-any.whl",
+    "pkg_e-4.0-py3-none-any.whl",
 )
 
 def main():

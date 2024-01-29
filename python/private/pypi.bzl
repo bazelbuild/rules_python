@@ -79,7 +79,7 @@ def _accumulate_transitive_deps_inner(intermediate, configs, package, already_ac
             dep = sets.to_list(pending_deps)[0]
             sets.remove(pending_deps, dep)
 
-            deps = intermediate[dep].get(config, "//conditions:default").get("deps", [])
+            deps = intermediate[dep].get(config, {"//conditions:default": {}}).get("deps", [])
             new_deps = sets.difference(sets.make(deps), already_accumulated[config])
             new_deps = sets.difference(new_deps, pending_deps)
             already_accumulated[config] = sets.union(already_accumulated[config], new_deps)

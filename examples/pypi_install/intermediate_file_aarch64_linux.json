@@ -14,7 +14,8 @@
             "sha256": "0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3",
             "deps": [
                 "pkg-c",
-                "pkg-d"
+                "pkg-d",
+                "pkg-e"
             ]
         }
     },
@@ -32,6 +33,13 @@
             "deps": [
                 "pkg-b"
             ]
+        }
+    },
+    "pkg-e": {
+        "@//:aarch64_linux": {
+            "url": "http://localhost:8989/packages/pkg_e-4.0-py3-none-any.whl",
+            "sha256": "ad6b3c87ed3bf7ae7175cd1ecc19e57e22540863ea2fc565db85b4c459d748f7",
+            "deps": []
         }
     }
 }

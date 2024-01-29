@@ -20,3 +20,6 @@ pkg-c==2.0 \
 pkg-d==3.0 \
     --hash=sha256:f8c16f8099eff9d0c0e409ea53471e7c56cdb700348ba314969fe490c3dce2f2
     # via pkg-b
+pkg-e==4.0 \
+    --hash=sha256:ad6b3c87ed3bf7ae7175cd1ecc19e57e22540863ea2fc565db85b4c459d748f7
+    # via pkg-b
