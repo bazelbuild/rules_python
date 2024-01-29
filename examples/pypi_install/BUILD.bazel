@@ -1,5 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
 py_binary(
@@ -67,9 +68,13 @@ genquery(
     scope = ["@pypi//pkg_a"],
 )
 
+# TODO(phil): This doesn't work. Find a way to make this work.
+#IS_BAZEL_6 = versions.parse(versions.get())[0] < 7
+
 diff_test(
     name = "pkg_a_deps_test",
     file1 = ":pkg_a_deps",
+    #file2 = "pkg_a_deps_bazel_6.txt" if IS_BAZEL_6 else "pkg_a_deps.txt",
     file2 = "pkg_a_deps.txt",
 )
 
@@ -83,5 +88,6 @@ genquery(
 diff_test(
     name = "pkg_d_deps_test",
     file1 = ":pkg_d_deps",
+    #file2 = "pkg_d_deps_bazel_6.txt" if IS_BAZEL_6 else "pkg_d_deps.txt",
     file2 = "pkg_d_deps.txt",
 )
