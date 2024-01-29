@@ -192,44 +192,6 @@ second = second.main:s""",
             filename, "48eed93258bba0bb366c879b77917d947267d89e7e60005d1766d844fb909118"
         )
 
-    def test_legacy_filename_escaping(self):
-        filename = self._get_path(
-            "file_name_escaping-0.0.1_r7-py3-none-any.whl",
-        )
-        with zipfile.ZipFile(filename) as zf:
-            self.assertAllEntriesHasReproducibleMetadata(zf)
-            self.assertEqual(
-                zf.namelist(),
-                [
-                    "examples/wheel/lib/data.txt",
-                    "examples/wheel/lib/module_with_data.py",
-                    "examples/wheel/lib/simple_module.py",
-                    "examples/wheel/main.py",
-                    # PEP calls for replacing only in the archive filename.
-                    # Alas setuptools also escapes in the dist-info directory
-                    # name, so let's be compatible.
-                    "file_name_escaping-0.0.1_r7.dist-info/WHEEL",
-                    "file_name_escaping-0.0.1_r7.dist-info/METADATA",
-                    "file_name_escaping-0.0.1_r7.dist-info/RECORD",
-                ],
-            )
-            metadata_contents = zf.read(
-                "file_name_escaping-0.0.1_r7.dist-info/METADATA"
-            )
-            self.assertEqual(
-                metadata_contents,
-                b"""\
-Metadata-Version: 2.1
-Name: file~~name-escaping
-Version: 0.0.1-r7
-
-UNKNOWN
-""",
-            )
-        self.assertFileSha256Equal(
-            filename, "ace5fab6458f8c3b4b50801b8e8214288bba786472e81547fced743a67531312"
-        )
-
     def test_filename_escaping(self):
         filename = self._get_path(
             "file_name_escaping-0.0.1rc1+ubuntu.r7-py3-none-any.whl",
@@ -450,15 +412,15 @@ Tag: cp38-abi3-{os_string}_{arch}
 
     def test_rule_expands_workspace_status_keys_in_wheel_metadata(self):
         filename = self._get_path(
-            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl"
+            "example_minimal_library{BUILD_USER}-0.1.{BUILD_TIMESTAMP}-py3-none-any.whl"
         )
 
         with zipfile.ZipFile(filename) as zf:
             self.assertAllEntriesHasReproducibleMetadata(zf)
             metadata_file = None
             for f in zf.namelist():
-                self.assertNotIn("_BUILD_TIMESTAMP_", f)
-                self.assertNotIn("_BUILD_USER_", f)
+                self.assertNotIn("{BUILD_TIMESTAMP}", f)
+                self.assertNotIn("{BUILD_USER}", f)
                 if os.path.basename(f) == "METADATA":
                     metadata_file = f
             self.assertIsNotNone(metadata_file)
@@ -475,6 +437,35 @@ Tag: cp38-abi3-{os_string}_{arch}
             self.assertIsNotNone(name)
             self.assertNotIn("{BUILD_TIMESTAMP}", version)
             self.assertNotIn("{BUILD_USER}", name)
+
+    def test_requires_file_and_extra_requires_files(self):
+        filename = self._get_path("requires_files-0.0.1-py3-none-any.whl")
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertAllEntriesHasReproducibleMetadata(zf)
+            metadata_file = None
+            for f in zf.namelist():
+                if os.path.basename(f) == "METADATA":
+                    metadata_file = f
+            self.assertIsNotNone(metadata_file)
+
+            requires = []
+            with zf.open(metadata_file) as fp:
+                for line in fp:
+                    if line.startswith(b"Requires-Dist:"):
+                        requires.append(line.decode("utf-8").strip())
+
+            print(requires)
+            self.assertEqual(
+                [
+                    "Requires-Dist: tomli>=2.0.0",
+                    "Requires-Dist: starlark",
+                    "Requires-Dist: pyyaml!=6.0.1,>=6.0.0; extra == 'example'",
+                    'Requires-Dist: toml; ((python_version == "3.11" or python_version == "3.12") and python_version != "3.8") and extra == \'example\'',
+                    'Requires-Dist: wheel; (python_version == "3.11" or python_version == "3.12") and extra == \'example\'',
+                ],
+                requires,
+            )
 
 
 if __name__ == "__main__":

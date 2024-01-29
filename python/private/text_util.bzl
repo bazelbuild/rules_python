@@ -20,26 +20,33 @@ def _indent(text, indent = " " * 4):
 
     return "\n".join([indent + line for line in text.splitlines()])
 
-def _render_alias(name, actual):
+def _render_alias(name, actual, *, visibility = None):
+    args = [
+        "name = \"{}\",".format(name),
+        "actual = {},".format(actual),
+    ]
+
+    if visibility:
+        args.append("visibility = {},".format(render.list(visibility)))
+
     return "\n".join([
         "alias(",
-        _indent("name = \"{}\",".format(name)),
-        _indent("actual = {},".format(actual)),
+    ] + [_indent(arg) for arg in args] + [
         ")",
     ])
 
-def _render_dict(d):
+def _render_dict(d, *, value_repr = repr):
     return "\n".join([
         "{",
         _indent("\n".join([
-            "{}: {},".format(repr(k), repr(v))
+            "{}: {},".format(repr(k), value_repr(v))
             for k, v in d.items()
         ])),
         "}",
     ])
 
-def _render_select(selects, *, no_match_error = None):
-    dict_str = _render_dict(selects) + ","
+def _render_select(selects, *, no_match_error = None, value_repr = repr):
+    dict_str = _render_dict(selects, value_repr = value_repr) + ","
 
     if no_match_error:
         args = "\n".join([
@@ -58,6 +65,12 @@ def _render_select(selects, *, no_match_error = None):
     return "select({})".format(args)
 
 def _render_list(items):
+    if not items:
+        return "[]"
+
+    if len(items) == 1:
+        return "[{}]".format(repr(items[0]))
+
     return "\n".join([
         "[",
         _indent("\n".join([

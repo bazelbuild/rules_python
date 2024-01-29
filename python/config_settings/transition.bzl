@@ -18,8 +18,11 @@ them to the desired target platform.
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//python:py_binary.bzl", _py_binary = "py_binary")
+load("//python:py_info.bzl", "PyInfo")
+load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load("//python:py_test.bzl", _py_test = "py_test")
 load("//python/config_settings/private:py_args.bzl", "py_args")
+load("//python/private:reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 
 def _transition_python_version_impl(_, attr):
     return {"//python/config_settings:python_version": str(attr.python_version)}
@@ -60,14 +63,28 @@ def _transition_py_impl(ctx):
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
 
+    if PyInfo in target:
+        py_info = target[PyInfo]
+    elif BuiltinPyInfo in target:
+        py_info = target[BuiltinPyInfo]
+    else:
+        fail("target {} does not have rules_python PyInfo or builtin PyInfo".format(target))
+
+    if PyRuntimeInfo in target:
+        py_runtime_info = target[PyRuntimeInfo]
+    elif BuiltinPyRuntimeInfo in target:
+        py_runtime_info = target[BuiltinPyRuntimeInfo]
+    else:
+        fail("target {} does not have rules_python PyRuntimeInfo or builtin PyRuntimeInfo".format(target))
+
     providers = [
         DefaultInfo(
             executable = executable,
             files = depset([zipfile_symlink] if zipfile_symlink else [], transitive = [target[DefaultInfo].files]),
             runfiles = ctx.runfiles([zipfile_symlink] if zipfile_symlink else []).merge(target[DefaultInfo].default_runfiles),
         ),
-        target[PyInfo],
-        target[PyRuntimeInfo],
+        py_info,
+        py_runtime_info,
         # Ensure that the binary we're wrapping is included in code coverage.
         coverage_common.instrumented_files_info(
             ctx,
@@ -125,16 +142,33 @@ _COMMON_ATTRS = {
     ),
 }
 
+_PY_TEST_ATTRS = {
+    # Magic attribute to help C++ coverage work. There's no
+    # docs about this; see TestActionBuilder.java
+    "_collect_cc_coverage": attr.label(
+        default = "@bazel_tools//tools/test:collect_cc_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
+    # Magic attribute to make coverage work. There's no
+    # docs about this; see TestActionBuilder.java
+    "_lcov_merger": attr.label(
+        default = configuration_field(fragment = "coverage", name = "output_generator"),
+        executable = True,
+        cfg = "exec",
+    ),
+}
+
 _transition_py_binary = rule(
     _transition_py_impl,
-    attrs = _COMMON_ATTRS,
+    attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     executable = True,
 )
 
 _transition_py_test = rule(
     _transition_py_impl,
-    attrs = _COMMON_ATTRS,
+    attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     test = True,
 )

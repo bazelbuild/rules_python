@@ -1,4 +1,4 @@
---extra-index-url https://pypi.python.org/simple/
+--extra-index-url https://pypi.org/simple/
 
 wheel
 websockets

@@ -105,7 +105,6 @@ def main(args: Any) -> None:
         patch_args = [
             args.patch_tool or Path.cwd() / args.patch_tool_target
         ] + args.patch_arg
-        patch_dir = args.patch_dir or "."
         for patch in args.patch:
             with patch.open("r") as stdin:
                 try:
@@ -115,7 +114,7 @@ def main(args: Any) -> None:
                         check=True,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
-                        cwd=args.directory / patch_dir,
+                        cwd=args.directory,
                     )
                 except subprocess.CalledProcessError as error:
                     print(f"Patch {patch} failed to apply:")
@@ -184,12 +183,6 @@ def parse_flags(argv) -> Any:
             "The path to the tool to invoke when applying patches. "
             "Ignored when --patch-tool is set."
         ),
-    )
-
-    parser.add_argument(
-        "--patch-dir",
-        type=str,
-        help="The directory from which to invoke the patch tool.",
     )
 
     return parser.parse_args(argv[1:])

@@ -9,8 +9,8 @@ py_test(
     name = "pip_whl_mods_test",
     srcs = ["pip_whl_mods_test.py"],
     env = {
-        "REQUESTS_PKG_DIR": "pip_39_requests",
-        "WHEEL_PKG_DIR": "pip_39_wheel",
+        "REQUESTS_PKG": "$(rlocationpaths @pip//requests:pkg)",
+        "WHEEL_PKG": "$(rlocationpaths @pip//wheel:pkg)",
     },
     main = "pip_whl_mods_test.py",
     deps = [

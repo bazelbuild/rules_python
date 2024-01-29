@@ -172,6 +172,9 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
         bzl_packages = list(whl_map.keys())
 
     contents = {}
+    if not bzl_packages:
+        return contents
+
     for name in bzl_packages:
         versions = None
         if whl_map != None:

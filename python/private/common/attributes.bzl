@@ -226,7 +226,7 @@ COMMON_ATTR_NAMES = [
     "testonly",
     "toolchains",
     "visibility",
-] + COMMON_ATTRS.keys()
+] + list(COMMON_ATTRS)  # Use list() instead .keys() so it's valid Python
 
 # Attribute names common to all test=True rules
 TEST_ATTR_NAMES = COMMON_ATTR_NAMES + [
@@ -236,10 +236,10 @@ TEST_ATTR_NAMES = COMMON_ATTR_NAMES + [
     "flaky",
     "shard_count",
     "local",
-] + AGNOSTIC_TEST_ATTRS.keys()
+] + list(AGNOSTIC_TEST_ATTRS)  # Use list() instead .keys() so it's valid Python
 
 # Attribute names common to all executable=True rules
 BINARY_ATTR_NAMES = COMMON_ATTR_NAMES + [
     "args",
     "output_licenses",  # NOTE: Common to all rules, but slated for removal
-] + AGNOSTIC_BINARY_ATTRS.keys()
+] + list(AGNOSTIC_BINARY_ATTRS)  # Use list() instead .keys() so it's valid Python

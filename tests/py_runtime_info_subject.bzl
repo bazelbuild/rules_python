@@ -31,12 +31,14 @@ def py_runtime_info_subject(info, *, meta):
     # buildifier: disable=uninitialized
     public = struct(
         # go/keep-sorted start
+        actual = info,
         bootstrap_template = lambda *a, **k: _py_runtime_info_subject_bootstrap_template(self, *a, **k),
         coverage_files = lambda *a, **k: _py_runtime_info_subject_coverage_files(self, *a, **k),
         coverage_tool = lambda *a, **k: _py_runtime_info_subject_coverage_tool(self, *a, **k),
         files = lambda *a, **k: _py_runtime_info_subject_files(self, *a, **k),
         interpreter = lambda *a, **k: _py_runtime_info_subject_interpreter(self, *a, **k),
         interpreter_path = lambda *a, **k: _py_runtime_info_subject_interpreter_path(self, *a, **k),
+        interpreter_version_info = lambda *a, **k: _py_runtime_info_subject_interpreter_version_info(self, *a, **k),
         python_version = lambda *a, **k: _py_runtime_info_subject_python_version(self, *a, **k),
         stub_shebang = lambda *a, **k: _py_runtime_info_subject_stub_shebang(self, *a, **k),
         # go/keep-sorted end
@@ -98,4 +100,17 @@ def _py_runtime_info_subject_stub_shebang(self):
     return subjects.str(
         self.actual.stub_shebang,
         meta = self.meta.derive("stub_shebang()"),
+    )
+
+def _py_runtime_info_subject_interpreter_version_info(self):
+    return subjects.struct(
+        self.actual.interpreter_version_info,
+        attrs = dict(
+            major = subjects.int,
+            minor = subjects.int,
+            micro = subjects.int,
+            releaselevel = subjects.str,
+            serial = subjects.int,
+        ),
+        meta = self.meta.derive("interpreter_version_info()"),
     )

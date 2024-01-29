@@ -19,6 +19,18 @@ load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")  # buildif
 
 _tests = []
 
+def _test_empty(env):
+    actual = render_pkg_aliases(
+        bzl_packages = None,
+        repo_name = "pypi",
+    )
+
+    want = {}
+
+    env.expect.that_dict(actual).contains_exactly(want)
+
+_tests.append(_test_empty)
+
 def _test_legacy_aliases(env):
     actual = render_pkg_aliases(
         bzl_packages = ["foo"],
@@ -73,11 +85,11 @@ _tests.append(_test_all_legacy_aliases_are_created)
 
 def _test_bzlmod_aliases(env):
     actual = render_pkg_aliases(
-        default_version = "3.2.3",
+        default_version = "3.2",
         repo_name = "pypi",
         rules_python = "rules_python",
         whl_map = {
-            "bar-baz": ["3.2.3"],
+            "bar-baz": ["3.2"],
         },
     )
 
@@ -94,7 +106,7 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:pkg",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
             "//conditions:default": "@pypi_32_bar_baz//:pkg",
         },
     ),
@@ -104,7 +116,7 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:whl",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
             "//conditions:default": "@pypi_32_bar_baz//:whl",
         },
     ),
@@ -114,7 +126,7 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:data",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
             "//conditions:default": "@pypi_32_bar_baz//:data",
         },
     ),
@@ -124,7 +136,7 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:dist_info",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
             "//conditions:default": "@pypi_32_bar_baz//:dist_info",
         },
     ),
@@ -141,7 +153,7 @@ def _test_bzlmod_aliases_with_no_default_version(env):
         repo_name = "pypi",
         rules_python = "rules_python",
         whl_map = {
-            "bar-baz": ["3.2.3", "3.1.3"],
+            "bar-baz": ["3.2", "3.1"],
         },
     )
 
@@ -154,7 +166,7 @@ No matching wheel for current configuration's Python version.
 
 The current build configuration's Python version doesn't match any of the Python
 versions available for this wheel. This wheel supports the following Python versions:
-    3.1.3, 3.2.3
+    3.1, 3.2
 
 As matched by the `@rules_python//python/config_settings:is_python_<version>`
 configuration settings.
@@ -177,8 +189,8 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:pkg",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:pkg",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -188,8 +200,8 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:whl",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:whl",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -199,8 +211,8 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:data",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:data",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -210,8 +222,8 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:dist_info",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:dist_info",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -224,11 +236,18 @@ _tests.append(_test_bzlmod_aliases_with_no_default_version)
 
 def _test_bzlmod_aliases_for_non_root_modules(env):
     actual = render_pkg_aliases(
-        default_version = "3.2.4",
+        # NOTE @aignas 2024-01-17: if the default X.Y version coincides with the
+        # versions that are used in the root module, then this would be the same as
+        # as _test_bzlmod_aliases.
+        #
+        # However, if the root module uses a different default version than the
+        # non-root module, then we will have a no-match-error because the default_version
+        # is not in the list of the versions in the whl_map.
+        default_version = "3.3",
         repo_name = "pypi",
         rules_python = "rules_python",
         whl_map = {
-            "bar-baz": ["3.2.3", "3.1.3"],
+            "bar-baz": ["3.2", "3.1"],
         },
     )
 
@@ -241,7 +260,7 @@ No matching wheel for current configuration's Python version.
 
 The current build configuration's Python version doesn't match any of the Python
 versions available for this wheel. This wheel supports the following Python versions:
-    3.1.3, 3.2.3
+    3.1, 3.2
 
 As matched by the `@rules_python//python/config_settings:is_python_<version>`
 configuration settings.
@@ -264,8 +283,8 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:pkg",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:pkg",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -275,8 +294,8 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:whl",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:whl",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -286,8 +305,8 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:data",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:data",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -297,8 +316,8 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1.3": "@pypi_31_bar_baz//:dist_info",
-            "@@rules_python//python/config_settings:is_python_3.2.3": "@pypi_32_bar_baz//:dist_info",
+            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
+            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -311,12 +330,12 @@ _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 
 def _test_bzlmod_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
-        default_version = "3.2.3",
+        default_version = "3.2",
         repo_name = "pypi",
         rules_python = "rules_python",
         whl_map = {
-            "bar": ["3.1.2", "3.2.3"],
-            "foo": ["3.1.2", "3.2.3"],
+            "bar": ["3.1", "3.2"],
+            "foo": ["3.1", "3.2"],
         },
     )
 

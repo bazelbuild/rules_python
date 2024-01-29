@@ -14,82 +14,116 @@
 
 """Runfiles lookup library for Bazel-built Python binaries and tests.
 
-See README.md for usage instructions.
+See @rules_python//python/runfiles/README.md for usage instructions.
 """
 import inspect
 import os
 import posixpath
 import sys
-
-if False:
-    # Mypy needs these symbols imported, but since they only exist in python 3.5+,
-    # this import may fail at runtime. Luckily mypy can follow this conditional import.
-    from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 
-def CreateManifestBased(manifest_path):
-    # type: (str) -> _Runfiles
-    return _Runfiles(_ManifestBased(manifest_path))
+class _ManifestBased:
+    """`Runfiles` strategy that parses a runfiles-manifest to look up runfiles."""
+
+    def __init__(self, path: str) -> None:
+        if not path:
+            raise ValueError()
+        if not isinstance(path, str):
+            raise TypeError()
+        self._path = path
+        self._runfiles = _ManifestBased._LoadRunfiles(path)
+
+    def RlocationChecked(self, path: str) -> Optional[str]:
+        """Returns the runtime path of a runfile."""
+        exact_match = self._runfiles.get(path)
+        if exact_match:
+            return exact_match
+        # If path references a runfile that lies under a directory that
+        # itself is a runfile, then only the directory is listed in the
+        # manifest. Look up all prefixes of path in the manifest and append
+        # the relative path from the prefix to the looked up path.
+        prefix_end = len(path)
+        while True:
+            prefix_end = path.rfind("/", 0, prefix_end - 1)
+            if prefix_end == -1:
+                return None
+            prefix_match = self._runfiles.get(path[0:prefix_end])
+            if prefix_match:
+                return prefix_match + "/" + path[prefix_end + 1 :]
+
+    @staticmethod
+    def _LoadRunfiles(path: str) -> Dict[str, str]:
+        """Loads the runfiles manifest."""
+        result = {}
+        with open(path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    tokens = line.split(" ", 1)
+                    if len(tokens) == 1:
+                        result[line] = line
+                    else:
+                        result[tokens[0]] = tokens[1]
+        return result
+
+    def _GetRunfilesDir(self) -> str:
+        if self._path.endswith("/MANIFEST") or self._path.endswith("\\MANIFEST"):
+            return self._path[: -len("/MANIFEST")]
+        if self._path.endswith(".runfiles_manifest"):
+            return self._path[: -len("_manifest")]
+        return ""
+
+    def EnvVars(self) -> Dict[str, str]:
+        directory = self._GetRunfilesDir()
+        return {
+            "RUNFILES_MANIFEST_FILE": self._path,
+            "RUNFILES_DIR": directory,
+            # TODO(laszlocsomor): remove JAVA_RUNFILES once the Java launcher can
+            # pick up RUNFILES_DIR.
+            "JAVA_RUNFILES": directory,
+        }
 
 
-def CreateDirectoryBased(runfiles_dir_path):
-    # type: (str) -> _Runfiles
-    return _Runfiles(_DirectoryBased(runfiles_dir_path))
+class _DirectoryBased:
+    """`Runfiles` strategy that appends runfiles paths to the runfiles root."""
+
+    def __init__(self, path: str) -> None:
+        if not path:
+            raise ValueError()
+        if not isinstance(path, str):
+            raise TypeError()
+        self._runfiles_root = path
+
+    def RlocationChecked(self, path: str) -> str:
+        # Use posixpath instead of os.path, because Bazel only creates a runfiles
+        # tree on Unix platforms, so `Create()` will only create a directory-based
+        # runfiles strategy on those platforms.
+        return posixpath.join(self._runfiles_root, path)
+
+    def EnvVars(self) -> Dict[str, str]:
+        return {
+            "RUNFILES_DIR": self._runfiles_root,
+            # TODO(laszlocsomor): remove JAVA_RUNFILES once the Java launcher can
+            # pick up RUNFILES_DIR.
+            "JAVA_RUNFILES": self._runfiles_root,
+        }
 
 
-def Create(env=None):
-    # type: (Optional[Dict[str, str]]) -> Optional[_Runfiles]
-    """Returns a new `Runfiles` instance.
-
-    The returned object is either:
-    - manifest-based, meaning it looks up runfile paths from a manifest file, or
-    - directory-based, meaning it looks up runfile paths under a given directory
-      path
-
-    If `env` contains "RUNFILES_MANIFEST_FILE" with non-empty value, this method
-    returns a manifest-based implementation. The object eagerly reads and caches
-    the whole manifest file upon instantiation; this may be relevant for
-    performance consideration.
-
-    Otherwise, if `env` contains "RUNFILES_DIR" with non-empty value (checked in
-    this priority order), this method returns a directory-based implementation.
-
-    If neither cases apply, this method returns null.
-
-    Args:
-      env: {string: string}; optional; the map of environment variables. If None,
-          this function uses the environment variable map of this process.
-    Raises:
-      IOError: if some IO error occurs.
-    """
-    env_map = os.environ if env is None else env
-    manifest = env_map.get("RUNFILES_MANIFEST_FILE")
-    if manifest:
-        return CreateManifestBased(manifest)
-
-    directory = env_map.get("RUNFILES_DIR")
-    if directory:
-        return CreateDirectoryBased(directory)
-
-    return None
-
-
-class _Runfiles(object):
+class Runfiles:
     """Returns the runtime location of runfiles.
 
     Runfiles are data-dependencies of Bazel-built binaries and tests.
     """
 
-    def __init__(self, strategy):
-        # type: (Union[_ManifestBased, _DirectoryBased]) -> None
+    def __init__(self, strategy: Union[_ManifestBased, _DirectoryBased]) -> None:
         self._strategy = strategy
         self._python_runfiles_root = _FindPythonRunfilesRoot()
         self._repo_mapping = _ParseRepoMapping(
             strategy.RlocationChecked("_repo_mapping")
         )
 
-    def Rlocation(self, path, source_repo=None):
-        # type: (str, Optional[str]) -> Optional[str]
+    def Rlocation(self, path: str, source_repo: Optional[str] = None) -> Optional[str]:
         """Returns the runtime path of a runfile.
 
         Runfiles are data-dependencies of Bazel-built binaries and tests.
@@ -153,14 +187,17 @@ class _Runfiles(object):
             #   which also should not be mapped.
             return self._strategy.RlocationChecked(path)
 
+        assert (
+            source_repo is not None
+        ), "BUG: if the `source_repo` is None, we should never go past the `if` statement above"
+
         # target_repo is an apparent repository name. Look up the corresponding
         # canonical repository name with respect to the current repository,
         # identified by its canonical name.
         target_canonical = self._repo_mapping[(source_repo, target_repo)]
         return self._strategy.RlocationChecked(target_canonical + "/" + remainder)
 
-    def EnvVars(self):
-        # type: () -> Dict[str, str]
+    def EnvVars(self) -> Dict[str, str]:
         """Returns environment variables for subprocesses.
 
         The caller should set the returned key-value pairs in the environment of
@@ -173,8 +210,7 @@ class _Runfiles(object):
         """
         return self._strategy.EnvVars()
 
-    def CurrentRepository(self, frame=1):
-        # type: (int) -> str
+    def CurrentRepository(self, frame: int = 1) -> str:
         """Returns the canonical name of the caller's Bazel repository.
 
         For example, this function returns '' (the empty string) when called
@@ -204,12 +240,11 @@ class _Runfiles(object):
             ValueError: if the caller cannot be determined or the caller's file
             path is not contained in the Python runfiles tree
         """
-        # pylint:disable=protected-access  # for sys._getframe
-        # pylint:disable=raise-missing-from  # we're still supporting Python 2
         try:
+            # pylint: disable-next=protected-access
             caller_path = inspect.getfile(sys._getframe(frame))
-        except (TypeError, ValueError):
-            raise ValueError("failed to determine caller's file path")
+        except (TypeError, ValueError) as exc:
+            raise ValueError("failed to determine caller's file path") from exc
         caller_runfiles_path = os.path.relpath(caller_path, self._python_runfiles_root)
         if caller_runfiles_path.startswith(".." + os.path.sep):
             raise ValueError(
@@ -232,9 +267,62 @@ class _Runfiles(object):
         # canonical name.
         return caller_runfiles_directory
 
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def CreateManifestBased(manifest_path: str) -> "Runfiles":
+        return Runfiles(_ManifestBased(manifest_path))
 
-def _FindPythonRunfilesRoot():
-    # type: () -> str
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def CreateDirectoryBased(runfiles_dir_path: str) -> "Runfiles":
+        return Runfiles(_DirectoryBased(runfiles_dir_path))
+
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def Create(env: Optional[Dict[str, str]] = None) -> Optional["Runfiles"]:
+        """Returns a new `Runfiles` instance.
+
+        The returned object is either:
+        - manifest-based, meaning it looks up runfile paths from a manifest file, or
+        - directory-based, meaning it looks up runfile paths under a given directory
+        path
+
+        If `env` contains "RUNFILES_MANIFEST_FILE" with non-empty value, this method
+        returns a manifest-based implementation. The object eagerly reads and caches
+        the whole manifest file upon instantiation; this may be relevant for
+        performance consideration.
+
+        Otherwise, if `env` contains "RUNFILES_DIR" with non-empty value (checked in
+        this priority order), this method returns a directory-based implementation.
+
+        If neither cases apply, this method returns null.
+
+        Args:
+        env: {string: string}; optional; the map of environment variables. If None,
+            this function uses the environment variable map of this process.
+        Raises:
+        IOError: if some IO error occurs.
+        """
+        env_map = os.environ if env is None else env
+        manifest = env_map.get("RUNFILES_MANIFEST_FILE")
+        if manifest:
+            return CreateManifestBased(manifest)
+
+        directory = env_map.get("RUNFILES_DIR")
+        if directory:
+            return CreateDirectoryBased(directory)
+
+        return None
+
+
+# Support legacy imports by defining a private symbol.
+_Runfiles = Runfiles
+
+
+def _FindPythonRunfilesRoot() -> str:
     """Finds the root of the Python runfiles tree."""
     root = __file__
     # Walk up our own runfiles path to the root of the runfiles tree from which
@@ -246,8 +334,7 @@ def _FindPythonRunfilesRoot():
     return root
 
 
-def _ParseRepoMapping(repo_mapping_path):
-    # type: (Optional[str]) -> Dict[Tuple[str, str], str]
+def _ParseRepoMapping(repo_mapping_path: Optional[str]) -> Dict[Tuple[str, str], str]:
     """Parses the repository mapping manifest."""
     # If the repository mapping file can't be found, that is not an error: We
     # might be running without Bzlmod enabled or there may not be any runfiles.
@@ -271,98 +358,13 @@ def _ParseRepoMapping(repo_mapping_path):
     return repo_mapping
 
 
-class _ManifestBased(object):
-    """`Runfiles` strategy that parses a runfiles-manifest to look up runfiles."""
-
-    def __init__(self, path):
-        # type: (str) -> None
-        if not path:
-            raise ValueError()
-        if not isinstance(path, str):
-            raise TypeError()
-        self._path = path
-        self._runfiles = _ManifestBased._LoadRunfiles(path)
-
-    def RlocationChecked(self, path):
-        # type: (str) -> Optional[str]
-        """Returns the runtime path of a runfile."""
-        exact_match = self._runfiles.get(path)
-        if exact_match:
-            return exact_match
-        # If path references a runfile that lies under a directory that
-        # itself is a runfile, then only the directory is listed in the
-        # manifest. Look up all prefixes of path in the manifest and append
-        # the relative path from the prefix to the looked up path.
-        prefix_end = len(path)
-        while True:
-            prefix_end = path.rfind("/", 0, prefix_end - 1)
-            if prefix_end == -1:
-                return None
-            prefix_match = self._runfiles.get(path[0:prefix_end])
-            if prefix_match:
-                return prefix_match + "/" + path[prefix_end + 1 :]
-
-    @staticmethod
-    def _LoadRunfiles(path):
-        # type: (str) -> Dict[str, str]
-        """Loads the runfiles manifest."""
-        result = {}
-        with open(path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    tokens = line.split(" ", 1)
-                    if len(tokens) == 1:
-                        result[line] = line
-                    else:
-                        result[tokens[0]] = tokens[1]
-        return result
-
-    def _GetRunfilesDir(self):
-        # type: () -> str
-        if self._path.endswith("/MANIFEST") or self._path.endswith("\\MANIFEST"):
-            return self._path[: -len("/MANIFEST")]
-        elif self._path.endswith(".runfiles_manifest"):
-            return self._path[: -len("_manifest")]
-        else:
-            return ""
-
-    def EnvVars(self):
-        # type: () -> Dict[str, str]
-        directory = self._GetRunfilesDir()
-        return {
-            "RUNFILES_MANIFEST_FILE": self._path,
-            "RUNFILES_DIR": directory,
-            # TODO(laszlocsomor): remove JAVA_RUNFILES once the Java launcher can
-            # pick up RUNFILES_DIR.
-            "JAVA_RUNFILES": directory,
-        }
+def CreateManifestBased(manifest_path: str) -> Runfiles:
+    return Runfiles.CreateManifestBased(manifest_path)
 
 
-class _DirectoryBased(object):
-    """`Runfiles` strategy that appends runfiles paths to the runfiles root."""
+def CreateDirectoryBased(runfiles_dir_path: str) -> Runfiles:
+    return Runfiles.CreateDirectoryBased(runfiles_dir_path)
 
-    def __init__(self, path):
-        # type: (str) -> None
-        if not path:
-            raise ValueError()
-        if not isinstance(path, str):
-            raise TypeError()
-        self._runfiles_root = path
 
-    def RlocationChecked(self, path):
-        # type: (str) -> str
-
-        # Use posixpath instead of os.path, because Bazel only creates a runfiles
-        # tree on Unix platforms, so `Create()` will only create a directory-based
-        # runfiles strategy on those platforms.
-        return posixpath.join(self._runfiles_root, path)
-
-    def EnvVars(self):
-        # type: () -> Dict[str, str]
-        return {
-            "RUNFILES_DIR": self._runfiles_root,
-            # TODO(laszlocsomor): remove JAVA_RUNFILES once the Java launcher can
-            # pick up RUNFILES_DIR.
-            "JAVA_RUNFILES": self._runfiles_root,
-        }
+def Create(env: Optional[Dict[str, str]] = None) -> Optional[Runfiles]:
+    return Runfiles.Create(env)

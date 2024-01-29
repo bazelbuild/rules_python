@@ -12,8 +12,6 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
-bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
-
 internal_deps = use_extension("@rules_python//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 internal_deps.install()
 use_repo(
@@ -56,13 +54,16 @@ use_repo(python, "pythons_hub")
 # This call registers the Python toolchains.
 register_toolchains("@pythons_hub//:all")
 
-# ===== DEV ONLY SETUP =====
-docs_pip = use_extension(
+# ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
+bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
+bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
+
+dev_pip = use_extension(
     "//python/extensions:pip.bzl",
     "pip",
     dev_dependency = True,
 )
-docs_pip.parse(
+dev_pip.parse(
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -73,8 +74,31 @@ docs_pip.parse(
             "sphinxcontrib-applehelp",
         ],
     },
-    hub_name = "docs_deps",
+    hub_name = "dev_pip",
     python_version = "3.11",
-    requirements_darwin = "//docs/sphinx:requirements_darwin.txt",
-    requirements_lock = "//docs/sphinx:requirements_linux.txt",
+    requirements_lock = "//docs/sphinx:requirements.txt",
+)
+
+bazel_binaries = use_extension(
+    "@rules_bazel_integration_test//:extensions.bzl",
+    "bazel_binaries",
+    dev_dependency = True,
+)
+
+# Keep in sync with //:version.bzl
+bazel_binaries.local(
+    name = "self",
+    path = "tests/integration/bazel_from_env",
+)
+bazel_binaries.download(version = "6.4.0")
+bazel_binaries.download(version = "rolling")
+use_repo(
+    bazel_binaries,
+    "bazel_binaries",
+    # These don't appear necessary, but are reported as direct dependencies
+    # that should be use_repo()'d, so we add them as requested
+    "bazel_binaries_bazelisk",
+    "build_bazel_bazel_6_4_0",
+    "build_bazel_bazel_rolling",
+    "build_bazel_bazel_self",
 )

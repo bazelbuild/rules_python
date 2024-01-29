@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/bazelbuild/bazel-gazelle/config"
@@ -89,9 +90,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	pyTestFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFileNames := treeset.NewWith(godsutils.StringComparator)
 
-	// hasPyBinary controls whether a py_binary target should be generated for
+	// hasPyBinaryEntryPointFile controls whether a single py_binary target should be generated for
 	// this package or not.
-	hasPyBinary := false
+	hasPyBinaryEntryPointFile := false
 
 	// hasPyTestEntryPointFile and hasPyTestEntryPointTarget control whether a py_test target should
 	// be generated for this package or not.
@@ -106,8 +107,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		ext := filepath.Ext(f)
 		if ext == ".py" {
 			pyFileNames.Add(f)
-			if !hasPyBinary && f == pyBinaryEntrypointFilename {
-				hasPyBinary = true
+			if !hasPyBinaryEntryPointFile && f == pyBinaryEntrypointFilename {
+				hasPyBinaryEntryPointFile = true
 			} else if !hasPyTestEntryPointFile && f == pyTestEntrypointFilename {
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
@@ -219,32 +220,63 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	collisionErrors := singlylinkedlist.New()
 
 	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
-		deps, err := parser.parse(srcs)
+		allDeps, mainModules, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
+		}
+
+		if !hasPyBinaryEntryPointFile {
+			// Creating one py_binary target per main module when __main__.py doesn't exist.
+			mainFileNames := make([]string, 0, len(mainModules))
+			for name := range mainModules {
+				mainFileNames = append(mainFileNames, name)
+
+				// Remove the file from srcs if we're doing per-file library generation so
+				// that we don't also generate a py_library target for it.
+				if cfg.PerFileGeneration() {
+					srcs.Remove(name)
+				}
+			}
+			sort.Strings(mainFileNames)
+			for _, filename := range mainFileNames {
+				pyBinaryTargetName := strings.TrimSuffix(filepath.Base(filename), ".py")
+				if err := ensureNoCollision(args.File, pyBinaryTargetName, actualPyBinaryKind); err != nil {
+					fqTarget := label.New("", args.Rel, pyBinaryTargetName)
+					log.Printf("failed to generate target %q of kind %q: %v",
+						fqTarget.String(), actualPyBinaryKind, err)
+					continue
+				}
+				pyBinary := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
+					addVisibility(visibility).
+					addSrc(filename).
+					addModuleDependencies(mainModules[filename]).
+					generateImportsAttribute().build()
+				result.Gen = append(result.Gen, pyBinary)
+				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
+			}
+		}
+
+		// If we're doing per-file generation, srcs could be empty at this point, meaning we shouldn't make a py_library.
+		if srcs.Empty() {
+			return
 		}
 
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
 		// generate it correctly.
-		if args.File != nil {
-			for _, t := range args.File.Rules {
-				if t.Name() == pyLibraryTargetName && t.Kind() != actualPyLibraryKind {
-					fqTarget := label.New("", args.Rel, pyLibraryTargetName)
-					err := fmt.Errorf("failed to generate target %q of kind %q: "+
-						"a target of kind %q with the same name already exists. "+
-						"Use the '# gazelle:%s' directive to change the naming convention.",
-						fqTarget.String(), actualPyLibraryKind, t.Kind(), pythonconfig.LibraryNamingConvention)
-					collisionErrors.Add(err)
-				}
-			}
+		if err := ensureNoCollision(args.File, pyLibraryTargetName, actualPyLibraryKind); err != nil {
+			fqTarget := label.New("", args.Rel, pyLibraryTargetName)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+				"Use the '# gazelle:%s' directive to change the naming convention.",
+				fqTarget.String(), actualPyLibraryKind, err, pythonconfig.LibraryNamingConvention)
+			collisionErrors.Add(err)
 		}
 
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(srcs).
-			addModuleDependencies(deps).
+			addModuleDependencies(allDeps).
 			generateImportsAttribute().
 			build()
 
@@ -252,26 +284,24 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
 	}
 	if cfg.PerFileGeneration() {
+		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
 		pyLibraryFilenames.Each(func(index int, filename interface{}) {
-			if filename == pyLibraryEntrypointFilename {
-				stat, err := os.Stat(filepath.Join(args.Dir, filename.(string)))
-				if err != nil {
-					log.Fatalf("ERROR: %v\n", err)
-				}
-				if stat.Size() == 0 {
-					return // ignore empty __init__.py
-				}
+			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if filename == pyLibraryEntrypointFilename && !nonEmptyInit {
+				return // ignore empty __init__.py.
 			}
 			srcs := treeset.NewWith(godsutils.StringComparator, filename)
-			pyLibraryTargetName := strings.TrimSuffix(filepath.Base(filename.(string)), ".py")
+			if cfg.PerFileGenerationIncludeInit() && hasInit && nonEmptyInit {
+				srcs.Add(pyLibraryEntrypointFilename)
+			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
 		})
 	} else if !pyLibraryFilenames.Empty() {
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
-	if hasPyBinary {
-		deps, err := parser.parseSingle(pyBinaryEntrypointFilename)
+	if hasPyBinaryEntryPointFile {
+		deps, _, err := parser.parseSingle(pyBinaryEntrypointFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -282,17 +312,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
 		// generate it correctly.
-		if args.File != nil {
-			for _, t := range args.File.Rules {
-				if t.Name() == pyBinaryTargetName && t.Kind() != actualPyBinaryKind {
-					fqTarget := label.New("", args.Rel, pyBinaryTargetName)
-					err := fmt.Errorf("failed to generate target %q of kind %q: "+
-						"a target of kind %q with the same name already exists. "+
-						"Use the '# gazelle:%s' directive to change the naming convention.",
-						fqTarget.String(), actualPyBinaryKind, t.Kind(), pythonconfig.BinaryNamingConvention)
-					collisionErrors.Add(err)
-				}
-			}
+		if err := ensureNoCollision(args.File, pyBinaryTargetName, actualPyBinaryKind); err != nil {
+			fqTarget := label.New("", args.Rel, pyBinaryTargetName)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+				"Use the '# gazelle:%s' directive to change the naming convention.",
+				fqTarget.String(), actualPyBinaryKind, err, pythonconfig.BinaryNamingConvention)
+			collisionErrors.Add(err)
 		}
 
 		pyBinaryTarget := newTargetBuilder(pyBinaryKind, pyBinaryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
@@ -310,7 +335,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var conftest *rule.Rule
 	if hasConftestFile {
-		deps, err := parser.parseSingle(conftestFilename)
+		deps, _, err := parser.parseSingle(conftestFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -319,16 +344,11 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
 		// generate it correctly.
-		if args.File != nil {
-			for _, t := range args.File.Rules {
-				if t.Name() == conftestTargetname && t.Kind() != actualPyLibraryKind {
-					fqTarget := label.New("", args.Rel, conftestTargetname)
-					err := fmt.Errorf("failed to generate target %q of kind %q: "+
-						"a target of kind %q with the same name already exists.",
-						fqTarget.String(), actualPyLibraryKind, t.Kind())
-					collisionErrors.Add(err)
-				}
-			}
+		if err := ensureNoCollision(args.File, conftestTargetname, actualPyLibraryKind); err != nil {
+			fqTarget := label.New("", args.Rel, conftestTargetname)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. ",
+				fqTarget.String(), actualPyLibraryKind, err)
+			collisionErrors.Add(err)
 		}
 
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyFileNames).
@@ -346,7 +366,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var pyTestTargets []*targetBuilder
 	newPyTestTargetBuilder := func(srcs *treeset.Set, pyTestTargetName string) *targetBuilder {
-		deps, err := parser.parse(srcs)
+		deps, _, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -354,17 +374,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
 		// generate it correctly.
-		if args.File != nil {
-			for _, t := range args.File.Rules {
-				if t.Name() == pyTestTargetName && t.Kind() != actualPyTestKind {
-					fqTarget := label.New("", args.Rel, pyTestTargetName)
-					err := fmt.Errorf("failed to generate target %q of kind %q: "+
-						"a target of kind %q with the same name already exists. "+
-						"Use the '# gazelle:%s' directive to change the naming convention.",
-						fqTarget.String(), actualPyTestKind, t.Kind(), pythonconfig.TestNamingConvention)
-					collisionErrors.Add(err)
-				}
-			}
+		if err := ensureNoCollision(args.File, pyTestTargetName, actualPyTestKind); err != nil {
+			fqTarget := label.New("", args.Rel, pyTestTargetName)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+				"Use the '# gazelle:%s' directive to change the naming convention.",
+				fqTarget.String(), actualPyTestKind, err, pythonconfig.TestNamingConvention)
+			collisionErrors.Add(err)
 		}
 		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrcs(srcs).
@@ -463,6 +478,19 @@ func hasEntrypointFile(dir string) bool {
 	return false
 }
 
+// hasLibraryEntrypointFile returns if the given directory has the library
+// entrypoint file, and if it is non-empty.
+func hasLibraryEntrypointFile(dir string) (bool, bool) {
+	stat, err := os.Stat(filepath.Join(dir, pyLibraryEntrypointFilename))
+	if os.IsNotExist(err) {
+		return false, false
+	}
+	if err != nil {
+		log.Fatalf("ERROR: %v\n", err)
+	}
+	return true, stat.Size() != 0
+}
+
 // isEntrypointFile returns whether the given path is an entrypoint file. The
 // given path can be absolute or relative.
 func isEntrypointFile(path string) bool {
@@ -475,4 +503,16 @@ func isEntrypointFile(path string) bool {
 	default:
 		return false
 	}
+}
+
+func ensureNoCollision(file *rule.File, targetName, kind string) error {
+	if file == nil {
+		return nil
+	}
+	for _, t := range file.Rules {
+		if t.Name() == targetName && t.Kind() != kind {
+			return fmt.Errorf("a target of kind %q with the same name already exists", t.Kind())
+		}
+	}
+	return nil
 }

@@ -17,6 +17,7 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching", "subjects")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("//python:py_binary.bzl", "py_binary")
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")  # buildifier: disable=bzl-visibility
@@ -98,6 +99,46 @@ def _test_builtin_py_info_accepted_impl(env, target):
     toolchain.py3_runtime().interpreter_path().equals("builtin")
 
 _tests.append(_test_builtin_py_info_accepted)
+
+def _test_py_runtime_pair_and_binary(name):
+    rt_util.helper_target(
+        py_runtime,
+        name = name + "_runtime",
+        interpreter_path = "/fake_interpreter",
+        python_version = "PY3",
+    )
+    rt_util.helper_target(
+        py_runtime_pair,
+        name = name + "_pair",
+        py3_runtime = name + "_runtime",
+    )
+    native.toolchain(
+        name = name + "_toolchain",
+        toolchain = name + "_pair",
+        toolchain_type = "//python:toolchain_type",
+    )
+    rt_util.helper_target(
+        py_binary,
+        name = name + "_subject",
+        srcs = [name + "_subject.py"],
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_py_runtime_pair_and_binary_impl,
+        config_settings = {
+            "//command_line_option:extra_toolchains": [
+                "//tests/py_runtime_pair:{}_toolchain".format(name),
+                "//tests/cc:all",
+            ],
+        },
+    )
+
+def _test_py_runtime_pair_and_binary_impl(env, target):
+    # Building indicates success, so nothing to assert
+    _ = env, target  # @unused
+
+_tests.append(_test_py_runtime_pair_and_binary)
 
 def py_runtime_pair_test_suite(name):
     test_suite(

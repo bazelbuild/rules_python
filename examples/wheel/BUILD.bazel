@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//examples/wheel/private:wheel_utils.bzl", "directory_writer", "make_variable_tags")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
@@ -54,8 +55,6 @@ py_wheel(
     testonly = True,  # Set this to verify the generated .dist target doesn't break things
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
     distribution = "example_minimal_library",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     version = "0.0.1",
     deps = [
@@ -78,8 +77,6 @@ py_wheel(
     testonly = True,
     abi = "$(ABI)",
     distribution = "example_minimal_library",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "$(PYTHON_TAG)",
     toolchains = ["//examples/wheel:make_variable_tags"],
     version = "$(VERSION)",
@@ -99,8 +96,6 @@ py_wheel(
     name = "minimal_with_py_library_with_stamp",
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
     distribution = "example_minimal_library{BUILD_USER}",
-    incompatible_normalize_name = False,
-    incompatible_normalize_version = False,
     python_tag = "py3",
     stamp = 1,
     version = "0.1.{BUILD_TIMESTAMP}",
@@ -129,8 +124,6 @@ py_wheel(
     name = "minimal_with_py_package",
     # Package data. We're building "example_minimal_package-0.0.1-py3-none-any.whl"
     distribution = "example_minimal_package",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     version = "0.0.1",
     deps = [":example_pkg"],
@@ -164,8 +157,6 @@ py_wheel(
         "//examples/wheel:README.md": "README",
     },
     homepage = "www.example.com",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     license = "Apache 2.0",
     project_urls = {
         "Bug Tracker": "www.example.com/issues",
@@ -187,8 +178,6 @@ py_wheel(
     entry_points = {
         "console_scripts": ["main = foo.bar:baz"],
     },
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     strip_path_prefixes = [
         "examples",
@@ -203,8 +192,6 @@ py_wheel(
     name = "custom_package_root_multi_prefix",
     # Package data. We're building "custom_custom_package_root_multi_prefix-0.0.1-py3-none-any.whl"
     distribution = "example_custom_package_root_multi_prefix",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     strip_path_prefixes = [
         "examples/wheel/lib",
@@ -220,8 +207,6 @@ py_wheel(
     name = "custom_package_root_multi_prefix_reverse_order",
     # Package data. We're building "custom_custom_package_root_multi_prefix_reverse_order-0.0.1-py3-none-any.whl"
     distribution = "example_custom_package_root_multi_prefix_reverse_order",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     strip_path_prefixes = [
         "examples/wheel",
@@ -236,8 +221,6 @@ py_wheel(
 py_wheel(
     name = "python_requires_in_a_package",
     distribution = "example_python_requires_in_a_package",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     python_tag = "py3",
     version = "0.0.1",
@@ -249,8 +232,6 @@ py_wheel(
 py_wheel(
     name = "use_rule_with_dir_in_outs",
     distribution = "use_rule_with_dir_in_outs",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     version = "0.0.1",
     deps = [
@@ -264,8 +245,6 @@ py_wheel(
     name = "python_abi3_binary_wheel",
     abi = "abi3",
     distribution = "example_python_abi3_binary_wheel",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     # these platform strings must line up with test_python_abi3_binary_wheel() in wheel_test.py
     platform = select({
         ":aarch64-apple-darwin": "macosx_11_0_arm64",
@@ -280,29 +259,56 @@ py_wheel(
 )
 
 py_wheel(
-    name = "legacy_filename_escaping",
-    # Per https://www.python.org/dev/peps/pep-0427/#escaping-and-unicode
-    # runs of non-alphanumeric, non-digit symbols should be replaced with a single underscore.
-    # Unicode non-ascii letters should *not* be replaced with underscore.
-    distribution = "file~~name-escaping",
-    incompatible_normalize_name = False,
-    incompatible_normalize_version = False,
-    python_tag = "py3",
-    version = "0.0.1-r7",
-    deps = [":example_pkg"],
-)
-
-py_wheel(
     name = "filename_escaping",
     # Per https://packaging.python.org/en/latest/specifications/binary-distribution-format/#escaping-and-unicode
     # runs of "-", "_" and "." should be replaced with a single underscore.
     # Unicode non-ascii letters aren't allowed according to
     # https://packaging.python.org/en/latest/specifications/name-normalization/.
     distribution = "File--Name-Escaping",
-    incompatible_normalize_name = True,
-    incompatible_normalize_version = True,
     python_tag = "py3",
     version = "v0.0.1.RC1+ubuntu-r7",
+    deps = [":example_pkg"],
+)
+
+write_file(
+    name = "requires_file",
+    out = "requires.txt",
+    content = """\
+# Requirements file
+--index-url https://pypi.com
+
+tomli>=2.0.0
+starlark  # Example comment
+""".splitlines(),
+)
+
+write_file(
+    name = "extra_requires_file",
+    out = "extra_requires.txt",
+    content = """\
+# Extras Requirements file
+--index-url https://pypi.com
+
+pyyaml>=6.0.0,!=6.0.1
+toml; (python_version == "3.11" or python_version == "3.12") and python_version != "3.8"
+wheel; python_version == "3.11" or python_version == "3.12"  # Example comment
+""".splitlines(),
+)
+
+# py_wheel can use text files to specify their requirements. This
+# can be convenient for users of `compile_pip_requirements` who have
+# granular `requirements.in` files per package. This target shows
+# how to provide this file.
+py_wheel(
+    name = "requires_files",
+    distribution = "requires_files",
+    extra_requires_files = {":extra_requires.txt": "example"},
+    python_tag = "py3",
+    # py_wheel can use text files to specify their requirements. This
+    # can be convenient for users of `compile_pip_requirements` who have
+    # granular `requirements.in` files per package.
+    requires_file = ":requires.txt",
+    version = "0.0.1",
     deps = [":example_pkg"],
 )
 
@@ -315,12 +321,12 @@ py_test(
         ":custom_package_root_multi_prefix_reverse_order",
         ":customized",
         ":filename_escaping",
-        ":legacy_filename_escaping",
         ":minimal_with_py_library",
         ":minimal_with_py_library_with_stamp",
         ":minimal_with_py_package",
         ":python_abi3_binary_wheel",
         ":python_requires_in_a_package",
+        ":requires_files",
         ":use_rule_with_dir_in_outs",
     ],
     deps = [
