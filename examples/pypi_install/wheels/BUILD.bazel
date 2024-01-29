@@ -58,12 +58,14 @@ py_wheel(
 py_binary(
     name = "pypiserver_runner",
     srcs = ["pypiserver_runner.py"],
+    deps = [
+        "@pypi__pypiserver//:lib",
+    ],
     data = [
         ":pkg_a",
         ":pkg_b",
         ":pkg_c",
         ":pkg_d",
-        "@rules_python//tests:pypiserver",
         "@rules_python//python/runfiles",
     ],
 )

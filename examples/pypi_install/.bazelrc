@@ -1,2 +1,3 @@
 # https://docs.bazel.build/versions/main/best-practices.html#using-the-bazelrc-file
 try-import %workspace%/user.bazelrc
+test --test_output=errors

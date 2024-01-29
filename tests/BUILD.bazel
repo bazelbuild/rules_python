@@ -5,13 +5,6 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-py_binary(
-    name = "pypiserver",
-    srcs = ["pypiserver.py"],
-    deps = ["@pypi__pypiserver//:lib"],
-    visibility = ["//visibility:public"],
-)
-
 build_test(
     name = "bzl_libraries_build_test",
     targets = [
