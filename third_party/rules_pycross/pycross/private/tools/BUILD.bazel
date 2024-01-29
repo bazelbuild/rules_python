@@ -15,6 +15,17 @@
 
 load("//python:defs.bzl", "py_binary")
 
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD.bazel",
+        "wheel_installer.py",
+    ],
+    visibility = [
+        "//third_party/rules_pycross/pycross/private:__subpackages__",
+    ],
+)
+
 py_binary(
     name = "wheel_installer",
     srcs = ["wheel_installer.py"],

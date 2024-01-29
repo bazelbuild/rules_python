@@ -24,7 +24,6 @@ _FORWARDED_ARGS = (
     ("patches", None),
     ("patch_args", None),
     ("patch_tool", None),
-    ("patch_dir", None),
 )
 
 def generate_package_alias(intermediate):

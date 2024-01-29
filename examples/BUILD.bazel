@@ -18,4 +18,5 @@ licenses(["notice"])  # Apache 2.0
 
 rules_python_integration_test(
     name = "pypi_install",
+    bzlmod = False,
 )
