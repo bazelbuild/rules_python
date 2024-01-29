@@ -112,38 +112,38 @@ py_test_3_11(
 
 py_test(
     name = "version_default_takes_3_10_subprocess_test",
-    srcs = ["versioned_version_test.py"],
+    srcs = ["cross_version_test.py"],
     data = [":version_3_10"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.10",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_10)",
         "VERSION_CHECK": "3.9",
     },
-    main = "versioned_version_test.py",
+    main = "cross_version_test.py",
 )
 
 py_test_3_10(
     name = "version_3_10_takes_3_9_subprocess_test",
-    srcs = ["versioned_version_test.py"],
+    srcs = ["cross_version_test.py"],
     data = [":version_3_9"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.9",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_9)",
         "VERSION_CHECK": "3.10",
     },
-    main = "versioned_version_test.py",
+    main = "cross_version_test.py",
 )
 
 py_versioned_test(
     name = "version_3_10_takes_3_9_subprocess_test_2",
-    srcs = ["versioned_version_test.py"],
+    srcs = ["cross_version_test.py"],
     data = [":version_3_9"],
     env = {
         "SUBPROCESS_VERSION_CHECK": "3.9",
         "SUBPROCESS_VERSION_PY_BINARY": "$(rootpath :version_3_9)",
         "VERSION_CHECK": "3.10",
     },
-    main = "versioned_version_test.py",
+    main = "cross_version_test.py",
     python_version = "3.10",
 )
 
