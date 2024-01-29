@@ -37,3 +37,7 @@ load("@pypi_install//:packages.bzl", "load_pypi_packages")
 load_pypi_packages(
     name = "pypi",
 )
+
+register_toolchains(
+    "//cc:linux_toolchain_definition",
+)

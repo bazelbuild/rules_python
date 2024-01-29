@@ -21,6 +21,7 @@ py_test(
 compile_pip_requirements(
     name = "requirements",
     intermediate_file = {
+        "@//:aarch64_linux": "intermediate_file_aarch64_linux.json",
         "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
     },
     # That binary will let users modify the intermediate file. Then they can:
@@ -35,6 +36,7 @@ compile_pip_requirements(
     # the file. Having these values as dictionaries allows us to do some
     # validation before the underlying targets get instantiated.
     requirements_txt = {
+        "@//:aarch64_linux": "requirements_lock_aarch64_linux.txt",
         "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
     },
     extra_args = [
@@ -51,6 +53,14 @@ compile_pip_requirements(
 py_binary(
     name = "intermediate_file_patcher",
     srcs = ["intermediate_file_patcher.py"],
+)
+
+config_setting(
+    name = "aarch64_linux",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
 )
 
 config_setting(
