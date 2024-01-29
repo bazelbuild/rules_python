@@ -115,7 +115,7 @@ def _py_wheel_library_impl(ctx):
         ),
     ]
 
-_py_wheel_library = rule(
+py_wheel_library = rule(
     implementation = _py_wheel_library_impl,
     attrs = {
         "deps": attr.label_list(
@@ -172,17 +172,3 @@ This option is required to support some packages which cannot handle the convers
         ),
     },
 )
-
-def py_wheel_library(patches = None, patch_tool = None, patch_tool_target = None, **kwargs):
-    # If the user has specified patches, but hasn't specified how to apply
-    # those patches, default to our internally-provided patch binary.
-    if patches and not patch_tool and not patch_tool_target:
-        fail("Patches specified, but missing `patch_tool` or `patch_tool_target` attributes. " +
-             "I.e. unsure how to apply patches.")
-
-    _py_wheel_library(
-        patches = patches,
-        patch_tool = patch_tool,
-        patch_tool_target = patch_tool_target,
-        **kwargs
-    )
