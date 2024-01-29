@@ -137,7 +137,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Wether to write to files",
+        help="Whether to write to files",
     )
     parser.add_argument(
         "--update-file",
