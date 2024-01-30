@@ -196,13 +196,22 @@ def _parse_optional_attrs(rctx, args):
     if use_isolated(rctx, rctx.attr):
         args.append("--isolated")
 
+    # At the time of writing, the very latest Bazel, as in `USE_BAZEL_VERSION=last_green bazelisk`
+    # supports rctx.getenv(name, default): When building incrementally, any change to the value of
+    # the variable named by name will cause this repository to be re-fetched. That hasn't yet made
+    # its way into the official releases, though.
+    if "getenv" in dir(rctx):
+        getenv = rctx.getenv
+    else:
+        getenv = rctx.os.environ.get
+
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
     if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
             json.encode(struct(arg = [
-                envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
+                envsubst(pip_arg, rctx.attr.envsubst, getenv)
                 for pip_arg in rctx.attr.extra_pip_args
             ])),
         ]
@@ -435,7 +444,9 @@ A list of environment variables to substitute (e.g. `["PIP_INDEX_URL",
 "PIP_RETRIES"]`). The corresponding variables are expanded in `extra_pip_args`
 using the syntax `$VARNAME` or `${VARNAME}` (expanding to empty string if unset)
 or `${VARNAME:-default}` (expanding to default if the variable is unset or empty
-in the environment).
+in the environment). Note: On Bazel 6 and Bazel 7 changes to the variables named
+here do not cause packages to be re-fetched. Don't fetch different things based
+on the value of these variables.
 """,
     ),
     "experimental_requirement_cycles": attr.string_list_dict(

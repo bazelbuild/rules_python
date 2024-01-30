@@ -20,45 +20,45 @@ _basic_tests = []
 
 def _test_envsubst_braceless(env):
     env.expect.that_str(
-        envsubst("--retries=$PIP_RETRIES", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=$PIP_RETRIES", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=5")
 
     env.expect.that_str(
-        envsubst("--retries=$PIP_RETRIES", [], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=$PIP_RETRIES", [], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=$PIP_RETRIES")
 
     env.expect.that_str(
-        envsubst("--retries=$PIP_RETRIES", ["PIP_RETRIES"], {}),
+        envsubst("--retries=$PIP_RETRIES", ["PIP_RETRIES"], {}.get),
     ).equals("--retries=")
 
 _basic_tests.append(_test_envsubst_braceless)
 
 def _test_envsubst_braces_without_default(env):
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES}", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=${PIP_RETRIES}", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=5")
 
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES}", [], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=${PIP_RETRIES}", [], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=${PIP_RETRIES}")
 
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES}", ["PIP_RETRIES"], {}),
+        envsubst("--retries=${PIP_RETRIES}", ["PIP_RETRIES"], {}.get),
     ).equals("--retries=")
 
 _basic_tests.append(_test_envsubst_braces_without_default)
 
 def _test_envsubst_braces_with_default(env):
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES:-6}", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=${PIP_RETRIES:-6}", ["PIP_RETRIES"], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=5")
 
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES:-6}", [], {"PIP_RETRIES": "5"}),
+        envsubst("--retries=${PIP_RETRIES:-6}", [], {"PIP_RETRIES": "5"}.get),
     ).equals("--retries=${PIP_RETRIES:-6}")
 
     env.expect.that_str(
-        envsubst("--retries=${PIP_RETRIES:-6}", ["PIP_RETRIES"], {}),
+        envsubst("--retries=${PIP_RETRIES:-6}", ["PIP_RETRIES"], {}.get),
     ).equals("--retries=6")
 
 _basic_tests.append(_test_envsubst_braces_with_default)
@@ -68,7 +68,7 @@ def _test_envsubst_nested_both_vars(env):
         envsubst(
             "${HOME:-/home/$USER}",
             ["HOME", "USER"],
-            {"HOME": "/home/testuser", "USER": "mockuser"},
+            {"HOME": "/home/testuser", "USER": "mockuser"}.get,
         ),
     ).equals("/home/testuser")
 
@@ -79,7 +79,7 @@ def _test_envsubst_nested_outer_var(env):
         envsubst(
             "${HOME:-/home/$USER}",
             ["HOME"],
-            {"HOME": "/home/testuser", "USER": "mockuser"},
+            {"HOME": "/home/testuser", "USER": "mockuser"}.get,
         ),
     ).equals("/home/testuser")
 
@@ -90,12 +90,12 @@ def _test_envsubst_nested_no_vars(env):
         envsubst(
             "${HOME:-/home/$USER}",
             [],
-            {"HOME": "/home/testuser", "USER": "mockuser"},
+            {"HOME": "/home/testuser", "USER": "mockuser"}.get,
         ),
     ).equals("${HOME:-/home/$USER}")
 
     env.expect.that_str(
-        envsubst("${HOME:-/home/$USER}", ["HOME", "USER"], {}),
+        envsubst("${HOME:-/home/$USER}", ["HOME", "USER"], {}.get),
     ).equals("/home/")
 
 _basic_tests.append(_test_envsubst_nested_no_vars)
@@ -105,7 +105,7 @@ def _test_envsubst_nested_braces_inner_var(env):
         envsubst(
             "Home directory is ${HOME:-/home/$USER}.",
             ["HOME", "USER"],
-            {"USER": "mockuser"},
+            {"USER": "mockuser"}.get,
         ),
     ).equals("Home directory is /home/mockuser.")
 
@@ -113,7 +113,7 @@ def _test_envsubst_nested_braces_inner_var(env):
         envsubst(
             "Home directory is ${HOME:-/home/$USER}.",
             ["USER"],
-            {"USER": "mockuser"},
+            {"USER": "mockuser"}.get,
         ),
     ).equals("Home directory is ${HOME:-/home/mockuser}.")
 

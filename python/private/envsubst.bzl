@@ -14,13 +14,15 @@
 
 """Substitute environment variables in shell format strings."""
 
-def envsubst(template_string, varnames, environ):
+def envsubst(template_string, varnames, getenv):
     """Helper function to substitute environment variables.
 
     Supports `$VARNAME`, `${VARNAME}` and `${VARNAME:-default}`
     syntaxes in the `template_string`, looking up each `VARNAME`
     listed in the `varnames` list in the environment defined by the
-    `environ` dict. Typically called with `environ = rctx.os.environ`.
+    `getenv` function. Typically called with `getenv = rctx.getenv`
+    (if it is available) or `getenv = rctx.os.environ.get` (on e.g.
+    Bazel 6 or Bazel 7, which don't have `rctx.getenv` yet).
 
     Limitations: Unlike the shell, we don't support `${VARNAME}` and
     `${VARNAME:-default}` in the default expression for a different
@@ -32,18 +34,20 @@ def envsubst(template_string, varnames, environ):
       template_string: String that may contain variables to be expanded.
       varnames: List of variable names of variables to expand in
         `template_string`.
-      environ: Dictionary mapping variable names to their values.
+      getenv: Callable mapping variable names (in the first argument)
+        to their values, or returns the default (provided in the
+        second argument to `getenv`) if a value wasn't found.
 
     Returns:
       `template_string` with environment variables expanded according
-      to their values in `environ`.
+      to their values as determined by `getenv`.
     """
 
     if not varnames:
         return template_string
 
     for varname in varnames:
-        value = environ.get(varname, "")
+        value = getenv(varname, "")
         template_string = template_string.replace("$%s" % varname, value)
         template_string = template_string.replace("${%s}" % varname, value)
         segments = template_string.split("${%s:-" % varname)
