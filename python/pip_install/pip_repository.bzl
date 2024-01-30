@@ -336,15 +336,13 @@ def _pip_repository_impl(rctx):
         for p in opt.split(" "):
             tokenized_options.append(p)
 
-    options = [
-        envsubst(pip_arg, rctx.attr.envsubst, rctx.os.environ)
-        for pip_arg in tokenized_options + rctx.attr.extra_pip_args
-    ]
+    options = tokenized_options + rctx.attr.extra_pip_args
 
     config = {
         "download_only": rctx.attr.download_only,
         "enable_implicit_namespace_pkgs": rctx.attr.enable_implicit_namespace_pkgs,
         "environment": rctx.attr.environment,
+        "envsubst": rctx.attr.envsubst,
         "extra_pip_args": options,
         "isolated": use_isolated(rctx, rctx.attr),
         "pip_data_exclude": rctx.attr.pip_data_exclude,
