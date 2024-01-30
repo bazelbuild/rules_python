@@ -26,8 +26,8 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
+load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
-load("//python/private:which.bzl", "which_with_fail")
 load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
@@ -114,7 +114,11 @@ def _get_xcode_location_cflags(rctx):
     if not rctx.os.name.lower().startswith("mac os"):
         return []
 
-    xcode_sdk_location = rctx.execute([which_with_fail("xcode-select", rctx), "--print-path"])
+    xcode_sdk_location = repo_utils.execute_unchecked(
+        rctx,
+        op = "GetXcodeLocation",
+        arguments = [repo_utils.which_checked(rctx, "xcode-select"), "--print-path"],
+    )
     if xcode_sdk_location.return_code != 0:
         return []
 
@@ -143,14 +147,16 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter):
     if not is_standalone_interpreter(rctx, python_interpreter):
         return []
 
-    er = rctx.execute([
-        python_interpreter,
-        "-c",
-        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
-    ])
-    if er.return_code != 0:
-        fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
-    _python_version = er.stdout
+    stdout = repo_utils.execute_checked_stdout(
+        rctx,
+        op = "GetPythonVersionForUnixCflags",
+        arguments = [
+            python_interpreter,
+            "-c",
+            "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
+        ],
+    )
+    _python_version = stdout
     include_path = "{}/include/python{}".format(
         python_interpreter.dirname,
         _python_version,
@@ -392,6 +398,7 @@ def _pip_repository_impl(rctx):
 
 common_env = [
     "RULES_PYTHON_PIP_ISOLATED",
+    REPO_DEBUG_ENV_VAR,
 ]
 
 common_attrs = {
@@ -499,7 +506,7 @@ is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
 
 You can also target a specific Python version by using `cp3<minor_version>_<os>_<arch>`.
 If multiple python versions are specified as target platforms, then select statements
-of the `lib` and `whl` targets will include usage of version aware toolchain config 
+of the `lib` and `whl` targets will include usage of version aware toolchain config
 settings like `@rules_python//python/config_settings:is_python_3.y`.
 
 Special values: `host` (for generating deps for the host platform only) and
@@ -719,28 +726,14 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    result = rctx.execute(
-        args,
+    repo_utils.execute_checked(
+        rctx,
+        op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+        arguments = args,
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
-    if result.return_code:
-        fail((
-            "whl_library '{name}' wheel_installer failed:\n" +
-            "  command: {cmd}\n" +
-            "  environment:\n{env}\n" +
-            "  return code: {return_code}\n" +
-            "===== stdout start ====\n{stdout}\n===== stdout end===\n" +
-            "===== stderr start ====\n{stderr}\n===== stderr end===\n"
-        ).format(
-            name = rctx.attr.name,
-            cmd = " ".join([str(a) for a in args]),
-            env = "\n".join(["{}={}".format(k, v) for k, v in environment.items()]),
-            return_code = result.return_code,
-            stdout = result.stdout,
-            stderr = result.stderr,
-        ))
 
     whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
     if not rctx.delete("whl_file.json"):
@@ -773,8 +766,10 @@ def _whl_library_impl(rctx):
                 for p in whl_target_platforms(parsed_whl.platform_tag)
             ]
 
-    result = rctx.execute(
-        args + [
+    repo_utils.execute_checked(
+        rctx,
+        op = "whl_library.ExtractWheel({}, {})".format(rctx.attr.name, whl_path),
+        arguments = args + [
             "--whl-file",
             whl_path,
         ] + ["--platform={}".format(p) for p in target_platforms],
@@ -782,9 +777,6 @@ def _whl_library_impl(rctx):
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
-
-    if result.return_code:
-        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     metadata = json.decode(rctx.read("metadata.json"))
     rctx.delete("metadata.json")
