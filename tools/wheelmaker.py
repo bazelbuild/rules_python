@@ -190,6 +190,10 @@ class _WhlFile(zipfile.ZipFile):
 
         zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
         zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
+        # Both pip and installer expect the regular file bit to be set in order for the
+        # executable bit to be preserved after extraction
+        # https://github.com/pypa/pip/blob/23.3.2/src/pip/_internal/utils/unpacking.py#L96-L100
+        # https://github.com/pypa/installer/blob/0.7.0/src/installer/sources.py#L310-L313
         zinfo.external_attr = (
             stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG
         ) << 16  # permissions: -rwxrwxrwx
