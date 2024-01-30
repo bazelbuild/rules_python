@@ -59,7 +59,9 @@ filegroup(
 
 filegroup(
     name = "{data_label}",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(["**/*"],
+                exclude = ["{whl_name}", "site-packages/**"],
+                allow_empty = True),
 )
 
 filegroup(
