@@ -23,6 +23,42 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (toolchains) Windows hosts always ignore pyc files in the downloaded runtimes.
+  This fixes issues due to pyc files being created at runtime and affecting the
+  definition of what files were considered part of the runtime.
+
+* (pip_parse) Added the `envsubst` parameter, which enables environment variable
+  substitutions in the `extra_pip_args` attribute.
+
+* (pip_repository) Added the `envsubst` parameter, which enables environment
+  variable substitutions in the `extra_pip_args` attribute.
+
+### Fixed
+
+* (bzlmod) pip.parse now does not fail with an empty `requirements.txt`.
+
+### Added
+
+* (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
+
+* (whl_library) *experimental_target_platforms* now supports specifying the
+  Python version explicitly and the output `BUILD.bazel` file will be correct
+  irrespective of the python interpreter that is generating the file and
+  extracting the `whl` distribution. Multiple python target version can be
+  specified and the code generation will generate version specific dependency
+  closures but that is not yet ready to be used and may break the build if
+  the default python version is not selected using
+  `common --@rules_python//python/config_settings:python_version=X.Y.Z`.
+
+* New Python versions available: `3.11.7`, `3.12.1` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20240107.
+
+## 0.29.0 - 2024-01-22
+
+[0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
+
+### Changed
+
 * **BREAKING** The deprecated `incompatible_generate_aliases` feature flags
   from `pip_parse` and `gazelle` got removed. They had been flipped to `True`
   in 0.27.0 release.
@@ -41,6 +77,7 @@ A brief description of the categories of changes:
   platform-specific content in `MODULE.bazel.lock` files; Follow
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643) for removing
   platform-specific content in `MODULE.bazel.lock` files.
+
 * (wheel) The stamp variables inside the distribution name are no longer
   lower-cased when normalizing under PEP440 conventions.
 
@@ -93,12 +130,6 @@ A brief description of the categories of changes:
   cycle. `pip_parse` will break the cycle for you transparently. This behavior
   is also available under bzlmod as
   `pip.parse(experimental_requirement_cycles={})`.
-
-* (pip_parse) Added the `envsubst` parameter, which enables environment variable
-  substitutions in the `extra_pip_args` attribute.
-
-* (pip_repository) Added the `envsubst` parameter, which enables environment
-  variable substitutions in the `extra_pip_args` attribute.
 
 * (toolchains) `py_runtime` can now take an executable target. Note: runfiles
   from the target are not supported yet.
