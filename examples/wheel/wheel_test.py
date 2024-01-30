@@ -15,6 +15,7 @@
 import hashlib
 import os
 import platform
+import stat
 import subprocess
 import unittest
 import zipfile
@@ -58,7 +59,11 @@ class WheelTest(unittest.TestCase):
         for zinfo in zf.infolist():
             self.assertEqual(zinfo.date_time, (1980, 1, 1, 0, 0, 0), msg=zinfo.filename)
             self.assertEqual(zinfo.create_system, 3, msg=zinfo.filename)
-            self.assertEqual(zinfo.external_attr, 0o777 << 16, msg=zinfo.filename)
+            self.assertEqual(
+                zinfo.external_attr,
+                (stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG) << 16,
+                msg=zinfo.filename
+            )
             self.assertEqual(
                 zinfo.compress_type, zipfile.ZIP_DEFLATED, msg=zinfo.filename
             )
