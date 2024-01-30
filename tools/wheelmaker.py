@@ -19,6 +19,7 @@ import base64
 import hashlib
 import os
 import re
+import stat
 import sys
 import zipfile
 from pathlib import Path
@@ -189,7 +190,9 @@ class _WhlFile(zipfile.ZipFile):
 
         zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
         zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
-        zinfo.external_attr = 0o777 << 16  # permissions: rwxrwxrwx
+        zinfo.external_attr = (
+            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG
+        ) << 16  # permissions: -rwxrwxrwx
         zinfo.compress_type = self.compression
         return zinfo
 
