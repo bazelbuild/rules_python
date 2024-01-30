@@ -30,6 +30,8 @@ A brief description of the categories of changes:
 ### Fixed
 
 * (bzlmod) pip.parse now does not fail with an empty `requirements.txt`.
+* (python_repository) install now works even if the repository has a directory
+  with a space in the name.
 
 ### Added
 
