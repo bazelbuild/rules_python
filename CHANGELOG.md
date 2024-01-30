@@ -47,6 +47,10 @@ A brief description of the categories of changes:
 * New Python versions available: `3.11.7`, `3.12.1` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240107.
 
+* (repo rules) The environment variable `RULES_PYTHON_REPO_DEBUG=1` can be
+  set to make repository rules log detailed information about what they're
+  up to.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
