@@ -82,6 +82,10 @@ def construct_config_settings(name, python_versions):
                 name = equals_micro_name,
                 flag_values = {":python_version": micro_version},
             )
+            # An alias pointing to an underscore-prefixed config_setting_group
+            # is used because config_setting_group creates
+            # `is_{minor}_N` targets, which are easily confused with the
+            # `is_{minor}.{micro}` (dot) targets.
             selects.config_setting_group(
                 name = "_" + is_micro_version_name,
                 match_any = [
