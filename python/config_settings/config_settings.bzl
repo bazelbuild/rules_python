@@ -62,11 +62,11 @@ def construct_config_settings(name, python_versions):
         )
         matches_minor_version_names = [equals_minor_version_name]
 
-        default_micro_version = MINOR_MAPPING.get(minor_version)
+        default_micro_version = MINOR_MAPPING[minor_version]
 
         for micro_version in micro_versions:
             is_micro_version_name = "is_python_" + micro_version
-            if not default_micro_version:
+            if default_micro_version != micro_version:
                 native.config_setting(
                     name = is_micro_version_name,
                     flag_values = {":python_version": micro_version},
