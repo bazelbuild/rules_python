@@ -27,7 +27,7 @@ _TARGETS = [
     genquery(
         name = target,
         expression = "//python/config_settings:" + target,
-        opts=["--output=build"],
+        opts = ["--output=build"],
         scope = ["//python/config_settings:" + target],
     )
     for target in _TARGETS
