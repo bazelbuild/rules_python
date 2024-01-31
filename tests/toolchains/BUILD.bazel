@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load(":defs.bzl", "acceptance_tests")
 load(":versions_test.bzl", "versions_test_suite")
 

@@ -95,7 +95,7 @@ def construct_config_settings(name, python_versions):
             )
             native.alias(
                 name = is_micro_version_name,
-                actual = "_is_python_" + minor_version,
+                actual = "_" + is_micro_version_name,
                 visibility = ["//visibility:public"],
             )
             matches_minor_version_names.append(equals_micro_name)
