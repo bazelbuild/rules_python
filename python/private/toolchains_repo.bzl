@@ -40,8 +40,7 @@ def python_toolchain_build_file_content(
         prefix,
         python_version,
         set_python_version_constraint,
-        user_repository_name,
-        rules_python):
+        user_repository_name):
     """Creates the content for toolchain definitions for a build file.
 
     Args:
@@ -51,58 +50,29 @@ def python_toolchain_build_file_content(
             have the Python version constraint added as a requirement for
             matching the toolchain, "False" if not.
         user_repository_name: names for the user repos
-        rules_python: rules_python label
 
     Returns:
         build_content: Text containing toolchain definitions
     """
-    if set_python_version_constraint == "True":
-        constraint = "{rules_python}//python/config_settings:is_python_{python_version}".format(
-            rules_python = rules_python,
-            python_version = python_version,
-        )
-        target_settings = '["{}"]'.format(constraint)
-    elif set_python_version_constraint == "False":
-        target_settings = "[]"
-    else:
-        fail(("Invalid set_python_version_constraint value: got {} {}, wanted " +
-              "either the string 'True' or the string 'False'; " +
-              "(did you convert bool to string?)").format(
-            type(set_python_version_constraint),
-            repr(set_python_version_constraint),
-        ))
 
     # We create a list of toolchain content from iterating over
     # the enumeration of PLATFORMS.  We enumerate PLATFORMS in
     # order to get us an index to increment the increment.
-    return "".join([
-        """
-toolchain(
-    name = "{prefix}{platform}_toolchain",
+    return "\n\n".join([
+        """\
+py_toolchain_suite(
+    user_repository_name = "{user_repository_name}_{platform}",
+    prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-)
-
-toolchain(
-    name = "{prefix}{platform}_py_cc_toolchain",
-    target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:py_cc_toolchain",
-    toolchain_type = "@rules_python//python/cc:toolchain_type",
-
-)
-""".format(
+    python_version = "{python_version}",
+    set_python_version_constraint = "{set_python_version_constraint}",
+)""".format(
             compatible_with = meta.compatible_with,
             platform = platform,
-            # We have to use a String value here because bzlmod is passing in a
-            # string as we cannot have list of bools in build rule attribues.
-            # This if statement does not appear to work unless it is in the
-            # toolchain file.
-            target_settings = target_settings,
+            set_python_version_constraint = set_python_version_constraint,
             user_repository_name = user_repository_name,
             prefix = prefix,
+            python_version = python_version,
         )
         for platform, meta in PLATFORMS.items()
     ])
@@ -116,17 +86,17 @@ def _toolchains_repo_impl(rctx):
 # python_register_toolchains macro so you don't normally need to interact with
 # these targets.
 
-"""
+load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
 
-    # Get the repository name
-    rules_python = get_repository_name(rctx.attr._rules_python_workspace)
+""".format(
+        rules_python = rctx.attr._rules_python_workspace.workspace_name,
+    )
 
     toolchains = python_toolchain_build_file_content(
         prefix = "",
         python_version = rctx.attr.python_version,
         set_python_version_constraint = str(rctx.attr.set_python_version_constraint),
         user_repository_name = rctx.attr.user_repository_name,
-        rules_python = rules_python,
     )
 
     rctx.file("BUILD.bazel", build_content + toolchains)

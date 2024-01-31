@@ -47,6 +47,12 @@ A brief description of the categories of changes:
 * New Python versions available: `3.11.7`, `3.12.1` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240107.
 
+* (toolchain) Allow setting `x.y` as the `python_version` parameter in
+  the version-aware `py_binary` and `py_test` rules. This allows users to
+  use the same rule import for testing with specific Python versions and
+  rely on toolchain configuration and how the latest version takes precedence
+  if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
+  that set the default `python_version` string flag in that way.
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
