@@ -27,6 +27,12 @@ A brief description of the categories of changes:
   This fixes issues due to pyc files being created at runtime and affecting the
   definition of what files were considered part of the runtime.
 
+* (pip_parse) Added the `envsubst` parameter, which enables environment variable
+  substitutions in the `extra_pip_args` attribute.
+
+* (pip_repository) Added the `envsubst` parameter, which enables environment
+  variable substitutions in the `extra_pip_args` attribute.
+
 ### Fixed
 
 * (bzlmod) pip.parse now does not fail with an empty `requirements.txt`.

@@ -18,8 +18,14 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 
 # This repository isn't referenced, except by our test that asserts the requirements.bzl is updated.
 # It also wouldn't be needed by users of this ruleset.
+# If you're using envsubst with extra_pip_args, as we do below, the value of the environment
+# variables at the time we generate requirements.bzl don't make it into the file, as you may
+# verify by inspection; the environment variables at a later time, when we download the
+# packages, will be the ones that take effect.
 pip_parse(
     name = "pip",
+    envsubst = ["PIP_RETRIES"],
+    extra_pip_args = ["--retries=${PIP_RETRIES:-5}"],
     python_interpreter_target = "@python39_host//:python",
     requirements_lock = "//:requirements.txt",
 )
