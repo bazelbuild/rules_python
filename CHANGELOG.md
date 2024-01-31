@@ -61,6 +61,11 @@ A brief description of the categories of changes:
   rely on toolchain configuration and how the latest version takes precedence
   if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
   that set the default `python_version` string flag in that way.
+
+* (repo rules) The environment variable `RULES_PYTHON_REPO_DEBUG=1` can be
+  set to make repository rules log detailed information about what they're
+  up to.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
