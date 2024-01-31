@@ -95,7 +95,7 @@ def _execute_internal(
             op = op,
             cmd = _args_to_str(arguments),
             return_code = result.return_code,
-            cwd = _cwd_to_str(kwargs),
+            cwd = _cwd_to_str(rctx, kwargs),
             timeout = _timeout_to_str(kwargs),
             env_str = _env_to_str(environment),
             output = _outputs_to_str(result),
