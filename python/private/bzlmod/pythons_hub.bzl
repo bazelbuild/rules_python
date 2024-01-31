@@ -20,7 +20,6 @@ load(
     "//python/private:toolchains_repo.bzl",
     "get_host_os_arch",
     "get_host_platform",
-    "get_repository_name",
     "python_toolchain_build_file_content",
 )
 
@@ -31,6 +30,7 @@ def _have_same_length(*lists):
 
 _HUB_BUILD_FILE_TEMPLATE = """\
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
 
 bzl_library(
     name = "interpreters_bzl",
@@ -56,19 +56,24 @@ def _hub_build_file_content(
     if not _have_same_length(python_versions, set_python_version_constraints, user_repository_names):
         fail("all lists must have the same length")
 
-    rules_python = get_repository_name(workspace_location)
-
     # Iterate over the length of python_versions and call
     # build the toolchain content by calling python_toolchain_build_file_content
-    toolchains = "\n".join([python_toolchain_build_file_content(
-        prefix = prefixes[i],
-        python_version = full_version(python_versions[i]),
-        set_python_version_constraint = set_python_version_constraints[i],
-        user_repository_name = user_repository_names[i],
-        rules_python = rules_python,
-    ) for i in range(len(python_versions))])
+    toolchains = "\n".join(
+        [
+            python_toolchain_build_file_content(
+                prefix = prefixes[i],
+                python_version = full_version(python_versions[i]),
+                set_python_version_constraint = set_python_version_constraints[i],
+                user_repository_name = user_repository_names[i],
+            )
+            for i in range(len(python_versions))
+        ],
+    )
 
-    return _HUB_BUILD_FILE_TEMPLATE.format(toolchains = toolchains)
+    return _HUB_BUILD_FILE_TEMPLATE.format(
+        toolchains = toolchains,
+        rules_python = workspace_location.workspace_name,
+    )
 
 _interpreters_bzl_template = """
 INTERPRETER_LABELS = {{

@@ -1,0 +1,27 @@
+config_setting(
+  name = "is_python_3.12.0",
+  visibility = ["//visibility:public"],
+  flag_values = {"//python/config_settings:python_version": "3.12.0"},
+)
+
+alias(
+  name = "is_python_3.12.1",
+  visibility = ["//visibility:public"],
+  actual = "//python/config_settings:_is_python_3.12.1",
+)
+
+alias(
+  name = "_is_python_3.12.1",
+  actual = select({"//python/config_settings:_python_version_flag_equals_3.12.1": "//python/config_settings:_python_version_flag_equals_3.12.1", "//conditions:default": "//python/config_settings:_python_version_flag_equals_3.12"}),
+)
+
+config_setting(
+  name = "_python_version_flag_equals_3.12.1",
+  flag_values = {"//python/config_settings:python_version": "3.12.1"},
+)
+
+config_setting(
+  name = "_python_version_flag_equals_3.12",
+  flag_values = {"//python/config_settings:python_version": "3.12"},
+)
+

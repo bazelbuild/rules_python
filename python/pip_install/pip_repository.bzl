@@ -22,6 +22,7 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
@@ -201,12 +202,24 @@ def _parse_optional_attrs(rctx, args):
     if use_isolated(rctx, rctx.attr):
         args.append("--isolated")
 
+    # At the time of writing, the very latest Bazel, as in `USE_BAZEL_VERSION=last_green bazelisk`
+    # supports rctx.getenv(name, default): When building incrementally, any change to the value of
+    # the variable named by name will cause this repository to be re-fetched. That hasn't yet made
+    # its way into the official releases, though.
+    if "getenv" in dir(rctx):
+        getenv = rctx.getenv
+    else:
+        getenv = rctx.os.environ.get
+
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
     if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            json.encode(struct(arg = rctx.attr.extra_pip_args)),
+            json.encode(struct(arg = [
+                envsubst(pip_arg, rctx.attr.envsubst, getenv)
+                for pip_arg in rctx.attr.extra_pip_args
+            ])),
         ]
 
     if rctx.attr.download_only:
@@ -344,6 +357,7 @@ def _pip_repository_impl(rctx):
         "download_only": rctx.attr.download_only,
         "enable_implicit_namespace_pkgs": rctx.attr.enable_implicit_namespace_pkgs,
         "environment": rctx.attr.environment,
+        "envsubst": rctx.attr.envsubst,
         "extra_pip_args": options,
         "isolated": use_isolated(rctx, rctx.attr),
         "pip_data_exclude": rctx.attr.pip_data_exclude,
@@ -425,9 +439,22 @@ Environment variables to set in the pip subprocess.
 Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
 Note that pip is run with "--isolated" on the CLI so `PIP_<VAR>_<NAME>`
 style env vars are ignored, but env vars that control requests and urllib3
-can be passed.
+can be passed. If you need `PIP_<VAR>_<NAME>`, take a look at `extra_pip_args`
+and `envsubst`.
         """,
         default = {},
+    ),
+    "envsubst": attr.string_list(
+        mandatory = False,
+        doc = """\
+A list of environment variables to substitute (e.g. `["PIP_INDEX_URL",
+"PIP_RETRIES"]`). The corresponding variables are expanded in `extra_pip_args`
+using the syntax `$VARNAME` or `${VARNAME}` (expanding to empty string if unset)
+or `${VARNAME:-default}` (expanding to default if the variable is unset or empty
+in the environment). Note: On Bazel 6 and Bazel 7 changes to the variables named
+here do not cause packages to be re-fetched. Don't fetch different things based
+on the value of these variables.
+""",
     ),
     "experimental_requirement_cycles": attr.string_list_dict(
         default = {},
@@ -516,7 +543,14 @@ NOTE: this is not for cross-compiling Python wheels but rather for parsing the `
 """,
     ),
     "extra_pip_args": attr.string_list(
-        doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+        doc = """Extra arguments to pass on to pip. Must not contain spaces.
+
+Supports environment variables using the syntax `$VARNAME` or
+`${VARNAME}` (expanding to empty string if unset) or
+`${VARNAME:-default}` (expanding to default if the variable is unset
+or empty in the environment), if `"VARNAME"` is listed in the
+`envsubst` attribute. See also `envsubst`.
+""",
     ),
     "isolated": attr.bool(
         doc = """\
