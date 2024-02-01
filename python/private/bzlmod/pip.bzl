@@ -200,6 +200,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
+            envsubst = pip_attr.envsubst,
             group_name = group_name,
             group_deps = group_deps,
         )
