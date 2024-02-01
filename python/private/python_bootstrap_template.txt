@@ -427,10 +427,10 @@ relative_files = True
     kparams['stdout'] = sys.stderr
     kparams['stderr'] = sys.stderr
 
-  ret_code = subprocess.call(
-    params,
-    **kparams
-  ) or ret_code
+  # ret_code = subprocess.call(
+  #   params,
+  #   **kparams
+  # ) or ret_code
 
   try:
     os.unlink(rcfile_name)
