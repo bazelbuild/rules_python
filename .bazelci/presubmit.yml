@@ -59,7 +59,7 @@ buildifier:
   build_targets: ["..."]
   test_targets: ["..."]
 .coverage_targets_example_bzlmod: &coverage_targets_example_bzlmod
-  coverage_targets: ["//:test"]
+  coverage_targets: ["..."]
 .coverage_targets_example_bzlmod_build_file_generation: &coverage_targets_example_bzlmod_build_file_generation
   coverage_targets: ["//:bzlmod_build_file_generation_test"]
 .coverage_targets_example_multi_python: &coverage_targets_example_multi_python
