@@ -257,7 +257,11 @@ def generate_whl_library_build_bazel(
 
     additional_content = []
     data = []
-    srcs_exclude = []
+    srcs_exclude = [
+        # there are sometimes files with whitespace in their names i.e. in `imgaug/augmenters/convolutional (copy).py`
+        # they cannot be imported in any sane way so we exclude them
+        "**/* *",
+    ]
     data_exclude = [] + data_exclude
     dependencies = sorted([normalize_name(d) for d in dependencies])
     dependencies_by_platform = {
