@@ -424,6 +424,7 @@ relative_files = True
   params = [python_program, coverage_entrypoint, "lcov", "--rcfile=" + rcfile_name, "-o", output_filename, "--quiet"]
   kparams = {"env": env, "cwd": workspace, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
   if IsVerboseCoverage():
+    # reconnect stdout/stderr to lcov generation.  Should be useful for debugging `coverage` issues.
     params.remove("--quiet")
     kparams['stdout'] = sys.stderr
     kparams['stderr'] = sys.stderr
