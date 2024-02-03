@@ -168,9 +168,9 @@ class Platform:
             else:
                 return f"{self.os}_{self.arch}"
 
-        prefix = "@//python/config_settings:is_python_3."
+        prefix = f"@//python/config_settings:is_python_3.{self.minor_version}"
         if self.arch is None and self.os is None:
-            return f"{prefix}{self.minor_version}"
+            return prefix
 
         os = self.os or "any"
         cpu = self.arch or "any"

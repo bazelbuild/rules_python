@@ -107,7 +107,7 @@ def _plat_label(plat):
     elif plat.startswith("@"):
         return str(Label(plat))
     else:
-        return ":is_" + plat
+        fail("unsupported platform label")
 
 def _render_list_and_select(deps, deps_by_platform, tmpl):
     deps = render.list([tmpl.format(d) for d in sorted(deps)])
