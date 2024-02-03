@@ -32,17 +32,12 @@ def construct_config_settings(name, python_versions):
 
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     minor_to_micro_versions = {}
-    micro_version_to_platforms = {}
 
     allowed_flag_values = []
-    for micro_version, plats in python_versions.items():
+    for micro_version in python_versions:
         minor, _, _ = micro_version.rpartition(".")
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
         allowed_flag_values.append(micro_version)
-        micro_version_to_platforms[micro_version] = [
-            _parse_platform(plat)
-            for plat in plats
-        ]
 
     allowed_flag_values.extend(list(minor_to_micro_versions))
 
@@ -61,7 +56,10 @@ def construct_config_settings(name, python_versions):
         _config_settings_for_minor_version(
             minor_version = minor_version,
             micro_versions = {
-                v: micro_version_to_platforms[v]
+                v: [
+                    _parse_platform(plat)
+                    for plat in python_versions[v]
+                ]
                 for v in micro_versions
             },
         )
