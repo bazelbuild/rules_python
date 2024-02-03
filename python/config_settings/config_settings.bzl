@@ -32,33 +32,17 @@ def construct_config_settings(name, python_versions):
 
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     minor_to_micro_versions = {}
-    minor_to_plats = {}
-    micro_to_plats = {}
+    micro_version_to_platforms = {}
 
     allowed_flag_values = []
     for micro_version, plats in python_versions.items():
         minor, _, _ = micro_version.rpartition(".")
         minor_to_micro_versions.setdefault(minor, []).append(micro_version)
         allowed_flag_values.append(micro_version)
-
-        for plat in plats:
-            cpu, _, os = plat.partition("-")
-            if "linux" in os:
-                os = "linux"
-            elif "darwin" in os:
-                os = "osx"
-            elif "windows" in os:
-                os = "windows"
-            else:
-                fail("unknown os: {}".format(os))
-
-            p = (os, cpu)
-
-            # TODO @aignas 2024-02-03: use bazel skylib sets
-            if minor not in minor_to_plats or p not in minor_to_plats[minor]:
-                minor_to_plats.setdefault(minor, []).append(p)
-            if micro_version not in micro_to_plats or (os, cpu) not in micro_to_plats[micro_version]:
-                micro_to_plats.setdefault(micro_version, []).append(p)
+        micro_version_to_platforms[micro_version] = [
+            _parse_platform(plat)
+            for plat in plats
+        ]
 
     allowed_flag_values.extend(list(minor_to_micro_versions))
 
@@ -77,10 +61,23 @@ def construct_config_settings(name, python_versions):
         _config_settings_for_minor_version(
             minor_version = minor_version,
             micro_versions = {
-                v: micro_to_plats[v]
+                v: micro_version_to_platforms[v]
                 for v in micro_versions
             },
         )
+
+def _parse_platform(plat):
+    cpu, _, os = plat.partition("-")
+    if "linux" in os:
+        os = "linux"
+    elif "darwin" in os:
+        os = "osx"
+    elif "windows" in os:
+        os = "windows"
+    else:
+        fail("unknown os: {}".format(os))
+
+    return (os, cpu)
 
 def _config_settings_for_minor_version(*, minor_version, micro_versions):
     """Constructs a set of configs for all Python versions.
