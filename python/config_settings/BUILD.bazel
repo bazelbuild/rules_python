@@ -12,14 +12,8 @@ filegroup(
 
 construct_config_settings(
     name = "construct_config_settings",
-    platforms = [
-        ("linux", "aarch64"),
-        ("linux", "ppc"),
-        ("linux", "s390x"),
-        ("linux", "x86_64"),
-        ("osx", "aarch64"),
-        ("osx", "x86_64"),
-        ("windows", "x86_64"),
-    ],
-    python_versions = TOOL_VERSIONS.keys(),
+    python_versions = {
+        version: metadata["sha256"].keys()
+        for version, metadata in TOOL_VERSIONS.items()
+    },
 )
