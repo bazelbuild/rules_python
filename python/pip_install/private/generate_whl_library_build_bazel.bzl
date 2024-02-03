@@ -107,7 +107,7 @@ def _plat_label(plat):
     elif plat.startswith("@"):
         return str(Label(plat))
     else:
-        fail("unsupported platform label")
+        return ":is_" + plat
 
 def _render_list_and_select(deps, deps_by_platform, tmpl):
     deps = render.list([tmpl.format(d) for d in sorted(deps)])
@@ -139,6 +139,51 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
         return deps_by_platform
     else:
         return "{} + {}".format(deps, deps_by_platform)
+
+def _render_config_settings(dependencies_by_platform):
+    plats = []
+    for p in dependencies_by_platform:
+        # p can be one of the following formats:
+        # * @platforms//os:{value}
+        # * @platforms//cpu:{value}
+        # * @//python/config_settings:is_python_3.{minor_version}
+        # * @//python/config_settings:is_python_3.{minor_version}_{os}_{cpu}
+        # * @//python/config_settings:is_python_3.{minor_version}_{os}_any
+        # * @//python/config_settings:is_python_3.{minor_version}_any_{cpu}
+        # * {os}_{cpu}
+        if p.startswith("@"):
+            continue
+
+        os, _, arch = p.partition("_")
+        os = "" if os == "any" else os
+        arch = "" if arch == "any" else arch
+
+        # TODO @aignas 2024-02-03: simplify
+        plats.append((os, arch))
+
+    if not plats:
+        return None, None
+
+    additional_content = []
+    for (os, arch) in plats:
+        constraint_values = [
+            "@platforms//os:{}".format(os),
+            "@platforms//cpu:{}".format(arch),
+        ]
+
+        additional_content.append(
+            """\
+config_setting(
+    name = "is_{name}",
+    constraint_values = {values},
+    visibility = ["//visibility:private"],
+)""".format(
+                name = "{}_{}".format(os, arch),
+                values = render.indent(render.list(sorted([str(Label(c)) for c in constraint_values]))).strip(),
+            ),
+        )
+
+    return "\n\n".join(additional_content)
 
 def generate_whl_library_build_bazel(
         *,
@@ -246,6 +291,10 @@ def generate_whl_library_build_bazel(
         """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
         """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
     ]
+
+    config_settings_content = _render_config_settings(dependencies_by_platform)
+    if config_settings_content:
+        additional_content.append(config_settings_content)
 
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
