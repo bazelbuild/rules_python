@@ -162,7 +162,7 @@ def _render_config_settings(dependencies_by_platform):
         plats.append((os, arch))
 
     if not plats:
-        return None, None
+        return None
 
     additional_content = []
     for (os, arch) in plats:
