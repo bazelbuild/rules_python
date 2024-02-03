@@ -73,23 +73,78 @@ def construct_config_settings(name, python_versions):
         visibility = ["//visibility:public"],
     )
 
-    _construct_config_settings_for_os_cpu(
-        minor_to_micro_versions = minor_to_micro_versions,
-        minor_to_plats = minor_to_plats,
-        micro_to_plats = micro_to_plats,
-    )
+    for minor_version, micro_versions in minor_to_micro_versions.items():
+        _config_settings_for_minor_version(
+            minor_version = minor_version,
+            micro_versions = {
+                v: micro_to_plats[v]
+                for v in micro_versions
+            },
+        )
+
+def _config_settings_for_minor_version(*, minor_version, micro_versions):
+    """Constructs a set of configs for all Python versions.
+    """
+    matches_minor_version_names = {}
+    constraint_values_by_suffix = {}
+
+    for micro_version, plats in micro_versions.items():
+        for suffix, constraint_values in _constraint_values(plats).items():
+            matches_micro_version = _micro_version_condition(
+                micro_version = micro_version,
+                suffix = suffix,
+                constraint_values = constraint_values,
+            )
+            matches_minor_version_names.setdefault(suffix, []).append(matches_micro_version)
+            constraint_values_by_suffix[suffix] = constraint_values
+
+    for suffix, constraint_values in constraint_values_by_suffix.items():
+        # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
+        # It's private because matching the concept of e.g. "3.8" value is done
+        # using the `is_python_X.Y` config setting group, which is aware of the
+        # minor versions that could match instead.
+        equals_minor_version = "_python_version_flag_equals_" + minor_version + suffix
+        native.config_setting(
+            name = equals_minor_version,
+            flag_values = {":python_version": minor_version},
+            constraint_values = constraint_values,
+        )
+        matches_minor_version_names[suffix].append(equals_minor_version)
+
+        # This is prefixed with an underscore to prevent confusion due to how
+        # config_setting_group is implemented and how our micro-version targets
+        # are named. config_setting_group will generate targets like
+        # "is_python_3.10_1" (where the `_N` suffix is len(match_any).
+        # Meanwhile, the micro-version tarets are named "is_python_3.10.1" --
+        # just a single dot vs underscore character difference.
+        selects.config_setting_group(
+            name = "_is_python_" + minor_version + suffix,
+            match_any = matches_minor_version_names[suffix],
+        )
+
+        native.alias(
+            name = "is_python_" + minor_version + suffix,
+            actual = "_is_python_" + minor_version,
+            visibility = ["//visibility:public"],
+        )
 
 def _constraint_values(plats):
+    """For a list of (os, cpu) tuples get all possible platform names and constraint values.
+    """
     ret = {
+        # This is the no platform constraint values version
         "": [],
     }
     _plats = []
     for (os, cpu) in plats:
         if (os, None) not in _plats:
+            # Add only the OS constraint value
             _plats.append((os, None))
         if (None, cpu) not in _plats:
+            # Add only the CPU constraint value
             _plats.append((None, cpu))
 
+        # Add both OS and CPU constraint values
         _plats.append((os, cpu))
 
     for (os, cpu) in _plats:
@@ -106,83 +161,42 @@ def _constraint_values(plats):
 
     return ret
 
-def _construct_config_settings_for_os_cpu(*, minor_to_micro_versions, minor_to_plats, micro_to_plats):
-    """Constructs a set of configs for all Python versions.
+def _micro_version_condition(*, micro_version, suffix, constraint_values):
+    minor_version, _, _ = micro_version.rpartition(".")
+    is_micro_version_name = "is_python_" + micro_version + suffix
+    if MINOR_MAPPING[minor_version] != micro_version:
+        native.config_setting(
+            name = is_micro_version_name,
+            flag_values = {":python_version": micro_version},
+            constraint_values = constraint_values,
+            visibility = ["//visibility:public"],
+        )
+        return is_micro_version_name
 
-    Args:
-        minor_to_micro_versions: Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
-        minor_to_plats: TODO
-        micro_to_plats: TODO
-    """
-    for minor_version, micro_versions in minor_to_micro_versions.items():
-        matches_minor_version_names = {}
-        for name, constraint_values in _constraint_values(minor_to_plats[minor_version]).items():
-            # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
-            # It's private because matching the concept of e.g. "3.8" value is done
-            # using the `is_python_X.Y` config setting group, which is aware of the
-            # minor versions that could match instead.
-            equals_minor_version_name = "_python_version_flag_equals_" + minor_version + name
-            native.config_setting(
-                name = equals_minor_version_name,
-                flag_values = {":python_version": minor_version},
-                constraint_values = constraint_values,
-            )
-            matches_minor_version_names[name] = [equals_minor_version_name]
+    # Ensure that is_python_3.9.8 is matched if python_version is set
+    # to 3.9 if MINOR_MAPPING points to 3.9.8
+    equals_micro_name = "_python_version_flag_equals_" + micro_version + suffix
+    equals_minor_name = "_python_version_flag_equals_" + minor_version + suffix
+    native.config_setting(
+        name = equals_micro_name,
+        flag_values = {":python_version": micro_version},
+        constraint_values = constraint_values,
+    )
 
-        for micro_version in micro_versions:
-            for name, constraint_values in _constraint_values(micro_to_plats[micro_version]).items():
-                is_micro_version_name = "is_python_" + micro_version + name
-                if MINOR_MAPPING[minor_version] != micro_version:
-                    native.config_setting(
-                        name = is_micro_version_name,
-                        flag_values = {":python_version": micro_version},
-                        constraint_values = constraint_values,
-                        visibility = ["//visibility:public"],
-                    )
-                    matches_minor_version_names[name].append(is_micro_version_name)
-                    continue
-
-                # Ensure that is_python_3.9.8 is matched if python_version is set
-                # to 3.9 if MINOR_MAPPING points to 3.9.8
-                equals_micro_name = "_python_version_flag_equals_" + micro_version + name
-                native.config_setting(
-                    name = equals_micro_name,
-                    flag_values = {":python_version": micro_version},
-                    constraint_values = constraint_values,
-                )
-
-                # An alias pointing to an underscore-prefixed config_setting_group
-                # is used because config_setting_group creates
-                # `is_{minor}_N` targets, which are easily confused with the
-                # `is_{minor}.{micro}` (dot) targets.
-                selects.config_setting_group(
-                    name = "_" + is_micro_version_name,
-                    match_any = [
-                        equals_micro_name,
-                        matches_minor_version_names[name][0],
-                    ],
-                )
-                native.alias(
-                    name = is_micro_version_name,
-                    actual = "_" + is_micro_version_name,
-                    visibility = ["//visibility:public"],
-                )
-                matches_minor_version_names[name].append(equals_micro_name)
-
-        for name in _constraint_values(minor_to_plats[minor_version]).keys():
-            # This is prefixed with an underscore to prevent confusion due to how
-            # config_setting_group is implemented and how our micro-version targets
-            # are named. config_setting_group will generate targets like
-            # "is_python_3.10_1" (where the `_N` suffix is len(match_any).
-            # Meanwhile, the micro-version tarets are named "is_python_3.10.1" --
-            # just a single dot vs underscore character difference.
-            selects.config_setting_group(
-                name = "_is_python_" + minor_version + name,
-                match_any = matches_minor_version_names[name],
-            )
-
-            native.alias(
-                name = "is_python_" + minor_version + name,
-                actual = "_is_python_" + minor_version,
-                visibility = ["//visibility:public"],
-            )
+    # An alias pointing to an underscore-prefixed config_setting_group
+    # is used because config_setting_group creates
+    # `is_{minor}_N` targets, which are easily confused with the
+    # `is_{minor}.{micro}` (dot) targets.
+    selects.config_setting_group(
+        name = "_" + is_micro_version_name,
+        match_any = [
+            equals_micro_name,
+            equals_minor_name,
+        ],
+    )
+    native.alias(
+        name = is_micro_version_name,
+        actual = "_" + is_micro_version_name,
+        visibility = ["//visibility:public"],
+    )
+    return equals_micro_name
