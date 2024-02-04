@@ -121,8 +121,8 @@ filegroup(
         {
             "@//python/config_settings:is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
             "@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:whl"],
-            "@//python/config_settings:is_python_3.9_any_aarch64": ["@pypi_py39_arm_dep//:whl"],
-            "@//python/config_settings:is_python_3.9_linux_any": ["@pypi_py39_linux_dep//:whl"],
+            "@//python/config_settings:is_python_3.9_aarch64": ["@pypi_py39_arm_dep//:whl"],
+            "@//python/config_settings:is_python_3.9_linux": ["@pypi_py39_linux_dep//:whl"],
             "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
             "@platforms//os:windows": ["@pypi_win_dep//:whl"],
             ":is_linux_x86_64": ["@pypi_linux_intel_dep//:whl"],
@@ -155,8 +155,8 @@ py_library(
         {
             "@//python/config_settings:is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
             "@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:pkg"],
-            "@//python/config_settings:is_python_3.9_any_aarch64": ["@pypi_py39_arm_dep//:pkg"],
-            "@//python/config_settings:is_python_3.9_linux_any": ["@pypi_py39_linux_dep//:pkg"],
+            "@//python/config_settings:is_python_3.9_aarch64": ["@pypi_py39_arm_dep//:pkg"],
+            "@//python/config_settings:is_python_3.9_linux": ["@pypi_py39_linux_dep//:pkg"],
             "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
             "@platforms//os:windows": ["@pypi_win_dep//:pkg"],
             ":is_linux_x86_64": ["@pypi_linux_intel_dep//:pkg"],
@@ -193,8 +193,8 @@ config_setting(
         dependencies_by_platform = {
             "@//python/config_settings:is_python_3.10_linux_ppc": ["py310_linux_ppc_dep"],
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
-            "@//python/config_settings:is_python_3.9_any_aarch64": ["py39_arm_dep"],
-            "@//python/config_settings:is_python_3.9_linux_any": ["py39_linux_dep"],
+            "@//python/config_settings:is_python_3.9_aarch64": ["py39_arm_dep"],
+            "@//python/config_settings:is_python_3.9_linux": ["py39_linux_dep"],
             "@platforms//cpu:aarch64": ["arm_dep"],
             "@platforms//os:windows": ["win_dep"],
             "linux_x86_64": ["linux_intel_dep"],

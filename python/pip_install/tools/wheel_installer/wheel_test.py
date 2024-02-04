@@ -242,15 +242,15 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(
             {
                 "@//python/config_settings:is_python_3.7": ["baz"],
-                "@//python/config_settings:is_python_3.7_linux_any": [
+                "@//python/config_settings:is_python_3.7_linux": [
                     "baz",
                     "posix_dep",
                 ],
-                "@//python/config_settings:is_python_3.8_linux_any": [
+                "@//python/config_settings:is_python_3.8_linux": [
                     "posix_dep",
                     "posix_dep_with_version",
                 ],
-                "@//python/config_settings:is_python_3.9_linux_any": [
+                "@//python/config_settings:is_python_3.9_linux": [
                     "posix_dep",
                     "posix_dep_with_version",
                 ],

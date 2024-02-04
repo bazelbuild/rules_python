@@ -144,15 +144,15 @@ def _constraint_values(plats):
 
     for (os, cpu) in _plats:
         constraint_values = []
+        parts = [""]
         if os:
             constraint_values.append("@platforms//os:{}".format(os))
+            parts.append(os)
         if cpu:
             constraint_values.append("@platforms//cpu:{}".format(cpu))
+            parts.append(cpu)
 
-        os = os or "any"
-        cpu = cpu or "any"
-
-        ret["_".join(["", os, cpu])] = constraint_values
+        ret["_".join(parts)] = constraint_values
 
     return ret
 

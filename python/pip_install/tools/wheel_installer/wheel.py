@@ -172,10 +172,13 @@ class Platform:
         if self.arch is None and self.os is None:
             return prefix
 
-        os = self.os or "any"
-        cpu = self.arch or "any"
+        suffix = [prefix]
+        if self.os:
+            suffix.append(str(self.os))
+        if self.arch:
+            suffix.append(str(self.arch))
 
-        return f"{prefix}_{os}_{cpu}"
+        return "_".join(suffix)
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
