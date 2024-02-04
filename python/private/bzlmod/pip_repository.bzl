@@ -31,13 +31,7 @@ def _pip_repository_impl(rctx):
         repo_name = rctx.attr.repo_name,
         rules_python = rctx.attr._template.workspace_name,
         default_version = rctx.attr.default_version,
-        whl_map = {
-            k: {
-                v.version: v.pip_name
-                for v in values
-            }
-            for k, values in whl_map_decode(rctx.attr.whl_map).items()
-        },
+        whl_map = whl_map_decode(rctx.attr.whl_map),
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)

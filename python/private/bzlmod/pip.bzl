@@ -221,24 +221,25 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             group_deps = group_deps,
         )
 
-        platform_config_setting = pip_attr.platform_config_setting
-        if not platform_config_setting and pip_attr.platform:
+        platform_config_setting = "@@{{rules_python}}//python/config_settings:is_python_{version}".format(
+            version = _major_minor_version(pip_attr.python_version),
+        )
+        if pip_attr.platform:
             platforms = whl_target_platforms(pip_attr.platform)
             if len(platforms) != 1:
                 fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
-
-            rules_python = Label("//:MODULE.bazel")
-            platform_config_setting = Label("@//python/config_settings:is_python_{version}_{platform}".format(
-                rules_python = rules_python.workspace_name,
-                version = _major_minor_version(pip_attr.python_version),
-                platform = platforms[0],
-            ))
+            platform_config_setting = "{}_{}_{}".format(
+                platform_config_setting,
+                platforms[0].os,
+                platforms[0].cpu,
+            )
 
         whl_map[hub_name].setdefault(whl_name, []).append(
             struct(
                 version = _major_minor_version(pip_attr.python_version),
                 pip_name = pip_name + "_",
-                config_setting = str(platform_config_setting),
+                config_setting = platform_config_setting,
+                platform = pip_attr.platform,
             ),
         )
 

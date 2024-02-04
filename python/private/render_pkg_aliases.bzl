@@ -67,26 +67,22 @@ def _render_whl_library_alias(
     # statements  These select statements point to the different pip
     # whls that are based on a specific version of Python.
     selects = {}
-    for full_version, repo in sorted(versions.items()):
-        condition = "@@{rules_python}//python/config_settings:is_python_{full_python_version}".format(
-            rules_python = rules_python,
-            full_python_version = full_version,
-        )
+    target_by_version = {}
+    for version in versions:
         actual = "@{repo_prefix}{dep}//:{target}".format(
-            repo_prefix = repo,
+            repo_prefix = version.pip_name,
             dep = dep,
             target = target,
         )
-        selects[condition] = actual
+        selects[version.config_setting.format(rules_python = rules_python)] = actual
 
-    if default_version:
+        # This allows us to set the default condition correctly
+        if not version.platform:
+            target_by_version[version.version] = actual
+
+    if default_version in target_by_version:
         no_match_error = None
-        default_actual = "@{repo_prefix}{dep}//:{target}".format(
-            repo_prefix = versions[default_version],
-            dep = dep,
-            target = target,
-        )
-        selects["//conditions:default"] = default_actual
+        selects["//conditions:default"] = target_by_version[default_version]
     else:
         no_match_error = "_NO_MATCH_ERROR"
 
@@ -105,11 +101,11 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
 
     version_values = None
     if versions:
-        version_values = sorted(versions)
+        version_values = sorted([v.version for v in versions])
 
     if not version_values:
         pass
-    elif default_version in versions:
+    elif default_version in version_values:
         pass
     else:
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
