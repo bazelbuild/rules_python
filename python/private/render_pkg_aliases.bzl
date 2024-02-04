@@ -16,9 +16,8 @@
 
 This is used in bzlmod and non-bzlmod setups."""
 
-load("//python/private:normalize_name.bzl", "normalize_name")
+load(":normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
-load(":version_label.bzl", "version_label")
 
 NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
@@ -57,8 +56,8 @@ def _render_whl_library_alias(
     if versions == None:
         return render.alias(
             name = name,
-            actual = repr("@{repo_name}_{dep}//:{target}".format(
-                repo_name = repo_name,
+            actual = repr("@{repo_prefix}_{dep}//:{target}".format(
+                repo_prefix = repo_name,
                 dep = dep,
                 target = target,
             )),
@@ -68,14 +67,13 @@ def _render_whl_library_alias(
     # statements  These select statements point to the different pip
     # whls that are based on a specific version of Python.
     selects = {}
-    for full_version in versions:
+    for full_version, repo in sorted(versions.items()):
         condition = "@@{rules_python}//python/config_settings:is_python_{full_python_version}".format(
             rules_python = rules_python,
             full_python_version = full_version,
         )
-        actual = "@{repo_name}_{version}_{dep}//:{target}".format(
-            repo_name = repo_name,
-            version = version_label(full_version),
+        actual = "@{repo_prefix}{dep}//:{target}".format(
+            repo_prefix = repo,
             dep = dep,
             target = target,
         )
@@ -83,9 +81,8 @@ def _render_whl_library_alias(
 
     if default_version:
         no_match_error = None
-        default_actual = "@{repo_name}_{version}_{dep}//:{target}".format(
-            repo_name = repo_name,
-            version = version_label(default_version),
+        default_actual = "@{repo_prefix}{dep}//:{target}".format(
+            repo_prefix = versions[default_version],
             dep = dep,
             target = target,
         )
@@ -106,16 +103,17 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
         """package(default_visibility = ["//visibility:public"])""",
     ]
 
+    version_values = None
     if versions:
-        versions = sorted(versions)
+        version_values = sorted(versions)
 
-    if not versions:
+    if not version_values:
         pass
     elif default_version in versions:
         pass
     else:
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
-            supported_versions = ", ".join(versions),
+            supported_versions = ", ".join(version_values),
             rules_python = rules_python,
         )
 

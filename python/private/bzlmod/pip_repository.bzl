@@ -16,6 +16,7 @@
 
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
 load("//python/private:text_util.bzl", "render")
+load(":utils.bzl", "whl_map_decode")
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
@@ -30,7 +31,13 @@ def _pip_repository_impl(rctx):
         repo_name = rctx.attr.repo_name,
         rules_python = rctx.attr._template.workspace_name,
         default_version = rctx.attr.default_version,
-        whl_map = rctx.attr.whl_map,
+        whl_map = {
+            k: {
+                v.version: v.pip_name
+                for v in values
+            }
+            for k, values in whl_map_decode(rctx.attr.whl_map).items()
+        },
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
@@ -71,7 +78,7 @@ setting.""",
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
-    "whl_map": attr.string_list_dict(
+    "whl_map": attr.string_dict(
         mandatory = True,
         doc = "The wheel map where values are python versions",
     ),
