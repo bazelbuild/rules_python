@@ -138,6 +138,37 @@ pip.parse(
     # You can use one of the values below to specify the target platform
     # to generate the dependency graph for.
     experimental_target_platforms = [
+        # Specifying the target platforms explicitly
+        "cp39_linux_x86_64",
+        "cp39_linux_*",
+        "cp39_*",
+    ],
+    hub_name = "pip",
+    platform = "manylinux_2_17_x86_64",
+    python_version = "3.9",
+    requirements_lock = "//:requirements_lock_3_9.txt",
+    # These modifications were created above and we
+    # are providing pip.parse with the label of the mod
+    # and the name of the wheel.
+    whl_modifications = {
+        "@whl_mods_hub//:requests.json": "requests",
+        "@whl_mods_hub//:wheel.json": "wheel",
+    },
+)
+pip.parse(
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-qthelp",
+            "sphinxcontrib-htmlhelp",
+            "sphinxcontrib-devhelp",
+            "sphinxcontrib-applehelp",
+            "sphinxcontrib-serializinghtml",
+        ],
+    },
+    # You can use one of the values below to specify the target platform
+    # to generate the dependency graph for.
+    experimental_target_platforms = [
         # Using host python version
         "linux_*",
         "osx_*",
