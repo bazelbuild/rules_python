@@ -124,6 +124,8 @@ pip.parse(
         "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
+
+# To setup fetching wheels for a particular target platform use the following:
 pip.parse(
     experimental_requirement_cycles = {
         "sphinx": [
@@ -135,16 +137,14 @@ pip.parse(
             "sphinxcontrib-serializinghtml",
         ],
     },
-    # You can use one of the values below to specify the target platform
-    # to generate the dependency graph for.
-    experimental_target_platforms = [
-        # Specifying the target platforms explicitly
-        "cp39_linux_x86_64",
-        "cp39_linux_*",
-        "cp39_*",
-    ],
     hub_name = "pip",
+    # NOTE @aignas 2024-02-05: the experimental_target_platforms will be
+    # derived from the value below, so you do not need to setup anything.
     platform = "manylinux_2_17_x86_64",
+    # You can also set a particular config setting if the default one will not suffice
+    # or if you have a custom interpreter that is passed to pip.parse and you for example
+    # want to target a `musl` python distribution.
+    platform_config_setting = "@rules_python//python/config_settings:is_python_3.9_linux_x86_64",
     python_version = "3.9",
     requirements_lock = "//:requirements_lock_3_9.txt",
     # These modifications were created above and we
