@@ -238,11 +238,16 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
     (os_name, arch) = get_host_os_arch(rctx)
     host_platform = get_host_platform(os_name, arch)
+
+    is_windows = (os_name == WINDOWS_NAME)
+    python3_binary_path = "python.exe" if is_windows else "bin/python3"
+
     host_python = rctx.path(
         Label(
-            "@@{py_repository}_{host_platform}//:python".format(
+            "@@{py_repository}_{host_platform}//:{python}".format(
                 py_repository = rctx.attr.name[:-len("_host")],
                 host_platform = host_platform,
+                python = python3_binary_path,
             ),
         ),
     )
