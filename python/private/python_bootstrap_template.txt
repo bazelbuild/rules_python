@@ -420,9 +420,11 @@ relative_files = True
 
   PrintVerboseCoverage('Converting coveragepy database to lcov:', output_filename)
   # Run coveragepy again to convert its .coverage database file into lcov.
+  # Under normal conditions running lcov outputs to stdout/stderr, which causes problems for `coverage`.
   params = [python_program, coverage_entrypoint, "lcov", "--rcfile=" + rcfile_name, "-o", output_filename, "--quiet"]
   kparams = {"env": env, "cwd": workspace, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
   if IsVerboseCoverage():
+    # reconnect stdout/stderr to lcov generation.  Should be useful for debugging `coverage` issues.
     params.remove("--quiet")
     kparams['stdout'] = sys.stderr
     kparams['stderr'] = sys.stderr
