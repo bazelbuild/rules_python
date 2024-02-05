@@ -66,6 +66,12 @@ A brief description of the categories of changes:
   set to make repository rules log detailed information about what they're
   up to.
 
+* (toolchain) The variants of `is_python` `config_setting` including the
+  target os and cpu values have been added for better ergonomics for matching
+  both, the python version and the os/cpu value in a single select statement.
+  They are added mainly for internal use and the API might change at any time
+  as needed by the internal repository rules.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
