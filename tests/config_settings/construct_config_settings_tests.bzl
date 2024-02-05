@@ -28,21 +28,49 @@ def _subject_impl(ctx):
 _subject = rule(
     implementation = _subject_impl,
     attrs = {
+        "match_cpu": attr.string(),
         "match_micro": attr.string(),
         "match_minor": attr.string(),
+        "match_os": attr.string(),
+        "match_os_cpu": attr.string(),
         "no_match": attr.string(),
         "no_match_micro": attr.string(),
     },
 )
 
 def _test_minor_version_matching(name):
+    minor_matches = {
+        "//python/config_settings:is_python_3.11": "matched-3.11",
+        "//conditions:default": "matched-default",
+    }
+    minor_cpu_matches = {
+        "//python/config_settings:is_python_3.11_aarch64": "matched-3.11-aarch64",
+        "//python/config_settings:is_python_3.11_ppc": "matched-3.11-ppc",
+        "//python/config_settings:is_python_3.11_s390x": "matched-3.11-s390x",
+        "//python/config_settings:is_python_3.11_x86_64": "matched-3.11-x86_64",
+    }
+    minor_os_matches = {
+        "//python/config_settings:is_python_3.11_linux": "matched-3.11-linux",
+        "//python/config_settings:is_python_3.11_osx": "matched-3.11-osx",
+        "//python/config_settings:is_python_3.11_windows": "matched-3.11-windows",
+    }
+    minor_os_cpu_matches = {
+        "//python/config_settings:is_python_3.11_linux_aarch64": "matched-3.11-linux-aarch64",
+        "//python/config_settings:is_python_3.11_linux_ppc": "matched-3.11-linux-ppc",
+        "//python/config_settings:is_python_3.11_linux_s390x": "matched-3.11-linux-s390x",
+        "//python/config_settings:is_python_3.11_linux_x86_64": "matched-3.11-linux-x86_64",
+        "//python/config_settings:is_python_3.11_osx_aarch64": "matched-3.11-osx-aarch64",
+        "//python/config_settings:is_python_3.11_osx_x86_64": "matched-3.11-osx-x86_64",
+        "//python/config_settings:is_python_3.11_windows_x86_64": "matched-3.11-windows-x86_64",
+    }
+
     rt_util.helper_target(
         _subject,
         name = name + "_subject",
-        match_minor = select({
-            "//python/config_settings:is_python_3.11": "matched-3.11",
-            "//conditions:default": "matched-default",
-        }),
+        match_minor = select(minor_matches),
+        match_cpu = select(minor_matches | minor_cpu_matches),
+        match_os = select(minor_matches | minor_os_matches),
+        match_os_cpu = select(minor_matches | minor_cpu_matches | minor_os_matches | minor_os_cpu_matches),
         match_micro = select({
             "//python/config_settings:is_python_3.11": "matched-3.11",
             "//conditions:default": "matched-default",
@@ -59,6 +87,7 @@ def _test_minor_version_matching(name):
         impl = _test_minor_version_matching_impl,
         config_settings = {
             str(Label("//python/config_settings:python_version")): "3.11.1",
+            "//command_line_option:platforms": str(Label("//tests/config_settings:linux_aarch64")),
         },
     )
 
@@ -69,6 +98,15 @@ def _test_minor_version_matching_impl(env, target):
     )
     target.attr("match_micro", factory = subjects.str).equals(
         "matched-3.11",
+    )
+    target.attr("match_cpu", factory = subjects.str).equals(
+        "matched-3.11-aarch64",
+    )
+    target.attr("match_os", factory = subjects.str).equals(
+        "matched-3.11-linux",
+    )
+    target.attr("match_os_cpu", factory = subjects.str).equals(
+        "matched-3.11-linux-aarch64",
     )
     target.attr("no_match", factory = subjects.str).equals(
         "matched-default",

@@ -119,7 +119,7 @@ def _config_settings_for_minor_version(*, minor_version, micro_versions):
 
         native.alias(
             name = "is_python_" + minor_version + suffix,
-            actual = "_is_python_" + minor_version,
+            actual = "_is_python_" + minor_version + suffix,
             visibility = ["//visibility:public"],
         )
 
@@ -130,19 +130,23 @@ def _constraint_values(plats):
         # This is the no platform constraint values version
         "": [],
     }
-    _plats = []
+    os_cpus = []
     for (os, cpu) in plats:
-        if (os, None) not in _plats:
+        # Normalize the cpu names to the ones present in the `@platforms//cpu`
+        if cpu == "ppc64le":
+            cpu = "ppc"
+
+        if (os, None) not in os_cpus:
             # Add only the OS constraint value
-            _plats.append((os, None))
-        if (None, cpu) not in _plats:
+            os_cpus.append((os, None))
+        if (None, cpu) not in os_cpus:
             # Add only the CPU constraint value
-            _plats.append((None, cpu))
+            os_cpus.append((None, cpu))
 
         # Add both OS and CPU constraint values
-        _plats.append((os, cpu))
+        os_cpus.append((os, cpu))
 
-    for (os, cpu) in _plats:
+    for (os, cpu) in os_cpus:
         constraint_values = []
         parts = [""]
         if os:
