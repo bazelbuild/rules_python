@@ -30,12 +30,14 @@ bzl_library(
     srcs = ["pip.bzl"],
     deps = [
         ":pip_repository_bzl",
+        ":utils_bzl",
         "//python/pip_install:pip_repository_bzl",
         "//python/pip_install:requirements_parser_bzl",
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:parse_whl_name_bzl",
         "//python/private:version_label_bzl",
+        "//python/private:whl_target_platforms_bzl",
         ":bazel_features_bzl",
     ] + [
         "@pythons_hub//:interpreters_bzl",
@@ -52,6 +54,7 @@ bzl_library(
     srcs = ["pip_repository.bzl"],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":utils_bzl",
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:text_util_bzl",
     ],
@@ -75,4 +78,9 @@ bzl_library(
         "//python/private:full_version_bzl",
         "//python/private:py_toolchain_suite_bzl",
     ],
+)
+
+bzl_library(
+    name = "utils_bzl",
+    srcs = ["utils.bzl"],
 )
