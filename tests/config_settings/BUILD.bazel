@@ -17,3 +17,11 @@ load(":construct_config_settings_tests.bzl", "construct_config_settings_test_sui
 construct_config_settings_test_suite(
     name = "construct_config_settings_tests",
 )
+
+platform(
+    name = "linux_aarch64",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+)
