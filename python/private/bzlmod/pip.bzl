@@ -131,10 +131,26 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             hub_name,
             version_label(pip_attr.python_version),
         )
+
+    platform_config_setting = "@@{{rules_python}}//python/config_settings:is_python_{version}".format(
+        version = _major_minor_version(pip_attr.python_version),
+    )
+    target_platforms = pip_attr.experimental_target_platforms
     if pip_attr.platform:
         requirements_lock = pip_attr.requirements_lock
         if not requirements_lock or pip_attr.requirements_windows or pip_attr.requirements_darwin or pip_attr.requirements_linux:
             fail("only requirements_lock can be specified when platform is used")
+
+        platforms = whl_target_platforms(pip_attr.platform)
+        if len(platforms) != 1:
+            fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
+
+        platform_config_setting = "{}_{}_{}".format(
+            platform_config_setting,
+            platforms[0].os,
+            platforms[0].cpu,
+        )
+        target_platforms = platforms
     else:
         requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
@@ -210,7 +226,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
                 p: json.encode(args)
                 for p, args in whl_overrides.get(whl_name, {}).items()
             },
-            experimental_target_platforms = pip_attr.experimental_target_platforms,
+            experimental_target_platforms = target_platforms,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
@@ -225,19 +241,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             group_name = group_name,
             group_deps = group_deps,
         )
-
-        platform_config_setting = "@@{{rules_python}}//python/config_settings:is_python_{version}".format(
-            version = _major_minor_version(pip_attr.python_version),
-        )
-        if pip_attr.platform:
-            platforms = whl_target_platforms(pip_attr.platform)
-            if len(platforms) != 1:
-                fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
-            platform_config_setting = "{}_{}_{}".format(
-                platform_config_setting,
-                platforms[0].os,
-                platforms[0].cpu,
-            )
 
         whl_map[hub_name].setdefault(whl_name, []).append(
             struct(
