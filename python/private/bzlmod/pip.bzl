@@ -150,7 +150,13 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             platforms[0].os,
             platforms[0].cpu,
         )
-        target_platforms = platforms
+        target_platforms = [
+            "cp{}_{}_{}".format(
+                version_label(pip_attr.python_version),
+                platforms[0].os,
+                platforms[0].cpu,
+            ),
+        ]
     else:
         requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
