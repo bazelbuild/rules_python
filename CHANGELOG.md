@@ -72,6 +72,11 @@ A brief description of the categories of changes:
   They are added mainly for internal use and the API might change at any time
   as needed by the internal repository rules.
 
+* (bzlmod pip) One can add hub repositories that are for a specific pip platform
+  by specifying the `platform` atribute on the `pip.parse` tag class. This
+  effectively turn on the `download_only = True` flag and setup the extra
+  `pip` args based on the `python_version` value.
+
 ## 0.29.0 - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
