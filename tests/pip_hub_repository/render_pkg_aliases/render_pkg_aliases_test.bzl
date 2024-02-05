@@ -22,7 +22,7 @@ _tests = []
 def _test_empty(env):
     actual = render_pkg_aliases(
         bzl_packages = None,
-        repo_name = "pypi",
+        repo_name = None,
     )
 
     want = {}
@@ -86,7 +86,7 @@ _tests.append(_test_all_legacy_aliases_are_created)
 def _test_bzlmod_aliases(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        repo_name = "pypi",
+        repo_name = None,
         rules_python = "rules_python",
         whl_map = {
             "bar-baz": [
@@ -157,7 +157,7 @@ _tests.append(_test_bzlmod_aliases)
 def _test_bzlmod_aliases_with_no_default_version(env):
     actual = render_pkg_aliases(
         default_version = None,
-        repo_name = "pypi",
+        repo_name = None,
         rules_python = "rules_python",
         whl_map = {
             "bar-baz": [
@@ -264,7 +264,7 @@ def _test_bzlmod_aliases_for_non_root_modules(env):
         # non-root module, then we will have a no-match-error because the default_version
         # is not in the list of the versions in the whl_map.
         default_version = "3.3",
-        repo_name = "pypi",
+        repo_name = None,
         rules_python = "rules_python",
         whl_map = {
             "bar-baz": [
@@ -364,7 +364,7 @@ _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 def _test_bzlmod_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        repo_name = "pypi",
+        repo_name = None,
         rules_python = "rules_python",
         whl_map = {
             "bar": [

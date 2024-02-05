@@ -153,7 +153,8 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
 
     Args:
         repo_name: the repository name of the hub repository that is visible to the users that is
-            also used as the prefix for the spoke repo names (e.g. "pip", "pypi").
+            also used as the prefix for the spoke repo names (e.g. "pip", "pypi"). Only
+            used when rendering legacy aliases.
         bzl_packages: the list of packages to setup, if not specified, whl_map.keys() will be used instead.
         whl_map: the whl_map for generating Python version aware aliases.
         default_version: the default version to be used for the aliases.
