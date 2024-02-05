@@ -131,11 +131,16 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             hub_name,
             version_label(pip_attr.python_version),
         )
-    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
+    if pip_attr.platform:
+        requirements_lock = pip_attr.requirements_lock
+        if not requirements_lock or pip_attr.requirements_windows or pip_attr.requirements_darwin or pip_attr.requirements_linux:
+            fail("only requirements_lock can be specified when platform is used")
+    else:
+        requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
     # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requrements_lock)
+    requirements_lock_content = module_ctx.read(requirements_lock)
     parse_result = parse_requirements(requirements_lock_content)
 
     # Replicate a surprising behavior that WORKSPACE builds allowed:
