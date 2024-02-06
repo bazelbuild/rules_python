@@ -273,7 +273,11 @@ exports_files(["python"], visibility = ["//visibility:public"])
 from pathlib import Path
 
 symlink_path = Path("python")
-print(f"We have created a symlink {symlink_path} which resolves to {symlink_path.resolve()}")
+msg = "'{}' resolves to: {}".format(
+    symlink_path.name,
+    symlink_path.resolve()
+)
+print(msg)
 """,
     ]
 
