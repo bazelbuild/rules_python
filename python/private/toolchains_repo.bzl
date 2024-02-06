@@ -252,10 +252,12 @@ exports_files(["python"], visibility = ["//visibility:public"])
     )
     rctx.symlink(host_python, "python")
 
+    python_check_command = ["python", "-c", "print(\"Hello, world!\")"]
+
     result = repo_utils.execute_unchecked(
         rctx,
         op = "CheckInterpreter",
-        arguments = ["python", "--version"],
+        arguments = python_check_command,
     )
     if result.return_code == 0:
         # Bazel is most likely running on a UNIX platform or with the following
@@ -289,18 +291,20 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
         # Use the symlink command as it will create copies if the symlinks are not
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
-        repo_utils.execute_checked(
+        #print("Copying files: {}".format(copy))
+        repo_utils.execute_checked_stdout(
             rctx,
             op = "CopyHostInterpreter",
             arguments = ["xcopy", p, p.name, "/s", "/e"],
         )
+        #print(out)
 
     # Recreate the symlink, but point it to the interpreter in the current repo
     rctx.symlink(python3_binary_path, "python")
     result = repo_utils.execute_unchecked(
         rctx,
         op = "CheckInterpreter",
-        arguments = ["python", "--version"],
+        arguments = python_check_command,
     )
     if result.return_code != 0:
         fail("The copy of the interpreter is not working, which may indicate that " +
