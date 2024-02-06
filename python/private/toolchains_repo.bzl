@@ -259,19 +259,12 @@ exports_files(["python"], visibility = ["//visibility:public"])
         op = "CheckInterpreter",
         arguments = python_check_command,
     )
-    if result.return_code == 0:
-        # Bazel is most likely running on a UNIX platform or with the following
-        # options on Windows
-        #
-        # startup --windows_enable_symlinks
-        return
+    if not is_windows and result.return_code != 0:
+        fail("the interpreter symlink is not working on a UNIX platform, which may indicate of FS permission errors or other errors that we cannot handle")
 
     # Let's recreate the symlink later
     if not rctx.delete("python"):
         fail("failed to delete a non-working symlink")
-
-    if not is_windows:
-        fail("the interpreter symlink is not working on a UNIX platform, which may indicate of FS permission errors or other errors that we cannot handle")
 
     rctx.report_progress(status = "Copying interpreter files to the target platform")
 
