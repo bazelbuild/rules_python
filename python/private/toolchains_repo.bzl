@@ -241,7 +241,6 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
     is_windows = (os_name == WINDOWS_NAME)
     python3_binary_path = "python.exe" if is_windows else "bin/python3"
-
     host_python = rctx.path(
         Label(
             "@@{py_repository}_{host_platform}//:{python}".format(
@@ -252,6 +251,42 @@ exports_files(["python"], visibility = ["//visibility:public"])
         ),
     )
     rctx.symlink(host_python, "python")
+
+    if not is_windows:
+        # UNIX platforms handle symlinks correctly, so the symlink above should work
+        return
+
+    result = repo_utils.execute_unchecked(
+        rctx,
+        op = "CheckInterpreter",
+        arguments = [repo_utils.which_checked(rctx, "uname"), "-m"],
+    )
+    if result.exit_code:
+        # Bazel is most likely running with the following options
+        # startup --windows_enable_symlinks
+        return
+
+    # If the interpreter symlink is not functioning under windows, resort to copying the
+    # host interpreter directory contents
+    for p in host_python.dirname.readdir():
+        if p.name in [
+            # This has been created by the command above.
+            "python",
+            # ignore special files created by the repo rule automatically
+            "BUILD.bazel",
+            "MODULE.bazel",
+            "REPO.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+            "WORKSPACE.bzlmod",
+        ]:
+            continue
+
+        # Use the symlink command as it will create copies if the symlinks are not
+        # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
+        rctx.execute(
+            ["xcopy", p, p.name, "/s", "/e"],
+        )
 
 host_toolchain = repository_rule(
     _host_toolchain_impl,
