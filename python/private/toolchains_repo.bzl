@@ -238,40 +238,20 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
     (os_name, arch) = get_host_os_arch(rctx)
     host_platform = get_host_platform(os_name, arch)
-
-    is_windows = (os_name == WINDOWS_NAME)
-    python3_binary_path = "python.exe" if is_windows else "bin/python3"
-    host_python = rctx.path(
-        Label(
-            "@@{py_repository}_{host_platform}//:{python}".format(
-                py_repository = rctx.attr.name[:-len("_host")],
-                host_platform = host_platform,
-                python = python3_binary_path,
-            ),
-        ),
+    repo = "@@{py_repository}_{host_platform}".format(
+        py_repository = rctx.attr.name[:-len("_host")],
+        host_platform = host_platform,
     )
-    rctx.symlink(host_python, "python")
 
-    python_check_command = ["python", "-c", "print(\"Hello, world!\")"]
+    rctx.report_progress("Symlinking interpreter files to the target platform")
+    host_python_repo = rctx.path(Label("{repo}//:BUILD.bazel".format(repo = repo)))
 
-    result = repo_utils.execute_unchecked(
-        rctx,
-        op = "CheckInterpreter",
-        arguments = python_check_command,
-    )
-    if not is_windows and result.return_code != 0:
-        fail("the interpreter symlink is not working on a UNIX platform, which may indicate of FS permission errors or other errors that we cannot handle")
-
-    # Let's recreate the symlink later
-    if not rctx.delete("python"):
-        fail("failed to delete a non-working symlink")
-
-    rctx.report_progress("Copying interpreter files to the target platform")
-
-    # If the interpreter symlink is not functioning under windows, resort to copying the
-    # host interpreter directory contents
-    for p in host_python.dirname.readdir():
-        if p.name in [
+    # The interpreter might not work on platfroms that don't have symlink support if
+    # we just symlink the interpreter itself. rctx.symlink does a copy in such cases
+    # so we can just attempt to symlink all of the directories in the host interpreter
+    # repo, which should be faster than re-downloading it.
+    for p in host_python_repo.dirname.readdir():
+        if p.basename in [
             # ignore special files created by the repo rule automatically
             "BUILD.bazel",
             "MODULE.bazel",
@@ -284,24 +264,24 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
         # Use the symlink command as it will create copies if the symlinks are not
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
-        copy = ["xcopy", p, p.name, "/s", "/e"]
-        rctx.report_progress("Copying files: {}".format(copy))
-        repo_utils.execute_checked(
-            rctx,
-            op = "CopyHostInterpreter",
-            arguments = copy,
-        )
+        rctx.symlink(p, p.basename)
 
-    # Recreate the symlink, but point it to the interpreter in the current repo
-    rctx.symlink(python3_binary_path, "python")
-    result = repo_utils.execute_unchecked(
+    python_check_command = [
+        "python",
+        "-c",
+        """\
+from pathlib import Path
+
+symlink_path = Path("python")
+print(f"We have created a symlink {symlink_path} which resolves to {symlink_path.resolve()}")
+""",
+    ]
+
+    repo_utils.execute_checked(
         rctx,
         op = "CheckInterpreter",
         arguments = python_check_command,
     )
-    if result.return_code != 0:
-        fail("The copy of the interpreter is not working, which may indicate that " +
-             "some of the Python runtime files are missing.")
 
 host_toolchain = repository_rule(
     _host_toolchain_impl,
