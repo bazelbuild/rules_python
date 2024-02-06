@@ -266,22 +266,31 @@ exports_files(["python"], visibility = ["//visibility:public"])
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
         rctx.symlink(p, p.basename)
 
+    # Ensure that we can run the interpreter and check that we are not
+    # using the host interpreter.
     python_tester_contents = """\
 from pathlib import Path
+import sys
 
+python = Path(sys.executable)
 symlink_path = Path("python")
-msg = "'{}' resolves to: {}".format(
-    symlink_path.name,
-    symlink_path.resolve()
-)
-print(msg)
-"""
+want_python = str(symlink_path.resolve())
+got_python = str(Path(sys.executable).resolve())
+
+msg = "'{{}}' resolves to: {{}}".format(symlink_path.name, want_python)
+assert "{repo}" in want_python, "Could not find the '{repo}' in the resolved interpreter path"
+assert want_python == got_python, \
+    "Expected to use a different interpreter:\\nwant: '{{}}'\\n got: '{{}}'".format(
+        want_python,
+        got_python,
+    )
+""".format(repo = repo.strip("@"))
     python_tester = rctx.path("python_tester.py")
     rctx.file(python_tester, python_tester_contents)
     repo_utils.execute_checked(
         rctx,
         op = "CheckHostInterpreter",
-        arguments = ["python", python_tester],
+        arguments = [rctx.path("python"), python_tester],
     )
     if not rctx.delete(python_tester):
         fail("Failed to delete the python tester")
