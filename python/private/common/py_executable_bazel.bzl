@@ -98,7 +98,7 @@ def create_executable_rule(*, attrs, **kwargs):
     )
 
 def py_executable_bazel_impl(ctx, *, is_test, inherited_environment):
-    """Common code for executables for Baze."""
+    """Common code for executables for Bazel."""
     result = py_executable_base_impl(
         ctx = ctx,
         semantics = create_binary_semantics_bazel(),
