@@ -266,6 +266,9 @@ exports_files(["python"], visibility = ["//visibility:public"])
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
         rctx.symlink(p, p.basename)
 
+    is_windows = (os_name == WINDOWS_NAME)
+    python_binary = "python.exe" if is_windows else "python"
+
     # Ensure that we can run the interpreter and check that we are not
     # using the host interpreter.
     python_tester_contents = """\
@@ -273,7 +276,7 @@ from pathlib import Path
 import sys
 
 python = Path(sys.executable)
-want_python = str(Path("python").resolve())
+want_python = str(Path("{python}").resolve())
 got_python = str(Path(sys.executable).resolve())
 
 assert want_python == got_python, \
@@ -281,13 +284,13 @@ assert want_python == got_python, \
         want_python,
         got_python,
     )
-""".format(repo = repo.strip("@"))
+""".format(repo = repo.strip("@"), python = python_binary)
     python_tester = rctx.path("python_tester.py")
     rctx.file(python_tester, python_tester_contents)
     repo_utils.execute_checked(
         rctx,
         op = "CheckHostInterpreter",
-        arguments = [rctx.path("python"), python_tester],
+        arguments = [rctx.path(python_binary), python_tester],
     )
     if not rctx.delete(python_tester):
         fail("Failed to delete the python tester")
