@@ -273,12 +273,9 @@ from pathlib import Path
 import sys
 
 python = Path(sys.executable)
-symlink_path = Path("python")
-want_python = str(symlink_path.resolve())
+want_python = str(Path("python").resolve())
 got_python = str(Path(sys.executable).resolve())
 
-msg = "'{{}}' resolves to: {{}}".format(symlink_path.name, want_python)
-assert "{repo}" in want_python, "Could not find the '{repo}' in the resolved interpreter path"
 assert want_python == got_python, \
     "Expected to use a different interpreter:\\nwant: '{{}}'\\n got: '{{}}'".format(
         want_python,
