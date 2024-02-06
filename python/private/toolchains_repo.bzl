@@ -291,11 +291,12 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
         # Use the symlink command as it will create copies if the symlinks are not
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
+        copy = ["xcopy", p, p.name, "/s", "/e"]
         print("Copying files: {}".format(copy))
         out = repo_utils.execute_checked_stdout(
             rctx,
             op = "CopyHostInterpreter",
-            arguments = ["xcopy", p, p.name, "/s", "/e"],
+            arguments = copy,
         )
         print(out)
 
