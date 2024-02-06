@@ -266,10 +266,7 @@ exports_files(["python"], visibility = ["//visibility:public"])
         # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
         rctx.symlink(p, p.basename)
 
-    python_check_command = [
-        "python",
-        "-c",
-        """\
+    python_tester_contents = """\
 from pathlib import Path
 
 symlink_path = Path("python")
@@ -278,14 +275,16 @@ msg = "'{}' resolves to: {}".format(
     symlink_path.resolve()
 )
 print(msg)
-""",
-    ]
-
+"""
+    python_tester = rctx.path("python_tester.py")
+    rctx.file(python_tester, python_tester_contents)
     repo_utils.execute_checked(
         rctx,
-        op = "CheckInterpreter",
-        arguments = python_check_command,
+        op = "CheckHostInterpreter",
+        arguments = ["python", python_tester],
     )
+    if not rctx.delete(python_tester):
+        fail("Failed to delete the python tester")
 
 host_toolchain = repository_rule(
     _host_toolchain_impl,
