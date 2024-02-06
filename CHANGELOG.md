@@ -70,7 +70,8 @@ A brief description of the categories of changes:
   set to make repository rules log detailed information about what they're
   up to.
 
-* (coverage) Added support for python 3.12.
+* (coverage) Add support for python 3.12 and bump `coverage.py` to
+  7.4.1.
 
 ## 0.29.0 - 2024-01-22
 
