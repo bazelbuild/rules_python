@@ -262,8 +262,10 @@ exports_files(["python"], visibility = ["//visibility:public"])
         ]:
             continue
 
-        # Use the symlink command as it will create copies if the symlinks are not
-        # supported, let's hope it handles directories, otherwise we'll have to do this in a very inefficient way.
+        # symlink works on all platforms that bazel supports, so it should work on
+        # UNIX and Windows with and without symlink support. For better performance
+        # users should enable the symlink startup option, however that requires admin
+        # privileges.
         rctx.symlink(p, p.basename)
 
     is_windows = (os_name == WINDOWS_NAME)
