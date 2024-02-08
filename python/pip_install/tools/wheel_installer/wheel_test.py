@@ -236,8 +236,6 @@ class DepsTest(unittest.TestCase):
         )
         got = deps.build()
 
-        self.maxDiff = None
-
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {

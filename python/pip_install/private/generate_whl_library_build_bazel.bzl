@@ -148,8 +148,8 @@ def _render_config_settings(dependencies_by_platform):
         # * @platforms//cpu:{value}
         # * @//python/config_settings:is_python_3.{minor_version}
         # * @//python/config_settings:is_python_3.{minor_version}_{os}_{cpu}
-        # * @//python/config_settings:is_python_3.{minor_version}_{os}_any
-        # * @//python/config_settings:is_python_3.{minor_version}_any_{cpu}
+        # * @//python/config_settings:is_python_3.{minor_version}_{os}
+        # * @//python/config_settings:is_python_3.{minor_version}_{cpu}
         # * {os}_{cpu}
         if p.startswith("@"):
             continue
@@ -158,7 +158,6 @@ def _render_config_settings(dependencies_by_platform):
         os = "" if os == "any" else os
         arch = "" if arch == "any" else arch
 
-        # TODO @aignas 2024-02-03: simplify
         plats.append((os, arch))
 
     if not plats:
