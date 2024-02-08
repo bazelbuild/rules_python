@@ -20,6 +20,7 @@ del sys.path[0]
 
 import os
 import subprocess
+import uuid
 
 def IsRunningFromZip():
   return %is_zipfile%
@@ -92,6 +93,10 @@ def PrintVerboseCoverage(*args):
   """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
   if os.environ.get("VERBOSE_COVERAGE"):
     print(*args, file=sys.stderr)
+
+def IsVerboseCoverage():
+  """Returns True if VERBOSE_COVERAGE is non-empty in the environment."""
+  return os.environ.get("VERBOSE_COVERAGE")
 
 def FindCoverageEntryPoint(module_space):
   cov_tool = '%coverage_tool%'
@@ -389,8 +394,8 @@ def _RunForCoverage(python_program, main_filename, args, env,
         runfiles directory if set.
   """
   # We need for coveragepy to use relative paths.  This can only be configured
-  # via an rc file, so we need to make one.
-  rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], '.coveragerc')
+  unique_id = uuid.uuid4()
+  rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], ".coveragerc_{}".format(unique_id))
   with open(rcfile_name, "w") as rcfile:
     rcfile.write('''[run]
 relative_files = True
@@ -415,18 +420,20 @@ relative_files = True
 
   PrintVerboseCoverage('Converting coveragepy database to lcov:', output_filename)
   # Run coveragepy again to convert its .coverage database file into lcov.
+  # Under normal conditions running lcov outputs to stdout/stderr, which causes problems for `coverage`.
+  params = [python_program, coverage_entrypoint, "lcov", "--rcfile=" + rcfile_name, "-o", output_filename, "--quiet"]
+  kparams = {"env": env, "cwd": workspace, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+  if IsVerboseCoverage():
+    # reconnect stdout/stderr to lcov generation.  Should be useful for debugging `coverage` issues.
+    params.remove("--quiet")
+    kparams['stdout'] = sys.stderr
+    kparams['stderr'] = sys.stderr
+
   ret_code = subprocess.call(
-    [
-      python_program,
-      coverage_entrypoint,
-      "lcov",
-      "--rcfile=" + rcfile_name,
-      "-o",
-      output_filename
-    ],
-    env=env,
-    cwd=workspace
+    params,
+    **kparams
   ) or ret_code
+
   try:
     os.unlink(rcfile_name)
   except OSError as err:

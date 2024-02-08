@@ -223,7 +223,7 @@ def _outputs_to_str(result):
 repo_utils = struct(
     execute_checked = _execute_checked,
     execute_unchecked = _execute_unchecked,
-    execute_check_stdout = _execute_checked_stdout,
+    execute_checked_stdout = _execute_checked_stdout,
     is_repo_debug_enabled = _is_repo_debug_enabled,
     debug_print = _debug_print,
     which_checked = _which_checked,
