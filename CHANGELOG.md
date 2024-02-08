@@ -164,6 +164,10 @@ A brief description of the categories of changes:
   target for each file with `if __name__ == "__main__"` instead of just one
   `py_binary` for the whole module.
 
+* (gazelle) the Gazelle manifest integrity field is now optional. If the
+  `requirements` argument to `gazelle_python_manifest` is unset, no integrity
+  field will be generated.
+
 ### Fixed
 
 * (gazelle) The gazelle plugin helper was not working with Python toolchains 3.11

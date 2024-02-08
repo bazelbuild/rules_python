@@ -586,4 +586,3 @@ manifest:
     yamllint.rules.truthy: yamllint
   pip_repository:
     name: pip
-integrity: cd25503dc6b3d9e1c5f46715ba2d0499ecc8b3d654ebcbf9f4e52f2074290e0a
