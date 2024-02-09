@@ -191,14 +191,11 @@ class Platform:
                 continue
 
             abi, _, tail = p.partition("_")
-            if abi in ["abi3", "none"]:
-                abi = ""
-            elif not abi.startswith("cp"):
+            if not abi.startswith("cp"):
                 # The first item is not an abi
                 tail = p
                 abi = ""
             os, _, arch = tail.partition("_")
-            print(abi, os, arch)
             arch = arch or "*"
 
             minor_version = int(abi[len("cp3") :]) if abi else None
