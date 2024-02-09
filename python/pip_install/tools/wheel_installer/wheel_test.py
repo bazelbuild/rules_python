@@ -290,9 +290,14 @@ class PlatformTest(unittest.TestCase):
         self.assertEqual(host, wheel.Platform.from_string("host"))
 
     def test_can_get_linux_x86_64_without_py_version(self):
-        got = wheel.Platform.from_string("linux_x86_64")
-        want = wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64)
-        self.assertEqual(want, got[0])
+        for input in [
+            "linux_x86_64",
+            "abi3_linux_x86_64",
+            "none_linux_x86_64",
+        ]:
+            got = wheel.Platform.from_string(input)
+            want = wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.x86_64)
+            self.assertEqual(want, got[0])
 
     def test_can_get_specific_from_string(self):
         got = wheel.Platform.from_string("cp33_linux_x86_64")
