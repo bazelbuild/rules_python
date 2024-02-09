@@ -792,7 +792,7 @@ def _whl_library_impl(rctx):
     target_platforms = rctx.attr.experimental_target_platforms
     if target_platforms:
         parsed_whl = parse_whl_name(whl_path.basename)
-        if parsed_whl.platform_tag != "any":
+        if parsed_whl.platform_tag != "any" and parsed_whl.abi_tag not in ["abi3", "none"]:
             # NOTE @aignas 2023-12-04: if the wheel is a platform specific
             # wheel, we only include deps for that target platform
             target_platforms = [
