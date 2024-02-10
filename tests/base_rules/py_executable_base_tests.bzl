@@ -22,7 +22,7 @@ load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 load("//tests/support:test_platforms.bzl", "WINDOWS")
 
-BuiltinPyRuntimeInfo = PyRuntimeInfo
+_BuiltinPyRuntimeInfo = PyRuntimeInfo
 
 _tests = []
 
@@ -296,9 +296,10 @@ def _test_py_runtime_info_provided_impl(env, target):
 
     # For compatibility during the transition, the builtin PyRuntimeInfo should
     # also be provided.
-    env.expect.that_target(target).has_provider(BuiltinPyRuntimeInfo)
+    env.expect.that_target(target).has_provider(_BuiltinPyRuntimeInfo)
 
 _tests.append(_test_py_runtime_info_provided)
+
 # Can't test this -- mandatory validation happens before analysis test
 # can intercept it
 # TODO(#1069): Once re-implemented in Starlark, modify rule logic to make this
