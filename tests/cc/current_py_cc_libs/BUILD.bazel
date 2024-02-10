@@ -15,3 +15,12 @@
 load(":current_py_cc_libs_tests.bzl", "current_py_cc_libs_test_suite")
 
 current_py_cc_libs_test_suite(name = "current_py_cc_libs_tests")
+
+cc_test(
+    name = "python_libs_linking_test",
+    srcs = ["python_libs_linking_test.cc"],
+    deps = [
+        "@rules_python//python/cc:current_py_cc_headers",
+        "@rules_python//python/cc:current_py_cc_libs",
+    ],
+)
