@@ -48,6 +48,11 @@ A brief description of the categories of changes:
 * (toolchain) Changed the `host_toolchain` to symlink all files to support
   Windows host environments without symlink support.
 
+* (PyRuntimeInfo) Switch back to builtin PyRuntimeInfo for Bazel 6.4 and when
+  pystar is disabled. This fixes an error about `target ... does not have ...
+  PyRuntimeInfo`.
+  ([#1732](https://github.com/bazelbuild/rules_python/issues/1732))
+
 ### Added
 
 * (py_wheel) Added `requires_file` and `extra_requires_files` attributes.
