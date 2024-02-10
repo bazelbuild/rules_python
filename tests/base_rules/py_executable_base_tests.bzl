@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests common to py_binary and py_test (executable rules)."""
 
+load("@rules_python//python:py_runtime_info.bzl", RulesPythonPyRuntimeInfo = "PyRuntimeInfo")
 load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
@@ -20,7 +21,6 @@ load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 load("//tests/support:test_platforms.bzl", "WINDOWS")
-load("@rules_python//python:py_runtime_info.bzl", RulesPythonPyRuntimeInfo = "PyRuntimeInfo")
 
 BuiltinPyRuntimeInfo = PyRuntimeInfo
 
@@ -229,7 +229,6 @@ def _test_explicit_main_cannot_be_ambiguous_impl(env, target):
     )
 
 def _test_files_to_build(name, config):
-    print(config.rule)
     rt_util.helper_target(
         config.rule,
         name = name + "_subject",
