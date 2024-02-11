@@ -31,12 +31,6 @@ import (
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 )
 
-func init() {
-	if os.Getenv("BUILD_WORKSPACE_DIRECTORY") == "" {
-		log.Fatalln("ERROR: this program must run under Bazel")
-	}
-}
-
 func main() {
 	var (
 		manifestGeneratorHashPath string
@@ -79,10 +73,6 @@ func main() {
 		"The Bazel target to update the YAML manifest file.")
 	flag.Parse()
 
-	if requirementsPath == "" {
-		log.Fatalln("ERROR: --requirements must be set")
-	}
-
 	if modulesMappingPath == "" {
 		log.Fatalln("ERROR: --modules-mapping must be set")
 	}
@@ -102,12 +92,12 @@ func main() {
 
 	header := generateHeader(updateTarget)
 	repository := manifest.PipRepository{
-		Name:                    pipRepositoryName,
+		Name: pipRepositoryName,
 	}
 
 	manifestFile := manifest.NewFile(&manifest.Manifest{
 		ModulesMapping: modulesMapping,
-		PipRepository: &repository,
+		PipRepository:  &repository,
 	})
 	if err := writeOutput(
 		outputPath,
@@ -155,12 +145,7 @@ func writeOutput(
 	manifestGeneratorHashPath string,
 	requirementsPath string,
 ) error {
-	stat, err := os.Stat(outputPath)
-	if err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
-	}
-
-	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_TRUNC, stat.Mode())
+	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write output: %w", err)
 	}
@@ -170,20 +155,26 @@ func writeOutput(
 		return fmt.Errorf("failed to write output: %w", err)
 	}
 
-	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
-	if err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
-	}
-	defer manifestGeneratorHash.Close()
+	if requirementsPath != "" {
+		manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
+		if err != nil {
+			return fmt.Errorf("failed to write output: %w", err)
+		}
+		defer manifestGeneratorHash.Close()
 
-	requirements, err := os.Open(requirementsPath)
-	if err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
-	}
-	defer requirements.Close()
+		requirements, err := os.Open(requirementsPath)
+		if err != nil {
+			return fmt.Errorf("failed to write output: %w", err)
+		}
+		defer requirements.Close()
 
-	if err := manifestFile.Encode(outputFile, manifestGeneratorHash, requirements); err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
+		if err := manifestFile.EncodeWithIntegrity(outputFile, manifestGeneratorHash, requirements); err != nil {
+			return fmt.Errorf("failed to write output: %w", err)
+		}
+	} else {
+		if err := manifestFile.EncodeWithoutIntegrity(outputFile); err != nil {
+			return fmt.Errorf("failed to write output: %w", err)
+		}
 	}
 
 	return nil
