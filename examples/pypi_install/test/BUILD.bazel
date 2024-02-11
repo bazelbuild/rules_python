@@ -1,0 +1,31 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load(":transitioned_par_file.bzl", "transitioned_par_file")
+
+py_binary(
+    name = "test_binary",
+    srcs = ["test_binary.py"],
+    deps = [
+        "@pypi//pkg_a",
+    ],
+)
+
+transitioned_par_file(
+    name = "test_binary_linux_aarch64",
+    src = ":test_binary",
+    platform = "//platforms:linux_aarch64",
+)
+
+transitioned_par_file(
+    name = "test_binary_linux_x86",
+    src = ":test_binary",
+    platform = "//platforms:linux_x86",
+)
+
+py_test(
+    name = "transitioned_par_file_test",
+    srcs = ["transitioned_par_file_test.py"],
+    data = [
+        ":test_binary_linux_aarch64",
+        ":test_binary_linux_x86",
+    ],
+)
