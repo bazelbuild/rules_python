@@ -1,5 +1,5 @@
-load("//python:versions.bzl", "TOOL_VERSIONS")
-load(":config_settings.bzl", "construct_config_settings")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load(":config_settings.bzl", "VERSION_FLAG_VALUES", "is_python_config_setting")
 
 filegroup(
     name = "distribution",
@@ -10,10 +10,29 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
-construct_config_settings(
-    name = "construct_config_settings",
-    python_versions = {
-        version: metadata["sha256"].keys()
-        for version, metadata in TOOL_VERSIONS.items()
-    },
+string_flag(
+    name = "python_version",
+    # TODO: The default here should somehow match the MODULE config. Until
+    # then, use the empty string to indicate an unknown version. This
+    # also prevents version-unaware targets from inadvertently matching
+    # a select condition when they shouldn't.
+    build_setting_default = "",
+    values = [""] + VERSION_FLAG_VALUES.keys(),
+    visibility = ["//visibility:public"],
 )
+
+[
+    is_python_config_setting(
+        name = "is_python_{}".format(version),
+        flag_values = {":python_version": version},
+        match_extra = [
+            # Use the internal labels created by this macro in order to handle matching
+            # 3.8 config value if using the 3.8 version from MINOR_MAPPING. If we used the
+            # public labels we would have a circular dependency loop.
+            ("_is_python_{}" if VERSION_FLAG_VALUES[x] else "is_python_{}").format(x)
+            for x in extras
+        ],
+        visibility = ["//visibility:public"],
+    )
+    for version, extras in VERSION_FLAG_VALUES.items()
+]
