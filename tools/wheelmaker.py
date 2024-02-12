@@ -19,6 +19,7 @@ import base64
 import hashlib
 import os
 import re
+import stat
 import sys
 import zipfile
 from pathlib import Path
@@ -189,7 +190,13 @@ class _WhlFile(zipfile.ZipFile):
 
         zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
         zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
-        zinfo.external_attr = 0o777 << 16  # permissions: rwxrwxrwx
+        # Both pip and installer expect the regular file bit to be set in order for the
+        # executable bit to be preserved after extraction
+        # https://github.com/pypa/pip/blob/23.3.2/src/pip/_internal/utils/unpacking.py#L96-L100
+        # https://github.com/pypa/installer/blob/0.7.0/src/installer/sources.py#L310-L313
+        zinfo.external_attr = (
+            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG
+        ) << 16  # permissions: -rwxrwxrwx
         zinfo.compress_type = self.compression
         return zinfo
 
@@ -510,9 +517,46 @@ def main() -> None:
             ) as description_file:
                 description = description_file.read()
 
-        metadata = None
-        with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
-            metadata = metadata_file.read()
+        metadata = arguments.metadata_file.read_text(encoding="utf-8")
+
+        # This is not imported at the top of the file due to the reliance
+        # on this file in the `whl_library` repository rule which does not
+        # provide `packaging` but does import symbols defined here.
+        from packaging.requirements import Requirement
+
+        # Search for any `Requires-Dist` entries that refer to other files and
+        # expand them.
+        for meta_line in metadata.splitlines():
+            if not meta_line.startswith("Requires-Dist: @"):
+                continue
+            file, _, extra = meta_line[len("Requires-Dist: @") :].partition(";")
+            extra = extra.strip()
+
+            reqs = []
+            for reqs_line in Path(file).read_text(encoding="utf-8").splitlines():
+                reqs_text = reqs_line.strip()
+                if not reqs_text or reqs_text.startswith(("#", "-")):
+                    continue
+
+                # Strip any comments
+                reqs_text, _, _ = reqs_text.partition("#")
+
+                req = Requirement(reqs_text.strip())
+                if req.marker:
+                    if extra:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
+                        )
+                    else:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
+                        )
+                else:
+                    reqs.append(
+                        f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
+                    )
+
+            metadata = metadata.replace(meta_line, "\n".join(reqs))
 
         maker.add_metadata(
             metadata=metadata,

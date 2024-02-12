@@ -14,6 +14,7 @@
 """Common functionality between test/binary executables."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -771,7 +772,28 @@ def _create_providers(
     # TODO(b/265840007): Make this non-conditional once Google enables
     # --incompatible_use_python_toolchains.
     if runtime_details.toolchain_runtime:
-        providers.append(runtime_details.toolchain_runtime)
+        py_runtime_info = runtime_details.toolchain_runtime
+        providers.append(py_runtime_info)
+
+        # Re-add the builtin PyRuntimeInfo for compatibility to make
+        # transitioning easier, but only if it isn't already added because
+        # returning the same provider type multiple times is an error.
+        # NOTE: The PyRuntimeInfo from the toolchain could be a rules_python
+        # PyRuntimeInfo or a builtin PyRuntimeInfo -- a user could have used the
+        # builtin py_runtime rule or defined their own. We can't directly detect
+        # the type of the provider object, but the rules_python PyRuntimeInfo
+        # object has an extra attribute that the builtin one doesn't.
+        if hasattr(py_runtime_info, "interpreter_version_info"):
+            providers.append(BuiltinPyRuntimeInfo(
+                interpreter_path = py_runtime_info.interpreter_path,
+                interpreter = py_runtime_info.interpreter,
+                files = py_runtime_info.files,
+                coverage_tool = py_runtime_info.coverage_tool,
+                coverage_files = py_runtime_info.coverage_files,
+                python_version = py_runtime_info.python_version,
+                stub_shebang = py_runtime_info.stub_shebang,
+                bootstrap_template = py_runtime_info.bootstrap_template,
+            ))
 
     # TODO(b/163083591): Remove the PyCcLinkParamsProvider once binaries-in-deps
     # are cleaned up.

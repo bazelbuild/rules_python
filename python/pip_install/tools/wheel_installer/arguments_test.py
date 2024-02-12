@@ -58,7 +58,8 @@ class ArgumentsTestCase(unittest.TestCase):
             args=[
                 "--platform=host",
                 "--platform=linux_*",
-                "--platform=all",
+                "--platform=osx_*",
+                "--platform=windows_*",
                 "--requirement=foo",
             ]
         )
