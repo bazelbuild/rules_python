@@ -14,11 +14,11 @@
 """Tests for construction of Python version matching config settings."""
 
 load("@//python:versions.bzl", "MINOR_MAPPING")
-load("//python/config_settings:config_settings.bzl", "is_python_config_setting")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("//python/config_settings:config_settings.bzl", "is_python_config_setting")
 
 _tests = []
 
@@ -203,7 +203,6 @@ def construct_config_settings_test_suite(name):
             ],
             python_version = "3.11",
         )
-
 
     native.platform(
         name = "linux_aarch64",
