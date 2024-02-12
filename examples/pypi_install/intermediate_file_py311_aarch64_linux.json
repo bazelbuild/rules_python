@@ -1,6 +1,6 @@
 {
     "pkg-a": {
-        "@//:x86_64_linux": {
+        "@//:py311_aarch64_linux": {
             "url": "http://localhost:8989/packages/pkg_a-1.0-py3-none-any.whl",
             "sha256": "d69d2e3d0ae4c2553808b3045997526e1cdd9cd326af69e764ae07ff8a5b8ab1",
             "deps": [
@@ -9,29 +9,37 @@
         }
     },
     "pkg-b": {
-        "@//:x86_64_linux": {
+        "@//:py311_aarch64_linux": {
             "url": "http://localhost:8989/packages/pkg_b-1.1-py3-none-any.whl",
             "sha256": "0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3",
             "deps": [
                 "pkg-c",
-                "pkg-d"
+                "pkg-d",
+                "pkg-e"
             ]
         }
     },
     "pkg-c": {
-        "@//:x86_64_linux": {
+        "@//:py311_aarch64_linux": {
             "url": "http://localhost:8989/packages/pkg_c-2.0-py3-none-any.whl",
             "sha256": "76cdfc700082ad1baade0c79bd500e2551425e063ebe59caeb0ea5037a5fa669",
             "deps": []
         }
     },
     "pkg-d": {
-        "@//:x86_64_linux": {
+        "@//:py311_aarch64_linux": {
             "url": "http://localhost:8989/packages/pkg_d-3.0-py3-none-any.whl",
             "sha256": "f8c16f8099eff9d0c0e409ea53471e7c56cdb700348ba314969fe490c3dce2f2",
             "deps": [
                 "pkg-b"
             ]
+        }
+    },
+    "pkg-e": {
+        "@//:py311_aarch64_linux": {
+            "url": "http://localhost:8989/packages/pkg_e-4.0-py3-none-any.whl",
+            "sha256": "ad6b3c87ed3bf7ae7175cd1ecc19e57e22540863ea2fc565db85b4c459d748f7",
+            "deps": []
         }
     }
 }

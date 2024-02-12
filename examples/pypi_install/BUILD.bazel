@@ -1,6 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 load("@bazel_skylib//lib:versions.bzl", "versions")
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
 py_binary(
@@ -21,8 +22,10 @@ py_test(
 compile_pip_requirements(
     name = "requirements",
     intermediate_file = {
-        "@//:aarch64_linux": "intermediate_file_aarch64_linux.json",
-        "@//:x86_64_linux": "intermediate_file_x86_64_linux.json",
+        "@//:py310_aarch64_linux": "intermediate_file_py310_aarch64_linux.json",
+        "@//:py310_x86_64_linux": "intermediate_file_py310_x86_64_linux.json",
+        "@//:py311_aarch64_linux": "intermediate_file_py311_aarch64_linux.json",
+        "@//:py311_x86_64_linux": "intermediate_file_py311_x86_64_linux.json",
     },
     # That binary will let users modify the intermediate file. Then they can:
     # - Inject dependencies.
@@ -36,8 +39,10 @@ compile_pip_requirements(
     # the file. Having these values as dictionaries allows us to do some
     # validation before the underlying targets get instantiated.
     requirements_txt = {
-        "@//:aarch64_linux": "requirements_lock_aarch64_linux.txt",
-        "@//:x86_64_linux": "requirements_lock_x86_64_linux.txt",
+        "@//:py310_aarch64_linux": "requirements_lock_py310_aarch64_linux.txt",
+        "@//:py310_x86_64_linux": "requirements_lock_py310_x86_64_linux.txt",
+        "@//:py311_aarch64_linux": "requirements_lock_py311_aarch64_linux.txt",
+        "@//:py311_x86_64_linux": "requirements_lock_py311_x86_64_linux.txt",
     },
     extra_args = [
         # Since we may frequently tweak the wheels for development, we can't
@@ -70,6 +75,20 @@ config_setting(
         "@platforms//os:linux",
     ],
 )
+
+[selects.config_setting_group(
+    name = "py{}_{}".format(py_version.replace(".", ""), platform),
+    match_all = [
+        "@rules_python//python/config_settings:is_python_{}".format(py_version),
+        ":{}".format(platform),
+    ],
+) for py_version in (
+    "3.10",
+    "3.11",
+) for platform in (
+    "aarch64_linux",
+    "x86_64_linux",
+)]
 
 genquery(
     name = "pkg_a_deps",

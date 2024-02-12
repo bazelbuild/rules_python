@@ -5,7 +5,7 @@ local_repository(
     path = "../..",
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_multi_toolchains")
 
 py_repositories()
 
@@ -13,12 +13,15 @@ load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependen
 
 pip_install_dependencies()
 
-python_register_toolchains(
-    name = "python39",
-    python_version = "3.9",
+python_register_multi_toolchains(
+    name = "python",
+    default_version = "3.10",
+    python_versions = [
+        "3.10",
+        "3.11",
+    ],
 )
 
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pypi.bzl", "pypi_install")
 
 pypi_install(
@@ -28,8 +31,8 @@ pypi_install(
     # TODO(phil): Add test to make sure that the config settings are mutually
     # exclusive.
     pip_installation_report = [
-        "//:intermediate_file_x86_64_linux.json",
-        "//:intermediate_file_aarch64_linux.json",
+        "//:intermediate_file_py310_x86_64_linux.json",
+        "//:intermediate_file_py310_aarch64_linux.json",
     ],
 )
 

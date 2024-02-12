@@ -3,3 +3,6 @@ try-import %workspace%/user.bazelrc
 test --test_output=errors
 
 common --noenable_bzlmod
+
+build:py310 --@rules_python//python/config_settings:python_version=3.10
+build:py311 --@rules_python//python/config_settings:python_version=3.11
