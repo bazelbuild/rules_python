@@ -50,12 +50,12 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD.bazel", "\n\n".join(
         [
-            _BUILD_FILE_CONTENTS.format(rules_python=rctx.attr._template.workspace_name),
+            _BUILD_FILE_CONTENTS.format(rules_python = rctx.attr._template.workspace_name),
             _render_config_settings(
-                whl_map=whl_map, 
-                rules_python=rctx.attr._template.workspace_name,
+                whl_map = whl_map,
+                rules_python = rctx.attr._template.workspace_name,
             ),
-        ]
+        ],
     ))
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
@@ -95,7 +95,7 @@ def _render_config_settings(*, whl_map, rules_python):
                     "@platforms//cpu:{}".format(ps[0].cpu),
                 ]
 
-            name = name_tmpl.format(version=info.version)
+            name = name_tmpl.format(version = info.version)
             if name in platforms:
                 continue
 
@@ -106,7 +106,7 @@ def _render_config_settings(*, whl_map, rules_python):
                 },
                 constraint_values = constraint_values,
                 match_extra = {
-                    name_tmpl.format(version=micro): {_python_version: micro}
+                    name_tmpl.format(version = micro): {_python_version: micro}
                     for micro in VERSION_FLAG_VALUES[info.version]
                 },
                 # Visibile only within the hub repo
@@ -117,14 +117,13 @@ def _render_config_settings(*, whl_map, rules_python):
         render.is_python_config_setting(**kwargs) if kwargs.get("constraint_values") else render.alias(
             name = kwargs["name"],
             actual = repr("@@{rules_python}//python/config_settings:{name}".format(
-                rules_python=rules_python,
-                name=kwargs["name"],
+                rules_python = rules_python,
+                name = kwargs["name"],
             )),
             visibility = kwargs.get("visibility"),
         )
         for kwargs in platforms.values()
     ])
-
 
 pip_repository_attrs = {
     "default_version": attr.string(

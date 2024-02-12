@@ -19,10 +19,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 def _ver_key(s):
-    _, _, s = s.partition(".") # All are 3
+    _, _, s = s.partition(".")  # All are 3
     minor, _, s = s.partition(".")
     micro, _, s = s.partition(".")
-    return 100* int(minor) + int(micro)
+    return 100 * int(minor) + int(micro)
 
 def _flag_values(python_versions):
     """Construct a map of python_version to a list of toolchain values.
@@ -38,10 +38,11 @@ def _flag_values(python_versions):
         the config_setting_group if they should be also matched, which is used for generating
         correct entries for matching the latest 3.8 version, etc.
     """
+
     # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     ret = {}
 
-    for micro_version in sorted(python_versions, key=_ver_key):
+    for micro_version in sorted(python_versions, key = _ver_key):
         minor_version, _, _ = micro_version.rpartition(".")
 
         # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
@@ -81,7 +82,7 @@ def is_python_config_setting(name, flag_values, match_extra, **kwargs):
             name = name,
             flag_values = flag_values,
             visibility = visibility,
-            **kwargs,
+            **kwargs
         )
         return
 
@@ -104,7 +105,7 @@ def is_python_config_setting(name, flag_values, match_extra, **kwargs):
             # implemented, it is using the internal aliases here, hence the need for making
             # them with the same visibility as the `alias` itself.
             visibility = visibility,
-            **kwargs,
+            **kwargs
         )
 
     # An alias pointing to an underscore-prefixed config_setting_group

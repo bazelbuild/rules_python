@@ -82,8 +82,8 @@ def _render_list(items):
 
 def _render_is_python_config_setting(name, flag_values, visibility = None, match_extra = None, constraint_values = None, **kwargs):
     rendered_kwargs = {
-        "name": repr(name),
         "flag_values": _render_dict(flag_values),
+        "name": repr(name),
     }
 
     if type(match_extra) == type({}):
@@ -104,9 +104,9 @@ def _render_is_python_config_setting(name, flag_values, visibility = None, match
 
     return "is_python_config_setting(\n{}\n)".format(
         _indent("\n".join([
-            "{key} = {value},".format(key=key, value=value)
+            "{key} = {value},".format(key = key, value = value)
             for key, value in rendered_kwargs.items()
-        ]))
+        ])),
     )
 
 render = struct(
