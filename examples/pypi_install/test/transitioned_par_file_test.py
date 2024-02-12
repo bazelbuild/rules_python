@@ -24,6 +24,7 @@ class ParFileTest(unittest.TestCase):
         self.assertNotIn(PY310_X86_64_BIN, file_list)
         self.assertTrue(library_is_in_file_list("pkg_a", file_list))
         self.assertTrue(library_is_in_file_list("pkg_e", file_list))
+        self.assertFalse(library_is_in_file_list("pkg_f", file_list))
 
     def test_linux_py310_x86_64(self):
         file_list = Path("test/test_binary_py310_linux_x86_64.txt").read_text().splitlines()
@@ -32,6 +33,7 @@ class ParFileTest(unittest.TestCase):
         self.assertIn(PY310_X86_64_BIN, file_list)
         self.assertTrue(library_is_in_file_list("pkg_a", file_list))
         self.assertFalse(library_is_in_file_list("pkg_e", file_list))
+        self.assertFalse(library_is_in_file_list("pkg_f", file_list))
 
     def test_linux_py311_aarch64(self):
         file_list = Path("test/test_binary_py311_linux_aarch64.txt").read_text().splitlines()
@@ -40,6 +42,7 @@ class ParFileTest(unittest.TestCase):
         self.assertNotIn(PY311_X86_64_BIN, file_list)
         self.assertTrue(library_is_in_file_list("pkg_a", file_list))
         self.assertTrue(library_is_in_file_list("pkg_e", file_list))
+        self.assertTrue(library_is_in_file_list("pkg_f", file_list))
 
     def test_linux_py311_x86_64(self):
         file_list = Path("test/test_binary_py311_linux_x86_64.txt").read_text().splitlines()
@@ -48,6 +51,7 @@ class ParFileTest(unittest.TestCase):
         self.assertIn(PY311_X86_64_BIN, file_list)
         self.assertTrue(library_is_in_file_list("pkg_a", file_list))
         self.assertFalse(library_is_in_file_list("pkg_e", file_list))
+        self.assertTrue(library_is_in_file_list("pkg_f", file_list))
 
 if __name__ == "__main__":
     unittest.main()

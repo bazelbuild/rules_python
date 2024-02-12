@@ -58,4 +58,5 @@ docker run \
   "$@"
 
 # Fix permissions.
+echo "Fixing up permissions after root user ran in docker container."
 sudo chown -R "${USER}:${USER}" "${BUILD_WORKSPACE_DIRECTORY}/bazel-bin/" || :

@@ -7,19 +7,22 @@
 --index-url http://localhost:8989/simple/
 
 pkg-a==1.0 \
-    --hash=sha256:d69d2e3d0ae4c2553808b3045997526e1cdd9cd326af69e764ae07ff8a5b8ab1
+    --hash=sha256:a0d9f8c13927e9a2b11260c7add67c827921d9727242247f31c605704bff5ff4
     # via -r requirements.in
 pkg-b==1.1 \
-    --hash=sha256:0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3
+    --hash=sha256:05cd20f93e030fcb81b83190bb9926590954d94a3552f0f0567232743e9e8c23
     # via
     #   pkg-a
     #   pkg-d
 pkg-c==2.0 \
-    --hash=sha256:76cdfc700082ad1baade0c79bd500e2551425e063ebe59caeb0ea5037a5fa669
+    --hash=sha256:1fd7e8c2c3a8bfb045b365f4c805d40986f1b7a164537458164d82ffc6aed636
     # via pkg-b
 pkg-d==3.0 \
-    --hash=sha256:f8c16f8099eff9d0c0e409ea53471e7c56cdb700348ba314969fe490c3dce2f2
+    --hash=sha256:de78d858ac71ffe1a5f9c7ddc58a8b26938e62f6583f1143fde0957389d3986f
     # via pkg-b
 pkg-e==4.0 \
-    --hash=sha256:ad6b3c87ed3bf7ae7175cd1ecc19e57e22540863ea2fc565db85b4c459d748f7
+    --hash=sha256:9d2fcec39f4f7e8b4e0d0d9bc8f1b06ee582af6dea8db258d031aa64089ca363
     # via pkg-b
+pkg-f==1.0 \
+    --hash=sha256:4245ce524d3cd27f0269902040b6b21ade2aed8f0b2c875ffe2678980713c6c7
+    # via pkg-c

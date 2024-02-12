@@ -2,7 +2,7 @@
     "pkg-a": {
         "@//:py310_linux_x86_64": {
             "url": "http://localhost:8989/packages/pkg_a-1.0-py3-none-any.whl",
-            "sha256": "d69d2e3d0ae4c2553808b3045997526e1cdd9cd326af69e764ae07ff8a5b8ab1",
+            "sha256": "a0d9f8c13927e9a2b11260c7add67c827921d9727242247f31c605704bff5ff4",
             "deps": [
                 "pkg-b"
             ]
@@ -11,7 +11,7 @@
     "pkg-b": {
         "@//:py310_linux_x86_64": {
             "url": "http://localhost:8989/packages/pkg_b-1.1-py3-none-any.whl",
-            "sha256": "0f63bf2fc636bad7600320b5a94337653f394b39d4d524998b020c4f08e548e3",
+            "sha256": "05cd20f93e030fcb81b83190bb9926590954d94a3552f0f0567232743e9e8c23",
             "deps": [
                 "pkg-c",
                 "pkg-d"
@@ -21,14 +21,14 @@
     "pkg-c": {
         "@//:py310_linux_x86_64": {
             "url": "http://localhost:8989/packages/pkg_c-2.0-py3-none-any.whl",
-            "sha256": "76cdfc700082ad1baade0c79bd500e2551425e063ebe59caeb0ea5037a5fa669",
+            "sha256": "1fd7e8c2c3a8bfb045b365f4c805d40986f1b7a164537458164d82ffc6aed636",
             "deps": []
         }
     },
     "pkg-d": {
         "@//:py310_linux_x86_64": {
             "url": "http://localhost:8989/packages/pkg_d-3.0-py3-none-any.whl",
-            "sha256": "f8c16f8099eff9d0c0e409ea53471e7c56cdb700348ba314969fe490c3dce2f2",
+            "sha256": "de78d858ac71ffe1a5f9c7ddc58a8b26938e62f6583f1143fde0957389d3986f",
             "deps": [
                 "pkg-b"
             ]
