@@ -168,17 +168,16 @@ class Platform:
             else:
                 return f"{self.os}_{self.arch}"
 
-        prefix = f"@//python/config_settings:is_python_3.{self.minor_version}"
         if self.arch is None and self.os is None:
-            return prefix
+            return f"@//python/config_settings:is_python_3.{self.minor_version}"
 
-        suffix = [prefix]
-        if self.os:
-            suffix.append(str(self.os))
-        if self.arch:
-            suffix.append(str(self.arch))
+        if self.arch is None:
+            return f"cp3{self.minor_version}_{self.os}_anyarch"
 
-        return "_".join(suffix)
+        if self.os is None:
+            return f"cp3{self.minor_version}_anyos_{self.arch}"
+
+        return f"cp3{self.minor_version}_{self.os}_{self.arch}"
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:

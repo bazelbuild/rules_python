@@ -236,24 +236,13 @@ class DepsTest(unittest.TestCase):
         )
         got = deps.build()
 
-        self.maxDiff = None
-
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
                 "@//python/config_settings:is_python_3.7": ["baz"],
-                "@//python/config_settings:is_python_3.7_linux": [
-                    "baz",
-                    "posix_dep",
-                ],
-                "@//python/config_settings:is_python_3.8_linux": [
-                    "posix_dep",
-                    "posix_dep_with_version",
-                ],
-                "@//python/config_settings:is_python_3.9_linux": [
-                    "posix_dep",
-                    "posix_dep_with_version",
-                ],
+                "cp37_linux_anyarch": ["baz", "posix_dep"],
+                "cp38_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
+                "cp39_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
             },
             got.deps_select,
         )
