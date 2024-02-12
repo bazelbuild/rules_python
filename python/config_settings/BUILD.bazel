@@ -26,11 +26,10 @@ string_flag(
         name = "is_python_{}".format(version),
         match_extra = [
             # Use the internal labels created by this macro in order to handle matching
-            # 3.8 config value if using the 3.8 version from MINOR_MAPPING. If we used the
-            # public labels we would have a circular dependency loop.
-            "_is_python_{}".format(x)
+            # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
+            # fewer targets overall.
+            ("_is_python_{}" if VERSION_FLAG_VALUES[x] else "is_python_{}").format(x)
             for x in extras
-            if VERSION_FLAG_VALUES[x]
         ],
         python_version = version,
         visibility = ["//visibility:public"],
