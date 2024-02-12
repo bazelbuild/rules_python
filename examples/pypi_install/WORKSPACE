@@ -31,8 +31,10 @@ pypi_install(
     # TODO(phil): Add test to make sure that the config settings are mutually
     # exclusive.
     pip_installation_report = [
-        "//:intermediate_file_py310_x86_64_linux.json",
-        "//:intermediate_file_py310_aarch64_linux.json",
+        "//:intermediate_file_py310_linux_x86_64.json",
+        "//:intermediate_file_py310_linux_aarch64.json",
+        "//:intermediate_file_py311_linux_x86_64.json",
+        "//:intermediate_file_py311_linux_aarch64.json",
     ],
 )
 

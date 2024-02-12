@@ -22,10 +22,10 @@ py_test(
 compile_pip_requirements(
     name = "requirements",
     intermediate_file = {
-        "@//:py310_aarch64_linux": "intermediate_file_py310_aarch64_linux.json",
-        "@//:py310_x86_64_linux": "intermediate_file_py310_x86_64_linux.json",
-        "@//:py311_aarch64_linux": "intermediate_file_py311_aarch64_linux.json",
-        "@//:py311_x86_64_linux": "intermediate_file_py311_x86_64_linux.json",
+        "@//:py310_linux_aarch64": "intermediate_file_py310_linux_aarch64.json",
+        "@//:py310_linux_x86_64": "intermediate_file_py310_linux_x86_64.json",
+        "@//:py311_linux_aarch64": "intermediate_file_py311_linux_aarch64.json",
+        "@//:py311_linux_x86_64": "intermediate_file_py311_linux_x86_64.json",
     },
     # That binary will let users modify the intermediate file. Then they can:
     # - Inject dependencies.
@@ -39,10 +39,10 @@ compile_pip_requirements(
     # the file. Having these values as dictionaries allows us to do some
     # validation before the underlying targets get instantiated.
     requirements_txt = {
-        "@//:py310_aarch64_linux": "requirements_lock_py310_aarch64_linux.txt",
-        "@//:py310_x86_64_linux": "requirements_lock_py310_x86_64_linux.txt",
-        "@//:py311_aarch64_linux": "requirements_lock_py311_aarch64_linux.txt",
-        "@//:py311_x86_64_linux": "requirements_lock_py311_x86_64_linux.txt",
+        "@//:py310_linux_aarch64": "requirements_lock_py310_linux_aarch64.txt",
+        "@//:py310_linux_x86_64": "requirements_lock_py310_linux_x86_64.txt",
+        "@//:py311_linux_aarch64": "requirements_lock_py311_linux_aarch64.txt",
+        "@//:py311_linux_x86_64": "requirements_lock_py311_linux_x86_64.txt",
     },
     extra_args = [
         # Since we may frequently tweak the wheels for development, we can't
@@ -61,7 +61,7 @@ py_binary(
 )
 
 config_setting(
-    name = "aarch64_linux",
+    name = "linux_aarch64",
     constraint_values = [
         "@platforms//cpu:aarch64",
         "@platforms//os:linux",
@@ -69,7 +69,7 @@ config_setting(
 )
 
 config_setting(
-    name = "x86_64_linux",
+    name = "linux_x86_64",
     constraint_values = [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
@@ -86,8 +86,8 @@ config_setting(
     "3.10",
     "3.11",
 ) for platform in (
-    "aarch64_linux",
-    "x86_64_linux",
+    "linux_aarch64",
+    "linux_x86_64",
 )]
 
 genquery(

@@ -2,6 +2,7 @@
 def _platform_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": str(attr.platform),
+        "@rules_python//python/config_settings:python_version": attr.python_version,
     }
 
 _platform_transition = transition(
@@ -9,6 +10,7 @@ _platform_transition = transition(
     inputs = [],
     outputs = [
         "//command_line_option:platforms",
+        "@rules_python//python/config_settings:python_version",
     ],
 )
 
@@ -30,5 +32,6 @@ transitioned_par_file = rule(
             cfg = _platform_transition,
         ),
         "platform": attr.label(),
+        "python_version": attr.string(),
     },
 )

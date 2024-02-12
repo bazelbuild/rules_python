@@ -9,23 +9,25 @@ py_binary(
     ],
 )
 
-transitioned_par_file(
-    name = "test_binary_linux_aarch64",
+[transitioned_par_file(
+    name = "test_binary_{}_{}".format(version.replace(".", ""), platform),
     src = ":test_binary",
-    platform = "//platforms:linux_aarch64",
-)
-
-transitioned_par_file(
-    name = "test_binary_linux_x86",
-    src = ":test_binary",
-    platform = "//platforms:linux_x86",
-)
+    platform = "//platforms:{}".format(platform),
+    python_version = version,
+) for version in (
+    "py3.10",
+    "py3.11",
+) for platform in (
+    "linux_aarch64",
+    "linux_x86_64",
+)]
 
 py_test(
     name = "transitioned_par_file_test",
     srcs = ["transitioned_par_file_test.py"],
     data = [
-        ":test_binary_linux_aarch64",
-        ":test_binary_linux_x86",
+        ":test_binary_{}_{}".format(version, platform)
+        for version in ("py310", "py311")
+        for platform in ("linux_aarch64", "linux_x86_64")
     ],
 )
