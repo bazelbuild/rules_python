@@ -27,6 +27,18 @@ use_repo(pip, "my_deps")
 For more documentation, including how the rules can update/create a requirements
 file, see the bzlmod examples under the {gh-path}`examples` folder.
 
+We are using a host-platform compatible toolchain by default to setup pip dependencies.
+During the setup phase, we create some symlinks, which may be inefficient on Windows
+by default. In that case use the following `.bazelrc` options to improve performance if
+you have admin privileges:
+```
+startup --windows_enable_symlinks
+```
+
+This will enable symlinks on Windows and help with bootstrap performance of setting up the 
+hermetic host python interpreter on this platform. Linux and OSX users should see no
+difference.
+
 ### Using a WORKSPACE file
 
 To add pip dependencies to your `WORKSPACE`, load the `pip_parse` function and

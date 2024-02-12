@@ -238,15 +238,64 @@ exports_files(["python"], visibility = ["//visibility:public"])
 
     (os_name, arch) = get_host_os_arch(rctx)
     host_platform = get_host_platform(os_name, arch)
-    host_python = rctx.path(
-        Label(
-            "@@{py_repository}_{host_platform}//:python".format(
-                py_repository = rctx.attr.name[:-len("_host")],
-                host_platform = host_platform,
-            ),
-        ),
+    repo = "@@{py_repository}_{host_platform}".format(
+        py_repository = rctx.attr.name[:-len("_host")],
+        host_platform = host_platform,
     )
-    rctx.symlink(host_python, "python")
+
+    rctx.report_progress("Symlinking interpreter files to the target platform")
+    host_python_repo = rctx.path(Label("{repo}//:BUILD.bazel".format(repo = repo)))
+
+    # The interpreter might not work on platfroms that don't have symlink support if
+    # we just symlink the interpreter itself. rctx.symlink does a copy in such cases
+    # so we can just attempt to symlink all of the directories in the host interpreter
+    # repo, which should be faster than re-downloading it.
+    for p in host_python_repo.dirname.readdir():
+        if p.basename in [
+            # ignore special files created by the repo rule automatically
+            "BUILD.bazel",
+            "MODULE.bazel",
+            "REPO.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+            "WORKSPACE.bzlmod",
+        ]:
+            continue
+
+        # symlink works on all platforms that bazel supports, so it should work on
+        # UNIX and Windows with and without symlink support. For better performance
+        # users should enable the symlink startup option, however that requires admin
+        # privileges.
+        rctx.symlink(p, p.basename)
+
+    is_windows = (os_name == WINDOWS_NAME)
+    python_binary = "python.exe" if is_windows else "python"
+
+    # Ensure that we can run the interpreter and check that we are not
+    # using the host interpreter.
+    python_tester_contents = """\
+from pathlib import Path
+import sys
+
+python = Path(sys.executable)
+want_python = str(Path("{python}").resolve())
+got_python = str(Path(sys.executable).resolve())
+
+assert want_python == got_python, \
+    "Expected to use a different interpreter:\\nwant: '{{}}'\\n got: '{{}}'".format(
+        want_python,
+        got_python,
+    )
+""".format(repo = repo.strip("@"), python = python_binary)
+    python_tester = rctx.path("python_tester.py")
+    rctx.file(python_tester, python_tester_contents)
+    repo_utils.execute_checked(
+        rctx,
+        op = "CheckHostInterpreter",
+        arguments = [rctx.path(python_binary), python_tester],
+    )
+    if not rctx.delete(python_tester):
+        fail("Failed to delete the python tester")
 
 host_toolchain = repository_rule(
     _host_toolchain_impl,
