@@ -14,6 +14,7 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
+load("//python/config_settings:config_settings.bzl", "VERSION_FLAG_VALUES")
 load(
     "//python/private:labels.bzl",
     "DATA_LABEL",
@@ -101,6 +102,8 @@ alias(
 )
 """
 
+_python_version = Label("//python/config_settings:python_version")
+
 def _plat_label(plat):
     if plat.startswith("@//"):
         return "@@" + str(Label("//:BUILD.bazel")).partition("//")[0].strip("@") + plat.strip("@")
@@ -141,49 +144,76 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
         return "{} + {}".format(deps, deps_by_platform)
 
 def _render_config_settings(dependencies_by_platform):
-    plats = []
+    loads = []
+    additional_content = []
     for p in dependencies_by_platform:
         # p can be one of the following formats:
         # * @platforms//os:{value}
         # * @platforms//cpu:{value}
         # * @//python/config_settings:is_python_3.{minor_version}
-        # * @//python/config_settings:is_python_3.{minor_version}_{os}_{cpu}
-        # * @//python/config_settings:is_python_3.{minor_version}_{os}_any
-        # * @//python/config_settings:is_python_3.{minor_version}_any_{cpu}
         # * {os}_{cpu}
+        # * cp3{minor_version}_{os}_{cpu}
         if p.startswith("@"):
             continue
 
-        os, _, arch = p.partition("_")
+        abi, _, tail = p.partition("_")
+        if not abi[2:].startswith("3"):
+            tail = p
+            abi = ""
+        os, _, arch = tail.partition("_")
         os = "" if os == "any" else os
         arch = "" if arch == "any" else arch
 
-        # TODO @aignas 2024-02-03: simplify
-        plats.append((os, arch))
+        constraint_values = []
+        if os:
+            constraint_values.append("@platforms//os:{}".format(os))
+        if arch:
+            constraint_values.append("@platforms//cpu:{}".format(arch))
 
-    if not plats:
-        return None
+        if abi == "":
+            if not os or not arch:
+                fail("BUG: both os and arch should be set in this case")
 
-    additional_content = []
-    for (os, arch) in plats:
-        constraint_values = [
-            "@platforms//os:{}".format(os),
-            "@platforms//cpu:{}".format(arch),
-        ]
-
-        additional_content.append(
-            """\
+            additional_content.append(
+                """\
 config_setting(
     name = "is_{name}",
     constraint_values = {values},
     visibility = ["//visibility:private"],
 )""".format(
-                name = "{}_{}".format(os, arch),
-                values = render.indent(render.list(sorted([str(Label(c)) for c in constraint_values]))).strip(),
-            ),
-        )
+                    name = "{}_{}".format(os, arch),
+                    values = render.indent(render.list(sorted([str(Label(c)) for c in constraint_values]))).strip(),
+                ),
+            )
+            continue
 
-    return "\n\n".join(additional_content)
+        if not loads:
+            loads.append(
+                """load("@@{rules_python}//python/config_settings:config_settings.bzl", "is_python_config_setting")""".format(
+                    rules_python=_python_version.workspace_name,
+                )
+            )
+
+        minor_version = int(abi[len("cp3"):])
+        minor = "3.{}".format(minor_version)
+        text = render.is_python_config_setting(
+            name = "is_{}".format(p),
+            flag_values = {
+                str(_python_version): minor,
+            },
+            match_extra = {
+                "is_{}".format(p).replace(abi, x): {str(_python_version): x}
+                for x in VERSION_FLAG_VALUES[minor]
+            },
+            constraint_values = constraint_values,
+            visibility = ["//visibility:private"],
+        )
+        additional_content.append(text)
+
+    if not additional_content:
+        return None, None
+
+    return loads, "\n\n".join(additional_content)
 
 def generate_whl_library_build_bazel(
         *,
@@ -292,8 +322,12 @@ def generate_whl_library_build_bazel(
         """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
     ]
 
-    config_settings_content = _render_config_settings(dependencies_by_platform)
+    loads_, config_settings_content = _render_config_settings(dependencies_by_platform)
     if config_settings_content:
+        for line in loads_:
+            if line not in loads:
+                loads.append(line)
+
         additional_content.append(config_settings_content)
 
     lib_dependencies = _render_list_and_select(
