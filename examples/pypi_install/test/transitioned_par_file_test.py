@@ -2,10 +2,10 @@ import unittest
 import zipfile
 from pathlib import Path
 
-PY310_AARCH64_BIN = "external/python310_aarch64-unknown-linux-gnu/bin/python3"
-PY310_X86_64_BIN = "external/python310_x86_64-unknown-linux-gnu/bin/python3"
-PY311_AARCH64_BIN = "external/python311_aarch64-unknown-linux-gnu/bin/python3"
-PY311_X86_64_BIN = "external/python311_x86_64-unknown-linux-gnu/bin/python3"
+PY310_AARCH64_BIN = "external/python_3_10_aarch64-unknown-linux-gnu/bin/python3"
+PY310_X86_64_BIN = "external/python_3_10_x86_64-unknown-linux-gnu/bin/python3"
+PY311_AARCH64_BIN = "external/python_3_11_aarch64-unknown-linux-gnu/bin/python3"
+PY311_X86_64_BIN = "external/python_3_11_x86_64-unknown-linux-gnu/bin/python3"
 
 def library_is_in_file_list(library_name, file_list):
     for name in file_list:

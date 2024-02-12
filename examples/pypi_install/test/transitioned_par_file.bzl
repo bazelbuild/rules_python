@@ -2,7 +2,7 @@
 def _platform_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": str(attr.platform),
-        "@rules_python//python/config_settings:python_version": attr.python_version,
+        "@rules_python//python/config_settings:python_version": attr.python_version.removeprefix("py"),
     }
 
 _platform_transition = transition(
