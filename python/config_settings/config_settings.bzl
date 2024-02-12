@@ -60,7 +60,7 @@ def _flag_values(python_versions):
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, flag_values, match_extra, **kwargs):
+def is_python_config_setting(name, *, python_version, match_extra = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -68,15 +68,24 @@ def is_python_config_setting(name, flag_values, match_extra, **kwargs):
 
     Args:
         name: name for the target that will be created to be used in select statements.
-        flag_values: The flag_values in the `config_setting`.
-        match_extra: The extra flag values that we should matched when the `name` is used
-            in the config setting. You can either pass a list of labels that will be included
-            in the bazel-skylib selects.config_setting_group match_any clause or it can be a
-            dict[str, dic], where the keys are the names of the extra config_setting targets
-            to be created and the value is the `flag_values` attribute.
+        python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
+        match_extra: The labels that should be used for matching the extra versions instead of creating
+            them on the fly. This will be passed to `config_setting_group.match_any`.
         **kwargs: extra kwargs passed to the `config_setting`
     """
     visibility = kwargs.pop("visibility", [])
+
+    _python_version = str(Label(":python_version"))
+    flag_values = {
+        _python_version: python_version,
+    }
+    if python_version not in name:
+        fail("The name must have the python version in it")
+
+    match_extra = match_extra or {
+        "_{}".format(name).replace(python_version, x): {_python_version: x}
+        for x in VERSION_FLAG_VALUES[python_version]
+    }
     if not match_extra:
         native.config_setting(
             name = name,
