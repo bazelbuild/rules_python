@@ -80,10 +80,40 @@ def _render_list(items):
         "]",
     ])
 
+def _render_is_python_config_setting(name, flag_values, visibility = None, match_extra = None, constraint_values = None, **kwargs):
+    rendered_kwargs = {
+        "name": repr(name),
+        "flag_values": _render_dict(flag_values),
+    }
+
+    if type(match_extra) == type({}):
+        rendered_kwargs["match_extra"] = _render_dict(match_extra)
+    elif type(match_extra) == type([]):
+        rendered_kwargs["match_extra"] = _render_list(match_extra)
+    elif match_extra != None:
+        fail("unknown 'match_extra' type: {}".format(type(match_extra)))
+
+    if visibility:
+        rendered_kwargs["visibility"] = _render_list(visibility)
+
+    if constraint_values:
+        rendered_kwargs["constraint_values"] = _render_list(constraint_values)
+
+    for key, value in kwargs.items():
+        rendered_kwargs[key] = repr(value)
+
+    return "is_python_config_setting(\n{}\n)".format(
+        _indent("\n".join([
+            "{key} = {value},".format(key=key, value=value)
+            for key, value in rendered_kwargs.items()
+        ]))
+    )
+
 render = struct(
     alias = _render_alias,
     dict = _render_dict,
     indent = _indent,
     list = _render_list,
     select = _render_select,
+    is_python_config_setting = _render_is_python_config_setting,
 )

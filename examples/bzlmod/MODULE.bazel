@@ -144,7 +144,7 @@ pip.parse(
     # You can also set a particular config setting if the default one will not suffice
     # or if you have a custom interpreter that is passed to pip.parse and you for example
     # want to target a `musl` python distribution.
-    platform_config_setting = "@rules_python//python/config_settings:is_python_3.9_linux_x86_64",
+    #platform_config_setting = "//:my_python_3.9_linux_x86_64",
     python_version = "3.9",
     requirements_lock = "//:requirements_lock_3_9.txt",
     # These modifications were created above and we

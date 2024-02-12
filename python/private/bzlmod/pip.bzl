@@ -132,7 +132,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             version_label(pip_attr.python_version),
         )
 
-    platform_config_setting = "@@{{rules_python}}//python/config_settings:is_python_{version}".format(
+    platform_config_setting = "//:is_python_{version}".format(
         version = _major_minor_version(pip_attr.python_version),
     )
     target_platforms = pip_attr.experimental_target_platforms
@@ -145,7 +145,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         if len(platforms) != 1:
             fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
 
-        platform_config_setting = "{}_{}_{}".format(
+        platform_config_setting = pip_attr.platform_config_setting or "{}_{}_{}".format(
             platform_config_setting,
             platforms[0].os,
             platforms[0].cpu,
@@ -451,7 +451,7 @@ Setting this will set 'download_only = True'.
             mandatory = False,
             doc = """\
 The platform config setting that will be used to setup the hub alias. Needs to include
-the '//python/config_settings:python_version' setting as well. Only used if "platform"
+the '//python/config_settings:python_version' flag_value setting as well. Only used if "platform"
 is set.
 """,
         ),
