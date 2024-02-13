@@ -80,10 +80,10 @@ def _render_list(items):
         "]",
     ])
 
-def _render_is_python_config_setting(name, flag_values, visibility = None, match_extra = None, constraint_values = None, **kwargs):
+def _render_is_python_config_setting(name, python_version, visibility = None, match_extra = None, constraint_values = None, **kwargs):
     rendered_kwargs = {
-        "flag_values": _render_dict(flag_values),
         "name": repr(name),
+        "python_version": repr(python_version),
     }
 
     if type(match_extra) == type({}):

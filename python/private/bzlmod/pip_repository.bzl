@@ -28,8 +28,6 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["requirements.bzl"])
 """
 
-_python_version = str(Label("//python/config_settings:python_version"))
-
 def _pip_repository_impl(rctx):
     bzl_packages = rctx.attr.whl_map.keys()
     whl_map = whl_map_decode(rctx.attr.whl_map)
@@ -101,14 +99,8 @@ def _render_config_settings(*, whl_map, rules_python):
 
             platforms[name] = dict(
                 name = name,
-                flag_values = {
-                    _python_version: info.version,
-                },
+                python_version = info.version,
                 constraint_values = constraint_values,
-                match_extra = {
-                    name_tmpl.format(version = micro): {_python_version: micro}
-                    for micro in VERSION_FLAG_VALUES[info.version]
-                },
                 # Visibile only within the hub repo
                 visibility = ["//:__subpackages__"],
             )
