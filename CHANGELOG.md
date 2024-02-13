@@ -21,9 +21,9 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
-## [0.30.0] - 2024-02-12
+## [0.31.0] - 2024-02-12
 
-[0.30.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.30.0
+[0.31.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.31.0
 
 ### Changed
 
@@ -32,6 +32,12 @@ A brief description of the categories of changes:
   continue to use the Bazel builtin symbols. Of particular note, this means,
   under Bazel 7, the builtin global symbol `PyInfo` is **not** the same as what
   is loaded from rules_python. The same is true of `PyRuntimeInfo`.
+
+## [0.30.0] - 2024-02-12
+
+[0.30.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.30.0
+
+### Changed
 
 * (toolchains) Windows hosts always ignore pyc files in the downloaded runtimes.
   This fixes issues due to pyc files being created at runtime and affecting the
