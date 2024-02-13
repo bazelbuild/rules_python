@@ -21,6 +21,17 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+### Added
+
+* (bzlmod pip) One can add hub repositories that are for a specific pip platform
+  by specifying the `platform` atribute on the `pip.parse` tag class. This
+  effectively turn on the `download_only = True` flag and setup the extra
+  `pip` args based on the `python_version` value.
+
+## [0.30.0] - 2024-02-12
+
+[0.30.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.30.0
+
 ### Changed
 
 * (toolchains) Windows hosts always ignore pyc files in the downloaded runtimes.
@@ -76,6 +87,13 @@ A brief description of the categories of changes:
   if e.g. `3.8` is selected. That also simplifies `.bazelrc` for any users
   that set the default `python_version` string flag in that way.
 
+* (toolchain) The runtime's shared libraries (libpython.so et al) can be
+  accessed using `@rules_python//python/cc:current_py_cc_libs`. This uses
+  toolchain resolution, so the files are from the same runtime used to run a
+  target. If you were previously using e.g. `@python_3_11//:libpython`, then
+  switch to `:current_py_cc_libs` for looser coupling to the underlying runtime
+  repo implementation.
+
 * (repo rules) The environment variable `RULES_PYTHON_REPO_DEBUG=1` can be
   set to make repository rules log detailed information about what they're
   up to.
@@ -83,12 +101,7 @@ A brief description of the categories of changes:
 * (coverage) Add support for python 3.12 and bump `coverage.py` to
   7.4.1.
 
-* (bzlmod pip) One can add hub repositories that are for a specific pip platform
-  by specifying the `platform` atribute on the `pip.parse` tag class. This
-  effectively turn on the `download_only = True` flag and setup the extra
-  `pip` args based on the `python_version` value.
-
-## 0.29.0 - 2024-01-22
+## [0.29.0] - 2024-01-22
 
 [0.29.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.29.0
 
