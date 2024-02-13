@@ -72,8 +72,8 @@ bzl_library(
     name = "config_settings_bzl",
     srcs = ["config_settings.bzl"],
     deps = [
-        "@bazel_skylib//lib:selects",
         "//python:versions_bzl",
+        "@bazel_skylib//lib:selects",
     ],
 )
 
