@@ -16,9 +16,8 @@
 
 This is used in bzlmod and non-bzlmod setups."""
 
-load("//python/private:normalize_name.bzl", "normalize_name")
+load(":normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
-load(":version_label.bzl", "version_label")
 
 NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
@@ -42,25 +41,18 @@ which has a "null" version value and will not match version constraints.
 def _render_whl_library_alias(
         *,
         name,
-        repo_name,
-        dep,
-        target,
         default_version,
-        versions,
-        rules_python):
-    """Render an alias for common targets
+        whl_repos):
+    """Render an alias for common targets."""
+    if len(whl_repos) == 1 and not whl_repos[0].version:
+        repo = whl_repos[0]
 
-    If the versions is passed, then the `rules_python` must be passed as well and
-    an alias with a select statement based on the python version is going to be
-    generated.
-    """
-    if versions == None:
         return render.alias(
             name = name,
-            actual = repr("@{repo_name}_{dep}//:{target}".format(
-                repo_name = repo_name,
-                dep = dep,
-                target = target,
+            actual = repr("@{repo_prefix}{dep}//:{name}".format(
+                repo_prefix = repo.repo_prefix,
+                dep = repo.name,
+                name = name,
             )),
         )
 
@@ -68,30 +60,21 @@ def _render_whl_library_alias(
     # statements  These select statements point to the different pip
     # whls that are based on a specific version of Python.
     selects = {}
-    for full_version in versions:
-        condition = "@@{rules_python}//python/config_settings:is_python_{full_python_version}".format(
-            rules_python = rules_python,
-            full_python_version = full_version,
+    no_match_error = "_NO_MATCH_ERROR"
+    default = None
+    for repo in sorted(whl_repos, key = lambda x: x.version):
+        actual = "@{repo_prefix}{dep}//:{name}".format(
+            repo_prefix = repo.repo_prefix,
+            dep = repo.name,
+            name = name,
         )
-        actual = "@{repo_name}_{version}_{dep}//:{target}".format(
-            repo_name = repo_name,
-            version = version_label(full_version),
-            dep = dep,
-            target = target,
-        )
-        selects[condition] = actual
+        selects[repo.config_setting] = actual
+        if repo.version == default_version:
+            default = actual
+            no_match_error = None
 
-    if default_version:
-        no_match_error = None
-        default_actual = "@{repo_name}_{version}_{dep}//:{target}".format(
-            repo_name = repo_name,
-            version = version_label(default_version),
-            dep = dep,
-            target = target,
-        )
-        selects["//conditions:default"] = default_actual
-    else:
-        no_match_error = "_NO_MATCH_ERROR"
+    if default:
+        selects["//conditions:default"] = default
 
     return render.alias(
         name = name,
@@ -101,22 +84,21 @@ def _render_whl_library_alias(
         ),
     )
 
-def _render_common_aliases(repo_name, name, versions = None, default_version = None, rules_python = None):
+def _render_common_aliases(*, name, whl_repos, default_version = None):
     lines = [
         """package(default_visibility = ["//visibility:public"])""",
     ]
 
-    if versions:
-        versions = sorted(versions)
+    versions = None
+    if whl_repos:
+        versions = sorted([v.version for v in whl_repos if v.version])
 
-    if not versions:
-        pass
-    elif default_version in versions:
+    if not versions or default_version in versions:
         pass
     else:
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
             supported_versions = ", ".join(versions),
-            rules_python = rules_python,
+            rules_python = "rules_python",
         )
 
         lines.append("_NO_MATCH_ERROR = \"\"\"\\\n{error_msg}\"\"\"".format(
@@ -137,12 +119,8 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
         [
             _render_whl_library_alias(
                 name = target,
-                repo_name = repo_name,
-                dep = name,
-                target = target,
-                versions = versions,
                 default_version = default_version,
-                rules_python = rules_python,
+                whl_repos = whl_repos,
             )
             for target in ["pkg", "whl", "data", "dist_info"]
         ],
@@ -150,7 +128,7 @@ def _render_common_aliases(repo_name, name, versions = None, default_version = N
 
     return "\n\n".join(lines)
 
-def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_python = None, default_version = None):
+def render_pkg_aliases(*, aliases, default_version = None):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -158,36 +136,58 @@ def render_pkg_aliases(*, repo_name, bzl_packages = None, whl_map = None, rules_
     when using bzlmod.
 
     Args:
-        repo_name: the repository name of the hub repository that is visible to the users that is
-            also used as the prefix for the spoke repo names (e.g. "pip", "pypi").
-        bzl_packages: the list of packages to setup, if not specified, whl_map.keys() will be used instead.
-        whl_map: the whl_map for generating Python version aware aliases.
+        aliases: the bzl_packages for generating Python version aware aliases.
         default_version: the default version to be used for the aliases.
-        rules_python: the name of the rules_python workspace.
 
     Returns:
         A dict of file paths and their contents.
     """
-    if not bzl_packages and whl_map:
-        bzl_packages = list(whl_map.keys())
-
     contents = {}
-    if not bzl_packages:
+    if not aliases:
         return contents
 
-    for name in bzl_packages:
-        versions = None
-        if whl_map != None:
-            versions = whl_map[name]
-        name = normalize_name(name)
+    whl_map = {}
+    for pkg in aliases:
+        whl_map.setdefault(pkg.name, []).append(pkg)
 
-        filename = "{}/BUILD.bazel".format(name)
-        contents[filename] = _render_common_aliases(
-            repo_name = repo_name,
+    return {
+        "{}/BUILD.bazel".format(name): _render_common_aliases(
             name = name,
-            versions = versions,
-            rules_python = rules_python,
+            whl_repos = whl_repos,
             default_version = default_version,
         ).strip()
+        for name, whl_repos in whl_map.items()
+    }
 
-    return contents
+def whl_alias(*, name, repo_prefix, version = None, config_setting = None):
+    """The bzl_packages value used by by the render_pkg_aliases function.
+
+    This contains the minimum amount of information required to generate correct
+    aliases in a hub repository.
+
+    Args:
+        name: str, the name of the package.
+        repo_prefix: str, the repo prefix of where to find the alias.
+        version: optional(str), the version of the python toolchain that this
+            whl alias is for. If not set, then non-version aware aliases will be
+            constructed. This is mainly used for better error messages when there
+            is no match found during a select.
+        config_setting: optional(Label or str), the config setting that we should use. Defaults
+            to "@rules_python//python/config_settings:is_python_{version}".
+
+    Returns:
+        a struct with the validated and parsed values.
+    """
+    if not repo_prefix:
+        fail("'repo_prefix' must be specified")
+
+    if version:
+        config_setting = config_setting or Label("//python/config_settings:is_python_" + version)
+        config_setting = str(config_setting)
+
+    return struct(
+        name = normalize_name(name),
+        repo_prefix = repo_prefix,
+        version = version,
+        config_setting = config_setting,
+    )

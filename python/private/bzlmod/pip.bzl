@@ -27,6 +27,7 @@ load(
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
 
@@ -205,10 +206,14 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             group_deps = group_deps,
         )
 
-        if whl_name not in whl_map[hub_name]:
-            whl_map[hub_name][whl_name] = {}
-
-        whl_map[hub_name][whl_name][_major_minor_version(pip_attr.python_version)] = pip_name + "_"
+        major_minor = _major_minor_version(pip_attr.python_version)
+        whl_map[hub_name].setdefault(whl_name, []).append(
+            whl_alias(
+                name = whl_name,
+                repo_prefix = pip_name,
+                version = major_minor,
+            ),
+        )
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -358,7 +363,10 @@ def _pip_impl(module_ctx):
         pip_repository(
             name = hub_name,
             repo_name = hub_name,
-            whl_map = whl_map,
+            whl_map = {
+                key: json.encode(value)
+                for key, value in whl_map.items()
+            },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
         )
 

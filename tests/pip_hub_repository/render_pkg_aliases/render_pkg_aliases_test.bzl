@@ -15,14 +15,13 @@
 """render_pkg_aliases tests"""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")  # buildifier: disable=bzl-visibility
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
 def _test_empty(env):
     actual = render_pkg_aliases(
-        bzl_packages = None,
-        repo_name = "pypi",
+        aliases = None,
     )
 
     want = {}
@@ -33,8 +32,9 @@ _tests.append(_test_empty)
 
 def _test_legacy_aliases(env):
     actual = render_pkg_aliases(
-        bzl_packages = ["foo"],
-        repo_name = "pypi",
+        aliases = [
+            whl_alias(name = "foo", repo_prefix = "pypi_"),
+        ],
     )
 
     want = {
@@ -73,8 +73,10 @@ _tests.append(_test_legacy_aliases)
 
 def _test_all_legacy_aliases_are_created(env):
     actual = render_pkg_aliases(
-        bzl_packages = ["foo", "bar"],
-        repo_name = "pypi",
+        aliases = [
+            whl_alias(name = "bar", repo_prefix = "pypi_"),
+            whl_alias(name = "foo", repo_prefix = "pypi_"),
+        ],
     )
 
     want_files = ["bar/BUILD.bazel", "foo/BUILD.bazel"]
@@ -86,11 +88,9 @@ _tests.append(_test_all_legacy_aliases_are_created)
 def _test_bzlmod_aliases(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        repo_name = "pypi",
-        rules_python = "rules_python",
-        whl_map = {
-            "bar-baz": ["3.2"],
-        },
+        aliases = [
+            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
+        ],
     )
 
     want = {
@@ -106,7 +106,7 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
             "//conditions:default": "@pypi_32_bar_baz//:pkg",
         },
     ),
@@ -116,7 +116,7 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
             "//conditions:default": "@pypi_32_bar_baz//:whl",
         },
     ),
@@ -126,7 +126,7 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
             "//conditions:default": "@pypi_32_bar_baz//:data",
         },
     ),
@@ -136,7 +136,7 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
             "//conditions:default": "@pypi_32_bar_baz//:dist_info",
         },
     ),
@@ -150,11 +150,10 @@ _tests.append(_test_bzlmod_aliases)
 def _test_bzlmod_aliases_with_no_default_version(env):
     actual = render_pkg_aliases(
         default_version = None,
-        repo_name = "pypi",
-        rules_python = "rules_python",
-        whl_map = {
-            "bar-baz": ["3.2", "3.1"],
-        },
+        aliases = [
+            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
+            whl_alias(name = "bar-baz", version = "3.1", repo_prefix = "pypi_31_"),
+        ],
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -189,8 +188,8 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -200,8 +199,8 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -211,8 +210,8 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -222,8 +221,8 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -244,11 +243,10 @@ def _test_bzlmod_aliases_for_non_root_modules(env):
         # non-root module, then we will have a no-match-error because the default_version
         # is not in the list of the versions in the whl_map.
         default_version = "3.3",
-        repo_name = "pypi",
-        rules_python = "rules_python",
-        whl_map = {
-            "bar-baz": ["3.2", "3.1"],
-        },
+        aliases = [
+            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
+            whl_alias(name = "bar-baz", version = "3.1", repo_prefix = "pypi_31_"),
+        ],
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -283,8 +281,8 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -294,8 +292,8 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -305,8 +303,8 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -316,8 +314,8 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@rules_python//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
-            "@@rules_python//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
+            "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
+            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
         },
         no_match_error = _NO_MATCH_ERROR,
     ),
@@ -331,12 +329,12 @@ _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 def _test_bzlmod_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        repo_name = "pypi",
-        rules_python = "rules_python",
-        whl_map = {
-            "bar": ["3.1", "3.2"],
-            "foo": ["3.1", "3.2"],
-        },
+        aliases = [
+            whl_alias(name = "bar", version = "3.1", repo_prefix = "pypi_31_"),
+            whl_alias(name = "bar", version = "3.2", repo_prefix = "pypi_32_"),
+            whl_alias(name = "foo", version = "3.1", repo_prefix = "pypi_32_"),
+            whl_alias(name = "foo", version = "3.2", repo_prefix = "pypi_31_"),
+        ],
     )
 
     want_files = [
