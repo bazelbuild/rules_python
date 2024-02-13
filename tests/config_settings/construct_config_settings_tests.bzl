@@ -158,7 +158,7 @@ def _test_latest_micro_version_matching_impl(env, target):
 
 _tests.append(_test_latest_micro_version_matching)
 
-def construct_config_settings_test_suite(name):
+def construct_config_settings_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
         tests = _tests,
