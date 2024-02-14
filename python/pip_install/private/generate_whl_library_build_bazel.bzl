@@ -54,14 +54,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "{dist_info_label}",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "{data_label}",
-    srcs = glob(["**/*"],
-                exclude = ["{whl_name}", "site-packages/**"],
-                allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["{whl_name}", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(

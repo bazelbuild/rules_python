@@ -28,12 +28,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["foo.whl", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -94,12 +101,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["foo.whl", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -246,12 +260,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["foo.whl", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -334,12 +355,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["foo.whl", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -408,12 +436,19 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = ["foo.whl", "site-packages/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
