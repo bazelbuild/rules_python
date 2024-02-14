@@ -210,7 +210,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 name = whl_name,
-                repo_prefix = pip_name,
+                repo_prefix = pip_name + "_",
                 version = major_minor,
             ),
         )
