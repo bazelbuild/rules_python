@@ -17,6 +17,16 @@
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")  # buildifier: disable=bzl-visibility
 
+def _normalize_labels(want):
+    # Do not modify the `want` on bazel 7+
+    if hasattr(native, "starlark_doc_extract"):
+        return want
+
+    return {
+        key: value.replace("\"@/", "\"@@/")
+        for key, value in want.items()
+    }
+
 _tests = []
 
 def _test_empty(env):
@@ -67,7 +77,7 @@ alias(
 )""",
     }
 
-    env.expect.that_dict(actual).contains_exactly(want)
+    env.expect.that_dict(actual).contains_exactly(_normalize_labels(want))
 
 _tests.append(_test_legacy_aliases)
 
@@ -143,7 +153,7 @@ alias(
 )""",
     }
 
-    env.expect.that_dict(actual).contains_exactly(want)
+    env.expect.that_dict(actual).contains_exactly(_normalize_labels(want))
 
 _tests.append(_test_bzlmod_aliases)
 
