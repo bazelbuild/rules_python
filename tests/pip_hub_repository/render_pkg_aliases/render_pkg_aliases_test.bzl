@@ -18,14 +18,14 @@ load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")  # buildifier: disable=bzl-visibility
 
 def _normalize_labels(want):
-    # Do not modify the `want` on bazel 7+
-    if hasattr(native, "starlark_doc_extract"):
+    if str(Label("//:invalid")).startswith("@@"):
+        # our expectations are already with double @
         return want
 
-    return {
-        key: value.replace("\"@/", "\"@@/")
-        for key, value in want.items()
-    }
+    if "@@" not in want:
+        fail("The expected string does not have '@@' labels, consider not using the function")
+
+    return want.replace("@@", "@")
 
 _tests = []
 
@@ -47,8 +47,8 @@ def _test_legacy_aliases(env):
         ],
     )
 
-    want = {
-        "foo/BUILD.bazel": """\
+    want_key = "foo/BUILD.bazel"
+    want_content = """\
 package(default_visibility = ["//visibility:public"])
 
 alias(
@@ -74,10 +74,9 @@ alias(
 alias(
     name = "dist_info",
     actual = "@pypi_foo//:dist_info",
-)""",
-    }
+)"""
 
-    env.expect.that_dict(actual).contains_exactly(_normalize_labels(want))
+    env.expect.that_dict(actual).contains_exactly({want_key: want_content})
 
 _tests.append(_test_legacy_aliases)
 
@@ -103,8 +102,8 @@ def _test_bzlmod_aliases(env):
         ],
     )
 
-    want = {
-        "bar_baz/BUILD.bazel": """\
+    want_key = "bar_baz/BUILD.bazel"
+    want_content = """\
 package(default_visibility = ["//visibility:public"])
 
 alias(
@@ -150,10 +149,10 @@ alias(
             "//conditions:default": "@pypi_32_bar_baz//:dist_info",
         },
     ),
-)""",
-    }
+)"""
 
-    env.expect.that_dict(actual).contains_exactly(_normalize_labels(want))
+    env.expect.that_collection(actual.keys()).contains_exactly([want_key])
+    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
 
 _tests.append(_test_bzlmod_aliases)
 
@@ -239,7 +238,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(want_content)
+    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
 
 _tests.append(_test_bzlmod_aliases_with_no_default_version)
 
@@ -332,7 +331,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(want_content)
+    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
 
 _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 
