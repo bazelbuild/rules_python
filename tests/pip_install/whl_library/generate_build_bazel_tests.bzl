@@ -38,7 +38,12 @@ filegroup(
     name = "data",
     srcs = glob(
         ["**/*"],
-        exclude = ["foo.whl", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )
@@ -111,7 +116,12 @@ filegroup(
     name = "data",
     srcs = glob(
         ["**/*"],
-        exclude = ["foo.whl", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )
@@ -270,7 +280,12 @@ filegroup(
     name = "data",
     srcs = glob(
         ["**/*"],
-        exclude = ["foo.whl", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )
@@ -365,7 +380,12 @@ filegroup(
     name = "data",
     srcs = glob(
         ["**/*"],
-        exclude = ["foo.whl", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )
@@ -446,7 +466,12 @@ filegroup(
     name = "data",
     srcs = glob(
         ["**/*"],
-        exclude = ["foo.whl", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )

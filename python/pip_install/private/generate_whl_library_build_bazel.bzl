@@ -64,7 +64,12 @@ filegroup(
     name = "{data_label}",
     srcs = glob(
         ["**/*"],
-        exclude = ["{whl_name}", "site-packages/**"],
+        exclude = [
+            "WORKSPACE",
+            "BUILD.bazel",
+            "{whl_name}",
+            "site-packages/**",
+        ],
         allow_empty = True,
     ),
 )
