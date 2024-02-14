@@ -42,18 +42,13 @@ def _render_whl_library_alias(
         *,
         name,
         default_version,
-        whl_repos):
+        aliases):
     """Render an alias for common targets."""
-    if len(whl_repos) == 1 and not whl_repos[0].version:
-        repo = whl_repos[0]
-
+    if len(aliases) == 1 and not aliases[0].version:
+        alias = aliases[0]
         return render.alias(
             name = name,
-            actual = repr("@{repo_prefix}{dep}//:{name}".format(
-                repo_prefix = repo.repo_prefix,
-                dep = repo.name,
-                name = name,
-            )),
+            actual = repr("@{repo}//:{name}".format(repo = alias.repo, name = name)),
         )
 
     # Create the alias repositories which contains different select
@@ -62,14 +57,10 @@ def _render_whl_library_alias(
     selects = {}
     no_match_error = "_NO_MATCH_ERROR"
     default = None
-    for repo in sorted(whl_repos, key = lambda x: x.version):
-        actual = "@{repo_prefix}{dep}//:{name}".format(
-            repo_prefix = repo.repo_prefix,
-            dep = repo.name,
-            name = name,
-        )
-        selects[repo.config_setting] = actual
-        if repo.version == default_version:
+    for alias in sorted(aliases, key = lambda x: x.version):
+        actual = "@{repo}//:{name}".format(repo = alias.repo, name = name)
+        selects[alias.config_setting] = actual
+        if alias.version == default_version:
             default = actual
             no_match_error = None
 
@@ -84,14 +75,14 @@ def _render_whl_library_alias(
         ),
     )
 
-def _render_common_aliases(*, name, whl_repos, default_version = None):
+def _render_common_aliases(*, name, aliases, default_version = None):
     lines = [
         """package(default_visibility = ["//visibility:public"])""",
     ]
 
     versions = None
-    if whl_repos:
-        versions = sorted([v.version for v in whl_repos if v.version])
+    if aliases:
+        versions = sorted([v.version for v in aliases if v.version])
 
     if not versions or default_version in versions:
         pass
@@ -120,7 +111,7 @@ def _render_common_aliases(*, name, whl_repos, default_version = None):
             _render_whl_library_alias(
                 name = target,
                 default_version = default_version,
-                whl_repos = whl_repos,
+                aliases = aliases,
             )
             for target in ["pkg", "whl", "data", "dist_info"]
         ],
@@ -136,7 +127,8 @@ def render_pkg_aliases(*, aliases, default_version = None):
     when using bzlmod.
 
     Args:
-        aliases: the bzl_packages for generating Python version aware aliases.
+        aliases: dict, the keys are normalized distribution names and values are the
+            whl_alias instances.
         default_version: the default version to be used for the aliases.
 
     Returns:
@@ -145,29 +137,26 @@ def render_pkg_aliases(*, aliases, default_version = None):
     contents = {}
     if not aliases:
         return contents
-
-    whl_map = {}
-    for pkg in aliases:
-        whl_map.setdefault(pkg.name, []).append(pkg)
+    elif type(aliases) != type({}):
+        fail("The aliases need to be provided as a dict, got: {}".format(type(aliases)))
 
     return {
-        "{}/BUILD.bazel".format(name): _render_common_aliases(
-            name = name,
-            whl_repos = whl_repos,
+        "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
+            name = normalize_name(name),
+            aliases = pkg_aliases,
             default_version = default_version,
         ).strip()
-        for name, whl_repos in whl_map.items()
+        for name, pkg_aliases in aliases.items()
     }
 
-def whl_alias(*, name, repo_prefix, version = None, config_setting = None):
+def whl_alias(*, repo, version = None, config_setting = None):
     """The bzl_packages value used by by the render_pkg_aliases function.
 
     This contains the minimum amount of information required to generate correct
     aliases in a hub repository.
 
     Args:
-        name: str, the name of the package.
-        repo_prefix: str, the repo prefix of where to find the alias.
+        repo: str, the repo of where to find the things to be aliased.
         version: optional(str), the version of the python toolchain that this
             whl alias is for. If not set, then non-version aware aliases will be
             constructed. This is mainly used for better error messages when there
@@ -178,16 +167,15 @@ def whl_alias(*, name, repo_prefix, version = None, config_setting = None):
     Returns:
         a struct with the validated and parsed values.
     """
-    if not repo_prefix:
-        fail("'repo_prefix' must be specified")
+    if not repo:
+        fail("'repo' must be specified")
 
     if version:
         config_setting = config_setting or Label("//python/config_settings:is_python_" + version)
         config_setting = str(config_setting)
 
     return struct(
-        name = normalize_name(name),
-        repo_prefix = repo_prefix,
+        repo = repo,
         version = version,
         config_setting = config_setting,
     )

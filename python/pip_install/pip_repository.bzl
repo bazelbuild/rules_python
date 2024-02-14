@@ -376,10 +376,10 @@ def _pip_repository_impl(rctx):
     macro_tmpl = "@%s//{}:{}" % rctx.attr.name
 
     aliases = render_pkg_aliases(
-        aliases = [
-            whl_alias(name = pkg, repo_prefix = rctx.attr.name + "_")
+        aliases = {
+            pkg: [whl_alias(repo = rctx.attr.name + "_" + pkg)]
             for pkg in bzl_packages or []
-        ],
+        },
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)

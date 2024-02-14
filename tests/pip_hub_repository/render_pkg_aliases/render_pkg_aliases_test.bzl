@@ -42,9 +42,11 @@ _tests.append(_test_empty)
 
 def _test_legacy_aliases(env):
     actual = render_pkg_aliases(
-        aliases = [
-            whl_alias(name = "foo", repo_prefix = "pypi_"),
-        ],
+        aliases = {
+            "foo": [
+                whl_alias(repo = "pypi_foo"),
+            ],
+        },
     )
 
     want_key = "foo/BUILD.bazel"
@@ -80,26 +82,14 @@ alias(
 
 _tests.append(_test_legacy_aliases)
 
-def _test_all_legacy_aliases_are_created(env):
-    actual = render_pkg_aliases(
-        aliases = [
-            whl_alias(name = "bar", repo_prefix = "pypi_"),
-            whl_alias(name = "foo", repo_prefix = "pypi_"),
-        ],
-    )
-
-    want_files = ["bar/BUILD.bazel", "foo/BUILD.bazel"]
-
-    env.expect.that_dict(actual).keys().contains_exactly(want_files)
-
-_tests.append(_test_all_legacy_aliases_are_created)
-
 def _test_bzlmod_aliases(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        aliases = [
-            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
-        ],
+        aliases = {
+            "bar-baz": [
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
+            ],
+        },
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -159,10 +149,12 @@ _tests.append(_test_bzlmod_aliases)
 def _test_bzlmod_aliases_with_no_default_version(env):
     actual = render_pkg_aliases(
         default_version = None,
-        aliases = [
-            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
-            whl_alias(name = "bar-baz", version = "3.1", repo_prefix = "pypi_31_"),
-        ],
+        aliases = {
+            "bar-baz": [
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
+                whl_alias(version = "3.1", repo = "pypi_31_bar_baz"),
+            ],
+        },
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -252,10 +244,12 @@ def _test_bzlmod_aliases_for_non_root_modules(env):
         # non-root module, then we will have a no-match-error because the default_version
         # is not in the list of the versions in the whl_map.
         default_version = "3.3",
-        aliases = [
-            whl_alias(name = "bar-baz", version = "3.2", repo_prefix = "pypi_32_"),
-            whl_alias(name = "bar-baz", version = "3.1", repo_prefix = "pypi_31_"),
-        ],
+        aliases = {
+            "bar-baz": [
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
+                whl_alias(version = "3.1", repo = "pypi_31_bar_baz"),
+            ],
+        },
     )
 
     want_key = "bar_baz/BUILD.bazel"
@@ -335,15 +329,19 @@ alias(
 
 _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 
-def _test_bzlmod_aliases_are_created_for_all_wheels(env):
+def _test_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
         default_version = "3.2",
-        aliases = [
-            whl_alias(name = "bar", version = "3.1", repo_prefix = "pypi_31_"),
-            whl_alias(name = "bar", version = "3.2", repo_prefix = "pypi_32_"),
-            whl_alias(name = "foo", version = "3.1", repo_prefix = "pypi_32_"),
-            whl_alias(name = "foo", version = "3.2", repo_prefix = "pypi_31_"),
-        ],
+        aliases = {
+            "bar": [
+                whl_alias(version = "3.1", repo = "pypi_31_bar"),
+                whl_alias(version = "3.2", repo = "pypi_32_bar"),
+            ],
+            "foo": [
+                whl_alias(version = "3.1", repo = "pypi_32_foo"),
+                whl_alias(version = "3.2", repo = "pypi_31_foo"),
+            ],
+        },
     )
 
     want_files = [
@@ -353,7 +351,7 @@ def _test_bzlmod_aliases_are_created_for_all_wheels(env):
 
     env.expect.that_dict(actual).keys().contains_exactly(want_files)
 
-_tests.append(_test_bzlmod_aliases_are_created_for_all_wheels)
+_tests.append(_test_aliases_are_created_for_all_wheels)
 
 def render_pkg_aliases_test_suite(name):
     """Create the test suite.

@@ -180,8 +180,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
+        repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(
-            name = "%s_%s" % (pip_name, whl_name),
+            name = repo_name,
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
@@ -209,9 +210,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         major_minor = _major_minor_version(pip_attr.python_version)
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
-                name = whl_name,
-                repo_prefix = pip_name + "_",
+                repo = repo_name,
                 version = major_minor,
+                config_setting = Label("//python/config_settings:is_python_" + major_minor),
             ),
         )
 
