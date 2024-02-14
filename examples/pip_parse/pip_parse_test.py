@@ -55,6 +55,7 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             actual,
             [
+                "bin/s3cmd",
                 "data/share/doc/packages/s3cmd/INSTALL.md",
                 "data/share/doc/packages/s3cmd/LICENSE",
                 "data/share/doc/packages/s3cmd/NEWS",
