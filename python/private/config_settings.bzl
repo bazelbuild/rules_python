@@ -42,9 +42,9 @@ def _flag_values(python_versions):
     """
 
     # Maps e.g.
-    #   "3.8" -> ["3.8.1", "3.8.2", ..., "3.8.19"]
-    #   "3.8.2" -> []  # no extra versions
-    #   "3.8.19" -> ["3.8"] # The last version should also match 3.8
+    #   "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]
+    #   "3.8.2" -> ["3.8.2"]  # no extra versions
+    #   "3.8.19" -> ["3.8.19", "3.8"] # The last version should also match 3.8
     ret = {}
 
     for micro_version in sorted(python_versions, key = _ver_key):
@@ -54,12 +54,12 @@ def _flag_values(python_versions):
         # It's private because matching the concept of e.g. "3.8" value is done
         # using the `is_python_X.Y` config setting group, which is aware of the
         # minor versions that could match instead.
-        ret.setdefault(minor_version, []).append(micro_version)
+        ret.setdefault(minor_version, [minor_version]).append(micro_version)
 
         # Ensure that is_python_3.9.8 is matched if python_version is set
         # to 3.9 if MINOR_MAPPING points to 3.9.8
         default_micro_version = MINOR_MAPPING[minor_version]
-        ret[micro_version] = [minor_version] if default_micro_version == micro_version else []
+        ret[micro_version] = [micro_version, minor_version] if default_micro_version == micro_version else [micro_version]
 
     return ret
 
@@ -88,7 +88,7 @@ def is_python_config_setting(name, *, python_version = None, match_extra = None,
 
     match_extra = match_extra or {
         "_{}".format(name).replace(python_version, x): {_PYTHON_VERSION_FLAG: x}
-        for x in VERSION_FLAG_VALUES[python_version]
+        for x in VERSION_FLAG_VALUES[python_version][1:]
     }
     if not match_extra:
         native.config_setting(
