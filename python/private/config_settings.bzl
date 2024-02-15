@@ -87,7 +87,7 @@ def is_python_config_setting(name, *, python_version = None, match_any = None, *
         _PYTHON_VERSION_FLAG: python_version,
     }
     if python_version not in name:
-        fail("The name must have the python version in it")
+        fail("The name '{}' must have the python version '{}' in it".format(name, python_version))
 
     if python_version not in VERSION_FLAG_VALUES:
         fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
