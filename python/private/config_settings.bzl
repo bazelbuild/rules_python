@@ -65,7 +65,7 @@ def _flag_values(python_versions):
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, *, python_version = None, match_extra = None, **kwargs):
+def is_python_config_setting(name, *, python_version = None, match_any = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -74,8 +74,11 @@ def is_python_config_setting(name, *, python_version = None, match_extra = None,
     Args:
         name: name for the target that will be created to be used in select statements.
         python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
-        match_extra: The labels that should be used for matching the extra versions instead of creating
-            them on the fly. This will be passed to `config_setting_group.match_extra`.
+        match_any: The labels that should be used for matching the extra versions instead of creating
+            them on the fly. This will be passed to `config_setting_group.match_any`. This can be
+            either None, which will create config settings necessary to match the `python_version` value,
+            a list of 'config_setting' labels passed to bazel-skylib's `config_setting_group` `match_any`
+            attribute.
         **kwargs: extra kwargs passed to the `config_setting`
     """
     visibility = kwargs.pop("visibility", [])
@@ -86,11 +89,11 @@ def is_python_config_setting(name, *, python_version = None, match_extra = None,
     if python_version not in name:
         fail("The name must have the python version in it")
 
-    match_extra = match_extra or {
-        "_{}".format(name).replace(python_version, x): {_PYTHON_VERSION_FLAG: x}
-        for x in VERSION_FLAG_VALUES[python_version][1:]
-    }
-    if not match_extra:
+    if python_version not in VERSION_FLAG_VALUES:
+        fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
+
+    python_versions = VERSION_FLAG_VALUES[python_version]
+    if len(python_versions) == 1 and not match_any:
         native.config_setting(
             name = name,
             flag_values = flag_values,
@@ -99,15 +102,16 @@ def is_python_config_setting(name, *, python_version = None, match_extra = None,
         )
         return
 
-    create_config_settings = {"_" + name: flag_values}
-    match_any = ["_" + name]
-    if type(match_extra) == type([]):
-        match_any.extend(match_extra)
-    elif type(match_extra) == type({}):
-        match_any.extend(match_extra.keys())
-        create_config_settings.update(match_extra)
+    if type(match_any) == type([]):
+        create_config_settings = {"_" + name: flag_values}
+    elif not match_any:
+        create_config_settings = {
+            "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
+            for version in python_versions
+        }
+        match_any = list(create_config_settings.keys())
     else:
-        fail("unsupported match_extra type, can be either a list or a dict of dicts")
+        fail("unsupported 'match_any' type, expected a 'list', got '{}'".format(type(match_any)))
 
     # Create all of the necessary config setting values for the config_setting_group
     for name_, flag_values_ in create_config_settings.items():
