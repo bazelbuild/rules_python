@@ -21,7 +21,7 @@ load("//python/private:config_settings.bzl", _VERSION_FLAG_VALUES = "VERSION_FLA
 VERSION_FLAG_VALUES = _VERSION_FLAG_VALUES
 is_python_config_setting = _is_python_config_setting
 
-def construct_config_settings(name = None):
+def construct_config_settings(name = None):  # buildifier: disable=function-docstring
     string_flag(
         name = "python_version",
         # TODO: The default here should somehow match the MODULE config. Until
@@ -33,16 +33,20 @@ def construct_config_settings(name = None):
         visibility = ["//visibility:public"],
     )
 
-    for version, match_any in VERSION_FLAG_VALUES.items():
-        is_python_config_setting(
-            name = "is_python_{}".format(version),
-            match_extra = [
+    for version, matching_versions in VERSION_FLAG_VALUES.items():
+        match_any = None
+        if len(matching_versions) > 1:
+            match_any = [
                 # Use the internal labels created by this macro in order to handle matching
                 # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
                 # fewer targets overall.
-                ("_is_python_{}" if len(VERSION_FLAG_VALUES[x]) == 1 else "is_python_{}").format(x)
-                for x in match_any[1:]
-            ],
+                ("_is_python_{}" if len(VERSION_FLAG_VALUES[v]) > 1 else "is_python_{}").format(v)
+                for v in matching_versions
+            ]
+
+        is_python_config_setting(
+            name = "is_python_{}".format(version),
             python_version = version,
+            match_any = match_any,
             visibility = ["//visibility:public"],
         )
