@@ -18,7 +18,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
-_PYTHON_VERSION = str(Label("//python/config_settings:python_version"))
+_PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
 
 def _ver_key(s):
     major, _, s = s.partition(".")
@@ -78,13 +78,13 @@ def is_python_config_setting(name, *, python_version, match_extra = None, **kwar
     visibility = kwargs.pop("visibility", [])
 
     flag_values = {
-        _PYTHON_VERSION: python_version,
+        _PYTHON_VERSION_FLAG: python_version,
     }
     if python_version not in name:
         fail("The name must have the python version in it")
 
     match_extra = match_extra or {
-        "_{}".format(name).replace(python_version, x): {_PYTHON_VERSION: x}
+        "_{}".format(name).replace(python_version, x): {_PYTHON_VERSION_FLAG: x}
         for x in VERSION_FLAG_VALUES[python_version]
     }
     if not match_extra:
