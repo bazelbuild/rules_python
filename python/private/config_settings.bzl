@@ -41,7 +41,10 @@ def _flag_values(python_versions):
         correct entries for matching the latest 3.8 version, etc.
     """
 
-    # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
+    # Maps e.g.
+    #   "3.8" -> ["3.8.1", "3.8.2", ..., "3.8.19"]
+    #   "3.8.2" -> []  # no extra versions
+    #   "3.8.19" -> ["3.8"] # The last version should also match 3.8
     ret = {}
 
     for micro_version in sorted(python_versions, key = _ver_key):
@@ -62,7 +65,7 @@ def _flag_values(python_versions):
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, *, python_version, match_extra = None, **kwargs):
+def is_python_config_setting(name, *, python_version = None, match_extra = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -72,7 +75,7 @@ def is_python_config_setting(name, *, python_version, match_extra = None, **kwar
         name: name for the target that will be created to be used in select statements.
         python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
         match_extra: The labels that should be used for matching the extra versions instead of creating
-            them on the fly. This will be passed to `config_setting_group.match_any`.
+            them on the fly. This will be passed to `config_setting_group.match_extra`.
         **kwargs: extra kwargs passed to the `config_setting`
     """
     visibility = kwargs.pop("visibility", [])
