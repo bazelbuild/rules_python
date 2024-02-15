@@ -36,15 +36,17 @@ def _flag_values(python_versions):
         python_versions: list of strings; all X.Y.Z python versions
 
     Returns:
-        A map with config settings as keys and values as extra flag values to be included in
-        the config_setting_group if they should be also matched, which is used for generating
-        correct entries for matching the latest 3.8 version, etc.
+        A map with config settings as keys and values are all of the python_version flag
+        values that that match the given 'key' specification. For example:
+        ```
+         "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]  # All 3.8 versions
+         "3.8.2" -> ["3.8.2"]  # Only 3.8.2
+         "3.8.19" -> ["3.8.19", "3.8"]  # The latest version should also match 3.8 so
+             as when the `3.8` toolchain is used we just use the latest `3.8` toolchain.
+             this makes the `select("is_python_3.8.19")` work no matter how the user
+             specifies the latest python version to use.
+        ```
     """
-
-    # Maps e.g.
-    #   "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]
-    #   "3.8.2" -> ["3.8.2"]  # no extra versions
-    #   "3.8.19" -> ["3.8.19", "3.8"] # The last version should also match 3.8
     ret = {}
 
     for micro_version in sorted(python_versions, key = _ver_key):
