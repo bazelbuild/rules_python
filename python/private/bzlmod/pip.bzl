@@ -212,6 +212,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             whl_alias(
                 repo = repo_name,
                 version = major_minor,
+                # Call Label() to canonicalize because its used in a different context
                 config_setting = Label("//python/config_settings:is_python_" + major_minor),
             ),
         )
