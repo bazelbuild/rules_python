@@ -33,15 +33,15 @@ def construct_config_settings(name = None):
         visibility = ["//visibility:public"],
     )
 
-    for version, extras in VERSION_FLAG_VALUES.items():
+    for version, match_any in VERSION_FLAG_VALUES.items():
         is_python_config_setting(
             name = "is_python_{}".format(version),
             match_extra = [
                 # Use the internal labels created by this macro in order to handle matching
                 # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
                 # fewer targets overall.
-                ("_is_python_{}" if VERSION_FLAG_VALUES[x] else "is_python_{}").format(x)
-                for x in extras
+                ("_is_python_{}" if len(VERSION_FLAG_VALUES[x]) == 1 else "is_python_{}").format(x)
+                for x in match_any[1:]
             ],
             python_version = version,
             visibility = ["//visibility:public"],
