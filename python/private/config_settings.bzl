@@ -33,7 +33,7 @@ def _flag_values(python_versions):
     For using this in the code, the VERSION_FLAG_VALUES should be used instead.
 
     Args:
-        python_versions: A list of all versions.
+        python_versions: list of strings; all X.Y.Z python versions
 
     Returns:
         A map with config settings as keys and values as extra flag values to be included in
