@@ -21,11 +21,16 @@ load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias
 def _normalize_label_strings(want):
     """normalize expected strings.
 
-    This function ensures that the desired `render_pkg_aliases` outputs are normalized from
-    `bzlmod` to `WORKSPACE` values so that we don't have to have to sets of expected strings.
-    The main difference is that under `bzlmod` the `str(Label("//my_label"))` results in
-    `"@@//my_label"` whereas under `non-bzlmod` we have `"@//my_label"`. This function does
+    This function ensures that the desired `render_pkg_aliases` outputs are
+    normalized from `bzlmod` to `WORKSPACE` values so that we don't have to
+    have to sets of expected strings. The main difference is that under
+    `bzlmod` the `str(Label("//my_label"))` results in `"@@//my_label"` whereas
+    under `non-bzlmod` we have `"@//my_label"`. This function does
     `string.replace("@@", "@")` to normalize the strings.
+
+    NOTE, in tests, we should only use keep `@@` usage in expectation values
+    for the test cases where the whl_alias has the `config_setting` constructed
+    from a `Label` instance.
     """
     if BZLMOD_ENABLED:
         # our expectations are already with double @
@@ -96,7 +101,7 @@ def _test_bzlmod_aliases(env):
         default_version = "3.2",
         aliases = {
             "bar-baz": [
-                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz", config_setting = "//:my_config_setting"),
             ],
         },
     )
@@ -114,7 +119,7 @@ alias(
     name = "pkg",
     actual = select(
         {
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
+            "//:my_config_setting": "@pypi_32_bar_baz//:pkg",
             "//conditions:default": "@pypi_32_bar_baz//:pkg",
         },
     ),
@@ -124,7 +129,7 @@ alias(
     name = "whl",
     actual = select(
         {
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
+            "//:my_config_setting": "@pypi_32_bar_baz//:whl",
             "//conditions:default": "@pypi_32_bar_baz//:whl",
         },
     ),
@@ -134,7 +139,7 @@ alias(
     name = "data",
     actual = select(
         {
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
+            "//:my_config_setting": "@pypi_32_bar_baz//:data",
             "//conditions:default": "@pypi_32_bar_baz//:data",
         },
     ),
@@ -144,7 +149,7 @@ alias(
     name = "dist_info",
     actual = select(
         {
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
+            "//:my_config_setting": "@pypi_32_bar_baz//:dist_info",
             "//conditions:default": "@pypi_32_bar_baz//:dist_info",
         },
     ),
@@ -160,7 +165,12 @@ def _test_bzlmod_aliases_with_no_default_version(env):
         default_version = None,
         aliases = {
             "bar-baz": [
-                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
+                whl_alias(
+                    version = "3.2",
+                    repo = "pypi_32_bar_baz",
+                    # pass the label to ensure that it gets converted to string
+                    config_setting = Label("//python/config_settings:is_python_3.2"),
+                ),
                 whl_alias(version = "3.1", repo = "pypi_31_bar_baz"),
             ],
         },
