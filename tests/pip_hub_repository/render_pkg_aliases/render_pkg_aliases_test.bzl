@@ -32,12 +32,12 @@ def _normalize_label_strings(want):
     for the test cases where the whl_alias has the `config_setting` constructed
     from a `Label` instance.
     """
+    if "@@" not in want:
+        fail("The expected string does not have '@@' labels, consider not using the function")
+
     if BZLMOD_ENABLED:
         # our expectations are already with double @
         return want
-
-    if "@@" not in want:
-        fail("The expected string does not have '@@' labels, consider not using the function")
 
     return want.replace("@@", "@")
 
@@ -156,7 +156,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
+    env.expect.that_str(actual[want_key]).equals(want_content)
 
 _tests.append(_test_bzlmod_aliases)
 
