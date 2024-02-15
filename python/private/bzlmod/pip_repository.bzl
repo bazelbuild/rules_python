@@ -14,7 +14,7 @@
 
 ""
 
-load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
 load("//python/private:text_util.bzl", "render")
 
 _BUILD_FILE_CONTENTS = """\
@@ -27,10 +27,11 @@ exports_files(["requirements.bzl"])
 def _pip_repository_impl(rctx):
     bzl_packages = rctx.attr.whl_map.keys()
     aliases = render_pkg_aliases(
-        repo_name = rctx.attr.repo_name,
-        rules_python = rctx.attr._template.workspace_name,
+        aliases = {
+            key: [whl_alias(**v) for v in json.decode(values)]
+            for key, values in rctx.attr.whl_map.items()
+        },
         default_version = rctx.attr.default_version,
-        whl_map = rctx.attr.whl_map,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
@@ -71,9 +72,12 @@ setting.""",
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
     ),
-    "whl_map": attr.string_list_dict(
+    "whl_map": attr.string_dict(
         mandatory = True,
-        doc = "The wheel map where values are python versions",
+        doc = """\
+The wheel map where values are json.encoded strings of the whl_map constructed
+in the pip.parse tag class.
+""",
     ),
     "_template": attr.label(
         default = ":requirements.bzl.tmpl",

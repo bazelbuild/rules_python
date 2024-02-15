@@ -26,7 +26,7 @@ load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
-load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
@@ -374,7 +374,13 @@ def _pip_repository_impl(rctx):
         config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
     macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-    aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+
+    aliases = render_pkg_aliases(
+        aliases = {
+            pkg: [whl_alias(repo = rctx.attr.name + "_" + pkg)]
+            for pkg in bzl_packages or []
+        },
+    )
     for path, contents in aliases.items():
         rctx.file(path, contents)
 
