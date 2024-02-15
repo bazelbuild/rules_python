@@ -15,10 +15,19 @@
 """render_pkg_aliases tests"""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")  # buildifier: disable=bzl-visibility
 
-def _normalize_labels(want):
-    if str(Label("//:invalid")).startswith("@@"):
+def _normalize_label_strings(want):
+    """normalize expected strings.
+
+    This function ensures that the desired `render_pkg_aliases` outputs are normalized from
+    `bzlmod` to `WORKSPACE` values so that we don't have to have to sets of expected strings.
+    The main difference is that under `bzlmod` the `str(Label("//my_label"))` results in
+    `"@@//my_label"` whereas under `non-bzlmod` we have `"@//my_label"`. This function does
+    `string.replace("@@", "@")` to normalize the strings.
+    """
+    if BZLMOD_ENABLED:
         # our expectations are already with double @
         return want
 
@@ -142,7 +151,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
+    env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
 
 _tests.append(_test_bzlmod_aliases)
 
@@ -230,7 +239,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
+    env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
 
 _tests.append(_test_bzlmod_aliases_with_no_default_version)
 
@@ -325,7 +334,7 @@ alias(
 )"""
 
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(_normalize_labels(want_content))
+    env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
 
 _tests.append(_test_bzlmod_aliases_for_non_root_modules)
 
