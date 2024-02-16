@@ -80,18 +80,16 @@ def _render_list(items):
         "]",
     ])
 
-def _render_is_python_config_setting(name, python_version, visibility = None, match_extra = None, constraint_values = None, **kwargs):
+def _render_is_python_config_setting(name, python_version, visibility = None, match_any = None, constraint_values = None, **kwargs):
     rendered_kwargs = {
         "name": repr(name),
         "python_version": repr(python_version),
     }
 
-    if type(match_extra) == type({}):
-        rendered_kwargs["match_extra"] = _render_dict(match_extra)
-    elif type(match_extra) == type([]):
-        rendered_kwargs["match_extra"] = _render_list(match_extra)
-    elif match_extra != None:
-        fail("unknown 'match_extra' type: {}".format(type(match_extra)))
+    if type(match_any) == type([]):
+        rendered_kwargs["match_any"] = _render_list(match_any)
+    elif match_any != None:
+        fail("unknown 'match_any' type: {}".format(type(match_any)))
 
     if visibility:
         rendered_kwargs["visibility"] = _render_list(visibility)

@@ -28,9 +28,10 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
+load("//python/private:text_util.bzl", "render")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
-load(":pip_repository.bzl", "pip_repository")
+load(":pip_repository.bzl", "BUILD_FILE_CONTENTS", "pip_repository")
 
 def _parse_version(version):
     major, _, version = version.partition(".")
@@ -99,7 +100,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_settings_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -120,10 +121,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    if pip_attr.platform:
+    if pip_attr.experimental_whl_platform:
         pip_name = "{}_{}_{}".format(
             hub_name,
-            pip_attr.platform,
+            pip_attr.experimental_whl_platform,
             version_label(pip_attr.python_version),
         )
     else:
@@ -132,24 +133,48 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             version_label(pip_attr.python_version),
         )
 
-    platform_config_setting = "//:is_python_{version}".format(
-        version = _major_minor_version(pip_attr.python_version),
-    )
+    major_minor = _major_minor_version(pip_attr.python_version)
     target_platforms = pip_attr.experimental_target_platforms
-    if pip_attr.platform:
+    if pip_attr.experimental_whl_platform:
+        # FIXME @aignas 2024-02-16: Right now the download is extremely inefficient, because
+        # we have to download wheels for the target platform from scratch even though some
+        # of the wheels for the target platform could already be reused because they are
+        # multi-platform.
+        #
+        # In order to improve this we would have to make `whl_library` support accessing its
+        # deps via the hub_repo aliases (so that it references `@pip//foo` and does not need
+        # to know if `foo` is target_platform specific or not.  One more thing would be to
+        # somehow know in advance the filename of the `whl` for the `whl_library` that we are
+        # going to create. That way we could create only a single `whl_library` for all python
+        # versions/platforms at once, thus simplifying the hub repo layout.
         requirements_lock = pip_attr.requirements_lock
         if not requirements_lock or pip_attr.requirements_windows or pip_attr.requirements_darwin or pip_attr.requirements_linux:
             fail("only requirements_lock can be specified when platform is used")
 
-        platforms = whl_target_platforms(pip_attr.platform)
+        platforms = whl_target_platforms(pip_attr.experimental_whl_platform)
         if len(platforms) != 1:
             fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
 
-        platform_config_setting = pip_attr.platform_config_setting or "{}_{}_{}".format(
-            platform_config_setting,
-            platforms[0].os,
-            platforms[0].cpu,
-        )
+        # TODO @aignas 2024-02-16: unify with downloading wheels for host?
+        platform_config_setting = pip_attr.experimental_platform_config_setting
+        if not platform_config_setting:
+            platform_config_setting_name = "is_python_{}_{}_{}".format(
+                major_minor,
+                platforms[0].os,
+                platforms[0].cpu,
+            )
+
+            config_settings_map.setdefault(hub_name, {})[platform_config_setting_name] = render.is_python_config_setting(
+                name = platform_config_setting_name,
+                python_version = major_minor,
+                constraint_values = [
+                    "@platforms//os:{}".format(platforms[0].os),
+                    "@platforms//cpu:{}".format(platforms[0].cpu),
+                ],
+                visibility = ["//:__subpackages__"],
+            )
+            platform_config_setting = "//:" + platform_config_setting_name
+
         target_platforms = [
             "cp{}_{}_{}".format(
                 version_label(pip_attr.python_version),
@@ -158,6 +183,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             ),
         ]
     else:
+        # Call Label() to canonicalize because its used in a different context
+        platform_config_setting = Label("//python/config_settings:is_python_{}".format(major_minor))
         requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -178,12 +205,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     }.values()
 
     extra_pip_args = pip_attr.extra_pip_args + parse_result.options
-    if pip_attr.platform:
+    if pip_attr.experimental_whl_platform:
         extra_pip_args.extend([
             "--implementation=cp",
             "--abi=cp{}".format(version_label(pip_attr.python_version)),
             "--python-version={}".format(pip_attr.python_version),
-            "--platform={}".format(pip_attr.platform),
+            "--platform={}".format(pip_attr.experimental_whl_platform),
         ])
 
     if hub_name not in whl_map:
@@ -240,7 +267,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             timeout = pip_attr.timeout,
             isolated = use_isolated(module_ctx, pip_attr),
             extra_pip_args = extra_pip_args,
-            download_only = pip_attr.platform != "" or pip_attr.download_only,
+            download_only = pip_attr.experimental_whl_platform != "" or pip_attr.download_only,
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
@@ -249,14 +276,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             group_deps = group_deps,
         )
 
-        major_minor = _major_minor_version(pip_attr.python_version)
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
                 version = major_minor,
-                # Call Label() to canonicalize because its used in a different context
                 config_setting = platform_config_setting,
-                platform = pip_attr.platform,
             ),
         )
 
@@ -366,13 +390,14 @@ def _pip_impl(module_ctx):
     # dict[hub, dict[whl, dict[version, str pip]]]
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
+    config_settings_map = {}
 
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
             hub_name = pip_attr.hub_name
             target_platform = struct(
                 version = pip_attr.python_version,
-                platform = pip_attr.platform,
+                platform = pip_attr.experimental_whl_platform,
             )
             if hub_name not in pip_hub_map:
                 pip_hub_map[pip_attr.hub_name] = struct(
@@ -409,11 +434,24 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].target_platforms.append(target_platform)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, config_settings_map)
 
     for hub_name, whl_map in hub_whl_map.items():
+        build_file_contents = BUILD_FILE_CONTENTS
+        config_settings = config_settings_map.get(hub_name, {}).values()
+        if config_settings:
+            self, _, _ = str(Label("//:MODULE.bazel")).partition("//")
+            build_file_contents = "\n".join([
+                """load("{}//python/config_settings:config_settings.bzl", "is_python_config_setting")""".format(self),
+                build_file_contents,
+                # Ensure that the blocks are separated with enough whitespace for debugging
+                "\n\n".join(config_settings),
+                "",
+            ])
+
         pip_repository(
             name = hub_name,
+            build_file_contents = build_file_contents,
             repo_name = hub_name,
             whl_map = {
                 key: json.encode(value)
@@ -424,6 +462,21 @@ def _pip_impl(module_ctx):
 
 def _pip_parse_ext_attrs():
     attrs = dict({
+        "experimental_platform_config_setting": attr.label(
+            mandatory = False,
+            doc = """\
+The platform config setting that will be used to setup the hub alias. Needs to include
+the '//python/config_settings:python_version' flag_value setting as well. Only used if "platform"
+is set.
+""",
+        ),
+        "experimental_whl_platform": attr.string(
+            mandatory = False,
+            doc = """\
+The pip platform that will be used to setup whl only hub repo for a particular platform.
+Setting this will set 'download_only = True'.
+""",
+        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """
@@ -444,21 +497,6 @@ is not required. Each hub is a separate resolution of pip dependencies. This
 means if different programs need different versions of some library, separate
 hubs can be created, and each program can use its respective hub's targets.
 Targets from different hubs should not be used together.
-""",
-        ),
-        "platform": attr.string(
-            mandatory = False,
-            doc = """\
-The pip platform that will be used to setup whl only hub repo for a particular platform.
-Setting this will set 'download_only = True'.
-""",
-        ),
-        "platform_config_setting": attr.label(
-            mandatory = False,
-            doc = """\
-The platform config setting that will be used to setup the hub alias. Needs to include
-the '//python/config_settings:python_version' flag_value setting as well. Only used if "platform"
-is set.
 """,
         ),
         "python_version": attr.string(

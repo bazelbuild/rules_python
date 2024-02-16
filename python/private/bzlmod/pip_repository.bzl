@@ -17,7 +17,7 @@
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
 load("//python/private:text_util.bzl", "render")
 
-_BUILD_FILE_CONTENTS = """\
+BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
 
 # Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
@@ -42,7 +42,7 @@ def _pip_repository_impl(rctx):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
+    rctx.file("BUILD.bazel", rctx.attr.build_file_contents)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
             macro_tmpl.format(p, "data")
@@ -61,6 +61,11 @@ def _pip_repository_impl(rctx):
     })
 
 pip_repository_attrs = {
+    # TODO @aignas 2024-02-16: consider passing a file with contents instead of a plain string.
+    "build_file_contents": attr.string(
+        default = BUILD_FILE_CONTENTS,
+        doc = """The BUILD.bazel contents for the root of the repo.""",
+    ),
     "default_version": attr.string(
         mandatory = True,
         doc = """\
