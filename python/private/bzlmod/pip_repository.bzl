@@ -61,7 +61,6 @@ def _pip_repository_impl(rctx):
     })
 
 pip_repository_attrs = {
-    # TODO @aignas 2024-02-16: consider passing a file with contents instead of a plain string.
     "build_file_contents": attr.string(
         default = BUILD_FILE_CONTENTS,
         doc = """The BUILD.bazel contents for the root of the repo.""",
