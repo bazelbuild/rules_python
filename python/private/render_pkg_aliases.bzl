@@ -38,6 +38,8 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
+_CONDITIONS_DEFAULT = "//conditions:default"
+
 def _render_whl_library_alias(
         *,
         name,
@@ -60,12 +62,13 @@ def _render_whl_library_alias(
     for alias in sorted(aliases, key = lambda x: x.version):
         actual = "@{repo}//:{name}".format(repo = alias.repo, name = name)
         selects[alias.config_setting] = actual
-        if alias.version == default_version:
+        if alias.version == default_version or alias.config_setting == _CONDITIONS_DEFAULT:
             default = actual
             no_match_error = None
 
     if default:
-        selects["//conditions:default"] = default
+        # Attempt setting it but continue if already exists
+        selects.setdefault("//conditions:default", default)
 
     return render.alias(
         name = name,
@@ -81,10 +84,24 @@ def _render_common_aliases(*, name, aliases, default_version = None):
     ]
 
     versions = None
+    has_default = False
     if aliases:
-        versions = sorted([v.version for v in aliases if v.version])
+        versions = sorted([a.version for a in aliases if a.version])
+        has_default = len([a.config_setting for a in aliases if a.config_setting == _CONDITIONS_DEFAULT]) == 1
+        default_version_aliases = [a for a in aliases if a.version == default_version]
+        if not has_default and len(default_version_aliases) > 1:
+            fail(
+                (
+                    "BUG: expected to have a single alias for the default version, but got multiple: '{}'. " +
+                    "Add the 'whl_alias(config_setting = \"//conditions:default\", ...)' setting explicitly."
+                ).format(default_version_aliases),
+            )
 
-    if not versions or default_version in versions:
+        if has_default:
+            # Zero this out as it is not useful anymore.
+            default_version = None
+
+    if not versions or default_version in versions or has_default:
         pass
     else:
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE.format(
