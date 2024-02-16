@@ -146,6 +146,7 @@ pip.parse(
     #experimental_platform_config_setting = "//:my_python_3.9_linux_x86_64",
     hub_name = "pip",
     python_version = "3.9",
+    # Specify the requirements file for the target platform
     requirements_lock = "//:requirements_lock_3_9.txt",
     # These modifications were created above and we
     # are providing pip.parse with the label of the mod
