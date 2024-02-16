@@ -58,7 +58,7 @@ class TestRequirementExtrasParsing(unittest.TestCase):
 class TestWhlFilegroup(unittest.TestCase):
     def setUp(self) -> None:
         self.wheel_name = "example_minimal_package-0.0.1-py3-none-any.whl"
-        self.wheel_dir = tempfile.mkdtemp()
+        self.wheel_dir = tempfile.mkdtemp(prefix=os.environ.get("TEST_TMPDIR"))
         self.wheel_path = os.path.join(self.wheel_dir, self.wheel_name)
         shutil.copy(os.path.join("examples", "wheel", self.wheel_name), self.wheel_dir)
 
@@ -75,9 +75,10 @@ class TestWhlFilegroup(unittest.TestCase):
         )
 
         want_files = [
-            "metadata.json",
-            "site-packages",
             self.wheel_name,
+            'example_minimal_package-0.0.1.dist-info',
+            "examples",
+            "metadata.json",
         ]
         self.assertEqual(
             sorted(want_files),

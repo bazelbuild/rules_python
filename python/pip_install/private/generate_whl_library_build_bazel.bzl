@@ -54,7 +54,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "{dist_info_label}",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -72,19 +72,19 @@ filegroup(
 py_library(
     name = "{py_library_impl_label}",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude={srcs_exclude},
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = {data} + glob(
-        ["site-packages/**/*"],
+        ["**/*"],
         exclude={data_exclude},
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = {dependencies},
     tags = {tags},
     visibility = {impl_vis},
@@ -299,6 +299,12 @@ def generate_whl_library_build_bazel(
         # of generated files produced when wheels are installed. The file is ignored to avoid
         # Bazel caching issues.
         "**/*.dist-info/RECORD",
+        "*.whl",
+        "**/__pycache__/**",
+        "bin/**/*",
+        "BUILD.bazel",
+        "WORKSPACE",
+        "{}*.py".format(WHEEL_ENTRY_POINT_PREFIX),
     ]
     for item in data_exclude:
         if item not in _data_exclude:
