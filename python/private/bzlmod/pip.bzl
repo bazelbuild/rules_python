@@ -197,7 +197,7 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
 
         target_platforms = [
             "cp{}_{}_{}".format(
-                version_label(pip_attr.python_version),
+                version_label(major_minor),
                 platforms[0].os,
                 platforms[0].cpu,
             ),
