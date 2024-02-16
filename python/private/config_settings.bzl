@@ -18,7 +18,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
-_PYTHON_VERSION = str(Label("//python/config_settings:python_version"))
+_PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
 
 def _ver_key(s):
     major, _, s = s.partition(".")
@@ -33,15 +33,20 @@ def _flag_values(python_versions):
     For using this in the code, the VERSION_FLAG_VALUES should be used instead.
 
     Args:
-        python_versions: A list of all versions.
+        python_versions: list of strings; all X.Y.Z python versions
 
     Returns:
-        A map with config settings as keys and values as extra flag values to be included in
-        the config_setting_group if they should be also matched, which is used for generating
-        correct entries for matching the latest 3.8 version, etc.
+        A map with config settings as keys and values are all of the python_version flag
+        values that that match the given 'key' specification. For example:
+        ```
+         "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]  # All 3.8 versions
+         "3.8.2" -> ["3.8.2"]  # Only 3.8.2
+         "3.8.19" -> ["3.8.19", "3.8"]  # The latest version should also match 3.8 so
+             as when the `3.8` toolchain is used we just use the latest `3.8` toolchain.
+             this makes the `select("is_python_3.8.19")` work no matter how the user
+             specifies the latest python version to use.
+        ```
     """
-
-    # Maps e.g. "3.8" -> ["3.8.1", "3.8.2", etc]
     ret = {}
 
     for micro_version in sorted(python_versions, key = _ver_key):
@@ -51,18 +56,18 @@ def _flag_values(python_versions):
         # It's private because matching the concept of e.g. "3.8" value is done
         # using the `is_python_X.Y` config setting group, which is aware of the
         # minor versions that could match instead.
-        ret.setdefault(minor_version, []).append(micro_version)
+        ret.setdefault(minor_version, [minor_version]).append(micro_version)
 
         # Ensure that is_python_3.9.8 is matched if python_version is set
         # to 3.9 if MINOR_MAPPING points to 3.9.8
         default_micro_version = MINOR_MAPPING[minor_version]
-        ret[micro_version] = [minor_version] if default_micro_version == micro_version else []
+        ret[micro_version] = [micro_version, minor_version] if default_micro_version == micro_version else [micro_version]
 
     return ret
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, *, python_version, match_extra = None, **kwargs):
+def is_python_config_setting(name, *, python_version = None, match_any = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -71,23 +76,26 @@ def is_python_config_setting(name, *, python_version, match_extra = None, **kwar
     Args:
         name: name for the target that will be created to be used in select statements.
         python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
-        match_extra: The labels that should be used for matching the extra versions instead of creating
-            them on the fly. This will be passed to `config_setting_group.match_any`.
+        match_any: The labels that should be used for matching the extra versions instead of creating
+            them on the fly. This will be passed to `config_setting_group.match_any`. This can be
+            either None, which will create config settings necessary to match the `python_version` value,
+            a list of 'config_setting' labels passed to bazel-skylib's `config_setting_group` `match_any`
+            attribute.
         **kwargs: extra kwargs passed to the `config_setting`
     """
     visibility = kwargs.pop("visibility", [])
 
     flag_values = {
-        _PYTHON_VERSION: python_version,
+        _PYTHON_VERSION_FLAG: python_version,
     }
     if python_version not in name:
-        fail("The name must have the python version in it")
+        fail("The name '{}' must have the python version '{}' in it".format(name, python_version))
 
-    match_extra = match_extra or {
-        "_{}".format(name).replace(python_version, x): {_PYTHON_VERSION: x}
-        for x in VERSION_FLAG_VALUES[python_version]
-    }
-    if not match_extra:
+    if python_version not in VERSION_FLAG_VALUES:
+        fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
+
+    python_versions = VERSION_FLAG_VALUES[python_version]
+    if len(python_versions) == 1 and not match_any:
         native.config_setting(
             name = name,
             flag_values = flag_values,
@@ -96,15 +104,16 @@ def is_python_config_setting(name, *, python_version, match_extra = None, **kwar
         )
         return
 
-    create_config_settings = {"_" + name: flag_values}
-    match_any = ["_" + name]
-    if type(match_extra) == type([]):
-        match_any.extend(match_extra)
-    elif type(match_extra) == type({}):
-        match_any.extend(match_extra.keys())
-        create_config_settings.update(match_extra)
+    if type(match_any) == type([]):
+        create_config_settings = {"_" + name: flag_values}
+    elif not match_any:
+        create_config_settings = {
+            "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
+            for version in python_versions
+        }
+        match_any = list(create_config_settings.keys())
     else:
-        fail("unsupported match_extra type, can be either a list or a dict of dicts")
+        fail("unsupported 'match_any' type, expected a 'list', got '{}'".format(type(match_any)))
 
     # Create all of the necessary config setting values for the config_setting_group
     for name_, flag_values_ in create_config_settings.items():

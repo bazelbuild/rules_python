@@ -159,11 +159,6 @@ def _test_latest_micro_version_matching_impl(env, target):
 _tests.append(_test_latest_micro_version_matching)
 
 def construct_config_settings_test_suite(name):  # buildifier: disable=function-docstring
-    test_suite(
-        name = name,
-        tests = _tests,
-    )
-
     # We have CI runners running on a great deal of the platforms from the list below,
     # hence use all of them within tests.
     # NOTE @aignas 2024-02-12: contrary to what we
@@ -202,6 +197,11 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
             ],
             python_version = "3.11",
         )
+
+    test_suite(
+        name = name,
+        tests = _tests,
+    )
 
     native.platform(
         name = "linux_aarch64",
