@@ -135,6 +135,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
 
     major_minor = _major_minor_version(pip_attr.python_version)
     target_platforms = pip_attr.experimental_target_platforms
+    platform_config_settings = []
     if pip_attr.experimental_whl_platform:
         # FIXME @aignas 2024-02-16: Right now the download is extremely inefficient, because
         # we have to download wheels for the target platform from scratch even though some
@@ -173,7 +174,25 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
                 ],
                 visibility = ["//:__subpackages__"],
             )
-            platform_config_setting = "//:" + platform_config_setting_name
+            platform_config_settings.append("//:" + platform_config_setting_name)
+
+        # Handle default version matching as well
+        default_version = _major_minor_version(DEFAULT_PYTHON_VERSION)
+        if default_version == major_minor:
+            platform_config_setting_name = "is_{}_{}".format(
+                platforms[0].os,
+                platforms[0].cpu,
+            )
+
+            config_settings_map.setdefault(hub_name, {})[platform_config_setting_name] = render.config_setting(
+                name = platform_config_setting_name,
+                constraint_values = [
+                    "@platforms//os:{}".format(platforms[0].os),
+                    "@platforms//cpu:{}".format(platforms[0].cpu),
+                ],
+                visibility = ["//:__subpackages__"],
+            )
+            platform_config_settings.append("//:" + platform_config_setting_name)
 
         target_platforms = [
             "cp{}_{}_{}".format(
@@ -183,8 +202,17 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
             ),
         ]
     else:
+        platform_config_setting_name = "is_python_{}".format(major_minor)
+
         # Call Label() to canonicalize because its used in a different context
-        platform_config_setting = Label("//python/config_settings:is_python_{}".format(major_minor))
+        actual = str(Label("//python/config_settings:{}".format(platform_config_setting_name)))
+
+        config_settings_map.setdefault(hub_name, {})[platform_config_setting_name] = render.alias(
+            name = platform_config_setting_name,
+            actual = repr(actual),
+            visibility = ["//:__subpackages__"],
+        )
+        platform_config_settings.append("//:" + platform_config_setting_name)
         requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -276,12 +304,15 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
             group_deps = group_deps,
         )
 
-        whl_map[hub_name].setdefault(whl_name, []).append(
-            whl_alias(
-                repo = repo_name,
-                version = major_minor,
-                config_setting = platform_config_setting,
-            ),
+        whl_map[hub_name].setdefault(whl_name, []).extend(
+            [
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                    config_setting = platform_config_setting,
+                )
+                for platform_config_setting in platform_config_settings
+            ],
         )
 
 def _pip_impl(module_ctx):

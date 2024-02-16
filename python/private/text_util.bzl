@@ -91,8 +91,29 @@ def _render_is_python_config_setting(name, python_version, visibility = None, ma
     elif match_any != None:
         fail("unknown 'match_any' type: {}".format(type(match_any)))
 
+    if constraint_values:
+        rendered_kwargs["constraint_values"] = _render_list(constraint_values)
+
+    for key, value in kwargs.items():
+        rendered_kwargs[key] = repr(value)
+
     if visibility:
         rendered_kwargs["visibility"] = _render_list(visibility)
+
+    return "is_python_config_setting(\n{}\n)".format(
+        _indent("\n".join([
+            "{key} = {value},".format(key = key, value = value)
+            for key, value in rendered_kwargs.items()
+        ])),
+    )
+
+def _render_config_setting(name, flag_values = None, visibility = None, constraint_values = None, **kwargs):
+    rendered_kwargs = {
+        "name": repr(name),
+    }
+
+    if flag_values:
+        rendered_kwargs["flag_values"] = _render_dict(flag_values)
 
     if constraint_values:
         rendered_kwargs["constraint_values"] = _render_list(constraint_values)
@@ -100,7 +121,10 @@ def _render_is_python_config_setting(name, python_version, visibility = None, ma
     for key, value in kwargs.items():
         rendered_kwargs[key] = repr(value)
 
-    return "is_python_config_setting(\n{}\n)".format(
+    if visibility:
+        rendered_kwargs["visibility"] = _render_list(visibility)
+
+    return "config_setting(\n{}\n)".format(
         _indent("\n".join([
             "{key} = {value},".format(key = key, value = value)
             for key, value in rendered_kwargs.items()
@@ -114,4 +138,5 @@ render = struct(
     list = _render_list,
     select = _render_select,
     is_python_config_setting = _render_is_python_config_setting,
+    config_setting = _render_config_setting,
 )
