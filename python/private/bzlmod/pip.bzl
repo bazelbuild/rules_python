@@ -100,7 +100,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_settings_map):
+def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_settings_map):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -137,7 +137,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
     target_platforms = pip_attr.experimental_target_platforms
     platform_config_settings = []
     if pip_attr.experimental_whl_platform:
-        # FIXME @aignas 2024-02-16: Right now the download is extremely inefficient, because
+        # NOTE @aignas 2024-02-16: Right now the download is extremely inefficient, because
         # we have to download wheels for the target platform from scratch even though some
         # of the wheels for the target platform could already be reused because they are
         # multi-platform.
@@ -156,7 +156,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
         if len(platforms) != 1:
             fail("the 'platform' must yield a single target platform. Did you try to use macosx_x_y_universal2?")
 
-        # TODO @aignas 2024-02-16: unify with downloading wheels for host?
         platform_config_setting = pip_attr.experimental_platform_config_setting
         if not platform_config_setting:
             platform_config_setting_name = "is_python_{}_{}_{}".format(
@@ -176,7 +175,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, config_setti
             )
             platform_config_settings.append("//:" + platform_config_setting_name)
 
-        # Handle default version matching as well
+        # Handle default version matching as well, so that we could use the
+        # platform specific wheels if they match the right platform without
+        # transitioning to a specific python version.
         default_version = _major_minor_version(DEFAULT_PYTHON_VERSION)
         if default_version == major_minor:
             platform_config_setting_name = "is_{}_{}".format(
@@ -421,6 +422,11 @@ def _pip_impl(module_ctx):
     # dict[hub, dict[whl, dict[version, str pip]]]
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
+
+    # Keeps track of all the unique config settings that need to be defined or
+    # aliased in the hub repo. Thus allows us to decouple from the exact naming
+    # used in the rules_python and allows to even create our own config_setting
+    # values to have a self-contained `hub_repo`.
     config_settings_map = {}
 
     for mod in module_ctx.modules:
@@ -465,7 +471,13 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].target_platforms.append(target_platform)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, config_settings_map)
+            _create_whl_repos(
+                module_ctx = module_ctx,
+                pip_attr = pip_attr,
+                whl_map = hub_whl_map,
+                whl_overrides = whl_overrides,
+                config_settings_map = config_settings_map,
+            )
 
     for hub_name, whl_map in hub_whl_map.items():
         build_file_contents = BUILD_FILE_CONTENTS
