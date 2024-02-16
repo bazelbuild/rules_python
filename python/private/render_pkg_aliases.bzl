@@ -57,7 +57,7 @@ def _render_whl_library_alias(
     selects = {}
     no_match_error = "_NO_MATCH_ERROR"
     default = None
-    for alias in sorted(aliases, key = lambda x: x.version):
+    for alias in sorted(aliases, key = lambda x: x.config_setting):
         actual = "@{repo}//:{name}".format(repo = alias.repo, name = name)
         selects[alias.config_setting] = actual
         if alias.version == default_version:
@@ -81,8 +81,12 @@ def _render_common_aliases(*, name, aliases, default_version = None):
     ]
 
     versions = None
+    has_default = False
     if aliases:
-        versions = sorted([v.version for v in aliases if v.version])
+        versions = sorted([a.version for a in aliases if a.version])
+        has_default = len([a.config_setting for a in aliases if a.config_setting == "//conditions:default"]) == 1
+        if has_default:
+            default_version = None
 
     if not versions or default_version in versions:
         pass

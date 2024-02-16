@@ -121,33 +121,27 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
-    if pip_attr.experimental_whl_platform:
-        pip_name = "{}_{}_{}".format(
-            hub_name,
-            pip_attr.experimental_whl_platform,
-            version_label(pip_attr.python_version),
-        )
-    else:
-        pip_name = "{}_{}".format(
-            hub_name,
-            version_label(pip_attr.python_version),
-        )
+    pip_name = "{}_{}".format(
+        hub_name,
+        version_label(pip_attr.python_version),
+    )
 
     major_minor = _major_minor_version(pip_attr.python_version)
     target_platforms = pip_attr.experimental_target_platforms
     platform_config_settings = []
+    default_version = _major_minor_version(DEFAULT_PYTHON_VERSION)
+
     if pip_attr.experimental_whl_platform:
         # NOTE @aignas 2024-02-16: Right now the download is extremely inefficient, because
         # we have to download wheels for the target platform from scratch even though some
         # of the wheels for the target platform could already be reused because they are
         # multi-platform.
         #
-        # In order to improve this we would have to make `whl_library` support accessing its
-        # deps via the hub_repo aliases (so that it references `@pip//foo` and does not need
-        # to know if `foo` is target_platform specific or not.  One more thing would be to
-        # somehow know in advance the filename of the `whl` for the `whl_library` that we are
-        # going to create. That way we could create only a single `whl_library` for all python
-        # versions/platforms at once, thus simplifying the hub repo layout.
+        # In order to improve this we would have to somehow know in advance the
+        # filename of the `whl` for the `whl_library` that we are going to
+        # create. That way we could create only a single `whl_library` for all
+        # python versions/platforms at once, thus simplifying the hub repo
+        # layout.
         requirements_lock = pip_attr.requirements_lock
         if not requirements_lock or pip_attr.requirements_windows or pip_attr.requirements_darwin or pip_attr.requirements_linux:
             fail("only requirements_lock can be specified when platform is used")
@@ -178,7 +172,6 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
         # Handle default version matching as well, so that we could use the
         # platform specific wheels if they match the right platform without
         # transitioning to a specific python version.
-        default_version = _major_minor_version(DEFAULT_PYTHON_VERSION)
         if default_version == major_minor:
             platform_config_setting_name = "is_{}_{}".format(
                 platforms[0].os,
@@ -195,13 +188,7 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
             )
             platform_config_settings.append("//:" + platform_config_setting_name)
 
-        target_platforms = [
-            "cp{}_{}_{}".format(
-                version_label(major_minor),
-                platforms[0].os,
-                platforms[0].cpu,
-            ),
-        ]
+        target_platforms = ["cp{}_{}_{}".format(version_label(major_minor), platforms[0].os, platforms[0].cpu)]
     else:
         platform_config_setting_name = "is_python_{}".format(major_minor)
 
@@ -214,6 +201,9 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
             visibility = ["//:__subpackages__"],
         )
         platform_config_settings.append("//:" + platform_config_setting_name)
+        if default_version == major_minor:
+            platform_config_settings.append("//conditions:default")
+            config_settings_map[hub_name]["//conditions:default"] = "//conditions:default"
         requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
@@ -261,7 +251,7 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
         for whl_name in group_whls
     }
 
-    group_repo = "%s__groups" % (pip_name,)
+    group_repo = "%s__%s__groups" % (pip_name, pip_attr.experimental_whl_platform)
     group_library(
         name = group_repo,
         repo_prefix = pip_name + "_",
@@ -279,17 +269,24 @@ def _create_whl_repos(*, module_ctx, pip_attr, whl_map, whl_overrides, config_se
         group_deps = requirement_cycles.get(group_name, [])
 
         repo_name = "{}_{}".format(pip_name, whl_name)
+        if pip_attr.experimental_whl_platform:
+            repo_name = "{}__{}".format(repo_name, pip_attr.experimental_whl_platform)
+            whl_pip_name = "{}_{}".format(pip_name, pip_attr.experimental_whl_platform)
+        else:
+            whl_pip_name = pip_name
+
         whl_library(
             name = repo_name,
             requirement = requirement_line,
-            repo = pip_name,
-            repo_prefix = pip_name + "_",
+            repo = whl_pip_name,
+            repo_prefix = whl_pip_name + "_",
             annotation = annotation,
             whl_patches = {
                 p: json.encode(args)
                 for p, args in whl_overrides.get(whl_name, {}).items()
             },
             experimental_target_platforms = target_platforms,
+            experimental_use_hub_for_deps = hub_name,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
             quiet = pip_attr.quiet,
@@ -481,7 +478,14 @@ def _pip_impl(module_ctx):
 
     for hub_name, whl_map in hub_whl_map.items():
         build_file_contents = BUILD_FILE_CONTENTS
-        config_settings = config_settings_map.get(hub_name, {}).values()
+        has_default = False
+        config_settings = []
+        for value in config_settings_map.get(hub_name, {}).values():
+            if value == "//conditions:default":
+                has_default = True
+                continue
+            config_settings.append(value)
+
         if config_settings:
             self, _, _ = str(Label("//:MODULE.bazel")).partition("//")
             build_file_contents = "\n".join([
@@ -501,6 +505,7 @@ def _pip_impl(module_ctx):
                 for key, value in whl_map.items()
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
+            render_default_version = not has_default,
         )
 
 def _pip_parse_ext_attrs():

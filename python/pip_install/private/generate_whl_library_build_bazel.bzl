@@ -232,7 +232,8 @@ def generate_whl_library_build_bazel(
         entry_points,
         annotation = None,
         group_name = None,
-        group_deps = []):
+        group_deps = [],
+        use_hub = False):
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
@@ -250,6 +251,7 @@ def generate_whl_library_build_bazel(
         group_deps: List[str]; names of fellow members of the group (if any). These will be excluded
           from generated deps lists so as to avoid direct cycles. These dependencies will be provided
           at runtime by the group rules which wrap this library and its fellows together.
+        use_hub: str; the hub to use instead of spoke repos when pointing to dependencies.
 
     Returns:
         A complete BUILD file as a string
@@ -338,13 +340,13 @@ def generate_whl_library_build_bazel(
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, PY_LIBRARY_PUBLIC_LABEL),
+        tmpl = "@{}//{{}}".format(use_hub) if use_hub else "@{}{{}}//:{}".format(repo_prefix, PY_LIBRARY_PUBLIC_LABEL),
     )
 
     whl_file_deps = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, WHEEL_FILE_PUBLIC_LABEL),
+        tmpl = "@{}//{{}}:{}".format(use_hub, WHEEL_FILE_PUBLIC_LABEL) if use_hub else "@{}{{}}//:{}".format(repo_prefix, WHEEL_FILE_PUBLIC_LABEL),
     )
 
     # If this library is a member of a group, its public label aliases need to

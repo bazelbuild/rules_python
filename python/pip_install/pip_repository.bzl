@@ -858,6 +858,7 @@ def _whl_library_impl(rctx):
         ],
         entry_points = entry_points,
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+        use_hub = rctx.attr.experimental_use_hub_for_deps,
     )
     rctx.file("BUILD.bazel", build_file_contents)
 
@@ -898,6 +899,9 @@ whl_library_attrs = {
             "See `package_annotation`"
         ),
         allow_files = True,
+    ),
+    "experimental_use_hub_for_deps": attr.string(
+        default = "",
     ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
