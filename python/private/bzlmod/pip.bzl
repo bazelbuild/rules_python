@@ -27,10 +27,10 @@ load(
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 load(":pip_repository.bzl", "pip_repository")
-load(":utils.bzl", "whl_map_encode")
 
 def _parse_version(version):
     major, _, version = version.partition(".")
@@ -222,8 +222,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
+        repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(
-            name = "%s_%s" % (pip_name, whl_name),
+            name = repo_name,
             requirement = requirement_line,
             repo = pip_name,
             repo_prefix = pip_name + "_",
@@ -248,10 +249,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             group_deps = group_deps,
         )
 
+        major_minor = _major_minor_version(pip_attr.python_version)
         whl_map[hub_name].setdefault(whl_name, []).append(
-            struct(
-                version = _major_minor_version(pip_attr.python_version),
-                pip_name = pip_name + "_",
+            whl_alias(
+                repo = repo_name,
+                version = major_minor,
+                # Call Label() to canonicalize because its used in a different context
                 config_setting = platform_config_setting,
                 platform = pip_attr.platform,
             ),
@@ -412,7 +415,10 @@ def _pip_impl(module_ctx):
         pip_repository(
             name = hub_name,
             repo_name = hub_name,
-            whl_map = whl_map_encode(whl_map),
+            whl_map = {
+                key: json.encode(value)
+                for key, value in whl_map.items()
+            },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
         )
 

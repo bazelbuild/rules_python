@@ -24,9 +24,21 @@ A brief description of the categories of changes:
 ### Added
 
 * (bzlmod pip) One can add hub repositories that are for a specific pip platform
-  by specifying the `platform` atribute on the `pip.parse` tag class. This
-  effectively turn on the `download_only = True` flag and setup the extra
+  by specifying the `experimental_platform` atribute on the `pip.parse` tag class.
+  This effectively turn on the `download_only = True` flag and setup the extra
   `pip` args based on the `python_version` value.
+
+## [0.31.0] - 2024-02-12
+
+[0.31.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.31.0
+
+### Changed
+
+* For Bazel 7, the core rules and providers are now implemented in rules_python
+  directly and the rules bundled with Bazel are not used. Bazel 6 and earlier
+  continue to use the Bazel builtin symbols. Of particular note, this means,
+  under Bazel 7, the builtin global symbol `PyInfo` is **not** the same as what
+  is loaded from rules_python. The same is true of `PyRuntimeInfo`.
 
 ## [0.30.0] - 2024-02-12
 
