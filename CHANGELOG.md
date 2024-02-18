@@ -35,6 +35,8 @@ A brief description of the categories of changes:
 
 ### Added
 
+* (toolchains) Added armv7 platform definition for python toolchains.
+
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
 * (gazelle) Added a new `python_visibility` directive to control visibility
