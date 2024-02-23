@@ -33,8 +33,8 @@ PyRequirementInfo = provider(
     doc = "Information about an individual python requirement",
     fields = {
         "name": "String: the name of the pypi dependency (e.g. 'protobuf')",
-        "version": "String: the concrete version of the pypi requirement (e.g. '4.25.2')",
         "specifier": "String: a formatted string, to be used verbatim for 'Requires-Dist' metadata specification (e.g 'protobuf>=4.25.2', see https://pip.pypa.io/en/stable/reference/requirement-specifiers/)",
+        "version": "String: the concrete version of the pypi requirement (e.g. '4.25.2')",
     },
 )
 
