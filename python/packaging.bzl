@@ -16,10 +16,18 @@
 
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:py_package.bzl", "py_package_lib")
-load("//python/private:py_wheel.bzl", _PyWheelInfo = "PyWheelInfo", _py_wheel = "py_wheel")
+load(
+    "//python/private:py_wheel.bzl",
+    _PyRequirementInfo = "PyRequirementInfo",
+    _PyRequirementsInfo = "PyRequirementsInfo",
+    _PyWheelInfo = "PyWheelInfo",
+    _py_wheel = "py_wheel",
+)
 load("//python/private:util.bzl", "copy_propagating_kwargs")
 
 # Re-export as public API
+PyRequrirementInfo = _PyRequirementInfo
+PyRequrirementsInfo = _PyRequirementsInfo
 PyWheelInfo = _PyWheelInfo
 
 py_package = rule(
