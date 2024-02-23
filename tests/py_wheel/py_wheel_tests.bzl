@@ -16,9 +16,51 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:packaging.bzl", "py_wheel")
+load("//python/private:py_wheel.bzl", "PyRequirementInfo", "PyRequirementsInfo")  # buildifier: disable=bzl-visibility
 load("//python/private:py_wheel_normalize_pep440.bzl", "normalize_pep440")  # buildifier: disable=bzl-visibility
 
-_basic_tests = []
+#####################
+# helpers
+#####################
+
+def _py_requirement_impl(ctx):
+    return [
+        PyRequirementInfo(
+            name = ctx.label.name,
+            version = ctx.attr.version,
+            specifier = "%s~=%s" % (ctx.label.name, ctx.attr.version),
+        ),
+    ]
+
+_py_requirement = rule(
+    implementation = _py_requirement_impl,
+    attrs = {"version": attr.string()},
+)
+
+def _py_requirements_impl(ctx):
+    requirements = []
+    for specifier in ctx.attr.specifiers:
+        requirements.append(PyRequirementInfo(
+            name = ctx.label.name,
+            version = "<not used>",
+            specifier = specifier,
+        ))
+    return [
+        PyRequirementsInfo(
+            label = ctx.label,
+            requirements = requirements,
+        ),
+    ]
+
+_py_requirements = rule(
+    implementation = _py_requirements_impl,
+    attrs = {"specifiers": attr.string_list()},
+)
+
+#####################
+# regular tests
+#####################
+
 _tests = []
 
 def _test_metadata(name):
@@ -45,6 +87,61 @@ def _test_metadata_impl(env, target):
     ])
 
 _tests.append(_test_metadata)
+
+def _test_requires_dist(name):
+    """_test_requires_dist tests the generation of 'Requires-Dist' metadata
+
+    assertions:
+    - values in the 'requires' attr show up in the METADATA
+    - values from other rules that provide 'PyRequirementInfo' show up in the METADATA
+    - values from other rules that provide 'PyRequirementsInfo' show up in the METADATA
+    - values are sorted and deduplicated
+    """
+
+    _py_requirement(
+        name = "six",
+        version = "6.6.6",
+    )
+    _py_requirements(
+        name = "more_requirements",
+        specifiers = [
+            "numpy==1.2.3",
+            "requests>=1.2.3",
+            "urllib>=4.5.6",
+        ],
+    )
+    rt_util.helper_target(
+        py_wheel,
+        name = name + "_subject",
+        distribution = "mydist_" + name,
+        version = "0.0.0",
+        requires = ["numpy==1.2.3"],
+        deps = [
+            ":six",
+            ":more_requirements",
+        ],
+    )
+    analysis_test(
+        name = name,
+        impl = _test_requires_dist_impl,
+        target = name + "_subject",
+    )
+
+def _test_requires_dist_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}.metadata.txt",
+    )
+    action.content().split("\n").contains_exactly([
+        env.expect.meta.format_str("Name: mydist_{test_name}"),
+        "Metadata-Version: 2.1",
+        "Requires-Dist: numpy==1.2.3",
+        "Requires-Dist: six~=6.6.6",
+        "Requires-Dist: requests>=1.2.3",
+        "Requires-Dist: urllib>=4.5.6",
+        "",
+    ])
+
+_tests.append(_test_requires_dist)
 
 def _test_content_type_from_attr(name):
     rt_util.helper_target(
@@ -93,6 +190,12 @@ def _test_content_type_from_description_impl(env, target):
     )
 
 _tests.append(_test_content_type_from_description)
+
+#####################
+# basic tests
+#####################
+
+_basic_tests = []
 
 def _test_pep440_normalization(env):
     prefixes = ["v", "  v", " \t\r\nv"]
@@ -193,6 +296,10 @@ def _test_pep440_normalization(env):
                         i += 1
 
 _basic_tests.append(_test_pep440_normalization)
+
+#####################
+# test suite
+#####################
 
 def py_wheel_test_suite(name):
     test_suite(

@@ -29,6 +29,23 @@ PyWheelInfo = provider(
     },
 )
 
+PyRequirementInfo = provider(
+    doc = "Information about an individual python requirement",
+    fields = {
+        "name": "String: the name of the pypi dependency (e.g. 'protobuf')",
+        "version": "String: the concrete version of the pypi requirement (e.g. '4.25.2')",
+        "specifier": "String: a formatted string, to be used verbatim for 'Requires-Dist' metadata specification (e.g 'protobuf>=4.25.2', see https://pip.pypa.io/en/stable/reference/requirement-specifiers/)",
+    },
+)
+
+PyRequirementsInfo = provider(
+    doc = "Information about a set of python requirements",
+    fields = {
+        "label": "Label: the label of the rule where the requirements originiated",
+        "requirements": "List[PyRequirementInfo]: the list of requirements",
+    },
+)
+
 _distribution_attrs = {
     "abi": attr.string(
         default = "none",
@@ -292,6 +309,26 @@ def _input_file_to_arg(input_file):
     """Converts a File object to string for --input_file argument to wheelmaker"""
     return "%s;%s" % (py_package_lib.path_inside_wheel(input_file), input_file.path)
 
+def _gather_requirement_specifiers(requires, deps):
+    """collects a set of requirement specifiers from the requires string attr and deps label_list attr.
+
+    Args:
+        requires: List[String]: the value of the ctx.attr.requires attribute
+        deps: List[Target]: the value of the ctx.attr.deps attribute
+    Returns:
+        a sorted and deduplicated list of formatted requirement specifiers
+    """
+    specifiers = [] + requires
+
+    for dep in deps:
+        if PyRequirementInfo in dep:
+            specifiers.append(dep[PyRequirementInfo].specifier)
+        if PyRequirementsInfo in dep:
+            for requirement in dep[PyRequirementsInfo].requirements:
+                specifiers.append(requirement.specifier)
+
+    return depset(specifiers).to_list()
+
 def _py_wheel_impl(ctx):
     abi = _replace_make_variables(ctx.attr.abi, ctx)
     python_tag = _replace_make_variables(ctx.attr.python_tag, ctx)
@@ -383,8 +420,9 @@ def _py_wheel_impl(ctx):
     if ctx.attr.requires and ctx.attr.requires_file:
         fail("`requires` and `requires_file` are mutually exclusive. Please update {}".format(ctx.label))
 
-    for requires in ctx.attr.requires:
-        metadata_contents.append("Requires-Dist: %s" % requires)
+    for specifier in _gather_requirement_specifiers(ctx.attr.requires, ctx.attr.deps):
+        metadata_contents.append("Requires-Dist: %s" % specifier)
+
     if ctx.attr.requires_file:
         # The @ prefixed paths will be resolved by the PyWheel action.
         # Expanding each line containing a constraint in place of this
@@ -507,6 +545,12 @@ py_wheel_lib = struct(
 Targets to be included in the distribution.
 
 The targets to package are usually `py_library` rules or filesets (for packaging data files).
+
+Targets that provide a PyRequirementInfo or PyRequirementsInfo provider can be used to
+populate 'Requires-Dist'.  For example, you can implement your own `py_package` rule
+(similar to the one provided by @rules_python) that filters the files to be included in
+the wheel, and have it also return a PyRequirementsInfo provider that will name additional
+dependencies that a wheel consumer will require.
 
 Note it's usually better to package `py_library` targets and use
 `entry_points` attribute to specify `console_scripts` than to package
