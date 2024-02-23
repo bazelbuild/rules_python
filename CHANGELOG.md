@@ -21,6 +21,9 @@ A brief description of the categories of changes:
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
+* (py_wheel) Wheel deps can supply requirement specifiers to the generated wheel
+  metadata using the new providers `PyRequirementInfo`, `PyRequirementsInfo`.
+
 ## [0.31.0] - 2024-02-12
 
 [0.31.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.31.0
