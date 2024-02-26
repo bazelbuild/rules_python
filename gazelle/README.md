@@ -114,6 +114,10 @@ gazelle_python_manifest(
     pip_repository_name = "pip",
     # This should point to wherever we declare our python dependencies
     # (the same as what we passed to the modules_mapping rule in WORKSPACE)
+    # This argument is optional. If provided, the `.test` target is very
+    # fast because it just has to check an integrity field. If not provided,
+    # the integrity field is not added to the manifest which can help avoid
+    # merge conflicts in large repos.
     requirements = "//:requirements_lock.txt",
 )
 ```

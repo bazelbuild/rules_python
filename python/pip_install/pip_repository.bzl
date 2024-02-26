@@ -22,12 +22,13 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
-load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases")
+load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
+load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
-load("//python/private:which.bzl", "which_with_fail")
 load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
@@ -114,7 +115,11 @@ def _get_xcode_location_cflags(rctx):
     if not rctx.os.name.lower().startswith("mac os"):
         return []
 
-    xcode_sdk_location = rctx.execute([which_with_fail("xcode-select", rctx), "--print-path"])
+    xcode_sdk_location = repo_utils.execute_unchecked(
+        rctx,
+        op = "GetXcodeLocation",
+        arguments = [repo_utils.which_checked(rctx, "xcode-select"), "--print-path"],
+    )
     if xcode_sdk_location.return_code != 0:
         return []
 
@@ -143,14 +148,16 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter):
     if not is_standalone_interpreter(rctx, python_interpreter):
         return []
 
-    er = rctx.execute([
-        python_interpreter,
-        "-c",
-        "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
-    ])
-    if er.return_code != 0:
-        fail("could not get python version from interpreter (status {}): {}".format(er.return_code, er.stderr))
-    _python_version = er.stdout
+    stdout = repo_utils.execute_checked_stdout(
+        rctx,
+        op = "GetPythonVersionForUnixCflags",
+        arguments = [
+            python_interpreter,
+            "-c",
+            "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
+        ],
+    )
+    _python_version = stdout
     include_path = "{}/include/python{}".format(
         python_interpreter.dirname,
         _python_version,
@@ -195,12 +202,24 @@ def _parse_optional_attrs(rctx, args):
     if use_isolated(rctx, rctx.attr):
         args.append("--isolated")
 
+    # At the time of writing, the very latest Bazel, as in `USE_BAZEL_VERSION=last_green bazelisk`
+    # supports rctx.getenv(name, default): When building incrementally, any change to the value of
+    # the variable named by name will cause this repository to be re-fetched. That hasn't yet made
+    # its way into the official releases, though.
+    if "getenv" in dir(rctx):
+        getenv = rctx.getenv
+    else:
+        getenv = rctx.os.environ.get
+
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
     if rctx.attr.extra_pip_args != None:
         args += [
             "--extra_pip_args",
-            json.encode(struct(arg = rctx.attr.extra_pip_args)),
+            json.encode(struct(arg = [
+                envsubst(pip_arg, rctx.attr.envsubst, getenv)
+                for pip_arg in rctx.attr.extra_pip_args
+            ])),
         ]
 
     if rctx.attr.download_only:
@@ -338,6 +357,7 @@ def _pip_repository_impl(rctx):
         "download_only": rctx.attr.download_only,
         "enable_implicit_namespace_pkgs": rctx.attr.enable_implicit_namespace_pkgs,
         "environment": rctx.attr.environment,
+        "envsubst": rctx.attr.envsubst,
         "extra_pip_args": options,
         "isolated": use_isolated(rctx, rctx.attr),
         "pip_data_exclude": rctx.attr.pip_data_exclude,
@@ -354,7 +374,13 @@ def _pip_repository_impl(rctx):
         config["experimental_target_platforms"] = rctx.attr.experimental_target_platforms
 
     macro_tmpl = "@%s//{}:{}" % rctx.attr.name
-    aliases = render_pkg_aliases(repo_name = rctx.attr.name, bzl_packages = bzl_packages)
+
+    aliases = render_pkg_aliases(
+        aliases = {
+            pkg: [whl_alias(repo = rctx.attr.name + "_" + pkg)]
+            for pkg in bzl_packages or []
+        },
+    )
     for path, contents in aliases.items():
         rctx.file(path, contents)
 
@@ -392,6 +418,7 @@ def _pip_repository_impl(rctx):
 
 common_env = [
     "RULES_PYTHON_PIP_ISOLATED",
+    REPO_DEBUG_ENV_VAR,
 ]
 
 common_attrs = {
@@ -418,9 +445,22 @@ Environment variables to set in the pip subprocess.
 Can be used to set common variables such as `http_proxy`, `https_proxy` and `no_proxy`
 Note that pip is run with "--isolated" on the CLI so `PIP_<VAR>_<NAME>`
 style env vars are ignored, but env vars that control requests and urllib3
-can be passed.
+can be passed. If you need `PIP_<VAR>_<NAME>`, take a look at `extra_pip_args`
+and `envsubst`.
         """,
         default = {},
+    ),
+    "envsubst": attr.string_list(
+        mandatory = False,
+        doc = """\
+A list of environment variables to substitute (e.g. `["PIP_INDEX_URL",
+"PIP_RETRIES"]`). The corresponding variables are expanded in `extra_pip_args`
+using the syntax `$VARNAME` or `${VARNAME}` (expanding to empty string if unset)
+or `${VARNAME:-default}` (expanding to default if the variable is unset or empty
+in the environment). Note: On Bazel 6 and Bazel 7 changes to the variables named
+here do not cause packages to be re-fetched. Don't fetch different things based
+on the value of these variables.
+""",
     ),
     "experimental_requirement_cycles": attr.string_list_dict(
         default = {},
@@ -499,7 +539,7 @@ is one of `linux`, `osx`, `windows` and arch is one of `x86_64`, `x86_32`,
 
 You can also target a specific Python version by using `cp3<minor_version>_<os>_<arch>`.
 If multiple python versions are specified as target platforms, then select statements
-of the `lib` and `whl` targets will include usage of version aware toolchain config 
+of the `lib` and `whl` targets will include usage of version aware toolchain config
 settings like `@rules_python//python/config_settings:is_python_3.y`.
 
 Special values: `host` (for generating deps for the host platform only) and
@@ -509,7 +549,14 @@ NOTE: this is not for cross-compiling Python wheels but rather for parsing the `
 """,
     ),
     "extra_pip_args": attr.string_list(
-        doc = "Extra arguments to pass on to pip. Must not contain spaces.",
+        doc = """Extra arguments to pass on to pip. Must not contain spaces.
+
+Supports environment variables using the syntax `$VARNAME` or
+`${VARNAME}` (expanding to empty string if unset) or
+`${VARNAME:-default}` (expanding to default if the variable is unset
+or empty in the environment), if `"VARNAME"` is listed in the
+`envsubst` attribute. See also `envsubst`.
+""",
     ),
     "isolated": attr.bool(
         doc = """\
@@ -719,28 +766,14 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    result = rctx.execute(
-        args,
+    repo_utils.execute_checked(
+        rctx,
+        op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+        arguments = args,
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
-    if result.return_code:
-        fail((
-            "whl_library '{name}' wheel_installer failed:\n" +
-            "  command: {cmd}\n" +
-            "  environment:\n{env}\n" +
-            "  return code: {return_code}\n" +
-            "===== stdout start ====\n{stdout}\n===== stdout end===\n" +
-            "===== stderr start ====\n{stderr}\n===== stderr end===\n"
-        ).format(
-            name = rctx.attr.name,
-            cmd = " ".join([str(a) for a in args]),
-            env = "\n".join(["{}={}".format(k, v) for k, v in environment.items()]),
-            return_code = result.return_code,
-            stdout = result.stdout,
-            stderr = result.stderr,
-        ))
 
     whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
     if not rctx.delete("whl_file.json"):
@@ -773,8 +806,10 @@ def _whl_library_impl(rctx):
                 for p in whl_target_platforms(parsed_whl.platform_tag)
             ]
 
-    result = rctx.execute(
-        args + [
+    repo_utils.execute_checked(
+        rctx,
+        op = "whl_library.ExtractWheel({}, {})".format(rctx.attr.name, whl_path),
+        arguments = args + [
             "--whl-file",
             whl_path,
         ] + ["--platform={}".format(p) for p in target_platforms],
@@ -782,9 +817,6 @@ def _whl_library_impl(rctx):
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
     )
-
-    if result.return_code:
-        fail("whl_library %s failed: %s (%s) error code: '%s'" % (rctx.attr.name, result.stdout, result.stderr, result.return_code))
 
     metadata = json.decode(rctx.read("metadata.json"))
     rctx.delete("metadata.json")
