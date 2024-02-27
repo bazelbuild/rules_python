@@ -168,6 +168,15 @@ Specifies additional environment variables to set when the target is executed by
         # The value is required, but varies by rule and/or rule type. Use
         # create_stamp_attr to create one.
         "stamp": None,
+        "_entrypoint_py_template": attr.label(
+            default = "@rules_python//python/private/common:entrypoint.tmpl.py",
+            allow_single_file = True,
+        ),
+        "_runfiles": attr.label(
+            default = "@rules_python//python/runfiles",
+            providers = [PyInfo],
+        ),
+
     },
     allow_none = True,
 )
