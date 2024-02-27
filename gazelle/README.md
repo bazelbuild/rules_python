@@ -204,28 +204,28 @@ Python-specific directives are as follows:
 
 Set this directive within the Bazel package that you want to use as the Python root.
 For example, if using a `src` dir (as recommended by the [Python Packaging User
-Guide][python-packaging-user-guide]), then set this directive in `src/BUILD`:
+Guide][python-packaging-user-guide]), then set this directive in `src/BUILD.bazel`:
 
 ```starlark
-# ./src/BUILD
+# ./src/BUILD.bazel
 # Tell gazelle that are python root is the same dir as this Bazel package.
 # gazelle:python_root
 ```
 
 Note that the directive does not have any arguments.
 
-Gazelle will then add `imports = [".."]` (or similar) to all targets that it
+Gazelle will then add the necessary `imports` attribute to all targets that it
 generates:
 
 ```starlark
-# in ./src/foo/BUILD
+# in ./src/foo/BUILD.bazel
 py_libary(
     ...
     imports = [".."],  # Gazelle adds this
     ...
 )
 
-# in ./src/foo/bar/BUILD
+# in ./src/foo/bar/BUILD.bazel
 py_libary(
     ...
     imports = ["../.."],  # Gazelle adds this
