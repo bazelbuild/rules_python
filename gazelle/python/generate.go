@@ -212,7 +212,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
-	visibility := fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)
+	// TODO(gh-1682): Add support for default_visibility directive and replace
+	// the initil visibility value.
+	visibility := []string{fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)}
+	visibility = append(visibility, cfg.ExtraVisibility()...)
 
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)

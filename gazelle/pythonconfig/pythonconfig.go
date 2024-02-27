@@ -67,6 +67,10 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
+	// ExtraVisibility represents the directive that controls what additional
+	// visibility labels are added to generated targets. It mimics the behavior
+	// of the `go_visibility` directive.
+	ExtraVisibility = "python_visibility"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -136,6 +140,7 @@ type Config struct {
 	libraryNamingConvention      string
 	binaryNamingConvention       string
 	testNamingConvention         string
+	extraVisibility              []string
 }
 
 // New creates a new Config.
@@ -157,6 +162,7 @@ func New(
 		libraryNamingConvention:      packageNameNamingConventionSubstitution,
 		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		extraVisibility:              []string{},
 	}
 }
 
@@ -183,6 +189,7 @@ func (c *Config) NewChild() *Config {
 		libraryNamingConvention:      c.libraryNamingConvention,
 		binaryNamingConvention:       c.binaryNamingConvention,
 		testNamingConvention:         c.testNamingConvention,
+		extraVisibility:              c.extraVisibility,
 	}
 }
 
@@ -387,4 +394,14 @@ func (c *Config) SetTestNamingConvention(testNamingConvention string) {
 // substitutions.
 func (c *Config) RenderTestName(packageName string) string {
 	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)
+}
+
+// AppendExtraVisibility adds additional items to the target's visibility.
+func (c *Config) AppendExtraVisibility(visibility string) {
+	c.extraVisibility = append(c.extraVisibility, visibility)
+}
+
+// ExtraVisibility returns the target's visibility.
+func (c *Config) ExtraVisibility() []string {
+	return c.extraVisibility
 }
