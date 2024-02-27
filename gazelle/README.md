@@ -198,6 +198,54 @@ Python-specific directives are as follows:
 | Controls the `py_test` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
 | `# gazelle:resolve py ...` | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
+| [`# gazelle:python_visibility label`](#directive-python_visibility) | |
+| Append additional visibility labels to each generated target. This directive can be set multiple times. | |
+
+
+#### Directive: `python_visibility`:
+
+Append additional `visibility` labels to each generated target.
+
+This directive can be set multiple times. The generated `visibility` attribute
+will include the default visibility and all labels defined by this directive.
+All labels will be ordered alphabetically.
+
+
+```starlark
+# ./BUILD.bazel
+# gazelle:python_visibility //tests:__pkg__
+# gazelle:python_visibility //bar:baz
+
+py_library(
+   ...
+   visibility = [
+       "//:__subpackages__",  # default visibility
+       "//bar:baz",
+       "//tests:__pkg__",
+   ],
+   ...
+)
+```
+
+Child Bazel packages inherit values from parents.
+
+```starlark
+# ./bar/BUILD.bazel
+# gazelle:python_visibility //tests:__subpackages__
+
+py_library(
+   ...
+   visibility = [
+       "//:__subpackages__",       # default visibility
+       "//bar:baz",                # defined in ../BUILD.bazel
+       "//tests:__pkg__",          # defined in ../BUILD.bazel
+       "//tests:__subpackages__",  # defined in this ./BUILD.bazel
+   ],
+   ...
+)
+
+```
+
 
 ### Libraries
 
