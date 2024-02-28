@@ -202,52 +202,6 @@ Python-specific directives are as follows:
 | Append additional visibility labels to each generated target. This directive can be set multiple times. | |
 
 
-#### Directive: `python_visibility`:
-
-Append additional `visibility` labels to each generated target.
-
-This directive can be set multiple times. The generated `visibility` attribute
-will include the default visibility and all labels defined by this directive.
-All labels will be ordered alphabetically.
-
-
-```starlark
-# ./BUILD.bazel
-# gazelle:python_visibility //tests:__pkg__
-# gazelle:python_visibility //bar:baz
-
-py_library(
-   ...
-   visibility = [
-       "//:__subpackages__",  # default visibility
-       "//bar:baz",
-       "//tests:__pkg__",
-   ],
-   ...
-)
-```
-
-Child Bazel packages inherit values from parents.
-
-```starlark
-# ./bar/BUILD.bazel
-# gazelle:python_visibility //tests:__subpackages__
-
-py_library(
-   ...
-   visibility = [
-       "//:__subpackages__",       # default visibility
-       "//bar:baz",                # defined in ../BUILD.bazel
-       "//tests:__pkg__",          # defined in ../BUILD.bazel
-       "//tests:__subpackages__",  # defined in this ./BUILD.bazel
-   ],
-   ...
-)
-
-```
-
-
-
 #### Directive: `python_root`:
 
 Set this directive within the Bazel package that you want to use as the Python root.
@@ -282,6 +236,50 @@ py_libary(
 ```
 
 [python-packaging-user-guide]: https://github.com/pypa/packaging.python.org/blob/4c86169a/source/tutorials/packaging-projects.rst
+
+
+#### Directive: `python_visibility`:
+
+Append additional `visibility` labels to each generated target.
+
+This directive can be set multiple times. The generated `visibility` attribute
+will include the default visibility and all labels defined by this directive.
+All labels will be ordered alphabetically.
+
+```starlark
+# ./BUILD.bazel
+# gazelle:python_visibility //tests:__pkg__
+# gazelle:python_visibility //bar:baz
+
+py_library(
+   ...
+   visibility = [
+       "//:__subpackages__",  # default visibility
+       "//bar:baz",
+       "//tests:__pkg__",
+   ],
+   ...
+)
+```
+
+Child Bazel packages inherit values from parents:
+
+```starlark
+# ./bar/BUILD.bazel
+# gazelle:python_visibility //tests:__subpackages__
+
+py_library(
+   ...
+   visibility = [
+       "//:__subpackages__",       # default visibility
+       "//bar:baz",                # defined in ../BUILD.bazel
+       "//tests:__pkg__",          # defined in ../BUILD.bazel
+       "//tests:__subpackages__",  # defined in this ./BUILD.bazel
+   ],
+   ...
+)
+
+```
 
 
 ### Libraries
