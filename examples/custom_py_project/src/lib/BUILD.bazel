@@ -1,5 +1,5 @@
-load("//bazel:py_library.bzl", "py_library")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("//bazel:py_library.bzl", "py_library")
 
 py_library(
     name = "lib",
