@@ -199,7 +199,7 @@ Python-specific directives are as follows:
 | `# gazelle:resolve py ...` | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
 | [`# gazelle:python_visibility label`](#directive-python_visibility) | |
-| Append additional visibility labels to each generated target. This directive can be set multiple times. | |
+| Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
 
 
 #### Directive: `python_root`:
@@ -240,7 +240,7 @@ py_libary(
 
 #### Directive: `python_visibility`:
 
-Append additional `visibility` labels to each generated target.
+Appends additional `visibility` labels to each generated target.
 
 This directive can be set multiple times. The generated `visibility` attribute
 will include the default visibility and all labels defined by this directive.
