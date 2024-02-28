@@ -1,0 +1,27 @@
+load("//bazel:py_library.bzl", "py_library")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+
+py_library(
+    name = "lib",
+    srcs = ["__init__.py"],
+    deps = [
+        "@pip//certifi",
+        "@pip//requests",
+    ],
+)
+
+genrule(
+    name = "requires_dist",
+    srcs = [":lib.whl"],
+    outs = ["requires_dist.txt"],
+    cmd = """
+set -euo pipefail
+unzip -c $(location :lib.whl) '*/METADATA' | grep Requires-Dist > $(@)
+""",
+)
+
+diff_test(
+    name = "requires_dist_golden_test",
+    file1 = "requires_dist.golden.txt",
+    file2 = "requires_dist.txt",
+)
