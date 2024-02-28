@@ -15,8 +15,8 @@ genrule(
     srcs = [":lib.whl"],
     outs = ["requires_dist.txt"],
     cmd = """
-set -euo pipefail
-unzip -c $(location :lib.whl) '*/METADATA' | grep Requires-Dist > $(@)
+set -euox pipefail
+unzip -c $(location :lib.whl) '*/METADATA' | grep '^Requires-Dist:' > $(@)
 """,
 )
 
