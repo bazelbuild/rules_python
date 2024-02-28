@@ -176,8 +176,8 @@ Python-specific directives are as follows:
 |--------------------------------------|-------------------|
 | `# gazelle:python_extension`         |   `enabled`       |
 | Controls whether the Python extension is enabled or not. Sub-packages inherit this value. Can be either "enabled" or "disabled". | |
-| `# gazelle:python_root`              |    n/a            |
-| Sets a Bazel package as a Python root. This is used on monorepos with multiple Python projects that don't share the top-level of the workspace as the root. | |
+| [`# gazelle:python_root`](#directive-python_root) |    n/a            |
+| Sets a Bazel package as a Python root. This is used on monorepos with multiple Python projects that don't share the top-level of the workspace as the root. See [Directive: `python_root`](#directive-python_root) below. | |
 | `# gazelle:python_manifest_file_name`| `gazelle_python.yaml` |
 | Overrides the default manifest file name. | |
 | `# gazelle:python_ignore_files`      |     n/a           |
@@ -188,7 +188,7 @@ Python-specific directives are as follows:
 | Controls whether the Python import statements should be validated. Can be "true" or "false" | |
 | `# gazelle:python_generation_mode`| `package` |
 | Controls the target generation mode. Can be "file", "package", or "project" | |
-| `# gazelle:python_generation_mode_per_file_include_init`| `package` |
+| `# gazelle:python_generation_mode_per_file_include_init`| `false` |
 | Controls whether `__init__.py` files are included as srcs in each generated target when target generation mode is "file". Can be "true", or "false" | |
 | `# gazelle:python_library_naming_convention`| `$package_name$` |
 | Controls the `py_library` naming convention. It interpolates `$package_name$` with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
@@ -245,6 +245,43 @@ py_library(
 )
 
 ```
+
+
+
+#### Directive: `python_root`:
+
+Set this directive within the Bazel package that you want to use as the Python root.
+For example, if using a `src` dir (as recommended by the [Python Packaging User
+Guide][python-packaging-user-guide]), then set this directive in `src/BUILD.bazel`:
+
+```starlark
+# ./src/BUILD.bazel
+# Tell gazelle that are python root is the same dir as this Bazel package.
+# gazelle:python_root
+```
+
+Note that the directive does not have any arguments.
+
+Gazelle will then add the necessary `imports` attribute to all targets that it
+generates:
+
+```starlark
+# in ./src/foo/BUILD.bazel
+py_libary(
+    ...
+    imports = [".."],  # Gazelle adds this
+    ...
+)
+
+# in ./src/foo/bar/BUILD.bazel
+py_libary(
+    ...
+    imports = ["../.."],  # Gazelle adds this
+    ...
+)
+```
+
+[python-packaging-user-guide]: https://github.com/pypa/packaging.python.org/blob/4c86169a/source/tutorials/packaging-projects.rst
 
 
 ### Libraries

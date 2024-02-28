@@ -160,8 +160,13 @@ def _which_checked(rctx, binary_name):
     """
     binary = rctx.which(binary_name)
     if binary == None:
-        fail(("Unable to find the binary '{binary_name}' on PATH.\n" +
-              "  PATH = {path}".format(rctx.os.environ.get("PATH"))))
+        fail((
+            "Unable to find the binary '{binary_name}' on PATH.\n" +
+            "  PATH = {path}"
+        ).format(
+            binary_name = binary_name,
+            path = rctx.os.environ.get("PATH"),
+        ))
     return binary
 
 def _args_to_str(arguments):
