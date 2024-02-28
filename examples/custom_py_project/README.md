@@ -7,7 +7,7 @@ included in the `Requires-Dist` wheel metadata.
 
 Notes:
 
-- `//src/lib` is a very simple `py_library` macro that depends on two external
+- `//src/lib:lib` is a very simple `py_library` macro that depends on two external
   libs from pypi.
 - The `py_library` macro from `//bazel:py_library` declares a `py_wheel` for
   each library rule.
@@ -17,5 +17,7 @@ Notes:
   - the `PyRequirementInfo` structs are bundled into `PyRequirementsInfo` and returned from the rule.
   - the `PyRequirementsInfo` are picked up by the `py_wheel` rule implementation
     and added to the generated wheel METADATA.
+  - the golden test depends on the generated wheel, whose METADATA has been
+    extracted and grepped for `Requires-Dist:`.
 
-> NOTE: pip boilerplate from copying the pip_parse_vendored example.
+> NOTE: this example was originally based off `examples/pip_parse_vendored`.
