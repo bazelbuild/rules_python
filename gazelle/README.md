@@ -233,7 +233,7 @@ py_libary(
 )
 ```
 
-[python-packaging-user-guide]: https://packaging.python.org/en/latest/tutorials/packaging-projects/
+[python-packaging-user-guide]: https://github.com/pypa/packaging.python.org/blob/4c86169a/source/tutorials/packaging-projects.rst
 
 
 ### Libraries
