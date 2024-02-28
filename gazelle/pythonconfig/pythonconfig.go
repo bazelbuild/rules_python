@@ -67,10 +67,10 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
-	// ExtraVisibility represents the directive that controls what additional
+	// Visibility represents the directive that controls what additional
 	// visibility labels are added to generated targets. It mimics the behavior
 	// of the `go_visibility` directive.
-	ExtraVisibility = "python_visibility"
+	Visibility = "python_visibility"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -396,12 +396,12 @@ func (c *Config) RenderTestName(packageName string) string {
 	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)
 }
 
-// AppendExtraVisibility adds additional items to the target's visibility.
-func (c *Config) AppendExtraVisibility(visibility string) {
+// AppendVisibility adds additional items to the target's visibility.
+func (c *Config) AppendVisibility(visibility string) {
 	c.extraVisibility = append(c.extraVisibility, visibility)
 }
 
-// ExtraVisibility returns the target's visibility.
-func (c *Config) ExtraVisibility() []string {
+// Visibility returns the target's visibility.
+func (c *Config) Visibility() []string {
 	return c.extraVisibility
 }

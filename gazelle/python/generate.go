@@ -215,7 +215,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	// TODO(gh-1682): Add support for default_visibility directive and replace
 	// the initial visibility value.
 	visibility := []string{fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)}
-	visibility = append(visibility, cfg.ExtraVisibility()...)
+	visibility = append(visibility, cfg.Visibility()...)
 
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)
