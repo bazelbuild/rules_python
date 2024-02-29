@@ -28,14 +28,12 @@ A brief description of the categories of changes:
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
-
-### Added
-
 * (bzlmod pip) One can add hub repositories that are for a specific pip platform
   by specifying the `experimental_platform` atribute on the `pip.parse` tag class.
   This effectively turn on the `download_only = True` flag and setup the extra
   `pip` args based on the `python_version` value.
+
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.31.0] - 2024-02-12
 
