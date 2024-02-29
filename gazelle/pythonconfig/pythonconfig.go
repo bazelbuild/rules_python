@@ -67,6 +67,9 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
+	// DefaultVisibilty represents the directive that controls what visibility
+	// labels are added to generated python targets.
+	DefaultVisibilty = "python_default_visibility"
 	// Visibility represents the directive that controls what additional
 	// visibility labels are added to generated targets. It mimics the behavior
 	// of the `go_visibility` directive.
@@ -140,6 +143,7 @@ type Config struct {
 	libraryNamingConvention      string
 	binaryNamingConvention       string
 	testNamingConvention         string
+	defaultVisibility            []string
 	visibility                   []string
 }
 
@@ -162,6 +166,7 @@ func New(
 		libraryNamingConvention:      packageNameNamingConventionSubstitution,
 		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		defaultVisibility:            []string{"//:__subpackages__"},
 		visibility:                   []string{},
 	}
 }
@@ -189,6 +194,7 @@ func (c *Config) NewChild() *Config {
 		libraryNamingConvention:      c.libraryNamingConvention,
 		binaryNamingConvention:       c.binaryNamingConvention,
 		testNamingConvention:         c.testNamingConvention,
+		defaultVisibility:            c.defaultVisibility,
 		visibility:                   c.visibility,
 	}
 }
@@ -403,5 +409,15 @@ func (c *Config) AppendVisibility(visibility string) {
 
 // Visibility returns the target's visibility.
 func (c *Config) Visibility() []string {
-	return c.visibility
+	return append(c.defaultVisibility, c.visibility...)
+}
+
+// SetDefaultVisibility sets the default visibility of the target.
+func (c *Config) SetDefaultVisibility(visibility []string) {
+	c.defaultVisibility = visibility
+}
+
+// DefaultVisibilty returns the target's default visibility.
+func (c *Config) DefaultVisibilty() []string {
+	return c.defaultVisibility
 }
