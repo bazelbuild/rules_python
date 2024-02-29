@@ -68,7 +68,7 @@ def _render_whl_library_alias(
 
     if default:
         # Attempt setting it but continue if already exists
-        selects.setdefault("//conditions:default", default)
+        selects.setdefault(_CONDITIONS_DEFAULT, default)
 
     return render.alias(
         name = name,
@@ -88,13 +88,13 @@ def _render_common_aliases(*, name, aliases, default_version = None):
     if aliases:
         versions = sorted([a.version for a in aliases if a.version])
         has_default = len([a.config_setting for a in aliases if a.config_setting == _CONDITIONS_DEFAULT]) == 1
-        default_version_aliases = [a for a in aliases if a.version == default_version]
+        default_version_aliases = [a for a in aliases if a.version == default_version or a.config_setting == _CONDITIONS_DEFAULT]
         if not has_default and len(default_version_aliases) > 1:
             fail(
                 (
                     "BUG: expected to have a single alias for the default version, but got multiple: '{}'. " +
-                    "Add the 'whl_alias(config_setting = \"//conditions:default\", ...)' setting explicitly."
-                ).format(default_version_aliases),
+                    "Add the 'whl_alias(config_setting = {}, ...)' setting explicitly."
+                ).format(default_version_aliases, repr(_CONDITIONS_DEFAULT)),
             )
 
         if has_default:

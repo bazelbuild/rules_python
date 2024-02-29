@@ -208,6 +208,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         )
 
         major_minor = _major_minor_version(pip_attr.python_version)
+        default_major_minor = _major_minor_version(DEFAULT_PYTHON_VERSION)
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
@@ -216,6 +217,14 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
                 config_setting = Label("//python/config_settings:is_python_" + major_minor),
             ),
         )
+        if default_major_minor == major_minor:
+            whl_map[hub_name][whl_name].append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                    config_setting = "//conditions:default",
+                ),
+            )
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.

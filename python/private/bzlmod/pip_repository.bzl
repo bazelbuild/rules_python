@@ -31,7 +31,6 @@ def _pip_repository_impl(rctx):
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
-        default_version = rctx.attr.default_version,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
