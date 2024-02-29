@@ -161,7 +161,6 @@ _tests.append(_test_latest_micro_version_matching)
 def construct_config_settings_test_suite(name):  # buildifier: disable=function-docstring
     # We have CI runners running on a great deal of the platforms from the list below,
     # hence use all of them within tests.
-    # NOTE @aignas 2024-02-12: contrary to what we
     for os in ["linux", "osx", "windows"]:
         is_python_config_setting(
             name = "is_python_3.11_" + os,
