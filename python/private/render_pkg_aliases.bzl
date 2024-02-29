@@ -66,6 +66,7 @@ def _render_whl_library_alias(
 
     if default:
         selects["//conditions:default"] = default
+        fail("foo")
 
     return render.alias(
         name = name,
@@ -83,7 +84,7 @@ def _render_common_aliases(*, name, aliases, default_version = None):
     versions = None
     has_default = False
     if aliases:
-        versions = sorted([a.version for a in aliases if a.version])
+        versions = sorted({a.version: True for a in aliases if a.version}.keys())
         has_default = len([a.config_setting for a in aliases if a.config_setting == "//conditions:default"]) == 1
         if has_default:
             default_version = None
