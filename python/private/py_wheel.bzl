@@ -30,11 +30,10 @@ PyWheelInfo = provider(
 )
 
 PyRequirementInfo = provider(
-    doc = "Information about an individual python requirement",
+    doc = "Information about an individual python dependency",
     fields = {
+        "dependency_specifier": "String: a formatted string, to be used verbatim for 'Requires-Dist' metadata specification (e.g 'protobuf>=4.25.2', see https://packaging.python.org/en/latest/specifications/dependency-specifiers/#dependency-specifiers/)",
         "name": "String: the name of the pypi dependency (e.g. 'protobuf')",
-        "specifier": "String: a formatted string, to be used verbatim for 'Requires-Dist' metadata specification (e.g 'protobuf>=4.25.2', see https://pip.pypa.io/en/stable/reference/requirement-specifiers/)",
-        "version": "String: the concrete version of the pypi requirement (e.g. '4.25.2')",
     },
 )
 
@@ -322,10 +321,10 @@ def _gather_requirement_specifiers(requires, deps):
 
     for dep in deps:
         if PyRequirementInfo in dep:
-            specifiers.append(dep[PyRequirementInfo].specifier)
+            specifiers.append(dep[PyRequirementInfo].dependency_specifier)
         if PyRequirementsInfo in dep:
             for requirement in dep[PyRequirementsInfo].requirements:
-                specifiers.append(requirement.specifier)
+                specifiers.append(requirement.dependency_specifier)
 
     return depset(specifiers).to_list()
 

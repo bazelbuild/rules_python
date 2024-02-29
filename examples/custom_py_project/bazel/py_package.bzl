@@ -26,8 +26,7 @@ def _py_package_impl(ctx):
                 if name and version:
                     requirements.append(PyRequrirementInfo(
                         name = name,
-                        version = version,
-                        specifier = "%s>=%s" % (name, version),
+                        dependency_specifier = "%s>=%s" % (name, version),
                     ))
         else:
             files.append(input_file)

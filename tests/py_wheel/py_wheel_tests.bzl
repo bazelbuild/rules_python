@@ -27,8 +27,7 @@ def _py_requirement_impl(ctx):
     return [
         PyRequirementInfo(
             name = ctx.label.name,
-            version = ctx.attr.version,
-            specifier = "%s~=%s" % (ctx.label.name, ctx.attr.version),
+            dependency_specifier = "%s~=%s" % (ctx.label.name, ctx.attr.version),
         ),
     ]
 
@@ -39,11 +38,10 @@ _py_requirement = rule(
 
 def _py_requirements_impl(ctx):
     requirements = []
-    for specifier in ctx.attr.specifiers:
+    for dependency_specifier in ctx.attr.dependency_specifiers:
         requirements.append(PyRequirementInfo(
             name = ctx.label.name,
-            version = "<not used>",
-            specifier = specifier,
+            dependency_specifier = dependency_specifier,
         ))
     return [
         PyRequirementsInfo(
@@ -54,7 +52,7 @@ def _py_requirements_impl(ctx):
 
 _py_requirements = rule(
     implementation = _py_requirements_impl,
-    attrs = {"specifiers": attr.string_list()},
+    attrs = {"dependency_specifiers": attr.string_list()},
 )
 
 #####################
@@ -104,7 +102,7 @@ def _test_requires_dist(name):
     )
     _py_requirements(
         name = "more_requirements",
-        specifiers = [
+        dependency_specifiers = [
             "numpy==1.2.3",
             "requests>=1.2.3",
             "urllib>=4.5.6",
