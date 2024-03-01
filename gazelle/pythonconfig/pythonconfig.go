@@ -140,7 +140,7 @@ type Config struct {
 	libraryNamingConvention      string
 	binaryNamingConvention       string
 	testNamingConvention         string
-	extraVisibility              []string
+	visibility                   []string
 }
 
 // New creates a new Config.
@@ -162,7 +162,7 @@ func New(
 		libraryNamingConvention:      packageNameNamingConventionSubstitution,
 		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
-		extraVisibility:              []string{},
+		visibility:                   []string{},
 	}
 }
 
@@ -189,7 +189,7 @@ func (c *Config) NewChild() *Config {
 		libraryNamingConvention:      c.libraryNamingConvention,
 		binaryNamingConvention:       c.binaryNamingConvention,
 		testNamingConvention:         c.testNamingConvention,
-		extraVisibility:              c.extraVisibility,
+		visibility:                   c.visibility,
 	}
 }
 
@@ -398,10 +398,10 @@ func (c *Config) RenderTestName(packageName string) string {
 
 // AppendVisibility adds additional items to the target's visibility.
 func (c *Config) AppendVisibility(visibility string) {
-	c.extraVisibility = append(c.extraVisibility, visibility)
+	c.visibility = append(c.visibility, visibility)
 }
 
 // Visibility returns the target's visibility.
 func (c *Config) Visibility() []string {
-	return c.extraVisibility
+	return c.visibility
 }
