@@ -63,6 +63,7 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
+		pythonconfig.Visibility,
 	}
 }
 
@@ -162,6 +163,8 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			config.SetBinaryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
+		case pythonconfig.Visibility:
+			config.AppendVisibility(strings.TrimSpace(d.Value))
 		}
 	}
 
