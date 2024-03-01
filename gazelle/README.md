@@ -266,10 +266,11 @@ py_library(
 ```
 
 You can also inject the `python_root` value by using the exact string
-`$python_root`:
+`$python_root`. All instances of this string will be replaced by the `python_root`
+value.
 
 ```starlark
-# gazelle:python_default_visibility //$python_root:__pkg__,//foo/$python_root/tests:__subpackages__,//$python_root/$python_root/foo:bar
+# gazelle:python_default_visibility //$python_root:__pkg__,//foo/$python_root/tests:__subpackages__
 
 # Assuming the "# gazelle:python_root" directive is set in ./py/src/BUILD.bazel,
 # the results will be:
@@ -277,7 +278,6 @@ py_library(
     ...,
     visibility = [
         "//foo/py/src/tests:__subpackages__",  # sorted alphabetically
-        "//py/src/py/src/foo:bar",
         "//py/src:__pkg__",
     ],
     ...,
