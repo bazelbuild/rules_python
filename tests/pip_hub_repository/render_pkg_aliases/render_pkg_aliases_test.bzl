@@ -160,6 +160,75 @@ alias(
 
 _tests.append(_test_bzlmod_aliases)
 
+def _test_bzlmod_aliases_with_default(env):
+    actual = render_pkg_aliases(
+        aliases = {
+            "bar-baz": [
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz", config_setting = "//:my_config_setting_32"),
+                whl_alias(version = "3.1", repo = "pypi_31_bar_baz", config_setting = "//:my_config_setting_31"),
+                whl_alias(version = "3.2", repo = "pypi_32_bar_baz", config_setting = "//conditions:default"),
+            ],
+        },
+    )
+
+    want_key = "bar_baz/BUILD.bazel"
+    want_content = """\
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "bar_baz",
+    actual = ":pkg",
+)
+
+alias(
+    name = "pkg",
+    actual = select(
+        {
+            "//:my_config_setting_31": "@pypi_31_bar_baz//:pkg",
+            "//:my_config_setting_32": "@pypi_32_bar_baz//:pkg",
+            "//conditions:default": "@pypi_32_bar_baz//:pkg",
+        },
+    ),
+)
+
+alias(
+    name = "whl",
+    actual = select(
+        {
+            "//:my_config_setting_31": "@pypi_31_bar_baz//:whl",
+            "//:my_config_setting_32": "@pypi_32_bar_baz//:whl",
+            "//conditions:default": "@pypi_32_bar_baz//:whl",
+        },
+    ),
+)
+
+alias(
+    name = "data",
+    actual = select(
+        {
+            "//:my_config_setting_31": "@pypi_31_bar_baz//:data",
+            "//:my_config_setting_32": "@pypi_32_bar_baz//:data",
+            "//conditions:default": "@pypi_32_bar_baz//:data",
+        },
+    ),
+)
+
+alias(
+    name = "dist_info",
+    actual = select(
+        {
+            "//:my_config_setting_31": "@pypi_31_bar_baz//:dist_info",
+            "//:my_config_setting_32": "@pypi_32_bar_baz//:dist_info",
+            "//conditions:default": "@pypi_32_bar_baz//:dist_info",
+        },
+    ),
+)"""
+
+    env.expect.that_collection(actual.keys()).contains_exactly([want_key])
+    env.expect.that_str(actual[want_key]).equals(want_content)
+
+_tests.append(_test_bzlmod_aliases_with_default)
+
 def _test_bzlmod_aliases_with_no_default_version(env):
     actual = render_pkg_aliases(
         default_version = None,

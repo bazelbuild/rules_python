@@ -478,11 +478,9 @@ def _pip_impl(module_ctx):
 
     for hub_name, whl_map in hub_whl_map.items():
         build_file_contents = BUILD_FILE_CONTENTS
-        has_default = False
         config_settings = []
         for value in config_settings_map.get(hub_name, {}).values():
             if value == "//conditions:default":
-                has_default = True
                 continue
             config_settings.append(value)
 
@@ -504,8 +502,6 @@ def _pip_impl(module_ctx):
                 key: json.encode(value)
                 for key, value in whl_map.items()
             },
-            default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
-            render_default_version = not has_default,
         )
 
 def _pip_parse_ext_attrs():

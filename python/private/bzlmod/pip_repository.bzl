@@ -31,7 +31,6 @@ def _pip_repository_impl(rctx):
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
-        default_version = rctx.attr.default_version if rctx.attr.render_default_version else None,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
@@ -64,16 +63,6 @@ pip_repository_attrs = {
     "build_file_contents": attr.string(
         default = BUILD_FILE_CONTENTS,
         doc = """The BUILD.bazel contents for the root of the repo.""",
-    ),
-    "default_version": attr.string(
-        mandatory = True,
-        doc = """\
-This is the default python version in the format of X.Y. This should match
-what is setup by the 'python' extension using the 'is_default = True'
-setting.""",
-    ),
-    "render_default_version": attr.bool(
-        default = True,
     ),
     "repo_name": attr.string(
         mandatory = True,
