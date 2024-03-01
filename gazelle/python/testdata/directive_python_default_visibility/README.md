@@ -12,7 +12,7 @@ correctly:
 6.  Setting the label to "DEFAULT" reverts to using the default.
 7.  Adding `python_visibility` directive with `python_default_visibility NONE`
     only adds the items listed by `python_visibility`.
-8.  Multiple `python_root` dirs [GH #1682](gh-1682) uses correct value when
+8.  Multiple `python_root` dirs [GH #1682][gh-1682] uses correct value when
     injecting `python_root`.
 
 
