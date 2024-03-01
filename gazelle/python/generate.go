@@ -212,8 +212,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
-	// TODO(gh-1682): Add support for default_visibility directive and replace
-	// the initial visibility value.
 	visibility := []string{fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)}
 	visibility = append(visibility, cfg.Visibility()...)
 
