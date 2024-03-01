@@ -269,11 +269,10 @@ You can also inject the `python_root` value by using the exact string
 `$python_root`:
 
 ```starlark
-# an absurd example
 # gazelle:python_default_visibility //$python_root:__pkg__,//foo/$python_root/tests:__subpackages__,//$python_root/$python_root/foo:bar
 
-# assuming the "# gazelle:python_root" directive is set in ./py/src/BUILD.bazel
-# results in:
+# Assuming the "# gazelle:python_root" directive is set in ./py/src/BUILD.bazel,
+# the results will be:
 py_library(
     ...,
     visibility = [
@@ -285,7 +284,7 @@ py_library(
 )
 ```
 
-Two special values are also accepted as an arg to the directive:
+Two special values are also accepted as an argument to the directive:
 
 +   `NONE`: This removes all default visibility. Labels added by the
     `python_visibility` directive are still included.
@@ -296,7 +295,6 @@ For example:
 ```starlark
 # gazelle:python_default_visibility NONE
 
-# results in no `visibility` attribute being set:
 py_library(
     name = "...",
     srcs = [...],
@@ -307,7 +305,6 @@ py_library(
 # gazelle:python_default_visibility //foo:bar
 # gazelle:python_default_visibility DEFAULT
 
-# results in:
 py_library(
     ...,
     visibility = ["//:__subpackages__"],
@@ -315,7 +312,7 @@ py_library(
 )
 ```
 
-These special values can be useful for descendant `BAZEL.build` packages.
+These special values can be useful for sub-packages.
 
 
 #### Directive: `python_visibility`:
