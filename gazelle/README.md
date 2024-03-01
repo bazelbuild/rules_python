@@ -245,6 +245,7 @@ py_libary(
 Instructs gazelle to use these visibility labels on all _python_ targets
 (typically `py_*`, but can be modified via the `map_kind` directive). The arg
 to this directive is a a comma-separated list (without spaces) of labels.
+
 For example:
 
 ```starlark
@@ -283,6 +284,38 @@ py_library(
     ...,
 )
 ```
+
+Two special values are also accepted as an arg to the directive:
+
++   `NONE`: This removes all default visibility. Labels added by the
+    `python_visibility` directive are still included.
++   `DEFAULT`: This resets the default visibility.
+
+For example:
+
+```starlark
+# gazelle:python_default_visibility NONE
+
+# results in no `visibility` attribute being set:
+py_library(
+    name = "...",
+    srcs = [...],
+)
+```
+
+```starlark
+# gazelle:python_default_visibility //foo:bar
+# gazelle:python_default_visibility DEFAULT
+
+# results in:
+py_library(
+    ...,
+    visibility = ["//:__subpackages__"],
+    ...,
+)
+```
+
+These special values can be useful for descendant `BAZEL.build` packages.
 
 
 #### Directive: `python_visibility`:
