@@ -168,7 +168,7 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 		case pythonconfig.TestNamingConvention:
 			config.SetTestNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.DefaultVisibilty:
-			switch strings.TrimSpace(d.Value) {
+			switch directiveArg := strings.TrimSpace(d.Value); directiveArg {
 			case "NONE":
 				config.SetDefaultVisibility([]string{})
 			case "DEFAULT":
@@ -178,7 +178,6 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			default:
 				// Handle injecting the python root. Assume that the user used the
 				// exact string "$python_root".
-				directiveArg := strings.TrimSpace(d.Value)
 				labels := strings.ReplaceAll(directiveArg, "$python_root", config.PythonProjectRoot())
 				config.SetDefaultVisibility(strings.Split(labels, ","))
 			}
