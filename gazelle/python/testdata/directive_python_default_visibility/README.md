@@ -14,6 +14,8 @@ correctly:
     only adds the items listed by `python_visibility`.
 8.  Multiple `python_root` dirs [GH #1682][gh-1682] uses correct value when
     injecting `python_root`.
+9.  Setting both `python_default_visibility` and `python_visibility` and how
+    they interact with sub-packages.
 
 
 [gh-1682]: https://github.com/bazelbuild/rules_python/issues/1682
