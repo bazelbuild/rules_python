@@ -96,6 +96,11 @@ const (
 	packageNameNamingConventionSubstitution = "$package_name$"
 )
 
+// The default visibility label, including a format placeholder for `python_root`.
+const (
+	DefaultVisibilityFmtString = "//%s:__subpackages__"
+)
+
 // defaultIgnoreFiles is the list of default values used in the
 // python_ignore_files option.
 var defaultIgnoreFiles = map[string]struct{}{
@@ -166,7 +171,7 @@ func New(
 		libraryNamingConvention:      packageNameNamingConventionSubstitution,
 		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
-		defaultVisibility:            []string{"//:__subpackages__"},
+		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
 		visibility:                   []string{},
 	}
 }
@@ -251,7 +256,6 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 					distributionRepositoryName = gazelleManifest.PipRepository.Name
 				}
 				sanitizedDistribution := SanitizeDistribution(distributionName)
-
 
 				// @<repository_name>//<distribution_name>
 				lbl := label.New(distributionRepositoryName, sanitizedDistribution, sanitizedDistribution)

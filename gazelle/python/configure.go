@@ -100,8 +100,6 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 	}
 
 	gazelleManifestFilename := "gazelle_python.yaml"
-	// TODO: figure out how to keep this in sync with pythonconfig.go New *Config
-	defaultVisibilityFmtString := "//%s:__subpackages__"
 
 	for _, d := range f.Directives {
 		switch d.Key {
@@ -122,7 +120,7 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			}
 		case pythonconfig.PythonRootDirective:
 			config.SetPythonProjectRoot(rel)
-			config.SetDefaultVisibility([]string{fmt.Sprintf(defaultVisibilityFmtString, rel)})
+			config.SetDefaultVisibility([]string{fmt.Sprintf(pythonconfig.DefaultVisibilityFmtString, rel)})
 		case pythonconfig.PythonManifestFileNameDirective:
 			gazelleManifestFilename = strings.TrimSpace(d.Value)
 		case pythonconfig.IgnoreFilesDirective:
@@ -173,7 +171,7 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				config.SetDefaultVisibility([]string{})
 			case "DEFAULT":
 				pythonProjectRoot := config.PythonProjectRoot()
-				defaultVisibility := fmt.Sprintf(defaultVisibilityFmtString, pythonProjectRoot)
+				defaultVisibility := fmt.Sprintf(pythonconfig.DefaultVisibilityFmtString, pythonProjectRoot)
 				config.SetDefaultVisibility([]string{defaultVisibility})
 			default:
 				// Handle injecting the python root. Assume that the user used the
