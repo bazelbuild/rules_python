@@ -201,7 +201,7 @@ class Platform:
             os, _, arch = tail.partition("_")
             arch = arch or "*"
 
-            minor_version = int(abi[len("cp3") :]) if abi else None
+            minor_version = int(abi[len("cp3") :]) if abi and abi != "none" else None
 
             if arch != "*":
                 ret.add(
