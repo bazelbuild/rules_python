@@ -190,7 +190,11 @@ class Platform:
                 continue
 
             abi, _, tail = p.partition("_")
-            if not abi.startswith("cp"):
+            if abi in ('abi3', 'none'):
+                # PEP 425 and PEP 384
+                abi = None
+
+            if abi and not abi.startswith("cp"):
                 # The first item is not an abi
                 tail = p
                 abi = ""
