@@ -22,7 +22,6 @@ python_register_toolchains(
 # Then we need to setup dependencies in order to use py_proto_library
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-
 http_archive(
     name = "rules_proto",
     sha256 = "904a8097fae42a690c8e08d805210e40cccb069f5f9a0f6727cf4faa7bed2c9c",
@@ -31,18 +30,17 @@ http_archive(
 )
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
-rules_proto_dependencies()
-rules_proto_toolchains()
 
+rules_proto_dependencies()
+
+rules_proto_toolchains()
 
 http_archive(
     name = "com_google_protobuf",
-    # sha256 = "8632d7e8a6cbbd7e58f40e3f62fed77bff3df6e4dcac73498f0a68ba5a38d892",
-    strip_prefix = "protobuf-d1c5e885b7b7d3ac888e89cf4d45cb0c9fa6b4ed",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/d1c5e885b7b7d3ac888e89cf4d45cb0c9fa6b4ed.tar.gz"],
+    strip_prefix = "protobuf-25.3",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/v25.3.tar.gz"],
 )
 
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps", "protobuf_register_toolchains")
-protobuf_deps()
-protobuf_register_toolchains()
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
+protobuf_deps()
