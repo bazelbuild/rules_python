@@ -766,18 +766,27 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    repo_utils.execute_checked(
-        rctx,
-        op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
-        arguments = args,
-        environment = environment,
-        quiet = rctx.attr.quiet,
-        timeout = rctx.attr.timeout,
-    )
+    if rctx.attr.whl_file:
+        whl_path = rctx.path(rctx.attr.whl_file)
+        if not whl_path.exists:
+            fail("The given whl '{}' does not exist".format(rctx.attr.whl_file))
 
-    whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
-    if not rctx.delete("whl_file.json"):
-        fail("failed to delete the whl_file.json file")
+        # Simulate the behaviour where the whl is present in the current directory.
+        rctx.symlink(whl_path, whl_path.basename)
+        whl_path = rctx.path(whl_path.basename)
+    else:
+        repo_utils.execute_checked(
+            rctx,
+            op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            arguments = args,
+            environment = environment,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+
+        whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
+        if not rctx.delete("whl_file.json"):
+            fail("failed to delete the whl_file.json file")
 
     if rctx.attr.whl_patches:
         patches = {}
@@ -910,6 +919,12 @@ whl_library_attrs = {
     "requirement": attr.string(
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
+    ),
+    "whl_file": attr.label(
+        doc = """\
+The wheel file label to be used for this installation. This will not use pip to download the
+whl and instead use the supplied file. Note that the label needs to point to a single file.
+""",
     ),
     "whl_patches": attr.label_keyed_string_dict(
         doc = """a label-keyed-string dict that has

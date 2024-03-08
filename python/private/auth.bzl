@@ -33,10 +33,13 @@ def get_auth(rctx, urls):
     Returns:
         dict: A map of authentication parameters by URL.
     """
-    if rctx.attr.netrc:
-        netrc = read_netrc(rctx, rctx.attr.netrc)
+    attr = getattr(rctx, "attr", None)
+
+    if getattr(attr, "netrc", None):
+        netrc = read_netrc(rctx, getattr(attr, "netrc"))
     elif "NETRC" in rctx.os.environ:
         netrc = read_netrc(rctx, rctx.os.environ["NETRC"])
     else:
         netrc = read_user_netrc(rctx)
-    return use_netrc(netrc, urls, rctx.attr.auth_patterns)
+
+    return use_netrc(netrc, urls, getattr(attr, "auth_patterns", None))
