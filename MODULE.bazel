@@ -12,7 +12,7 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
-internal_deps = use_extension("@rules_python//python/private/bzlmod:internal_deps.bzl", "internal_deps")
+internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 internal_deps.install()
 use_repo(
     internal_deps,
@@ -38,7 +38,7 @@ use_repo(
 
 # We need to do another use_extension call to expose the "pythons_hub"
 # repo.
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python = use_extension("//python/extensions:python.bzl", "python")
 
 # The default toolchain to use if nobody configures a toolchain.
 # NOTE: This is not a stable version. It is provided for convenience, but will
@@ -98,6 +98,7 @@ dev_pip.parse(
     python_version = "3.11",
     requirements_lock = "//docs/sphinx:requirements.txt",
 )
+use_repo(dev_pip, "dev_pip")
 
 bazel_binaries = use_extension(
     "@rules_bazel_integration_test//:extensions.bzl",
