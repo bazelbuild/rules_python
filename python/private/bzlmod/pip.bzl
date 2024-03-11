@@ -206,14 +206,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
                 for dist in index_json
                 if dist.filename.endswith(".whl") and version_segment in dist.filename
             ]
-            any_whls = [
-                dist
-                for dist in whls
-                if dist.filename.endswith("-none-any.whl") or dist.filename.endswith("-abi3-any.whl")
-            ]
 
-            if len(any_whls) == len(whls) and len(whls) == 1:
-                whl_file = any_whls[0].label
+            if len(whls) == 1 and whls[0].filename.endswith("-any.whl"):
+                whl_file = whls[0].label
             else:
                 whl_file = None
 

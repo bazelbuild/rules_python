@@ -61,6 +61,10 @@ use_repo(pypi_index, "pypi_index")
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
 
+# Extra gazelle deps
+bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_name = "io_bazel_rules_go")
+bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
+
 # This call additionally only adds items to the `pypi_index` if we are
 # not ignoring dev dependencies, making it no-op for the regular usage.
 dev_pypi_index = use_extension(

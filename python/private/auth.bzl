@@ -42,4 +42,4 @@ def get_auth(rctx, urls):
     else:
         netrc = read_user_netrc(rctx)
 
-    return use_netrc(netrc, urls, getattr(attr, "auth_patterns", None))
+    return use_netrc(netrc, urls, getattr(attr, "auth_patterns", ""))
