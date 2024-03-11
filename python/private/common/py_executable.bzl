@@ -14,7 +14,6 @@
 """Common functionality between test/binary executables."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":attributes.bzl",
@@ -148,7 +147,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
     output_sources = semantics.maybe_precompile(ctx, direct_sources)
     if ctx.attr.incompatible_generate_entrypoint_shim:
-        output_sources += [entrypoint_py]
+        output_sources.append(entrypoint_py)
     imports = collect_imports(ctx, semantics)
     executable, files_to_build = _compute_outputs(ctx, output_sources)
 
@@ -244,10 +243,10 @@ def _generate_entrypoint_py(ctx, imports, main_py, entrypoint_py):
         template = ctx.file._entrypoint_py_template,
         output = entrypoint_py,
         substitutions = {
+            "%IMPORTS%": json.encode_indent(imports.to_list()),
             # Is there a better way to retrieve the name of the main repo?
             "%MAIN_REPO%": ctx.label.workspace_name or ctx.workspace_name,
             "%MAIN_SHORT_PATH%": main_py.short_path,
-            "%IMPORTS%": json.encode_indent(imports.to_list()),
         },
     )
 
