@@ -263,6 +263,8 @@ def filter_to_py_srcs(srcs):
 
 def collect_imports(ctx, semantics):
     if hasattr(ctx.attr, "_runfiles"):
+        # Executable rules have a private _runfiles attribute so they can pull
+        # in the runfiles library.
         base = [ctx.attr._runfiles[PyInfo].imports]
     else:
         base = []

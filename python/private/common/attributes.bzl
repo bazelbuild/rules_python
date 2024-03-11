@@ -176,7 +176,6 @@ Specifies additional environment variables to set when the target is executed by
             default = "@rules_python//python/runfiles",
             providers = [PyInfo],
         ),
-
     },
     allow_none = True,
 )

@@ -305,6 +305,7 @@ def _expand_bootstrap_template(
             "%coverage_tool%": coverage_tool_runfiles_path,
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
+            "%incompatible_generate_entrypoint_shim%": str(ctx.attr.incompatible_generate_entrypoint_shim),
             "%is_zipfile%": "True" if is_for_zip else "False",
             "%main%": "{}/{}".format(
                 ctx.workspace_name,

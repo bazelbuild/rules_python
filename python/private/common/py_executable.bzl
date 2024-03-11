@@ -65,12 +65,27 @@ _CC_TOOLCHAINS = [config_common.toolchain_type(
     mandatory = False,
 )] if hasattr(config_common, "toolchain_type") else []
 
+_feature_flags = {
+    "incompatible_generate_entrypoint_shim": attr.bool(
+        default = False,
+        doc = """\
+Generate a small shim that executes before the "main" script.
+The shim is responsible for performing some hermeticity fixes inside the running
+Python process.
+
+For example, it will provide PYTHONSAFEPATH support for Python versions prior to
+3.11.
+""",
+    ),
+}
+
 # Non-Google-specific attributes for executables
 # These attributes are for rules that accept Python sources.
 EXECUTABLE_ATTRS = union_attrs(
     COMMON_ATTRS,
     AGNOSTIC_EXECUTABLE_ATTRS,
     PY_SRCS_ATTRS,
+    _feature_flags,
     {
         # TODO(b/203567235): In the Java impl, any file is allowed. While marked
         # label, it is more treated as a string, and doesn't have to refer to
@@ -127,24 +142,24 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
 
     main_py = determine_main(ctx)
 
-    entrypoint_py = ctx.actions.declare_file(
-        paths.replace_extension(main_py.basename, "_entrypoint.py"),
-        sibling = main_py,
-    )
+    if ctx.attr.incompatible_generate_entrypoint_shim:
+        entrypoint_py = ctx.actions.declare_file(ctx.label.name + "_entrypoint.py")
 
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
-    output_sources = semantics.maybe_precompile(ctx, direct_sources) + [entrypoint_py]
+    output_sources = semantics.maybe_precompile(ctx, direct_sources)
+    if ctx.attr.incompatible_generate_entrypoint_shim:
+        output_sources += [entrypoint_py]
     imports = collect_imports(ctx, semantics)
     executable, files_to_build = _compute_outputs(ctx, output_sources)
 
-    _generate_entrypoint_py(
-        ctx,
-        imports = imports,
-        main_py = main_py,
-        entrypoint_py = entrypoint_py,
-    )
-    main_py = entrypoint_py
-    imports = depset()
+    if ctx.attr.incompatible_generate_entrypoint_shim:
+        _generate_entrypoint_py(
+            ctx,
+            imports = imports,
+            main_py = main_py,
+            entrypoint_py = entrypoint_py,
+        )
+        main_py = entrypoint_py
 
     runtime_details = _get_runtime_details(ctx, semantics)
     if ctx.configuration.coverage_enabled:
@@ -156,6 +171,11 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     # but just to be safe, also guard against adding it to the output here.
     if not _is_tool_config(ctx):
         extra_deps.extend(semantics.get_debugger_deps(ctx, runtime_details))
+
+    if ctx.attr.incompatible_generate_entrypoint_shim:
+        runfiles_library_dep = [ctx.attr._runfiles[DefaultInfo].default_runfiles]
+    else:
+        runfiles_library_dep = []
 
     cc_details = semantics.get_cc_details_for_binary(ctx, extra_deps = extra_deps)
     native_deps_details = _get_native_deps_details(
@@ -174,10 +194,11 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
             cc_details.extra_runfiles,
             native_deps_details.runfiles,
             semantics.get_extra_common_runfiles_for_binary(ctx),
-            ctx.attr._runfiles[DefaultInfo].default_runfiles,
-        ],
+        ] + runfiles_library_dep,
         semantics = semantics,
     )
+    if ctx.attr.incompatible_generate_entrypoint_shim:
+        print("Found incompatible_generate_entrypoint_shim on " + str(ctx.label))
     exec_result = semantics.create_executable(
         ctx,
         executable = executable,

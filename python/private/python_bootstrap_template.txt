@@ -464,7 +464,12 @@ def Main():
     module_space = FindModuleSpace(main_rel_path)
     delete_module_space = False
 
-  python_imports = '%imports%'
+  incompatible_generate_entrypoint_shim = %incompatible_generate_entrypoint_shim%
+  if incompatible_generate_entrypoint_shim:
+    python_imports = ''
+  else:
+    python_imports = '%imports%'
+
   python_path_entries = CreatePythonPathEntries(python_imports, module_space)
   python_path_entries += GetRepositoriesImports(module_space, %import_all%)
   # Remove duplicates to avoid overly long PYTHONPATH (#10977). Preserve order,
