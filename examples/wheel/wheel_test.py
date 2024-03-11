@@ -472,6 +472,23 @@ Tag: cp38-abi3-{os_string}_{arch}
                 requires,
             )
 
+    def test_minimal_data_files(self):
+        filename = self._get_path("minimal_data_files-0.0.1-py3-none-any.whl")
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertAllEntriesHasReproducibleMetadata(zf)
+            metadata_file = None
+            self.assertEqual(
+                zf.namelist(),
+                [
+                    "minimal_data_files-0.0.1.dist-info/WHEEL",
+                    "minimal_data_files-0.0.1.dist-info/METADATA",
+                    "minimal_data_files-0.0.1.data/data/target/path/README.md",
+                    "minimal_data_files-0.0.1.data/scripts/NOTICE",
+                    "minimal_data_files-0.0.1.dist-info/RECORD",
+                ]
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

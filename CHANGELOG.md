@@ -37,6 +37,9 @@ A brief description of the categories of changes:
   _default_ visibility of generated targets. See the [docs][python_default_visibility]
   for details.
 
+* (wheel) Add support for `data_files` attributes in py_wheel rule
+  ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
