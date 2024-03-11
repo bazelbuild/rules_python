@@ -114,6 +114,7 @@ def compile_pip_requirements(
         requirement("click"),
         requirement("colorama"),
         requirement("importlib_metadata"),
+        requirement("keyring"),
         requirement("more_itertools"),
         requirement("packaging"),
         requirement("pep517"),

@@ -3,6 +3,7 @@ click
 colorama
 importlib_metadata
 installer
+keyring
 more_itertools
 packaging
 pep517
