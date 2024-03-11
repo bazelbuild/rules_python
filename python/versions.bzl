@@ -369,6 +369,19 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.11.8": {
+        "url": "20240224/cpython-{python_version}+20240224-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "389a51139f5abe071a0d70091ca5df3e7a3dfcfcbe3e0ba6ad85fb4c5638421e",
+            "aarch64-unknown-linux-gnu": "389b9005fb78dd5a6f68df5ea45ab7b30d9a4b3222af96999e94fd20d4ad0c6a",
+            "ppc64le-unknown-linux-gnu": "eb2b31f8e50309aae493c6a359c32b723a676f07c641f5e8fe4b6aa4dbb50946",
+            "s390x-unknown-linux-gnu": "844f64f4c16e24965778281da61d1e0e6cd1358a581df1662da814b1eed096b9",
+            "x86_64-apple-darwin": "097f467b0c36706bfec13f199a2eaf924e668f70c6e2bd1f1366806962f7e86e",
+            "x86_64-pc-windows-msvc": "b618f1f047349770ee1ef11d1b05899840abd53884b820fd25c7dfe2ec1664d4",
+            "x86_64-unknown-linux-gnu": "94e13d0e5ad417035b80580f3e893a72e094b0900d5d64e7e34ab08e95439987",
+        },
+        "strip_prefix": "python",
+    },
     "3.12.0": {
         "url": "20231002/cpython-{python_version}+20231002-{platform}-{build}.tar.gz",
         "sha256": {
@@ -395,6 +408,19 @@ TOOL_VERSIONS = {
         },
         "strip_prefix": "python",
     },
+    "3.12.2": {
+        "url": "20240224/cpython-{python_version}+20240224-{platform}-{build}.tar.gz",
+        "sha256": {
+            "aarch64-apple-darwin": "01c064c00013b0175c7858b159989819ead53f4746d40580b5b0b35b6e80fba6",
+            "aarch64-unknown-linux-gnu": "e52550379e7c4ac27a87de832d172658bc04150e4e27d4e858e6d8cbb96fd709",
+            "ppc64le-unknown-linux-gnu": "74bc02c4bbbd26245c37b29b9e12d0a9c1b7ab93477fed8b651c988b6a9a6251",
+            "s390x-unknown-linux-gnu": "ecd6b0285e5eef94deb784b588b4b425a15a43ae671bf206556659dc141a9825",
+            "x86_64-apple-darwin": "a53a6670a202c96fec0b8c55ccc780ea3af5307eb89268d5b41a9775b109c094",
+            "x86_64-pc-windows-msvc": "1e5655a6ccb1a64a78460e4e3ee21036c70246800f176a6c91043a3fe3654a3b",
+            "x86_64-unknown-linux-gnu": "57a37b57f8243caa4cdac016176189573ad7620f0b6da5941c5e40660f9468ab",
+        },
+        "strip_prefix": "python",
+    },
 }
 
 # buildifier: disable=unsorted-dict-items
@@ -402,8 +428,8 @@ MINOR_MAPPING = {
     "3.8": "3.8.18",
     "3.9": "3.9.18",
     "3.10": "3.10.13",
-    "3.11": "3.11.7",
-    "3.12": "3.12.1",
+    "3.11": "3.11.8",
+    "3.12": "3.12.2",
 }
 
 PLATFORMS = {

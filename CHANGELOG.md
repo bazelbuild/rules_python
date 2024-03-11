@@ -19,6 +19,15 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+### Changed
+
+### Fixed
+
+### Added
+
+* New Python versions available: `3.11.8`, `3.12.2` using
+  https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.31.0] - 2024-02-12
