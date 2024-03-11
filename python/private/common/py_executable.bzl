@@ -196,8 +196,6 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         ] + runfiles_library_dep,
         semantics = semantics,
     )
-    if ctx.attr.incompatible_generate_entrypoint_shim:
-        print("Found incompatible_generate_entrypoint_shim on " + str(ctx.label))
     exec_result = semantics.create_executable(
         ctx,
         executable = executable,
