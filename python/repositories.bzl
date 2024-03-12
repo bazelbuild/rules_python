@@ -220,6 +220,7 @@ def _python_repository_impl(rctx):
         "lib/python{python_version}/**/test/**".format(python_version = python_short_version),
         "lib/python{python_version}/**/tests/**".format(python_version = python_short_version),
         "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
+        "share/terminfo/N/NCR260VT300WPP",  # Apparent cycle of symbolic links on case-insensitive FS with 'Too many levels of symbolic links'
     ]
 
     if rctx.attr.ignore_root_user_error or "windows" in rctx.os.name:
