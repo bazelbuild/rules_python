@@ -27,6 +27,8 @@ A brief description of the categories of changes:
 
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+* (gazelle) Added a new `python_visibility` directive to control visibility
+  of generated targets by appending additional visibility labels.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
