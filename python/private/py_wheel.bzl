@@ -21,9 +21,15 @@ load(":py_wheel_normalize_pep440.bzl", "normalize_pep440")
 PyWheelInfo = provider(
     doc = "Information about a wheel produced by `py_wheel`",
     fields = {
+        "distribution": (
+            "Name of the distribution."
+        ),
         "name_file": (
             "File: A file containing the canonical name of the wheel (after " +
             "stamping, if enabled)."
+        ),
+        "version": (
+            "Version number of the package."
         ),
         "wheel": "File: The wheel file itself.",
     },
@@ -489,6 +495,8 @@ def _py_wheel_impl(ctx):
         PyWheelInfo(
             wheel = outfile,
             name_file = name_file,
+            version = version,
+            distribution = ctx.attr.distribution,
         ),
     ]
 

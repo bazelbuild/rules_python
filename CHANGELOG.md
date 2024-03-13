@@ -21,6 +21,8 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* Add version and distribution fields to `PyWheelInfo` provider
+
 ### Fixed
 
 ### Added
