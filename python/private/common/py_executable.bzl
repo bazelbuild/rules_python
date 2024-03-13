@@ -93,6 +93,7 @@ filename in `srcs`, `main` must be specified.
             default = "PY3",
             # NOTE: Some tests care about the order of these values.
             values = ["PY2", "PY3"],
+            doc = "Defunct, unused, does nothing.",
         ),
         "_windows_constraints": attr.label_list(
             default = [
