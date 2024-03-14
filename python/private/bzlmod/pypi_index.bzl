@@ -78,10 +78,10 @@ $ bazel query @pypi_index//requests/...
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:auth.bzl", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:pypi_index.bzl", "get_packages_from_requirements")
 load("//python/private:text_util.bzl", "render")
 
 _PYPI_INDEX = "pypi_index"
@@ -91,7 +91,7 @@ exports_files(["{}"])
 """
 
 def _impl(module_ctx):
-    want_packages = {}
+    simpleapi_srcs = {}
     for mod in module_ctx.modules:
         for reqs in mod.tags.add_requirements:
             env_vars = ["PIP_INDEX_URL"]
@@ -100,10 +100,11 @@ def _impl(module_ctx):
                 env_vars,
                 module_ctx.os.environ.get,
             )
-            pkgs = _get_packages_from_requirements(module_ctx, reqs.srcs)
-            for pkg, want_shas in pkgs.items():
+            requirements_files = [module_ctx.read(module_ctx.path(src)) for src in reqs.srcs]
+            sources = get_packages_from_requirements(requirements_files)
+            for pkg, want_shas in sources.simpleapi.items():
                 pkg = normalize_name(pkg)
-                entry = want_packages.setdefault(pkg, {"urls": {}, "want_shas": {}})
+                entry = simpleapi_srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
                 entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
                 entry["want_shas"].update(want_shas)
 
@@ -113,7 +114,7 @@ def _impl(module_ctx):
 
     downloads = {}
     outs = {}
-    for pkg, args in want_packages.items():
+    for pkg, args in simpleapi_srcs.items():
         outs[pkg] = module_ctx.path("{}/{}.html".format(_PYPI_INDEX, pkg))
         all_urls = list(args["urls"].keys())
 
@@ -132,7 +133,7 @@ def _impl(module_ctx):
         )
 
     packages = {}
-    for pkg, args in want_packages.items():
+    for pkg, args in simpleapi_srcs.items():
         result = downloads[pkg]
         if download_kwargs.get("block") == False:
             result = result.wait()
@@ -183,25 +184,6 @@ def _impl(module_ctx):
         name = _PYPI_INDEX,
         repos = repos,
     )
-
-def _get_packages_from_requirements(module_ctx, requirements_files):
-    want_packages = {}
-    for file in requirements_files:
-        contents = module_ctx.read(module_ctx.path(file))
-        parse_result = parse_requirements(contents)
-        for distribution, line in parse_result.requirements:
-            # NOTE @aignas 2024-03-08: this only supports Simple API,
-            # more complex cases may need to rely on the usual methods.
-            #
-            # if we don't have `sha256` values then we will not add this
-            # to our index.
-            want_packages.setdefault(distribution, {}).update({
-                # TODO @aignas 2024-03-07: use sets
-                sha.strip(): True
-                for sha in line.split("--hash=sha256:")[1:]
-            })
-
-    return want_packages
 
 def _get_packages(index_url, pkg, content, want_shas):
     want_shas = {sha: True for sha in want_shas}
