@@ -27,6 +27,7 @@ load(
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:pypi_index.bzl", "get_simpleapi_sources")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
@@ -184,29 +185,26 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
 
         pkg_pypi_index = pypi_index_repo.get_child(whl_name, "index.json")
         if not pkg_pypi_index.exists:
-            # The wheel index for a package does not exist, so not using bazel downloader...
+            # The index for a package does not exist, so not using bazel downloader...
             whl_file = None
         else:
-            # Ensure that we have a wheel for a particular version.
-            # FIXME @aignas 2024-03-10: Maybe the index structure should be:
-            # pypi_index/<distro>/<version>:index.json?
-            #
-            # We expect the `requirement_line to be of shape '<distro>==<version> ...'
-            _, _, version_tail = requirement_line.partition("==")
-            version, _, _ = version_tail.partition(" ")
-            version_segment = "-{}-".format(version.strip("\" "))
+            srcs = get_simpleapi_sources(requirement_line)
 
-            index_json = [struct(**v) for v in json.decode(module_ctx.read(pkg_pypi_index))]
-
-            # For now only use the whl_file if it is a cross-platform wheel.
-            # This is very conservative and does that only thing that we have
-            # in the whl list is the cross-platform wheel.
+            index_json = {
+                v.sha256: v
+                for v in [
+                    struct(**encoded)
+                    for encoded in json.decode(module_ctx.read(pkg_pypi_index))
+                ]
+            }
             whls = [
-                dist
-                for dist in index_json
-                if dist.filename.endswith(".whl") and version_segment in dist.filename
+                index_json[sha]
+                for sha in srcs.shas
+                if index_json[sha].filename.endswith(".whl")
             ]
 
+            # For now only use the bazel downloader only whl file is a
+            # cross-platform wheel.
             if len(whls) == 1 and whls[0].filename.endswith("-any.whl"):
                 whl_file = whls[0].label
             else:

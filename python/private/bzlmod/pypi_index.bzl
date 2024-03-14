@@ -80,7 +80,6 @@ $ bazel query @pypi_index//requests/...
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/private:auth.bzl", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
-load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:pypi_index.bzl", "get_packages_from_requirements")
 load("//python/private:text_util.bzl", "render")
 
@@ -103,7 +102,6 @@ def _impl(module_ctx):
             requirements_files = [module_ctx.read(module_ctx.path(src)) for src in reqs.srcs]
             sources = get_packages_from_requirements(requirements_files)
             for pkg, want_shas in sources.simpleapi.items():
-                pkg = normalize_name(pkg)
                 entry = simpleapi_srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
                 entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
                 entry["want_shas"].update(want_shas)
