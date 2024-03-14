@@ -30,7 +30,28 @@ _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", Non
 _STAMP_VALUES = [-1, 0, 1]
 
 def create_stamp_attr(**kwargs):
-    return {"stamp": attr.int(values = _STAMP_VALUES, **kwargs)}
+    return {
+        "stamp": attr.int(
+            values = _STAMP_VALUES,
+            doc = """
+Whether to encode build information into the binary. Possible values:
+
+* `stamp = 1`: Always stamp the build information into the binary, even in
+  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
+  remote caching for the binary and any downstream actions that depend on it.
+* `stamp = 0`: Always replace build information by constant values. This gives
+  good build result caching.
+* `stamp = -1`: Embedding of build information is controlled by the
+  `--[no]stamp` flag.
+
+Stamped binaries are not rebuilt unless their dependencies change.
+
+WARNING: Stamping can harm build performance by reducing cache hits and should
+be avoided if possible.
+""",
+            **kwargs
+        ),
+    }
 
 def create_srcs_attr(*, mandatory):
     return {
@@ -40,6 +61,12 @@ def create_srcs_attr(*, mandatory):
             mandatory = mandatory,
             # Necessary for --compile_one_dependency to work.
             flags = ["DIRECT_COMPILE_TIME_INPUT"],
+            doc = """
+The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`.
+""",
         ),
     }
 
@@ -51,6 +78,7 @@ def create_srcs_version_attr(values):
         "srcs_version": attr.string(
             default = "PY2AND3",
             values = values,
+            doc = "Defunct, unused, does nothing.",
         ),
     }
 
@@ -81,6 +109,13 @@ DATA_ATTRS = {
     "data": attr.label_list(
         allow_files = True,
         flags = ["SKIP_CONSTRAINTS_OVERRIDE"],
+        doc = """
+The list of files need by this library at runtime. See comments about
+the [`data` attribute typically defined by rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+
+There is no `py_embed_data` like there is `cc_embed_data` and `go_embed_data`.
+This is because Python has a concept of runtime resources.
+""",
     ),
 }
 
@@ -136,6 +171,16 @@ PY_SRCS_ATTRS = union_attrs(
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,
+            doc = """
+List of additional libraries to be linked in to the target.
+See comments about
+the [`deps` attribute typically defined by
+rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+These are typically `py_library` rules.
+
+Targets that only provide data files used at runtime belong in the `data`
+attribute.
+""",
         ),
         # Required attribute, but details vary by rule.
         # Use create_srcs_attr to create one.
