@@ -80,14 +80,14 @@ $ bazel query @pypi_index//requests/...
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/private:auth.bzl", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
-load("//python/private:pypi_index.bzl", "get_packages_from_requirements")
-load("//python/private:text_util.bzl", "render")
+load(
+    "//python/private:pypi_index.bzl",
+    "create_spoke_repos",
+    "get_packages_from_requirements",
+    "pypi_index_hub",
+)
 
 _PYPI_INDEX = "pypi_index"
-_BUILD_TEMPLATE = """\
-package(default_visibility = ["//visibility:public"])
-exports_files(["{}"])
-"""
 
 def _impl(module_ctx):
     simpleapi_srcs = {}
@@ -97,7 +97,7 @@ def _impl(module_ctx):
             index_url = envsubst(
                 reqs.index_url,
                 env_vars,
-                module_ctx.os.environ.get,
+                module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
             )
             requirements_files = [module_ctx.read(module_ctx.path(src)) for src in reqs.srcs]
             sources = get_packages_from_requirements(requirements_files)
@@ -111,145 +111,52 @@ def _impl(module_ctx):
         download_kwargs["block"] = False
 
     downloads = {}
-    outs = {}
     for pkg, args in simpleapi_srcs.items():
-        outs[pkg] = module_ctx.path("{}/{}.html".format(_PYPI_INDEX, pkg))
+        output = module_ctx.path("{}/{}.html".format(_PYPI_INDEX, pkg))
         all_urls = list(args["urls"].keys())
-
-        downloads[pkg] = module_ctx.download(
-            url = all_urls,
-            output = outs[pkg],
-            auth = get_auth(
-                struct(
-                    os = module_ctx.os,
-                    path = module_ctx.path,
-                    read = module_ctx.read,
+        downloads[pkg] = struct(
+            out = output,
+            urls = all_urls,
+            download = module_ctx.download(
+                url = all_urls,
+                output = output,
+                auth = get_auth(
+                    # Simulate the repository_ctx so that `get_auth` works.
+                    struct(
+                        os = module_ctx.os,
+                        path = module_ctx.path,
+                        read = module_ctx.read,
+                    ),
+                    all_urls,
                 ),
-                all_urls,
+                **download_kwargs
             ),
-            **download_kwargs
         )
 
-    packages = {}
+    repos = {}
     for pkg, args in simpleapi_srcs.items():
-        result = downloads[pkg]
+        download = downloads[pkg]
+        result = download.download
         if download_kwargs.get("block") == False:
             result = result.wait()
 
         if not result.success:
-            fail(result)
+            fail("Failed to download from {}: {}".format(download.urls, result))
 
-        content = module_ctx.read(outs[pkg])
-
-        # TODO @aignas 2024-03-08: pass in the index urls, so that we can correctly work
-        packages[pkg] = _get_packages(
-            args["urls"].keys()[0].rpartition("/")[0],
-            pkg,
-            content,
-            args["want_shas"],
+        repos.update(
+            create_spoke_repos(
+                simple_api_urls = download.urls,
+                pkg = pkg,
+                html_contents = module_ctx.read(download.out),
+                want_shas = args["want_shas"],
+                prefix = _PYPI_INDEX,
+            ),
         )
 
-    repos = {}
-    for pkg, urls in packages.items():
-        for url in urls:
-            pkg_name = "{}__{}_{}".format(_PYPI_INDEX, pkg, url.sha256)
-            _archive_repo(
-                name = pkg_name,
-                urls = [url.url],
-                filename = url.filename,
-                sha256 = url.sha256,
-            )
-            repos[pkg_name] = url.filename
-
-            if url.metadata_sha256:
-                _archive_repo(
-                    name = pkg_name + ".METADATA",
-                    urls = [url.metadata_url],
-                    filename = "METADATA",
-                    sha256 = url.metadata_sha256,
-                )
-            elif url.filename.endswith(".whl"):
-                _whl_metadata_repo(
-                    name = pkg_name + ".METADATA",
-                    whl = "@{}//{}:{}".format(
-                        _PYPI_INDEX,
-                        pkg_name,
-                        url.filename,
-                    ),
-                )
-
-    _hub(
+    pypi_index_hub(
         name = _PYPI_INDEX,
         repos = repos,
     )
-
-def _get_packages(index_url, pkg, content, want_shas):
-    want_shas = {sha: True for sha in want_shas}
-    packages = []
-    lines = content.split("<a href=\"")
-
-    _, _, api_version = lines[0].partition("name=\"pypi:repository-version\" content=\"")
-    api_version, _, _ = api_version.partition("\"")
-
-    for line in lines[1:]:
-        url, _, tail = line.partition("#sha256=")
-        sha256, _, tail = tail.partition("\"")
-
-        if sha256 not in want_shas:
-            continue
-        elif "data-yanked" in line:
-            # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-            #
-            # For now we just fail and inform the user to relock the requirements with a
-            # different version.
-            fail("The package with '--hash=sha256:{}' was yanked, relock your requirements".format(sha256))
-        else:
-            want_shas.pop(sha256)
-
-        maybe_metadata, _, tail = tail.partition(">")
-        filename, _, tail = tail.partition("<")
-
-        metadata_marker = "data-core-metadata=\"sha256="
-        if metadata_marker in maybe_metadata:
-            # Implement https://peps.python.org/pep-0714/
-            _, _, tail = maybe_metadata.partition(metadata_marker)
-            metadata_sha256, _, _ = tail.partition("\"")
-            metadata_url = url + ".metadata"
-        else:
-            metadata_sha256 = ""
-            metadata_url = ""
-
-        packages.append(
-            struct(
-                filename = filename,
-                url = _absolute_urls(index_url, url),
-                sha256 = sha256,
-                metadata_sha256 = metadata_sha256,
-                metadata_url = metadata_url,
-            ),
-        )
-
-    if len(want_shas):
-        fail(
-            "Missing artifacts for '{}' with shas: {}\n{}".format(
-                pkg,
-                ", ".join(want_shas.keys()),
-                content,
-            ),
-        )
-
-    return packages
-
-def _absolute_urls(index_url, candidate):
-    if not candidate.startswith(".."):
-        return candidate
-
-    candidate_parts = candidate.split("..")
-    last = candidate_parts[-1]
-    for _ in range(len(candidate_parts) - 1):
-        index_url, _, _ = index_url.rstrip("/").rpartition("/")
-
-    return "{}/{}".format(index_url, last.strip("/"))
 
 pypi_index = module_extension(
     doc = "",
@@ -273,149 +180,5 @@ By default rules_python will use the env variable value of PIP_INDEX_URL if pres
                 "srcs": attr.label_list(),
             },
         ),
-    },
-)
-
-def _hub_impl(repository_ctx):
-    # This is so that calling the following in rules_python works:
-    # $ bazel query $pypi_index/... --ignore_dev_dependency
-    repository_ctx.file("BUILD.bazel", "")
-
-    if not repository_ctx.attr.repos:
-        return
-
-    packages = {}
-    for repo, filename in repository_ctx.attr.repos.items():
-        head, _, sha256 = repo.rpartition("_")
-        _, _, pkg = head.rpartition("__")
-
-        prefix = repository_ctx.name[:-len(_PYPI_INDEX)]
-        packages.setdefault(pkg, []).append(
-            struct(
-                sha256 = sha256,
-                filename = filename,
-                label = str(Label("@@{}{}//:{}".format(prefix, repo, filename))),
-            ),
-        )
-
-    for pkg, filenames in packages.items():
-        # This contains the labels that should be used in the `pip` extension
-        # to get the labels that can be used by `whl_library`.
-        repository_ctx.file(
-            "{}/index.json".format(pkg),
-            json.encode(filenames),
-        )
-
-        # These labels should be used to be passed to `whl_library`.
-        repository_ctx.file(
-            "{}/BUILD.bazel".format(pkg),
-            "\n\n".join([
-                _BUILD_TEMPLATE.format("index.json"),
-            ] + [
-                render.alias(
-                    name = r.filename,
-                    actual = repr(r.label),
-                    visibility = ["//visibility:private"],
-                )
-                for r in filenames
-            ] + [
-                render.alias(
-                    name = r.filename + ".METADATA",
-                    actual = repr(r.label.split("//:")[0] + ".METADATA//:METADATA"),
-                    visibility = ["//visibility:private"],
-                )
-                for r in filenames
-                if r.filename.endswith(".whl")
-            ]),
-        )
-
-_hub = repository_rule(
-    doc = """\
-This hub repository allows for easy passing of wheel labels to the pip extension.
-
-The layout of this repo is similar to the simple API:
-//:BUILD.bazel
-//<distribution> - normalized to rules_python scheme - lowercase snake-case)
-    :index.json  - contains all labels in the bazel package
-    :BUILD.bazel - contains aliases to the repos created by the extension for easy
-                   introspection using `bazel query`.  Visibility is private for now.
-                   Change it to `public` if needed.
-""",
-    implementation = _hub_impl,
-    attrs = {
-        "repos": attr.string_dict(mandatory = True),
-    },
-)
-
-def _archive_repo_impl(repository_ctx):
-    filename = repository_ctx.attr.filename
-    repository_ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format(filename))
-
-    if repository_ctx.attr.file:
-        repository_ctx.symlink(repository_ctx.path(repository_ctx.attr.file), filename)
-        return
-
-    result = repository_ctx.download(
-        url = repository_ctx.attr.urls,
-        output = filename,
-        auth = get_auth(
-            repository_ctx,
-            repository_ctx.attr.urls,
-        ),
-    )
-
-    if not result.success:
-        fail(result)
-
-_archive_repo = repository_rule(
-    implementation = _archive_repo_impl,
-    attrs = {
-        "file": attr.label(
-            doc = "Used for indexing wheels on the local filesystem",
-            allow_single_file = [".whl", ".tar.gz", ".zip"],
-        ),
-        "filename": attr.string(mandatory = True),
-        "sha256": attr.string(),
-        "urls": attr.string_list(),
-    },
-)
-
-def _whl_metadata_repo_impl(repository_ctx):
-    whl_label = repository_ctx.attr.whl
-
-    if not whl_label.workspace_name.endswith(_PYPI_INDEX):
-        # Here we should have a hub repo label which we need to rewrite to the
-        # thing that the label is pointing to. We can do this because we own
-        # the construction of the labels.
-        fail("Expected the label to this rule to be from the '{}' hub repo".format(_PYPI_INDEX))
-
-    # NOTE @aignas 2024-03-08: if we see restarts, then it could mean that we are not constructing
-    # the right label as an input file.
-    whl_label = Label("@@{}//:{}".format(repository_ctx.name[:-len(".METADATA")], whl_label.name))
-
-    repository_ctx.symlink(repository_ctx.path(whl_label), "wheel.zip")
-    repository_ctx.extract("wheel.zip")
-
-    content = None
-    for p in repository_ctx.path(".").readdir():
-        if p.basename.endswith(".dist-info"):
-            content = repository_ctx.read(p.get_child("METADATA"))
-        repository_ctx.delete(p)
-
-    if content == None:
-        fail("Could not find a METADATA file")
-
-    repository_ctx.file("METADATA", content)
-    repository_ctx.file("BUILD.bazel", _BUILD_TEMPLATE.format("METADATA"))
-
-_whl_metadata_repo = repository_rule(
-    doc = """Extract METADATA from a '.whl' file in repository context.
-
-This allows to work with other implementations of Indexes that do not serve
-METADATA like PyPI or with patched METADATA in patched and re-zipped wheels.
-""",
-    implementation = _whl_metadata_repo_impl,
-    attrs = {
-        "whl": attr.label(mandatory = True, allow_single_file = [".whl"]),
     },
 )
