@@ -34,6 +34,15 @@ _distribution_attrs = {
         default = "none",
         doc = "Python ABI tag. 'none' for pure-Python wheels.",
     ),
+    "custom_properties": attr.label(
+        allow_single_file = True,
+        doc = """\
+File containing user defined properties. This file is usually produced by other target.
+
+Format:
+FOO BAR
+""",
+    ),
     "distribution": attr.string(
         mandatory = True,
         doc = """\
@@ -340,6 +349,10 @@ def _py_wheel_impl(ctx):
         args.add("--volatile_status_file", ctx.version_file)
         args.add("--stable_status_file", ctx.info_file)
         other_inputs.extend([ctx.version_file, ctx.info_file])
+
+    if ctx.attr.custom_properties:
+        args.add("--custom_properties", ctx.file.custom_properties)
+        other_inputs.extend([ctx.file.custom_properties])
 
     args.add("--input_file_list", packageinputfile)
 

@@ -327,7 +327,7 @@ def get_files_to_package(input_files):
 
 
 def resolve_argument_stamp(
-    argument: str, volatile_status_stamp: Path, stable_status_stamp: Path
+    argument: str, volatile_status_stamp: Path, stable_status_stamp: Path, custom_properties: Path
 ) -> str:
     """Resolve workspace status stamps format strings found in the argument string
 
@@ -335,14 +335,19 @@ def resolve_argument_stamp(
         argument (str): The raw argument represenation for the wheel (may include stamp variables)
         volatile_status_stamp (Path): The path to a volatile workspace status file
         stable_status_stamp (Path): The path to a stable workspace status file
+        custom_properties (Path): The path to custom properties file. eg: file containing generated version variable
 
     Returns:
         str: A resolved argument string
     """
-    lines = (
-        volatile_status_stamp.read_text().splitlines()
-        + stable_status_stamp.read_text().splitlines()
-    )
+    lines = []
+    if volatile_status_stamp:
+       lines.extend(volatile_status_stamp.read_text().splitlines())
+    if stable_status_stamp:
+        lines.extend(stable_status_stamp.read_text().splitlines())
+    if custom_properties:
+        lines.extend(custom_properties.read_text().splitlines())
+
     for line in lines:
         if not line:
             continue
@@ -361,6 +366,11 @@ def parse_args() -> argparse.Namespace:
     )
     metadata_group.add_argument(
         "--version", required=True, type=str, help="Version of the distribution"
+    )
+    metadata_group.add_argument(
+        "--custom_properties",
+        type=Path,
+        help="A file containing user defined properties",
     )
     metadata_group.add_argument(
         "--build_tag",
@@ -478,23 +488,19 @@ def main() -> None:
 
     strip_prefixes = [p for p in arguments.strip_path_prefix]
 
-    if arguments.volatile_status_file and arguments.stable_status_file:
-        name = resolve_argument_stamp(
-            arguments.name,
-            arguments.volatile_status_file,
-            arguments.stable_status_file,
-        )
-    else:
-        name = arguments.name
+    name = resolve_argument_stamp(
+        arguments.name,
+        arguments.volatile_status_file,
+        arguments.stable_status_file,
+        arguments.custom_properties
+    )
 
-    if arguments.volatile_status_file and arguments.stable_status_file:
-        version = resolve_argument_stamp(
-            arguments.version,
-            arguments.volatile_status_file,
-            arguments.stable_status_file,
-        )
-    else:
-        version = arguments.version
+    version = resolve_argument_stamp(
+        arguments.version,
+        arguments.volatile_status_file,
+        arguments.stable_status_file,
+        arguments.custom_properties
+    )
 
     with WheelMaker(
         name=name,
