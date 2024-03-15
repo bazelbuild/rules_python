@@ -23,6 +23,8 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* remove bzlmod `pip.parse(annotations)` attribute
+
 ### Added
 
 * New Python versions available: `3.11.8`, `3.12.2` using
