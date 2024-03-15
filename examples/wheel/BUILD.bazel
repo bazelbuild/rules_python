@@ -105,6 +105,18 @@ py_wheel(
     ],
 )
 
+py_wheel(
+    name = "version_from_other_target",
+    custom_properties = ":user_defined_properties.txt",
+    distribution = "example_minimal_library",
+    python_tag = "py3",
+    version = "{GENERATED_WHEEL_VERSION}",
+    deps = [
+        "//examples/wheel/lib:module_with_data",
+        "//examples/wheel/lib:simple_module",
+    ],
+)
+
 # Use py_package to collect all transitive dependencies of a target,
 # selecting just the files within a specific python package.
 py_package(
