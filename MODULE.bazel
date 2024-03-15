@@ -12,7 +12,7 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
-internal_deps = use_extension("@rules_python//python/private/bzlmod:internal_deps.bzl", "internal_deps")
+internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 internal_deps.install()
 use_repo(
     internal_deps,
@@ -38,7 +38,7 @@ use_repo(
 
 # We need to do another use_extension call to expose the "pythons_hub"
 # repo.
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python = use_extension("//python/extensions:python.bzl", "python")
 
 # The default toolchain to use if nobody configures a toolchain.
 # NOTE: This is not a stable version. It is provided for convenience, but will
@@ -56,6 +56,13 @@ register_toolchains("@pythons_hub//:all")
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.5.0", dev_dependency = True)
+bazel_dep(name = "rules_cc", version = "0.0.9", dev_dependency = True)
+
+# Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
+# We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
+bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_name = "io_bazel_rules_go")
+bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
 
 dev_pip = use_extension(
     "//python/extensions:pip.bzl",
@@ -77,6 +84,7 @@ dev_pip.parse(
     python_version = "3.11",
     requirements_lock = "//docs/sphinx:requirements.txt",
 )
+use_repo(dev_pip, "dev_pip")
 
 bazel_binaries = use_extension(
     "@rules_bazel_integration_test//:extensions.bzl",
