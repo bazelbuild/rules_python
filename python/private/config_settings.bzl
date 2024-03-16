@@ -69,19 +69,31 @@ def _flag_values(python_versions):
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, *, python_version, match_any = None, **kwargs):
+def is_python_config_setting(name, *, python_version, reuse_conditions = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
     machinery.
 
+    The matching of the 'python_version' flag depends on the value passed in
+    `python_version` and here is the example for `3.8` (but the same applies
+    to other python versions present in @//python:versions.bzl#TOOL_VERSIONS):
+     * "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]  # All 3.8 versions
+     * "3.8.2" -> ["3.8.2"]  # Only 3.8.2
+     * "3.8.19" -> ["3.8.19", "3.8"]  # The latest version should also match 3.8 so
+         as when the `3.8` toolchain is used we just use the latest `3.8` toolchain.
+         this makes the `select("is_python_3.8.19")` work no matter how the user
+         specifies the latest python version to use.
+
     Args:
         name: name for the target that will be created to be used in select statements.
-        python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
-        match_any: The labels that should be used for matching the extra
-            versions, which get passed to `config_setting_group.match_any`. If
-            empty or None, this macro will create config settings necessary to
-            match the `python_version` value.
+        python_version: The python_version to be passed in the `flag_values` in the
+            `config_setting`. Depending on the version, the matching python version list
+            can be as described above.
+        reuse_conditions: A dict of version to version label for which we should
+            reuse config_setting targets instead of creating them from scratch. This
+            is useful when using is_python_config_setting multiple times in the
+            same package with the same `major.minor` python versions.
         **kwargs: extra kwargs passed to the `config_setting`.
     """
     if python_version not in name:
@@ -90,34 +102,38 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     if python_version not in VERSION_FLAG_VALUES:
         fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
 
-    flag_values = {
-        _PYTHON_VERSION_FLAG: python_version,
-    }
-
     python_versions = VERSION_FLAG_VALUES[python_version]
-    if len(python_versions) == 1 and not match_any:
+    if len(python_versions) == 1:
         native.config_setting(
             name = name,
-            flag_values = flag_values,
+            flag_values = {
+                _PYTHON_VERSION_FLAG: python_version,
+            },
             **kwargs
         )
         return
 
-    if not match_any:
-        create_config_settings = {
-            "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
-            for version in python_versions
-        }
-        match_any = list(create_config_settings.keys())
-    else:
-        setting_name = "_" + name if len(python_versions) > 1 else name
-        create_config_settings = {setting_name: flag_values}
-        if setting_name not in match_any:
-            # Here we expect the user to supply us with a name of the label that
-            # would be created by this function. This needs to be the case because
-            # the VERSION_FLAG_VALUES values contain the all of the versions that
-            # have to be matched.
-            fail("'{}' must be present in 'match_any'".format(setting_name))
+    reuse_conditions = reuse_conditions or {}
+    create_config_settings = {
+        "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
+        for version in python_versions
+        if not reuse_conditions or version not in reuse_conditions
+    }
+    match_any = list(create_config_settings.keys())
+    for version, condition in reuse_conditions.items():
+        if len(VERSION_FLAG_VALUES[version]) == 1:
+            match_any.append(condition)
+            continue
+
+        # Convert the name to an internal label that this function would create,
+        # so that we are hitting the config_setting and not the config_setting_group.
+        condition = Label(condition)
+        if hasattr(condition, "same_package_label"):
+            condition = condition.same_package_label("_" + condition.name)
+        else:
+            condition = condition.relative("_" + condition.name)
+
+        match_any.append(condition)
 
     for name_, flag_values_ in create_config_settings.items():
         native.config_setting(
@@ -162,25 +178,13 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
     )
 
     for version, matching_versions in VERSION_FLAG_VALUES.items():
-        match_any = None
-        if len(matching_versions) > 1:
-            match_any = [
-                # Use the internal labels created by this macro in order to handle matching
-                # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
-                # fewer targets overall.
-                ("_is_python_{}" if len(VERSION_FLAG_VALUES[v]) > 1 else "is_python_{}").format(v)
-                for v in matching_versions
-            ]
-
         is_python_config_setting(
             name = "is_python_{}".format(version),
             python_version = version,
-            # NOTE @aignas 2024-03-16: if we don't have this, then we may create duplicate
-            # targets. I think this should be improved, but I haven't figured out how yet
-            # and I ran out of time.
-            #
-            # The fact that this parameter is needed here, suggests that we may need to
-            # think of a better abstraction here.
-            match_any = match_any,
+            reuse_conditions = {
+                v: native.package_relative_label("is_python_{}".format(v))
+                for v in matching_versions
+                if v != version
+            },
             visibility = ["//visibility:public"],
         )
