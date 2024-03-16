@@ -94,14 +94,12 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     flag_values = {
         _PYTHON_VERSION_FLAG: python_version,
     }
-    visibility = kwargs.pop("visibility", [])
 
     python_versions = VERSION_FLAG_VALUES[python_version]
     if len(python_versions) == 1:
         native.config_setting(
             name = name,
             flag_values = flag_values,
-            visibility = visibility,
             **kwargs
         )
         return
@@ -120,10 +118,6 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
         native.config_setting(
             name = name_,
             flag_values = flag_values_,
-            # We need to pass the visibility here because of how `config_setting_group` is
-            # implemented, it is using the internal aliases here, hence the need for making
-            # them with the same visibility as the `alias` itself.
-            visibility = visibility,
             **kwargs
         )
 
@@ -139,7 +133,7 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     native.alias(
         name = name,
         actual = "_{}_group".format(name),
-        visibility = visibility,
+        visibility = kwargs.get("visibility", []),
     )
 
 def construct_config_settings(name = None):  # buildifier: disable=function-docstring
