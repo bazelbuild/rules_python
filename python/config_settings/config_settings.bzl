@@ -15,38 +15,16 @@
 """This module is used to construct the config settings in the BUILD file in this same package.
 """
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("//python/private:config_settings.bzl", _VERSION_FLAG_VALUES = "VERSION_FLAG_VALUES", _is_python_config_setting = "is_python_config_setting")
+load(
+    "//python/private:config_settings.bzl",
+    _construct_config_settings = "construct_config_settings",
+    _is_python_config_setting = "is_python_config_setting",
+)
 
-VERSION_FLAG_VALUES = _VERSION_FLAG_VALUES
+# This is exposed only for cases where the pip hub repo needs to use this rule
+# to define hub-repo scoped config_settings for platform specific wheel
+# support.
 is_python_config_setting = _is_python_config_setting
 
-def construct_config_settings(name = None):  # buildifier: disable=function-docstring
-    string_flag(
-        name = "python_version",
-        # TODO: The default here should somehow match the MODULE config. Until
-        # then, use the empty string to indicate an unknown version. This
-        # also prevents version-unaware targets from inadvertently matching
-        # a select condition when they shouldn't.
-        build_setting_default = "",
-        values = [""] + VERSION_FLAG_VALUES.keys(),
-        visibility = ["//visibility:public"],
-    )
-
-    for version, matching_versions in VERSION_FLAG_VALUES.items():
-        match_any = None
-        if len(matching_versions) > 1:
-            match_any = [
-                # Use the internal labels created by this macro in order to handle matching
-                # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
-                # fewer targets overall.
-                ("_is_python_{}" if len(VERSION_FLAG_VALUES[v]) > 1 else "is_python_{}").format(v)
-                for v in matching_versions
-            ]
-
-        is_python_config_setting(
-            name = "is_python_{}".format(version),
-            python_version = version,
-            match_any = match_any,
-            visibility = ["//visibility:public"],
-        )
+# This is exposed for usage in rules_python only.
+construct_config_settings = _construct_config_settings

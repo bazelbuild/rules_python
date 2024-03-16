@@ -16,6 +16,7 @@
 """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 _PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
@@ -36,8 +37,9 @@ def _flag_values(python_versions):
         python_versions: list of strings; all X.Y.Z python versions
 
     Returns:
-        A map with config settings as keys and values are all of the python_version flag
-        values that that match the given 'key' specification. For example:
+        A `map[str, list[str]]`. Each key is a python_version flag value. Each value
+        is a list of the python_version flag values that should match when for the
+        `key`. For example:
         ```
          "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]  # All 3.8 versions
          "3.8.2" -> ["3.8.2"]  # Only 3.8.2
@@ -67,7 +69,7 @@ def _flag_values(python_versions):
 
 VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
 
-def is_python_config_setting(name, *, python_version = None, match_any = None, **kwargs):
+def is_python_config_setting(name, *, python_version, match_any = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -81,18 +83,18 @@ def is_python_config_setting(name, *, python_version = None, match_any = None, *
             either None, which will create config settings necessary to match the `python_version` value,
             a list of 'config_setting' labels passed to bazel-skylib's `config_setting_group` `match_any`
             attribute.
-        **kwargs: extra kwargs passed to the `config_setting`
+        **kwargs: extra kwargs passed to the `config_setting`.
     """
-    visibility = kwargs.pop("visibility", [])
-
-    flag_values = {
-        _PYTHON_VERSION_FLAG: python_version,
-    }
     if python_version not in name:
         fail("The name '{}' must have the python version '{}' in it".format(name, python_version))
 
     if python_version not in VERSION_FLAG_VALUES:
         fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
+
+    flag_values = {
+        _PYTHON_VERSION_FLAG: python_version,
+    }
+    visibility = kwargs.pop("visibility", [])
 
     python_versions = VERSION_FLAG_VALUES[python_version]
     if len(python_versions) == 1 and not match_any:
@@ -141,3 +143,41 @@ def is_python_config_setting(name, *, python_version = None, match_any = None, *
         actual = "_{}_group".format(name),
         visibility = visibility,
     )
+
+def construct_config_settings(name = None):  # buildifier: disable=function-docstring
+    """Create a 'python_version' config flag and construct all config settings used in rules_python.
+
+    This mainly includes the targets that are used in the toolchain and pip hub
+    repositories that only match on the 'python_version' flag values.
+
+    Args:
+        name(str): A dummy name value that is no-op for now.
+    """
+    string_flag(
+        name = "python_version",
+        # TODO: The default here should somehow match the MODULE config. Until
+        # then, use the empty string to indicate an unknown version. This
+        # also prevents version-unaware targets from inadvertently matching
+        # a select condition when they shouldn't.
+        build_setting_default = "",
+        values = [""] + VERSION_FLAG_VALUES.keys(),
+        visibility = ["//visibility:public"],
+    )
+
+    for version, matching_versions in VERSION_FLAG_VALUES.items():
+        match_any = None
+        if len(matching_versions) > 1:
+            match_any = [
+                # Use the internal labels created by this macro in order to handle matching
+                # 3.8 config value if using the 3.8 version from MINOR_MAPPING with generating
+                # fewer targets overall.
+                ("_is_python_{}" if len(VERSION_FLAG_VALUES[v]) > 1 else "is_python_{}").format(v)
+                for v in matching_versions
+            ]
+
+        is_python_config_setting(
+            name = "is_python_{}".format(version),
+            python_version = version,
+            match_any = match_any,
+            visibility = ["//visibility:public"],
+        )

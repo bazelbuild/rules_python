@@ -9,4 +9,6 @@ filegroup(
     visibility = ["//python:__pkg__"],
 )
 
-construct_config_settings()
+construct_config_settings(
+    name = "construct_config_settings",
+)
