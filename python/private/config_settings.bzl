@@ -78,11 +78,10 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     Args:
         name: name for the target that will be created to be used in select statements.
         python_version: The python_version to be passed in the `flag_values` in the `config_setting`.
-        match_any: The labels that should be used for matching the extra versions instead of creating
-            them on the fly. This will be passed to `config_setting_group.match_any`. This can be
-            either None, which will create config settings necessary to match the `python_version` value,
-            a list of 'config_setting' labels passed to bazel-skylib's `config_setting_group` `match_any`
-            attribute.
+        match_any: The labels that should be used for matching the extra
+            versions, which get passed to `config_setting_group.match_any`. If
+            empty or None, this macro will create config settings necessary to
+            match the `python_version` value.
         **kwargs: extra kwargs passed to the `config_setting`.
     """
     if python_version not in name:
@@ -96,7 +95,7 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     }
 
     python_versions = VERSION_FLAG_VALUES[python_version]
-    if len(python_versions) == 1:
+    if len(python_versions) == 1 and not match_any:
         native.config_setting(
             name = name,
             flag_values = flag_values,
@@ -104,16 +103,22 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
         )
         return
 
-    if match_any:
-        create_config_settings = {"_" + name: flag_values}
-    else:
+    if not match_any:
         create_config_settings = {
             "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
             for version in python_versions
         }
         match_any = list(create_config_settings.keys())
+    else:
+        setting_name = "_" + name if len(python_versions) > 1 else name
+        create_config_settings = {setting_name: flag_values}
+        if setting_name not in match_any:
+            # Here we expect the user to supply us with a name of the label that
+            # would be created by this function. This needs to be the case because
+            # the VERSION_FLAG_VALUES values contain the all of the versions that
+            # have to be matched.
+            fail("'{}' must be present in 'match_any'".format(setting_name))
 
-    # Create all of the necessary config setting values for the config_setting_group
     for name_, flag_values_ in create_config_settings.items():
         native.config_setting(
             name = name_,
@@ -170,6 +175,12 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         is_python_config_setting(
             name = "is_python_{}".format(version),
             python_version = version,
+            # NOTE @aignas 2024-03-16: if we don't have this, then we may create duplicate
+            # targets. I think this should be improved, but I haven't figured out how yet
+            # and I ran out of time.
+            #
+            # The fact that this parameter is needed here, suggests that we may need to
+            # think of a better abstraction here.
             match_any = match_any,
             visibility = ["//visibility:public"],
         )
