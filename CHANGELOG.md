@@ -29,8 +29,12 @@ A brief description of the categories of changes:
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
 * (gazelle) Added a new `python_visibility` directive to control visibility
   of generated targets by appending additional visibility labels.
+* (gazelle) Added a new `python_default_visibility` directive to control the
+  _default_ visibility of generated targets. See the [docs][python_default_visibility]
+  for details.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+[python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
 ### Changed
 
