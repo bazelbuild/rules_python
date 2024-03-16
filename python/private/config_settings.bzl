@@ -97,7 +97,7 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
     visibility = kwargs.pop("visibility", [])
 
     python_versions = VERSION_FLAG_VALUES[python_version]
-    if len(python_versions) == 1 and not match_any:
+    if len(python_versions) == 1:
         native.config_setting(
             name = name,
             flag_values = flag_values,
@@ -106,16 +106,14 @@ def is_python_config_setting(name, *, python_version, match_any = None, **kwargs
         )
         return
 
-    if type(match_any) == type([]):
+    if match_any:
         create_config_settings = {"_" + name: flag_values}
-    elif not match_any:
+    else:
         create_config_settings = {
             "_{}".format(name).replace(python_version, version): {_PYTHON_VERSION_FLAG: version}
             for version in python_versions
         }
         match_any = list(create_config_settings.keys())
-    else:
-        fail("unsupported 'match_any' type, expected a 'list', got '{}'".format(type(match_any)))
 
     # Create all of the necessary config setting values for the config_setting_group
     for name_, flag_values_ in create_config_settings.items():
