@@ -198,6 +198,8 @@ Python-specific directives are as follows:
 | Controls the `py_test` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
 | `# gazelle:resolve py ...` | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
+| [`# gazelle:python_default_visibility labels`](#directive-python_default_visibility) | |
+| Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root:__subpackages__` |
 | [`# gazelle:python_visibility label`](#directive-python_visibility) | |
 | Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
 
@@ -236,6 +238,81 @@ py_libary(
 ```
 
 [python-packaging-user-guide]: https://github.com/pypa/packaging.python.org/blob/4c86169a/source/tutorials/packaging-projects.rst
+
+
+#### Directive: `python_default_visibility`:
+
+Instructs gazelle to use these visibility labels on all _python_ targets
+(typically `py_*`, but can be modified via the `map_kind` directive). The arg
+to this directive is a a comma-separated list (without spaces) of labels.
+
+For example:
+
+```starlark
+# gazelle:python_default_visibility //:__subpackages__,//tests:__subpackages__
+```
+
+produces the following visibility attribute:
+
+```starlark
+py_library(
+    ...,
+    visibility = [
+        "//:__subpackages__",
+        "//tests:__subpackages__",
+    ],
+    ...,
+)
+```
+
+You can also inject the `python_root` value by using the exact string
+`$python_root`. All instances of this string will be replaced by the `python_root`
+value.
+
+```starlark
+# gazelle:python_default_visibility //$python_root:__pkg__,//foo/$python_root/tests:__subpackages__
+
+# Assuming the "# gazelle:python_root" directive is set in ./py/src/BUILD.bazel,
+# the results will be:
+py_library(
+    ...,
+    visibility = [
+        "//foo/py/src/tests:__subpackages__",  # sorted alphabetically
+        "//py/src:__pkg__",
+    ],
+    ...,
+)
+```
+
+Two special values are also accepted as an argument to the directive:
+
++   `NONE`: This removes all default visibility. Labels added by the
+    `python_visibility` directive are still included.
++   `DEFAULT`: This resets the default visibility.
+
+For example:
+
+```starlark
+# gazelle:python_default_visibility NONE
+
+py_library(
+    name = "...",
+    srcs = [...],
+)
+```
+
+```starlark
+# gazelle:python_default_visibility //foo:bar
+# gazelle:python_default_visibility DEFAULT
+
+py_library(
+    ...,
+    visibility = ["//:__subpackages__"],
+    ...,
+)
+```
+
+These special values can be useful for sub-packages.
 
 
 #### Directive: `python_visibility`:
