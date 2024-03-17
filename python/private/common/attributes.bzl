@@ -146,6 +146,7 @@ NATIVE_RULES_ALLOWLIST_ATTRS = _create_native_rules_allowlist_attrs()
 COMMON_ATTRS = union_attrs(
     DATA_ATTRS,
     NATIVE_RULES_ALLOWLIST_ATTRS,
+    # buildifier: disable=attr-licenses
     {
         # NOTE: This attribute is deprecated and slated for removal.
         "distribs": attr.string_list(),
