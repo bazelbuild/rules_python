@@ -84,7 +84,26 @@ dev_pip.parse(
     python_version = "3.11",
     requirements_lock = "//docs/sphinx:requirements.txt",
 )
-use_repo(dev_pip, "dev_pip")
+
+#####################
+# Install twine for our own runfiles wheel publishing.
+# Eventually we might want to install twine automatically for users too, see:
+# https://github.com/bazelbuild/rules_python/issues/1016.
+
+dev_pip.parse(
+    hub_name = "publish_deps",
+    python_version = "3.11",
+    requirements_darwin = "//tools/publish:requirements_darwin.txt",
+    requirements_lock = "//tools/publish:requirements.txt",
+    requirements_windows = "//tools/publish:requirements_windows.txt",
+)
+use_repo(
+    dev_pip,
+    "dev_pip",
+    publish_deps_twine = "publish_deps_311_twine",
+)
+
+# Bazel integration test setup below
 
 bazel_binaries = use_extension(
     "@rules_bazel_integration_test//:extensions.bzl",
