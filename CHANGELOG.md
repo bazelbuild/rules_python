@@ -23,6 +23,10 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (whl_library): Fix the experimental_target_platforms overriding for platform
+  specific wheels when the wheels are for any python interpreter version. Fixes
+  [#1810](https://github.com/bazelbuild/rules_python/issues/1810).
+
 ### Added
 
 * New Python versions available: `3.11.8`, `3.12.2` using
