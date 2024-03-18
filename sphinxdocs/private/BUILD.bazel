@@ -34,7 +34,7 @@ exports_files(
         "sphinx_build.py",
         "sphinx_server.py",
     ],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 bzl_library(
@@ -70,14 +70,14 @@ py_binary(
     name = "inventory_builder",
     srcs = ["inventory_builder.py"],
     # Only public because it's an implicit attribute
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 py_binary(
     name = "proto_to_markdown",
     srcs = ["proto_to_markdown.py"],
     # Only public because it's an implicit attribute
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":proto_to_markdown_lib"],
 )
 
@@ -85,7 +85,7 @@ py_library(
     name = "proto_to_markdown_lib",
     srcs = ["proto_to_markdown.py"],
     # Only public because it's an implicit attribute
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         ":stardoc_output_proto_py_pb2",
     ],
