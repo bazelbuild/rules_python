@@ -32,6 +32,7 @@ bzl_library(
         ":pip_repository_bzl",
         "//python/pip_install:pip_repository_bzl",
         "//python/pip_install:requirements_parser_bzl",
+        "//python/private:pypi_index_bzl",
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:parse_whl_name_bzl",
@@ -54,6 +55,17 @@ bzl_library(
     deps = [
         "//python/private:render_pkg_aliases_bzl",
         "//python/private:text_util_bzl",
+    ],
+)
+
+bzl_library(
+    name = "pypi_index_bzl",
+    srcs = ["pypi_index.bzl"],
+    deps = [
+        ":bazel_features_bzl",
+        "//python/private:auth_bzl",
+        "//python/private:envsubst_bzl",
+        "//python/private:pypi_index_bzl",
     ],
 )
 

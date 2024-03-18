@@ -32,6 +32,13 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pypi_index_bzl",
+    srcs = ["pypi_index.bzl"],
+    visibility = ["//:__subpackages__"],
+    deps = ["//python/private/bzlmod:pypi_index_bzl"],
+)
+
+bzl_library(
     name = "python_bzl",
     srcs = ["python.bzl"],
     visibility = ["//:__subpackages__"],
