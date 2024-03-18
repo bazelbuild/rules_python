@@ -19,6 +19,8 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+
 ### Changed
 
 ### Fixed
@@ -32,12 +34,10 @@ A brief description of the categories of changes:
 * (gazelle) Added a new `python_default_visibility` directive to control the
   _default_ visibility of generated targets. See the [docs][python_default_visibility]
   for details.
-
 * (bzlmod) New **experimental** `pypi_index` extension that can be used to
   instruct the `pip.parse` tag class to use the bazel downloader to fetch
   wheels. Note, the API is very unstable and may be changed at any time.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
 ### Changed
