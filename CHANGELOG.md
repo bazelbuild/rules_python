@@ -27,12 +27,22 @@ A brief description of the categories of changes:
 
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+* (gazelle) Added a new `python_visibility` directive to control visibility
+  of generated targets by appending additional visibility labels.
+* (gazelle) Added a new `python_default_visibility` directive to control the
+  _default_ visibility of generated targets. See the [docs][python_default_visibility]
+  for details.
 
 * (bzlmod) New **experimental** `pypi_index` extension that can be used to
   instruct the `pip.parse` tag class to use the bazel downloader to fetch
   wheels. Note, the API is very unstable and may be changed at any time.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+[python_default_visibility]: gazelle/README.md#directive-python_default_visibility
+
+### Changed
+
+* (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 
 ## [0.31.0] - 2024-02-12
 

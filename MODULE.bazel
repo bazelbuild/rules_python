@@ -17,7 +17,7 @@ internal_deps.install()
 use_repo(
     internal_deps,
     "rules_python_internal",
-    # START: maintained by 'bazel run //tools/private:update_pip_deps'
+    # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
     "pypi__build",
     "pypi__click",
     "pypi__colorama",
@@ -33,7 +33,7 @@ use_repo(
     "pypi__tomli",
     "pypi__wheel",
     "pypi__zipp",
-    # END: maintained by 'bazel run //tools/private:update_pip_deps'
+    # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
 )
 
 # We need to do another use_extension call to expose the "pythons_hub"

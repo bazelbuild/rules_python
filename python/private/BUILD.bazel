@@ -69,6 +69,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "config_settings_bzl",
+    srcs = ["config_settings.bzl"],
+    deps = [
+        "//python:versions_bzl",
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
     name = "coverage_deps_bzl",
     srcs = ["coverage_deps.bzl"],
     deps = [

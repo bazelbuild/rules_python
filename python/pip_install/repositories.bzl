@@ -18,7 +18,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _RULE_DEPS = [
-    # START: maintained by 'bazel run //tools/private:update_pip_deps'
+    # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
     (
         "pypi__build",
         "https://files.pythonhosted.org/packages/58/91/17b00d5fac63d3dca605f1b8269ba3c65e98059e1fd99d00283e42a454f0/build-0.10.0-py3-none-any.whl",
@@ -94,7 +94,7 @@ _RULE_DEPS = [
         "https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl",
         "679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0",
     ),
-    # END: maintained by 'bazel run //tools/private:update_pip_deps'
+    # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
 ]
 
 _GENERIC_WHEEL = """\

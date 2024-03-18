@@ -111,13 +111,13 @@ def main():
     parser.add_argument(
         "--start",
         type=str,
-        default="# START: maintained by 'bazel run //tools/private:update_pip_deps'",
+        default="# START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
         "--end",
         type=str,
-        default="# END: maintained by 'bazel run //tools/private:update_pip_deps'",
+        default="# END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
