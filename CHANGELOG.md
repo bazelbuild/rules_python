@@ -28,6 +28,10 @@ A brief description of the categories of changes:
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
 
+* (bzlmod) New **experimental** `pypi_index` extension that can be used to
+  instruct the `pip.parse` tag class to use the bazel downloader to fetch
+  wheels. Note, the API is very unstable and may be changed at any time.
+
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 
 ## [0.31.0] - 2024-02-12
