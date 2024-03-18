@@ -422,6 +422,9 @@ The labels are JSON config files describing the modifications.
     # don't allow users to override it.
     attrs.pop("repo_prefix")
 
+    # annotations has been replaced with whl_modifications in bzlmod
+    attrs.pop("annotations")
+
     return attrs
 
 def _whl_mod_attrs():
