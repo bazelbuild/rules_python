@@ -106,49 +106,14 @@ def _impl(module_ctx):
                 entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
                 entry["want_shas"].update(want_shas)
 
-    download_kwargs = {}
-    if bazel_features.external_deps.download_has_block_param:
-        download_kwargs["block"] = False
-
-    downloads = {}
-    for pkg, args in simpleapi_srcs.items():
-        output = module_ctx.path("{}/{}.html".format(_PYPI_INDEX, pkg))
-        all_urls = list(args["urls"].keys())
-        downloads[pkg] = struct(
-            out = output,
-            urls = all_urls,
-            download = module_ctx.download(
-                url = all_urls,
-                output = output,
-                auth = get_auth(
-                    # Simulate the repository_ctx so that `get_auth` works.
-                    struct(
-                        os = module_ctx.os,
-                        path = module_ctx.path,
-                        read = module_ctx.read,
-                    ),
-                    all_urls,
-                ),
-                **download_kwargs
-            ),
-        )
-
     repos = {}
-    for pkg, args in simpleapi_srcs.items():
-        download = downloads[pkg]
-        result = download.download
-        if download_kwargs.get("block") == False:
-            result = result.wait()
-
-        if not result.success:
-            fail("Failed to download from {}: {}".format(download.urls, result))
-
+    for pkg, download in simpleapi_download(module_ctx, simpleapi_srcs).items():
         repos.update(
             create_spoke_repos(
                 simple_api_urls = download.urls,
                 pkg = pkg,
                 html_contents = module_ctx.read(download.out),
-                want_shas = args["want_shas"],
+                want_shas = simpleapi_srcs[pkg]["want_shas"],
                 prefix = _PYPI_INDEX,
             ),
         )
@@ -182,3 +147,53 @@ By default rules_python will use the env variable value of PIP_INDEX_URL if pres
         ),
     },
 )
+
+def simpleapi_download(module_ctx, srcs):
+    """Download Simple API HTML.
+
+    Args:
+        module_ctx: The bzlmod module_ctx.
+        srcs: The sources to download things for.
+
+    Returns:
+        dict of pkg name to struct with download information containing
+        * urls - the URLs used for downloading the file.
+        * out - the output file to which HTML has been written.
+    """
+    download_kwargs = {}
+    if bazel_features.external_deps.download_has_block_param:
+        download_kwargs["block"] = False
+
+    downloads = {}
+    for pkg, args in srcs.items():
+        output = module_ctx.path("{}/{}.html".format(_PYPI_INDEX, pkg))
+        all_urls = list(args["urls"].keys())
+        downloads[pkg] = struct(
+            out = output,
+            urls = all_urls,
+            download = module_ctx.download(
+                url = all_urls,
+                output = output,
+                auth = get_auth(
+                    # Simulate the repository_ctx so that `get_auth` works.
+                    struct(
+                        os = module_ctx.os,
+                        path = module_ctx.path,
+                        read = module_ctx.read,
+                    ),
+                    all_urls,
+                ),
+                **download_kwargs
+            ),
+        )
+
+    for pkg, download in downloads.items():
+        if download_kwargs.get("block") == False:
+            result = download.download.wait()
+        else:
+            result = download.download
+
+        if not result.success:
+            fail("Failed to download from {}: {}".format(download.urls, result))
+
+    return downloads

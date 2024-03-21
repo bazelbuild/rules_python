@@ -98,7 +98,7 @@ def create_spoke_repos(simple_api_urls, pkg, html_contents, want_shas, prefix):
             are also created, but they will not be in the returned dictionary.
     """
     repos = {}
-    urls = _get_packages(
+    urls = get_packages(
         simple_api_urls,
         html_contents,
         want_shas,
@@ -136,8 +136,23 @@ def create_spoke_repos(simple_api_urls, pkg, html_contents, want_shas, prefix):
 
     return repos
 
-def _get_packages(index_urls, content, want_shas):
-    """Get the package URLs for given shas by parsing the Simple API HTML."""
+def get_packages(index_urls, content, want_shas):
+    """Get the package URLs for given shas by parsing the Simple API HTML.
+
+    Args:
+        index_urls(list[str]): The URLs that the HTML content can be downloaded from.
+        content(str): The Simple API HTML content.
+        want_shas(list[str]): The list of shas that we need to get.
+
+    Returns:
+        A list of structs with:
+        * filename: The filename of the artifact.
+        * url: The URL to download the artifact.
+        * sha256: The sha256 of the artifact.
+        * metadata_sha256: The whl METADATA sha256 if we can download it. If this is
+          present, then the 'metadata_url' is also present. Defaults to "".
+        * metadata_url: The URL for the METADATA if we can download it. Defaults to "".
+    """
     want_shas = {sha: True for sha in want_shas}
     packages = []
     lines = content.split("<a href=\"")
