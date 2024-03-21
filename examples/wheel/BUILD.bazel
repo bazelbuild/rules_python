@@ -312,6 +312,20 @@ py_wheel(
     deps = [":example_pkg"],
 )
 
+# Package just a specific py_libraries, without their dependencies
+py_wheel(
+    name = "minimal_data_files",
+    testonly = True,  # Set this to verify the generated .dist target doesn't break things
+
+    # Re-using some files already checked into the repo.
+    data_files = {
+        "//examples/wheel:NOTICE": "scripts/NOTICE",
+        "README.md": "data/target/path/README.md",
+    },
+    distribution = "minimal_data_files",
+    version = "0.0.1",
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -321,6 +335,7 @@ py_test(
         ":custom_package_root_multi_prefix_reverse_order",
         ":customized",
         ":filename_escaping",
+        ":minimal_data_files",
         ":minimal_with_py_library",
         ":minimal_with_py_library_with_stamp",
         ":minimal_with_py_package",

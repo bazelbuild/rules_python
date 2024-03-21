@@ -120,6 +120,7 @@ See [`py_wheel_dist`](#py_wheel_dist) for more info.
 
 _feature_flags = {}
 
+ALLOWED_DATA_FILE_PREFIX = ("purelib", "platlib", "headers", "scripts", "data")
 _requirement_attrs = {
     "extra_requires": attr.string_list_dict(
         doc = ("A mapping of [extras](https://peps.python.org/pep-0508/#extras) options to lists of requirements (similar to `requires`). This attribute " +
@@ -171,6 +172,11 @@ _other_attrs = {
     ),
     "classifiers": attr.string_list(
         doc = "A list of strings describing the categories for the package. For valid classifiers see https://pypi.org/classifiers",
+    ),
+    "data_files": attr.label_keyed_string_dict(
+        doc = ("Any file that is not normally installed inside site-packages goes into the .data directory, named " +
+               "as the .dist-info directory but with the .data/ extension.  Allowed paths: {prefixes}".format(prefixes = ALLOWED_DATA_FILE_PREFIX)),
+        allow_files = True,
     ),
     "description_content_type": attr.string(
         doc = ("The type of contents in description_file. " +
@@ -470,6 +476,28 @@ def _py_wheel_impl(ctx):
         other_inputs.extend(target_files)
         args.add(
             "--extra_distinfo_file",
+            filename + ";" + target_files[0].path,
+        )
+
+    for target, filename in ctx.attr.data_files.items():
+        target_files = target.files.to_list()
+        if len(target_files) != 1:
+            fail(
+                "Multi-file target listed in data_files %s",
+                filename,
+            )
+
+        if filename.partition("/")[0] not in ALLOWED_DATA_FILE_PREFIX:
+            fail(
+                "The target data file must start with one of these prefixes: '%s'.  Target filepath: '%s'" %
+                (
+                    ",".join(ALLOWED_DATA_FILE_PREFIX),
+                    filename,
+                ),
+            )
+        other_inputs.extend(target_files)
+        args.add(
+            "--data_files",
             filename + ";" + target_files[0].path,
         )
 
