@@ -73,12 +73,12 @@ class PipInstallTest(unittest.TestCase):
         self.assertListEqual(
             actual,
             [
-                "site-packages/requests-2.25.1.dist-info/INSTALLER",
-                "site-packages/requests-2.25.1.dist-info/LICENSE",
-                "site-packages/requests-2.25.1.dist-info/METADATA",
-                "site-packages/requests-2.25.1.dist-info/RECORD",
-                "site-packages/requests-2.25.1.dist-info/WHEEL",
-                "site-packages/requests-2.25.1.dist-info/top_level.txt",
+                "requests-2.25.1.dist-info/INSTALLER",
+                "requests-2.25.1.dist-info/LICENSE",
+                "requests-2.25.1.dist-info/METADATA",
+                "requests-2.25.1.dist-info/RECORD",
+                "requests-2.25.1.dist-info/WHEEL",
+                "requests-2.25.1.dist-info/top_level.txt",
             ],
         )
 
