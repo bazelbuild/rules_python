@@ -39,12 +39,18 @@ A brief description of the categories of changes:
 * (gazelle) Added a new `python_default_visibility` directive to control the
   _default_ visibility of generated targets. See the [docs][python_default_visibility]
   for details.
+* (gazelle) Added a new `python_test_file_pattern` directive. This directive tells
+  gazelle which python files should be mapped to the `py_test` rule. See the
+  [original issue][test_file_pattern_issue] and the [docs][test_file_pattern_docs]
+  for details.
 
 * (wheel) Add support for `data_files` attributes in py_wheel rule
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
+[test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
+[test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
 
 ### Changed
 
