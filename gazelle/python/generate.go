@@ -393,20 +393,22 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			// the file exists on disk.
 			pyTestFilenames.Add(pyTestEntrypointFilename)
 		}
-		pyTestTargetName := cfg.RenderTestName(packageName)
-		pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
+		if (hasPyTestEntryPointTarget || !pyTestFilenames.Empty()) {
+			pyTestTargetName := cfg.RenderTestName(packageName)
+			pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
 
-		if hasPyTestEntryPointTarget {
-			entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
-			main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
-			pyTestTarget.
-				addSrc(entrypointTarget).
-				addResolvedDependency(entrypointTarget).
-				setMain(main)
-		} else {
-			pyTestTarget.setMain(pyTestEntrypointFilename)
+			if hasPyTestEntryPointTarget {
+				entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
+				main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
+				pyTestTarget.
+					addSrc(entrypointTarget).
+					addResolvedDependency(entrypointTarget).
+					setMain(main)
+			} else if hasPyTestEntryPointFile {
+				pyTestTarget.setMain(pyTestEntrypointFilename)
+			}
+			pyTestTargets = append(pyTestTargets, pyTestTarget)
 		}
-		pyTestTargets = append(pyTestTargets, pyTestTarget)
 	} else {
 		// Create one py_test target per file
 		pyTestFilenames.Each(func(index int, testFile interface{}) {
