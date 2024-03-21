@@ -43,30 +43,6 @@ python.toolchain(
 # rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_versions")
 
-# This extension allows rules_python to optimize downloading for packages by checking
-# for available artifacts on PyPI Simple API compatible mirrors.
-pypi_index = use_extension("@rules_python//python/extensions:pypi_index.bzl", "pypi_index")
-pypi_index.add_requirements(
-    srcs = [
-        "//:requirements_lock_3_10.txt",
-        "//:requirements_lock_3_9.txt",
-        "//:requirements_windows_3_10.txt",
-        "//:requirements_windows_3_9.txt",
-    ],
-)
-
-# We can also initialize the extension in dev mode.
-dev_pypi_index = use_extension(
-    "@rules_python//python/extensions:pypi_index.bzl",
-    "pypi_index",
-    dev_dependency = True,
-)
-dev_pypi_index.add_requirements(
-    srcs = [
-        "//tests/dupe_requirements:requirements.txt",
-    ],
-)
-
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
 # to modify the BUILD file, and copy files.
@@ -118,6 +94,11 @@ use_repo(pip, "whl_mods_hub")
 # Alternatively, `python_interpreter_target` can be used to directly specify
 # the Python interpreter to run to resolve dependencies.
 pip.parse(
+    # We can use `envsubst in the above
+    envsubst = ["PIP_INDEX_URL"],
+    # Use the bazel downloader to query the simple API for downloading the sources
+    # Note, that we can use envsubst for this value.
+    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -136,6 +117,10 @@ pip.parse(
         "cp39_linux_*",
         "cp39_*",
     ],
+    # TODO @aignas 2024-03-21: how do we handle overrides for the index urls per package?
+    # index_url_per_package = {
+    #    foo: bar
+    # },
     hub_name = "pip",
     python_version = "3.9",
     requirements_lock = "//:requirements_lock_3_9.txt",

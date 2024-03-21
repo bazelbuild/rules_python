@@ -25,12 +25,14 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private:pypi_index.bzl", "get_simpleapi_sources")
+load("//python/private:pypi_index.bzl", "get_packages", "get_packages_from_requirements", "get_simpleapi_sources")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
+load(":pypi_index.bzl", "simpleapi_download")
 
 def _parse_version(version):
     major, _, version = version.partition(".")
@@ -102,8 +104,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     python_interpreter_target = pip_attr.python_interpreter_target
 
-    pypi_index_repo = module_ctx.path(pip_attr._pypi_index_repo).dirname
-
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
     hub_name = pip_attr.hub_name
@@ -126,11 +126,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         hub_name,
         version_label(pip_attr.python_version),
     )
-    requrements_lock = locked_requirements_label(module_ctx, pip_attr)
+    requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
     # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requrements_lock)
+    requirements_lock_content = module_ctx.read(requirements_lock)
     parse_result = parse_requirements(requirements_lock_content)
 
     # Replicate a surprising behavior that WORKSPACE builds allowed:
@@ -173,6 +173,32 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         groups = pip_attr.experimental_requirement_cycles,
     )
 
+    # TODO @aignas 2024-03-21: do this outside this function so that we can
+    # decrease the number of times we call the simple API.
+    index_urls = {}
+    if pip_attr.experimental_index_url:
+        index_url = envsubst(
+            pip_attr.experimental_index_url,
+            pip_attr.envsubst,
+            module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
+        )
+        sources = get_packages_from_requirements([requirements_lock_content])
+        simpleapi_srcs = {}
+        for pkg, want_shas in sources.simpleapi.items():
+            entry = simpleapi_srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
+
+            # ensure that we have a trailing slash, because we will otherwise get redirects
+            # which may not work on private indexes with netrc authentication.
+            entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
+            entry["want_shas"].update(want_shas)
+
+        for pkg, download in simpleapi_download(module_ctx, simpleapi_srcs).items():
+            index_urls[pkg] = get_packages(
+                download.urls,
+                module_ctx.read(download.out),
+                want_shas = simpleapi_srcs[pkg]["want_shas"],
+            )
+
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
         # We are not using the "sanitized name" because the user
@@ -183,38 +209,32 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
-        pkg_pypi_index = pypi_index_repo.get_child(whl_name, "index.json")
-        if not pkg_pypi_index.exists:
-            # The index for a package does not exist, so not using bazel downloader...
-            whl_file = None
-        else:
+        urls = []
+        sha256 = None
+        filename = None
+        if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 
-            index_json = {
-                v.sha256: v
-                for v in [
-                    struct(**encoded)
-                    for encoded in json.decode(module_ctx.read(pkg_pypi_index))
-                ]
-            }
             whls = [
-                index_json[sha]
-                for sha in srcs.shas
-                if index_json[sha].filename.endswith(".whl")
+                src
+                for src in index_urls[whl_name]
+                if src.sha256 in srcs.shas and src.filename.endswith(".whl")
             ]
 
             # For now only use the bazel downloader only whl file is a
             # cross-platform wheel.
             if len(whls) == 1 and whls[0].filename.endswith("-any.whl"):
-                whl_file = whls[0].label
-            else:
-                whl_file = None
+                urls.append(whls[0].url)
+                sha256 = whls[0].sha256
+                filename = whls[0].filename
 
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(
             name = repo_name,
             requirement = requirement_line,
-            whl_file = whl_file,
+            filename = filename,
+            urls = urls,
+            sha256 = sha256,
             repo = pip_name,
             repo_prefix = pip_name + "_",
             annotation = annotation,
@@ -405,6 +425,12 @@ def _pip_impl(module_ctx):
 
 def _pip_parse_ext_attrs():
     attrs = dict({
+        "experimental_index_url": attr.string(
+            doc = """\
+The index URL to use for downloading wheels using bazel downloader. This value is going
+to be subject to `envsubst` substitutions if necessary.
+""",
+        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """
@@ -445,19 +471,6 @@ a corresponding `python.toolchain()` configured.
             doc = """\
 A dict of labels to wheel names that is typically generated by the whl_modifications.
 The labels are JSON config files describing the modifications.
-""",
-        ),
-        "_pypi_index_repo": attr.label(
-            default = "@pypi_index//:BUILD.bazel",
-            doc = """\
-The label to the root of the pypi_index repository to be used for this particular
-call of the `pip.parse`. This ensures that we can work with isolated usage of the
-pip.parse tag class, where the user may want to also have the `pypi_index` usage
-isolated as well.
-
-This also makes the code cleaner and ensures there are no cyclic dependencies.
-
-NOTE: For now this is internal and will be exposed if needed.
 """,
         ),
     }, **pip_repository_attrs)

@@ -22,6 +22,7 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:auth.bzl", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
@@ -765,14 +766,20 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    if rctx.attr.whl_file:
-        whl_path = rctx.path(rctx.attr.whl_file)
-        if not whl_path.exists:
-            fail("The given whl '{}' does not exist".format(rctx.attr.whl_file))
+    if rctx.attr.urls:
+        result = rctx.download(
+            url = rctx.attr.urls,
+            output = rctx.attr.filename,
+            auth = get_auth(
+                rctx,
+                rctx.attr.urls,
+            ),
+        )
 
-        # Simulate the behaviour where the whl is present in the current directory.
-        rctx.symlink(whl_path, whl_path.basename)
-        whl_path = rctx.path(whl_path.basename)
+        if not result.success:
+            fail(result)
+
+        whl_path = rctx.path(rctx.attr.filename)
     else:
         repo_utils.execute_checked(
             rctx,
@@ -904,6 +911,9 @@ whl_library_attrs = {
         ),
         allow_files = True,
     ),
+    "filename": attr.string(
+        doc = "Download the whl file to this filename.",
+    ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
         default = [],
@@ -919,11 +929,11 @@ whl_library_attrs = {
         mandatory = True,
         doc = "Python requirement string describing the package to make available",
     ),
-    "whl_file": attr.label(
-        doc = """\
-The wheel file label to be used for this installation. This will not use pip to download the
-whl and instead use the supplied file. Note that the label needs to point to a single file.
-""",
+    "sha256": attr.string(
+        doc = "The sha256 of the downloaded whl",
+    ),
+    "urls": attr.string_list(
+        doc = "The url of the whl to be downloaded using bazel downloader",
     ),
     "whl_patches": attr.label_keyed_string_dict(
         doc = """a label-keyed-string dict that has

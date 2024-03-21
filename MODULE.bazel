@@ -90,6 +90,8 @@ dev_pip = use_extension(
     dev_dependency = True,
 )
 dev_pip.parse(
+    envsubst = ["PIP_INDEX_URL"],
+    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
