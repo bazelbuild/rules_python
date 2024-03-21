@@ -1,0 +1,22 @@
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    src = "requirements.in",
+)
+
+write_file(
+    name = "gen_update",
+    out = "update.sh",
+    content = [
+        "cd $BUILD_WORKSPACE_DIRECTORY",
+        "cp -fv bazel-pip_parse_vendored/external/pip/requirements.bzl requirements.bzl",
+    ],
+)
+
+sh_binary(
+    name = "vendor_requirements",
+    srcs = ["update.sh"],
+    data = ["@pip//:requirements.bzl"],
+)

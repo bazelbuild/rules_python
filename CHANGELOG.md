@@ -47,6 +47,9 @@ A brief description of the categories of changes:
 
 * (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 
+* (py_wheel) Wheel deps can supply requirement specifiers to the generated wheel
+  metadata using the new providers `PyRequirementInfo`, `PyRequirementsInfo`.
+
 ## [0.31.0] - 2024-02-12
 
 [0.31.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.31.0

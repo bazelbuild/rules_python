@@ -316,17 +316,45 @@ tasks:
     working_directory: examples/multi_python_versions
     platform: windows
 
+  integration_test_custom_py_project_ubuntu_min_workspace:
+    <<: *minimum_supported_version
+    <<: *common_workspace_flags
+    <<: *reusable_build_test_all
+    name: "examples/custom_py_project: Ubuntu, workspace, minimum supported Bazel version"
+    working_directory: examples/custom_py_project
+    platform: ubuntu2004
+  integration_test_custom_py_project_ubuntu_min_bzlmod:
+    <<: *minimum_supported_version
+    <<: *reusable_build_test_all
+    name: "examples/custom_py_project: Ubuntu, bzlmod, minimum supported Bazel version"
+    working_directory: examples/custom_py_project
+    platform: ubuntu2004
+  integration_test_custom_py_project_debian:
+    <<: *reusable_build_test_all
+    name: "examples/custom_py_project: Debian"
+    working_directory: examples/custom_py_project
+    platform: debian11
+  integration_test_custom_py_project_windows:
+    <<: *reusable_build_test_all
+    name: "examples/custom_py_project: Windows"
+    working_directory: examples/custom_py_project
+    platform: windows
+  # We don't run examples/custom_py_project on all platforms because the
+  # generated requirements.txt file stamps in the python version using the python
+  # intepreter provided by the CI agent host, which varies across the bazelci agents
+  # that run the tests.
+
   integration_test_pip_parse_ubuntu_min_workspace:
     <<: *minimum_supported_version
     <<: *common_workspace_flags
     <<: *reusable_build_test_all
-    name: "examples/pip_parse: Ubuntu, workspace, minimum supporte Bazel version"
+    name: "examples/pip_parse: Ubuntu, workspace, minimum supported Bazel version"
     working_directory: examples/pip_parse
     platform: ubuntu2004
   integration_test_pip_parse_ubuntu_min_bzlmod:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
-    name: "examples/pip_parse: Ubuntu, bzlmod, minimum supporte Bazel version"
+    name: "examples/pip_parse: Ubuntu, bzlmod, minimum supported Bazel version"
     working_directory: examples/pip_parse
     platform: ubuntu2004
   integration_test_pip_parse_ubuntu:
