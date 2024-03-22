@@ -29,6 +29,9 @@ A brief description of the categories of changes:
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.
+* (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
+  defined by a repository template. This enables stable ABI builds of Python extensions
+  on Windows (by defining Py_LIMITED_API).
 
 ### Added
 
