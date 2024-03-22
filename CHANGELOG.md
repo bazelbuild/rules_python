@@ -42,6 +42,9 @@ A brief description of the categories of changes:
   `pip.parse` extension is now possible, see the
   `examples/pip_parse/MODULE.bazel` for how to do it.
   See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
+* (repositories): Add libs/python3.lib and pythonXY.dll to the `libpython` target
+  defined by a repository template. This enables stable ABI builds of Python extensions
+  on Windows (by defining Py_LIMITED_API).
 
 ### Added
 
