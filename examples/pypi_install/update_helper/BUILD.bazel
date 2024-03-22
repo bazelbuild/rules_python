@@ -1,0 +1,10 @@
+sh_binary(
+    name = "update_helper",
+    srcs = ["update_helper.sh"],
+    data = [
+        "Dockerfile",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+    ],
+)

@@ -14,8 +14,26 @@
 
 """Rules to verify and update pip-compile locked requirements.txt"""
 
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
+load("@bazel_skylib//lib:types.bzl", "types")
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 load("//python/pip_install:repositories.bzl", "requirement")
+
+def _generate_loc_select(config_to_filepath_dict, loc):
+    result = {}
+    for config, label in config_to_filepath_dict.items():
+        result[config] = [loc.format(label)]
+    return select(result)
+
+def _generate_data_select(config_to_filepath_dict):
+    return select({k: [v] for k, v in config_to_filepath_dict.items()})
+
+def _generate_config_select(config_to_filepath_dict):
+    return select({k: [k] for k in config_to_filepath_dict})
+
+def _validate_keys_match(description, dict1, dict2):
+    if not sets.is_equal(sets.make(dict1.keys()), sets.make(dict2.keys())):
+        fail("The keys of {} must match.".format(description))
 
 def compile_pip_requirements(
         name,
@@ -30,6 +48,8 @@ def compile_pip_requirements(
         requirements_darwin = None,
         requirements_linux = None,
         requirements_windows = None,
+        intermediate_file = None,
+        intermediate_file_patcher = None,
         visibility = ["//visibility:private"],
         tags = None,
         **kwargs):
@@ -75,16 +95,28 @@ def compile_pip_requirements(
 
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
+    if types.is_dict(requirements_txt):
+        requirements_txt_data = _generate_data_select(requirements_txt)
+    else:
+        requirements_txt_data = [requirements_txt]
+
     # "Default" target produced by this macro
     # Allow a compile_pip_requirements rule to include another one in the data
     # for a requirements file that does `-r ../other/requirements.txt`
     native.filegroup(
         name = name,
-        srcs = kwargs.pop("data", []) + [requirements_txt],
+        srcs = kwargs.pop("data", []) + requirements_txt_data,
         visibility = visibility,
     )
 
-    data = [name, requirements_txt, src] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, src] + requirements_txt_data + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    if intermediate_file:
+        data += _generate_loc_select(intermediate_file, "{}")
+        _validate_keys_match("requirements_txt and intermediate_file", intermediate_file, requirements_txt)
+        if intermediate_file_patcher:
+            data += [intermediate_file_patcher]
+    elif intermediate_file_patcher:
+        fail("Don't specify a patcher without also specifying intermediate_file.")
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -94,20 +126,27 @@ def compile_pip_requirements(
 
     args = [
         loc.format(src),
-        loc.format(requirements_txt),
+    ] + (_generate_loc_select(requirements_txt, loc) if types.is_dict(requirements_txt) else [loc.format(requirements_txt)]) + [
         "//%s:%s.update" % (native.package_name(), name),
         "--resolver=backtracking",
         "--allow-unsafe",
     ]
     if generate_hashes:
-        args.append("--generate-hashes")
+        args += ["--generate-hashes"]
+    if intermediate_file:
+        args += ["--intermediate-config"]
+        args += _generate_config_select(intermediate_file)
+        args += ["--intermediate-file"]
+        args += _generate_loc_select(intermediate_file, loc)
+    if intermediate_file_patcher:
+        args += ["--intermediate-file-patcher={}".format(loc.format(intermediate_file_patcher))]
     if requirements_linux:
-        args.append("--requirements-linux={}".format(loc.format(requirements_linux)))
+        args += ["--requirements-linux={}".format(loc.format(requirements_linux))]
     if requirements_darwin:
-        args.append("--requirements-darwin={}".format(loc.format(requirements_darwin)))
+        args += ["--requirements-darwin={}".format(loc.format(requirements_darwin))]
     if requirements_windows:
-        args.append("--requirements-windows={}".format(loc.format(requirements_windows)))
-    args.extend(extra_args)
+        args += ["--requirements-windows={}".format(loc.format(requirements_windows))]
+    args += extra_args
 
     deps = [
         requirement("build"),
@@ -139,6 +178,15 @@ def compile_pip_requirements(
         "tags": tags,
         "visibility": visibility,
     }
+
+    # If we are generating data into an intermediate file, then we mark the
+    # update target as only compatible with the platforms for which an
+    # intermediate file is specified. This should hopefully prevent confusing
+    # runtime errors.
+    if intermediate_file:
+        compatible = {config: [] for config in intermediate_file}
+        compatible["//conditions:default"] = ["@platforms//:incompatible"]
+        attrs["target_compatible_with"] = select(compatible)
 
     # cheap way to detect the bazel version
     _bazel_version_4_or_greater = "propeller_optimize" in dir(native)

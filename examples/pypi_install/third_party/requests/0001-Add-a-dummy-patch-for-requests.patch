@@ -1,0 +1,19 @@
+From 71a59346ecb9837c4a7cff7319063019bb555a54 Mon Sep 17 00:00:00 2001
+From: Philipp Schrader <philipp.schrader@gmail.com>
+Date: Sat, 26 Aug 2023 17:52:25 -0700
+Subject: [PATCH] Add a dummy patch for requests
+
+This needs to be applied to the `library/site-packages` directory.
+---
+ requests/hello.py | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 requests/hello.py
+
+diff --git a/requests/hello.py b/requests/hello.py
+new file mode 100644
+index 0000000..9d7c21d
+--- /dev/null
++++ b/requests/hello.py
+@@ -0,0 +1,2 @@
++def patched_function():
++    return "Hello from a patch"

@@ -1,0 +1,99 @@
+load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
+
+
+[(py_library(
+    name = "{}_py_library".format(name),
+    srcs = glob([
+        "src/{}/**/*.py".format(name),
+    ]),
+),py_package(
+    name = "{}_py_package".format(name),
+    packages = ["wheels.src.{}".format(name)],
+    deps = [":{}_py_library".format(name)],
+)) for name in (
+    "pkg_a",
+    "pkg_b",
+    "pkg_c",
+    "pkg_d",
+    "pkg_e",
+    "pkg_f",
+)]
+
+
+py_wheel(
+    name = "pkg_a",
+    distribution = "pkg-a",
+    version = "1.0",
+    requires = ["pkg-b"],
+    deps = [":pkg_a_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+py_wheel(
+    name = "pkg_b",
+    distribution = "pkg-b",
+    version = "1.1",
+    requires = [
+        "pkg-c",
+        "pkg-d",
+        'pkg-e ; platform_machine == "aarch64"',
+    ],
+    deps = [":pkg_b_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+py_wheel(
+    name = "pkg_c",
+    distribution = "pkg-c",
+    version = "2.0",
+    requires = [
+        'pkg-f ; python_version >= "3.11"',
+    ],
+    deps = [":pkg_c_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+py_wheel(
+    name = "pkg_d",
+    distribution = "pkg-d",
+    version = "3.0",
+    requires = ["pkg-b"],
+    deps = [":pkg_d_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+# aarch64-specific.
+py_wheel(
+    name = "pkg_e",
+    distribution = "pkg-e",
+    version = "4.0",
+    deps = [":pkg_e_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+py_wheel(
+    name = "pkg_f",
+    distribution = "pkg-f",
+    version = "1.0",
+    deps = [":pkg_e_py_package"],
+    strip_path_prefixes = ["wheels/src"],
+)
+
+py_binary(
+    name = "pypiserver_runner",
+    srcs = ["pypiserver_runner.py"],
+    deps = [
+        "@pypi__pypiserver//:lib",
+    ],
+    data = [
+        ":pkg_a",
+        ":pkg_b",
+        ":pkg_c",
+        ":pkg_d",
+        ":pkg_e",
+        ":pkg_f",
+        "@rules_python//python/runfiles",
+    ],
+)

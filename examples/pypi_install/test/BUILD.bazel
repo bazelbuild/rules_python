@@ -1,0 +1,33 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load(":transitioned_par_file.bzl", "transitioned_par_file")
+
+py_binary(
+    name = "test_binary",
+    srcs = ["test_binary.py"],
+    deps = [
+        "@pypi//pkg_a",
+    ],
+)
+
+[transitioned_par_file(
+    name = "test_binary_{}_{}".format(version.replace(".", ""), platform),
+    src = ":test_binary",
+    platform = "//platforms:{}".format(platform),
+    python_version = version,
+) for version in (
+    "py3.10",
+    "py3.11",
+) for platform in (
+    "linux_aarch64",
+    "linux_x86_64",
+)]
+
+py_test(
+    name = "transitioned_par_file_test",
+    srcs = ["transitioned_par_file_test.py"],
+    data = [
+        ":test_binary_{}_{}".format(version, platform)
+        for version in ("py310", "py311")
+        for platform in ("linux_aarch64", "linux_x86_64")
+    ],
+)
