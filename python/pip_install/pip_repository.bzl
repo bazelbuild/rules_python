@@ -766,14 +766,24 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    if rctx.attr.urls:
+    if rctx.attr.whl_file:
+        whl_path = rctx.path(rctx.attr.whl_file)
+
+        # Simulate the behaviour where the whl is present in the current directory.
+        rctx.symlink(whl_path, whl_path.basename)
+        whl_path = rctx.path(whl_path.basename)
+    elif rctx.attr.urls:
+        filename = rctx.attr.filename
+        if not filename:
+            _, _, filename = rctx.attr.urls[0].rpartition("/")
+            if not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith("zip")):
+                fail("'filename' needs to be provided when passing if it is not possible to auto-detect filename extension from URL:" + rctx.attr.urls[0])
+
         result = rctx.download(
             url = rctx.attr.urls,
             output = rctx.attr.filename,
-            auth = get_auth(
-                rctx,
-                rctx.attr.urls,
-            ),
+            sha256 = rctx.attr.sha256,
+            auth = get_auth(rctx, rctx.attr.urls),
         )
 
         if not result.success:
@@ -903,7 +913,8 @@ if __name__ == "__main__":
     )
     return contents
 
-whl_library_attrs = {
+# NOTE @aignas 2024-03-21: The usage of dict({}, **common) ensures that all args to `dict` are unique
+whl_library_attrs = dict({
     "annotation": attr.label(
         doc = (
             "Optional json encoded file containing annotation to apply to the extracted wheel. " +
@@ -927,13 +938,16 @@ whl_library_attrs = {
     ),
     "requirement": attr.string(
         mandatory = True,
-        doc = "Python requirement string describing the package to make available",
+        doc = "Python requirement string describing the package to make available, if 'urls' or 'whl_file' is given, then this only needs to include foo[any_extras] as a bare minimum.",
     ),
     "sha256": attr.string(
         doc = "The sha256 of the downloaded whl",
     ),
     "urls": attr.string_list(
         doc = "The url of the whl to be downloaded using bazel downloader",
+    ),
+    "whl_file": attr.label(
+        doc = "The whl file that should be used instead of downloading",
     ),
     "whl_patches": attr.label_keyed_string_dict(
         doc = """a label-keyed-string dict that has
@@ -955,9 +969,7 @@ whl_library_attrs = {
             for repo in all_requirements
         ],
     ),
-}
-
-whl_library_attrs.update(**common_attrs)
+}, **common_attrs)
 
 whl_library = repository_rule(
     attrs = whl_library_attrs,

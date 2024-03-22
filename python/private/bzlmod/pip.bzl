@@ -101,7 +101,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_cache):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -126,12 +126,21 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
         hub_name,
         version_label(pip_attr.python_version),
     )
-    requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
     # Parse the requirements file directly in starlark to get the information
     # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requirements_lock)
-    parse_result = parse_requirements(requirements_lock_content)
+    requirements_locks = {
+        key: module_ctx.read(file)
+        for key, file in {
+            "default": pip_attr.requirements_lock,
+            "host": locked_requirements_label(module_ctx, pip_attr),
+            "linux": pip_attr.requirements_linux,
+            "osx": pip_attr.requirements_darwin,
+            "windows": pip_attr.requirements_windows,
+        }.items()
+        if file
+    }
+    parse_result = parse_requirements(requirements_locks["host"])
 
     # Replicate a surprising behavior that WORKSPACE builds allowed:
     # Defining a repo with the same name multiple times, but only the last
@@ -182,7 +191,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             pip_attr.envsubst,
             module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
         )
-        sources = get_packages_from_requirements([requirements_lock_content])
+        sources = get_packages_from_requirements(requirements_locks.values())
         simpleapi_srcs = {}
         for pkg, want_shas in sources.simpleapi.items():
             entry = simpleapi_srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
@@ -192,10 +201,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
             entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
             entry["want_shas"].update(want_shas)
 
-        for pkg, download in simpleapi_download(module_ctx, simpleapi_srcs).items():
+        for pkg, download in simpleapi_download(module_ctx, simpleapi_srcs, simpleapi_cache).items():
             index_urls[pkg] = get_packages(
                 download.urls,
-                module_ctx.read(download.out),
+                download.html,
                 want_shas = simpleapi_srcs[pkg]["want_shas"],
             )
 
@@ -227,6 +236,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
                 urls.append(whls[0].url)
                 sha256 = whls[0].sha256
                 filename = whls[0].filename
+            else:
+                pass
+                #print("Would use the following for {}: {}".format(whl_name, whls))
 
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(
@@ -375,6 +387,10 @@ def _pip_impl(module_ctx):
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
 
+    # We don't use the `module_ctx.download` mechanisms because we don't want to persist
+    # this across the evaluations of the extension.
+    simpleapi_cache = {}
+
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
             hub_name = pip_attr.hub_name
@@ -410,7 +426,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, simpleapi_cache)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
