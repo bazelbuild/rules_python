@@ -438,7 +438,7 @@ for more information on extending Gazelle.
 
 If you add new Go dependencies to the plugin source code, you need to "tidy" the go.mod file.
 After changing that file, run `go mod tidy` or `bazel run @go_sdk//:bin/go -- mod tidy`
-to update the go.mod and go.sum files. Then run `bazel run //:update_go_deps` to have gazelle
+to update the go.mod and go.sum files. Then run `bazel run //:gazelle_update_repos` to have gazelle
 add the new dependenies to the deps.bzl file. The deps.bzl file is used as defined in our /WORKSPACE
 to include the external repos Bazel loads Go dependencies from.
 
