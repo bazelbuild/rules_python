@@ -102,12 +102,13 @@ class _WhlFile(zipfile.ZipFile):
         filename,
         *,
         mode,
-        distinfo_dir: str | Path,
+        distribution_prefix: str,
         strip_path_prefixes=None,
         compression=zipfile.ZIP_DEFLATED,
         **kwargs,
     ):
-        self._distinfo_dir: str = Path(distinfo_dir).name
+        self._distribution_prefix = distribution_prefix
+
         self._strip_path_prefixes = strip_path_prefixes or []
         # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
@@ -115,7 +116,10 @@ class _WhlFile(zipfile.ZipFile):
         super().__init__(filename, mode=mode, compression=compression, **kwargs)
 
     def distinfo_path(self, basename):
-        return f"{self._distinfo_dir}/{basename}"
+        return f"{self._distribution_prefix}.dist-info/{basename}"
+
+    def data_path(self, basename):
+        return f"{self._distribution_prefix}.data/{basename}"
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
@@ -123,8 +127,8 @@ class _WhlFile(zipfile.ZipFile):
         def arcname_from(name):
             # Always use unix path separators.
             normalized_arcname = name.replace(os.path.sep, "/")
-            # Don't manipulate names filenames in the .distinfo directory.
-            if normalized_arcname.startswith(self._distinfo_dir):
+            # Don't manipulate names filenames in the .distinfo or .data directories.
+            if normalized_arcname.startswith(self._distribution_prefix):
                 return normalized_arcname
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
@@ -237,11 +241,9 @@ class WheelMaker(object):
         self._wheelname_fragment_distribution_name = escape_filename_distribution_name(
             self._name
         )
-        self._distinfo_dir = (
-            self._wheelname_fragment_distribution_name
-            + "-"
-            + self._version
-            + ".dist-info/"
+
+        self._distribution_prefix = (
+            self._wheelname_fragment_distribution_name + "-" + self._version
         )
 
         self._whlfile = None
@@ -250,7 +252,7 @@ class WheelMaker(object):
         self._whlfile = _WhlFile(
             self.filename(),
             mode="w",
-            distinfo_dir=self._distinfo_dir,
+            distribution_prefix=self._distribution_prefix,
             strip_path_prefixes=self._strip_path_prefixes,
         )
         return self
@@ -279,6 +281,9 @@ class WheelMaker(object):
 
     def distinfo_path(self, basename):
         return self._whlfile.distinfo_path(basename)
+
+    def data_path(self, basename):
+        return self._whlfile.data_path(basename)
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
@@ -436,6 +441,12 @@ def parse_args() -> argparse.Namespace:
         help="'filename;real_path' pairs listing extra files to include in"
         "dist-info directory. Can be supplied multiple times.",
     )
+    contents_group.add_argument(
+        "--data_files",
+        action="append",
+        help="'filename;real_path' pairs listing data files to include in"
+        "data directory. Can be supplied multiple times.",
+    )
 
     build_group = parser.add_argument_group("Building requirements")
     build_group.add_argument(
@@ -452,25 +463,25 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args(sys.argv[1:])
 
 
+def _parse_file_pairs(content: List[str]) -> List[List[str]]:
+    """
+    Parse ; delimited lists of files into a 2D list.
+    """
+    return [i.split(";", maxsplit=1) for i in content or []]
+
+
 def main() -> None:
     arguments = parse_args()
 
-    if arguments.input_file:
-        input_files = [i.split(";") for i in arguments.input_file]
-    else:
-        input_files = []
+    input_files = _parse_file_pairs(arguments.input_file)
+    extra_distinfo_file = _parse_file_pairs(arguments.extra_distinfo_file)
+    data_files = _parse_file_pairs(arguments.data_files)
 
-    if arguments.extra_distinfo_file:
-        extra_distinfo_file = [i.split(";") for i in arguments.extra_distinfo_file]
-    else:
-        extra_distinfo_file = []
-
-    if arguments.input_file_list:
-        for input_file in arguments.input_file_list:
-            with open(input_file) as _file:
-                input_file_list = _file.read().splitlines()
-            for _input_file in input_file_list:
-                input_files.append(_input_file.split(";"))
+    for input_file in arguments.input_file_list:
+        with open(input_file) as _file:
+            input_file_list = _file.read().splitlines()
+        for _input_file in input_file_list:
+            input_files.append(_input_file.split(";"))
 
     all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
@@ -570,6 +581,8 @@ def main() -> None:
             )
 
         # Sort the files for reproducible order in the archive.
+        for filename, real_path in sorted(data_files):
+            maker.add_file(maker.data_path(filename), real_path)
         for filename, real_path in sorted(extra_distinfo_file):
             maker.add_file(maker.distinfo_path(filename), real_path)
 

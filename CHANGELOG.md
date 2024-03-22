@@ -25,6 +25,13 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (whl_library): Fix the experimental_target_platforms overriding for platform
+  specific wheels when the wheels are for any python interpreter version. Fixes
+  [#1810](https://github.com/bazelbuild/rules_python/issues/1810).
+* (gazelle) In `project` or `package` generation modes, do not generate `py_test`
+  rules when there are no test files and do not set `main = "__test__.py"` when
+  that file doesn't exist.
+
 ### Added
 
 * New Python versions available: `3.11.8`, `3.12.2` using
@@ -37,6 +44,8 @@ A brief description of the categories of changes:
 * (bzlmod) New **experimental** `pypi_index` extension that can be used to
   instruct the `pip.parse` tag class to use the bazel downloader to fetch
   wheels. Note, the API is very unstable and may be changed at any time.
+* (wheel) Add support for `data_files` attributes in py_wheel rule
+  ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
 
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 

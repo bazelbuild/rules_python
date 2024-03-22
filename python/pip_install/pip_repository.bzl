@@ -827,8 +827,11 @@ def _whl_library_impl(rctx):
             # NOTE @aignas 2023-12-04: if the wheel is a platform specific
             # wheel, we only include deps for that target platform
             target_platforms = [
-                "{}_{}_{}".format(parsed_whl.abi_tag, p.os, p.cpu)
-                for p in whl_target_platforms(parsed_whl.platform_tag)
+                p.target_platform
+                for p in whl_target_platforms(
+                    platform_tag = parsed_whl.platform_tag,
+                    abi_tag = parsed_whl.abi_tag,
+                )
             ]
 
     repo_utils.execute_checked(

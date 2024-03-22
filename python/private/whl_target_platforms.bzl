@@ -40,28 +40,41 @@ _OS_PREFIXES = {
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
 
-def whl_target_platforms(tag):
-    """Parse the wheel platform tag and return (os, cpu) tuples.
+def whl_target_platforms(platform_tag, abi_tag = ""):
+    """Parse the wheel abi and platform tags and return (os, cpu) tuples.
 
     Args:
-        tag (str): The platform_tag part of the wheel name. See
+        platform_tag (str): The platform_tag part of the wheel name. See
             ./parse_whl_name.bzl for more details.
+        abi_tag (str): The abi tag that should be used for parsing.
 
     Returns:
         A list of structs, with attributes:
         * os: str, one of the _OS_PREFIXES values
         * cpu: str, one of the _CPU_PREFIXES values
+        * abi: str, the ABI that the interpreter should have if it is passed.
+        * target_platform: str, the target_platform that can be given to the
+          wheel_installer for parsing whl METADATA.
     """
-    cpus = _cpu_from_tag(tag)
+    cpus = _cpu_from_tag(platform_tag)
+
+    abi = None
+    if abi_tag not in ["", "none", "abi3"]:
+        abi = abi_tag
 
     for prefix, os in _OS_PREFIXES.items():
-        if tag.startswith(prefix):
+        if platform_tag.startswith(prefix):
             return [
-                struct(os = os, cpu = cpu)
+                struct(
+                    os = os,
+                    cpu = cpu,
+                    abi = abi,
+                    target_platform = "_".join([abi, os, cpu] if abi else [os, cpu]),
+                )
                 for cpu in cpus
             ]
 
-    fail("unknown tag os: {}".format(tag))
+    fail("unknown platform_tag os: {}".format(platform_tag))
 
 def _cpu_from_tag(tag):
     candidate = [
