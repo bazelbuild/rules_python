@@ -247,6 +247,20 @@ class Runfiles:
             raise ValueError("failed to determine caller's file path") from exc
         caller_runfiles_path = os.path.relpath(caller_path, self._python_runfiles_root)
         if caller_runfiles_path.startswith(".." + os.path.sep):
+            # With Python 3.10 and earlier, sys.path contains the directory
+            # of the script, which can result in a module being loaded from
+            # outside the runfiles tree. In this case, assume that the module is
+            # located in the main repository.
+            # With Python 3.11 and higher, the Python launcher sets
+            # PYTHONSAFEPATH, which prevents this behavior.
+            # TODO: This doesn't cover the case of a script being run from an
+            #       external repository, which could be heuristically detected
+            #       by parsing the script's path.
+            if (
+                sys.version_info.minor <= 10
+                and sys.path[0] != self._python_runfiles_root
+            ):
+                return ""
             raise ValueError(
                 "{} does not lie under the runfiles root {}".format(
                     caller_path, self._python_runfiles_root
