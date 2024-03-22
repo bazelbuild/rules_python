@@ -439,7 +439,7 @@ func (c *Config) SetTestFilePattern(patterns []string) {
 	c.testFilePattern = patterns
 }
 
-// TestFilePattern returns the patters that should be mapped to 'py_test' rules.
+// TestFilePattern returns the patterns that should be mapped to 'py_test' rules.
 func (c *Config) TestFilePattern() []string {
 	return c.testFilePattern
 }

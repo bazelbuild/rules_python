@@ -368,7 +368,7 @@ This directive adjusts which python files will be mapped to the `py_test` rule.
 The default is `*_test.py,test_*.py`: both `test_*.py` and `*_test.py` files
 will generate `py_test` targets.
 
-This directive accepts multiple `glob` patterns, separted by commas without spaces:
+This directive accepts multiple `glob` patterns, separated by commas without spaces:
 
 ```starlark
 # gazelle:python_test_file_pattern foo*,?at
@@ -394,7 +394,7 @@ py_test(
 )
 ```
 
-It is recommended, though not necesasry, to include the `.py` extension in
+It is recommended, though not necessary, to include the `.py` extension in
 the `glob`s: `foo*.py,?at.py`.
 
 
