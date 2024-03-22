@@ -211,6 +211,8 @@ def _python_repository_impl(rctx):
     glob_include = []
     glob_exclude = [
         "**/* *",  # Bazel does not support spaces in file names.
+        # XXX: This doesn't seem to be properly catching the scikit-rf issue
+        "**/* */**",  # Bazel does not support spaces in directories either.
         # Unused shared libraries. `python` executable and the `:libpython` target
         # depend on `libpython{python_version}.so.1.0`.
         "lib/libpython{python_version}.so".format(python_version = python_short_version),

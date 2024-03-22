@@ -35,6 +35,7 @@ py_binary(
         "@pypi//requests:pkg",
         "@pypi//sphinx:pkg",
         "@pypi//sphinxcontrib_serializinghtml:pkg",
+        "@pypi//scikit_rf:pkg",
     ],
 )
 
