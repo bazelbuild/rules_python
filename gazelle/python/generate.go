@@ -31,8 +31,8 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
-	"github.com/gobwas/glob"
 	godsutils "github.com/emirpasic/gods/utils"
+	"github.com/gobwas/glob"
 )
 
 const (
@@ -53,6 +53,24 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 		return kindOverride.KindName
 	}
 	return kind
+}
+
+func makeCompiledGlobs(globs []string) []glob.Glob {
+	compiledGlobs := []glob.Glob{}
+	for _, value := range globs {
+		compiledGlob := glob.MustCompile(value)
+		compiledGlobs = append(compiledGlobs, compiledGlob)
+	}
+	return compiledGlobs
+}
+
+func matchesAnyGlob(s string, globs []glob.Glob) bool {
+	for _, g := range globs {
+		if g.Match(s) {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateRules extracts build metadata from source files in a directory.
@@ -101,6 +119,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	hasPyTestEntryPointTarget := false
 	hasConftestFile := false
 
+	testFileGlobs := makeCompiledGlobs(cfg.TestFilePattern())
+
 	for _, f := range args.RegularFiles {
 		if cfg.IgnoresFile(filepath.Base(f)) {
 			continue
@@ -114,7 +134,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
 				hasConftestFile = true
-			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
+			} else if matchesAnyGlob(f, testFileGlobs) {
 				pyTestFilenames.Add(f)
 			} else {
 				pyLibraryFilenames.Add(f)
@@ -196,7 +216,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 							}
 						}
 						baseName := filepath.Base(path)
-						if strings.HasSuffix(baseName, "_test.py") || strings.HasPrefix(baseName, "test_") {
+						if matchesAnyGlob(baseName, testFileGlobs) {
 							pyTestFilenames.Add(srcPath)
 						} else {
 							pyLibraryFilenames.Add(srcPath)
