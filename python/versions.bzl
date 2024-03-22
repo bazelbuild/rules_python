@@ -454,6 +454,14 @@ PLATFORMS = {
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
         arch = "aarch64",
     ),
+    "armv7-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:armv7",
+        ],
+        os_name = LINUX_NAME,
+        arch = "armv7",
+    ),
     "ppc64le-unknown-linux-gnu": struct(
         compatible_with = [
             "@platforms//os:linux",
