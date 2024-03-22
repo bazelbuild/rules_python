@@ -74,7 +74,8 @@ const (
 	// visibility labels are added to generated targets. It mimics the behavior
 	// of the `go_visibility` directive.
 	Visibility = "python_visibility"
-	// Foo does a Bar.
+	// TestFilePattern represents the directive that controls which python
+	// files are mapped to `py_test` targets.
 	TestFilePattern = "python_test_file_pattern"
 )
 
