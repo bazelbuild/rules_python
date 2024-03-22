@@ -43,7 +43,7 @@ def simpleapi_download(module_ctx, srcs, cache = None):
             cache_key = ",".join(all_urls)
             if cache_key in cache:
                 contents[pkg] = cache[cache_key]
-            continue
+                continue
 
         downloads[pkg] = struct(
             out = output,
@@ -69,7 +69,7 @@ def simpleapi_download(module_ctx, srcs, cache = None):
         content = module_ctx.read(download.out)
         contents[pkg] = struct(
             html = content,
-            urls = download.all_urls,
+            urls = download.urls,
         )
 
         if cache != None and download.cache_key:
