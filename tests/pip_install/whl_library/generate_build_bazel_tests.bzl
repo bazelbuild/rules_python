@@ -37,17 +37,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -67,17 +67,7 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 """
     actual = generate_whl_library_build_bazel(
@@ -113,7 +103,7 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
@@ -130,11 +120,11 @@ filegroup(
             "//conditions:default": [],
         },
     ),
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -165,17 +155,7 @@ py_library(
         },
     ),
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 config_setting(
@@ -275,17 +255,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=["srcs_exclude_all"],
@@ -305,17 +285,7 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 copy_file(
@@ -373,17 +343,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -403,17 +373,7 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 py_binary(
@@ -502,16 +462,6 @@ py_library(
     visibility = ["@pypi__groups//:__pkg__"],
 )
 
-alias(
-   name = "pkg",
-   actual = "@pypi__groups//:qux_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "@pypi__groups//:qux_whl",
-)
-
 config_setting(
     name = "is_linux_x86_64",
     constraint_values = [
@@ -519,6 +469,16 @@ config_setting(
         "@platforms//os:linux",
     ],
     visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "pkg",
+    actual = "@pypi__groups//:qux_pkg",
+)
+
+alias(
+    name = "whl",
+    actual = "@pypi__groups//:qux_whl",
 )
 """
     actual = generate_whl_library_build_bazel(

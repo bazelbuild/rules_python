@@ -29,6 +29,9 @@ A brief description of the categories of changes:
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.
+* (whl_library) The group redirection is only added when the package is part of
+  the group potentially fixing aspects that want to traverse a `py_library` graph.
+  Fixes [#1760](https://github.com/bazelbuild/rules_python/issues/1760).
 
 ### Added
 
