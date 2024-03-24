@@ -58,7 +58,10 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 func makeCompiledGlobs(globs []string) []glob.Glob {
 	compiledGlobs := []glob.Glob{}
 	for _, value := range globs {
-		compiledGlob := glob.MustCompile(value)
+		compiledGlob, err := glob.Compile(value)
+		if err != nil {
+			log.Fatalf("ERROR: Failed to compile glob '%v'. Error: %v\n", value, err)
+		}
 		compiledGlobs = append(compiledGlobs, compiledGlob)
 	}
 	return compiledGlobs
