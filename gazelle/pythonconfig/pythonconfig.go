@@ -74,6 +74,9 @@ const (
 	// visibility labels are added to generated targets. It mimics the behavior
 	// of the `go_visibility` directive.
 	Visibility = "python_visibility"
+	// TestFilePattern represents the directive that controls which python
+	// files are mapped to `py_test` targets.
+	TestFilePattern = "python_test_file_pattern"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -96,9 +99,11 @@ const (
 	packageNameNamingConventionSubstitution = "$package_name$"
 )
 
-// The default visibility label, including a format placeholder for `python_root`.
 const (
+	// The default visibility label, including a format placeholder for `python_root`.
 	DefaultVisibilityFmtString = "//%s:__subpackages__"
+	// The default globs used to determine pt_test targets.
+	DefaultTestFilePatternString = "*_test.py,test_*.py"
 )
 
 // defaultIgnoreFiles is the list of default values used in the
@@ -150,6 +155,7 @@ type Config struct {
 	testNamingConvention         string
 	defaultVisibility            []string
 	visibility                   []string
+	testFilePattern              []string
 }
 
 // New creates a new Config.
@@ -173,6 +179,7 @@ func New(
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
 		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
 		visibility:                   []string{},
+		testFilePattern:              strings.Split(DefaultTestFilePatternString, ","),
 	}
 }
 
@@ -201,6 +208,7 @@ func (c *Config) NewChild() *Config {
 		testNamingConvention:         c.testNamingConvention,
 		defaultVisibility:            c.defaultVisibility,
 		visibility:                   c.visibility,
+		testFilePattern:              c.testFilePattern,
 	}
 }
 
@@ -424,4 +432,14 @@ func (c *Config) SetDefaultVisibility(visibility []string) {
 // DefaultVisibilty returns the target's default visibility.
 func (c *Config) DefaultVisibilty() []string {
 	return c.defaultVisibility
+}
+
+// SetTestFilePattern sets the file patterns that should be mapped to 'py_test' rules.
+func (c *Config) SetTestFilePattern(patterns []string) {
+	c.testFilePattern = patterns
+}
+
+// TestFilePattern returns the patterns that should be mapped to 'py_test' rules.
+func (c *Config) TestFilePattern() []string {
+	return c.testFilePattern
 }

@@ -65,6 +65,7 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.TestNamingConvention,
 		pythonconfig.DefaultVisibilty,
 		pythonconfig.Visibility,
+		pythonconfig.TestFilePattern,
 	}
 }
 
@@ -181,6 +182,9 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 			}
 		case pythonconfig.Visibility:
 			config.AppendVisibility(strings.TrimSpace(d.Value))
+		case pythonconfig.TestFilePattern:
+			globStrings := strings.Split(strings.TrimSpace(d.Value), ",")
+			config.SetTestFilePattern(globStrings)
 		}
 	}
 
