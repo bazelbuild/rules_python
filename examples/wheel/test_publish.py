@@ -53,7 +53,7 @@ class TestTwineUpload(unittest.TestCase):
         line = "Hit Ctrl-C to quit"
         interval = 0.1
         wait_seconds = 40
-        for _ in range(wait_seconds / interval):  # 40 second timeout
+        for _ in range(int(wait_seconds / interval)):  # 40 second timeout
             current_logs = self.log_file.read_text()
             if line in current_logs:
                 print(current_logs.strip())
