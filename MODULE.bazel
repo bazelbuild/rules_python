@@ -97,7 +97,12 @@ dev_pip.parse(
     python_version = "3.11",
     requirements_lock = "//docs/sphinx:requirements.txt",
 )
-use_repo(dev_pip, "dev_pip")
+dev_pip.parse(
+    hub_name = "pypiserver",
+    python_version = "3.11",
+    requirements_lock = "//examples/wheel:requirements_server.txt",
+)
+use_repo(dev_pip, "dev_pip", "pypiserver")
 
 # Bazel integration test setup below
 

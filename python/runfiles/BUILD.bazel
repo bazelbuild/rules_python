@@ -52,7 +52,7 @@ py_wheel(
     homepage = "https://github.com/bazelbuild/rules_python",
     python_requires = ">=3.7",
     strip_path_prefixes = ["python"],
-    twine = "//tools/publish:twine",
+    twine_binary = "//tools/publish:twine",
     # this can be replaced by building with --stamp --embed_label=1.2.3
     version = "{BUILD_EMBED_LABEL}",
     visibility = ["//visibility:public"],

@@ -175,13 +175,13 @@ def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") i
             name = "{}.publish".format(name),
             src = twine_binary,
             out = select({
-                "@platforms//os:windows": "{}.publish_script".format(name),
-                "//conditions:default": "{}.publish_script.exe".format(name),
+                "@platforms//os:windows": "{}.publish_script.exe".format(name),
+                "//conditions:default": "{}.publish_script".format(name),
             }),
             args = twine_args,
             data = [_dist_target],
             visibility = kwargs.get("visibility"),
-            **copy_propagating_kwargs(kwargs, twine_kwargs),
+            **copy_propagating_kwargs(kwargs, twine_kwargs)
         )
     elif twine:
         if not twine.endswith(":pkg"):

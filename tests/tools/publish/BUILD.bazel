@@ -1,0 +1,32 @@
+load("//python:pip.bzl", "compile_pip_requirements")
+load("//python:py_test.bzl", "py_test")
+load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+
+compile_pip_requirements(
+    name = "requirements_server",
+    src = "requirements_server.in",
+)
+
+py_test(
+    name = "test_runfiles_publish",
+    srcs = ["test_runfiles_publish.py"],
+    data = [
+        ":minimal_with_py_library",
+        ":minimal_with_py_library.publish",
+        ":pypiserver",
+    ],
+    env = {
+        "PUBLISH_PATH": "$(location :minimal_with_py_library.publish)",
+        "SERVER_PATH": "$(location :pypiserver)",
+        "WHEEL_PATH": "$(rootpath :minimal_with_py_library)",
+    },
+    deps = [
+        "@pypiserver//pypiserver",
+    ],
+)
+
+py_console_script_binary(
+    name = "pypiserver",
+    pkg = "@pypiserver//pypiserver",
+    script = "pypi-server",
+)
