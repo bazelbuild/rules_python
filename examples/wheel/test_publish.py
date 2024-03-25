@@ -51,7 +51,9 @@ class TestTwineUpload(unittest.TestCase):
         )
 
         line = "Hit Ctrl-C to quit"
-        for _ in range(30):  # 3 second timeout
+        interval = 0.1
+        wait_seconds = 40
+        for _ in range(wait_seconds / interval):  # 40 second timeout
             current_logs = self.log_file.read_text()
             if line in current_logs:
                 print(current_logs.strip())
@@ -61,7 +63,7 @@ class TestTwineUpload(unittest.TestCase):
             time.sleep(0.1)
         else:
             raise RuntimeError(
-                "Could not get the server running fast enough, waited for 3s"
+                f"Could not get the server running fast enough, waited for {wait_seconds}s"
             )
 
     def tearDown(self):
