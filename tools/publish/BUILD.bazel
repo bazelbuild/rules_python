@@ -21,3 +21,14 @@ py_console_script_binary(
     script = "twine",
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD.bazel",
+        "requirements.txt",
+        "requirements_darwin.txt",
+        "requirements_windows.txt",
+    ],
+    visibility = ["//tools:__pkg__"],
+)
