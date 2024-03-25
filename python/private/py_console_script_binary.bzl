@@ -31,10 +31,11 @@ def _dist_info(pkg):
         * @pypi//pylint
         * @pypi//pylint:pkg
         * Label("@pypi//pylint:pkg")
+        * Label("@pypi//pylint")
     """
 
     # str() is called to convert Label objects
-    return str(pkg).replace(":pkg", "") + ":dist_info"
+    return str(pkg).rpartition(":")[0] + ":dist_info"
 
 def py_console_script_binary(
         *,
