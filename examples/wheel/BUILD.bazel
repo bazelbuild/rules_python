@@ -376,6 +376,11 @@ py_test(
         "SERVER_PATH": "$(location :pypiserver)",
         "WHEEL_PATH": "$(rootpath :minimal_with_py_library)",
     },
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     deps = [
         "@pypiserver//pypiserver",
     ],

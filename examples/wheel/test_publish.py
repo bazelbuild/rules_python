@@ -48,18 +48,6 @@ class TestTwineUpload(unittest.TestCase):
                 ".",
                 str(_storage_dir),
             ],
-            # pypiserver is setting some defaults and the sandbox does not like it.
-            # Code in question is here:
-            # https://github.com/pypiserver/pypiserver/blob/50c7a78f4f4e288d023d667873b4cbac44e0915c/pypiserver/config.py#L87
-            #
-            # The error is raised here:
-            # https://github.com/python/cpython/blob/a3a0ce1b2ffb4f24be1587892aa89027382ea574/Lib/pathlib.py#L1385
-            #
-            # Due to code in here:
-            # https://github.com/python/cpython/blob/a3a0ce1b2ffb4f24be1587892aa89027382ea574/Lib/ntpath.py#L319
-            env={
-                "USERPROFILE": "C:\\dummy",
-            },
         )
 
         line = "Hit Ctrl-C to quit"
