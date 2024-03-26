@@ -28,11 +28,10 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private:pypi_index.bzl", "get_packages", "get_packages_from_requirements", "get_simpleapi_sources")
+load("//python/private:pypi_index.bzl", "get_packages", "get_packages_from_requirements", "get_simpleapi_sources", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load(":pip_repository.bzl", "pip_repository")
-load(":pypi_index.bzl", "simpleapi_download")
 
 def _parse_version(version):
     major, _, version = version.partition(".")
@@ -221,10 +220,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         urls = []
         sha256 = None
         filename = None
-        python = python_interpreter
-        if not python:
-            python = module_ctx.path(python_interpreter_target)
-
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 

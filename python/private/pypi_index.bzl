@@ -18,6 +18,7 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 The functions here should not depend on the `module_ctx` for easy unit testing.
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
 load(":normalize_name.bzl", "normalize_name")
