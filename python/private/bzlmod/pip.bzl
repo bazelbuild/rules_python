@@ -221,6 +221,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         urls = []
         sha256 = None
         filename = None
+        python = python_interpreter
+        if not python:
+            python = module_ctx.path(python_interpreter_target)
+
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 
