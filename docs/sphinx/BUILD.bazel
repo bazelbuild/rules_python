@@ -91,7 +91,6 @@ sphinx_stardocs(
     } if IS_BAZEL_7_OR_HIGHER else {}) | ({
         # This depends on @pythons_hub, which is only created under bzlmod,
         "api/extensions/pip.md": "//python/extensions:pip_bzl",
-        "api/extensions/pypi_index.md": "//python/extensions:pypi_index_bzl",
     } if IS_BAZEL_7_OR_HIGHER and BZLMOD_ENABLED else {}),
     footer = "_stardoc_footer.md",
     tags = ["docs"],

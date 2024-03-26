@@ -127,6 +127,7 @@ bzl_library(
         ":normalize_name_bzl",
         ":text_util_bzl",
         "//python/pip_install:requirements_parser_bzl",
+        "//python/private/bzlmod:bazel_features_bzl",
     ],
 )
 
