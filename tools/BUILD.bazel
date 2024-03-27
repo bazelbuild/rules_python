@@ -29,6 +29,7 @@ filegroup(
     srcs = [
         "BUILD.bazel",
         "wheelmaker.py",
+        "//tools/publish:distribution",
     ],
     visibility = ["//:__pkg__"],
 )

@@ -18,14 +18,16 @@ A simple test macro.
 
 load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
-def py_console_script_binary_in_a_macro(name, pkg):
+def py_console_script_binary_in_a_macro(name, pkg, **kwargs):
     """A simple macro to see that we can use our macro in a macro.
 
     Args:
         name, str: the name of the target
         pkg, str: the pkg target
+        **kwargs, Any: extra kwargs passed through.
     """
     py_console_script_binary(
         name = name,
         pkg = Label(pkg),
+        **kwargs
     )
