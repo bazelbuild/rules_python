@@ -183,7 +183,11 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 		case pythonconfig.Visibility:
 			config.AppendVisibility(strings.TrimSpace(d.Value))
 		case pythonconfig.TestFilePattern:
-			globStrings := strings.Split(strings.TrimSpace(d.Value), ",")
+			value := strings.TrimSpace(d.Value)
+			if value == "" {
+				log.Fatalf("ERROR: Directive 'python_test_file_pattern' requires a value.")
+			}
+			globStrings := strings.Split(value, ",")
 			config.SetTestFilePattern(globStrings)
 		}
 	}
