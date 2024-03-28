@@ -12,7 +12,6 @@ int main(int argc, char** argv) {
   // To make it actually run, more custom initialization is necessary.
   // See https://docs.python.org/3/c-api/intro.html#embedding-python
   Py_Initialize();
-  PyRun_SimpleString("print('Hello, world')\n");
   Py_Finalize();
   return 0;
 }
