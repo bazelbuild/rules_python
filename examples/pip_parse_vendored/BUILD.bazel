@@ -6,7 +6,7 @@ load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 # lockfile based on the requirements.in.
 compile_pip_requirements(
     name = "requirements",
-    src = "requirements.in",
+    srcs = ["requirements.in"],
 )
 
 write_file(
