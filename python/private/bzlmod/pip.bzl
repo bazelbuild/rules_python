@@ -15,6 +15,7 @@
 "pip module extension for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
+load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
@@ -26,6 +27,7 @@ load(
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:envsubst.bzl", "envsubst")
+load("//python/private:whl_target_platforms.bzl", "select_whl")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "get_packages", "get_packages_from_requirements", "get_simpleapi_sources", "simpleapi_download")
@@ -185,27 +187,29 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
     # decrease the number of times we call the simple API.
     index_urls = {}
     if pip_attr.experimental_index_url:
-        index_url = envsubst(
-            pip_attr.experimental_index_url,
-            pip_attr.envsubst,
-            module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
+        index_urls = simpleapi_download(
+            module_ctx,
+            index_url = pip_attr.experimental_index_url,
+            # TODO @aignas 2024-03-28: support index overrides for specific packages
+            # We should never attempt to join index contents ourselves.
+            index_url_overrides = pip_attr.experimental_index_url_overrides,
+            sources = requirements_locks.values(),
+            envsubst = pip_attr.envsubst,
+            cache =simpleapi_cache,
         )
-        sources = get_packages_from_requirements(requirements_locks.values())
-        simpleapi_srcs = {}
-        for pkg, want_shas in sources.simpleapi.items():
-            entry = simpleapi_srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
 
-            # ensure that we have a trailing slash, because we will otherwise get redirects
-            # which may not work on private indexes with netrc authentication.
-            entry["urls"]["{}/{}/".format(index_url.rstrip("/"), pkg)] = True
-            entry["want_shas"].update(want_shas)
+    major_minor = _major_minor_version(pip_attr.python_version)
 
-        for pkg, download in simpleapi_download(module_ctx, simpleapi_srcs, simpleapi_cache).items():
-            index_urls[pkg] = get_packages(
-                download.urls,
-                download.html,
-                want_shas = simpleapi_srcs[pkg]["want_shas"],
-            )
+    host_cpu, host_os = None, None
+    for constraint in HOST_CONSTRAINTS:
+        if "@platforms//cpu:" in constraint:
+            _, _, host_cpu = constraint.partition(":")
+        elif "@platforms//os:" in constraint:
+            _, _, host_os = constraint.partition(":")
+
+    if not (host_os and host_cpu):
+        fail("Don't have host information")
+
 
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
@@ -220,24 +224,26 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         urls = []
         sha256 = None
         filename = None
+        extra_whl_pip_args = extra_pip_args
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 
-            whls = [
-                src
-                for src in index_urls[whl_name]
-                if src.sha256 in srcs.shas and src.filename.endswith(".whl")
-            ]
+            whl = select_whl(
+                whls=[
+                    src
+                    for src in index_urls[whl_name]
+                    if src.sha256 in srcs.shas and src.filename.endswith(".whl")
+                ],
+                want_abis=["none", "abi3", "cp" + major_minor.replace(".", "")],
+                want_platform="{}_{}".format(host_os, host_cpu),
+            )
 
-            # For now only use the bazel downloader only whl file is a
-            # cross-platform wheel.
-            if len(whls) == 1 and whls[0].filename.endswith("-any.whl"):
-                urls.append(whls[0].url)
-                sha256 = whls[0].sha256
-                filename = whls[0].filename
-            else:
-                pass
-                #print("Would use the following for {}: {}".format(whl_name, whls))
+            if whl:
+                requirement_line = srcs.wo_shas
+                urls.append(whl.url)
+                sha256 = whl.sha256
+                filename = whl.filename
+                extra_whl_pip_args = None
 
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(
@@ -259,7 +265,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             quiet = pip_attr.quiet,
             timeout = pip_attr.timeout,
             isolated = use_isolated(module_ctx, pip_attr),
-            extra_pip_args = extra_pip_args,
+            extra_pip_args = extra_whl_pip_args,
             download_only = pip_attr.download_only,
             pip_data_exclude = pip_attr.pip_data_exclude,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
@@ -269,7 +275,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             group_deps = group_deps,
         )
 
-        major_minor = _major_minor_version(pip_attr.python_version)
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
@@ -444,6 +449,16 @@ def _pip_parse_ext_attrs():
             doc = """\
 The index URL to use for downloading wheels using bazel downloader. This value is going
 to be subject to `envsubst` substitutions if necessary.
+""",
+        ),
+        "experimental_index_url_overrides": attr.string_dict(
+            doc = """\
+The index URL overrides for each package to use for downloading wheels using
+bazel downloader. This value is going to be subject to `envsubst` substitutions
+if necessary.
+
+The key is the package name (will be normalized before usage) and the value is the
+index URL.
 """,
         ),
         "hub_name": attr.string(

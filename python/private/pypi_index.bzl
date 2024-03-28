@@ -21,67 +21,130 @@ The functions here should not depend on the `module_ctx` for easy unit testing.
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
+load(":envsubst.bzl", "envsubst")
 load(":normalize_name.bzl", "normalize_name")
 
-def simpleapi_download(module_ctx, srcs, cache = None):
+def simpleapi_download(module_ctx, *, index_url, index_url_overrides, sources, envsubst, cache = None):
     """Download Simple API HTML.
 
     Args:
         module_ctx: The bzlmod module_ctx.
-        srcs: The sources to download things for.
+        index_url: The index.
+        index_url_overrides: The index overrides for separate packages.
+        sources: The sources to download things for.
+        envsubst: The envsubst vars.
         cache: A dictionary that can be used as a cache between calls during a
             single evaluation of the extension.
 
     Returns:
         dict of pkg name to the HTML contents.
     """
+    sources = get_packages_from_requirements(sources)
+    index_url_overrides = {
+        normalize_name(p): i
+        for p, i in (index_url_overrides or {}).items()
+    }
+
+    srcs = {}
+    for pkg, want_shas in sources.simpleapi.items():
+        entry = srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
+
+        # ensure that we have a trailing slash, because we will otherwise get redirects
+        # which may not work on private indexes with netrc authentication.
+        entry["urls"]["{}/{}/".format(index_url_overrides.get(pkg, index_url).rstrip("/"), pkg)] = True
+        entry["want_shas"].update(want_shas)
+
     download_kwargs = {}
     if bazel_features.external_deps.download_has_block_param:
         download_kwargs["block"] = False
 
+    # Download in parallel if possible
     downloads = {}
     contents = {}
     for pkg, args in srcs.items():
-        output = module_ctx.path("{}/{}.html".format("pypi_index", pkg))
         all_urls = list(args["urls"].keys())
         cache_key = ""
         if cache != None:
+            # FIXME @aignas 2024-03-28: should I envsub this?
             cache_key = ",".join(all_urls)
             if cache_key in cache:
                 contents[pkg] = cache[cache_key]
                 continue
 
         downloads[pkg] = struct(
-            out = output,
-            urls = all_urls,
             cache_key = cache_key,
-            download = module_ctx.download(
+            urls = all_urls,
+            packages = read_simple_api(
+                module_ctx = module_ctx,
                 url = all_urls,
-                output = output,
-                auth = get_auth(module_ctx, all_urls),
-                **download_kwargs
+                pkg = pkg,
+                envsubst_vars = envsubst,
+                **download_kwargs,
             ),
         )
 
     for pkg, download in downloads.items():
-        if download_kwargs.get("block") == False:
-            result = download.download.wait()
-        else:
-            result = download.download
-
-        if not result.success:
-            fail("Failed to download from {}: {}".format(download.urls, result))
-
-        content = module_ctx.read(download.out)
-        contents[pkg] = struct(
-            html = content,
-            urls = download.urls,
-        )
+        contents[pkg] = download.packages.contents()
 
         if cache != None and download.cache_key:
             cache[download.cache_key] = contents[pkg]
 
     return contents
+
+def read_simple_api(module_ctx, url, pkg, envsubst_vars, **download_kwargs):
+    """Read SimpleAPI.
+
+    Args:
+        module_ctx: TODO
+        url: The url parameter that can be passed to module_ctx.download.
+        pkg: The pkg to fetch the data for.
+        envsubst_vars: The env vars to do env sub before downloading.
+        **download_kwargs: Any extra params to module_ctx.download.
+            Note that output and auth will be passed for you.
+
+    Returns:
+        A similar object to what `download` would return except that in result.out
+        will be the parsed simple api contents.
+    """
+    # TODO @aignas 2024-03-26: use a unique path to avoid clashes
+    output = module_ctx.path("{}/{}.html".format("pypi_index", pkg))
+
+    # TODO: Add a test that env subbed index urls do not leak into the lock file.
+    if type(url) == type(""):
+        fail("TODO")
+    else:
+        real_url = [
+            envsubst(
+                u,
+                envsubst_vars,
+                module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
+            )
+            for u in url
+        ]
+
+    download = module_ctx.download(
+        url = real_url,
+        output = output,
+        auth = get_auth(module_ctx, real_url),
+        **download_kwargs
+    )
+
+    return struct(
+        contents=lambda: _read_contents(
+            module_ctx,
+            download.wait() if download_kwargs.get("block") == False else download,
+            output,
+            url,
+        ),
+    )
+
+
+def _read_contents(module_ctx, result, output, url):
+    if not result.success:
+          fail("Failed to download from {}: {}".format(url, result))
+
+    html = module_ctx.read(output)
+    return get_packages(url, html)
 
 def get_packages_from_requirements(requirements_files):
     """Get Simple API sources from a list of requirements files and merge them.
@@ -132,15 +195,24 @@ def get_simpleapi_sources(line):
             for sha in maybe_hashes.split("--hash=sha256:")[1:]
         ]
 
-    return struct(version = version, shas = sorted(shas))
+    if head == line:
+        head = line.partition("--hash=")[0].strip()
+    else:
+        head = head + ";" + maybe_hashes.partition("--hash=")[0].strip()
 
-def get_packages(index_urls, content, want_shas):
+    return struct(
+        wo_shas = line if not shas else head,
+        version = version,
+        shas = sorted(shas),
+    )
+
+def get_packages(index_urls, content, want_shas = None):
     """Get the package URLs for given shas by parsing the Simple API HTML.
 
     Args:
         index_urls(list[str]): The URLs that the HTML content can be downloaded from.
         content(str): The Simple API HTML content.
-        want_shas(list[str]): The list of shas that we need to get.
+        want_shas(list[str], optional): The list of shas that we need to get, otherwise we'll get all.
 
     Returns:
         A list of structs with:
@@ -151,7 +223,7 @@ def get_packages(index_urls, content, want_shas):
           present, then the 'metadata_url' is also present. Defaults to "".
         * metadata_url: The URL for the METADATA if we can download it. Defaults to "".
     """
-    want_shas = {sha: True for sha in want_shas}
+    want_shas = {sha: True for sha in want_shas} if want_shas else {}
     packages = []
     lines = content.split("<a href=\"")
 
@@ -172,16 +244,17 @@ def get_packages(index_urls, content, want_shas):
         url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
 
-        if sha256 not in want_shas:
-            continue
-        elif "data-yanked" in line:
-            # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-            #
-            # For now we just fail and inform the user to relock the requirements with a
-            # different version.
-            fail("The package with '--hash=sha256:{}' was yanked, relock your requirements".format(sha256))
-        else:
-            want_shas.pop(sha256)
+        if want_shas:
+            if sha256 not in want_shas:
+                continue
+            elif "data-yanked" in line:
+                # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+                #
+                # For now we just fail and inform the user to relock the requirements with a
+                # different version.
+                fail("The package with '--hash=sha256:{}' was yanked, relock your requirements".format(sha256))
+            else:
+                want_shas.pop(sha256)
 
         maybe_metadata, _, tail = tail.partition(">")
         filename, _, tail = tail.partition("<")

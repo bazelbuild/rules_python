@@ -16,6 +16,22 @@
 A starlark implementation of the wheel platform tag parsing to get the target platform.
 """
 
+load(":parse_whl_name.bzl", "parse_whl_name")
+
+_LEGACY_ALIASES = {
+    "manylinux1_x86_64": "manylinux_2_5_x86_64",
+    "manylinux1_i686": "manylinux_2_5_i686",
+    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
+    "manylinux2010_i686": "manylinux_2_12_i686",
+    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
+    "manylinux2014_i686": "manylinux_2_17_i686",
+    "manylinux2014_aarch64": "manylinux_2_17_aarch64",
+    "manylinux2014_armv7l": "manylinux_2_17_armv7l",
+    "manylinux2014_ppc64": "manylinux_2_17_ppc64",
+    "manylinux2014_ppc64le": "manylinux_2_17_ppc64le",
+    "manylinux2014_s390x": "manylinux_2_17_s390x",
+}
+
 # The order of the dictionaries is to keep definitions with their aliases next to each
 # other
 _CPU_ALIASES = {
@@ -39,6 +55,52 @@ _OS_PREFIXES = {
     "macos": "osx",
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
+
+def select_whl(*, whls, want_abis, want_platforms):
+    if not whls:
+        return None
+
+    candidates = {}
+    for whl in whls:
+        parsed = parse_whl_name(whl.filename)
+        if parsed.abi_tag not in want_abis:
+            # Filter out incompatible ABIs
+            continue
+
+        candidates[parsed.platform_tag] = whl
+
+    # For now only use the bazel downloader only whl file is a
+    # cross-platform wheel.
+    if len(candidates) == 1 and "any" in candidates:
+        return struct(
+            url = candidates["any"].url,
+            sha256 = candidates["any"].sha256,
+            filename = candidates["any"].filename,
+        )
+
+    target_plats = {}
+    has_any = "any" in candidates
+    for platform_tag, whl in candidates.items():
+        if platform_tag == "any":
+            continue
+
+        platform_tag = ".".join({_LEGACY_ALIASES.get(p, p): True for p in platform_tag.split(".")})
+        platforms = whl_target_platforms(platform_tag)
+        for p in platforms:
+            target_plats.setdefault("{}_{}".format(p.os, p.cpu), []).append(platform_tag)
+
+        for p in platform_tag.split("."):
+            target_plats.setdefault(p, []).append(p)
+
+    want = target_plats.get(want_platform) or (["any"] if has_any else [])
+    if len(want) == 1:
+        return candidates[want[0]]
+
+    fail("\n".join([want]))
+
+    # todo what todo here?
+    print("Multiple matches found: {}".format(want))
+    return candidates[sorted(want[0])]
 
 def whl_target_platforms(platform_tag, abi_tag = ""):
     """Parse the wheel abi and platform tags and return (os, cpu) tuples.
