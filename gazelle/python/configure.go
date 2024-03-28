@@ -185,7 +185,7 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 		case pythonconfig.TestFilePattern:
 			value := strings.TrimSpace(d.Value)
 			if value == "" {
-				log.Fatalf("ERROR: Directive 'python_test_file_pattern' requires a value.")
+				log.Fatal("ERROR: Directive 'python_test_file_pattern' requires a value.")
 			}
 			globStrings := strings.Split(value, ",")
 			config.SetTestFilePattern(globStrings)
