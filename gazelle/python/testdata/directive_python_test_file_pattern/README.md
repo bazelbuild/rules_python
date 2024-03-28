@@ -8,9 +8,9 @@ It consists of 6 cases:
 1.  When not set, both `*_test.py` and `test_*.py` files are mapped to the `py_test`
     rule.
 2.  When set to a single value `*_test.py`, `test_*.py` files are mapped to the
-    `py_library` rule (also using `# gazelle:python_generation_mode file`).
+    `py_library` rule.
 3.  When set to a single value `test_*.py`, `*_test.py` files are mapped to the
-    `py_library` rule (ie: the inverse of case 2, but with "package" generation
+    `py_library` rule (ie: the inverse of case 2, but also with "file" generation
     mode).
 4.  Arbitrary `glob` patterns are supported.
 5.  Multiple `glob` patterns are supported and that patterns don't technically
