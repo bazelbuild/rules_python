@@ -365,13 +365,17 @@ py_library(
 
 This directive adjusts which python files will be mapped to the `py_test` rule.
 
-The default is `*_test.py,test_*.py`: both `test_*.py` and `*_test.py` files
-will generate `py_test` targets.
-
-This directive accepts multiple `glob` patterns, separated by commas without spaces:
++ The default is `*_test.py,test_*.py`: both `test_*.py` and `*_test.py` files
+  will generate `py_test` targets.
++ This directive must have a value. If no value is given, an error will be raised.
++ It is recommended, though not necessary, to include the `.py` extension in
+  the `glob`s: `foo*.py,?at.py`.
++ Like most directives, it applies to the current Bazel package and all subpackages
+  until the directive is set again.
++ This directive accepts multiple `glob` patterns, separated by commas without spaces:
 
 ```starlark
-# gazelle:python_test_file_pattern foo*,?at
+# gazelle:python_test_file_pattern foo*.py,?at
 
 py_library(
     name = "mylib",
@@ -394,8 +398,31 @@ py_test(
 )
 ```
 
-It is recommended, though not necessary, to include the `.py` extension in
-the `glob`s: `foo*.py,?at.py`.
+
+##### Notes
+
+Resetting to the default value (such as in a subpackage) is manual. Set:
+
+```starlark
+# gazelle:python_test_file_pattern *_test.py,test_*.py
+```
+
+There currently is no way to tell gazelle that _no_ files in a package should
+be mapped to `py_test` targets (see [Issue #1826][issue-1826]). The workaround
+is to set this directive to a pattern that will never match a `.py` file, such
+as `foo.bar`:
+
+```starlark
+# No files in this package should be mapped to py_test targets.
+# gazelle:python_test_file_pattern foo.bar
+
+py_library(
+    name = "my_test",
+    srcs = ["my_test.py"],
+)
+```
+
+[issue-1826]: https://github.com/bazelbuild/rules_python/issues/1826
 
 
 ### Libraries
