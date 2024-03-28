@@ -202,7 +202,7 @@ Python-specific directives are as follows:
 | Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root:__subpackages__` |
 | [`# gazelle:python_visibility label`](#directive-python_visibility) | |
 | Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
-| [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `test_*.py,*_test.py` |
+| [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `*_test.py,test_*.py` |
 | Filenames matching these comma-separated `glob`s will be mapped to `py_test` targets. |
 
 
