@@ -7,6 +7,10 @@ compile_pip_requirements(
     src = "requirements.in",
     requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
+    tags = [
+        "no-remote-exec",
+        "no-sandbox",
+    ],
 )
 
 py_console_script_binary(

@@ -104,6 +104,7 @@ def main(
     )
 
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
+    resolved_requirements_txt = _locate(bazel_runfiles, requirements_txt)
     resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
@@ -147,8 +148,8 @@ def main(
             os.environ["TEST_TMPDIR"], os.path.basename(requirements_file) + ".out"
         )
         # Those two files won't necessarily be on the same filesystem, so we can't use os.replace
-        # or shutil.copyfile, as they will fail with OSError: [Errno 18] Invalid cross-device link.
-        shutil.copy(resolved_requirements_file, requirements_out)
+        # as it will fail with OSError: [Errno 18] Invalid cross-device link.
+        shutil.copyfile(resolved_requirements_txt, requirements_out)
 
     update_command = os.getenv("CUSTOM_COMPILE_COMMAND") or "bazel run %s" % (
         update_target_label,
