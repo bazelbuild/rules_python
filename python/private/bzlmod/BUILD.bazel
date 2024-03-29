@@ -51,7 +51,9 @@ bzl_library(
 
 bzl_library(
     name = "platforms_bzl",
-    srcs = ["@platforms//:constraints.bzl"],
+    srcs = [
+        "@platforms//host:constraints.bzl",
+    ],
 )
 
 bzl_library(
