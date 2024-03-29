@@ -46,7 +46,7 @@ bzl_library(
 
 bzl_library(
     name = "bazel_features_bzl",
-    srcs = ["@bazel_features//:bzl_files"] if BZLMOD_ENABLED else [],
+    srcs = ["@bazel_features//:bzl_files"],
 )
 
 bzl_library(
