@@ -26,13 +26,12 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
-load("//python/private:envsubst.bzl", "envsubst")
-load("//python/private:whl_target_platforms.bzl", "select_whl")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private:pypi_index.bzl", "get_packages", "get_packages_from_requirements", "get_simpleapi_sources", "simpleapi_download")
+load("//python/private:pypi_index.bzl", "get_simpleapi_sources", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
+load("//python/private:whl_target_platforms.bzl", "select_whl")
 load(":pip_repository.bzl", "pip_repository")
 
 def _parse_version(version):
@@ -186,7 +185,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
     # TODO @aignas 2024-03-21: do this outside this function so that we can
     # decrease the number of times we call the simple API.
     index_urls = {}
+    host_cpu, host_os = None, None
     if pip_attr.experimental_index_url:
+        if pip_attr.download_only:
+            fail("Currently unsupported")
+
         index_urls = simpleapi_download(
             module_ctx,
             index_url = pip_attr.experimental_index_url,
@@ -195,21 +198,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             index_url_overrides = pip_attr.experimental_index_url_overrides,
             sources = requirements_locks.values(),
             envsubst = pip_attr.envsubst,
-            cache =simpleapi_cache,
+            cache = simpleapi_cache,
         )
 
+        for constraint in HOST_CONSTRAINTS:
+            if "@platforms//cpu:" in constraint:
+                _, _, host_cpu = constraint.partition(":")
+            elif "@platforms//os:" in constraint:
+                _, _, host_os = constraint.partition(":")
+
+        if not (host_os and host_cpu):
+            fail("Don't have host information")
+
     major_minor = _major_minor_version(pip_attr.python_version)
-
-    host_cpu, host_os = None, None
-    for constraint in HOST_CONSTRAINTS:
-        if "@platforms//cpu:" in constraint:
-            _, _, host_cpu = constraint.partition(":")
-        elif "@platforms//os:" in constraint:
-            _, _, host_os = constraint.partition(":")
-
-    if not (host_os and host_cpu):
-        fail("Don't have host information")
-
 
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
@@ -229,13 +230,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             srcs = get_simpleapi_sources(requirement_line)
 
             whl = select_whl(
-                whls=[
+                whls = [
                     src
                     for src in index_urls[whl_name]
                     if src.sha256 in srcs.shas and src.filename.endswith(".whl")
                 ],
-                want_abis=["none", "abi3", "cp" + major_minor.replace(".", "")],
-                want_platform="{}_{}".format(host_os, host_cpu),
+                want_abis = [
+                    "none",
+                    "abi3",
+                    "cp" + major_minor.replace(".", ""),
+                    # Older python versions have wheels for the `*m` ABI.
+                    "cp" + major_minor.replace(".", "") + "m",
+                ],
+                want_platform = "{}_{}".format(host_os, host_cpu),
             )
 
             if whl:
@@ -244,6 +251,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 sha256 = whl.sha256
                 filename = whl.filename
                 extra_whl_pip_args = None
+            else:
+                # TODO @aignas 2024-03-29: in the future we should probably just
+                # use an `sdist` but having this makes it easy to debug issues
+                # in early development stages.
+                fail("Could not find whl for: {}".format(requirement_line))
 
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library(

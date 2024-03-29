@@ -19,17 +19,17 @@ A starlark implementation of the wheel platform tag parsing to get the target pl
 load(":parse_whl_name.bzl", "parse_whl_name")
 
 _LEGACY_ALIASES = {
-    "manylinux1_x86_64": "manylinux_2_5_x86_64",
     "manylinux1_i686": "manylinux_2_5_i686",
-    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
+    "manylinux1_x86_64": "manylinux_2_5_x86_64",
     "manylinux2010_i686": "manylinux_2_12_i686",
-    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
-    "manylinux2014_i686": "manylinux_2_17_i686",
+    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
     "manylinux2014_aarch64": "manylinux_2_17_aarch64",
     "manylinux2014_armv7l": "manylinux_2_17_armv7l",
+    "manylinux2014_i686": "manylinux_2_17_i686",
     "manylinux2014_ppc64": "manylinux_2_17_ppc64",
     "manylinux2014_ppc64le": "manylinux_2_17_ppc64le",
     "manylinux2014_s390x": "manylinux_2_17_s390x",
+    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
 }
 
 # The order of the dictionaries is to keep definitions with their aliases next to each
@@ -56,7 +56,64 @@ _OS_PREFIXES = {
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
 
-def select_whl(*, whls, want_abis, want_platforms):
+def _whl_priority(value):
+    """Return a number for sorting whl lists, larger number means lower priority.
+
+    TODO @aignas 2024-03-29: In the future we should create a repo for each
+    repo that matches the abi and then we could have config flags for the
+    preference of `any` wheels or `sdist` or `manylinux` vs `musllinux` or
+    `universal2`. Ideally we use `select` statements in the hub repo to do
+    the selection based on the config, but for now this is the best way to
+    get this working for the host platform.
+    """
+    if "." in value:
+        value, _, _ = value.partition(".")
+
+    if "any" == value:
+        # This is just a big value that should be larger than any other value returned by this function
+        return 100000
+
+    # The offset is for ensuring that the universal wheels are less
+    # preferred.
+    offset = (len(whl_target_platforms(value)) - 1) * 10000
+
+    if "linux" in value:
+        os, _, tail = value.partition("_")
+        if os == "linux":
+            # If the platform tag starts with 'linux', then return something less than what 'any' returns
+            version = 99
+        else:
+            _major, _, tail = tail.partition("_")  # We don't need to use that because it's the same for all candidates now
+            version, _, _ = tail.partition("_")
+
+        return int(version) + offset
+
+    if "mac" in value or "osx" in value:
+        _, _, tail = value.partition("_")
+        major, _, tail = tail.partition("_")
+        minor, _, _ = tail.partition("_")
+
+        # the major is >= 10, so let's just multiply by 10
+        version = int(major) * 100 + int(minor)
+        return version + offset
+
+    if not "win" in value:
+        fail("BUG")
+
+    # Windows does not have multiple wheels for the same target platform
+    return offset
+
+def select_whl(*, whls, want_abis, want_platform):
+    """Select a suitable wheel from a list.
+
+    Args:
+        whls(list[struct]): A list of candidates.
+        want_abis(list[str]): A list of ABIs that are supported.
+        want_platform(str): A string platform that can be derived from `{os}_{cpu}` values.
+
+    Returns:
+        A struct with `url`, `sha256` and `filename` attributes for the selected whl.
+    """
     if not whls:
         return None
 
@@ -65,12 +122,20 @@ def select_whl(*, whls, want_abis, want_platforms):
         parsed = parse_whl_name(whl.filename)
         if parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
+            # print("Skipping {} because {} is not in {}".format(
+            #     whl.filename,
+            #     parsed.abi_tag,
+            #     want_abis,
+            # ))
             continue
 
-        candidates[parsed.platform_tag] = whl
+        platform_tags = list({_LEGACY_ALIASES.get(p, p): True for p in parsed.platform_tag.split(".")})
 
-    # For now only use the bazel downloader only whl file is a
-    # cross-platform wheel.
+        for tag in platform_tags:
+            candidates[tag] = whl
+
+    # For most packages - if they supply 'any' wheel and there are no other
+    # compatible wheels with the selected abis, we can just return the value.
     if len(candidates) == 1 and "any" in candidates:
         return struct(
             url = candidates["any"].url,
@@ -84,23 +149,26 @@ def select_whl(*, whls, want_abis, want_platforms):
         if platform_tag == "any":
             continue
 
+        if "musl" in platform_tag:
+            # Ignore musl wheels for now
+            continue
+
         platform_tag = ".".join({_LEGACY_ALIASES.get(p, p): True for p in platform_tag.split(".")})
         platforms = whl_target_platforms(platform_tag)
         for p in platforms:
             target_plats.setdefault("{}_{}".format(p.os, p.cpu), []).append(platform_tag)
 
-        for p in platform_tag.split("."):
-            target_plats.setdefault(p, []).append(p)
+    for p, platform_tags in target_plats.items():
+        if has_any:
+            platform_tags.append("any")
 
-    want = target_plats.get(want_platform) or (["any"] if has_any else [])
-    if len(want) == 1:
-        return candidates[want[0]]
+        target_plats[p] = sorted(platform_tags, key = _whl_priority)
 
-    fail("\n".join([want]))
+    want = target_plats.get(want_platform)
+    if not want:
+        return want
 
-    # todo what todo here?
-    print("Multiple matches found: {}".format(want))
-    return candidates[sorted(want[0])]
+    return candidates[want[0]]
 
 def whl_target_platforms(platform_tag, abi_tag = ""):
     """Parse the wheel abi and platform tags and return (os, cpu) tuples.

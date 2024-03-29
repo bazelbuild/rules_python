@@ -41,11 +41,12 @@ A brief description of the categories of changes:
 * (gazelle) Added a new `python_default_visibility` directive to control the
   _default_ visibility of generated targets. See the [docs][python_default_visibility]
   for details.
-* (bzlmod) New **experimental** `pypi_index` extension that can be used to
-  instruct the `pip.parse` tag class to use the bazel downloader to fetch
-  wheels. Note, the API is very unstable and may be changed at any time.
 * (wheel) Add support for `data_files` attributes in py_wheel rule
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
+* (bzlmod) New `experimental_index_url` and `experimental_index_url_overrides` to
+  `pip.parse` for using the bazel downloader. This is currently only working for
+  `whl-only` setups and may contain bugs. If you see any issues, report in
+  [#1357](https://github.com/bazelbuild/rules_python/issues/1357).
 
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
