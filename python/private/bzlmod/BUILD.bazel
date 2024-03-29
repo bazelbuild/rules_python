@@ -51,7 +51,7 @@ bzl_library(
 
 bzl_library(
     name = "platforms_host_bzl",
-    srcs = ["@platforms//host:srcs"],
+    srcs = ["@platforms//host:srcs"] if BZLMOD_ENABLED else [],
 )
 
 bzl_library(
