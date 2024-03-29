@@ -127,20 +127,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         version_label(pip_attr.python_version),
     )
 
+    requirements_lock = locked_requirements_label(module_ctx, pip_attr)
+
     # Parse the requirements file directly in starlark to get the information
     # needed for the whl_libary declarations below.
-    requirements_locks = {
-        key: module_ctx.read(file)
-        for key, file in {
-            "default": pip_attr.requirements_lock,
-            "host": locked_requirements_label(module_ctx, pip_attr),
-            "linux": pip_attr.requirements_linux,
-            "osx": pip_attr.requirements_darwin,
-            "windows": pip_attr.requirements_windows,
-        }.items()
-        if file
-    }
-    parse_result = parse_requirements(requirements_locks["host"])
+    requirements_lock_content = module_ctx.read(requirements_lock)
+    parse_result = parse_requirements(requirements_lock_content)
 
     # Replicate a surprising behavior that WORKSPACE builds allowed:
     # Defining a repo with the same name multiple times, but only the last
@@ -192,15 +184,15 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
     host_cpu, host_os = None, None
     if pip_attr.experimental_index_url:
         if pip_attr.download_only:
-            fail("Currently unsupported")
+            fail("Currently unsupported to use `download_only` and `experimental_index_url`")
 
         index_urls = simpleapi_download(
             module_ctx,
             index_url = pip_attr.experimental_index_url,
             # TODO @aignas 2024-03-28: support index overrides for specific packages
             # We should never attempt to join index contents ourselves.
-            index_url_overrides = pip_attr.experimental_index_url_overrides,
-            sources = requirements_locks.values(),
+            index_url_overrides = pip_attr.experimental_index_url_overrides or {},
+            sources = [requirements_lock_content],
             envsubst = pip_attr.envsubst,
             cache = simpleapi_cache,
         )
@@ -227,10 +219,40 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 
-        urls = []
-        sha256 = None
-        filename = None
-        extra_whl_pip_args = extra_pip_args
+        # Construct args separately so that the lock file can be smaller and does not include unused
+        # attrs.
+        repo_name = "{}_{}".format(pip_name, whl_name)
+        whl_library_args = dict(
+            repo = pip_name,
+            repo_prefix = pip_name + "_",
+            requirement = requirement_line,
+            isolated = use_isolated(module_ctx, pip_attr),
+            quiet = pip_attr.quiet,
+            timeout = pip_attr.timeout,
+        ) | {
+            key: value
+            for key, value in dict(
+                # The following values are safe to omit if they have false like values
+                annotation = annotation,
+                download_only = pip_attr.download_only,
+                enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
+                environment = pip_attr.environment,
+                envsubst = pip_attr.envsubst,
+                experimental_target_platforms = pip_attr.experimental_target_platforms,
+                extra_pip_args = extra_pip_args,
+                group_deps = group_deps,
+                group_name = group_name,
+                pip_data_exclude = pip_attr.pip_data_exclude,
+                python_interpreter = pip_attr.python_interpreter,
+                python_interpreter_target = python_interpreter_target,
+                whl_patches = {
+                    p: json.encode(args)
+                    for p, args in whl_overrides.get(whl_name, {}).items()
+                },
+            ).items()
+            if value
+        }
+
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 
@@ -251,47 +273,27 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             )
 
             if whl:
-                requirement_line = srcs.wo_shas
-                urls.append(whl.url)
-                sha256 = whl.sha256
-                filename = whl.filename
-                extra_whl_pip_args = None
+                for unused_attr in [
+                    # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
+                    "extra_pip_args",
+                    # This is no-op because pip is not used to download the wheel.
+                    "download_only",
+                ]:
+                    whl_library_args.pop(unused_attr, None)
+
+                whl_library_args.update(dict(
+                    requirement = srcs.wo_shas,
+                    urls = [whl.url],
+                    sha256 = whl.sha256,
+                    filename = whl.filename,
+                ))
             else:
                 # TODO @aignas 2024-03-29: in the future we should probably just
                 # use an `sdist` but having this makes it easy to debug issues
                 # in early development stages.
                 fail("Could not find whl for: {}".format(requirement_line))
 
-        repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_library(
-            name = repo_name,
-            requirement = requirement_line,
-            filename = filename,
-            urls = urls,
-            sha256 = sha256,
-            repo = pip_name,
-            repo_prefix = pip_name + "_",
-            annotation = annotation,
-            whl_patches = {
-                p: json.encode(args)
-                for p, args in whl_overrides.get(whl_name, {}).items()
-            },
-            experimental_target_platforms = pip_attr.experimental_target_platforms,
-            python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = python_interpreter_target,
-            quiet = pip_attr.quiet,
-            timeout = pip_attr.timeout,
-            isolated = use_isolated(module_ctx, pip_attr),
-            extra_pip_args = extra_whl_pip_args,
-            download_only = pip_attr.download_only,
-            pip_data_exclude = pip_attr.pip_data_exclude,
-            enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
-            environment = pip_attr.environment,
-            envsubst = pip_attr.envsubst,
-            group_name = group_name,
-            group_deps = group_deps,
-        )
-
+        whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,

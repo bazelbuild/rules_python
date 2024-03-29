@@ -272,6 +272,9 @@ bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        "parse_whl_name_bzl",
+    ],
 )
 
 bzl_library(

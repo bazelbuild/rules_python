@@ -117,9 +117,10 @@ pip.parse(
         "cp39_linux_*",
         "cp39_*",
     ],
-    # TODO @aignas 2024-03-21: how do we handle overrides for the index urls per package?
-    # index_url_per_package = {
-    #    foo: bar
+    # One can also select a particular index for a particular package.
+    # This ensures that the setup is resistant against confusion attacks.
+    # experimental_index_url_overrides = {
+    #    'my_package": "https://different-index-url.com",
     # },
     hub_name = "pip",
     python_version = "3.9",
