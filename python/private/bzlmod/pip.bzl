@@ -164,23 +164,27 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         for mod, whl_name in pip_attr.whl_modifications.items():
             whl_modifications[whl_name] = mod
 
-    requirement_cycles = {
-        name: [normalize_name(whl_name) for whl_name in whls]
-        for name, whls in pip_attr.experimental_requirement_cycles.items()
-    }
+    if pip_attr.experimental_requirement_cycles:
+        requirement_cycles = {
+            name: [normalize_name(whl_name) for whl_name in whls]
+            for name, whls in pip_attr.experimental_requirement_cycles.items()
+        }
 
-    whl_group_mapping = {
-        whl_name: group_name
-        for group_name, group_whls in requirement_cycles.items()
-        for whl_name in group_whls
-    }
+        whl_group_mapping = {
+            whl_name: group_name
+            for group_name, group_whls in requirement_cycles.items()
+            for whl_name in group_whls
+        }
 
-    group_repo = "%s__groups" % (pip_name,)
-    group_library(
-        name = group_repo,
-        repo_prefix = pip_name + "_",
-        groups = pip_attr.experimental_requirement_cycles,
-    )
+        group_repo = "%s__groups" % (pip_name,)
+        group_library(
+            name = group_repo,
+            repo_prefix = pip_name + "_",
+            groups = pip_attr.experimental_requirement_cycles,
+        )
+    else:
+        whl_group_mapping = {}
+        requirement_cycles = {}
 
     # TODO @aignas 2024-03-21: do this outside this function so that we can
     # decrease the number of times we call the simple API.
@@ -219,6 +223,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         # to.
         annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
+
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
 

@@ -19,8 +19,6 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
-
 ### Changed
 
 ### Fixed
@@ -31,6 +29,9 @@ A brief description of the categories of changes:
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.
+* (whl_library) The group redirection is only added when the package is part of
+  the group potentially fixing aspects that want to traverse a `py_library` graph.
+  Fixes [#1760](https://github.com/bazelbuild/rules_python/issues/1760).
 
 ### Added
 
@@ -43,11 +44,14 @@ A brief description of the categories of changes:
   for details.
 * (wheel) Add support for `data_files` attributes in py_wheel rule
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
+* (py_wheel) `bzlmod` installations now provide a `twine` setup for the default
+  Python toolchain in `rules_python` for version 3.11.
 * (bzlmod) New `experimental_index_url` and `experimental_index_url_overrides` to
   `pip.parse` for using the bazel downloader. This is currently only working for
   `whl-only` setups and may contain bugs. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357).
 
+[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 
 ### Changed
@@ -272,7 +276,6 @@ A brief description of the categories of changes:
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
-
 
 ## [0.27.0] - 2023-11-16
 
