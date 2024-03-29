@@ -18,6 +18,7 @@ A starlark implementation of the wheel platform tag parsing to get the target pl
 
 load(":parse_whl_name.bzl", "parse_whl_name")
 
+# Taken from https://peps.python.org/pep-0600/
 _LEGACY_ALIASES = {
     "manylinux1_i686": "manylinux_2_5_i686",
     "manylinux1_x86_64": "manylinux_2_5_x86_64",
@@ -65,6 +66,16 @@ def _whl_priority(value):
     `universal2`. Ideally we use `select` statements in the hub repo to do
     the selection based on the config, but for now this is the best way to
     get this working for the host platform.
+
+    In the future the right thing would be to have `bool_flag` or something
+    similar to be able to have select statements that does the right thing:
+    * select whls vs sdists.
+    * select manylinux vs musllinux
+    * select universal2 vs arch-specific whls
+
+    All of these can be expressed as configuration settings and included in the
+    select statements in the `whl` repo. This means that the user can configure
+    for a particular target what they need.
     """
     if "." in value:
         value, _, _ = value.partition(".")

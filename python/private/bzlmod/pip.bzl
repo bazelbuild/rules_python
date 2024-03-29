@@ -178,8 +178,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         whl_group_mapping = {}
         requirement_cycles = {}
 
-    # TODO @aignas 2024-03-21: do this outside this function so that we can
-    # decrease the number of times we call the simple API.
     index_urls = {}
     host_cpu, host_os = None, None
     if pip_attr.experimental_index_url:
@@ -410,8 +408,12 @@ def _pip_impl(module_ctx):
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
 
-    # We don't use the `module_ctx.download` mechanisms because we don't want to persist
-    # this across the evaluations of the extension.
+    # We use a dictionary as a cache so that we can reuse calls to the simple
+    # API when evaluating the extension. Using the canonical_id parameter of
+    # the module_ctx would deposit the simple API responses to the bazel cache
+    # and that is undesirable because additions to the PyPI index would not be
+    # reflected when re-evaluating the extension unless we do
+    # `bazel clean --expunge`.
     simpleapi_cache = {}
 
     for mod in module_ctx.modules:

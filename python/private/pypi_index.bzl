@@ -14,21 +14,20 @@
 
 """
 A file that houses private functions used in the `bzlmod` extension with the same name.
-
-The functions here should not depend on the `module_ctx` for easy unit testing.
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
 load(":normalize_name.bzl", "normalize_name")
 
-def simpleapi_download(module_ctx, *, index_url, index_url_overrides, sources, envsubst, cache = None):
+def simpleapi_download(ctx, *, index_url, index_url_overrides, sources, envsubst, cache = None):
     """Download Simple API HTML.
 
     Args:
-        module_ctx: The bzlmod module_ctx.
+        ctx: The module_ctx or repository_ctx.
         index_url: The index.
         index_url_overrides: The index overrides for separate packages.
         sources: The sources to download things for.
@@ -47,12 +46,12 @@ def simpleapi_download(module_ctx, *, index_url, index_url_overrides, sources, e
 
     srcs = {}
     for pkg, want_shas in sources.simpleapi.items():
-        entry = srcs.setdefault(pkg, {"urls": {}, "want_shas": {}})
+        entry = srcs.setdefault(pkg, {"urls": {}, "want_shas": sets.make()})
 
         # ensure that we have a trailing slash, because we will otherwise get redirects
         # which may not work on private indexes with netrc authentication.
         entry["urls"]["{}/{}/".format(index_url_overrides.get(pkg, index_url).rstrip("/"), pkg)] = True
-        entry["want_shas"].update(want_shas)
+        entry["want_shas"] = sets.union(entry["want_shas"], want_shas)
 
     download_kwargs = {}
     if bazel_features.external_deps.download_has_block_param:
@@ -75,11 +74,10 @@ def simpleapi_download(module_ctx, *, index_url, index_url_overrides, sources, e
             cache_key = cache_key,
             urls = all_urls,
             packages = read_simple_api(
-                module_ctx = module_ctx,
+                ctx = ctx,
                 url = all_urls,
-                pkg = pkg,
                 envsubst_vars = envsubst,
-                **download_kwargs,
+                **download_kwargs
             ),
         )
 
@@ -91,59 +89,60 @@ def simpleapi_download(module_ctx, *, index_url, index_url_overrides, sources, e
 
     return contents
 
-def read_simple_api(module_ctx, url, pkg, envsubst_vars, **download_kwargs):
+def read_simple_api(ctx, url, envsubst_vars, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
-        module_ctx: TODO
-        url: The url parameter that can be passed to module_ctx.download.
-        pkg: The pkg to fetch the data for.
+        ctx: The module_ctx or repository_ctx.
+        url: The url parameter that can be passed to ctx.download.
         envsubst_vars: The env vars to do env sub before downloading.
-        **download_kwargs: Any extra params to module_ctx.download.
+        **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
     Returns:
         A similar object to what `download` would return except that in result.out
         will be the parsed simple api contents.
     """
-    # TODO @aignas 2024-03-26: use a unique path to avoid clashes
-    output = module_ctx.path("{}/{}.html".format("pypi_index", pkg))
-
     # TODO: Add a test that env subbed index urls do not leak into the lock file.
-    if type(url) == type(""):
-        fail("TODO")
-    else:
-        real_url = [
-            envsubst(
-                u,
-                envsubst_vars,
-                module_ctx.getenv if hasattr(module_ctx, "getenv") else module_ctx.os.environ.get,
-            )
-            for u in url
-        ]
 
-    download = module_ctx.download(
-        url = real_url,
+    if type(url) == type([]) and len(url) > 1:
+        fail("Only a single url is supported")
+
+    url = url if type(url) == type("") else url[0]
+
+    output_str = url
+    for char in [".", ":", "/", "\\", "$", "[", "]", "{", "}", "'", "\"", "-"]:
+        output_str = output_str.replace(char, "_")
+
+    output = ctx.path(output_str.strip("_").lower() + ".html")
+
+    real_url = envsubst(
+        url,
+        envsubst_vars,
+        ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
+    )
+
+    download = ctx.download(
+        url = [real_url],
         output = output,
-        auth = get_auth(module_ctx, real_url),
+        auth = get_auth(ctx, [real_url]),
         **download_kwargs
     )
 
     return struct(
-        contents=lambda: _read_contents(
-            module_ctx,
+        contents = lambda: _read_contents(
+            ctx,
             download.wait() if download_kwargs.get("block") == False else download,
             output,
             url,
         ),
     )
 
-
-def _read_contents(module_ctx, result, output, url):
+def _read_contents(ctx, result, output, url):
     if not result.success:
-          fail("Failed to download from {}: {}".format(url, result))
+        fail("Failed to download from {}: {}".format(url, result))
 
-    html = module_ctx.read(output)
+    html = ctx.read(output)
     return get_packages(url, html)
 
 def get_packages_from_requirements(requirements_files):
@@ -160,11 +159,14 @@ def get_packages_from_requirements(requirements_files):
     for contents in requirements_files:
         parse_result = parse_requirements(contents)
         for distribution, line in parse_result.requirements:
-            want_packages.setdefault(normalize_name(distribution), {}).update({
-                # TODO @aignas 2024-03-07: use sets
-                sha: True
-                for sha in get_simpleapi_sources(line).shas
-            })
+            distribution = normalize_name(distribution)
+            shas = want_packages.get(distribution)
+            if not shas:
+                shas = sets.make()
+                want_packages[distribution] = shas
+
+            for sha in get_simpleapi_sources(line).shas:
+                sets.insert(shas, sha)
 
     return struct(
         simpleapi = want_packages,
@@ -212,7 +214,7 @@ def get_packages(index_urls, content, want_shas = None):
     Args:
         index_urls(list[str]): The URLs that the HTML content can be downloaded from.
         content(str): The Simple API HTML content.
-        want_shas(list[str], optional): The list of shas that we need to get, otherwise we'll get all.
+        want_shas(set[str], optional): The list of shas that we need to get, otherwise we'll get all.
 
     Returns:
         A list of structs with:
@@ -223,7 +225,6 @@ def get_packages(index_urls, content, want_shas = None):
           present, then the 'metadata_url' is also present. Defaults to "".
         * metadata_url: The URL for the METADATA if we can download it. Defaults to "".
     """
-    want_shas = {sha: True for sha in want_shas} if want_shas else {}
     packages = []
     lines = content.split("<a href=\"")
 
@@ -245,7 +246,7 @@ def get_packages(index_urls, content, want_shas = None):
         sha256, _, tail = tail.partition("\"")
 
         if want_shas:
-            if sha256 not in want_shas:
+            if sets.contains(want_shas, sha256):
                 continue
             elif "data-yanked" in line:
                 # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
@@ -254,7 +255,7 @@ def get_packages(index_urls, content, want_shas = None):
                 # different version.
                 fail("The package with '--hash=sha256:{}' was yanked, relock your requirements".format(sha256))
             else:
-                want_shas.pop(sha256)
+                sets.remove(want_shas, sha256)
 
         maybe_metadata, _, tail = tail.partition(">")
         filename, _, tail = tail.partition("<")
@@ -279,7 +280,7 @@ def get_packages(index_urls, content, want_shas = None):
             ),
         )
 
-    if len(want_shas):
+    if want_shas:
         fail(
             "Indexes {} did not provide packages with all shas: {}".format(
                 index_urls,

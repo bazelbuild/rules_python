@@ -21,6 +21,10 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
+  sorted in the attributes section. We are also removing values that are not
+  default in order to reduce the noise.
+
 ### Fixed
 
 * (whl_library): Fix the experimental_target_platforms overriding for platform
@@ -49,7 +53,8 @@ A brief description of the categories of changes:
 * (bzlmod) New `experimental_index_url` and `experimental_index_url_overrides` to
   `pip.parse` for using the bazel downloader. This is currently only working for
   `whl-only` setups and may contain bugs. If you see any issues, report in
-  [#1357](https://github.com/bazelbuild/rules_python/issues/1357).
+  [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
+  the whl files will be written to the lock file.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
