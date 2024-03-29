@@ -38,6 +38,7 @@ bzl_library(
         "//python/private:parse_whl_name_bzl",
         "//python/private:version_label_bzl",
         ":bazel_features_bzl",
+        ":platforms_bzl",
     ] + [
         "@pythons_hub//:interpreters_bzl",
     ] if BZLMOD_ENABLED else [],
@@ -46,6 +47,11 @@ bzl_library(
 bzl_library(
     name = "bazel_features_bzl",
     srcs = ["@bazel_features//:bzl_files"] if BZLMOD_ENABLED else [],
+)
+
+bzl_library(
+    name = "platforms_bzl",
+    srcs = ["@platforms//:constraints.bzl"],
 )
 
 bzl_library(
