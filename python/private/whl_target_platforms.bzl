@@ -157,7 +157,8 @@ def select_whl(*, whls, want_abis, want_os, want_cpu):
         want_cpu(str): The module_ctx.os.arch.
 
     Returns:
-        A struct with `url`, `sha256` and `filename` attributes for the selected whl.
+        None or a struct with `url`, `sha256` and `filename` attributes for the
+        selected whl. If no match is found, None is returned.
     """
     if not whls:
         return None
