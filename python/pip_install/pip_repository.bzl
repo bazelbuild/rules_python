@@ -776,8 +776,9 @@ def _whl_library_impl(rctx):
         filename = rctx.attr.filename
         if not filename:
             _, _, filename = rctx.attr.urls[0].rpartition("/")
-            if not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith("zip")):
-                fail("'filename' needs to be provided when passing if it is not possible to auto-detect filename extension from URL:" + rctx.attr.urls[0])
+            fail("Only '.whl', '.tar.gz' or '.zip' files are supported, detected '{}' from url: {}".format(filename, rctx.attr.urls[0]))
+        elif not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith(".zip")):
+            fail("Only '.whl', '.tar.gz' or '.zip' files are supported, got: {}".format(filename))
 
         result = rctx.download(
             url = rctx.attr.urls,
