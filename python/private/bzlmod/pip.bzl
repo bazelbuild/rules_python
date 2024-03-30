@@ -222,29 +222,27 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             isolated = use_isolated(module_ctx, pip_attr),
             quiet = pip_attr.quiet,
             timeout = pip_attr.timeout,
-        ) | {
-            key: value
-            for key, value in dict(
-                # The following values are safe to omit if they have false like values
-                annotation = annotation,
-                download_only = pip_attr.download_only,
-                enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
-                environment = pip_attr.environment,
-                envsubst = pip_attr.envsubst,
-                experimental_target_platforms = pip_attr.experimental_target_platforms,
-                extra_pip_args = extra_pip_args,
-                group_deps = group_deps,
-                group_name = group_name,
-                pip_data_exclude = pip_attr.pip_data_exclude,
-                python_interpreter = pip_attr.python_interpreter,
-                python_interpreter_target = python_interpreter_target,
-                whl_patches = {
-                    p: json.encode(args)
-                    for p, args in whl_overrides.get(whl_name, {}).items()
-                },
-            ).items()
-            if value
-        }
+        )
+        maybe_args = dict(
+            # The following values are safe to omit if they have false like values
+            annotation = annotation,
+            download_only = pip_attr.download_only,
+            enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
+            environment = pip_attr.environment,
+            envsubst = pip_attr.envsubst,
+            experimental_target_platforms = pip_attr.experimental_target_platforms,
+            extra_pip_args = extra_pip_args,
+            group_deps = group_deps,
+            group_name = group_name,
+            pip_data_exclude = pip_attr.pip_data_exclude,
+            python_interpreter = pip_attr.python_interpreter,
+            python_interpreter_target = python_interpreter_target,
+            whl_patches = {
+                p: json.encode(args)
+                for p, args in whl_overrides.get(whl_name, {}).items()
+            },
+        )
+        whl_library_args.update({k: v for k, v in maybe_args.items() if v})
 
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
