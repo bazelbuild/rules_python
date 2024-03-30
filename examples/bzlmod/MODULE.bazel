@@ -120,7 +120,7 @@ pip.parse(
     # One can also select a particular index for a particular package.
     # This ensures that the setup is resistant against confusion attacks.
     # experimental_index_url_overrides = {
-    #    'my_package": "https://different-index-url.com",
+    #    "my_package": "https://different-index-url.com",
     # },
     hub_name = "pip",
     python_version = "3.9",

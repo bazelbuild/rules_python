@@ -23,25 +23,30 @@ load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
 load(":normalize_name.bzl", "normalize_name")
 
-def simpleapi_download(ctx, *, index_url, index_url_overrides, sources, envsubst, cache = None):
+def simpleapi_download(ctx, *, attr, cache = None):
     """Download Simple API HTML.
 
     Args:
         ctx: The module_ctx or repository_ctx.
-        index_url: The index.
-        index_url_overrides: The index overrides for separate packages.
-        sources: The sources to download things for.
-        envsubst: The envsubst vars.
+        attr: Contains the parameters for the download. They are grouped into a
+          struct for better clarity. It must have attributes:
+           * index_url: The index.
+           * index_url_overrides: The index overrides for separate packages.
+           * sources: The sources to download things for.
+           * envsubst: The envsubst vars.
+           * netrc: The netrc parameter for ctx.download, see http_file for docs.
+           * auth_patterns: The auth_patterns parameter for ctx.download, see
+               http_file for docs.
         cache: A dictionary that can be used as a cache between calls during a
             single evaluation of the extension.
 
     Returns:
         dict of pkg name to the HTML contents.
     """
-    sources = get_packages_from_requirements(sources)
+    sources = get_packages_from_requirements(attr.sources)
     index_url_overrides = {
         normalize_name(p): i
-        for p, i in (index_url_overrides or {}).items()
+        for p, i in (attr.index_url_overrides or {}).items()
     }
 
     srcs = {}
@@ -50,7 +55,7 @@ def simpleapi_download(ctx, *, index_url, index_url_overrides, sources, envsubst
 
         # ensure that we have a trailing slash, because we will otherwise get redirects
         # which may not work on private indexes with netrc authentication.
-        entry["urls"]["{}/{}/".format(index_url_overrides.get(pkg, index_url).rstrip("/"), pkg)] = True
+        entry["urls"]["{}/{}/".format(index_url_overrides.get(pkg, attr.index_url).rstrip("/"), pkg)] = True
         entry["want_shas"] = sets.union(entry["want_shas"], want_shas)
 
     download_kwargs = {}
@@ -76,7 +81,7 @@ def simpleapi_download(ctx, *, index_url, index_url_overrides, sources, envsubst
             packages = read_simple_api(
                 ctx = ctx,
                 url = all_urls,
-                envsubst_vars = envsubst,
+                attr = attr,
                 **download_kwargs
             ),
         )
@@ -89,13 +94,18 @@ def simpleapi_download(ctx, *, index_url, index_url_overrides, sources, envsubst
 
     return contents
 
-def read_simple_api(ctx, url, envsubst_vars, **download_kwargs):
+def read_simple_api(ctx, url, attr, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
         ctx: The module_ctx or repository_ctx.
         url: The url parameter that can be passed to ctx.download.
-        envsubst_vars: The env vars to do env sub before downloading.
+        attr: The attribute that contains necessary info for downloading. The
+          following attributes must be present:
+           * envsubst: The env vars to do env sub before downloading.
+           * netrc: The netrc parameter for ctx.download, see http_file for docs.
+           * auth_patterns: The auth_patterns parameter for ctx.download, see
+               http_file for docs.
         **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
@@ -118,14 +128,14 @@ def read_simple_api(ctx, url, envsubst_vars, **download_kwargs):
 
     real_url = envsubst(
         url,
-        envsubst_vars,
+        attr.envsubst,
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
     )
 
     download = ctx.download(
         url = [real_url],
         output = output,
-        auth = get_auth(ctx, [real_url]),
+        auth = get_auth(ctx, [real_url], ctx_attr = attr),
         **download_kwargs
     )
 

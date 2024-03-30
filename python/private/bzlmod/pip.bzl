@@ -25,6 +25,7 @@ load(
     "whl_library",
 )
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
+load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "get_simpleapi_sources", "simpleapi_download")
@@ -184,12 +185,17 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
 
         index_urls = simpleapi_download(
             module_ctx,
-            index_url = pip_attr.experimental_index_url,
-            # TODO @aignas 2024-03-28: support index overrides for specific packages
-            # We should never attempt to join index contents ourselves.
-            index_url_overrides = pip_attr.experimental_index_url_overrides or {},
-            sources = [requirements_lock_content],
-            envsubst = pip_attr.envsubst,
+            attr = struct(
+                index_url = pip_attr.experimental_index_url,
+                # TODO @aignas 2024-03-28: support index overrides for specific packages
+                # We should never attempt to join index contents ourselves.
+                index_url_overrides = pip_attr.experimental_index_url_overrides or {},
+                sources = [requirements_lock_content],
+                envsubst = pip_attr.envsubst,
+                # Auth related info
+                netrc = pip_attr.netrc,
+                auth_patterns = pip_attr.auth_patterns,
+            ),
             cache = simpleapi_cache,
         )
 
@@ -275,6 +281,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                     sha256 = whl.sha256,
                     filename = whl.filename,
                 ))
+                if pip_attr.netrc:
+                    whl_library_args["netrc"] = pip_attr.netrc
+                if pip_attr.auth_patterns:
+                    whl_library_args["auth_patterns"] = pip_attr.auth_patterns
+
             else:
                 # TODO @aignas 2024-03-29: in the future we should probably just
                 # use an `sdist` but having this makes it easy to debug issues
@@ -515,6 +526,7 @@ The labels are JSON config files describing the modifications.
 """,
         ),
     }, **pip_repository_attrs)
+    attrs.update(AUTH_ATTRS)
 
     # Like the pip_repository rule, we end up setting this manually so
     # don't allow users to override it.

@@ -22,7 +22,8 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
-load("//python/private:auth.bzl", "get_auth")
+load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
@@ -917,65 +918,71 @@ if __name__ == "__main__":
     return contents
 
 # NOTE @aignas 2024-03-21: The usage of dict({}, **common) ensures that all args to `dict` are unique
-whl_library_attrs = dict({
-    "annotation": attr.label(
-        doc = (
-            "Optional json encoded file containing annotation to apply to the extracted wheel. " +
-            "See `package_annotation`"
+def whl_library_attrs():
+    attrs = dict({
+        "annotation": attr.label(
+            doc = (
+                "Optional json encoded file containing annotation to apply to the extracted wheel. " +
+                "See `package_annotation`"
+            ),
+            allow_files = True,
         ),
-        allow_files = True,
-    ),
-    "filename": attr.string(
-        doc = "Download the whl file to this filename.",
-    ),
-    "group_deps": attr.string_list(
-        doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
-        default = [],
-    ),
-    "group_name": attr.string(
-        doc = "Name of the group, if any.",
-    ),
-    "repo": attr.string(
-        mandatory = True,
-        doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
-    ),
-    "requirement": attr.string(
-        mandatory = True,
-        doc = "Python requirement string describing the package to make available, if 'urls' or 'whl_file' is given, then this only needs to include foo[any_extras] as a bare minimum.",
-    ),
-    "sha256": attr.string(
-        doc = "The sha256 of the downloaded whl",
-    ),
-    "urls": attr.string_list(
-        doc = "The url of the whl to be downloaded using bazel downloader",
-    ),
-    "whl_file": attr.label(
-        doc = "The whl file that should be used instead of downloading",
-    ),
-    "whl_patches": attr.label_keyed_string_dict(
-        doc = """a label-keyed-string dict that has
-            json.encode(struct([whl_file], patch_strip]) as values. This
-            is to maintain flexibility and correct bzlmod extension interface
-            until we have a better way to define whl_library and move whl
-            patching to a separate place. INTERNAL USE ONLY.""",
-    ),
-    "_python_path_entries": attr.label_list(
-        # Get the root directory of these rules and keep them as a default attribute
-        # in order to avoid unnecessary repository fetching restarts.
-        #
-        # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
-        default = [
-            Label("//:BUILD.bazel"),
-        ] + [
-            # Includes all the external dependencies from repositories.bzl
-            Label("@" + repo + "//:BUILD.bazel")
-            for repo in all_requirements
-        ],
-    ),
-}, **common_attrs)
+        "filename": attr.string(
+            doc = "Download the whl file to this filename.",
+        ),
+        "group_deps": attr.string_list(
+            doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
+            default = [],
+        ),
+        "group_name": attr.string(
+            doc = "Name of the group, if any.",
+        ),
+        "repo": attr.string(
+            mandatory = True,
+            doc = "Pointer to parent repo name. Used to make these rules rerun if the parent repo changes.",
+        ),
+        "requirement": attr.string(
+            mandatory = True,
+            doc = "Python requirement string describing the package to make available, if 'urls' or 'whl_file' is given, then this only needs to include foo[any_extras] as a bare minimum.",
+        ),
+        "sha256": attr.string(
+            doc = "The sha256 of the downloaded whl",
+        ),
+        "urls": attr.string_list(
+            doc = "The url of the whl to be downloaded using bazel downloader",
+        ),
+        "whl_file": attr.label(
+            doc = "The whl file that should be used instead of downloading",
+        ),
+        "whl_patches": attr.label_keyed_string_dict(
+            doc = """a label-keyed-string dict that has
+                json.encode(struct([whl_file], patch_strip]) as values. This
+                is to maintain flexibility and correct bzlmod extension interface
+                until we have a better way to define whl_library and move whl
+                patching to a separate place. INTERNAL USE ONLY.""",
+        ),
+        "_python_path_entries": attr.label_list(
+            # Get the root directory of these rules and keep them as a default attribute
+            # in order to avoid unnecessary repository fetching restarts.
+            #
+            # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
+            default = [
+                Label("//:BUILD.bazel"),
+            ] + [
+                # Includes all the external dependencies from repositories.bzl
+                Label("@" + repo + "//:BUILD.bazel")
+                for repo in all_requirements
+            ],
+        ),
+    }, **common_attrs)
+
+    if BZLMOD_ENABLED:
+        attrs.update(AUTH_ATTRS)
+
+    return attrs
 
 whl_library = repository_rule(
-    attrs = whl_library_attrs,
+    attrs = whl_library_attrs(),
     doc = """
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
