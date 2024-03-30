@@ -142,7 +142,7 @@ def _whl_priority(value):
         return version + offset
 
     if not "win" in value:
-        fail("BUG")
+        fail("BUG: only windows, linux and mac platforms are supported, but got: {}".format(value))
 
     # Windows does not have multiple wheels for the same target platform
     return offset
@@ -167,11 +167,6 @@ def select_whl(*, whls, want_abis, want_os, want_cpu):
         parsed = parse_whl_name(whl.filename)
         if parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
-            # print("Skipping {} because {} is not in {}".format(
-            #     whl.filename,
-            #     parsed.abi_tag,
-            #     want_abis,
-            # ))
             continue
 
         platform_tags = list({_LEGACY_ALIASES.get(p, p): True for p in parsed.platform_tag.split(".")})
