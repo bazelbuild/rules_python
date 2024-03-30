@@ -268,7 +268,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 whl_library_args["requirement"] = srcs.wo_shas
                 whl_library_args["urls"] = [whl.url]
                 whl_library_args["sha256"] = whl.sha256
-                whl_library_args["filename"] = whl.filename
+                whl_library_args["filename"] = whl.filenam2
                 if pip_attr.netrc:
                     whl_library_args["netrc"] = pip_attr.netrc
                 if pip_attr.auth_patterns:
@@ -285,6 +285,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 # in early development stages.
                 fail("Could not find whl for: {}".format(requirement_line))
 
+        # We sort so that the lock-file remains the same no matter the order of how the
+        # args are manipulated in the code going before. Maybe this will not be needed
+        # in the future.
         whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
