@@ -38,7 +38,13 @@ def simpleapi_download(ctx, *, attr, cache = None):
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
         cache: A dictionary that can be used as a cache between calls during a
-            single evaluation of the extension.
+            single evaluation of the extension. We use a dictionary as a cache
+            so that we can reuse calls to the simple API when evaluating the
+            extension. Using the canonical_id parameter of the module_ctx would
+            deposit the simple API responses to the bazel cache and that is
+            undesirable because additions to the PyPI index would not be
+            reflected when re-evaluating the extension unless we do
+            `bazel clean --expunge`.
 
     Returns:
         dict of pkg name to the HTML contents.

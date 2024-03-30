@@ -405,12 +405,6 @@ def _pip_impl(module_ctx):
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
 
-    # We use a dictionary as a cache so that we can reuse calls to the simple
-    # API when evaluating the extension. Using the canonical_id parameter of
-    # the module_ctx would deposit the simple API responses to the bazel cache
-    # and that is undesirable because additions to the PyPI index would not be
-    # reflected when re-evaluating the extension unless we do
-    # `bazel clean --expunge`.
     simpleapi_cache = {}
 
     for mod in module_ctx.modules:
