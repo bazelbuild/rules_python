@@ -265,13 +265,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             )
 
             if whl:
-                for unused_attr in [
-                    # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
-                    "extra_pip_args",
-                    # This is no-op because pip is not used to download the wheel.
-                    "download_only",
-                ]:
-                    whl_library_args.pop(unused_attr, None)
+                # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
+                whl_library_args.pop("extra_pip_args", None)
+
+                # This is no-op because pip is not used to download the wheel.
+                whl_library_args.pop("download_only", None)
 
                 whl_library_args.update(dict(
                     requirement = srcs.wo_shas,
