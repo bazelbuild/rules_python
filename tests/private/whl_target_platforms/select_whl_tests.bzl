@@ -83,37 +83,37 @@ def _match(env, got, want_filename):
 _tests = []
 
 def _test_selecting(env):
-    got = select_whl(whls = WHL_LIST, want_abis = ["none"], want_platform = "ignored")
+    got = select_whl(whls = WHL_LIST, want_abis = ["none"], want_os = "ignored", want_cpu = "ignored")
     _match(env, got, "pkg-0.0.1-py3-none-any.whl")
 
-    got = select_whl(whls = WHL_LIST, want_abis = ["abi3"], want_platform = "ignored")
+    got = select_whl(whls = WHL_LIST, want_abis = ["abi3"], want_os = "ignored", want_cpu = "ignored")
     _match(env, got, "pkg-0.0.1-py3-abi3-any.whl")
 
     # Check the selection failure
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp39"], want_platform = "does-not-exist")
+    got = select_whl(whls = WHL_LIST, want_abis = ["cp39"], want_os = "fancy", want_cpu = "exotic")
     _match(env, got, None)
 
     # Check we match the ABI and not the py version
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp37m"], want_platform = "linux_x86_64")
+    got = select_whl(whls = WHL_LIST, want_abis = ["cp37m"], want_os = "linux", want_cpu = "amd64")
     _match(env, got, "pkg-0.0.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")
 
     # Check we can select a filename with many platform tags
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp39"], want_platform = "linux_x86_32")
+    got = select_whl(whls = WHL_LIST, want_abis = ["cp39"], want_os = "linux", want_cpu = "i686")
     _match(env, got, "pkg-0.0.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl")
 
     # Check that we prefer the specific wheel
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp311"], want_platform = "osx_x86_64")
+    got = select_whl(whls = WHL_LIST, want_abis = ["cp311"], want_os = "mac os", want_cpu = "x86_64")
     _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_10_9_x86_64.whl")
 
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp311"], want_platform = "osx_aarch64")
+    got = select_whl(whls = WHL_LIST, want_abis = ["cp311"], want_os = "mac os", want_cpu = "aarch64")
     _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_11_0_arm64.whl")
 
     # Check that we can use the universal2 if the arm wheel is not available
-    got = select_whl(whls = [w for w in WHL_LIST if "arm64" not in w.filename], want_abis = ["cp311"], want_platform = "osx_aarch64")
+    got = select_whl(whls = [w for w in WHL_LIST if "arm64" not in w.filename], want_abis = ["cp311"], want_os = "mac os", want_cpu = "aarch64")
     _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl")
 
     # Check we prefer platform specific wheels
-    got = select_whl(whls = WHL_LIST, want_abis = ["none", "abi3", "cp39"], want_platform = "linux_x86_64")
+    got = select_whl(whls = WHL_LIST, want_abis = ["none", "abi3", "cp39"], want_os = "linux", want_cpu = "x86_64")
     _match(env, got, "pkg-0.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")
 
 _tests.append(_test_selecting)

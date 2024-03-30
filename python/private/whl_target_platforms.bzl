@@ -91,7 +91,7 @@ _OS_PREFIXES = {
 }  # buildifier: disable=unsorted-dict-items
 
 def _whl_priority(value):
-    """Return a number for sorting whl lists, larger number means lower priority.
+    """Return a value for sorting whl lists.
 
     TODO @aignas 2024-03-29: In the future we should create a repo for each
     repo that matches the abi and then we could have config flags for the
@@ -109,43 +109,44 @@ def _whl_priority(value):
     All of these can be expressed as configuration settings and included in the
     select statements in the `whl` repo. This means that the user can configure
     for a particular target what they need.
+
+    Returns a 4-tuple where the items are:
+        * bool - is it an 'any' wheel? True if it is.
+        * bool - is it an 'universal' wheel? True if it is. (e.g. macos universal2 wheels)
+        * int - the minor plaform version (e.g. osx os version, libc version)
+        * int - the major plaform version (e.g. osx os version, libc version)
     """
     if "." in value:
         value, _, _ = value.partition(".")
 
     if "any" == value:
         # This is just a big value that should be larger than any other value returned by this function
-        return 100000
-
-    # The offset is for ensuring that the universal wheels are less
-    # preferred.
-    offset = (len(whl_target_platforms(value)) - 1) * 10000
+        return (True, False, 0, 0)
 
     if "linux" in value:
         os, _, tail = value.partition("_")
         if os == "linux":
             # If the platform tag starts with 'linux', then return something less than what 'any' returns
-            version = 99
+            minor = 0
+            major = 0
         else:
-            _major, _, tail = tail.partition("_")  # We don't need to use that because it's the same for all candidates now
-            version, _, _ = tail.partition("_")
+            major, _, tail = tail.partition("_")  # We don't need to use that because it's the same for all candidates now
+            minor, _, _ = tail.partition("_")
 
-        return int(version) + offset
+        return (False, os == "linux", int(minor), int(major))
 
     if "mac" in value or "osx" in value:
         _, _, tail = value.partition("_")
         major, _, tail = tail.partition("_")
         minor, _, _ = tail.partition("_")
 
-        # the major is >= 10, so let's just multiply by 10
-        version = int(major) * 100 + int(minor)
-        return version + offset
+        return (False, "universal2" in value, int(minor), int(major))
 
     if not "win" in value:
         fail("BUG: only windows, linux and mac platforms are supported, but got: {}".format(value))
 
     # Windows does not have multiple wheels for the same target platform
-    return offset
+    return (False, False, 0, 0)
 
 def select_whl(*, whls, want_abis, want_os, want_cpu):
     """Select a suitable wheel from a list.
