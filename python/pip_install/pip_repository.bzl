@@ -774,25 +774,26 @@ def _whl_library_impl(rctx):
         whl_path = rctx.path(whl_path.basename)
     elif rctx.attr.urls:
         filename = rctx.attr.filename
+        urls = rctx.attr.urls
         if not filename:
-            _, _, filename = rctx.attr.urls[0].rpartition("/")
+            _, _, filename = urls[0].rpartition("/")
 
         if not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith(".zip")):
             if rctx.attr.filename:
                 msg = "got '{}'".format(filename)
             else:
-                msg = "detected '{}' from url:\n{}".format(filename, rctx.attr.urls[0])
+                msg = "detected '{}' from url:\n{}".format(filename, urls[0])
             fail("Only '.whl', '.tar.gz' or '.zip' files are supported, {}".format(msg))
 
         result = rctx.download(
-            url = rctx.attr.urls,
+            url = urls,
             output = rctx.attr.filename,
             sha256 = rctx.attr.sha256,
-            auth = get_auth(rctx, rctx.attr.urls),
+            auth = get_auth(rctx, urls),
         )
 
         if not result.success:
-            fail(result)
+            fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
 
         whl_path = rctx.path(rctx.attr.filename)
     else:
