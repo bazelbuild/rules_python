@@ -23,7 +23,7 @@ load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
 load(":normalize_name.bzl", "normalize_name")
 
-def simpleapi_download(ctx, *, attr, cache = None):
+def simpleapi_download(ctx, *, attr, cache):
     """Download Simple API HTML.
 
     Args:
@@ -73,13 +73,13 @@ def simpleapi_download(ctx, *, attr, cache = None):
     contents = {}
     for pkg, args in srcs.items():
         all_urls = list(args["urls"].keys())
-        cache_key = ""
-        if cache != None:
-            # FIXME @aignas 2024-03-28: should I envsub this?
-            cache_key = ",".join(all_urls)
-            if cache_key in cache:
-                contents[pkg] = cache[cache_key]
-                continue
+
+        # FIXME @aignas 2024-03-28: should I envsub this?
+        # Sort for a stable cache key
+        cache_key = ",".join(sorted(all_urls))
+        if cache_key in cache:
+            contents[pkg] = cache[cache_key]
+            continue
 
         downloads[pkg] = struct(
             cache_key = cache_key,
@@ -92,11 +92,11 @@ def simpleapi_download(ctx, *, attr, cache = None):
             ),
         )
 
+    # If we use `block` == False, then we need to have a second loop that is
+    # collecting all of the results as they were being downloaded in parallel.
     for pkg, download in downloads.items():
         contents[pkg] = download.packages.contents()
-
-        if cache != None and download.cache_key:
-            cache[download.cache_key] = contents[pkg]
+        cache.setdefault(download.cache_key, contents[pkg])
 
     return contents
 
@@ -138,6 +138,7 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
     )
 
+    # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
         output = output,
@@ -146,7 +147,7 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
     )
 
     return struct(
-        contents = lambda: _read_contents(
+        contents = lambda: _read_index_result(
             ctx,
             download.wait() if download_kwargs.get("block") == False else download,
             output,
@@ -154,7 +155,7 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
         ),
     )
 
-def _read_contents(ctx, result, output, url):
+def _read_index_result(ctx, result, output, url):
     if not result.success:
         fail("Failed to download from {}: {}".format(url, result))
 
