@@ -932,7 +932,7 @@ whl_library_attrs = dict({
         allow_files = True,
     ),
     "filename": attr.string(
-        doc = "Download the whl file to this filename.",
+        doc = "Download the whl file to this filename. Only used when the `urls` is passed. If not specified, will be auto-detected from the `urls`.",
     ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
@@ -950,13 +950,15 @@ whl_library_attrs = dict({
         doc = "Python requirement string describing the package to make available, if 'urls' or 'whl_file' is given, then this only needs to include foo[any_extras] as a bare minimum.",
     ),
     "sha256": attr.string(
-        doc = "The sha256 of the downloaded whl",
+        doc = "The sha256 of the downloaded whl. Only used when the `urls` is passed.",
     ),
     "urls": attr.string_list(
-        doc = "The url of the whl to be downloaded using bazel downloader",
+        doc = """\
+The list of urls of the whl to be downloaded using bazel downloader. Using this
+attr makes `extra_pip_args` and `download_only` ignored.""",
     ),
     "whl_file": attr.label(
-        doc = "The whl file that should be used instead of downloading",
+        doc = "The whl file that should be used instead of downloading or building the whl.",
     ),
     "whl_patches": attr.label_keyed_string_dict(
         doc = """a label-keyed-string dict that has

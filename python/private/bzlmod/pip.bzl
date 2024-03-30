@@ -462,6 +462,9 @@ def _pip_parse_ext_attrs():
             doc = """\
 The index URL to use for downloading wheels using bazel downloader. This value is going
 to be subject to `envsubst` substitutions if necessary.
+
+The indexes must support Simple API as described here:
+https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
         ),
         "experimental_index_url_overrides": attr.string_dict(
@@ -472,6 +475,9 @@ if necessary.
 
 The key is the package name (will be normalized before usage) and the value is the
 index URL.
+
+The indexes must support Simple API as described here:
+https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
         ),
         "hub_name": attr.string(

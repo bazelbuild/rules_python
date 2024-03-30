@@ -24,6 +24,8 @@ A brief description of the categories of changes:
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
   sorted in the attributes section. We are also removing values that are not
   default in order to reduce the noise.
+* (deps): Bumped bazel_features to 1.9.1 to detect optional support
+  non-blocking downloads.
 
 ### Fixed
 
