@@ -268,7 +268,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 whl_library_args["requirement"] = srcs.requirement
                 whl_library_args["urls"] = [whl.url]
                 whl_library_args["sha256"] = whl.sha256
-                whl_library_args["filename"] = whl.filenam2
+                whl_library_args["filename"] = whl.filename
                 if pip_attr.netrc:
                     whl_library_args["netrc"] = pip_attr.netrc
                 if pip_attr.auth_patterns:
