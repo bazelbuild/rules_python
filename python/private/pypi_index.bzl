@@ -29,10 +29,12 @@ def simpleapi_download(ctx, *, attr, cache):
         ctx: The module_ctx or repository_ctx.
         attr: Contains the parameters for the download. They are grouped into a
           struct for better clarity. It must have attributes:
-           * index_url: The index.
-           * index_url_overrides: The index overrides for separate packages.
-           * sources: The sources to download things for.
-           * envsubst: The envsubst vars.
+           * index_url: str, the index.
+           * index_url_overrides: dict[str, str], the index overrides for
+             separate packages.
+           * sources: list[str], the sources to download things for. Each value is
+             the contents of requirements files.
+           * envsubst: list[str], the envsubst vars for performing substitution in index url.
            * netrc: The netrc parameter for ctx.download, see http_file for docs.
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
