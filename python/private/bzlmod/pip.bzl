@@ -15,7 +15,6 @@
 "pip module extension for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
@@ -179,7 +178,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         requirement_cycles = {}
 
     index_urls = {}
-    host_cpu, host_os = None, None
     if pip_attr.experimental_index_url:
         if pip_attr.download_only:
             fail("Currently unsupported to use `download_only` and `experimental_index_url`")
@@ -194,15 +192,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             envsubst = pip_attr.envsubst,
             cache = simpleapi_cache,
         )
-
-        for constraint in HOST_CONSTRAINTS:
-            if "@platforms//cpu:" in constraint:
-                _, _, host_cpu = constraint.partition(":")
-            elif "@platforms//os:" in constraint:
-                _, _, host_os = constraint.partition(":")
-
-        if not (host_os and host_cpu):
-            fail("Don't have host information")
 
     major_minor = _major_minor_version(pip_attr.python_version)
 
@@ -267,7 +256,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                     # Older python versions have wheels for the `*m` ABI.
                     "cp" + major_minor.replace(".", "") + "m",
                 ],
-                want_platform = "{}_{}".format(host_os, host_cpu),
+                want_os = module_ctx.os.name,
+                want_cpu = module_ctx.os.arch,
             )
 
             if whl:

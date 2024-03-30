@@ -33,6 +33,39 @@ _LEGACY_ALIASES = {
     "manylinux2014_x86_64": "manylinux_2_17_x86_64",
 }
 
+# _translate_cpu and _translate_os from @platforms//host:extension.bzl
+def _translate_cpu(arch):
+    if arch in ["i386", "i486", "i586", "i686", "i786", "x86"]:
+        return "x86_32"
+    if arch in ["amd64", "x86_64", "x64"]:
+        return "x86_64"
+    if arch in ["ppc", "ppc64", "ppc64le"]:
+        return "ppc"
+    if arch in ["arm", "armv7l"]:
+        return "arm"
+    if arch in ["aarch64"]:
+        return "aarch64"
+    if arch in ["s390x", "s390"]:
+        return "s390x"
+    if arch in ["mips64el", "mips64"]:
+        return "mips64"
+    if arch in ["riscv64"]:
+        return "riscv64"
+    return None
+
+def _translate_os(os):
+    if os.startswith("mac os"):
+        return "osx"
+    if os.startswith("freebsd"):
+        return "freebsd"
+    if os.startswith("openbsd"):
+        return "openbsd"
+    if os.startswith("linux"):
+        return "linux"
+    if os.startswith("windows"):
+        return "windows"
+    return None
+
 # The order of the dictionaries is to keep definitions with their aliases next to each
 # other
 _CPU_ALIASES = {
@@ -114,13 +147,14 @@ def _whl_priority(value):
     # Windows does not have multiple wheels for the same target platform
     return offset
 
-def select_whl(*, whls, want_abis, want_platform):
+def select_whl(*, whls, want_abis, want_os, want_cpu):
     """Select a suitable wheel from a list.
 
     Args:
         whls(list[struct]): A list of candidates.
         want_abis(list[str]): A list of ABIs that are supported.
-        want_platform(str): A string platform that can be derived from `{os}_{cpu}` values.
+        want_os(str): The module_ctx.os.name.
+        want_cpu(str): The module_ctx.os.arch.
 
     Returns:
         A struct with `url`, `sha256` and `filename` attributes for the selected whl.
@@ -175,7 +209,10 @@ def select_whl(*, whls, want_abis, want_platform):
 
         target_plats[p] = sorted(platform_tags, key = _whl_priority)
 
-    want = target_plats.get(want_platform)
+    want = target_plats.get("{}_{}".format(
+        _translate_os(want_os),
+        _translate_cpu(want_cpu),
+    ))
     if not want:
         return want
 

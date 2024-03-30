@@ -6,15 +6,7 @@ module(
 
 bazel_dep(name = "bazel_features", version = "1.9.1")
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "platforms", version = "0.0.9")
-
-# TODO @aignas 2024-03-29: remove once the PR is merged
-# https://github.com/bazelbuild/platforms/pull/89
-archive_override(
-    module_name = "platforms",
-    strip_prefix = "platforms-647e63090b1455274e6af2900cf7830cd13ce6bb",
-    urls = ["https://github.com/aignas/platforms/archive/647e63090b1455274e6af2900cf7830cd13ce6bb.zip"],
-)
+bazel_dep(name = "platforms", version = "0.0.4")
 
 # Those are loaded only when using py_proto_library
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
