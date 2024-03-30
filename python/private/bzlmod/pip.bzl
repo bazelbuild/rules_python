@@ -265,23 +265,20 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             )
 
             if whl:
-                # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
-                whl_library_args.pop("extra_pip_args", None)
-
-                # This is no-op because pip is not used to download the wheel.
-                whl_library_args.pop("download_only", None)
-
-                whl_library_args.update(dict(
-                    requirement = srcs.wo_shas,
-                    urls = [whl.url],
-                    sha256 = whl.sha256,
-                    filename = whl.filename,
-                ))
+                whl_library_args["requirement"] = srcs.wo_shas
+                whl_library_args["urls"] = [whl.url]
+                whl_library_args["sha256"] = whl.sha256
+                whl_library_args["filename"] = whl.filename
                 if pip_attr.netrc:
                     whl_library_args["netrc"] = pip_attr.netrc
                 if pip_attr.auth_patterns:
                     whl_library_args["auth_patterns"] = pip_attr.auth_patterns
 
+                # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
+                whl_library_args.pop("extra_pip_args", None)
+
+                # This is no-op because pip is not used to download the wheel.
+                whl_library_args.pop("download_only", None)
             else:
                 # TODO @aignas 2024-03-29: in the future we should probably just
                 # use an `sdist` but having this makes it easy to debug issues
