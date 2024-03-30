@@ -220,7 +220,7 @@ def get_simpleapi_sources(line):
         head = head + ";" + maybe_hashes.partition("--hash=")[0].strip()
 
     return struct(
-        wo_shas = line if not shas else head,
+        requirement = line if not shas else head,
         version = version,
         shas = sorted(shas),
     )

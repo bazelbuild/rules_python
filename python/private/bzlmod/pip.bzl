@@ -265,7 +265,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             )
 
             if whl:
-                whl_library_args["requirement"] = srcs.wo_shas
+                whl_library_args["requirement"] = srcs.requirement
                 whl_library_args["urls"] = [whl.url]
                 whl_library_args["sha256"] = whl.sha256
                 whl_library_args["filename"] = whl.filenam2
