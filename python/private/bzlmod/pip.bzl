@@ -187,8 +187,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             module_ctx,
             attr = struct(
                 index_url = pip_attr.experimental_index_url,
-                # TODO @aignas 2024-03-28: support index overrides for specific packages
-                # We should never attempt to join index contents ourselves.
                 index_url_overrides = pip_attr.experimental_index_url_overrides or {},
                 sources = [requirements_lock_content],
                 envsubst = pip_attr.envsubst,
