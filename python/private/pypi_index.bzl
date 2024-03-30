@@ -17,7 +17,6 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
@@ -49,20 +48,10 @@ def simpleapi_download(ctx, *, attr, cache):
     Returns:
         dict of pkg name to the HTML contents.
     """
-    sources = get_packages_from_requirements(attr.sources)
     index_url_overrides = {
         normalize_name(p): i
         for p, i in (attr.index_url_overrides or {}).items()
     }
-
-    srcs = {}
-    for pkg, want_shas in sources.simpleapi.items():
-        entry = srcs.setdefault(pkg, {"urls": {}, "want_shas": sets.make()})
-
-        # ensure that we have a trailing slash, because we will otherwise get redirects
-        # which may not work on private indexes with netrc authentication.
-        entry["urls"]["{}/{}/".format(index_url_overrides.get(pkg, attr.index_url).rstrip("/"), pkg)] = True
-        entry["want_shas"] = sets.union(entry["want_shas"], want_shas)
 
     download_kwargs = {}
     if bazel_features.external_deps.download_has_block_param:
@@ -71,22 +60,23 @@ def simpleapi_download(ctx, *, attr, cache):
     # Download in parallel if possible
     downloads = {}
     contents = {}
-    for pkg, args in srcs.items():
-        all_urls = list(args["urls"].keys())
+    for pkg in get_packages_from_requirements(attr.sources):
+        url = "{}/{}/".format(
+            index_url_overrides.get(pkg, attr.index_url).rstrip("/"),
+            pkg,
+        )
 
-        # FIXME @aignas 2024-03-28: should I envsub this?
-        # Sort for a stable cache key
-        cache_key = ",".join(sorted(all_urls))
+        # FIXME @aignas 2024-03-28: should I envsubt this?
+        cache_key = url
         if cache_key in cache:
             contents[pkg] = cache[cache_key]
             continue
 
         downloads[pkg] = struct(
             cache_key = cache_key,
-            urls = all_urls,
             packages = read_simple_api(
                 ctx = ctx,
-                url = all_urls,
+                url = [url],
                 attr = attr,
                 **download_kwargs
             ),
@@ -175,19 +165,11 @@ def get_packages_from_requirements(requirements_files):
     want_packages = {}
     for contents in requirements_files:
         parse_result = parse_requirements(contents)
-        for distribution, line in parse_result.requirements:
+        for distribution, _ in parse_result.requirements:
             distribution = normalize_name(distribution)
-            shas = want_packages.get(distribution)
-            if not shas:
-                shas = sets.make()
-                want_packages[distribution] = shas
+            want_packages[distribution] = None
 
-            for sha in get_simpleapi_sources(line).shas:
-                sets.insert(shas, sha)
-
-    return struct(
-        simpleapi = want_packages,
-    )
+    return want_packages
 
 def get_simpleapi_sources(line):
     """Get PyPI sources from a requirements.txt line.
@@ -225,13 +207,12 @@ def get_simpleapi_sources(line):
         shas = sorted(shas),
     )
 
-def get_packages(index_urls, content, want_shas = None):
+def get_packages(index_urls, content):
     """Get the package URLs for given shas by parsing the Simple API HTML.
 
     Args:
         index_urls(list[str]): The URLs that the HTML content can be downloaded from.
         content(str): The Simple API HTML content.
-        want_shas(set[str], optional): The list of shas that we need to get, otherwise we'll get all.
 
     Returns:
         A list of structs with:
@@ -262,17 +243,8 @@ def get_packages(index_urls, content, want_shas = None):
         url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
 
-        if want_shas:
-            if sets.contains(want_shas, sha256):
-                continue
-            elif "data-yanked" in line:
-                # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-                #
-                # For now we just fail and inform the user to relock the requirements with a
-                # different version.
-                fail("The package with '--hash=sha256:{}' was yanked, relock your requirements".format(sha256))
-            else:
-                sets.remove(want_shas, sha256)
+        # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+        yanked = "data-yanked" in line
 
         maybe_metadata, _, tail = tail.partition(">")
         filename, _, tail = tail.partition("<")
@@ -294,14 +266,7 @@ def get_packages(index_urls, content, want_shas = None):
                 sha256 = sha256,
                 metadata_sha256 = metadata_sha256,
                 metadata_url = metadata_url,
-            ),
-        )
-
-    if want_shas:
-        fail(
-            "Indexes {} did not provide packages with all shas: {}".format(
-                index_urls,
-                ", ".join(want_shas.keys()),
+                yanked = yanked,
             ),
         )
 

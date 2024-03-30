@@ -251,7 +251,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 whls = [
                     src
                     for src in index_urls[whl_name]
-                    if src.sha256 in srcs.shas and src.filename.endswith(".whl")
+                    # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+                    #
+                    # For now we just exclude such artifacts.
+                    if src.sha256 in srcs.shas and src.filename.endswith(".whl") and not src.yanked
                 ],
                 want_abis = [
                     "none",
