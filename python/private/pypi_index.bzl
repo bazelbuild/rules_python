@@ -46,7 +46,7 @@ def simpleapi_download(ctx, *, attr, cache):
             `bazel clean --expunge`.
 
     Returns:
-        dict of pkg name to the HTML contents.
+        dict of pkg name to the parsed HTML contents - a list of structs.
     """
     index_url_overrides = {
         normalize_name(p): i
@@ -117,6 +117,8 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
     url = url if type(url) == type("") else url[0]
 
     output_str = url
+
+    # Transform the URL into a valid filename
     for char in [".", ":", "/", "\\", "$", "[", "]", "{", "}", "'", "\"", "-"]:
         output_str = output_str.replace(char, "_")
 
