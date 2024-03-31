@@ -12,4 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//tests/integration:integration_test.bzl", "rules_python_integration_test")
+
 licenses(["notice"])  # Apache 2.0
+
+rules_python_integration_test(
+    name = "pypi_install",
+    bzlmod = False,
+)

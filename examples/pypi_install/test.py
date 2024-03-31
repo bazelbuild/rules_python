@@ -1,4 +1,3 @@
-# Copyright 2023 Jeremy Volkman. All rights reserved.
 # Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_binary")
+import unittest
 
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD.bazel",
-        "wheel_installer.py",
-    ],
-    visibility = [
-        "//third_party/rules_pycross/pycross/private:__subpackages__",
-    ],
-)
+import main
 
-py_binary(
-    name = "wheel_installer",
-    srcs = ["wheel_installer.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//python/pip_install/tools/wheel_installer:lib",
-        "@pypi__installer//:lib",
-    ],
-)
+
+class ExampleTest(unittest.TestCase):
+    def test_main(self):
+        self.assertEqual("1.0", main.pkg_a_version())
+
+    def test_original(self):
+        self.assertEqual("This is pkg_a", main.pkg_a_function())
+
+    #def test_patch(self):
+    #    self.assertEqual("Hello from a patch", main.patched_hello())
+
+
+if __name__ == "__main__":
+    unittest.main()

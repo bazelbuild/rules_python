@@ -1,11 +1,10 @@
-# Copyright 2023 Jeremy Volkman. All rights reserved.
 # Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,15 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD.bazel",
-        "providers.bzl",
-        "wheel_library.bzl",
-        "//third_party/rules_pycross/pycross/private/tools:distribution",
-    ],
-    visibility = [
-        "//:__subpackages__",
-    ],
-)
+def generate_repo_name_for_download(package, info):
+    # TODO(phil): Can we make it more human readable by avoiding the checksum?
+    return "pypi_download_{}_{}".format(package, info["sha256"])
+
+def generate_repo_name_for_extracted_wheel(package, info):
+    # TODO(phil): Can we make it more human readable by avoiding the checksum?
+    return "pypi_extracted_wheel_{}_{}".format(package, info["sha256"])

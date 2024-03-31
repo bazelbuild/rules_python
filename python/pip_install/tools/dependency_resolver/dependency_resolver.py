@@ -15,17 +15,28 @@
 "Set defaults for the pip-compile command to run it under Bazel"
 
 import atexit
+import json
 import os
 import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Mapping, Optional, Tuple
 
 import click
+import pip
+import pip._internal.cli.main
+from packaging.requirements import Requirement
+from packaging.markers import Marker
 import piptools.writer as piptools_writer
 from piptools.scripts.compile import cli
 
 from python.runfiles import runfiles
+
+
+RUNFILES = runfiles.Create()
+
 
 # Replace the os.replace function with shutil.copy to work around os.replace not being able to
 # replace or move files across filesystems.
@@ -70,19 +81,130 @@ def _select_golden_requirements_file(
         return requirements_txt
 
 
-def _locate(bazel_runfiles, file):
+def _locate(file):
     """Look up the file via Rlocation"""
 
     if not file:
         return file
 
-    return bazel_runfiles.Rlocation(file)
+    return RUNFILES.Rlocation(file)
+
+
+def _evaluate_marker(marker: Marker, environment: Mapping[str, str], extra: str):
+    """Evaluates a requirements marker found in the metadata.
+
+    https://packaging.pypa.io/en/stable/markers.html
+
+    Since there doesn't seem to be a packaging-provided helper to evaluate
+    against multiple extras, call this function once for each extra. Call it at
+    least once with `extra` set to the empty string.
+    """
+    environment_copy = environment.copy()
+    environment_copy["extra"] = extra
+    return marker.evaluate(environment_copy)
+
+
+def _post_process_installation_report(
+        config_setting: str,
+        raw_installation_report: Path,
+        intermediate_file: Path):
+    """Processes an installation report into an intermediate file.
+
+    See the docs on installation reports for more information:
+    https://pip.pypa.io/en/stable/reference/installation-report/
+    """
+    with raw_installation_report.open() as file:
+        report = json.load(file)
+
+    environment = report["environment"]
+
+    intermediate = {}
+
+    for install in report["install"]:
+        download_info = install["download_info"]
+        metadata = install["metadata"]
+        name = metadata["name"]
+
+        # Extract the basic information about the hosted file (URL and sha256).
+        info = intermediate.setdefault(name, {}).setdefault(config_setting, {})
+        info["url"] = download_info["url"]
+        hash = download_info["archive_info"].get("hash", "")
+        if hash and hash.startswith("sha256="):
+            info["sha256"] = hash.split("=", 1)[1]
+        else:
+            raise ValueError("unknown integrity check: " + str(download_info["archive_info"]))
+
+        extras = install.get("requested_extras", []) + [""]
+
+        # Extract the dependency information.
+        deps = []
+        for raw_requirement in metadata.get("requires_dist", []):
+            requirement = Requirement(raw_requirement)
+            # TODO(phil): Is there a way to evaluate against all requested
+            # extras at once?
+            if requirement.marker:
+                if not any(_evaluate_marker(requirement.marker, environment, extra) for extra in extras):
+                    continue
+            # TODO(phil): Look at requirement.extras and pull in that
+            # dependency's extra variant. This requires us to expose libraries
+            # with those extra variants. For now just pull in the library
+            # assuming that it provides all requested extras.
+            deps.append(requirement.name)
+
+        info["deps"] = sorted(deps)
+
+    with intermediate_file.open("w") as file:
+        json.dump(intermediate, file, indent=4)
+        file.write("\n")
+
+
+def _generate_intermediate_file(config_setting, requirements_in, intermediate_file, intermediate_file_patcher):
+    """Generates an installation report and then converts it into an intermediate file."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        raw_installation_report = Path(temp_dir) / "installation_report.json"
+        sys.argv = [
+            "pip",
+            "install",
+            "--ignore-installed",
+            "--dry-run",
+            "--quiet",
+            "--report",
+            str(raw_installation_report),
+            "--requirement",
+            str(requirements_in),
+        ]
+
+        result = pip._internal.cli.main.main()
+        if result != 0:
+            return result
+
+        _post_process_installation_report(
+            config_setting,
+            raw_installation_report,
+            intermediate_file)
+
+        if intermediate_file_patcher:
+            env_backup = os.environ.copy()
+            os.environ.pop("PYTHONPATH")
+            os.environ.update(RUNFILES.EnvVars())
+            try:
+                subprocess.run([
+                        _locate(intermediate_file_patcher),
+                        intermediate_file,
+                    ],
+                    check=True,
+                )
+            finally:
+                os.environ = env_backup
 
 
 @click.command(context_settings={"ignore_unknown_options": True})
 @click.argument("requirements_in")
 @click.argument("requirements_txt")
 @click.argument("update_target_label")
+@click.option("--intermediate-config")
+@click.option("--intermediate-file")
+@click.option("--intermediate-file-patcher")
 @click.option("--requirements-linux")
 @click.option("--requirements-darwin")
 @click.option("--requirements-windows")
@@ -91,6 +213,9 @@ def main(
     requirements_in: str,
     requirements_txt: str,
     update_target_label: str,
+    intermediate_config: Optional[str],
+    intermediate_file: Optional[str],
+    intermediate_file_patcher: Optional[str],
     requirements_linux: Optional[str],
     requirements_darwin: Optional[str],
     requirements_windows: Optional[str],
@@ -103,8 +228,8 @@ def main(
         requirements_darwin=requirements_darwin, requirements_windows=requirements_windows
     )
 
-    resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
-    resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
+    resolved_requirements_in = _locate(requirements_in)
+    resolved_requirements_file = _locate(requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
     # Main repo: __main__/<path_to_file>
@@ -122,6 +247,8 @@ def main(
     # Note: Windows cannot reference generated files without runfiles support enabled.
     requirements_in_relative = requirements_in[len(repository_prefix):]
     requirements_file_relative = requirements_file[len(repository_prefix):]
+    if intermediate_file:
+        pip_installation_report_relative = intermediate_file[len(repository_prefix):]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -164,6 +291,7 @@ def main(
         else resolved_requirements_in
     )
     argv.extend(extra_args)
+    print(argv)
 
     if UPDATE:
         print("Updating " + requirements_file_relative)
@@ -179,11 +307,24 @@ def main(
                         resolved_requirements_file, requirements_file_tree
                     )
                 )
-        cli(argv)
+        try:
+            cli(argv)
+        except SystemExit as e:
+            if e.code != 0:
+                raise
         requirements_file_relative_path = Path(requirements_file_relative)
         content = requirements_file_relative_path.read_text()
         content = content.replace(absolute_path_prefix, "")
         requirements_file_relative_path.write_text(content)
+
+        if intermediate_file:
+            print("Generating an intermediate file.")
+            # Feed the output of pip-compile into the installation report
+            # generation.
+            sys.exit(_generate_intermediate_file(intermediate_config, requirements_file_relative_path,
+                           Path(pip_installation_report_relative), intermediate_file_patcher))
+        else:
+            print("Not generating an intermediate file.")
     else:
         # cli will exit(0) on success
         try:
@@ -201,7 +342,7 @@ def main(
                 )
                 sys.exit(1)
             elif e.code == 0:
-                golden = open(_locate(bazel_runfiles, requirements_file)).readlines()
+                golden = open(_locate(requirements_file)).readlines()
                 out = open(requirements_out).readlines()
                 out = [line.replace(absolute_path_prefix, "") for line in out]
                 if golden != out:

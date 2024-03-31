@@ -1,4 +1,3 @@
-# Copyright 2023 Jeremy Volkman. All rights reserved.
 # Copyright 2023 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//python:defs.bzl", "py_binary")
+import sys
 
-filegroup(
-    name = "distribution",
-    srcs = [
-        "BUILD.bazel",
-        "wheel_installer.py",
-    ],
-    visibility = [
-        "//third_party/rules_pycross/pycross/private:__subpackages__",
-    ],
-)
+import pkg_resources
 
-py_binary(
-    name = "wheel_installer",
-    srcs = ["wheel_installer.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//python/pip_install/tools/wheel_installer:lib",
-        "@pypi__installer//:lib",
-    ],
-)
+import pkg_a.foo
+
+def pkg_a_version() -> str:
+    return pkg_resources.require("pkg-a")[0].version
+
+def pkg_a_function() -> str:
+    return pkg_a.foo.original_function()
+
+def main(argv):
+    print(f"pkg_a version: {pkg_a_version()}")
+    print(f"pkg_a function: {pkg_a_function()}")
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
