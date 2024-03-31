@@ -32,6 +32,8 @@ def simpleapi_download(ctx, *, attr, cache):
            * index_url: str, the index.
            * index_url_overrides: dict[str, str], the index overrides for
              separate packages.
+           * extra_index_urls: Extra index URLs that will be looked up after
+             the main is looked up.
            * sources: list[str], the sources to download things for. Each value is
              the contents of requirements files.
            * envsubst: list[str], the envsubst vars for performing substitution in index url.
@@ -59,51 +61,86 @@ def simpleapi_download(ctx, *, attr, cache):
     if bazel_features.external_deps.download_has_block_param:
         download_kwargs["block"] = False
 
-    # Download in parallel if possible
-    downloads = {}
+    # Download in parallel if possible. This will download (potentially
+    # duplicate) data for multiple packages if there is more than one index
+    # available, but that is the price of convenience. However, that price
+    # should be mostly negligible because the simple API calls are very cheap
+    # and the user should not notice any extra overhead.
+    #
+    # If we are in synchronous mode, then we will use the first result that we
+    # find.
+    #
+    # NOTE @aignas 2024-03-31: we are not merging results from multiple indexes
+    # to replicate how `pip` would handle this case.
+    async_downloads = {}
     contents = {}
+    index_urls = [attr.index_url] + attr.extra_index_urls
     for pkg in get_packages_from_requirements(attr.sources):
-        url = "{}/{}/".format(
-            index_url_overrides.get(pkg, attr.index_url).rstrip("/"),
-            pkg,
-        )
+        success = False
+        for index_url in index_urls:
+            url = "{}/{}/".format(
+                index_url_overrides.get(pkg, index_url).rstrip("/"),
+                pkg,
+            )
 
-        # FIXME @aignas 2024-03-28: should I envsubt this?
-        cache_key = url
-        if cache_key in cache:
-            contents[pkg] = cache[cache_key]
-            continue
-
-        downloads[pkg] = struct(
-            cache_key = cache_key,
-            packages = read_simple_api(
+            result = read_simple_api(
                 ctx = ctx,
-                url = [url],
+                url = url,
                 attr = attr,
+                cache = cache,
                 **download_kwargs
-            ),
-        )
+            )
+            if download_kwargs.get("block") == False:
+                # We will process it in a separate loop:
+                async_downloads.setdefault(pkg, []).append(struct(wait = result.wait))
+                continue
+
+            if result.success:
+                contents[pkg] = result.output
+                success = True
+                break
+
+        if not async_downloads and not success:
+            fail("Failed to download metadata about '{}' from urls: {}".format(
+                pkg,
+                ", ".join(index_urls),
+            ))
+
+    if not async_downloads:
+        return contents
 
     # If we use `block` == False, then we need to have a second loop that is
     # collecting all of the results as they were being downloaded in parallel.
-    for pkg, download in downloads.items():
-        contents[pkg] = download.packages.contents()
-        cache.setdefault(download.cache_key, contents[pkg])
+    for pkg, downloads in async_downloads.items():
+        success = False
+        for download in downloads:
+            result = download.wait()
+
+            if result.success:
+                contents[pkg] = result.output
+                success = True
+                break
+
+        if not success:
+            fail("Failed to download metadata about '{}' from urls: {}".format(
+                pkg,
+                ", ".join(index_urls),
+            ))
 
     return contents
 
-def read_simple_api(ctx, url, attr, **download_kwargs):
+def read_simple_api(ctx, url, attr, cache, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
         ctx: The module_ctx or repository_ctx.
-        url: The url parameter that can be passed to ctx.download.
+        url: str, the url parameter that can be passed to ctx.download.
         attr: The attribute that contains necessary info for downloading. The
           following attributes must be present:
-           * envsubst: The env vars to do env sub before downloading.
            * netrc: The netrc parameter for ctx.download, see http_file for docs.
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
+        cache: A dict for storing the results.
         **download_kwargs: Any extra params to ctx.download.
             Note that output and auth will be passed for you.
 
@@ -113,18 +150,9 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
     """
     # TODO: Add a test that env subbed index urls do not leak into the lock file.
 
-    if type(url) == type([]) and len(url) > 1:
-        fail("Only a single url is supported")
-
-    url = url if type(url) == type("") else url[0]
-
-    output_str = url
-
-    # Transform the URL into a valid filename
-    for char in [".", ":", "/", "\\", "$", "[", "]", "{", "}", "'", "\"", "-"]:
-        output_str = output_str.replace(char, "_")
-
-    output = ctx.path(output_str.strip("_").lower() + ".html")
+    # NOTE @aignas 2024-03-31: some of the simple APIs use relative URLs for
+    # the whl location and we cannot handle multiple URLs at once by passing
+    # them to ctx.download if we want to correctly handle the relative URLs.
 
     real_url = envsubst(
         url,
@@ -132,29 +160,54 @@ def read_simple_api(ctx, url, attr, **download_kwargs):
         ctx.getenv if hasattr(ctx, "getenv") else ctx.os.environ.get,
     )
 
+    cache_key = real_url
+    if cache_key in cache:
+        return struct(success = True, output = cache[cache_key])
+
+    output_str = envsubst(
+        url,
+        attr.envsubst,
+        # Use env names in the subst values - this will be unique over
+        # the lifetime of the execution of this function and we also use
+        # `~` as the separator to ensure that we don't get clashes.
+        {e: "~{}~".format(e) for e in attr.envsubst}.get,
+    )
+
+    # Transform the URL into a valid filename
+    for char in [".", ":", "/", "\\", "-"]:
+        output_str = output_str.replace(char, "_")
+
+    output = ctx.path(output_str.strip("_").lower() + ".html")
+
     # NOTE: this may have block = True or block = False in the download_kwargs
     download = ctx.download(
         url = [real_url],
         output = output,
         auth = get_auth(ctx, [real_url], ctx_attr = attr),
+        allow_fail = True,
         **download_kwargs
     )
 
-    return struct(
-        contents = lambda: _read_index_result(
-            ctx,
-            download.wait() if download_kwargs.get("block") == False else download,
-            output,
-            url,
-        ),
-    )
+    if download_kwargs.get("block") == False:
+        # Simulate the same API as ctx.download has
+        return struct(
+            wait = lambda: _read_index_result(ctx, download.wait(), output, url, cache, cache_key),
+        )
 
-def _read_index_result(ctx, result, output, url):
+    return _read_index_result(ctx, download, output, url, cache, cache_key)
+
+def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:
-        fail("Failed to download from {}: {}".format(url, result))
+        return struct(success = False)
 
     html = ctx.read(output)
-    return get_packages(url, html)
+
+    output = get_packages(url, html)
+    if output:
+        cache.setdefault(cache_key, output)
+        return struct(success = True, output = output, cache_key = cache_key)
+    else:
+        return struct(success = False)
 
 def get_packages_from_requirements(requirements_files):
     """Get Simple API sources from a list of requirements files and merge them.

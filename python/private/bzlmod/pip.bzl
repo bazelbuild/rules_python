@@ -187,6 +187,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             module_ctx,
             attr = struct(
                 index_url = pip_attr.experimental_index_url,
+                extra_index_urls = pip_attr.experimental_extra_index_urls or [],
                 index_url_overrides = pip_attr.experimental_index_url_overrides or {},
                 sources = [requirements_lock_content],
                 envsubst = pip_attr.envsubst,
@@ -458,6 +459,18 @@ def _pip_impl(module_ctx):
 
 def _pip_parse_ext_attrs():
     attrs = dict({
+        "experimental_extra_index_urls": attr.string_list(
+            doc = """\
+The extra index URLs to use for downloading wheels using bazel downloader.
+Each value is going to be subject to `envsubst` substitutions if necessary.
+
+The indexes must support Simple API as described here:
+https://packaging.python.org/en/latest/specifications/simple-repository-api/
+
+This is equivalent to `--extra-index-urls` `pip` option.
+""",
+            default = [],
+        ),
         "experimental_index_url": attr.string(
             doc = """\
 The index URL to use for downloading wheels using bazel downloader. This value is going
@@ -465,6 +478,11 @@ to be subject to `envsubst` substitutions if necessary.
 
 The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
+
+In the future this could be defaulted to `https://pypi.org` when this feature becomes
+stable.
+
+This is equivalent to `--index-url` `pip` option.
 """,
         ),
         "experimental_index_url_overrides": attr.string_dict(
@@ -475,6 +493,10 @@ if necessary.
 
 The key is the package name (will be normalized before usage) and the value is the
 index URL.
+
+This design pattern has been chosen in order to be fully deterministic about which
+packages come from which source. We want to avoid issues similar to what happened in
+https://pytorch.org/blog/compromised-nightly-dependency/.
 
 The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
