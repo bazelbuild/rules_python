@@ -106,16 +106,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None and not pip_attr.python_interpreter:
         python_name = "python_{}_host".format(
-            version_label(pip_attr.python_version, sep = "_"),
+            pip_attr.python_version.replace(".", "_"),
         )
         if python_name not in INTERPRETER_LABELS:
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
                 "python_version={version}: Make sure a corresponding " +
-                '`python.toolchain(python_version="{version}")` call exists'
+                '`python.toolchain(python_version="{version}")` call exists.' +
+                "Expected to find {python_name} among registered versions:\n  {labels}"
             ).format(
                 hub_name = hub_name,
                 version = pip_attr.python_version,
+                python_name = python_name,
+                labels = "  \n".join(INTERPRETER_LABELS),
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
@@ -405,9 +408,7 @@ Targets from different hubs should not be used together.
             mandatory = True,
             doc = """
 The Python version the dependencies are targetting, in Major.Minor format
-(e.g., "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
-If not specified, then the default Python version (as set by the root module or
-rules_python) will be used.
+(e.g., "3.11") or patch level granularity (e.g. "3.11.1").
 
 If an interpreter isn't explicitly provided (using `python_interpreter` or
 `python_interpreter_target`), then the version specified here must have

@@ -32,6 +32,10 @@ A brief description of the categories of changes:
 * (whl_library) The group redirection is only added when the package is part of
   the group potentially fixing aspects that want to traverse a `py_library` graph.
   Fixes [#1760](https://github.com/bazelbuild/rules_python/issues/1760).
+* (bzlmod) Setting a particular micro version for the interpreter and the
+  `pip.parse` extension is now possible, see the
+  `examples/pip_parse/MODULE.bazel` for how to do it.
+  See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
 
 ### Added
 
