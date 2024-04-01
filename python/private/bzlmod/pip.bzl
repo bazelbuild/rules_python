@@ -106,16 +106,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides):
     hub_name = pip_attr.hub_name
     if python_interpreter_target == None and not pip_attr.python_interpreter:
         python_name = "python_{}_host".format(
-            version_label(pip_attr.python_version, sep = "_"),
+            pip_attr.python_version.replace(".", "_"),
         )
         if python_name not in INTERPRETER_LABELS:
             fail((
                 "Unable to find interpreter for pip hub '{hub_name}' for " +
                 "python_version={version}: Make sure a corresponding " +
-                '`python.toolchain(python_version="{version}")` call exists'
+                '`python.toolchain(python_version="{version}")` call exists.' +
+                "Expected to find {python_name} among registered versions:\n  {labels}"
             ).format(
                 hub_name = hub_name,
                 version = pip_attr.python_version,
+                python_name = python_name,
+                labels = "  \n".join(INTERPRETER_LABELS),
             ))
         python_interpreter_target = INTERPRETER_LABELS[python_name]
 
