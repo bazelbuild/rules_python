@@ -408,9 +408,7 @@ Targets from different hubs should not be used together.
             mandatory = True,
             doc = """
 The Python version the dependencies are targetting, in Major.Minor format
-(e.g., "3.11"). Patch level granularity (e.g. "3.11.1") is not supported.
-If not specified, then the default Python version (as set by the root module or
-rules_python) will be used.
+(e.g., "3.11") or patch level granularity (e.g. "3.11.1").
 
 If an interpreter isn't explicitly provided (using `python_interpreter` or
 `python_interpreter_target`), then the version specified here must have
