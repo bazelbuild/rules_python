@@ -35,6 +35,7 @@ A brief description of the categories of changes:
 * (bzlmod) Setting a particular micro version for the interpreter and the
   `pip.parse` extension is now possible, see the
   `examples/pip_parse/MODULE.bazel` for how to do it.
+  See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
 
 ### Added
 
