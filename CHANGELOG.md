@@ -52,9 +52,10 @@ A brief description of the categories of changes:
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
 * (py_wheel) `bzlmod` installations now provide a `twine` setup for the default
   Python toolchain in `rules_python` for version 3.11.
-* (bzlmod) New `experimental_index_url` and `experimental_index_url_overrides` to
-  `pip.parse` for using the bazel downloader. This is currently only working for
-  `whl-only` setups and may contain bugs. If you see any issues, report in
+* (bzlmod) New `experimental_index_url`, `experimental_extra_index_urls` and
+  `experimental_index_url_overrides` to `pip.parse` for using the bazel
+  downloader. This is currently only working for `whl-only` setups and may
+  contain bugs. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
   the whl files will be written to the lock file.
 
