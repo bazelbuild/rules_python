@@ -84,6 +84,7 @@ def _test_parse_simple_api_html(env):
                     'data-requires-python="&gt;=3.7"',
                 ],
                 filename = "foo-0.0.1.tar.gz",
+                url = "ignored",
             ),
             struct(
                 filename = "foo-0.0.1.tar.gz",
@@ -103,6 +104,7 @@ def _test_parse_simple_api_html(env):
                     'data-core-metadata="sha256=deadb00f"',
                 ],
                 filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                url = "ignored",
             ),
             struct(
                 filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -113,11 +115,86 @@ def _test_parse_simple_api_html(env):
                 yanked = False,
             ),
         ),
+        (
+            struct(
+                attrs = [
+                    'href="https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=deadbeef"',
+                    'data-requires-python="&gt;=3.7"',
+                    'data-core-metadata="sha256=deadb00f"',
+                ],
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                url = "ignored",
+            ),
+            struct(
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                metadata_sha256 = "deadb00f",
+                metadata_url = "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata",
+                sha256 = "deadbeef",
+                url = "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = [
+                    'href="https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=deadbeef"',
+                    'data-requires-python="&gt;=3.7"',
+                    'data-dist-info-metadata="sha256=deadb00f"',
+                ],
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                url = "ignored",
+            ),
+            struct(
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                metadata_sha256 = "deadb00f",
+                metadata_url = "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata",
+                sha256 = "deadbeef",
+                url = "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = [
+                    'href="https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=deadbeef"',
+                    'data-requires-python="&gt;=3.7"',
+                ],
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                url = "ignored",
+            ),
+            struct(
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "deadbeef",
+                url = "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = [
+                    'href="../../foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=deadbeef"',
+                    'data-requires-python="&gt;=3.7"',
+                    'data-dist-info-metadata="sha256=deadb00f"',
+                ],
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                url = "https://example.org/python-wheels/bar/foo/",
+            ),
+            struct(
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                metadata_sha256 = "deadb00f",
+                metadata_url = "https://example.org/python-wheels/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata",
+                sha256 = "deadbeef",
+                url = "https://example.org/python-wheels/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                yanked = False,
+            ),
+        ),
     ]
 
     for (input, want) in tests:
         html = _generate_html(input)
-        got = parse_simple_api_html(url = "ignored", content = html)
+        got = parse_simple_api_html(url = input.url, content = html)
         env.expect.that_collection(got).has_size(1)
         if not got:
             fail("expected at least one element, but did not get anything from:\n{}".format(html))

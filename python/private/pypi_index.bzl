@@ -310,30 +310,31 @@ def parse_simple_api_html(*, url, content):
         maybe_metadata, _, tail = tail.partition(">")
         filename, _, tail = tail.partition("<")
 
-        metadata_marker = "data-core-metadata=\"sha256="
-        if metadata_marker in maybe_metadata:
-            # Implement https://peps.python.org/pep-0714/
-            _, _, tail = maybe_metadata.partition(metadata_marker)
-            metadata_sha256, _, _ = tail.partition("\"")
-            metadata_url = dist_url + ".metadata"
-        else:
-            metadata_sha256 = ""
-            metadata_url = ""
+        metadata_sha256 = ""
+        metadata_url = ""
+        for metadata_marker in ["data-core-metadata", "data-dist-info-metadata"]:
+            metadata_marker = metadata_marker + "=\"sha256="
+            if metadata_marker in maybe_metadata:
+                # Implement https://peps.python.org/pep-0714/
+                _, _, tail = maybe_metadata.partition(metadata_marker)
+                metadata_sha256, _, _ = tail.partition("\"")
+                metadata_url = dist_url + ".metadata"
+                break
 
         packages.append(
             struct(
                 filename = filename,
-                url = _absolute_urls(url, dist_url),
+                url = _absolute_url(url, dist_url),
                 sha256 = sha256,
                 metadata_sha256 = metadata_sha256,
-                metadata_url = metadata_url,
+                metadata_url = _absolute_url(url, metadata_url),
                 yanked = yanked,
             ),
         )
 
     return packages
 
-def _absolute_urls(index_url, candidate):
+def _absolute_url(index_url, candidate):
     if not candidate.startswith(".."):
         return candidate
 
