@@ -75,6 +75,7 @@ def _generate_html(*items):
     )
 
 def _test_parse_simple_api_html(env):
+    # buildifier: disable=unsorted-dict-items
     tests = [
         (
             struct(
@@ -83,6 +84,25 @@ def _test_parse_simple_api_html(env):
                     "href": "https://example.org/full-url/foo-0.0.1.tar.gz#sha256=deadbeefasource",
                 },
                 filename = "foo-0.0.1.tar.gz",
+            ),
+            struct(
+                filename = "foo-0.0.1.tar.gz",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "deadbeefasource",
+                url = "https://example.org/full-url/foo-0.0.1.tar.gz",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = {
+                    "href": "https://example.org/full-url/foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=deadbeef",
+                    "data-requires-python": "&gt;=3.7",
+                    "data-dist-info-metadata": "sha256=deadb00f",
+                    "data-core-metadata": "sha256=deadb00f",
+                },
+                filename = "foo-0.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
             ),
             struct(
                 filename = "foo-0.0.1.tar.gz",
@@ -119,7 +139,6 @@ def _test_parse_simple_api_html(env):
 
 _tests.append(_test_parse_simple_api_html)
 
-# <a href="https://example.org/full-url/foo-0.0.1.tar.gz#sha256=deadbeefasource" data-requires-python="&gt;=3.7" >foo-0.0.1.tar.gz</a><br />
 # <a href="https://example.org/full-url/foo-0.0.2-py3-none-any.whl#sha256=deadbeefawhl" data-requires-python="&gt;=3.7" data-tist-info-metadata="deadbeefametadata" data-core-metadata>cengal-3.2.5.tar.gz</a><br />
 # <a href="https://files.pythonhosted.org/packages/b5/e7/6121e9cbc85af3028db8e24c2ab093998e40be93a9aff33b4a2ce474c3a0/cengal-3.2.5.tar.gz#sha256=47bd9f239cb3ad0fa80f9e722424b1780a220c2034a95ad05e76b96f8eb7b926" data-requires-python="&gt;=3.7" >cengal-3.2.5.tar.gz</a><br />
 # <a href="https://files.pythonhosted.org/packages/f7/da/6a8858654fc80871e81fca22e503c7376b3e68a7681e0bd100c35daa1e69/cengal-3.2.6.tar.gz#sha256=19adb8b205484445cdeea0e10b7dbb89d867e8ab5902f678a023a5235fdc92e1" data-requires-python="&gt;=3.7" >cengal-3.2.6.tar.gz</a><br />
