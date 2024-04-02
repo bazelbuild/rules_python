@@ -17,6 +17,7 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
@@ -76,33 +77,37 @@ def simpleapi_download(ctx, *, attr, cache):
     contents = {}
     index_urls = [attr.index_url] + attr.extra_index_urls
     for pkg in get_packages_from_requirements(attr.sources):
+        pkg_normalized = normalize_name(pkg)
+
         success = False
         for index_url in index_urls:
-            url = "{}/{}/".format(
-                index_url_overrides.get(pkg, index_url).rstrip("/"),
-                pkg,
-            )
-
             result = read_simple_api(
                 ctx = ctx,
-                url = url,
+                url = "{}/{}/".format(
+                    index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
+                    pkg,
+                ),
                 attr = attr,
                 cache = cache,
                 **download_kwargs
             )
             if download_kwargs.get("block") == False:
                 # We will process it in a separate loop:
-                async_downloads.setdefault(pkg, []).append(struct(wait = result.wait))
+                async_downloads.setdefault(pkg_normalized, []).append(
+                    struct(
+                        pkg_normalized = pkg_normalized,
+                        wait = result.wait,
+                    ),
+                )
                 continue
 
             if result.success:
-                contents[pkg] = result.output
+                contents[pkg_normalized] = result.output
                 success = True
                 break
 
         if not async_downloads and not success:
-            fail("Failed to download metadata about '{}' from urls: {}".format(
-                pkg,
+            fail("Failed to download metadata from urls: {}".format(
                 ", ".join(index_urls),
             ))
 
@@ -116,14 +121,12 @@ def simpleapi_download(ctx, *, attr, cache):
         for download in downloads:
             result = download.wait()
 
-            if result.success:
-                contents[pkg] = result.output
+            if result.success and download.pkg_normalized not in contents:
+                contents[download.pkg_normalized] = result.output
                 success = True
-                break
 
         if not success:
-            fail("Failed to download metadata about '{}' from urls: {}".format(
-                pkg,
+            fail("Failed to download metadata from urls: {}".format(
                 ", ".join(index_urls),
             ))
 
@@ -137,6 +140,7 @@ def read_simple_api(ctx, url, attr, cache, **download_kwargs):
         url: str, the url parameter that can be passed to ctx.download.
         attr: The attribute that contains necessary info for downloading. The
           following attributes must be present:
+           * envsubst: The envsubst values for performing substitutions in the URL.
            * netrc: The netrc parameter for ctx.download, see http_file for docs.
            * auth_patterns: The auth_patterns parameter for ctx.download, see
                http_file for docs.
@@ -148,11 +152,10 @@ def read_simple_api(ctx, url, attr, cache, **download_kwargs):
         A similar object to what `download` would return except that in result.out
         will be the parsed simple api contents.
     """
-    # TODO: Add a test that env subbed index urls do not leak into the lock file.
-
     # NOTE @aignas 2024-03-31: some of the simple APIs use relative URLs for
     # the whl location and we cannot handle multiple URLs at once by passing
     # them to ctx.download if we want to correctly handle the relative URLs.
+    # TODO: Add a test that env subbed index urls do not leak into the lock file.
 
     real_url = envsubst(
         url,
@@ -200,9 +203,9 @@ def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:
         return struct(success = False)
 
-    html = ctx.read(output)
+    content = ctx.read(output)
 
-    output = get_packages(url, html)
+    output = parse_simple_api_html(url = url, content = content)
     if output:
         cache.setdefault(cache_key, output)
         return struct(success = True, output = output, cache_key = cache_key)
@@ -216,17 +219,18 @@ def get_packages_from_requirements(requirements_files):
         requirements_files(list[str]): A list of requirements files contents.
 
     Returns:
-        A struct with `simpleapi` attribute that contains a dict of normalized package
-        name to a list of shas that we should index.
+        A list.
     """
-    want_packages = {}
+    want_packages = sets.make()
     for contents in requirements_files:
         parse_result = parse_requirements(contents)
         for distribution, _ in parse_result.requirements:
-            distribution = normalize_name(distribution)
-            want_packages[distribution] = None
+            # NOTE: we'll be querying the PyPI servers multiple times if the
+            # requirements contains non-normalized names, but this is what user
+            # is specifying to us.
+            sets.insert(want_packages, distribution)
 
-    return want_packages
+    return sets.to_list(want_packages)
 
 def get_simpleapi_sources(line):
     """Get PyPI sources from a requirements.txt line.
@@ -264,11 +268,11 @@ def get_simpleapi_sources(line):
         shas = sorted(shas),
     )
 
-def get_packages(index_urls, content):
+def parse_simple_api_html(*, url, content):
     """Get the package URLs for given shas by parsing the Simple API HTML.
 
     Args:
-        index_urls(list[str]): The URLs that the HTML content can be downloaded from.
+        url(str): The URL that the HTML content can be downloaded from.
         content(str): The Simple API HTML content.
 
     Returns:
@@ -297,7 +301,7 @@ def get_packages(index_urls, content):
         fail("Unsupported API version: {}".format(api_version))
 
     for line in lines[1:]:
-        url, _, tail = line.partition("#sha256=")
+        dist_url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
 
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
@@ -311,7 +315,7 @@ def get_packages(index_urls, content):
             # Implement https://peps.python.org/pep-0714/
             _, _, tail = maybe_metadata.partition(metadata_marker)
             metadata_sha256, _, _ = tail.partition("\"")
-            metadata_url = url + ".metadata"
+            metadata_url = dist_url + ".metadata"
         else:
             metadata_sha256 = ""
             metadata_url = ""
@@ -319,7 +323,7 @@ def get_packages(index_urls, content):
         packages.append(
             struct(
                 filename = filename,
-                url = _absolute_urls(index_urls[0], url),
+                url = _absolute_urls(url, dist_url),
                 sha256 = sha256,
                 metadata_sha256 = metadata_sha256,
                 metadata_url = metadata_url,
