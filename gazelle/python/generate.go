@@ -54,21 +54,13 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 	return kind
 }
 
-func makeCompiledGlobs(globs []string) []glob.Glob {
-	compiledGlobs := []glob.Glob{}
-	for _, value := range globs {
-		compiledGlob, err := glob.Compile(value)
-		if err != nil {
-			log.Fatalf("ERROR: Failed to compile glob '%v'. Error: %v\n", value, err)
-		}
-		compiledGlobs = append(compiledGlobs, compiledGlob)
-	}
-	return compiledGlobs
-}
-
-func matchesAnyGlob(s string, globs []glob.Glob) bool {
+func matchesAnyGlob(s string, globs []string) bool {
 	for _, g := range globs {
-		if g.Match(s) {
+		ok, err := doublestar.Match(g, s)
+		if err != nil {
+			log.Fatalf("ERROR: Failed to compile glob '%v'. Error: %v\n", g, err)
+		}
+		if ok {
 			return true
 		}
 	}
@@ -121,7 +113,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	hasPyTestEntryPointTarget := false
 	hasConftestFile := false
 
-	testFileGlobs := makeCompiledGlobs(cfg.TestFilePattern())
+	testFileGlobs := cfg.TestFilePattern()
 
 	for _, f := range args.RegularFiles {
 		if cfg.IgnoresFile(filepath.Base(f)) {
