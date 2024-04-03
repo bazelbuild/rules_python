@@ -55,12 +55,10 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 }
 
 func matchesAnyGlob(s string, globs []string) bool {
+	// This function assumes that the globs have already been validated. If a glob is
+	// invalid, this function will simply return `false`.
 	for _, g := range globs {
-		ok, err := doublestar.Match(g, s)
-		if err != nil {
-			log.Fatalf("ERROR: Failed to compile glob '%v'. Error: %v\n", g, err)
-		}
-		if ok {
+		if ok, _ := doublestar.Match(g, s); ok {
 			return true
 		}
 	}
