@@ -42,7 +42,6 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
-        "@com_github_gobwas_glob//:glob",
     ],
 )
 

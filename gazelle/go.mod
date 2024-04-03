@@ -9,7 +9,6 @@ require (
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/emirpasic/gods v1.18.1
 	github.com/ghodss/yaml v1.0.0
-	github.com/gobwas/glob v0.2.3
 	gopkg.in/yaml.v2 v2.4.0
 )
 

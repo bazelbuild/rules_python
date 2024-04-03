@@ -32,7 +32,6 @@ import (
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
-	"github.com/gobwas/glob"
 )
 
 const (

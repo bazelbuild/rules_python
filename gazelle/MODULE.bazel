@@ -17,6 +17,5 @@ use_repo(
     "com_github_bmatcuk_doublestar",
     "com_github_emirpasic_gods",
     "com_github_ghodss_yaml",
-    "com_github_gobwas_glob",
     "in_gopkg_yaml_v2",
 )
