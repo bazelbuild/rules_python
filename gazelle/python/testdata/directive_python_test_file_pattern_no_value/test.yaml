@@ -16,4 +16,4 @@
 expect:
   exit_code: 1
   stderr: |
-    gazelle: ERROR: Directive 'python_test_file_pattern' requires a value.
+    gazelle: directive 'python_test_file_pattern' requires a value

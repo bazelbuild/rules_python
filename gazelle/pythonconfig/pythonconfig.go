@@ -441,7 +441,7 @@ func (c *Config) DefaultVisibilty() []string {
 func (c *Config) SetTestFilePattern(patterns []string) {
 	for _, p := range patterns {
 		if !doublestar.ValidatePattern(p) {
-			log.Fatalf("ERROR: Failed to compile glob '%v'. Error: syntax error in pattern\n", p)
+			log.Fatalf("invalid glob pattern '%s'", p)
 		}
 	}
 	c.testFilePattern = patterns

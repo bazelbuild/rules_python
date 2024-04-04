@@ -16,4 +16,4 @@
 expect:
   exit_code: 1
   stderr: |
-    gazelle: ERROR: Failed to compile glob 'foo_*_[A-Z_test?.py'. Error: syntax error in pattern
+    gazelle: invalid glob pattern 'foo_*_[A-Z_test?.py'
