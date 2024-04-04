@@ -16,11 +16,9 @@ package pythonconfig
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"strings"
 
-	"github.com/bmatcuk/doublestar/v4"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 
 	"github.com/bazelbuild/bazel-gazelle/label"
@@ -437,13 +435,7 @@ func (c *Config) DefaultVisibilty() []string {
 }
 
 // SetTestFilePattern sets the file patterns that should be mapped to 'py_test' rules.
-// Will exit 1 if the pattern is invalid.
 func (c *Config) SetTestFilePattern(patterns []string) {
-	for _, p := range patterns {
-		if !doublestar.ValidatePattern(p) {
-			log.Fatalf("invalid glob pattern '%s'", p)
-		}
-	}
 	c.testFilePattern = patterns
 }
 

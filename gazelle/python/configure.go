@@ -25,6 +25,7 @@ import (
 
 	"github.com/bazelbuild/bazel-gazelle/config"
 	"github.com/bazelbuild/bazel-gazelle/rule"
+	"github.com/bmatcuk/doublestar/v4"
 
 	"github.com/bazelbuild/rules_python/gazelle/manifest"
 	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
@@ -188,6 +189,11 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal("directive 'python_test_file_pattern' requires a value")
 			}
 			globStrings := strings.Split(value, ",")
+			for _, g := range globStrings {
+				if !doublestar.ValidatePattern(g) {
+					log.Fatalf("invalid glob pattern '%s'", g)
+				}
+			}
 			config.SetTestFilePattern(globStrings)
 		}
 	}
