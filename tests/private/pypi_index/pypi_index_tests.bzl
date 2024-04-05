@@ -88,13 +88,39 @@ def _test_parse_simple_api_html(env):
             ),
             struct(
                 filename = "foo-0.0.1.tar.gz",
-                metadata_sha256 = "",
-                metadata_url = "",
                 sha256 = "deadbeefasource",
                 url = "https://example.org/full-url/foo-0.0.1.tar.gz",
                 yanked = False,
             ),
         ),
+    ]
+
+    for (input, want) in tests:
+        html = _generate_html(input)
+        got = parse_simple_api_html(url = input.url, content = html)
+        env.expect.that_collection(got.sdists).has_size(1)
+        if not got:
+            fail("expected at least one element, but did not get anything from:\n{}".format(html))
+
+        actual = env.expect.that_struct(
+            got.sdists[want.sha256],
+            attrs = dict(
+                filename = subjects.str,
+                sha256 = subjects.str,
+                url = subjects.str,
+                yanked = subjects.bool,
+            ),
+        )
+        actual.filename().equals(want.filename)
+        actual.sha256().equals(want.sha256)
+        actual.url().equals(want.url)
+        actual.yanked().equals(want.yanked)
+
+_tests.append(_test_parse_simple_api_html)
+
+def _test_parse_simple_api_html_whls(env):
+    # buildifier: disable=unsorted-dict-items
+    tests = [
         (
             struct(
                 attrs = [
@@ -195,12 +221,12 @@ def _test_parse_simple_api_html(env):
     for (input, want) in tests:
         html = _generate_html(input)
         got = parse_simple_api_html(url = input.url, content = html)
-        env.expect.that_collection(got).has_size(1)
+        env.expect.that_collection(got.whls).has_size(1)
         if not got:
             fail("expected at least one element, but did not get anything from:\n{}".format(html))
 
         actual = env.expect.that_struct(
-            got[0],
+            got.whls[want.sha256],
             attrs = dict(
                 filename = subjects.str,
                 metadata_sha256 = subjects.str,
@@ -217,7 +243,7 @@ def _test_parse_simple_api_html(env):
         actual.url().equals(want.url)
         actual.yanked().equals(want.yanked)
 
-_tests.append(_test_parse_simple_api_html)
+_tests.append(_test_parse_simple_api_html_whls)
 
 def pypi_index_test_suite(name):
     """Create the test suite.
