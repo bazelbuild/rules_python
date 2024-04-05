@@ -23,7 +23,7 @@ A brief description of the categories of changes:
 
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
   sorted in the attributes section. We are also removing values that are not
-  default in order to reduce the noise.
+  default in order to reduce the size of the lock file.
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
 
@@ -54,10 +54,9 @@ A brief description of the categories of changes:
   Python toolchain in `rules_python` for version 3.11.
 * (bzlmod) New `experimental_index_url`, `experimental_extra_index_urls` and
   `experimental_index_url_overrides` to `pip.parse` for using the bazel
-  downloader. This is currently only working for `whl-only` setups and may
-  contain bugs. If you see any issues, report in
+  downloader. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
-  the whl files will be written to the lock file.
+  the whl and sdist files will be written to the lock file.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility

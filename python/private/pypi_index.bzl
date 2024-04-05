@@ -91,7 +91,7 @@ def simpleapi_download(ctx, *, attr, cache):
                 cache = cache,
                 **download_kwargs
             )
-            if download_kwargs.get("block") == False:
+            if hasattr(result, "wait"):
                 # We will process it in a separate loop:
                 async_downloads.setdefault(pkg_normalized, []).append(
                     struct(
@@ -284,7 +284,8 @@ def parse_simple_api_html(*, url, content):
           present, then the 'metadata_url' is also present. Defaults to "".
         * metadata_url: The URL for the METADATA if we can download it. Defaults to "".
     """
-    packages = []
+    sdists = {}
+    whls = {}
     lines = content.split("<a href=\"")
 
     _, _, api_version = lines[0].partition("name=\"pypi:repository-version\" content=\"")
@@ -321,18 +322,29 @@ def parse_simple_api_html(*, url, content):
                 metadata_url = dist_url + ".metadata"
                 break
 
-        packages.append(
-            struct(
+        if filename.endswith(".whl"):
+            whls[sha256] = struct(
                 filename = filename,
                 url = _absolute_url(url, dist_url),
                 sha256 = sha256,
                 metadata_sha256 = metadata_sha256,
                 metadata_url = _absolute_url(url, metadata_url),
                 yanked = yanked,
-            ),
-        )
+            )
+        else:
+            sdists[sha256] = struct(
+                filename = filename,
+                url = _absolute_url(url, dist_url),
+                sha256 = sha256,
+                metadata_sha256 = "",
+                metadata_url = "",
+                yanked = yanked,
+            )
 
-    return packages
+    return struct(
+        sdists = sdists,
+        whls = whls,
+    )
 
 def _absolute_url(index_url, candidate):
     if not candidate.startswith(".."):

@@ -218,9 +218,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             repo = pip_name,
             repo_prefix = pip_name + "_",
             requirement = requirement_line,
-            isolated = use_isolated(module_ctx, pip_attr),
-            quiet = pip_attr.quiet,
-            timeout = pip_attr.timeout,
         )
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
@@ -242,19 +239,38 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             },
         )
         whl_library_args.update({k: v for k, v in maybe_args.items() if v})
+        maybe_args_with_default = dict(
+            # The following values have defaults next to them
+            isolated = (use_isolated(module_ctx, pip_attr), True),
+            quiet = (pip_attr.quiet, True),
+            timeout = (pip_attr.timeout, 600),
+        )
+        whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
         if index_urls:
             srcs = get_simpleapi_sources(requirement_line)
 
-            whl = select_whl(
-                whls = [
-                    src
-                    for src in index_urls[whl_name]
-                    # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-                    #
-                    # For now we just exclude such artifacts.
-                    if src.sha256 in srcs.shas and src.filename.endswith(".whl") and not src.yanked
-                ],
+            whls = []
+            sdist = None
+            for sha256 in srcs.shas:
+                # For now if the artifact is marked as yanked we just ignore it.
+                #
+                # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+
+                maybe_whl = index_urls[whl_name].whls.get(sha256)
+                if maybe_whl and not maybe_whl.yanked:
+                    whls.append(maybe_whl)
+                    continue
+
+                maybe_sdist = index_urls[whl_name].sdists.get(sha256)
+                if maybe_sdist and not maybe_sdist.yanked:
+                    sdist = maybe_sdist
+                    continue
+
+                print("WARNING: Could not find a whl or an sdist with sha256={}".format(sha256))  # buildifier: disable=print
+
+            distribution = select_whl(
+                whls = whls,
                 want_abis = [
                     "none",
                     "abi3",
@@ -264,13 +280,13 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 ],
                 want_os = module_ctx.os.name,
                 want_cpu = module_ctx.os.arch,
-            )
+            ) or sdist
 
-            if whl:
+            if distribution:
                 whl_library_args["requirement"] = srcs.requirement
-                whl_library_args["urls"] = [whl.url]
-                whl_library_args["sha256"] = whl.sha256
-                whl_library_args["filename"] = whl.filename
+                whl_library_args["urls"] = [distribution.url]
+                whl_library_args["sha256"] = distribution.sha256
+                whl_library_args["filename"] = distribution.filename
                 if pip_attr.netrc:
                     whl_library_args["netrc"] = pip_attr.netrc
                 if pip_attr.auth_patterns:
@@ -282,10 +298,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 # This is no-op because pip is not used to download the wheel.
                 whl_library_args.pop("download_only", None)
             else:
-                # TODO @aignas 2024-03-29: in the future we should probably just
-                # use an `sdist` but having this makes it easy to debug issues
-                # in early development stages.
-                fail("Could not find whl for: {}".format(requirement_line))
+                print("WARNING: falling back to pip for installing the right file for {}".format(requirement_line))  # buildifier: disable=print
 
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before. Maybe this will not be needed

@@ -188,7 +188,7 @@ def use_isolated(ctx, attr):
 
     return use_isolated
 
-def _parse_optional_attrs(rctx, args):
+def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
     This function also serializes the structured arguments as JSON
@@ -197,6 +197,7 @@ def _parse_optional_attrs(rctx, args):
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
+        extra_pip_args: The pip args to pass.
     Returns: Augmented args list.
     """
 
@@ -213,7 +214,7 @@ def _parse_optional_attrs(rctx, args):
 
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
-    if rctx.attr.extra_pip_args != None:
+    if extra_pip_args != None:
         args += [
             "--extra_pip_args",
             json.encode(struct(arg = [
@@ -760,12 +761,13 @@ def _whl_library_impl(rctx):
         "--requirement",
         rctx.attr.requirement,
     ]
-
-    args = _parse_optional_attrs(rctx, args)
+    extra_pip_args = []
+    extra_pip_args.extend(rctx.attr.extra_pip_args)
 
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
+    whl_path = None
     if rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
 
@@ -787,7 +789,7 @@ def _whl_library_impl(rctx):
 
         result = rctx.download(
             url = urls,
-            output = rctx.attr.filename,
+            output = filename,
             sha256 = rctx.attr.sha256,
             auth = get_auth(rctx, urls),
         )
@@ -795,8 +797,14 @@ def _whl_library_impl(rctx):
         if not result.success:
             fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
 
-        whl_path = rctx.path(rctx.attr.filename)
-    else:
+        if filename.endswith(".whl"):
+            whl_path = rctx.path(rctx.attr.filename)
+        else:
+            extra_pip_args.extend(["--no-index", "--find-links", "."])
+
+    args = _parse_optional_attrs(rctx, args, extra_pip_args)
+
+    if not whl_path:
         repo_utils.execute_checked(
             rctx,
             op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
