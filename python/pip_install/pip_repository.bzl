@@ -22,6 +22,7 @@ load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
+load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
@@ -187,7 +188,7 @@ def use_isolated(ctx, attr):
 
     return use_isolated
 
-def _parse_optional_attrs(rctx, args):
+def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
     This function also serializes the structured arguments as JSON
@@ -196,6 +197,7 @@ def _parse_optional_attrs(rctx, args):
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
+        extra_pip_args: The pip args to pass.
     Returns: Augmented args list.
     """
 
@@ -212,7 +214,7 @@ def _parse_optional_attrs(rctx, args):
 
     # Check for None so we use empty default types from our attrs.
     # Some args want to be list, and some want to be dict.
-    if rctx.attr.extra_pip_args != None:
+    if extra_pip_args != None:
         args += [
             "--extra_pip_args",
             json.encode(struct(arg = [
@@ -759,24 +761,64 @@ def _whl_library_impl(rctx):
         "--requirement",
         rctx.attr.requirement,
     ]
-
-    args = _parse_optional_attrs(rctx, args)
+    extra_pip_args = []
+    extra_pip_args.extend(rctx.attr.extra_pip_args)
 
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter)
 
-    repo_utils.execute_checked(
-        rctx,
-        op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
-        arguments = args,
-        environment = environment,
-        quiet = rctx.attr.quiet,
-        timeout = rctx.attr.timeout,
-    )
+    whl_path = None
+    if rctx.attr.whl_file:
+        whl_path = rctx.path(rctx.attr.whl_file)
 
-    whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
-    if not rctx.delete("whl_file.json"):
-        fail("failed to delete the whl_file.json file")
+        # Simulate the behaviour where the whl is present in the current directory.
+        rctx.symlink(whl_path, whl_path.basename)
+        whl_path = rctx.path(whl_path.basename)
+    elif rctx.attr.urls:
+        filename = rctx.attr.filename
+        urls = rctx.attr.urls
+        if not filename:
+            _, _, filename = urls[0].rpartition("/")
+
+        if not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith(".zip")):
+            if rctx.attr.filename:
+                msg = "got '{}'".format(filename)
+            else:
+                msg = "detected '{}' from url:\n{}".format(filename, urls[0])
+            fail("Only '.whl', '.tar.gz' or '.zip' files are supported, {}".format(msg))
+
+        result = rctx.download(
+            url = urls,
+            output = filename,
+            sha256 = rctx.attr.sha256,
+            auth = get_auth(rctx, urls),
+        )
+
+        if not result.success:
+            fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
+
+        if filename.endswith(".whl"):
+            whl_path = rctx.path(rctx.attr.filename)
+        else:
+            # It is an sdist and we need to tell PyPI to use a file in this directory
+            # and not use any indexes.
+            extra_pip_args.extend(["--no-index", "--find-links", "."])
+
+    args = _parse_optional_attrs(rctx, args, extra_pip_args)
+
+    if not whl_path:
+        repo_utils.execute_checked(
+            rctx,
+            op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            arguments = args,
+            environment = environment,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+
+        whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
+        if not rctx.delete("whl_file.json"):
+            fail("failed to delete the whl_file.json file")
 
     if rctx.attr.whl_patches:
         patches = {}
@@ -890,13 +932,17 @@ if __name__ == "__main__":
     )
     return contents
 
-whl_library_attrs = {
+# NOTE @aignas 2024-03-21: The usage of dict({}, **common) ensures that all args to `dict` are unique
+whl_library_attrs = dict({
     "annotation": attr.label(
         doc = (
             "Optional json encoded file containing annotation to apply to the extracted wheel. " +
             "See `package_annotation`"
         ),
         allow_files = True,
+    ),
+    "filename": attr.string(
+        doc = "Download the whl file to this filename. Only used when the `urls` is passed. If not specified, will be auto-detected from the `urls`.",
     ),
     "group_deps": attr.string_list(
         doc = "List of dependencies to skip in order to break the cycles within a dependency group.",
@@ -911,7 +957,18 @@ whl_library_attrs = {
     ),
     "requirement": attr.string(
         mandatory = True,
-        doc = "Python requirement string describing the package to make available",
+        doc = "Python requirement string describing the package to make available, if 'urls' or 'whl_file' is given, then this only needs to include foo[any_extras] as a bare minimum.",
+    ),
+    "sha256": attr.string(
+        doc = "The sha256 of the downloaded whl. Only used when the `urls` is passed.",
+    ),
+    "urls": attr.string_list(
+        doc = """\
+The list of urls of the whl to be downloaded using bazel downloader. Using this
+attr makes `extra_pip_args` and `download_only` ignored.""",
+    ),
+    "whl_file": attr.label(
+        doc = "The whl file that should be used instead of downloading or building the whl.",
     ),
     "whl_patches": attr.label_keyed_string_dict(
         doc = """a label-keyed-string dict that has
@@ -933,9 +990,8 @@ whl_library_attrs = {
             for repo in all_requirements
         ],
     ),
-}
-
-whl_library_attrs.update(**common_attrs)
+}, **common_attrs)
+whl_library_attrs.update(AUTH_ATTRS)
 
 whl_library = repository_rule(
     attrs = whl_library_attrs,

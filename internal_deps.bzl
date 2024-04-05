@@ -57,18 +57,9 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "rules_testing",
-        sha256 = "b84ed8546f1969d700ead4546de9f7637e0f058d835e47e865dcbb13c4210aed",
-        strip_prefix = "rules_testing-0.5.0",
-        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.5.0/rules_testing-v0.5.0.tar.gz",
-    )
-
-    http_archive(
-        name = "rules_license",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
-            "https://github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
-        ],
-        sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
+        sha256 = "02c62574631876a4e3b02a1820cb51167bb9cdcdea2381b2fa9d9b8b11c407c4",
+        strip_prefix = "rules_testing-0.6.0",
+        url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.6.0/rules_testing-v0.6.0.tar.gz",
     )
 
     http_archive(
@@ -220,4 +211,11 @@ def rules_python_internal_deps():
             "https://github.com/bazelbuild/rules_license/releases/download/0.0.7/rules_license-0.0.7.tar.gz",
         ],
         sha256 = "4531deccb913639c30e5c7512a054d5d875698daeb75d8cf90f284375fe7c360",
+    )
+
+    http_archive(
+        name = "bazel_features",
+        sha256 = "d7787da289a7fb497352211ad200ec9f698822a9e0757a4976fd9f713ff372b3",
+        strip_prefix = "bazel_features-1.9.1",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.9.1/bazel_features-v1.9.1.tar.gz",
     )

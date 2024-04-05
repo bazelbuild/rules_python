@@ -72,10 +72,62 @@ def _test_with_abi(env):
 
 _tests.append(_test_with_abi)
 
-def whl_target_platforms_test_suite(name):
-    """Create the test suite.
+def _can_parse_existing_tags(env):
+    examples = {
+        "linux_armv6l": 1,
+        "linux_armv7l": 1,
+        "macosx_11_12_arm64": 1,
+        "macosx_11_12_i386": 1,
+        "macosx_11_12_intel": 1,
+        "macosx_11_12_universal": 2,
+        "macosx_11_12_universal2": 2,
+        "macosx_11_12_x86_64": 1,
+        "manylinux1_i686": 1,
+        "manylinux1_x86_64": 1,
+        "manylinux2010_i686": 1,
+        "manylinux2010_x86_64": 1,
+        "manylinux2014_aarch64": 1,
+        "manylinux2014_armv7l": 1,
+        "manylinux2014_i686": 1,
+        "manylinux2014_ppc64": 1,
+        "manylinux2014_ppc64le": 1,
+        "manylinux2014_s390x": 1,
+        "manylinux2014_x86_64": 1,
+        "manylinux_11_12_aarch64": 1,
+        "manylinux_11_12_armv7l": 1,
+        "manylinux_11_12_i686": 1,
+        "manylinux_11_12_ppc64": 1,
+        "manylinux_11_12_ppc64le": 1,
+        "manylinux_11_12_s390x": 1,
+        "manylinux_11_12_x86_64": 1,
+        "manylinux_1_2_aarch64": 1,
+        "manylinux_1_2_x86_64": 1,
+        "musllinux_11_12_aarch64": 1,
+        "musllinux_11_12_armv7l": 1,
+        "musllinux_11_12_i686": 1,
+        "musllinux_11_12_ppc64le": 1,
+        "musllinux_11_12_s390x": 1,
+        "musllinux_11_12_x86_64": 1,
+        "win32": 1,
+        "win_amd64": 1,
+        "win_arm64": 1,
+        "win_ia64": 0,
+    }
 
-    Args:
+    for major_version in [2, 10, 13]:
+        for minor_version in [0, 1, 2, 10, 45]:
+            for give, want_size in examples.items():
+                give = give.replace("_11_", "_{}_".format(major_version))
+                give = give.replace("_12_", "_{}_".format(minor_version))
+                got = whl_target_platforms(give)
+                env.expect.that_str("{}: {}".format(give, len(got))).equals("{}: {}".format(give, want_size))
+
+_tests.append(_can_parse_existing_tags)
+
+def whl_target_platforms_test_suite(name):
+    """create the test suite.
+
+    args:
         name: the name of the test suite
     """
     test_suite(name = name, basic_tests = _tests)
