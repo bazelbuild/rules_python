@@ -78,8 +78,11 @@ _CPU_ALIASES = {
     "aarch64": "aarch64",
     "arm64": "aarch64",
     "ppc": "ppc",
+    "ppc64": "ppc",
     "ppc64le": "ppc",
     "s390x": "s390x",
+    "armv6l": "arm",
+    "armv7l": "arm",
 }  # buildifier: disable=unsorted-dict-items
 
 _OS_PREFIXES = {
@@ -249,7 +252,8 @@ def whl_target_platforms(platform_tag, abi_tag = ""):
                 for cpu in cpus
             ]
 
-    fail("unknown platform_tag os: {}".format(platform_tag))
+    print("WARNING: ignoring unknown platform_tag os: {}".format(platform_tag))  # buildifier: disable=print
+    return []
 
 def _cpu_from_tag(tag):
     candidate = [
@@ -262,7 +266,14 @@ def _cpu_from_tag(tag):
 
     if tag == "win32":
         return ["x86_32"]
-    elif tag.endswith("universal2") and tag.startswith("macosx"):
-        return ["x86_64", "aarch64"]
-    else:
-        fail("Unrecognized tag: '{}': cannot determine CPU".format(tag))
+    elif tag == "win_ia64":
+        return []
+    elif tag.startswith("macosx"):
+        if tag.endswith("universal2"):
+            return ["x86_64", "aarch64"]
+        elif tag.endswith("universal"):
+            return ["x86_64", "aarch64"]
+        elif tag.endswith("intel"):
+            return ["x86_32"]
+
+    return []
