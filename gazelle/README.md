@@ -202,6 +202,8 @@ Python-specific directives are as follows:
 | Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root:__subpackages__` |
 | [`# gazelle:python_visibility label`](#directive-python_visibility) | |
 | Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
+| [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `*_test.py,test_*.py` |
+| Filenames matching these comma-separated `glob`s will be mapped to `py_test` targets. |
 
 
 #### Directive: `python_root`:
@@ -359,6 +361,70 @@ py_library(
 ```
 
 
+#### Directive: `python_test_file_pattern`:
+
+This directive adjusts which python files will be mapped to the `py_test` rule.
+
++ The default is `*_test.py,test_*.py`: both `test_*.py` and `*_test.py` files
+  will generate `py_test` targets.
++ This directive must have a value. If no value is given, an error will be raised.
++ It is recommended, though not necessary, to include the `.py` extension in
+  the `glob`s: `foo*.py,?at.py`.
++ Like most directives, it applies to the current Bazel package and all subpackages
+  until the directive is set again.
++ This directive accepts multiple `glob` patterns, separated by commas without spaces:
+
+```starlark
+# gazelle:python_test_file_pattern foo*.py,?at
+
+py_library(
+    name = "mylib",
+    srcs = ["mylib.py"],
+)
+
+py_test(
+    name = "foo_bar",
+    srcs = ["foo_bar.py"],
+)
+
+py_test(
+    name = "cat",
+    srcs = ["cat.py"],
+)
+
+py_test(
+    name = "hat",
+    srcs = ["hat.py"],
+)
+```
+
+
+##### Notes
+
+Resetting to the default value (such as in a subpackage) is manual. Set:
+
+```starlark
+# gazelle:python_test_file_pattern *_test.py,test_*.py
+```
+
+There currently is no way to tell gazelle that _no_ files in a package should
+be mapped to `py_test` targets (see [Issue #1826][issue-1826]). The workaround
+is to set this directive to a pattern that will never match a `.py` file, such
+as `foo.bar`:
+
+```starlark
+# No files in this package should be mapped to py_test targets.
+# gazelle:python_test_file_pattern foo.bar
+
+py_library(
+    name = "my_test",
+    srcs = ["my_test.py"],
+)
+```
+
+[issue-1826]: https://github.com/bazelbuild/rules_python/issues/1826
+
+
 ### Libraries
 
 Python source files are those ending in `.py` but not ending in `_test.py`.
@@ -438,7 +504,7 @@ for more information on extending Gazelle.
 
 If you add new Go dependencies to the plugin source code, you need to "tidy" the go.mod file.
 After changing that file, run `go mod tidy` or `bazel run @go_sdk//:bin/go -- mod tidy`
-to update the go.mod and go.sum files. Then run `bazel run //:update_go_deps` to have gazelle
+to update the go.mod and go.sum files. Then run `bazel run //:gazelle_update_repos` to have gazelle
 add the new dependenies to the deps.bzl file. The deps.bzl file is used as defined in our /WORKSPACE
 to include the external repos Bazel loads Go dependencies from.
 

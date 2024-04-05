@@ -28,7 +28,7 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
 	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
@@ -52,6 +52,17 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 		return kindOverride.KindName
 	}
 	return kind
+}
+
+func matchesAnyGlob(s string, globs []string) bool {
+	// This function assumes that the globs have already been validated. If a glob is
+	// invalid, it's considered a non-match and we move on to the next pattern.
+	for _, g := range globs {
+		if ok, _ := doublestar.Match(g, s); ok {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateRules extracts build metadata from source files in a directory.
@@ -100,6 +111,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	hasPyTestEntryPointTarget := false
 	hasConftestFile := false
 
+	testFileGlobs := cfg.TestFilePattern()
+
 	for _, f := range args.RegularFiles {
 		if cfg.IgnoresFile(filepath.Base(f)) {
 			continue
@@ -113,7 +126,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
 				hasConftestFile = true
-			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
+			} else if matchesAnyGlob(f, testFileGlobs) {
 				pyTestFilenames.Add(f)
 			} else {
 				pyLibraryFilenames.Add(f)
@@ -195,7 +208,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 							}
 						}
 						baseName := filepath.Base(path)
-						if strings.HasSuffix(baseName, "_test.py") || strings.HasPrefix(baseName, "test_") {
+						if matchesAnyGlob(baseName, testFileGlobs) {
 							pyTestFilenames.Add(srcPath)
 						} else {
 							pyLibraryFilenames.Add(srcPath)
