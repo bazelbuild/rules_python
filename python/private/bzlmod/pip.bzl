@@ -301,8 +301,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 print("WARNING: falling back to pip for installing the right file for {}".format(requirement_line))  # buildifier: disable=print
 
         # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before. Maybe this will not be needed
-        # in the future.
+        # args are manipulated in the code going before.
         whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(

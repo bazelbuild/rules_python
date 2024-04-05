@@ -800,6 +800,8 @@ def _whl_library_impl(rctx):
         if filename.endswith(".whl"):
             whl_path = rctx.path(rctx.attr.filename)
         else:
+            # It is an sdist and we need to tell PyPI to use a file in this directory
+            # and not use any indexes.
             extra_pip_args.extend(["--no-index", "--find-links", "."])
 
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
