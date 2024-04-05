@@ -184,10 +184,10 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "com_google_protobuf",
-        sha256 = "dc167b7d23ec0d6e4a3d4eae1798de6c8d162e69fa136d39753aaeb7a6e1289d",
-        strip_prefix = "protobuf-23.1",
+        sha256 = "616bb3536ac1fff3fb1a141450fa28b875e985712170ea7f1bfe5e5fc41e2cd8",
+        strip_prefix = "protobuf-24.4",
         urls = [
-            "https://github.com/protocolbuffers/protobuf/archive/v23.1.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/archive/v24.4.tar.gz",
         ],
     )
 
