@@ -296,6 +296,12 @@ cc_import(
     system_provided = True,
 )
 
+cc_import(
+    name = "abi3_interface",
+    interface_library = "libs/python3.lib",
+    system_provided = True,
+)
+
 filegroup(
     name = "includes",
     srcs = glob(["include/**/*.h"]),
@@ -304,7 +310,7 @@ filegroup(
 cc_library(
     name = "python_headers",
     deps = select({{
-        "@bazel_tools//src/conditions:windows": [":interface"],
+        "@bazel_tools//src/conditions:windows": [":interface", ":abi3_interface"],
         "//conditions:default": None,
     }}),
     hdrs = [":includes"],
