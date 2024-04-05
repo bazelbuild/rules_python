@@ -402,11 +402,12 @@ tasks:
     working_directory: examples/py_proto_library
     platform: macos
   integration_test_py_proto_library_windows_workspace:
-    <<: *reusable_build_test_all
     <<: *common_workspace_flags
     name: "examples/py_proto_library: Windows, workspace"
     working_directory: examples/py_proto_library
     platform: windows
+    build_targets: ["//..."] # Building everything triggers problems in protobuf
+    test_targets: ["//..."]
 
   integration_test_pip_repository_annotations_ubuntu_workspace:
     <<: *reusable_build_test_all
