@@ -120,6 +120,18 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pypi_index_bzl",
+    srcs = ["pypi_index.bzl"],
+    deps = [
+        ":auth_bzl",
+        ":normalize_name_bzl",
+        ":text_util_bzl",
+        "//python/pip_install:requirements_parser_bzl",
+        "//python/private/bzlmod:bazel_features_bzl",
+    ],
+)
+
+bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = [
         "py_cc_toolchain_macro.bzl",
@@ -260,6 +272,9 @@ bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        "parse_whl_name_bzl",
+    ],
 )
 
 bzl_library(

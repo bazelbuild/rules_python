@@ -21,6 +21,12 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
+  sorted in the attributes section. We are also removing values that are not
+  default in order to reduce the size of the lock file.
+* (deps): Bumped bazel_features to 1.9.1 to detect optional support
+  non-blocking downloads.
+
 ### Fixed
 
 * (whl_library): Fix the experimental_target_platforms overriding for platform
@@ -29,8 +35,17 @@ A brief description of the categories of changes:
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.
+* (whl_library) The group redirection is only added when the package is part of
+  the group potentially fixing aspects that want to traverse a `py_library` graph.
+  Fixes [#1760](https://github.com/bazelbuild/rules_python/issues/1760).
+* (bzlmod) Setting a particular micro version for the interpreter and the
+  `pip.parse` extension is now possible, see the
+  `examples/pip_parse/MODULE.bazel` for how to do it.
+  See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
 
 ### Added
+
+* (toolchains) Added armv7 platform definition for python toolchains.
 
 * New Python versions available: `3.11.8`, `3.12.2` using
   https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
@@ -43,9 +58,15 @@ A brief description of the categories of changes:
   gazelle which python files should be mapped to the `py_test` rule. See the
   [original issue][test_file_pattern_issue] and the [docs][test_file_pattern_docs]
   for details.
-
 * (wheel) Add support for `data_files` attributes in py_wheel rule
   ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
+* (py_wheel) `bzlmod` installations now provide a `twine` setup for the default
+  Python toolchain in `rules_python` for version 3.11.
+* (bzlmod) New `experimental_index_url`, `experimental_extra_index_urls` and
+  `experimental_index_url_overrides` to `pip.parse` for using the bazel
+  downloader. If you see any issues, report in
+  [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
+  the whl and sdist files will be written to the lock file.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
@@ -274,7 +295,6 @@ A brief description of the categories of changes:
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
-
 
 ## [0.27.0] - 2023-11-16
 

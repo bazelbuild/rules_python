@@ -1,8 +1,34 @@
 load("//python:pip.bzl", "compile_pip_requirements")
+load("//python/config_settings:transition.bzl", "py_binary")
+load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
 
 compile_pip_requirements(
     name = "requirements",
     src = "requirements.in",
     requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
+)
+
+py_console_script_binary(
+    name = "twine",
+    # We use a py_binary rule with version transitions to ensure that we do not
+    # rely on the default version of the registered python toolchain. What is more
+    # we are using this instead of `@python_versions//3.11:defs.bzl` because loading
+    # that file relies on bzlmod being enabled.
+    binary_rule = py_binary,
+    pkg = "@rules_python_publish_deps//twine",
+    python_version = "3.11",
+    script = "twine",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD.bazel",
+        "requirements.txt",
+        "requirements_darwin.txt",
+        "requirements_windows.txt",
+    ],
+    visibility = ["//tools:__pkg__"],
 )
