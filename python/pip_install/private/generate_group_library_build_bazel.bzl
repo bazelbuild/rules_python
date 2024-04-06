@@ -22,9 +22,10 @@ load(
     "WHEEL_FILE_PUBLIC_LABEL",
 )
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 
 _PRELUDE = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 """
 
 _GROUP_TEMPLATE = """\
@@ -62,26 +63,39 @@ def _generate_group_libraries(repo_prefix, group_name, group_members):
           which make up the group.
     """
 
-    lib_dependencies = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_IMPL_LABEL)
-        for d in group_members
-    ]
-    whl_file_deps = [
-        "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_IMPL_LABEL)
-        for d in group_members
-    ]
-    visibility = [
-        "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d))
-        for d in group_members
-    ]
+    group_members = sorted(group_members)
+
+    if repo_prefix:
+        lib_dependencies = [
+            "@%s%s//:%s" % (repo_prefix, normalize_name(d), PY_LIBRARY_IMPL_LABEL)
+            for d in group_members
+        ]
+        whl_file_deps = [
+            "@%s%s//:%s" % (repo_prefix, normalize_name(d), WHEEL_FILE_IMPL_LABEL)
+            for d in group_members
+        ]
+        visibility = [
+            "@%s%s//:__pkg__" % (repo_prefix, normalize_name(d))
+            for d in group_members
+        ]
+    else:
+        lib_dependencies = [
+            "//%s:%s" % (normalize_name(d), PY_LIBRARY_IMPL_LABEL)
+            for d in group_members
+        ]
+        whl_file_deps = [
+            "//%s:%s" % (normalize_name(d), WHEEL_FILE_IMPL_LABEL)
+            for d in group_members
+        ]
+        visibility = ["//:__subpackages__"]
 
     return _GROUP_TEMPLATE.format(
         name = normalize_name(group_name),
         whl_public_label = WHEEL_FILE_PUBLIC_LABEL,
-        whl_deps = repr(whl_file_deps),
+        whl_deps = render.indent(render.list(whl_file_deps)).lstrip(),
         lib_public_label = PY_LIBRARY_PUBLIC_LABEL,
-        lib_deps = repr(lib_dependencies),
-        visibility = repr(visibility),
+        lib_deps = render.indent(render.list(lib_dependencies)).lstrip(),
+        visibility = render.indent(render.list(visibility)).lstrip(),
     )
 
 def generate_group_library_build_bazel(

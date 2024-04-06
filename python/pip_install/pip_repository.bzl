@@ -365,9 +365,12 @@ def _pip_repository_impl(rctx):
         "python_interpreter": _get_python_interpreter_attr(rctx),
         "quiet": rctx.attr.quiet,
         "repo": rctx.attr.name,
-        "repo_prefix": "{}_".format(rctx.attr.name),
         "timeout": rctx.attr.timeout,
     }
+    if rctx.attr.use_hub_alias_dependencies:
+        config["dep_template"] = "@{}//{{name}}:{{target}}".format(rctx.attr.name)
+    else:
+        config["repo_prefix"] = "{}_".format(rctx.attr.name)
 
     if rctx.attr.python_interpreter_target:
         config["python_interpreter_target"] = str(rctx.attr.python_interpreter_target)
@@ -387,6 +390,13 @@ def _pip_repository_impl(rctx):
 
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
+        "    # %%GROUP_LIBRARY%%": """\
+    group_repo = "{name}__groups"
+    group_library(
+        name = group_repo,
+        repo_prefix = "{name}_",
+        groups = all_requirement_groups,
+    )""".format(name = rctx.attr.name) if not rctx.attr.use_hub_alias_dependencies else "",
         "%%ALL_DATA_REQUIREMENTS%%": _format_repr_list([
             macro_tmpl.format(p, "data")
             for p in bzl_packages
@@ -595,6 +605,8 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
     "repo_prefix": attr.string(
         doc = """
 Prefix for the generated packages will be of the form `@<prefix><sanitized-package-name>//...`
+
+DEPRECATED. Only left for people who vendor requirements.bzl.
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute
@@ -636,6 +648,15 @@ attributes.
     "requirements_windows": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Windows",
+    ),
+    "use_hub_alias_dependencies": attr.bool(
+        default = False,
+        doc = """\
+Controls if the hub alias dependencies are used. If set to true, then the
+group_library will be included in the hub repo.
+
+True will become default in a subsequent release.
+""",
     ),
     "_template": attr.label(
         default = ":pip_repository_requirements.bzl.tmpl",
@@ -886,7 +907,7 @@ def _whl_library_impl(rctx):
         entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
-        repo_prefix = rctx.attr.repo_prefix,
+        dep_template = rctx.attr.dep_template or "@{}_{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
         whl_name = whl_path.basename,
         dependencies = metadata["deps"],
         dependencies_by_platform = metadata["deps_by_platform"],
@@ -940,6 +961,13 @@ whl_library_attrs = dict({
             "See `package_annotation`"
         ),
         allow_files = True,
+    ),
+    "dep_template": attr.string(
+        doc = """
+The dep template to use for referencing the dependencies. It should have `{name}`
+and `{target}` tokens that will be replaced with the normalized distribution name
+and the target that we need respectively.
+""",
     ),
     "filename": attr.string(
         doc = "Download the whl file to this filename. Only used when the `urls` is passed. If not specified, will be auto-detected from the `urls`.",

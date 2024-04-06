@@ -372,6 +372,50 @@ def _test_aliases_are_created_for_all_wheels(env):
 
 _tests.append(_test_aliases_are_created_for_all_wheels)
 
+def _test_aliases_with_groups(env):
+    actual = render_pkg_aliases(
+        default_version = "3.2",
+        aliases = {
+            "bar": [
+                whl_alias(version = "3.1", repo = "pypi_31_bar"),
+                whl_alias(version = "3.2", repo = "pypi_32_bar"),
+            ],
+            "baz": [
+                whl_alias(version = "3.1", repo = "pypi_31_baz"),
+                whl_alias(version = "3.2", repo = "pypi_32_baz"),
+            ],
+            "foo": [
+                whl_alias(version = "3.1", repo = "pypi_32_foo"),
+                whl_alias(version = "3.2", repo = "pypi_31_foo"),
+            ],
+        },
+        requirement_cycles = {
+            "group": ["bar", "baz"],
+        },
+    )
+
+    want_files = [
+        "bar/BUILD.bazel",
+        "foo/BUILD.bazel",
+        "baz/BUILD.bazel",
+        "_groups/BUILD.bazel",
+    ]
+    env.expect.that_dict(actual).keys().contains_exactly(want_files)
+
+    want_key = "_groups/BUILD.bazel"
+
+    # Just check that it contains a private whl
+    env.expect.that_str(actual[want_key]).contains("//bar:_whl")
+
+    want_key = "bar/BUILD.bazel"
+
+    # Just check that it contains a private whl
+    env.expect.that_str(actual[want_key]).contains("name = \"_whl\"")
+    env.expect.that_str(actual[want_key]).contains("name = \"whl\"")
+    env.expect.that_str(actual[want_key]).contains("\"//_groups:group_whl\"")
+
+_tests.append(_test_aliases_with_groups)
+
 def render_pkg_aliases_test_suite(name):
     """Create the test suite.
 

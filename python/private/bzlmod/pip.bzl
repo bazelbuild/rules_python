@@ -18,7 +18,6 @@ load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
-    "group_library",
     "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
@@ -101,7 +100,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_cache):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -129,6 +128,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         hub_name,
         version_label(pip_attr.python_version),
     )
+    major_minor = _major_minor_version(pip_attr.python_version)
 
     requirements_lock = locked_requirements_label(module_ctx, pip_attr)
 
@@ -171,12 +171,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             for whl_name in group_whls
         }
 
-        group_repo = "%s__groups" % (pip_name,)
-        group_library(
-            name = group_repo,
-            repo_prefix = pip_name + "_",
-            groups = pip_attr.experimental_requirement_cycles,
-        )
+        # TODO @aignas 2024-04-05: how do we support different requirement
+        # cycles for different abis/oses? For now we will need the users to
+        # assume the same groups across all versions/platforms until we start
+        # using an alternative cycle resolution strategy.
+        group_map[hub_name] = pip_attr.experimental_requirement_cycles
     else:
         whl_group_mapping = {}
         requirement_cycles = {}
@@ -201,8 +200,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
             cache = simpleapi_cache,
         )
 
-    major_minor = _major_minor_version(pip_attr.python_version)
-
     # Create a new wheel library for each of the different whls
     for whl_name, requirement_line in requirements:
         # We are not using the "sanitized name" because the user
@@ -219,7 +216,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_library_args = dict(
             repo = pip_name,
-            repo_prefix = pip_name + "_",
+            dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
             requirement = requirement_line,
         )
         maybe_args = dict(
@@ -421,6 +418,7 @@ def _pip_impl(module_ctx):
     # dict[hub, dict[whl, dict[version, str pip]]]
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
+    hub_group_map = {}
 
     simpleapi_cache = {}
 
@@ -459,7 +457,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, simpleapi_cache)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
@@ -470,6 +468,7 @@ def _pip_impl(module_ctx):
                 for key, value in whl_map.items()
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
+            groups = hub_group_map.get(hub_name),
         )
 
 def _pip_parse_ext_attrs():
