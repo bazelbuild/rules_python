@@ -199,7 +199,7 @@ Python-specific directives are as follows:
 | `# gazelle:resolve py ...` | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
 | [`# gazelle:python_default_visibility labels`](#directive-python_default_visibility) | |
-| Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root:__subpackages__` |
+| Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root$:__subpackages__` |
 | [`# gazelle:python_visibility label`](#directive-python_visibility) | |
 | Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
 | [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `*_test.py,test_*.py` |
@@ -268,11 +268,11 @@ py_library(
 ```
 
 You can also inject the `python_root` value by using the exact string
-`$python_root`. All instances of this string will be replaced by the `python_root`
+`$python_root$`. All instances of this string will be replaced by the `python_root`
 value.
 
 ```starlark
-# gazelle:python_default_visibility //$python_root:__pkg__,//foo/$python_root/tests:__subpackages__
+# gazelle:python_default_visibility //$python_root$:__pkg__,//foo/$python_root$/tests:__subpackages__
 
 # Assuming the "# gazelle:python_root" directive is set in ./py/src/BUILD.bazel,
 # the results will be:

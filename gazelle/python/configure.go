@@ -177,8 +177,8 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				config.SetDefaultVisibility([]string{defaultVisibility})
 			default:
 				// Handle injecting the python root. Assume that the user used the
-				// exact string "$python_root".
-				labels := strings.ReplaceAll(directiveArg, "$python_root", config.PythonProjectRoot())
+				// exact string "$python_root$".
+				labels := strings.ReplaceAll(directiveArg, "$python_root$", config.PythonProjectRoot())
 				config.SetDefaultVisibility(strings.Split(labels, ","))
 			}
 		case pythonconfig.Visibility:
