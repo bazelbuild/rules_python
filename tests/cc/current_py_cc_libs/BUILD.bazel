@@ -42,6 +42,7 @@ cc_test(
     name = "python_libs_linking_windows_test",
     srcs = ["python_libs_linking_test.cc"],
     defines = ["Py_LIMITED_API=0x030A0000"],
+    env = {"HELLO": "world"},
     target_compatible_with = ["@platforms//os:windows"],
     deps = [
         "@rules_python//python/cc:current_py_cc_headers",

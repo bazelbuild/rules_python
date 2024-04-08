@@ -1,8 +1,10 @@
+#include <cstdlib>
 #include <Python.h>
 
 int main(int argc, char** argv) {
   // Early return to prevent the broken code below from running.
-  if (argc >= 1) {
+  char* val = std::getenv("HELLO");
+  if (val || argc >= 1) {
     return 0;
   }
 
