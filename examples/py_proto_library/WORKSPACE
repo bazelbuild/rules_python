@@ -1,4 +1,4 @@
-workspace(name = "rules_python_py_proto_library_example")
+workspace(name = "p")
 
 # The following local_path_override is only needed to run this example as part of our CI.
 local_repository(
