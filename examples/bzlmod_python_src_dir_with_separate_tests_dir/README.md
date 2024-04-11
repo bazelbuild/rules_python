@@ -81,10 +81,10 @@ packaging_tutorial/
 │   ├── BUILD.bazel
 │   └── mypackage/
 │       ├── __init__.py
-│       ├── BUILD.bazel     # New
+│       ├── BUILD.bazel     # New, added by 'bazel run //:gazelle'
 │       └── my_python_module.py
 └── tests/
     ├── __init__.py
-    ├── BUILD.bazel         # New
+    ├── BUILD.bazel         # New, added by 'bazel run //:gazelle'
     └── test_my_python_module.py
 ```
