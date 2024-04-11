@@ -1,3 +1,5 @@
+# NB: short workspace name is required to workaround PATH length limitation, see
+# https://github.com/bazelbuild/bazel/issues/18683#issuecomment-1843857373
 workspace(name = "p")
 
 # The following local_path_override is only needed to run this example as part of our CI.
