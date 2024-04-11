@@ -1,0 +1,7 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+py_test(
+    name = "test_my_python_module",
+    srcs = ["test_my_python_module.py"],
+    deps = ["//src/my_package:my_python_module"],
+)
