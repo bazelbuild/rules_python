@@ -1,0 +1,102 @@
+# Load all of the various rules and functions that we end up using.
+load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@pypi//:requirements.bzl", "all_whl_requirements")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
+
+# This filegroup is only needed if
+# (a) you're using pyproject.toml to store your dependencies and
+# (b) you have [tool.setuptools.package-dir] and [tool.setuptools.packages.find]
+# configured for `src` dirs per https://setuptools.pypa.io/en/stable/userguide/package_discovery.html
+# (which you probably do if you're looking at this example).
+# This target gets used later by compile_pip_requirements.
+filegroup(
+    name = "src_dir",
+    srcs = ["src"],
+)
+
+######
+# Gazelle
+#
+# Gazelle is an automatic BUILD(.bazel) file generator. Run via:
+# bazel run //:gazelle
+######
+
+# Comments that start with "# gazelle:XYZ" are called *directives*. Some directives
+# can and should be set here, in the same bazel package (BUILD file) that defines
+# gazelle, while other directives (such as "# gazelle:python_root") should be
+# defined in a BUILD file specific to that part of the folder tree. See
+# src/BUILD for such an example - it's how we define that the "src" dir should
+# be the root of python files and thus get added to sys.path.
+
+# This directive tells gazelle that our tests are named "test_foo.py" instead
+# of "foo_test.py".
+# gazelle:python_test_naming_convention test_$package_name$
+
+# This directive tells gazelle to make a single bazel target per python file.
+# The default is to make a single bazel target per python _package_).
+# gazelle:python_generation_mode file
+
+###### End Gazelle Directives ######
+
+# This rule will compile the project requirements into a lock file that
+# contains versions and hashes. The lock file ends up getting used when
+# installing dependencies via pip.
+# bazel run //:requirements.update
+compile_pip_requirements(
+    # Name this target. This will be how you run with `bazel run //:<name>.update`
+    name = "requirements",
+    # See comment about filegroup above. If both (a) and (b) are true, you need this otherwise
+    # the compiling will fail with "error in 'egg_base' option: 'src' does not exist or
+    # is not a directory".
+    data = [":src_dir"],
+    # Optional. Tell pip_tools to be more verbose.
+    # extra_args = ["-v"],
+    # If you store requirements in a separate file, name that file in `src`.
+    # Otherwise, gazelle will pull from pyproject.toml's [project.dependencies] section.
+    # src = "requirements.in",
+    requirements_txt = "requirements.lock",
+)
+
+# This rule fetches the metadata for python packages we depend on. That data is
+# required for the gazelle_python_manifest rule to update our manifest file.
+modules_mapping(
+    # Name this target. This name is used in `gazelle_python_manifest.modules_mapping` below.
+    name = "modules_map",
+    wheels = all_whl_requirements,
+)
+
+# Gazelle python extension needs a manifest file mapping from
+# an import to the installed package that provides it. This target updates the
+# "gazelle_python.yaml" file when run. The file must already exist.
+# This target produces two targets:
+# bazel run //:gazelle_python_manifest.update
+# bazel run //:gazelle_python_manifest.test
+gazelle_python_manifest(
+    # Name this target. This will be how you run with `bazel run //:<name>.update`
+    name = "gazelle_python_manifest",
+    # Same as `modules_mapping.name` (with ":"), above.
+    modules_mapping = ":modules_map",
+    # This is what we called our `pip_parse` rule, where third-party
+    # python libraries are loaded in BUILD files.
+    pip_repository_name = "pypi",
+    # This should point to wherever we declare our python dependencies.
+    # It's the same as what we passed to the pip.parse rule in MODULE.bazel and
+    # is the same filename that we used in the `requirements_txt` attribute of
+    # `compile_pip_requirements`, above.)
+    # This argument is optional. If provided, the `.test` target is very
+    # fast because it just has to check an integrity field. If not provided,
+    # the integrity field is not added to the manifest which can help avoid
+    # merge conflicts in large repos.
+    requirements = "//:requirements.lock",
+)
+
+# Make a target for running gazelle.
+# bazel run //:gazelle
+# or:
+# bazel run //:gazelle update  # Note: "update" is the arg, not part of the target
+gazelle(
+    name = "gazelle",
+    gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
+)
