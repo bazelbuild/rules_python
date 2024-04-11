@@ -7,7 +7,7 @@ more_itertools
 packaging
 pep517
 pip
-pip_tools
+pip_tools >= 7.4.0
 setuptools
 tomli
 wheel
