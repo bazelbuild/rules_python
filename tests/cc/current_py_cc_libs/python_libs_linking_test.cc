@@ -1,8 +1,10 @@
+#include <cstdlib>
 #include <Python.h>
 
 int main(int argc, char** argv) {
   // Early return to prevent the broken code below from running.
-  if (argc >= 1) {
+  char* val = std::getenv("HELLO");
+  if (val || argc >= 1) {
     return 0;
   }
 
@@ -12,7 +14,6 @@ int main(int argc, char** argv) {
   // To make it actually run, more custom initialization is necessary.
   // See https://docs.python.org/3/c-api/intro.html#embedding-python
   Py_Initialize();
-  PyRun_SimpleString("print('Hello, world')\n");
   Py_Finalize();
   return 0;
 }
