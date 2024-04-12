@@ -67,6 +67,8 @@ A brief description of the categories of changes:
   downloader. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
   the whl and sdist files will be written to the lock file.
+* (docs) Added example of using bzlmod and Gazelle with a python `src` directory
+  and separate `tests` directory.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
