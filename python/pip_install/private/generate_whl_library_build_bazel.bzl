@@ -258,7 +258,7 @@ def generate_whl_library_build_bazel(
     """
 
     additional_content = []
-    data = []
+    data = [":data"]
     srcs_exclude = []
     data_exclude = [] + data_exclude
     dependencies = sorted([normalize_name(d) for d in dependencies])
