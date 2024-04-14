@@ -73,6 +73,7 @@ A brief description of the categories of changes:
   the whl and sdist files will be written to the lock file. Controlling whether
   the downloading of metadata is done in parallel can be done using
   `parallel_download` attribute.
+* (deps): `rules_python` depends now on `rules_cc` 0.0.9
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility

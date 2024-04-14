@@ -143,6 +143,7 @@ bzl_library(
     ],
     deps = [
         ":py_cc_toolchain_info_bzl",
+        ":rules_cc_srcs_bzl",
         ":util_bzl",
     ],
 )
@@ -291,6 +292,13 @@ bzl_library(
         # sources.
         "@bazel_tools//tools:bzl_srcs",
     ],
+)
+
+# @rules_cc does not offer a bzl_library target for @rules_cc//cc:defs.bzl
+bzl_library(
+    name = "rules_cc_srcs_bzl",
+    srcs = ["@rules_cc//cc:bzl_srcs"],
+    deps = [":bazel_tools_bzl"],
 )
 
 # Needed to define bzl_library targets for docgen. (We don't define the
