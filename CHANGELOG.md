@@ -42,6 +42,8 @@ A brief description of the categories of changes:
   `pip.parse` extension is now possible, see the
   `examples/pip_parse/MODULE.bazel` for how to do it.
   See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
+* (refactor) The pre-commit developer workflow should now pass `isort` and `black`
+  checks (see [#1674](https://github.com/bazelbuild/rules_python/issues/1674)).
 
 ### Added
 
