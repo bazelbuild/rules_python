@@ -24,8 +24,6 @@ def get_random_number():
     return jsonify({"number": generate_random_number.generate_random_number()})
 
 
-"""Start the python web server"""
-
-
 def main():
+    """Start the python web server"""
     app.run()
