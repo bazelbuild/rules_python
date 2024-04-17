@@ -24,6 +24,7 @@ A brief description of the categories of changes:
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
   sorted in the attributes section. We are also removing values that are not
   default in order to reduce the size of the lock file.
+* (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
 * (deps): Updated `pip_tools` to >= 7.4.0
@@ -74,9 +75,6 @@ A brief description of the categories of changes:
 [test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
 [test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
 
-### Changed
-
-* (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 
 ## [0.31.0] - 2024-02-12
 
