@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import unittest
+
 import random_number_generator.generate_random_number as generate_random_number
+
 
 class TestRandomNumberGenerator(unittest.TestCase):
     def test_generate_random_number(self):

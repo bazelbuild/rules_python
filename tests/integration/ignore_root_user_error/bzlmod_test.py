@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import pathlib
 import json
+import pathlib
+import unittest
 
 from python.runfiles import runfiles
+
 
 class BzlmodTest(unittest.TestCase):
     def test_toolchains(self):

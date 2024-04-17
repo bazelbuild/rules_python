@@ -13,7 +13,9 @@
 # limitations under the License.
 
 import unittest
+
 from __init__ import app
+
 
 class TestServer(unittest.TestCase):
     def setUp(self):

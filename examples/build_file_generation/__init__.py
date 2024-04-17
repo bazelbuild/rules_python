@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sphinx  # noqa
 from flask import Flask, jsonify
 from random_number_generator import generate_random_number
-import sphinx  # noqa
 
 app = Flask(__name__)
 
