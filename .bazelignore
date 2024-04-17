@@ -19,6 +19,10 @@ examples/bzlmod/other_module/bazel-other_module
 examples/bzlmod/other_module/bazel-out
 examples/bzlmod/other_module/bazel-testlogs
 examples/bzlmod_build_file_generation/bazel-bzlmod_build_file_generation
+examples/bzlmod_python_src_dir_with_separate_tests_dir/bazel-bin
+examples/bzlmod_python_src_dir_with_separate_tests_dir/bazel-bzlmod_python_src_dir_with_separate_tests_dir
+examples/bzlmod_python_src_dir_with_separate_tests_dir/bazel-out
+examples/bzlmod_python_src_dir_with_separate_tests_dir/bazel-testlogs
 examples/multi_python_versions/bazel-multi_python_versions
 examples/pip_parse/bazel-pip_parse
 examples/pip_parse_vendored/bazel-pip_parse_vendored
