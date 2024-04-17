@@ -42,7 +42,8 @@ def _render_whl_library_alias(
         *,
         name,
         default_version,
-        aliases):
+        aliases,
+        **kwargs):
     """Render an alias for common targets."""
     if len(aliases) == 1 and not aliases[0].version:
         alias = aliases[0]
@@ -56,27 +57,27 @@ def _render_whl_library_alias(
     # whls that are based on a specific version of Python.
     selects = {}
     no_match_error = "_NO_MATCH_ERROR"
-    default = None
     for alias in sorted(aliases, key = lambda x: x.version):
         actual = "@{repo}//:{name}".format(repo = alias.repo, name = name)
-        selects[alias.config_setting] = actual
+        selects.setdefault(actual, []).append(alias.config_setting)
         if alias.version == default_version:
-            default = actual
+            selects[actual].append("//conditions:default")
             no_match_error = None
-
-    if default:
-        selects["//conditions:default"] = default
 
     return render.alias(
         name = name,
         actual = render.select(
-            selects,
+            {tuple(sorted(v, key = lambda x: ("is_python" not in x, x))): k for k, v in sorted(selects.items())},
             no_match_error = no_match_error,
+            key_repr = lambda x: repr(x[0]) if len(x) == 1 else render.tuple(x),
+            name = "selects.with_or",
         ),
+        **kwargs
     )
 
 def _render_common_aliases(*, name, aliases, default_version = None):
     lines = [
+        """load("@bazel_skylib//lib:selects.bzl", "selects")""",
         """package(default_visibility = ["//visibility:public"])""",
     ]
 

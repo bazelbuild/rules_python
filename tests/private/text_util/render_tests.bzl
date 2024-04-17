@@ -54,6 +54,25 @@ def _test_render_alias(env):
 
 _tests.append(_test_render_alias)
 
+def _test_render_tuple_dict(env):
+    got = render.dict(
+        {
+            ("foo", "bar"): "baz",
+            ("foo",): "bar",
+        },
+        key_repr = render.tuple,
+    )
+    env.expect.that_str(got).equals("""\
+{
+    (
+        "foo",
+        "bar",
+    ): "baz",
+    ("foo",): "bar",
+}""")
+
+_tests.append(_test_render_tuple_dict)
+
 def render_test_suite(name):
     """Create the test suite.
 
