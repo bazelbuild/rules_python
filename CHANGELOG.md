@@ -66,7 +66,9 @@ A brief description of the categories of changes:
   `experimental_index_url_overrides` to `pip.parse` for using the bazel
   downloader. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
-  the whl and sdist files will be written to the lock file.
+  the whl and sdist files will be written to the lock file. Controlling whether
+  the downloading of metadata is done in parallel can be done using
+  `parallel_download` attribute.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
