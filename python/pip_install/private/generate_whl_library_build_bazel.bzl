@@ -66,6 +66,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "{whl_name}",
             "site-packages/**",
