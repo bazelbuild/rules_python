@@ -22,6 +22,7 @@ class TestRandomNumberGenerator(unittest.TestCase):
         number = generate_random_number.generate_random_number()
         self.assertGreaterEqual(number, 1)
         self.assertLessEqual(number, 10)
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     unittest.main()

@@ -62,7 +62,7 @@ class WheelTest(unittest.TestCase):
             self.assertEqual(
                 zinfo.external_attr,
                 (stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG) << 16,
-                msg=zinfo.filename
+                msg=zinfo.filename,
             )
             self.assertEqual(
                 zinfo.compress_type, zipfile.ZIP_DEFLATED, msg=zinfo.filename
@@ -486,7 +486,7 @@ Tag: cp38-abi3-{os_string}_{arch}
                     "minimal_data_files-0.0.1.data/data/target/path/README.md",
                     "minimal_data_files-0.0.1.data/scripts/NOTICE",
                     "minimal_data_files-0.0.1.dist-info/RECORD",
-                ]
+                ],
             )
 
 

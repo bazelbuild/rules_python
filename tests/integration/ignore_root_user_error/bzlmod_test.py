@@ -22,17 +22,20 @@ from python.runfiles import runfiles
 class BzlmodTest(unittest.TestCase):
     def test_toolchains(self):
         rf = runfiles.Create()
-        debug_path = pathlib.Path(rf.Rlocation(
-                "rules_python_bzlmod_debug/debug_info.json"
-        ))
+        debug_path = pathlib.Path(
+            rf.Rlocation("rules_python_bzlmod_debug/debug_info.json")
+        )
         debug_info = json.loads(debug_path.read_bytes())
 
         expected = [
-            {'ignore_root_user_error': True, 'name': 'python_3_11', },
-            {'ignore_root_user_error': True, 'name': 'python_3_10'}
+            {
+                "ignore_root_user_error": True,
+                "name": "python_3_11",
+            },
+            {"ignore_root_user_error": True, "name": "python_3_10"},
         ]
-        self.assertCountEqual(debug_info["toolchains_registered"],
-                              expected)
+        self.assertCountEqual(debug_info["toolchains_registered"], expected)
+
 
 if __name__ == "__main__":
     unittest.main()

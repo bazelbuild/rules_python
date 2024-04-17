@@ -18,10 +18,14 @@ from random_number_generator import generate_random_number
 
 app = Flask(__name__)
 
-@app.route('/random-number', methods=['GET'])
+
+@app.route("/random-number", methods=["GET"])
 def get_random_number():
-    return jsonify({'number': generate_random_number.generate_random_number()})
+    return jsonify({"number": generate_random_number.generate_random_number()})
+
 
 """Start the python web server"""
+
+
 def main():
     app.run()
