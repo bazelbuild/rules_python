@@ -73,7 +73,7 @@ def parse_main(content):
             if token_type != OP or token_val != "==":
                 continue
             token_type, token_val, start, _, _ = next(g)
-            if token_type != STRING or token_val.strip("\"'") != '__main__':
+            if token_type != STRING or token_val.strip("\"'") != "__main__":
                 continue
             token_type, token_val, start, _, _ = next(g)
             if token_type != OP or token_val != ":":

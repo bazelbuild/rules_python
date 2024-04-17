@@ -99,8 +99,10 @@ def main(
     bazel_runfiles = runfiles.Create()
 
     requirements_file = _select_golden_requirements_file(
-        requirements_txt=requirements_txt, requirements_linux=requirements_linux,
-        requirements_darwin=requirements_darwin, requirements_windows=requirements_windows
+        requirements_txt=requirements_txt,
+        requirements_linux=requirements_linux,
+        requirements_darwin=requirements_darwin,
+        requirements_windows=requirements_windows,
     )
 
     resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
@@ -120,8 +122,8 @@ def main(
     # use the runfiles file first. Thus, we need to compute the relative path
     # from the execution root.
     # Note: Windows cannot reference generated files without runfiles support enabled.
-    requirements_in_relative = requirements_in[len(repository_prefix):]
-    requirements_file_relative = requirements_file[len(repository_prefix):]
+    requirements_in_relative = requirements_in[len(repository_prefix) :]
+    requirements_file_relative = requirements_file[len(repository_prefix) :]
 
     # Before loading click, set the locale for its parser.
     # If it leaks through to the system setting, it may fail:
@@ -157,7 +159,9 @@ def main(
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    argv.append(f"--output-file={requirements_file_relative if UPDATE else requirements_out}")
+    argv.append(
+        f"--output-file={requirements_file_relative if UPDATE else requirements_out}"
+    )
     argv.append(
         requirements_in_relative
         if Path(requirements_in_relative).exists()
