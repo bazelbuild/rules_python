@@ -26,6 +26,7 @@ A brief description of the categories of changes:
   default in order to reduce the size of the lock file.
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
+* (deps): Updated `pip_tools` to >= 7.4.0
 
 ### Fixed
 
