@@ -1,0 +1,12 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "my_python_module",
+    srcs = ["my_python_module.py"],
+    imports = [".."],
+    visibility = [
+        "//src:__subpackages__",
+        "//tests:__subpackages__",
+    ],
+    deps = ["@pypi//pathspec"],
+)

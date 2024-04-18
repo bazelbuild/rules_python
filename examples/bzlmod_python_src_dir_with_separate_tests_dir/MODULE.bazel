@@ -1,0 +1,69 @@
+# Define metadata about this repository/project.
+module(
+    name = "example_bzlmod_python_src_dir_with_separate_tests_dir",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+# Install rules_python, which allows us to define how bazel should work with python files.
+# See https://github.com/bazelbuild/rules_python/blob/main/examples/bzlmod/MODULE.bazel
+# In the old WORKSPACE file, this would be 4 items:
+#   1.  `load` the http_archive rule
+#   2.  run the http_archive rule, grapping rules_python from github
+#   3.  load the py_repositories target from rules_python
+#   4.  execute py_respositories()
+bazel_dep(name = "rules_python", version = "0.31.0")
+
+### THIS BLOCK IS ONLY REQUIRED FOR EXAMPLES ###
+# This `local_path_override` allows us to use this repo's version of rules_python.
+# For usual setups you should remove this local_path_override block.
+local_path_override(
+    module_name = "rules_python",
+    path = "../..",
+)
+### END EXAMPLE-ONLY BLOCK ###
+
+# Gazelle for auto BUILD generation. See
+# https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# First install the gazelle config that's specific to python.
+bazel_dep(name = "rules_python_gazelle_plugin", version = "0.31.0")  # same version as rules_python
+
+### THIS BLOCK IS ONLY REQUIRED FOR EXAMPLES ###
+# This `local_path_override` allows us to use this repo's version of rules_python.
+# For usual setups you should remove this local_path_override block.
+local_path_override(
+    module_name = "rules_python_gazelle_plugin",
+    path = "../../gazelle",
+)
+### END EXAMPLE-ONLY BLOCK ###
+
+# Then install gazelle itself.
+bazel_dep(name = "gazelle", version = "0.35.0", repo_name = "bazel_gazelle")
+
+# Initialize the python toolchain using the rules_python extension.
+# This is similar to the "python_register_toolchains" function in WORKSPACE.
+# It creates a hermetic python rather than relying on a system-installed interpreter.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.9",
+)
+
+# Enable pip
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
+# Configure how we fetch python dependencies via pip
+pip.parse(
+    # Use the bazel downloader for pulling pypi packages.
+    experimental_index_url = "https://pypi.org/simple",
+    # This hub name is what gets used in other BUILD files with `load()`.
+    hub_name = "pypi",
+    python_version = "3.9",
+    # The file that contains the python dependencies, versions, and hashes.
+    # This target needs to be the same as what's passed to `gazelle_python_manifest.requirements`
+    # in ./BUILD.bazel.
+    requirements_lock = "//:requirements.lock",
+)
+
+# Same as WORKSPACE install_deps() - actually install the python deps.
+use_repo(pip, "pypi")
