@@ -67,7 +67,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -156,7 +156,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -409,7 +409,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -501,7 +501,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
