@@ -40,6 +40,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "foo.whl",
             "site-packages/**",
@@ -118,6 +119,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "foo.whl",
             "site-packages/**",
@@ -282,6 +284,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "foo.whl",
             "site-packages/**",
@@ -309,7 +312,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = ["file_dest", "exec_dest"] + glob(
+    data = [":data", "file_dest", "exec_dest"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "data_exclude_all"],
     ),
@@ -382,6 +385,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "foo.whl",
             "site-packages/**",
@@ -468,6 +472,7 @@ filegroup(
         ["**/*"],
         exclude = [
             "WORKSPACE",
+            "REPO.bazel",
             "BUILD.bazel",
             "foo.whl",
             "site-packages/**",
