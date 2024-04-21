@@ -212,6 +212,7 @@ const (
 	annotationPrefix string = "gazelle:"
 	// The ignore annotation kind. E.g. '# gazelle:ignore <module_name>'.
 	annotationKindIgnore annotationKind = "ignore"
+	annotationKindIncludeDep annotationKind = "include_dep"
 )
 
 // comment represents a Python comment.
@@ -247,12 +248,15 @@ type annotation struct {
 type annotations struct {
 	// The parsed modules to be ignored by Gazelle.
 	ignore map[string]struct{}
+	// Labels that Gazelle should include as deps of the generated target.
+	includeDep []string
 }
 
 // annotationsFromComments returns all the annotations parsed out of the
 // comments of a Python module.
 func annotationsFromComments(comments []comment) (*annotations, error) {
 	ignore := make(map[string]struct{})
+	includeDep := []string{}
 	for _, comment := range comments {
 		annotation, err := comment.asAnnotation()
 		if err != nil {
@@ -269,10 +273,21 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 					ignore[m] = struct{}{}
 				}
 			}
+			if annotation.kind == annotationKindIncludeDep {
+				targets := strings.Split(annotation.value, ",")
+				for _, t := range targets {
+					if t == "" {
+						continue
+					}
+					t = strings.TrimSpace(t)
+					includeDep = append(includeDep, t)
+				}
+			}
 		}
 	}
 	return &annotations{
 		ignore: ignore,
+		includeDep: includeDep,
 	}, nil
 }
 
