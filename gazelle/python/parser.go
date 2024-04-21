@@ -101,7 +101,7 @@ func newPython3Parser(
 
 // parseSingle parses a single Python file and returns the extracted modules
 // from the import statements as well as the parsed comments.
-func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, error) {
+func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	pyFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFilenames.Add(pyFilename)
 	return p.parse(pyFilenames)
@@ -109,7 +109,7 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string
 
 // parse parses multiple Python files and returns the extracted modules from
 // the import statements as well as the parsed comments.
-func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, error) {
+func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	parserMutex.Lock()
 	defer parserMutex.Unlock()
 
@@ -122,28 +122,29 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 	}
 	encoder := json.NewEncoder(parserStdin)
 	if err := encoder.Encode(&req); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
 	reader := bufio.NewReader(parserStdout)
 	data, err := reader.ReadBytes(0)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 	data = data[:len(data)-1]
 	var allRes []parserResponse
 	if err := json.Unmarshal(data, &allRes); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
 	mainModules := make(map[string]*treeset.Set, len(allRes))
+	annotations := &annotations{}
 	for _, res := range allRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
 		annotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
+			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
 
 		for _, m := range res.Modules {
@@ -166,7 +167,7 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		}
 	}
 
-	return modules, mainModules, nil
+	return modules, mainModules, annotations, nil
 }
 
 // parserResponse represents a response returned by the parser.py for a given
