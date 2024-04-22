@@ -199,6 +199,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, simpleapi_ca
                 auth_patterns = pip_attr.auth_patterns,
             ),
             cache = simpleapi_cache,
+            parallel_download = pip_attr.parallel_download,
         )
 
     major_minor = _major_minor_version(pip_attr.python_version)
@@ -538,6 +539,23 @@ means if different programs need different versions of some library, separate
 hubs can be created, and each program can use its respective hub's targets.
 Targets from different hubs should not be used together.
 """,
+        ),
+        "parallel_download": attr.bool(
+            doc = """\
+The flag allows to make use of parallel downloading feature in bazel 7.1 and above
+when the bazel downloader is used. This is by default enabled as it improves the
+performance by a lot, but in case the queries to the simple API are very expensive
+or when debugging authentication issues one may want to disable this feature.
+
+NOTE, This will download (potentially duplicate) data for multiple packages if
+there is more than one index available, but in general this should be negligible
+because the simple API calls are very cheap and the user should not notice any
+extra overhead.
+
+If we are in synchronous mode, then we will use the first result that we
+find in case extra indexes are specified.
+""",
+            default = True,
         ),
         "python_version": attr.string(
             mandatory = True,
