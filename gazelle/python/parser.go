@@ -137,12 +137,12 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 	}
 
 	mainModules := make(map[string]*treeset.Set, len(allRes))
-	annotations := &annotations{}
+	annotations := new(annotations)
 	for _, res := range allRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
-		annotations, err := annotationsFromComments(res.Comments)
+		annotations, err = annotationsFromComments(res.Comments)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
