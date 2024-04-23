@@ -138,6 +138,7 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 
 	mainModules := make(map[string]*treeset.Set, len(allRes))
 	allAnnotations := new(annotations)
+	allAnnotations.ignore = make(map[string]struct{})
 	for _, res := range allRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
