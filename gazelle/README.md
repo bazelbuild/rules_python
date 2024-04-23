@@ -497,6 +497,9 @@ target, building will result in an error saying:
 <target> does not have mandatory providers: 'PyInfo' or 'CcInfo' or 'PyInfo'.
 ```
 
+Adding non-Python targets to the generated target is a feature request being
+tracked in [Issue #1865](https://github.com/bazelbuild/rules_python/issues/1865).
+
 The annotation can be added multiple times, and all values are combined
 and de-duplicated.
 
