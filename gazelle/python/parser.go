@@ -167,11 +167,23 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		}
 
 		// Collect all annotations from each file into a single annotations struct.
-		// annotations.ignores = append(annotations.ignores, thisFileAnnotations.ignores)
+		for k, v := range thisFileAnnotations.ignore {
+			annotations.ignore[k] = v
+		}
 		annotations.includeDep = append(annotations.includeDep, thisFileAnnotations.includeDep...)
 	}
 
-	// Remove dupes from the annotations.
+	// Remove dupes. Make a treeset and then "cast" back to []string
+	depsSet := treeset.NewWith(godsutils.StringComparator)
+	for _, d := range annotations.includeDep {
+		depsSet.Add(d)
+	}
+	s := make([]string, depsSet.Size())
+	for i, v := range depsSet.Values() {
+		s[i] = fmt.Sprint(v)
+	}
+	annotations.includeDep = s
+
 	return modules, mainModules, annotations, nil
 }
 
@@ -217,7 +229,7 @@ const (
 	// The Gazelle annotation prefix.
 	annotationPrefix string = "gazelle:"
 	// The ignore annotation kind. E.g. '# gazelle:ignore <module_name>'.
-	annotationKindIgnore annotationKind = "ignore"
+	annotationKindIgnore     annotationKind = "ignore"
 	annotationKindIncludeDep annotationKind = "include_dep"
 )
 
@@ -292,7 +304,7 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 		}
 	}
 	return &annotations{
-		ignore: ignore,
+		ignore:     ignore,
 		includeDep: includeDep,
 	}, nil
 }
