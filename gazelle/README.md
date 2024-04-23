@@ -489,8 +489,13 @@ deps = ["@pypi//numpy"],
 
 #### Annotation: `include_dep`
 
-This annotation accepts a comma-separated string of values. Values _should_
-be targets names, but no validation is done.
+This annotation accepts a comma-separated string of values. Values _must_
+be Python targets, but _no validation is done_. If a value is not a Python
+target, building will result in an error saying:
+
+```
+<target> does not have mandatory providers: 'PyInfo' or 'CcInfo' or 'PyInfo'.
+```
 
 The annotation can be added multiple times, and all values are combined
 and de-duplicated.
