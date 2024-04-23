@@ -173,18 +173,24 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		allAnnotations.includeDep = append(allAnnotations.includeDep, annotations.includeDep...)
 	}
 
-	// Remove dupes. Make a treeset and then "cast" back to []string
-	depsSet := treeset.NewWith(godsutils.StringComparator)
-	for _, d := range allAnnotations.includeDep {
-		depsSet.Add(d)
-	}
-	s := make([]string, depsSet.Size())
-	for i, v := range depsSet.Values() {
-		s[i] = fmt.Sprint(v)
-	}
-	allAnnotations.includeDep = s
+	allAnnotations.includeDep = removeDupesFromStringTreeSetSlice(allAnnotations.includeDep)
 
 	return modules, mainModules, allAnnotations, nil
+}
+
+// removeDupesFromStringTreeSetSlice takes a []string, makes a set out of the
+// elements, and then returns a new []string with all duplicates removed. Order
+// is preserved.
+func removeDupesFromStringTreeSetSlice(array []string) []string {
+	s := treeset.NewWith(godsutils.StringComparator)
+	for _, v := range array {
+		s.Add(v)
+	}
+	dedupe := make([]string, s.Size())
+	for i, v := range s.Values() {
+		dedupe[i] = fmt.Sprint(v)
+	}
+	return dedupe
 }
 
 // parserResponse represents a response returned by the parser.py for a given
