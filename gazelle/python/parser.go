@@ -142,7 +142,7 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
-		annotations, err = annotationsFromComments(res.Comments)
+		thisFileAnnotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
@@ -150,7 +150,7 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		for _, m := range res.Modules {
 			// Check for ignored dependencies set via an annotation to the Python
 			// module.
-			if annotations.ignores(m.Name) || annotations.ignores(m.From) {
+			if thisFileAnnotations.ignores(m.Name) || thisFileAnnotations.ignores(m.From) {
 				continue
 			}
 
@@ -165,8 +165,13 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 				mainModules[res.FileName].Add(m)
 			}
 		}
+
+		// Collect all annotations from each file into a single annotations struct.
+		// annotations.ignores = append(annotations.ignores, thisFileAnnotations.ignores)
+		annotations.includeDep = append(annotations.includeDep, thisFileAnnotations.includeDep...)
 	}
 
+	// Remove dupes from the annotations.
 	return modules, mainModules, annotations, nil
 }
 
