@@ -137,12 +137,12 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 	}
 
 	mainModules := make(map[string]*treeset.Set, len(allRes))
-	annotations := new(annotations)
+	allAnnotations := new(annotations)
 	for _, res := range allRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
-		thisFileAnnotations, err := annotationsFromComments(res.Comments)
+		annotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
@@ -150,7 +150,7 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		for _, m := range res.Modules {
 			// Check for ignored dependencies set via an annotation to the Python
 			// module.
-			if thisFileAnnotations.ignores(m.Name) || thisFileAnnotations.ignores(m.From) {
+			if annotations.ignores(m.Name) || annotations.ignores(m.From) {
 				continue
 			}
 
@@ -167,24 +167,24 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		}
 
 		// Collect all annotations from each file into a single annotations struct.
-		for k, v := range thisFileAnnotations.ignore {
-			annotations.ignore[k] = v
+		for k, v := range annotations.ignore {
+			allAnnotations.ignore[k] = v
 		}
-		annotations.includeDep = append(annotations.includeDep, thisFileAnnotations.includeDep...)
+		allAnnotations.includeDep = append(allAnnotations.includeDep, annotations.includeDep...)
 	}
 
 	// Remove dupes. Make a treeset and then "cast" back to []string
 	depsSet := treeset.NewWith(godsutils.StringComparator)
-	for _, d := range annotations.includeDep {
+	for _, d := range allAnnotations.includeDep {
 		depsSet.Add(d)
 	}
 	s := make([]string, depsSet.Size())
 	for i, v := range depsSet.Values() {
 		s[i] = fmt.Sprint(v)
 	}
-	annotations.includeDep = s
+	allAnnotations.includeDep = s
 
-	return modules, mainModules, annotations, nil
+	return modules, mainModules, allAnnotations, nil
 }
 
 // parserResponse represents a response returned by the parser.py for a given
