@@ -487,7 +487,7 @@ deps = ["@pypi//numpy"],
 ```
 
 
-#### Annotation: `include_deps`
+#### Annotation: `include_dep`
 
 This annotation accepts a comma-separated string of values. Values _should_
 be targets names, but no validation is done.
