@@ -57,7 +57,7 @@ by buildifier.
 self
 getting-started
 pypi-dependencies
-configuring
+toolchains
 pip
 coverage
 gazelle
