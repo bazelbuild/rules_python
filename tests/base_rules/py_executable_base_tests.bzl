@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests common to py_binary and py_test (executable rules)."""
 
+load("@rules_python//python:py_runtime_info.bzl", RulesPythonPyRuntimeInfo = "PyRuntimeInfo")
 load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
@@ -20,6 +21,8 @@ load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 load("//tests/support:test_platforms.bzl", "WINDOWS")
+
+_BuiltinPyRuntimeInfo = PyRuntimeInfo
 
 _tests = []
 
@@ -274,6 +277,28 @@ def _test_name_cannot_end_in_py_impl(env, target):
     env.expect.that_target(target).failures().contains_predicate(
         matching.str_matches("name must not end in*.py"),
     )
+
+def _test_py_runtime_info_provided(name, config):
+    rt_util.helper_target(
+        config.rule,
+        name = name + "_subject",
+        srcs = [name + "_subject.py"],
+    )
+    analysis_test(
+        name = name,
+        impl = _test_py_runtime_info_provided_impl,
+        target = name + "_subject",
+    )
+
+def _test_py_runtime_info_provided_impl(env, target):
+    # Make sure that the rules_python loaded symbol is provided.
+    env.expect.that_target(target).has_provider(RulesPythonPyRuntimeInfo)
+
+    # For compatibility during the transition, the builtin PyRuntimeInfo should
+    # also be provided.
+    env.expect.that_target(target).has_provider(_BuiltinPyRuntimeInfo)
+
+_tests.append(_test_py_runtime_info_provided)
 
 # Can't test this -- mandatory validation happens before analysis test
 # can intercept it

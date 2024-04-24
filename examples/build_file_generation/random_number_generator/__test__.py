@@ -13,13 +13,16 @@
 # limitations under the License.
 
 import unittest
+
 import random_number_generator.generate_random_number as generate_random_number
+
 
 class TestRandomNumberGenerator(unittest.TestCase):
     def test_generate_random_number(self):
         number = generate_random_number.generate_random_number()
         self.assertGreaterEqual(number, 1)
         self.assertLessEqual(number, 10)
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     unittest.main()

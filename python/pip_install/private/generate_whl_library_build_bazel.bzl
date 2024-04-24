@@ -48,8 +48,7 @@ py_binary(
 """
 
 _BUILD_TEMPLATE = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+{loads}
 
 package(default_visibility = ["//visibility:public"])
 
@@ -64,14 +63,14 @@ filegroup(
 )
 
 filegroup(
-    name = "{whl_file_impl_label}",
+    name = "{whl_file_label}",
     srcs = ["{whl_name}"],
     data = {whl_file_deps},
     visibility = {impl_vis},
 )
 
 py_library(
-    name = "{py_library_impl_label}",
+    name = "{py_library_label}",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude={srcs_exclude},
@@ -90,34 +89,39 @@ py_library(
     tags = {tags},
     visibility = {impl_vis},
 )
-
-alias(
-   name = "{py_library_public_label}",
-   actual = "{py_library_actual_label}",
-)
-
-alias(
-   name = "{whl_file_public_label}",
-   actual = "{whl_file_actual_label}",
-)
 """
 
+def _plat_label(plat):
+    if plat.startswith("@//"):
+        return "@@" + str(Label("//:BUILD.bazel")).partition("//")[0].strip("@") + plat.strip("@")
+    elif plat.startswith("@"):
+        return str(Label(plat))
+    else:
+        return ":is_" + plat
+
 def _render_list_and_select(deps, deps_by_platform, tmpl):
-    deps = render.list([tmpl.format(d) for d in deps])
+    deps = render.list([tmpl.format(d) for d in sorted(deps)])
 
     if not deps_by_platform:
         return deps
 
     deps_by_platform = {
-        p if p.startswith("@") else ":is_" + p: [
+        _plat_label(p): [
             tmpl.format(d)
-            for d in deps
+            for d in sorted(deps)
         ]
-        for p, deps in deps_by_platform.items()
+        for p, deps in sorted(deps_by_platform.items())
     }
 
     # Add the default, which means that we will be just using the dependencies in
     # `deps` for platforms that are not handled in a special way by the packages
+    #
+    # FIXME @aignas 2024-01-24: This currently works as expected only if the default
+    # value of the @rules_python//python/config_settings:python_version is set in
+    # the `.bazelrc`. If it is unset, then the we don't get the expected behaviour
+    # in cases where we are using a simple `py_binary` using the default toolchain
+    # without forcing any transitions. If the `python_version` config setting is set
+    # via .bazelrc, then everything works correctly.
     deps_by_platform["//conditions:default"] = []
     deps_by_platform = render.select(deps_by_platform, value_repr = render.list)
 
@@ -125,6 +129,87 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
         return deps_by_platform
     else:
         return "{} + {}".format(deps, deps_by_platform)
+
+def _render_config_settings(dependencies_by_platform):
+    py_version_by_os_arch = {}
+    for p in dependencies_by_platform:
+        # p can be one of the following formats:
+        # * @platforms//os:{value}
+        # * @platforms//cpu:{value}
+        # * @//python/config_settings:is_python_3.{minor_version}
+        # * {os}_{cpu}
+        # * cp3{minor_version}_{os}_{cpu}
+        if p.startswith("@"):
+            continue
+
+        abi, _, tail = p.partition("_")
+        if not abi.startswith("cp"):
+            tail = p
+            abi = ""
+        os, _, arch = tail.partition("_")
+        os = "" if os == "anyos" else os
+        arch = "" if arch == "anyarch" else arch
+
+        py_version_by_os_arch.setdefault((os, arch), []).append(abi)
+
+    if not py_version_by_os_arch:
+        return None, None
+
+    loads = []
+    additional_content = []
+    for (os, arch), abis in py_version_by_os_arch.items():
+        constraint_values = []
+        if os:
+            constraint_values.append("@platforms//os:{}".format(os))
+        if arch:
+            constraint_values.append("@platforms//cpu:{}".format(arch))
+
+        os_arch = (os or "anyos") + "_" + (arch or "anyarch")
+        additional_content.append(
+            """\
+config_setting(
+    name = "is_{name}",
+    constraint_values = {values},
+    visibility = ["//visibility:private"],
+)""".format(
+                name = os_arch,
+                values = render.indent(render.list(sorted([str(Label(c)) for c in constraint_values]))).strip(),
+            ),
+        )
+
+        if abis == [""]:
+            if not os or not arch:
+                fail("BUG: both os and arch should be set in this case")
+            continue
+
+        for abi in abis:
+            if not loads:
+                loads.append("""load("@bazel_skylib//lib:selects.bzl", "selects")""")
+            minor_version = int(abi[len("cp3"):])
+            setting = "@@{rules_python}//python/config_settings:is_python_3.{version}".format(
+                rules_python = str(Label("//:BUILD.bazel")).partition("//")[0].strip("@"),
+                version = minor_version,
+            )
+            settings = [
+                ":is_" + os_arch,
+                setting,
+            ]
+
+            plat = "{}_{}".format(abi, os_arch)
+
+            additional_content.append(
+                """\
+selects.config_setting_group(
+    name = "{name}",
+    match_all = {values},
+    visibility = ["//visibility:private"],
+)""".format(
+                    name = _plat_label(plat).lstrip(":"),
+                    values = render.indent(render.list(sorted(settings))).strip(),
+                ),
+            )
+
+    return loads, "\n\n".join(additional_content)
 
 def generate_whl_library_build_bazel(
         *,
@@ -228,24 +313,17 @@ def generate_whl_library_build_bazel(
         if deps
     }
 
-    for p in dependencies_by_platform:
-        if p.startswith("@"):
-            continue
+    loads = [
+        """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
+        """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
+    ]
 
-        os, _, cpu = p.partition("_")
-
-        additional_content.append(
-            """\
-config_setting(
-    name = "is_{os}_{cpu}",
-    constraint_values = [
-        "@platforms//cpu:{cpu}",
-        "@platforms//os:{os}",
-    ],
-    visibility = ["//visibility:private"],
-)
-""".format(os = os, cpu = cpu),
-        )
+    loads_, config_settings_content = _render_config_settings(dependencies_by_platform)
+    if config_settings_content:
+        for line in loads_:
+            if line not in loads:
+                loads.append(line)
+        additional_content.append(config_settings_content)
 
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
@@ -265,35 +343,45 @@ config_setting(
     # implementation.
     if group_name:
         group_repo = repo_prefix + "_groups"
-        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
-        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-        impl_vis = "@%s//:__pkg__" % (group_repo,)
+        label_tmpl = "\"@{}//:{}_{{}}\"".format(group_repo, normalize_name(group_name))
+        impl_vis = ["@{}//:__pkg__".format(group_repo)]
+        additional_content.extend([
+            "",
+            render.alias(
+                name = PY_LIBRARY_PUBLIC_LABEL,
+                actual = label_tmpl.format(PY_LIBRARY_PUBLIC_LABEL),
+            ),
+            "",
+            render.alias(
+                name = WHEEL_FILE_PUBLIC_LABEL,
+                actual = label_tmpl.format(WHEEL_FILE_PUBLIC_LABEL),
+            ),
+        ])
+        py_library_label = PY_LIBRARY_IMPL_LABEL
+        whl_file_label = WHEEL_FILE_IMPL_LABEL
 
     else:
-        library_impl_label = PY_LIBRARY_IMPL_LABEL
-        whl_impl_label = WHEEL_FILE_IMPL_LABEL
-        impl_vis = "//visibility:private"
+        py_library_label = PY_LIBRARY_PUBLIC_LABEL
+        whl_file_label = WHEEL_FILE_PUBLIC_LABEL
+        impl_vis = ["//visibility:public"]
 
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
-                py_library_public_label = PY_LIBRARY_PUBLIC_LABEL,
-                py_library_impl_label = PY_LIBRARY_IMPL_LABEL,
-                py_library_actual_label = library_impl_label,
+                loads = "\n".join(loads),
+                py_library_label = py_library_label,
                 dependencies = render.indent(lib_dependencies, " " * 4).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
-                whl_file_public_label = WHEEL_FILE_PUBLIC_LABEL,
-                whl_file_impl_label = WHEEL_FILE_IMPL_LABEL,
-                whl_file_actual_label = whl_impl_label,
+                whl_file_label = whl_file_label,
                 tags = repr(tags),
                 data_label = DATA_LABEL,
                 dist_info_label = DIST_INFO_LABEL,
                 entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
-                impl_vis = repr([impl_vis]),
+                impl_vis = repr(impl_vis),
             ),
         ] + additional_content,
     )

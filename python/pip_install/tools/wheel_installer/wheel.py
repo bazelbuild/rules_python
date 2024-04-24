@@ -36,6 +36,14 @@ class OS(Enum):
     darwin = osx
     win32 = windows
 
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the interpreter operating system."
+        return cls[sys.platform.lower()]
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
 
 class Arch(Enum):
     x86_64 = 1
@@ -50,17 +58,57 @@ class Arch(Enum):
     x86 = x86_32
     ppc64le = ppc
 
+    @classmethod
+    def interpreter(cls) -> "OS":
+        "Return the currently running interpreter architecture."
+        # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
+        # is returning an empty string here, so lets default to x86_64
+        return cls[platform.machine().lower() or "x86_64"]
+
+    def __str__(self) -> str:
+        return self.name.lower()
+
+
+def _as_int(value: Optional[Union[OS, Arch]]) -> int:
+    """Convert one of the enums above to an int for easier sorting algorithms.
+
+    Args:
+        value: The value of an enum or None.
+
+    Returns:
+        -1 if we get None, otherwise, the numeric value of the given enum.
+    """
+    if value is None:
+        return -1
+
+    return int(value.value)
+
+
+def host_interpreter_minor_version() -> int:
+    return sys.version_info.minor
+
 
 @dataclass(frozen=True)
 class Platform:
-    os: OS
+    os: Optional[OS] = None
     arch: Optional[Arch] = None
+    minor_version: Optional[int] = None
+
+    def __post_init__(self):
+        if not self.os and not self.arch and not self.minor_version:
+            raise ValueError(
+                "At least one of os, arch, minor_version must be specified"
+            )
 
     @classmethod
-    def all(cls, want_os: Optional[OS] = None) -> List["Platform"]:
+    def all(
+        cls,
+        want_os: Optional[OS] = None,
+        minor_version: Optional[int] = None,
+    ) -> List["Platform"]:
         return sorted(
             [
-                cls(os=os, arch=arch)
+                cls(os=os, arch=arch, minor_version=minor_version)
                 for os in OS
                 for arch in Arch
                 if not want_os or want_os == os
@@ -77,14 +125,7 @@ class Platform:
             A list of parsed values which makes the signature the same as
             `Platform.all` and `Platform.from_string`.
         """
-        return [
-            cls(
-                os=OS[sys.platform.lower()],
-                # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
-                # is returning an empty string here, so lets default to x86_64
-                arch=Arch[platform.machine().lower() or "x86_64"],
-            )
-        ]
+        return [cls(os=OS.interpreter(), arch=Arch.interpreter())]
 
     def all_specializations(self) -> Iterator["Platform"]:
         """Return the platform itself and all its unambiguous specializations.
@@ -95,37 +136,48 @@ class Platform:
         yield self
         if self.arch is None:
             for arch in Arch:
-                yield Platform(os=self.os, arch=arch)
+                yield Platform(os=self.os, arch=arch, minor_version=self.minor_version)
+        if self.os is None:
+            for os in OS:
+                yield Platform(os=os, arch=self.arch, minor_version=self.minor_version)
+        if self.arch is None and self.os is None:
+            for os in OS:
+                for arch in Arch:
+                    yield Platform(os=os, arch=arch, minor_version=self.minor_version)
 
     def __lt__(self, other: Any) -> bool:
         """Add a comparison method, so that `sorted` returns the most specialized platforms first."""
         if not isinstance(other, Platform) or other is None:
             raise ValueError(f"cannot compare {other} with Platform")
 
-        if self.arch is None and other.arch is not None:
-            return True
+        self_arch, self_os = _as_int(self.arch), _as_int(self.os)
+        other_arch, other_os = _as_int(other.arch), _as_int(other.os)
 
-        if self.arch is not None and other.arch is None:
-            return True
-
-        # Here we ensure that we sort by OS before sorting by arch
-
-        if self.arch is None and other.arch is None:
-            return self.os.value < other.os.value
-
-        if self.os.value < other.os.value:
-            return True
-
-        if self.os.value == other.os.value:
-            return self.arch.value < other.arch.value
-
-        return False
+        if self_os == other_os:
+            return self_arch < other_arch
+        else:
+            return self_os < other_os
 
     def __str__(self) -> str:
-        if self.arch is None:
-            return f"@platforms//os:{self.os.name.lower()}"
+        if self.minor_version is None:
+            assert (
+                self.os is not None
+            ), f"if minor_version is None, OS must be specified, got {repr(self)}"
+            if self.arch is None:
+                return f"@platforms//os:{self.os}"
+            else:
+                return f"{self.os}_{self.arch}"
 
-        return self.os.name.lower() + "_" + self.arch.name.lower()
+        if self.arch is None and self.os is None:
+            return f"@//python/config_settings:is_python_3.{self.minor_version}"
+
+        if self.arch is None:
+            return f"cp3{self.minor_version}_{self.os}_anyarch"
+
+        if self.os is None:
+            return f"cp3{self.minor_version}_anyos_{self.arch}"
+
+        return f"cp3{self.minor_version}_{self.os}_{self.arch}"
 
     @classmethod
     def from_string(cls, platform: Union[str, List[str]]) -> List["Platform"]:
@@ -135,14 +187,33 @@ class Platform:
         for p in platform:
             if p == "host":
                 ret.update(cls.host())
-            elif p == "all":
-                ret.update(cls.all())
-            elif p.endswith("*"):
-                os, _, _ = p.partition("_")
-                ret.update(cls.all(OS[os]))
+                continue
+
+            abi, _, tail = p.partition("_")
+            if not abi.startswith("cp"):
+                # The first item is not an abi
+                tail = p
+                abi = ""
+            os, _, arch = tail.partition("_")
+            arch = arch or "*"
+
+            minor_version = int(abi[len("cp3") :]) if abi else None
+
+            if arch != "*":
+                ret.add(
+                    cls(
+                        os=OS[os] if os != "*" else None,
+                        arch=Arch[arch],
+                        minor_version=minor_version,
+                    )
+                )
             else:
-                os, _, arch = p.partition("_")
-                ret.add(cls(os=OS[os], arch=Arch[arch]))
+                ret.update(
+                    cls.all(
+                        want_os=OS[os] if os != "*" else None,
+                        minor_version=minor_version,
+                    )
+                )
 
         return sorted(ret)
 
@@ -212,6 +283,9 @@ class Platform:
             return ""
 
     def env_markers(self, extra: str) -> Dict[str, str]:
+        # If it is None, use the host version
+        minor_version = self.minor_version or host_interpreter_minor_version()
+
         return {
             "extra": extra,
             "os_name": self.os_name,
@@ -220,11 +294,14 @@ class Platform:
             "platform_system": self.platform_system,
             "platform_release": "",  # unset
             "platform_version": "",  # unset
+            "python_version": f"3.{minor_version}",
+            # FIXME @aignas 2024-01-14: is putting zero last a good idea? Maybe we should
+            # use `20` or something else to avoid having weird issues where the full version is used for
+            # matching and the author decides to only support 3.y.5 upwards.
+            "implementation_version": f"3.{minor_version}.0",
+            "python_full_version": f"3.{minor_version}.0",
             # we assume that the following are the same as the interpreter used to setup the deps:
-            # "implementation_version": "X.Y.Z",
             # "implementation_name": "cpython"
-            # "python_version": "X.Y",
-            # "python_full_version": "X.Y.Z",
             # "platform_python_implementation: "CPython",
         }
 
@@ -236,16 +313,36 @@ class FrozenDeps:
 
 
 class Deps:
+    """Deps is a dependency builder that has a build() method to return FrozenDeps."""
+
     def __init__(
         self,
         name: str,
+        requires_dist: List[str],
         *,
-        requires_dist: Optional[List[str]],
         extras: Optional[Set[str]] = None,
         platforms: Optional[Set[Platform]] = None,
     ):
+        """Create a new instance and parse the requires_dist
+
+        Args:
+            name (str): The name of the whl distribution
+            requires_dist (list[Str]): The Requires-Dist from the METADATA of the whl
+                distribution.
+            extras (set[str], optional): The list of requested extras, defaults to None.
+            platforms (set[Platform], optional): The list of target platforms, defaults to
+                None. If the list of platforms has multiple `minor_version` values, it
+                will change the code to generate the select statements using
+                `@rules_python//python/config_settings:is_python_3.y` conditions.
+        """
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
+        self._target_versions = {p.minor_version for p in platforms or {}}
+        self._add_version_select = platforms and len(self._target_versions) > 2
+        if None in self._target_versions and len(self._target_versions) > 2:
+            raise ValueError(
+                f"all python versions need to be specified explicitly, got: {platforms}"
+            )
 
         # Sort so that the dictionary order in the FrozenDeps is deterministic
         # without the final sort because Python retains insertion order. That way
@@ -286,18 +383,39 @@ class Deps:
 
             self._select[p].add(dep)
 
-        if len(self._select[platform]) != 1:
+        if len(self._select[platform]) == 1:
+            # We are adding a new item to the select and we need to ensure that
+            # existing dependencies from less specialized platforms are propagated
+            # to the newly added dependency set.
+            for p, deps in self._select.items():
+                # Check if the existing platform overlaps with the given platform
+                if p == platform or platform not in p.all_specializations():
+                    continue
+
+                self._select[platform].update(self._select[p])
+
+    def _maybe_add_common_dep(self, dep):
+        if len(self._target_versions) < 2:
             return
 
-        # We are adding a new item to the select and we need to ensure that
-        # existing dependencies from less specialized platforms are propagated
-        # to the newly added dependency set.
-        for p, deps in self._select.items():
-            # Check if the existing platform overlaps with the given platform
-            if p == platform or platform not in p.all_specializations():
-                continue
+        platforms = [Platform(minor_version=v) for v in self._target_versions]
 
-            self._select[platform].update(self._select[p])
+        # If the dep is targeting all target python versions, lets add it to
+        # the common dependency list to simplify the select statements.
+        for p in platforms:
+            if p not in self._select:
+                return
+
+            if dep not in self._select[p]:
+                return
+
+        # All of the python version-specific branches have the dep, so lets add
+        # it to the common deps.
+        self._deps.add(dep)
+        for p in platforms:
+            self._select[p].remove(dep)
+            if not self._select[p]:
+                self._select.pop(p)
 
     @staticmethod
     def _normalize(name: str) -> str:
@@ -385,8 +503,9 @@ class Deps:
             ]
         )
         match_arch = "platform_machine" in marker_str
+        match_version = "version" in marker_str
 
-        if not (match_os or match_arch):
+        if not (match_os or match_arch or match_version):
             if any(req.marker.evaluate({"extra": extra}) for extra in extras):
                 self._add(req.name, None)
             return
@@ -399,8 +518,17 @@ class Deps:
 
             if match_arch:
                 self._add(req.name, plat)
-            else:
+            elif match_os and self._add_version_select:
+                self._add(req.name, Platform(plat.os, minor_version=plat.minor_version))
+            elif match_os:
                 self._add(req.name, Platform(plat.os))
+            elif match_version and self._add_version_select:
+                self._add(req.name, Platform(minor_version=plat.minor_version))
+            elif match_version:
+                self._add(req.name, None)
+
+        # Merge to common if possible after processing all platforms
+        self._maybe_add_common_dep(req.name)
 
     def build(self) -> FrozenDeps:
         return FrozenDeps(

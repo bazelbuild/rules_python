@@ -94,6 +94,20 @@ use_repo(pip, "whl_mods_hub")
 # Alternatively, `python_interpreter_target` can be used to directly specify
 # the Python interpreter to run to resolve dependencies.
 pip.parse(
+    # We can use `envsubst in the above
+    envsubst = ["PIP_INDEX_URL"],
+    # Use the bazel downloader to query the simple API for downloading the sources
+    # Note, that we can use envsubst for this value.
+    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
+    # One can also select a particular index for a particular package.
+    # This ensures that the setup is resistant against confusion attacks.
+    # experimental_index_url_overrides = {
+    #    "my_package": "https://different-index-url.com",
+    # },
+    # Or you can specify extra indexes like with `pip`:
+    # experimental_extra_index_urls = [
+    #    "https://different-index-url.com",
+    # ],
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -107,9 +121,10 @@ pip.parse(
     # You can use one of the values below to specify the target platform
     # to generate the dependency graph for.
     experimental_target_platforms = [
-        "all",
-        "linux_*",
-        "host",
+        # Specifying the target platforms explicitly
+        "cp39_linux_x86_64",
+        "cp39_linux_*",
+        "cp39_*",
     ],
     hub_name = "pip",
     python_version = "3.9",
@@ -137,8 +152,13 @@ pip.parse(
     # You can use one of the values below to specify the target platform
     # to generate the dependency graph for.
     experimental_target_platforms = [
-        "all",
+        # Using host python version
         "linux_*",
+        "osx_*",
+        "windows_*",
+        # Or specifying an exact platform
+        "linux_x86_64",
+        # Or the following to get the `host` platform only
         "host",
     ],
     hub_name = "pip",

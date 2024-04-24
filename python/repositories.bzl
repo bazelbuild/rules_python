@@ -25,6 +25,7 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
+load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(
     "//python/private:toolchains_repo.bzl",
     "host_toolchain",
@@ -32,7 +33,6 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
-load("//python/private:which.bzl", "which_with_fail")
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -86,13 +86,17 @@ def is_standalone_interpreter(rctx, python_interpreter_path):
         return False
 
     # This is a rules_python provided toolchain.
-    return rctx.execute([
-        "ls",
-        "{}/{}".format(
-            python_interpreter_path.dirname,
-            STANDALONE_INTERPRETER_FILENAME,
-        ),
-    ]).return_code == 0
+    return repo_utils.execute_unchecked(
+        rctx,
+        op = "IsStandaloneInterpreter",
+        arguments = [
+            "ls",
+            "{}/{}".format(
+                python_interpreter_path.dirname,
+                STANDALONE_INTERPRETER_FILENAME,
+            ),
+        ],
+    ).return_code == 0
 
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
@@ -102,7 +106,8 @@ def _python_repository_impl(rctx):
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
-    python_short_version = python_version.rpartition(".")[0]
+    python_version_info = python_version.split(".")
+    python_short_version = "{0}.{1}".format(*python_version_info)
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
@@ -124,35 +129,32 @@ def _python_repository_impl(rctx):
             )
             working_directory = "zstd-{version}".format(version = rctx.attr.zstd_version)
 
-            make_result = rctx.execute(
-                [which_with_fail("make", rctx), "--jobs=4"],
+            repo_utils.execute_checked(
+                rctx,
+                op = "python_repository.MakeZstd",
+                arguments = [
+                    repo_utils.which_checked(rctx, "make"),
+                    "--jobs=4",
+                ],
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
             )
-            if make_result.return_code:
-                fail_msg = (
-                    "Failed to compile 'zstd' from source for use in Python interpreter extraction. " +
-                    "'make' error message: {}".format(make_result.stderr)
-                )
-                fail(fail_msg)
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
             rctx.symlink(zstd, unzstd)
 
-        exec_result = rctx.execute([
-            which_with_fail("tar", rctx),
-            "--extract",
-            "--strip-components=2",
-            "--use-compress-program={unzstd}".format(unzstd = unzstd),
-            "--file={}".format(release_filename),
-        ])
-        if exec_result.return_code:
-            fail_msg = (
-                "Failed to extract Python interpreter from '{}'. ".format(release_filename) +
-                "'tar' error message: {}".format(exec_result.stderr)
-            )
-            fail(fail_msg)
+        repo_utils.execute_checked(
+            rctx,
+            op = "python_repository.ExtractRuntime",
+            arguments = [
+                repo_utils.which_checked(rctx, "tar"),
+                "--extract",
+                "--strip-components=2",
+                "--use-compress-program={unzstd}".format(unzstd = unzstd),
+                "--file={}".format(release_filename),
+            ],
+        )
     else:
         rctx.download_and_extract(
             url = urls,
@@ -182,20 +184,23 @@ def _python_repository_impl(rctx):
         if "windows" not in rctx.os.name:
             lib_dir = "lib" if "windows" not in platform else "Lib"
 
-            exec_result = rctx.execute([which_with_fail("chmod", rctx), "-R", "ugo-w", lib_dir])
-            if exec_result.return_code != 0:
-                fail_msg = "Failed to make interpreter installation read-only. 'chmod' error msg: {}".format(
-                    exec_result.stderr,
-                )
-                fail(fail_msg)
-            exec_result = rctx.execute([which_with_fail("touch", rctx), "{}/.test".format(lib_dir)])
+            repo_utils.execute_checked(
+                rctx,
+                op = "python_repository.MakeReadOnly",
+                arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", lib_dir],
+            )
+            exec_result = repo_utils.execute_unchecked(
+                rctx,
+                op = "python_repository.TestReadOnly",
+                arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
+            )
             if exec_result.return_code == 0:
-                exec_result = rctx.execute([which_with_fail("id", rctx), "-u"])
-                if exec_result.return_code != 0:
-                    fail("Could not determine current user ID. 'id -u' error msg: {}".format(
-                        exec_result.stderr,
-                    ))
-                uid = int(exec_result.stdout.strip())
+                stdout = repo_utils.execute_checked_stdout(
+                    rctx,
+                    op = "python_repository.GetUserId",
+                    arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
+                )
+                uid = int(stdout.strip())
                 if uid == 0:
                     fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
                 else:
@@ -217,7 +222,7 @@ def _python_repository_impl(rctx):
         "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
     ]
 
-    if rctx.attr.ignore_root_user_error:
+    if rctx.attr.ignore_root_user_error or "windows" in rctx.os.name:
         glob_exclude += [
             # These pycache files are created on first use of the associated python files.
             # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
@@ -335,6 +340,11 @@ py_runtime(
     files = [":files"],
 {coverage_attr}
     interpreter = "{python_path}",
+    interpreter_version_info = {{
+        "major": "{interpreter_version_info_major}",
+        "minor": "{interpreter_version_info_minor}",
+        "micro": "{interpreter_version_info_micro}",
+    }},
     python_version = "PY3",
 )
 
@@ -347,6 +357,7 @@ py_runtime_pair(
 py_cc_toolchain(
     name = "py_cc_toolchain",
     headers = ":python_headers",
+    libs = ":libpython",
     python_version = "{python_version}",
 )
 """.format(
@@ -356,6 +367,9 @@ py_cc_toolchain(
         python_version = python_short_version,
         python_version_nodot = python_short_version.replace(".", ""),
         coverage_attr = coverage_attr_text,
+        interpreter_version_info_major = python_version_info[0],
+        interpreter_version_info_minor = python_version_info[1],
+        interpreter_version_info_micro = python_version_info[2],
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -475,6 +489,7 @@ For more information see the official bazel docs
             default = "1.5.2",
         ),
     },
+    environ = [REPO_DEBUG_ENV_VAR],
 )
 
 # Wrapper macro around everything above, this is the primary API.

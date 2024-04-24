@@ -14,6 +14,7 @@
 
 """Setup for rules_python tests and tools."""
 
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
@@ -42,3 +43,4 @@ def rules_python_internal_setup():
     bazel_integration_test_rules_dependencies()
     bazel_starlib_dependencies()
     bazel_binaries(versions = SUPPORTED_BAZEL_VERSIONS)
+    bazel_features_deps()

@@ -69,12 +69,26 @@ bzl_library(
 )
 
 bzl_library(
+    name = "config_settings_bzl",
+    srcs = ["config_settings.bzl"],
+    deps = [
+        "//python:versions_bzl",
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
     name = "coverage_deps_bzl",
     srcs = ["coverage_deps.bzl"],
     deps = [
         ":bazel_tools_bzl",
         ":version_label_bzl",
     ],
+)
+
+bzl_library(
+    name = "envsubst_bzl",
+    srcs = ["envsubst.bzl"],
 )
 
 bzl_library(
@@ -103,6 +117,18 @@ bzl_library(
 bzl_library(
     name = "parse_whl_name_bzl",
     srcs = ["parse_whl_name.bzl"],
+)
+
+bzl_library(
+    name = "pypi_index_bzl",
+    srcs = ["pypi_index.bzl"],
+    deps = [
+        ":auth_bzl",
+        ":normalize_name_bzl",
+        ":text_util_bzl",
+        "//python/pip_install:requirements_parser_bzl",
+        "//python/private/bzlmod:bazel_features_bzl",
+    ],
 )
 
 bzl_library(
@@ -162,6 +188,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "py_toolchain_suite_bzl",
+    srcs = ["py_toolchain_suite.bzl"],
+    deps = [
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
     name = "py_wheel_bzl",
     srcs = ["py_wheel.bzl"],
     visibility = ["//:__subpackages__"],
@@ -196,6 +230,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "repo_utils_bzl",
+    srcs = ["repo_utils.bzl"],
+)
+
+bzl_library(
     name = "stamp_bzl",
     srcs = ["stamp.bzl"],
     visibility = ["//:__subpackages__"],
@@ -210,7 +249,7 @@ bzl_library(
     name = "toolchains_repo_bzl",
     srcs = ["toolchains_repo.bzl"],
     deps = [
-        ":which_bzl",
+        ":repo_utils_bzl",
         "//python:versions_bzl",
     ],
 )
@@ -230,18 +269,12 @@ bzl_library(
 )
 
 bzl_library(
-    name = "which_bzl",
-    srcs = ["which.bzl"],
-    visibility = [
-        "//docs:__subpackages__",
-        "//python:__subpackages__",
-    ],
-)
-
-bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        "parse_whl_name_bzl",
+    ],
 )
 
 bzl_library(

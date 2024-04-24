@@ -23,5 +23,9 @@ bzlmod_version = f"{sys.version_info.major}{sys.version_info.minor}"
 if not my_lib.websockets_is_for_python_version(
     workspace_version
 ) and not my_lib.websockets_is_for_python_version(bzlmod_version):
-    print("expected package for Python version is different than returned")
+    print(
+        "expected package for Python version is different than returned\n"
+        f"expected either {workspace_version} or {bzlmod_version}\n"
+        f"but got {my_lib.websockets.__file__}"
+    )
     sys.exit(1)

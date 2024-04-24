@@ -1,0 +1,3 @@
+load(":pypi_index_tests.bzl", "pypi_index_test_suite")
+
+pypi_index_test_suite(name = "pypi_index_tests")

@@ -14,6 +14,7 @@
 """Common functionality between test/binary executables."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -92,6 +93,7 @@ filename in `srcs`, `main` must be specified.
             default = "PY3",
             # NOTE: Some tests care about the order of these values.
             values = ["PY2", "PY3"],
+            doc = "Defunct, unused, does nothing.",
         ),
         "_windows_constraints": attr.label_list(
             default = [
@@ -181,7 +183,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         data_runfiles = runfiles_details.data_runfiles.merge(extra_exec_runfiles),
     )
 
-    legacy_providers, modern_providers = _create_providers(
+    return _create_providers(
         ctx = ctx,
         executable = executable,
         runfiles_details = runfiles_details,
@@ -195,10 +197,13 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         semantics = semantics,
         output_groups = exec_result.output_groups,
     )
-    return struct(
-        legacy_providers = legacy_providers,
-        providers = modern_providers,
-    )
+
+def _get_build_info(ctx, cc_toolchain):
+    build_info_files = py_internal.cc_toolchain_build_info_files(cc_toolchain)
+    if cc_helper.is_stamping_enabled(ctx):
+        return build_info_files.non_redacted_build_info_files.to_list()
+    else:
+        return build_info_files.redacted_build_info_files.to_list()
 
 def _validate_executable(ctx):
     if ctx.attr.python_version != "PY3":
@@ -509,6 +514,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
             is_test = is_test,
             requested_features = cc_feature_config.requested_features,
             feature_configuration = cc_feature_config.feature_configuration,
+            cc_toolchain = cc_details.cc_toolchain,
         )
         ctx.actions.symlink(
             output = dso,
@@ -517,19 +523,22 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
         )
     else:
         linked_lib = dso
-    _cc_common.link(
+
+    # The regular cc_common.link API can't be used because several
+    # args are private-use only; see # private comments
+    py_internal.link(
         name = ctx.label.name,
         actions = ctx.actions,
         linking_contexts = [cc_info.linking_context],
         output_type = "dynamic_library",
-        never_link = True,
-        native_deps = True,
+        never_link = True,  # private
+        native_deps = True,  # private
         feature_configuration = cc_feature_config.feature_configuration,
         cc_toolchain = cc_details.cc_toolchain,
-        test_only_target = is_test,
+        test_only_target = is_test,  # private
         stamp = 1 if is_stamping_enabled(ctx, semantics) else 0,
-        main_output = linked_lib,
-        use_shareable_artifact_factory = True,
+        main_output = linked_lib,  # private
+        use_shareable_artifact_factory = True,  # private
         # NOTE: Only flags not captured by cc_info.linking_context need to
         # be manually passed
         user_link_flags = semantics.get_native_deps_user_link_flags(ctx),
@@ -545,8 +554,9 @@ def _create_shared_native_deps_dso(
         cc_info,
         is_test,
         feature_configuration,
-        requested_features):
-    linkstamps = cc_info.linking_context.linkstamps()
+        requested_features,
+        cc_toolchain):
+    linkstamps = py_internal.linking_context_linkstamps(cc_info.linking_context)
 
     partially_disabled_thin_lto = (
         _cc_common.is_enabled(
@@ -570,8 +580,11 @@ def _create_shared_native_deps_dso(
             for input in cc_info.linking_context.linker_inputs.to_list()
             for flag in input.user_link_flags
         ],
-        linkstamps = [linkstamp.file() for linkstamp in linkstamps.to_list()],
-        build_info_artifacts = _cc_common.get_build_info(ctx) if linkstamps else [],
+        linkstamps = [
+            py_internal.linkstamp_file(linkstamp)
+            for linkstamp in linkstamps.to_list()
+        ],
+        build_info_artifacts = _get_build_info(ctx, cc_toolchain) if linkstamps else [],
         features = requested_features,
         is_test_target_partially_disabled_thin_lto = is_test and partially_disabled_thin_lto,
     )
@@ -732,9 +745,7 @@ def _create_providers(
         semantics: BinarySemantics struct; see create_binary_semantics()
 
     Returns:
-        A two-tuple of:
-        1. A dict of legacy providers.
-        2. A list of modern providers.
+        A list of modern providers.
     """
     providers = [
         DefaultInfo(
@@ -756,7 +767,28 @@ def _create_providers(
     # TODO(b/265840007): Make this non-conditional once Google enables
     # --incompatible_use_python_toolchains.
     if runtime_details.toolchain_runtime:
-        providers.append(runtime_details.toolchain_runtime)
+        py_runtime_info = runtime_details.toolchain_runtime
+        providers.append(py_runtime_info)
+
+        # Re-add the builtin PyRuntimeInfo for compatibility to make
+        # transitioning easier, but only if it isn't already added because
+        # returning the same provider type multiple times is an error.
+        # NOTE: The PyRuntimeInfo from the toolchain could be a rules_python
+        # PyRuntimeInfo or a builtin PyRuntimeInfo -- a user could have used the
+        # builtin py_runtime rule or defined their own. We can't directly detect
+        # the type of the provider object, but the rules_python PyRuntimeInfo
+        # object has an extra attribute that the builtin one doesn't.
+        if hasattr(py_runtime_info, "interpreter_version_info"):
+            providers.append(BuiltinPyRuntimeInfo(
+                interpreter_path = py_runtime_info.interpreter_path,
+                interpreter = py_runtime_info.interpreter,
+                files = py_runtime_info.files,
+                coverage_tool = py_runtime_info.coverage_tool,
+                coverage_files = py_runtime_info.coverage_files,
+                python_version = py_runtime_info.python_version,
+                stub_shebang = py_runtime_info.stub_shebang,
+                bootstrap_template = py_runtime_info.bootstrap_template,
+            ))
 
     # TODO(b/163083591): Remove the PyCcLinkParamsProvider once binaries-in-deps
     # are cleaned up.
@@ -783,13 +815,13 @@ def _create_providers(
     providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
-    extra_legacy_providers, extra_providers = semantics.get_extra_providers(
+    extra_providers = semantics.get_extra_providers(
         ctx,
         main_py = main_py,
         runtime_details = runtime_details,
     )
     providers.extend(extra_providers)
-    return extra_legacy_providers, providers
+    return providers
 
 def _create_run_environment_info(ctx, inherited_environment):
     expanded_env = {}

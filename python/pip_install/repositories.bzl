@@ -18,11 +18,11 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _RULE_DEPS = [
-    # START: maintained by 'bazel run //tools/private:update_pip_deps'
+    # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
     (
         "pypi__build",
-        "https://files.pythonhosted.org/packages/58/91/17b00d5fac63d3dca605f1b8269ba3c65e98059e1fd99d00283e42a454f0/build-0.10.0-py3-none-any.whl",
-        "af266720050a66c893a6096a2f410989eeac74ff9a68ba194b3f6473e8e26171",
+        "https://files.pythonhosted.org/packages/e2/03/f3c8ba0a6b6e30d7d18c40faab90807c9bb5e9a1e3b2fe2008af624a9c97/build-1.2.1-py3-none-any.whl",
+        "75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4",
     ),
     (
         "pypi__click",
@@ -66,8 +66,8 @@ _RULE_DEPS = [
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/e8/df/47e6267c6b5cdae867adbdd84b437393e6202ce4322de0a5e0b92960e1d6/pip_tools-7.3.0-py3-none-any.whl",
-        "8717693288720a8c6ebd07149c93ab0be1fced0b5191df9e9decd3263e20d85e",
+        "https://files.pythonhosted.org/packages/0d/dc/38f4ce065e92c66f058ea7a368a9c5de4e702272b479c0992059f7693941/pip_tools-7.4.1-py3-none-any.whl",
+        "4c690e5fbae2f21e87843e89c26191f0d9454f362d8acdbd695716493ec8b3a9",
     ),
     (
         "pypi__pyproject_hooks",
@@ -94,7 +94,7 @@ _RULE_DEPS = [
         "https://files.pythonhosted.org/packages/8c/08/d3006317aefe25ea79d3b76c9650afabaf6d63d1c8443b236e7405447503/zipp-3.16.2-py3-none-any.whl",
         "679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0",
     ),
-    # END: maintained by 'bazel run //tools/private:update_pip_deps'
+    # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
 ]
 
 _GENERIC_WHEEL = """\

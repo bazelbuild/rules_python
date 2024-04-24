@@ -67,6 +67,16 @@ const (
 	// naming convention. See python_library_naming_convention for more info on
 	// the package name interpolation.
 	TestNamingConvention = "python_test_naming_convention"
+	// DefaultVisibilty represents the directive that controls what visibility
+	// labels are added to generated python targets.
+	DefaultVisibilty = "python_default_visibility"
+	// Visibility represents the directive that controls what additional
+	// visibility labels are added to generated targets. It mimics the behavior
+	// of the `go_visibility` directive.
+	Visibility = "python_visibility"
+	// TestFilePattern represents the directive that controls which python
+	// files are mapped to `py_test` targets.
+	TestFilePattern = "python_test_file_pattern"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -87,6 +97,13 @@ const (
 
 const (
 	packageNameNamingConventionSubstitution = "$package_name$"
+)
+
+const (
+	// The default visibility label, including a format placeholder for `python_root`.
+	DefaultVisibilityFmtString = "//%s:__subpackages__"
+	// The default globs used to determine pt_test targets.
+	DefaultTestFilePatternString = "*_test.py,test_*.py"
 )
 
 // defaultIgnoreFiles is the list of default values used in the
@@ -136,6 +153,9 @@ type Config struct {
 	libraryNamingConvention      string
 	binaryNamingConvention       string
 	testNamingConvention         string
+	defaultVisibility            []string
+	visibility                   []string
+	testFilePattern              []string
 }
 
 // New creates a new Config.
@@ -157,6 +177,9 @@ func New(
 		libraryNamingConvention:      packageNameNamingConventionSubstitution,
 		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
 		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
+		visibility:                   []string{},
+		testFilePattern:              strings.Split(DefaultTestFilePatternString, ","),
 	}
 }
 
@@ -183,6 +206,9 @@ func (c *Config) NewChild() *Config {
 		libraryNamingConvention:      c.libraryNamingConvention,
 		binaryNamingConvention:       c.binaryNamingConvention,
 		testNamingConvention:         c.testNamingConvention,
+		defaultVisibility:            c.defaultVisibility,
+		visibility:                   c.visibility,
+		testFilePattern:              c.testFilePattern,
 	}
 }
 
@@ -238,7 +264,6 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 					distributionRepositoryName = gazelleManifest.PipRepository.Name
 				}
 				sanitizedDistribution := SanitizeDistribution(distributionName)
-
 
 				// @<repository_name>//<distribution_name>
 				lbl := label.New(distributionRepositoryName, sanitizedDistribution, sanitizedDistribution)
@@ -387,4 +412,34 @@ func (c *Config) SetTestNamingConvention(testNamingConvention string) {
 // substitutions.
 func (c *Config) RenderTestName(packageName string) string {
 	return strings.ReplaceAll(c.testNamingConvention, packageNameNamingConventionSubstitution, packageName)
+}
+
+// AppendVisibility adds additional items to the target's visibility.
+func (c *Config) AppendVisibility(visibility string) {
+	c.visibility = append(c.visibility, visibility)
+}
+
+// Visibility returns the target's visibility.
+func (c *Config) Visibility() []string {
+	return append(c.defaultVisibility, c.visibility...)
+}
+
+// SetDefaultVisibility sets the default visibility of the target.
+func (c *Config) SetDefaultVisibility(visibility []string) {
+	c.defaultVisibility = visibility
+}
+
+// DefaultVisibilty returns the target's default visibility.
+func (c *Config) DefaultVisibilty() []string {
+	return c.defaultVisibility
+}
+
+// SetTestFilePattern sets the file patterns that should be mapped to 'py_test' rules.
+func (c *Config) SetTestFilePattern(patterns []string) {
+	c.testFilePattern = patterns
+}
+
+// TestFilePattern returns the patterns that should be mapped to 'py_test' rules.
+func (c *Config) TestFilePattern() []string {
+	return c.testFilePattern
 }

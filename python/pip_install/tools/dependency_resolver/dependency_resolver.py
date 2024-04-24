@@ -99,8 +99,10 @@ def main(
     bazel_runfiles = runfiles.Create()
 
     requirements_file = _select_golden_requirements_file(
-        requirements_txt=requirements_txt, requirements_linux=requirements_linux,
-        requirements_darwin=requirements_darwin, requirements_windows=requirements_windows
+        requirements_txt=requirements_txt,
+        requirements_linux=requirements_linux,
+        requirements_darwin=requirements_darwin,
+        requirements_windows=requirements_windows,
     )
 
     resolved_srcs = [_locate(bazel_runfiles, src) for src in srcs]
@@ -157,7 +159,9 @@ def main(
     os.environ["CUSTOM_COMPILE_COMMAND"] = update_command
     os.environ["PIP_CONFIG_FILE"] = os.getenv("PIP_CONFIG_FILE") or os.devnull
 
-    argv.append(f"--output-file={requirements_file_relative if UPDATE else requirements_out}")
+    argv.append(
+        f"--output-file={requirements_file_relative if UPDATE else requirements_out}"
+    )
     argv.extend(
         (src_relative if Path(src_relative).exists() else resolved_src)
         for src_relative, resolved_src in zip(srcs_relative, resolved_srcs)

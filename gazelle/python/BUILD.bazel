@@ -38,7 +38,7 @@ go_library(
         "@bazel_gazelle//resolve:go_default_library",
         "@bazel_gazelle//rule:go_default_library",
         "@com_github_bazelbuild_buildtools//build:go_default_library",
-        "@com_github_bmatcuk_doublestar//:doublestar",
+        "@com_github_bmatcuk_doublestar_v4//:doublestar",
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
