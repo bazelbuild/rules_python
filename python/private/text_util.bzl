@@ -35,18 +35,18 @@ def _render_alias(name, actual, *, visibility = None):
         ")",
     ])
 
-def _render_dict(d, *, value_repr = repr):
+def _render_dict(d, *, key_repr = repr, value_repr = repr):
     return "\n".join([
         "{",
         _indent("\n".join([
-            "{}: {},".format(repr(k), value_repr(v))
+            "{}: {},".format(key_repr(k), value_repr(v))
             for k, v in d.items()
         ])),
         "}",
     ])
 
-def _render_select(selects, *, no_match_error = None, value_repr = repr):
-    dict_str = _render_dict(selects, value_repr = value_repr) + ","
+def _render_select(selects, *, no_match_error = None, key_repr = repr, value_repr = repr, name = "select"):
+    dict_str = _render_dict(selects, key_repr = key_repr, value_repr = value_repr) + ","
 
     if no_match_error:
         args = "\n".join([
@@ -62,7 +62,7 @@ def _render_select(selects, *, no_match_error = None, value_repr = repr):
             "",
         ])
 
-    return "select({})".format(args)
+    return "{}({})".format(name, args)
 
 def _render_list(items):
     if not items:
@@ -80,10 +80,27 @@ def _render_list(items):
         "]",
     ])
 
+def _render_tuple(items, *, value_repr = repr):
+    if not items:
+        return "tuple()"
+
+    if len(items) == 1:
+        return "({},)".format(value_repr(items[0]))
+
+    return "\n".join([
+        "(",
+        _indent("\n".join([
+            "{},".format(value_repr(item))
+            for item in items
+        ])),
+        ")",
+    ])
+
 render = struct(
     alias = _render_alias,
     dict = _render_dict,
     indent = _indent,
     list = _render_list,
     select = _render_select,
+    tuple = _render_tuple,
 )
