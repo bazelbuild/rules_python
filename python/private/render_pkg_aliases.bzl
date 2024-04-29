@@ -67,8 +67,17 @@ def _render_whl_library_alias(
     return render.alias(
         name = name,
         actual = render.select(
-            {tuple(sorted(v, key = lambda x: ("is_python" not in x, x))): k for k, v in sorted(selects.items())},
+            {
+                tuple(sorted(
+                    conditions,
+                    # Group `is_python` and other conditions for easier reading
+                    # when looking at the generated files.
+                    key = lambda condition: ("is_python" not in condition, condition),
+                )): target
+                for target, conditions in sorted(selects.items())
+            },
             no_match_error = no_match_error,
+            # This key_repr is used to render selects.with_or keys
             key_repr = lambda x: repr(x[0]) if len(x) == 1 else render.tuple(x),
             name = "selects.with_or",
         ),
