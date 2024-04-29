@@ -21,6 +21,7 @@ package(
 bzl_library(
     name = "attributes_bazel_bzl",
     srcs = ["attributes_bazel.bzl"],
+    deps = ["//python/private:rules_cc_srcs_bzl"],
 )
 
 bzl_library(
@@ -61,6 +62,7 @@ bzl_library(
         ":py_internal_bzl",
         ":semantics_bzl",
         "//python/private:reexports_bzl",
+        "//python/private:rules_cc_srcs_bzl",
     ],
 )
 
@@ -74,6 +76,7 @@ bzl_library(
     srcs = ["providers.bzl"],
     deps = [
         ":semantics_bzl",
+        "//python/private:rules_cc_srcs_bzl",
         "//python/private:util_bzl",
     ],
 )
@@ -121,6 +124,7 @@ bzl_library(
         ":common_bzl",
         ":providers_bzl",
         ":py_internal_bzl",
+        "//python/private:rules_cc_srcs_bzl",
         "@bazel_skylib//lib:dicts",
     ],
 )

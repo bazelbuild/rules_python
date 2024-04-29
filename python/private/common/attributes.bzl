@@ -13,6 +13,7 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load("@rules_cc//cc:defs.bzl", "CcInfo")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
@@ -23,8 +24,6 @@ load(
     "SRCS_ATTR_ALLOW_FILES",
 )
 
-# TODO: Load CcInfo from rules_cc
-_CcInfo = CcInfo
 _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
 _STAMP_VALUES = [-1, 0, 1]
@@ -166,7 +165,7 @@ PY_SRCS_ATTRS = union_attrs(
         "deps": attr.label_list(
             providers = [
                 [PyInfo],
-                [_CcInfo],
+                [CcInfo],
                 [BuiltinPyInfo],
             ],
             # TODO(b/228692666): Google-specific; remove these allowances once
