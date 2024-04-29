@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import boto3
 import __init__
+import boto3
 
 _ = boto3

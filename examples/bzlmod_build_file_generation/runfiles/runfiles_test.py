@@ -26,7 +26,9 @@ class RunfilesTest(unittest.TestCase):
         self.assertEqual(runfiles.Create().CurrentRepository(), "")
 
     def testRunfilesWithRepoMapping(self):
-        data_path = runfiles.Create().Rlocation("example_bzlmod_build_file_generation/runfiles/data/data.txt")
+        data_path = runfiles.Create().Rlocation(
+            "example_bzlmod_build_file_generation/runfiles/data/data.txt"
+        )
         with open(data_path) as f:
             self.assertEqual(f.read().strip(), "Hello, example_bzlmod!")
 
