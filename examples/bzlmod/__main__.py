@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from lib import main
 import sys
+
+from lib import main
 
 if __name__ == "__main__":
     print(main([["A", 1], ["B", 2]]))

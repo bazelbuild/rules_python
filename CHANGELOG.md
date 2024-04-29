@@ -24,8 +24,10 @@ A brief description of the categories of changes:
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
   sorted in the attributes section. We are also removing values that are not
   default in order to reduce the size of the lock file.
+* (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
+* (deps): Updated `pip_tools` to >= 7.4.0
 
 ### Fixed
 
@@ -42,6 +44,8 @@ A brief description of the categories of changes:
   `pip.parse` extension is now possible, see the
   `examples/pip_parse/MODULE.bazel` for how to do it.
   See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
+* (refactor) The pre-commit developer workflow should now pass `isort` and `black`
+  checks (see [#1674](https://github.com/bazelbuild/rules_python/issues/1674)).
 
 ### Added
 
@@ -66,7 +70,9 @@ A brief description of the categories of changes:
   `experimental_index_url_overrides` to `pip.parse` for using the bazel
   downloader. If you see any issues, report in
   [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
-  the whl and sdist files will be written to the lock file.
+  the whl and sdist files will be written to the lock file. Controlling whether
+  the downloading of metadata is done in parallel can be done using
+  `parallel_download` attribute.
 * (pip_parse): A new flag `use_hub_alias_dependencies` has been added that is going
   to become default in the next release. This makes use of `dep_template` flag
   in the `whl_library` rule. This also affects the
@@ -80,9 +86,6 @@ A brief description of the categories of changes:
 [test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
 [test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
 
-### Changed
-
-* (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
 
 ## [0.31.0] - 2024-02-12
 

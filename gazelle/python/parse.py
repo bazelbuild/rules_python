@@ -20,6 +20,7 @@ import ast
 import concurrent.futures
 import json
 import os
+import platform
 import sys
 from io import BytesIO
 from tokenize import COMMENT, NAME, OP, STRING, tokenize
@@ -72,7 +73,7 @@ def parse_main(content):
             if token_type != OP or token_val != "==":
                 continue
             token_type, token_val, start, _, _ = next(g)
-            if token_type != STRING or token_val.strip("\"'") != '__main__':
+            if token_type != STRING or token_val.strip("\"'") != "__main__":
                 continue
             token_type, token_val, start, _, _ = next(g)
             if token_type != OP or token_val != ":":
@@ -108,8 +109,19 @@ def parse(repo_root, rel_package_path, filename):
         return output
 
 
+def create_main_executor():
+    # We cannot use ProcessPoolExecutor on macOS, because the fork start method should be considered unsafe as it can
+    # lead to crashes of the subprocess as macOS system libraries may start threads. Meanwhile, the 'spawn' and
+    # 'forkserver' start methods generally cannot be used with “frozen” executables (i.e., Python zip file) on POSIX
+    # systems. Therefore, there is no good way to use ProcessPoolExecutor on macOS when we distribute this program with
+    # a zip file.
+    # Ref: https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
+    if platform.system() == "Darwin":
+        return concurrent.futures.ThreadPoolExecutor()
+    return concurrent.futures.ProcessPoolExecutor()
+
 def main(stdin, stdout):
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with create_main_executor() as executor:
         for parse_request in stdin:
             parse_request = json.loads(parse_request)
             repo_root = parse_request["repo_root"]

@@ -152,7 +152,9 @@ def main(sys_argv):
         record_contents = record_path.read_text() if record_path.exists() else ""
         distribution_prefix = distinfo_dir.with_suffix("").name
 
-        with _WhlFile(args.output, mode="w", distribution_prefix=distribution_prefix) as out:
+        with _WhlFile(
+            args.output, mode="w", distribution_prefix=distribution_prefix
+        ) as out:
             for p in _files_to_pack(patched_wheel_dir, record_contents):
                 rel_path = p.relative_to(patched_wheel_dir)
                 out.add_file(str(rel_path), p)
