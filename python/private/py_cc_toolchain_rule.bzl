@@ -18,6 +18,7 @@ NOTE: This is a beta-quality feature. APIs subject to change until
 https://github.com/bazelbuild/rules_python/issues/824 is considered done.
 """
 
+load("@rules_cc//cc:defs.bzl", "CcInfo")
 load(":py_cc_toolchain_info.bzl", "PyCcToolchainInfo")
 
 def _py_cc_toolchain_impl(ctx):

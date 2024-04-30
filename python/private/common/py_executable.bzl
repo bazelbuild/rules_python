@@ -14,6 +14,7 @@
 """Common functionality between test/binary executables."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@rules_cc//cc:defs.bzl", "cc_common")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":attributes.bzl",
@@ -52,9 +53,6 @@ load(
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
 )
-
-# TODO: Load cc_common from rules_cc
-_cc_common = cc_common
 
 _py_builtins = py_internal
 
@@ -559,10 +557,10 @@ def _create_shared_native_deps_dso(
     linkstamps = py_internal.linking_context_linkstamps(cc_info.linking_context)
 
     partially_disabled_thin_lto = (
-        _cc_common.is_enabled(
+        cc_common.is_enabled(
             feature_name = "thin_lto_linkstatic_tests_use_shared_nonlto_backends",
             feature_configuration = feature_configuration,
-        ) and not _cc_common.is_enabled(
+        ) and not cc_common.is_enabled(
             feature_name = "thin_lto_all_linkstatic_use_shared_nonlto_backends",
             feature_configuration = feature_configuration,
         )
@@ -876,7 +874,7 @@ def cc_configure_features(ctx, *, cc_toolchain, extra_features):
     requested_features.extend(ctx.features)
     if "legacy_whole_archive" not in ctx.disabled_features:
         requested_features.append("legacy_whole_archive")
-    feature_configuration = _cc_common.configure_features(
+    feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
         requested_features = requested_features,

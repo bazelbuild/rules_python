@@ -14,15 +14,10 @@
 """Common functions that are specific to Bazel rule implementation"""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
 load(":common.bzl", "is_bool")
 load(":providers.bzl", "PyCcLinkParamsProvider")
 load(":py_internal.bzl", "py_internal")
-
-# TODO: Load cc_common from rules_cc
-_cc_common = cc_common
-
-# TODO: Load CcInfo from rules_cc
-_CcInfo = CcInfo
 
 _py_builtins = py_internal
 
@@ -42,13 +37,13 @@ def collect_cc_info(ctx, extra_deps = []):
         deps.extend(extra_deps)
     cc_infos = []
     for dep in deps:
-        if _CcInfo in dep:
-            cc_infos.append(dep[_CcInfo])
+        if CcInfo in dep:
+            cc_infos.append(dep[CcInfo])
 
         if PyCcLinkParamsProvider in dep:
             cc_infos.append(dep[PyCcLinkParamsProvider].cc_info)
 
-    return _cc_common.merge_cc_infos(cc_infos = cc_infos)
+    return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
 def maybe_precompile(ctx, srcs):
     """Computes all the outputs (maybe precompiled) from the input srcs.
