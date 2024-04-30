@@ -213,7 +213,7 @@ selects.config_setting_group(
 
 def generate_whl_library_build_bazel(
         *,
-        repo_prefix,
+        dep_template,
         whl_name,
         dependencies,
         dependencies_by_platform,
@@ -226,7 +226,7 @@ def generate_whl_library_build_bazel(
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
-        repo_prefix: the repo prefix that should be used for dependency lists.
+        dep_template: the dependency template that should be used for dependency lists.
         whl_name: the whl_name that this is generated for.
         dependencies: a list of PyPI packages that are dependencies to the py_library.
         dependencies_by_platform: a dict[str, list] of PyPI packages that may vary by platform.
@@ -328,37 +328,48 @@ def generate_whl_library_build_bazel(
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, PY_LIBRARY_PUBLIC_LABEL),
+        tmpl = dep_template.format(name = "{}", target = PY_LIBRARY_PUBLIC_LABEL),
     )
 
     whl_file_deps = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, WHEEL_FILE_PUBLIC_LABEL),
+        tmpl = dep_template.format(name = "{}", target = WHEEL_FILE_PUBLIC_LABEL),
     )
 
     # If this library is a member of a group, its public label aliases need to
     # point to the group implementation rule not the implementation rules. We
     # also need to mark the implementation rules as visible to the group
     # implementation.
-    if group_name:
-        group_repo = repo_prefix + "_groups"
-        label_tmpl = "\"@{}//:{}_{{}}\"".format(group_repo, normalize_name(group_name))
-        impl_vis = ["@{}//:__pkg__".format(group_repo)]
+    if group_name and "//:" in dep_template:
+        # This is the legacy behaviour where the group library is outside the hub repo
+        label_tmpl = dep_template.format(
+            name = "_groups",
+            target = normalize_name(group_name) + "_{}",
+        )
+        impl_vis = [dep_template.format(
+            name = "_groups",
+            target = "__pkg__",
+        )]
         additional_content.extend([
             "",
             render.alias(
                 name = PY_LIBRARY_PUBLIC_LABEL,
-                actual = label_tmpl.format(PY_LIBRARY_PUBLIC_LABEL),
+                actual = repr(label_tmpl.format(PY_LIBRARY_PUBLIC_LABEL)),
             ),
             "",
             render.alias(
                 name = WHEEL_FILE_PUBLIC_LABEL,
-                actual = label_tmpl.format(WHEEL_FILE_PUBLIC_LABEL),
+                actual = repr(label_tmpl.format(WHEEL_FILE_PUBLIC_LABEL)),
             ),
         ])
         py_library_label = PY_LIBRARY_IMPL_LABEL
         whl_file_label = WHEEL_FILE_IMPL_LABEL
+
+    elif group_name:
+        py_library_label = PY_LIBRARY_PUBLIC_LABEL
+        whl_file_label = WHEEL_FILE_PUBLIC_LABEL
+        impl_vis = [dep_template.format(name = "", target = "__subpackages__")]
 
     else:
         py_library_label = PY_LIBRARY_PUBLIC_LABEL

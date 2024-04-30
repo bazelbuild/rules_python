@@ -74,6 +74,13 @@ A brief description of the categories of changes:
   the downloading of metadata is done in parallel can be done using
   `parallel_download` attribute.
 * (deps): `rules_python` depends now on `rules_cc` 0.0.9
+* (pip_parse): A new flag `use_hub_alias_dependencies` has been added that is going
+  to become default in the next release. This makes use of `dep_template` flag
+  in the `whl_library` rule. This also affects the
+  `experimental_requirement_cycles` feature where the dependencies that are in
+  a group would be only accessible via the hub repo aliases. If you still
+  depend on legacy labels instead of the hub repo aliases and you use the
+  `experimental_requirement_cycles`, now is a good time to migrate.
 
 [0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
