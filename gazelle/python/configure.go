@@ -90,11 +90,11 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 
 	configs := c.Exts[languageName].(pythonconfig.Configs)
 
-	config, exists := configs[rel]
+	config, exists := configs[filepath.FromSlash(rel)]
 	if !exists {
 		parent := configs.ParentForPackage(rel)
 		config = parent.NewChild()
-		configs[rel] = config
+		configs[filepath.FromSlash(rel)] = config
 	}
 
 	if f == nil {
