@@ -56,7 +56,7 @@ func (*Resolver) Name() string { return languageName }
 // returned, including an empty slice, the rule will be indexed.
 func (py *Resolver) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
 	cfgs := c.Exts[languageName].(pythonconfig.Configs)
-	cfg := cfgs[filepath.FromSlash(f.Pkg)]
+	cfg := cfgs[f.Pkg]
 	srcs := r.AttrStrings("srcs")
 	provides := make([]resolve.ImportSpec, 0, len(srcs)+1)
 	for _, src := range srcs {
@@ -143,7 +143,7 @@ func (py *Resolver) Resolve(
 	deps := treeset.NewWith(godsutils.StringComparator)
 	if modulesRaw != nil {
 		cfgs := c.Exts[languageName].(pythonconfig.Configs)
-		cfg := cfgs[filepath.FromSlash(from.Pkg)]
+		cfg := cfgs[from.Pkg]
 		pythonProjectRoot := cfg.PythonProjectRoot()
 		modules := modulesRaw.(*treeset.Set)
 		it := modules.Iterator()

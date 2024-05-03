@@ -70,7 +70,7 @@ func matchesAnyGlob(s string, globs []string) bool {
 // in depth-first post-order.
 func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateResult {
 	cfgs := args.Config.Exts[languageName].(pythonconfig.Configs)
-	cfg := cfgs[filepath.FromSlash(args.Rel)]
+	cfg := cfgs[args.Rel]
 
 	if !cfg.ExtensionEnabled() {
 		return language.GenerateResult{}
