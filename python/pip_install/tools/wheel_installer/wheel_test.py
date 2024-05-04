@@ -264,6 +264,48 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar", "baz"], got.deps)
         self.assertEqual({}, got.deps_select)
 
+    def test_deps_are_not_duplicated(self):
+        # See an example in
+        # https://files.pythonhosted.org/packages/76/9e/db1c2d56c04b97981c06663384f45f28950a73d9acf840c4006d60d0a1ff/opencv_python-4.9.0.80-cp37-abi3-win32.whl.metadata
+        requires_dist = [
+            "bar >=0.1.0 ; python_version < '3.7'",
+            "bar >=0.2.0 ; python_version >= '3.7'",
+            "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
+            "bar >=0.4.0 ; python_version >= '3.9'",
+            "bar >=0.5.0 ; python_version <= '3.9' and platform_system == 'Darwin' and platform_machine == 'arm64'",
+            "bar >=0.5.0 ; python_version >= '3.10' and platform_system == 'Darwin'",
+            "bar >=0.5.0 ; python_version >= '3.10'",
+            "bar >=0.6.0 ; python_version >= '3.11'",
+        ]
+
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=wheel.Platform.from_string(["cp310_*"]),
+        )
+        got = deps.build()
+
+        self.assertEqual(["bar"], got.deps)
+        self.assertEqual({}, got.deps_select)
+
+    def test_deps_are_not_duplicated_when_encountering_platform_dep_first(self):
+        # Note, that we are sorting the incoming `requires_dist` and we need to ensure that we are not getting any
+        # issues even if the platform-specific line comes first.
+        requires_dist = [
+            "bar >=0.4.0 ; python_version >= '3.6' and platform_system == 'Linux' and platform_machine == 'aarch64'",
+            "bar >=0.5.0 ; python_version >= '3.9'",
+        ]
+
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=wheel.Platform.from_string(["cp310_*"]),
+        )
+        got = deps.build()
+
+        self.assertEqual(["bar"], got.deps)
+        self.assertEqual({}, got.deps_select)
+
 
 class MinorVersionTest(unittest.TestCase):
     def test_host(self):
