@@ -122,12 +122,14 @@ pip.parse(
     # to generate the dependency graph for.
     experimental_target_platforms = [
         # Specifying the target platforms explicitly
-        "cp39_linux_x86_64",
-        "cp39_linux_*",
         "cp39_*",
+        "cp310_*",
+        "cp311_*",
+        "cp312_*",
     ],
     hub_name = "pip",
     python_version = "3.9",
+    quiet = False,
     requirements_lock = "//:requirements_lock_3_9.txt",
     requirements_windows = "//:requirements_windows_3_9.txt",
     # These modifications were created above and we
