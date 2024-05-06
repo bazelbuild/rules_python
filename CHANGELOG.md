@@ -28,6 +28,14 @@ A brief description of the categories of changes:
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
 * (deps): Updated `pip_tools` to >= 7.4.0
+* (toolchains): Change some old toolchain versions to use [20240224] release to
+  include security fixes `3.8.18`, `3.9.18` and `3.10.13`
+* (toolchains): Bump default toolchain versions to:
+    * `3.8 -> 3.8.19`
+    * `3.9 -> 3.9.19`
+    * `3.10 -> 3.10.14`
+    * `3.11 -> 3.11.9`
+    * `3.12 -> 3.12.3`
 
 ### Fixed
 
@@ -50,9 +58,9 @@ A brief description of the categories of changes:
 ### Added
 
 * (toolchains) Added armv7 platform definition for python toolchains.
-
-* New Python versions available: `3.11.8`, `3.12.2` using
-  https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+* (toolchains) New Python versions available: `3.11.8`, `3.12.2` using the [20240224] release.
+* (toolchains) New Python versions available: `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`, `3.12.3` using
+  the [20240415] release.
 * (gazelle) Added a new `python_visibility` directive to control visibility
   of generated targets by appending additional visibility labels.
 * (gazelle) Added a new `python_default_visibility` directive to control the
@@ -86,6 +94,8 @@ A brief description of the categories of changes:
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 [test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
 [test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
+[20240224]: https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+[20240415]: https://github.com/indygreg/python-build-standalone/releases/tag/20240415.
 
 
 ## [0.31.0] - 2024-02-12
