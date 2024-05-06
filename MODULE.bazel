@@ -107,6 +107,33 @@ dev_pip.parse(
 )
 use_repo(dev_pip, "dev_pip", "pypiserver")
 
+# uv setup - because we support WORKSPACE and bzlmod, we cannot use rules_uv,
+# loading rules_uv from any of the `bzlmod` files may break the users who don't
+# have uv registered in their repos and I could not figure out how to load it
+# in a way where bzlmod and non-bzlmod pathways would have different files but
+# we could share the same `pip_compile` rule. We still have tests using
+# WORKSPACE, so they would break if that was the case.
+uv = use_extension(
+    "//python/private/bzlmod:uv.bzl",
+    "uv",
+    dev_dependency = True,
+)
+uv.install(
+    # When updating, clear the sha values and observe the terminal output warnings when running
+    # bazel run @uv
+    files = {
+        "uv-aarch64-apple-darwin.tar.gz": "35e320cfa41c8902d66e2c491b5b2d2414e1c6443177c660736de657c66fb2c2",
+        "uv-aarch64-unknown-linux-gnu.tar.gz": "62b24363f21c07e02f62cf8e298ee6ec30e844006f3a52ac55c02903c755586d",
+        "uv-powerpc64le-unknown-linux-gnu.tar.gz": "07b1856e71c35f93ef5359c54f63d819841762316bf4d7c2774e178412d9090c",
+        "uv-s390x-unknown-linux-gnu.tar.gz": "773725ad1e02d6f4c90494fad5309a7cb4ce03b2e377fad336fecd895bc42dd2",
+        "uv-x86_64-apple-darwin.tar.gz": "cf5393f17de6961c7140d68f80e09c1f43ef47f8fac923ccd41896cce698f296",
+        "uv-x86_64-pc-windows-msvc.zip": "a44eb417b0c1e1c7cffd7349b8019d684f6200d0b5cfaef7dc322e8312bb254c",
+        "uv-x86_64-unknown-linux-gnu.tar.gz": "e748caea4ddafd3aebba771f4e8f51fe5aa517b71151a648269b3be982a349a1",
+    },
+    version = "0.1.39",
+)
+use_repo(uv, "uv")
+
 # Bazel integration test setup below
 
 bazel_binaries = use_extension(
