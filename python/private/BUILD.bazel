@@ -129,6 +129,17 @@ bzl_library(
 )
 
 bzl_library(
+    name = "parse_requirements_bzl",
+    srcs = ["parse_requirements.bzl"],
+    deps = [
+        ":normalize_name_bzl",
+        ":pypi_index_sources_bzl",
+        ":whl_target_platforms_bzl",
+        "//python/pip_install:requirements_parser_bzl",
+    ],
+)
+
+bzl_library(
     name = "parse_whl_name_bzl",
     srcs = ["parse_whl_name.bzl"],
 )
@@ -143,6 +154,11 @@ bzl_library(
         "//python/pip_install:requirements_parser_bzl",
         "//python/private/bzlmod:bazel_features_bzl",
     ],
+)
+
+bzl_library(
+    name = "pypi_index_sources_bzl",
+    srcs = ["pypi_index_sources.bzl"],
 )
 
 bzl_library(

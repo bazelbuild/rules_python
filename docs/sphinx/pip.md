@@ -19,7 +19,37 @@ load("@pip_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
+For `bzlmod` an equivalent `MODULE.bazel` would look like:
+```starlark
+pip = use_extension("//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pip_deps",
+    requirements_lock = ":requirements.txt",
+)
+use_repo(pip, "pip_deps")
+```
+
 You can then reference installed dependencies from a `BUILD` file with:
+
+```starlark
+load("@pip_deps//:requirements.bzl", "requirement")
+
+py_library(
+    name = "bar",
+    ...
+    deps = [
+        "//my/other:dep",
+        "@pip_deps//requests",
+        "@pip_deps//numpy",
+    ],
+)
+```
+
+The rules also provide a convenience macro for translating the entries in the
+`requirements.txt` file (e.g. `opencv-python`) to the right bazel label (e.g.
+`@pip_deps//opencv_python`). The convention of bazel labels is lowercase
+`snake_case`, but you can use the helper to avoid depending on this convention
+as follows:
 
 ```starlark
 load("@pip_deps//:requirements.bzl", "requirement")
@@ -35,33 +65,39 @@ py_library(
 )
 ```
 
-In addition to the `requirement` macro, which is used to access the generated `py_library`
-target generated from a package's wheel, The generated `requirements.bzl` file contains
-functionality for exposing [entry points][whl_ep] as `py_binary` targets as well.
+If you would like to access [entry points][whl_ep], see the `py_console_script_binary` rule documentation.
 
 [whl_ep]: https://packaging.python.org/specifications/entry-points/
 
-```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
+(per-os-arch-requirements)=
+## Requirements for a specific OS/Architecture
 
-alias(
-    name = "pip-compile",
-    actual = entry_point(
-        pkg = "pip-tools",
-        script = "pip-compile",
-    ),
-)
+In some cases you may need to use different requirements files for different OS, Arch combinations. This is enabled via the `requirements_by_platform` attribute in `pip.parse` extension and the `pip_parse` repository rule. The keys of the dictionary are labels to the file and the values are a list of comma separated target (os, arch) tuples.
+
+For example:
+```starlark
+    # ...
+    requirements_by_platform = {
+        "requirements_linux_x86_64.txt": "linux_x86_64",
+        "requirements_osx.txt": "osx_*",
+        "requirements_linux_exotic.txt": "linux_exotic",
+        "requirements_some_platforms.txt": "linux_aarch64,windows_*",
+    },
+    # For the list of standard platforms that the rules_python has toolchains for, default to
+    # the following requirements file.
+    requirements_lock = "requirements_lock.txt",
 ```
 
-Note that for packages whose name and script are the same, only the name of the package
-is needed when calling the `entry_point` macro.
+In case of duplicate platforms, `rules_python` will raise an error as there has
+to be unambiguous mapping of the requirement files to the (os, arch) tuples.
 
+An alternative way is to use per-OS requirement attributes.
 ```starlark
-load("@pip_deps//:requirements.bzl", "entry_point")
-
-alias(
-    name = "flake8",
-    actual = entry_point("flake8"),
+    # ...
+    requirements_windows = "requirements_windows.txt",
+    requirements_darwin = "requirements_darwin.txt",
+    # For the remaining platforms (which is basically only linux OS), use this file.
+    requirements_lock = "requirements_lock.txt",
 )
 ```
 

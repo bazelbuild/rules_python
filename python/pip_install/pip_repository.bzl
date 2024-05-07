@@ -18,13 +18,13 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
-load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/pip_install/private:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
@@ -272,38 +272,30 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["requirements.bzl"])
 """
 
-def locked_requirements_label(ctx, attr):
-    """Get the preferred label for a locked requirements file based on platform.
-
-    Args:
-        ctx: repository or module context
-        attr: attributes for the repo rule or tag extension
-
-    Returns:
-        Label
-    """
-    os = ctx.os.name.lower()
-    requirements_txt = attr.requirements_lock
-    if os.startswith("mac os") and attr.requirements_darwin != None:
-        requirements_txt = attr.requirements_darwin
-    elif os.startswith("linux") and attr.requirements_linux != None:
-        requirements_txt = attr.requirements_linux
-    elif "win" in os and attr.requirements_windows != None:
-        requirements_txt = attr.requirements_windows
-    if not requirements_txt:
-        fail("""\
-A requirements_lock attribute must be specified, or a platform-specific lockfile using one of the requirements_* attributes.
-""")
-    return requirements_txt
-
 def _pip_repository_impl(rctx):
-    requirements_txt = locked_requirements_label(rctx, rctx.attr)
-    content = rctx.read(requirements_txt)
-    parsed_requirements_txt = parse_requirements(content)
+    requirements_by_platform = parse_requirements(
+        rctx,
+        requirements_by_platform = rctx.attr.requirements_by_platform,
+        requirements_linux = rctx.attr.requirements_linux,
+        requirements_lock = rctx.attr.requirements_lock,
+        requirements_osx = rctx.attr.requirements_darwin,
+        requirements_windows = rctx.attr.requirements_windows,
+        extra_pip_args = rctx.attr.extra_pip_args,
+    )
+    selected_requirements = {}
+    options = None
+    repository_platform = host_platform(rctx.os)
+    for name, requirements in requirements_by_platform.items():
+        r = select_requirement(
+            requirements,
+            platform = repository_platform,
+        )
+        if not r:
+            continue
+        options = options or r.extra_pip_args
+        selected_requirements[name] = r.requirement_line
 
-    packages = [(normalize_name(name), requirement) for name, requirement in parsed_requirements_txt.requirements]
-
-    bzl_packages = sorted([normalize_name(name) for name, _ in parsed_requirements_txt.requirements])
+    bzl_packages = sorted(selected_requirements.keys())
 
     # Normalize cycles first
     requirement_cycles = {
@@ -346,13 +338,6 @@ def _pip_repository_impl(rctx):
         filename = "{}.annotation.json".format(normalize_name(pkg))
         rctx.file(filename, json.encode_indent(json.decode(annotation)))
         annotations[pkg] = "@{name}//:{filename}".format(name = rctx.attr.name, filename = filename)
-
-    tokenized_options = []
-    for opt in parsed_requirements_txt.options:
-        for p in opt.split(" "):
-            tokenized_options.append(p)
-
-    options = tokenized_options + rctx.attr.extra_pip_args
 
     config = {
         "download_only": rctx.attr.download_only,
@@ -419,10 +404,9 @@ def _pip_repository_impl(rctx):
         "%%PACKAGES%%": _format_repr_list(
             [
                 ("{}_{}".format(rctx.attr.name, p), r)
-                for p, r in packages
+                for p, r in sorted(selected_requirements.items())
             ],
         ),
-        "%%REQUIREMENTS_LOCK%%": str(requirements_txt),
     })
 
     return
@@ -625,6 +609,15 @@ pip_repository_attrs = {
     "annotations": attr.string_dict(
         doc = "Optional annotations to apply to packages",
     ),
+    "requirements_by_platform": attr.label_keyed_string_dict(
+        doc = """\
+The requirements files and the comma delimited list of target platforms as values.
+
+The keys are the requirement files and the values are comma-separated platform
+identifiers. For now we only support `<os>_<cpu>` values that are present in
+`@platforms//os` and `@platforms//cpu` packages respectively.
+""",
+    ),
     "requirements_darwin": attr.label(
         allow_single_file = True,
         doc = "Override the requirements_lock attribute when the host platform is Mac OS",
@@ -643,6 +636,11 @@ individual repositories for each of your dependencies so that wheels are
 fetched/built only for the targets specified by 'build/run/test'. Note that if
 your lockfile is platform-dependent, you can use the `requirements_[platform]`
 attributes.
+
+Note, that in general requirements files are compiled for a specific platform,
+but sometimes they can work for multiple platforms. `rules_python` right now
+supports requirements files that are created for a particular platform without
+platform markers.
 """,
     ),
     "requirements_windows": attr.label(

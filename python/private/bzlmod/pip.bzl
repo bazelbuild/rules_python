@@ -18,16 +18,15 @@ load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
-    "locked_requirements_label",
     "pip_repository_attrs",
     "use_isolated",
     "whl_library",
 )
-load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private:pypi_index.bzl", "get_simpleapi_sources", "simpleapi_download")
+load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private:whl_target_platforms.bzl", "select_whl")
@@ -130,27 +129,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
     )
     major_minor = _major_minor_version(pip_attr.python_version)
 
-    requirements_lock = locked_requirements_label(module_ctx, pip_attr)
-
-    # Parse the requirements file directly in starlark to get the information
-    # needed for the whl_libary declarations below.
-    requirements_lock_content = module_ctx.read(requirements_lock)
-    parse_result = parse_requirements(requirements_lock_content)
-
-    # Replicate a surprising behavior that WORKSPACE builds allowed:
-    # Defining a repo with the same name multiple times, but only the last
-    # definition is respected.
-    # The requirement lines might have duplicate names because lines for extras
-    # are returned as just the base package name. e.g., `foo[bar]` results
-    # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
-    requirements = {
-        normalize_name(entry[0]): entry
-        # The WORKSPACE pip_parse sorted entries, so mimic that ordering.
-        for entry in sorted(parse_result.requirements)
-    }.values()
-
-    extra_pip_args = pip_attr.extra_pip_args + parse_result.options
-
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
 
@@ -180,6 +158,18 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         whl_group_mapping = {}
         requirement_cycles = {}
 
+    # Create a new wheel library for each of the different whls
+
+    requirements_by_platform = parse_requirements(
+        module_ctx,
+        requirements_by_platform = pip_attr.requirements_by_platform,
+        requirements_linux = pip_attr.requirements_linux,
+        requirements_lock = pip_attr.requirements_lock,
+        requirements_osx = pip_attr.requirements_darwin,
+        requirements_windows = pip_attr.requirements_windows,
+        extra_pip_args = pip_attr.extra_pip_args,
+    )
+
     index_urls = {}
     if pip_attr.experimental_index_url:
         if pip_attr.download_only:
@@ -191,7 +181,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 index_url = pip_attr.experimental_index_url,
                 extra_index_urls = pip_attr.experimental_extra_index_urls or [],
                 index_url_overrides = pip_attr.experimental_index_url_overrides or {},
-                sources = [requirements_lock_content],
+                sources = list({
+                    req.distribution: None
+                    for reqs in requirements_by_platform.values()
+                    for req in reqs
+                }),
                 envsubst = pip_attr.envsubst,
                 # Auth related info
                 netrc = pip_attr.netrc,
@@ -201,8 +195,21 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             parallel_download = pip_attr.parallel_download,
         )
 
-    # Create a new wheel library for each of the different whls
-    for whl_name, requirement_line in requirements:
+    repository_platform = host_platform(module_ctx.os)
+    for whl_name, requirements in requirements_by_platform.items():
+        requirement = select_requirement(
+            requirements,
+            platform = repository_platform,
+        )
+        if not requirement:
+            # Sometimes the package is not present for host platform if there
+            # are whls specified only in particular requirements files, in that
+            # case just continue, however, if the download_only flag is set up,
+            # then the user can also specify the target platform of the wheel
+            # packages they want to download, in that case there will be always
+            # a requirement here, so we will not be in this code branch.
+            continue
+
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
         # to.
@@ -218,7 +225,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         whl_library_args = dict(
             repo = pip_name,
             dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
-            requirement = requirement_line,
+            requirement = requirement.requirement_line,
         )
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
@@ -228,7 +235,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             environment = pip_attr.environment,
             envsubst = pip_attr.envsubst,
             experimental_target_platforms = pip_attr.experimental_target_platforms,
-            extra_pip_args = extra_pip_args,
+            extra_pip_args = requirement.extra_pip_args,
             group_deps = group_deps,
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
@@ -249,11 +256,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
         if index_urls:
-            srcs = get_simpleapi_sources(requirement_line)
-
             whls = []
             sdist = None
-            for sha256 in srcs.shas:
+            for sha256 in requirement.srcs.shas:
                 # For now if the artifact is marked as yanked we just ignore it.
                 #
                 # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
@@ -279,12 +284,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     # Older python versions have wheels for the `*m` ABI.
                     "cp" + major_minor.replace(".", "") + "m",
                 ],
-                want_os = module_ctx.os.name,
-                want_cpu = module_ctx.os.arch,
+                want_platform = repository_platform,
             ) or sdist
 
             if distribution:
-                whl_library_args["requirement"] = srcs.requirement
+                whl_library_args["requirement"] = requirement.srcs.requirement
                 whl_library_args["urls"] = [distribution.url]
                 whl_library_args["sha256"] = distribution.sha256
                 whl_library_args["filename"] = distribution.filename
@@ -299,7 +303,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 # This is no-op because pip is not used to download the wheel.
                 whl_library_args.pop("download_only", None)
             else:
-                print("WARNING: falling back to pip for installing the right file for {}".format(requirement_line))  # buildifier: disable=print
+                print("WARNING: falling back to pip for installing the right file for {}".format(requirement.requirement_line))  # buildifier: disable=print
 
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.
