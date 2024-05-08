@@ -270,11 +270,6 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 		}
 
-		// If we're doing per-file generation, srcs could be empty at this point, meaning we shouldn't make a py_library.
-		if srcs.Empty() {
-			return
-		}
-
 		// Check if a target with the same name we are generating already
 		// exists, and if it is of a different kind from the one we are
 		// generating. If so, we have to throw an error since Gazelle won't
@@ -295,8 +290,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			generateImportsAttribute().
 			build()
 
-		result.Gen = append(result.Gen, pyLibrary)
-		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+		if pyLibrary.IsEmpty(py.Kinds()[pyLibrary.Kind()]) {
+			result.Empty = append(result.Gen, pyLibrary)
+		} else {
+			result.Gen = append(result.Gen, pyLibrary)
+			result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+		}
 	}
 	if cfg.PerFileGeneration() {
 		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
@@ -311,7 +310,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
 		})
-	} else if !pyLibraryFilenames.Empty() {
+	} else {
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
@@ -411,7 +410,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			// the file exists on disk.
 			pyTestFilenames.Add(pyTestEntrypointFilename)
 		}
-		if (hasPyTestEntryPointTarget || !pyTestFilenames.Empty()) {
+		if hasPyTestEntryPointTarget || !pyTestFilenames.Empty() {
 			pyTestTargetName := cfg.RenderTestName(packageName)
 			pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
 
