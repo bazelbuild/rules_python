@@ -453,7 +453,7 @@ The annotations are:
 | [`# gazelle:ignore imports`](#annotation-ignore)              | N/A               |
 | Tells Gazelle to ignore import statements. `imports` is a comma-separated list of imports to ignore. | |
 | [`# gazelle:include_dep targets`](#annotation-include_dep)    | N/A               |
-| Tell Gazelle to include  import statements. `targets` is a comma-separated list of target names to include as dependencies. | |
+| Tells Gazelle to include a set of dependencies, even if they are not imported in a Python module. `targets` is a comma-separated list of target names to include as dependencies. | |
 
 
 #### Annotation: `ignore`
