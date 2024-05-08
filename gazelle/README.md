@@ -451,7 +451,7 @@ The annotations are:
 | **Annotation**                                                | **Default value** |
 |---------------------------------------------------------------|-------------------|
 | [`# gazelle:ignore imports`](#annotation-ignore)              | N/A               |
-| Tell Gazelle to ignore import statements. `imports` is a comma-separated list of imports to ignore. | |
+| Tells Gazelle to ignore import statements. `imports` is a comma-separated list of imports to ignore. | |
 | [`# gazelle:include_dep targets`](#annotation-include_dep)    | N/A               |
 | Tell Gazelle to include  import statements. `targets` is a comma-separated list of target names to include as dependencies. | |
 
