@@ -311,7 +311,7 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 		}
 	}
 	return &annotations{
-		ignore:     ignore,
+		ignore:      ignore,
 		includeDeps: includeDeps,
 	}, nil
 }
