@@ -21,7 +21,7 @@ _tests = []
 
 def _test_simple(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 
 ## Group vbap
@@ -29,24 +29,71 @@ load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 filegroup(
     name = "vbap_whl",
     srcs = [],
-    data = ["@pypi_oletools//:_whl", "@pypi_pcodedmp//:_whl"],
-    visibility = ["@pypi_oletools//:__pkg__", "@pypi_pcodedmp//:__pkg__"],
+    data = [
+        "@pypi_oletools//:_whl",
+        "@pypi_pcodedmp//:_whl",
+    ],
+    visibility = [
+        "@pypi_oletools//:__pkg__",
+        "@pypi_pcodedmp//:__pkg__",
+    ],
 )
 
 py_library(
     name = "vbap_pkg",
     srcs = [],
-    deps = ["@pypi_oletools//:_pkg", "@pypi_pcodedmp//:_pkg"],
-    visibility = ["@pypi_oletools//:__pkg__", "@pypi_pcodedmp//:__pkg__"],
+    deps = [
+        "@pypi_oletools//:_pkg",
+        "@pypi_pcodedmp//:_pkg",
+    ],
+    visibility = [
+        "@pypi_oletools//:__pkg__",
+        "@pypi_pcodedmp//:__pkg__",
+    ],
 )
 """
     actual = generate_group_library_build_bazel(
         repo_prefix = "pypi_",
-        groups = {"vbap": ["oletools", "pcodedmp"]},
+        groups = {"vbap": ["pcodedmp", "oletools"]},
     )
     env.expect.that_str(actual).equals(want)
 
 _tests.append(_test_simple)
+
+def _test_in_hub(env):
+    want = """\
+load("@rules_python//python:defs.bzl", "py_library")
+
+
+## Group vbap
+
+filegroup(
+    name = "vbap_whl",
+    srcs = [],
+    data = [
+        "//oletools:_whl",
+        "//pcodedmp:_whl",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+py_library(
+    name = "vbap_pkg",
+    srcs = [],
+    deps = [
+        "//oletools:_pkg",
+        "//pcodedmp:_pkg",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+"""
+    actual = generate_group_library_build_bazel(
+        repo_prefix = "",
+        groups = {"vbap": ["pcodedmp", "oletools"]},
+    )
+    env.expect.that_str(actual).equals(want)
+
+_tests.append(_test_in_hub)
 
 def generate_build_bazel_test_suite(name):
     """Create the test suite.

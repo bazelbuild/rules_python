@@ -13,10 +13,8 @@
 # limitations under the License.
 """Providers for Python rules."""
 
+load("@rules_cc//cc:defs.bzl", "CcInfo")
 load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")
-
-# TODO: load CcInfo from rules_cc
-_CcInfo = CcInfo
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
@@ -241,7 +239,7 @@ This field is currently unused in Bazel and may go away in the future.
 
 def _PyCcLinkParamsProvider_init(cc_info):
     return {
-        "cc_info": _CcInfo(linking_context = cc_info.linking_context),
+        "cc_info": CcInfo(linking_context = cc_info.linking_context),
     }
 
 # buildifier: disable=name-conventions

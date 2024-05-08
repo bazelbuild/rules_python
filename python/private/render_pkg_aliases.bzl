@@ -16,6 +16,19 @@
 
 This is used in bzlmod and non-bzlmod setups."""
 
+load(
+    "//python/pip_install/private:generate_group_library_build_bazel.bzl",
+    "generate_group_library_build_bazel",
+)  # buildifier: disable=bzl-visibility
+load(
+    ":labels.bzl",
+    "DATA_LABEL",
+    "DIST_INFO_LABEL",
+    "PY_LIBRARY_IMPL_LABEL",
+    "PY_LIBRARY_PUBLIC_LABEL",
+    "WHEEL_FILE_IMPL_LABEL",
+    "WHEEL_FILE_PUBLIC_LABEL",
+)
 load(":normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
 
@@ -42,13 +55,19 @@ def _render_whl_library_alias(
         *,
         name,
         default_version,
-        aliases):
+        aliases,
+        target_name,
+        **kwargs):
     """Render an alias for common targets."""
     if len(aliases) == 1 and not aliases[0].version:
         alias = aliases[0]
         return render.alias(
             name = name,
-            actual = repr("@{repo}//:{name}".format(repo = alias.repo, name = name)),
+            actual = repr("@{repo}//:{name}".format(
+                repo = alias.repo,
+                name = target_name,
+            )),
+            **kwargs
         )
 
     # Create the alias repositories which contains different select
@@ -56,27 +75,36 @@ def _render_whl_library_alias(
     # whls that are based on a specific version of Python.
     selects = {}
     no_match_error = "_NO_MATCH_ERROR"
-    default = None
     for alias in sorted(aliases, key = lambda x: x.version):
-        actual = "@{repo}//:{name}".format(repo = alias.repo, name = name)
-        selects[alias.config_setting] = actual
+        actual = "@{repo}//:{name}".format(repo = alias.repo, name = target_name)
+        selects.setdefault(actual, []).append(alias.config_setting)
         if alias.version == default_version:
-            default = actual
+            selects[actual].append("//conditions:default")
             no_match_error = None
-
-    if default:
-        selects["//conditions:default"] = default
 
     return render.alias(
         name = name,
         actual = render.select(
-            selects,
+            {
+                tuple(sorted(
+                    conditions,
+                    # Group `is_python` and other conditions for easier reading
+                    # when looking at the generated files.
+                    key = lambda condition: ("is_python" not in condition, condition),
+                )): target
+                for target, conditions in sorted(selects.items())
+            },
             no_match_error = no_match_error,
+            # This key_repr is used to render selects.with_or keys
+            key_repr = lambda x: repr(x[0]) if len(x) == 1 else render.tuple(x),
+            name = "selects.with_or",
         ),
+        **kwargs
     )
 
-def _render_common_aliases(*, name, aliases, default_version = None):
+def _render_common_aliases(*, name, aliases, default_version = None, group_name = None):
     lines = [
+        """load("@bazel_skylib//lib:selects.bzl", "selects")""",
         """package(default_visibility = ["//visibility:public"])""",
     ]
 
@@ -109,17 +137,37 @@ def _render_common_aliases(*, name, aliases, default_version = None):
     lines.extend(
         [
             _render_whl_library_alias(
-                name = target,
+                name = name,
                 default_version = default_version,
                 aliases = aliases,
+                target_name = target_name,
+                visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
             )
-            for target in ["pkg", "whl", "data", "dist_info"]
+            for target_name, name in {
+                PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
+                WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
+                DATA_LABEL: DATA_LABEL,
+                DIST_INFO_LABEL: DIST_INFO_LABEL,
+            }.items()
         ],
     )
+    if group_name:
+        lines.extend(
+            [
+                render.alias(
+                    name = "pkg",
+                    actual = repr("//_groups:{}_pkg".format(group_name)),
+                ),
+                render.alias(
+                    name = "whl",
+                    actual = repr("//_groups:{}_whl".format(group_name)),
+                ),
+            ],
+        )
 
     return "\n\n".join(lines)
 
-def render_pkg_aliases(*, aliases, default_version = None):
+def render_pkg_aliases(*, aliases, default_version = None, requirement_cycles = None):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -130,6 +178,7 @@ def render_pkg_aliases(*, aliases, default_version = None):
         aliases: dict, the keys are normalized distribution names and values are the
             whl_alias instances.
         default_version: the default version to be used for the aliases.
+        requirement_cycles: any package groups to also add.
 
     Returns:
         A dict of file paths and their contents.
@@ -140,16 +189,33 @@ def render_pkg_aliases(*, aliases, default_version = None):
     elif type(aliases) != type({}):
         fail("The aliases need to be provided as a dict, got: {}".format(type(aliases)))
 
-    return {
+    whl_group_mapping = {}
+    if requirement_cycles:
+        requirement_cycles = {
+            name: [normalize_name(whl_name) for whl_name in whls]
+            for name, whls in requirement_cycles.items()
+        }
+
+        whl_group_mapping = {
+            whl_name: group_name
+            for group_name, group_whls in requirement_cycles.items()
+            for whl_name in group_whls
+        }
+
+    files = {
         "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
             name = normalize_name(name),
             aliases = pkg_aliases,
             default_version = default_version,
+            group_name = whl_group_mapping.get(normalize_name(name)),
         ).strip()
         for name, pkg_aliases in aliases.items()
     }
+    if requirement_cycles:
+        files["_groups/BUILD.bazel"] = generate_group_library_build_bazel("", requirement_cycles)
+    return files
 
-def whl_alias(*, repo, version = None, config_setting = None):
+def whl_alias(*, repo, version = None, config_setting = None, extra_targets = None):
     """The bzl_packages value used by by the render_pkg_aliases function.
 
     This contains the minimum amount of information required to generate correct
@@ -163,6 +229,8 @@ def whl_alias(*, repo, version = None, config_setting = None):
             is no match found during a select.
         config_setting: optional(Label or str), the config setting that we should use. Defaults
             to "@rules_python//python/config_settings:is_python_{version}".
+        extra_targets: optional(list[str]), the extra targets that we need to create
+            aliases for.
 
     Returns:
         a struct with the validated and parsed values.
@@ -178,4 +246,5 @@ def whl_alias(*, repo, version = None, config_setting = None):
         repo = repo,
         version = version,
         config_setting = config_setting,
+        extra_targets = extra_targets or [],
     )

@@ -32,6 +32,7 @@ def _pip_repository_impl(rctx):
             for key, values in rctx.attr.whl_map.items()
         },
         default_version = rctx.attr.default_version,
+        requirement_cycles = rctx.attr.groups,
     )
     for path, contents in aliases.items():
         rctx.file(path, contents)
@@ -67,6 +68,9 @@ pip_repository_attrs = {
 This is the default python version in the format of X.Y. This should match
 what is setup by the 'python' extension using the 'is_default = True'
 setting.""",
+    ),
+    "groups": attr.string_list_dict(
+        mandatory = False,
     ),
     "repo_name": attr.string(
         mandatory = True,
