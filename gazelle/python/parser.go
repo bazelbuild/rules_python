@@ -171,10 +171,10 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 		for k, v := range annotations.ignore {
 			allAnnotations.ignore[k] = v
 		}
-		allAnnotations.includeDep = append(allAnnotations.includeDep, annotations.includeDep...)
+		allAnnotations.includeDeps = append(allAnnotations.includeDeps, annotations.includeDeps...)
 	}
 
-	allAnnotations.includeDep = removeDupesFromStringTreeSetSlice(allAnnotations.includeDep)
+	allAnnotations.includeDeps = removeDupesFromStringTreeSetSlice(allAnnotations.includeDeps)
 
 	return modules, mainModules, allAnnotations, nil
 }
@@ -274,14 +274,14 @@ type annotations struct {
 	// The parsed modules to be ignored by Gazelle.
 	ignore map[string]struct{}
 	// Labels that Gazelle should include as deps of the generated target.
-	includeDep []string
+	includeDeps []string
 }
 
 // annotationsFromComments returns all the annotations parsed out of the
 // comments of a Python module.
 func annotationsFromComments(comments []comment) (*annotations, error) {
 	ignore := make(map[string]struct{})
-	includeDep := []string{}
+	includeDeps := []string{}
 	for _, comment := range comments {
 		annotation, err := comment.asAnnotation()
 		if err != nil {
@@ -305,14 +305,14 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 						continue
 					}
 					t = strings.TrimSpace(t)
-					includeDep = append(includeDep, t)
+					includeDeps = append(includeDeps, t)
 				}
 			}
 		}
 	}
 	return &annotations{
 		ignore:     ignore,
-		includeDep: includeDep,
+		includeDeps: includeDeps,
 	}, nil
 }
 
