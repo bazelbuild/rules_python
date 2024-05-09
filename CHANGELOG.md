@@ -73,6 +73,8 @@ A brief description of the categories of changes:
   the whl and sdist files will be written to the lock file. Controlling whether
   the downloading of metadata is done in parallel can be done using
   `parallel_download` attribute.
+* (gazelle) Add a new annotation `include_deps`. Also add documentation for
+  annotations to `gazelle/README.md`.
 * (deps): `rules_python` depends now on `rules_cc` 0.0.9
 * (pip_parse): A new flag `use_hub_alias_dependencies` has been added that is going
   to become default in the next release. This makes use of `dep_template` flag
