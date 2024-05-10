@@ -54,12 +54,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "{dist_info_label}",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "{data_label}",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "{whl_name}",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -246,7 +259,7 @@ def generate_whl_library_build_bazel(
     """
 
     additional_content = []
-    data = []
+    data = [":data"]
     srcs_exclude = []
     data_exclude = [] + data_exclude
     dependencies = sorted([normalize_name(d) for d in dependencies])

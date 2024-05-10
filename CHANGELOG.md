@@ -28,6 +28,11 @@ A brief description of the categories of changes:
 * (deps): Bumped bazel_features to 1.9.1 to detect optional support
   non-blocking downloads.
 * (deps): Updated `pip_tools` to >= 7.4.0
+* (whl_library) A new `filegroup` rule named `:data` has been added to
+  `whl_library` which captures any non-source resources emplaced outside of the
+  `site-packages` tree by installing a wheel. For instance this captures `/bin`
+  files such as compiled binaries distributed in wheels along with `/etc` or
+  other data files.
 
 ### Fixed
 

@@ -28,12 +28,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -55,7 +68,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -94,12 +107,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -132,7 +158,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -246,12 +272,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -273,7 +312,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = ["file_dest", "exec_dest"] + glob(
+    data = [":data", "file_dest", "exec_dest"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "data_exclude_all"],
     ),
@@ -334,12 +373,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -361,7 +413,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
@@ -408,12 +460,25 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(
+        ["site-packages/*.dist-info/**"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            "WORKSPACE",
+            "REPO.bazel",
+            "BUILD.bazel",
+            "foo.whl",
+            "site-packages/**",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
@@ -441,7 +506,7 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
-    data = [] + glob(
+    data = [":data"] + glob(
         ["site-packages/**/*"],
         exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
     ),
