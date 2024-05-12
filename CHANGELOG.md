@@ -34,6 +34,9 @@ A brief description of the categories of changes:
 * (whl_library): Fix the experimental_target_platforms overriding for platform
   specific wheels when the wheels are for any python interpreter version. Fixes
   [#1810](https://github.com/bazelbuild/rules_python/issues/1810).
+* (whl_library): Stop generating duplicate dependencies when encountering
+  duplicates in the METADATA. Fixes
+  [#1873](https://github.com/bazelbuild/rules_python/issues/1873).
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.

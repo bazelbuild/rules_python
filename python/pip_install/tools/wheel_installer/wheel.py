@@ -370,6 +370,24 @@ class Deps:
 
         if not platform:
             self._deps.add(dep)
+
+            # If the dep is in the platform-specific list, remove it from the select.
+            pop_keys = []
+            for p, deps in self._select.items():
+                if dep not in deps:
+                    continue
+
+                deps.remove(dep)
+                if not deps:
+                    pop_keys.append(p)
+
+            for p in pop_keys:
+                self._select.pop(p)
+            return
+
+        if dep in self._deps:
+            # If the dep is already in the main dependency list, no need to add it in the
+            # platform-specific dependency list.
             return
 
         # Add the platform-specific dep
