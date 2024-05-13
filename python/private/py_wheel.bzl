@@ -39,7 +39,7 @@ _distribution_attrs = {
         doc = """\
 Name of the distribution.
 
-This should match the project name onm PyPI. It's also the name that is used to
+This should match the project name on PyPI. It's also the name that is used to
 refer to the package in other packages' dependencies.
 
 Workspace status keys are expanded using `{NAME}` format, for example:
