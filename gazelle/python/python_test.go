@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/bazelbuild/bazel-gazelle/testtools"
-	"github.com/bazelbuild/rules_go/go/runfiles"
 	"github.com/bazelbuild/rules_go/go/tools/bazel"
 	"github.com/ghodss/yaml"
 )
@@ -42,9 +41,10 @@ const (
 	gazelleBinaryName = "gazelle_binary"
 )
 
-var gazellePath = mustFindGazelle()
+var gazellePath string
 
 func TestGazelleBinary(t *testing.T) {
+	gazellePath = mustFindGazelle()
 	tests := map[string][]bazel.RunfileEntry{}
 
 	runfiles, err := bazel.ListRunfiles()
@@ -160,11 +160,6 @@ func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 		cmd.Dir = workspaceRoot
-		helperScript, err := runfiles.Rlocation("rules_python_gazelle_plugin/python/helper")
-		if err != nil {
-			t.Fatalf("failed to initialize Python helper: %v", err)
-		}
-		cmd.Env = append(os.Environ(), "GAZELLE_PYTHON_HELPER="+helperScript)
 		if err := cmd.Run(); err != nil {
 			var e *exec.ExitError
 			if !errors.As(err, &e) {

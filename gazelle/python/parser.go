@@ -15,64 +15,16 @@
 package python
 
 import (
-	"bufio"
 	"context"
 	_ "embed"
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"os"
-	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
 )
-
-var (
-	parserCmd    *exec.Cmd
-	parserStdin  io.WriteCloser
-	parserStdout io.Reader
-	parserMutex  sync.Mutex
-)
-
-func startParserProcess(ctx context.Context) {
-	// due to #691, we need a system interpreter to boostrap, part of which is
-	// to locate the hermetic interpreter.
-	parserCmd = exec.CommandContext(ctx, "python3", helperPath, "parse")
-	parserCmd.Stderr = os.Stderr
-
-	stdin, err := parserCmd.StdinPipe()
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-	parserStdin = stdin
-
-	stdout, err := parserCmd.StdoutPipe()
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-	parserStdout = stdout
-
-	if err := parserCmd.Start(); err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func shutdownParserProcess() {
-	if err := parserStdin.Close(); err != nil {
-		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
-	}
-
-	if err := parserCmd.Wait(); err != nil {
-		log.Printf("failed to wait for parser: %v\n", err)
-	}
-}
 
 // python3Parser implements a parser for Python files that extracts the modules
 // as seen in the import statements.
@@ -110,36 +62,49 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string
 // parse parses multiple Python files and returns the extracted modules from
 // the import statements as well as the parsed comments.
 func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
-	parserMutex.Lock()
-	defer parserMutex.Unlock()
-
 	modules := treeset.NewWith(moduleComparator)
 
-	req := map[string]interface{}{
-		"repo_root":        p.repoRoot,
-		"rel_package_path": p.relPackagePath,
-		"filenames":        pyFilenames.Values(),
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var wg sync.WaitGroup
+	ch := make(chan struct{}, 6) // Limit the number of concurrent parses.
+	chRes := make(chan *ParserOutput, len(pyFilenames.Values()))
+	chErr := make(chan error, 1)
+	for _, v := range pyFilenames.Values() {
+		wg.Add(1)
+		go func(filename string) {
+			defer func() {
+				<-ch
+				wg.Done()
+			}()
+			if err := ctx.Err(); err != nil {
+				return
+			}
+			ch <- struct{}{}
+			res, err := NewFileParser().ParseFile(ctx, p.repoRoot, p.relPackagePath, filename)
+			if err != nil {
+				cancel()
+				select {
+				case chErr <- fmt.Errorf("failed to parse %s: %w", filepath.Join(p.relPackagePath, filename), err):
+				default:
+				}
+				return
+			}
+			chRes <- res
+		}(v.(string))
 	}
-	encoder := json.NewEncoder(parserStdin)
-	if err := encoder.Encode(&req); err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
+	wg.Wait()
+	close(chErr)
+	close(chRes)
+	if len(chErr) > 0 {
+		return nil, nil, nil, <-chErr
 	}
 
-	reader := bufio.NewReader(parserStdout)
-	data, err := reader.ReadBytes(0)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
-	}
-	data = data[:len(data)-1]
-	var allRes []parserResponse
-	if err := json.Unmarshal(data, &allRes); err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
-	}
-
-	mainModules := make(map[string]*treeset.Set, len(allRes))
+	mainModules := make(map[string]*treeset.Set, len(chRes))
 	allAnnotations := new(annotations)
 	allAnnotations.ignore = make(map[string]struct{})
-	for _, res := range allRes {
+	for res := range chRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
@@ -192,21 +157,6 @@ func removeDupesFromStringTreeSetSlice(array []string) []string {
 		dedupe[i] = fmt.Sprint(v)
 	}
 	return dedupe
-}
-
-// parserResponse represents a response returned by the parser.py for a given
-// parsed Python module.
-type parserResponse struct {
-	// FileName of the parsed module
-	FileName string
-	// The modules depended by the parsed module.
-	Modules []module `json:"modules"`
-	// The comments contained in the parsed module. This contains the
-	// annotations as they are comments in the Python module.
-	Comments []comment `json:"comments"`
-	// HasMain indicates whether the Python module has `if __name == "__main__"`
-	// at the top level
-	HasMain bool `json:"has_main"`
 }
 
 // module represents a fully-qualified, dot-separated, Python module as seen on
