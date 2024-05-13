@@ -17,7 +17,9 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
-## Unreleased
+## [0.32.0] - 2024-05-12
+
+[0.32.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.0
 
 ### Changed
 
@@ -95,7 +97,6 @@ A brief description of the categories of changes:
   depend on legacy labels instead of the hub repo aliases and you use the
   `experimental_requirement_cycles`, now is a good time to migrate.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 [test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
 [test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
