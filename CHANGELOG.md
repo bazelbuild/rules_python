@@ -25,6 +25,12 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (gazelle) Remove `visibility` from `NonEmptyAttr`.
+  Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
+  be automatically deleted correctly. For example, if `python_generation_mode`
+  is set to package, when `__init__.py` is deleted, the `py_library` generated
+  for this package before will be deleted automatically.
+
 ### Added
 
 ## [0.32.2] - 2024-05-14
@@ -80,11 +86,6 @@ A brief description of the categories of changes:
   See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
 * (refactor) The pre-commit developer workflow should now pass `isort` and `black`
   checks (see [#1674](https://github.com/bazelbuild/rules_python/issues/1674)).
-* (gazelle) Remove `visibility` from `NonEmptyAttr`.
-  Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
-  be automatically deleted correctly. For example, if `python_generation_mode`
-  is set to package, when `__init__.py` is deleted, the `py_library` generated
-  for this package before will be deleted automatically.
 
 ### Added
 
