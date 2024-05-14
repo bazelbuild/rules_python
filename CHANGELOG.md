@@ -17,6 +17,27 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+## Unreleased
+
+[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
+
+### Changed
+
+### Fixed
+
+### Added
+
+## [0.32.2] - 2024-05-14
+
+[0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2
+
+### Fixed
+
+* Workaround existence of infinite symlink loops on case insensitive filesystems when targeting linux platforms with recent Python toolchains. Works around an upstream [issue][indygreg-231]. Fixes [#1800][rules_python_1800].
+
+[indygreg-231]: https://github.com/indygreg/python-build-standalone/issues/231
+[rules_python_1800]: https://github.com/bazelbuild/rules_python/issues/1800
+
 ## [0.32.0] - 2024-05-12
 
 [0.32.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.0
