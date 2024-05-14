@@ -77,7 +77,7 @@ func TestParseImportStatements(t *testing.T) {
 		},
 		{
 			name:     "import as",
-			code:     "import os as b\nfrom foo import bar as c",
+			code:     "import os as b\nfrom foo import bar as c# 123",
 			filepath: "abc.py",
 			result: []module{
 				{
@@ -156,6 +156,11 @@ func TestParseComments(t *testing.T) {
 			name:   "has comment in def",
 			code:   "if True:\n  # a = 1\n  # b = 2",
 			result: []comment{"# a = 1", "# b = 2"},
+		},
+		{
+			name:   "has comment inline",
+			code:   "import os# 123\nfrom pathlib import Path as b#456",
+			result: []comment{"# 123", "#456"},
 		},
 	}
 	for _, u := range units {
