@@ -40,6 +40,7 @@ def gazelle_deps():
 
     go_repository(
         name = "com_github_bazelbuild_buildtools",
+        build_naming_convention = "go_default_library",
         importpath = "github.com/bazelbuild/buildtools",
         sum = "h1:HTepWP/jhtWTC1gvK0RnvKCgjh4gLqiwaOwGozAXcbw=",
         version = "v0.0.0-20231103205921-433ea8554e82",
