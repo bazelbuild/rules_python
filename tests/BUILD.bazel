@@ -25,22 +25,3 @@ build_test(
         "//python/entry_points:py_console_script_binary_bzl",
     ],
 )
-
-# Used for manual tests when downloading a toolchain for a particular platform
-platform(
-    name = "linux_x86_64",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
-    ],
-    visibility = ["//:__subpackages__"],
-)
-
-platform(
-    name = "windows_x86_64",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:windows",
-    ],
-    visibility = ["//:__subpackages__"],
-)
