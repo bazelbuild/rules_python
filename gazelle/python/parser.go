@@ -18,12 +18,11 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
+	"golang.org/x/sync/errgroup"
 )
 
 // python3Parser implements a parser for Python files that extracts the modules
@@ -64,43 +63,30 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string
 func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	modules := treeset.NewWith(moduleComparator)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var wg sync.WaitGroup
+	g, ctx := errgroup.WithContext(context.Background())
 	ch := make(chan struct{}, 6) // Limit the number of concurrent parses.
 	chRes := make(chan *ParserOutput, len(pyFilenames.Values()))
-	chErr := make(chan error, 1)
 	for _, v := range pyFilenames.Values() {
-		wg.Add(1)
-		go func(filename string) {
-			defer func() {
-				<-ch
-				wg.Done()
-			}()
-			if err := ctx.Err(); err != nil {
-				return
-			}
-			ch <- struct{}{}
-			res, err := NewFileParser().ParseFile(ctx, p.repoRoot, p.relPackagePath, filename)
-			if err != nil {
-				cancel()
-				select {
-				case chErr <- fmt.Errorf("failed to parse %s: %w", filepath.Join(p.relPackagePath, filename), err):
-				default:
+		ch <- struct{}{}
+		g.Go(func(filename string) func() error {
+			return func() error {
+				defer func() {
+					<-ch
+				}()
+				res, err := NewFileParser().ParseFile(ctx, p.repoRoot, p.relPackagePath, filename)
+				if err != nil {
+					return err
 				}
-				return
+				chRes <- res
+				return nil
 			}
-			chRes <- res
-		}(v.(string))
+		}(v.(string)))
 	}
-	wg.Wait()
-	close(chErr)
+	if err := g.Wait(); err != nil {
+		return nil, nil, nil, err
+	}
+	close(ch)
 	close(chRes)
-	if len(chErr) > 0 {
-		return nil, nil, nil, <-chErr
-	}
-
 	mainModules := make(map[string]*treeset.Set, len(chRes))
 	allAnnotations := new(annotations)
 	allAnnotations.ignore = make(map[string]struct{})

@@ -11,6 +11,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/smacker/go-tree-sitter v0.0.0-20240422154435-0628b34cbf9c
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/sync v0.2.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
