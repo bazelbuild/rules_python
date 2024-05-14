@@ -87,8 +87,22 @@ bzl_library(
 )
 
 bzl_library(
+    name = "enum_bzl",
+    srcs = ["enum.bzl"],
+)
+
+bzl_library(
     name = "envsubst_bzl",
     srcs = ["envsubst.bzl"],
+)
+
+bzl_library(
+    name = "flags_bzl",
+    srcs = ["flags.bzl"],
+    deps = [
+        ":enum_bzl",
+        "@bazel_skylib//rules:common_settings",
+    ],
 )
 
 bzl_library(
@@ -164,6 +178,18 @@ bzl_library(
     deps = [
         "//python:py_binary_bzl",
     ],
+)
+
+bzl_library(
+    name = "py_exec_tools_toolchain_bzl",
+    srcs = ["py_exec_tools_toolchain.bzl"],
+    deps = ["//python/private/common:providers_bzl"],
+)
+
+bzl_library(
+    name = "py_interpreter_program_bzl",
+    srcs = ["py_interpreter_program.bzl"],
+    deps = ["@bazel_skylib//rules:common_settings"],
 )
 
 bzl_library(
@@ -254,6 +280,11 @@ bzl_library(
         ":repo_utils_bzl",
         "//python:versions_bzl",
     ],
+)
+
+bzl_library(
+    name = "toolchain_types.bzl",
+    srcs = ["toolchain_types.bzl"],
 )
 
 bzl_library(

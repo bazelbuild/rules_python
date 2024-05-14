@@ -304,6 +304,7 @@ def _python_repository_impl(rctx):
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
 load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
 load("@rules_python//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
+load("@rules_python//python/private:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -373,6 +374,8 @@ py_runtime(
         "micro": "{interpreter_version_info_micro}",
     }},
     python_version = "PY3",
+    implementation_name = 'cpython',
+    pyc_tag = "cpython-{interpreter_version_info_major}{interpreter_version_info_minor}",
 )
 
 py_runtime_pair(
@@ -386,6 +389,17 @@ py_cc_toolchain(
     headers = ":python_headers",
     libs = ":libpython",
     python_version = "{python_version}",
+)
+
+py_exec_tools_toolchain(
+    name = "py_exec_tools_toolchain",
+    exec_interpreter = "{python_path}",
+    exec_interpreter_version_info = {{
+        "major": "{interpreter_version_info_major}",
+        "minor": "{interpreter_version_info_minor}",
+        "micro": "{interpreter_version_info_micro}",
+    }},
+    precompiler = "@rules_python//tools/precompiler:precompiler",
 )
 """.format(
         glob_exclude = repr(glob_exclude),

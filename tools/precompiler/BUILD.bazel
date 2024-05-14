@@ -1,0 +1,24 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+load("//python/private:py_interpreter_program.bzl", "py_interpreter_program")  # buildifier: disable=bzl-visibility
+
+py_interpreter_program(
+    name = "precompiler",
+    execution_requirements = ":execution_requirements",
+    main = "precompiler.py",
+    visibility = [
+        # Not actually public. Only public so rules_python-generated toolchains
+        # are able to reference it.
+        "//visibility:public",
+    ],
+)
+
+string_list_flag(
+    name = "execution_requirements",
+    build_setting_default = [
+        "supports-workers=1",
+        "requires-worker-protocol=json",
+        "supports-multiplex-sandboxing=1",
+        "supports-multiplex-workers=1",
+        "supports-worker-cancellation=1",
+    ],
+)

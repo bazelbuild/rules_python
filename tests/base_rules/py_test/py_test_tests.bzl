@@ -21,7 +21,7 @@ load(
     "create_executable_tests",
 )
 load("//tests/base_rules:util.bzl", pt_util = "util")
-load("//tests/support:test_platforms.bzl", "LINUX", "MAC")
+load("//tests/support:support.bzl", "LINUX", "MAC")
 
 # Explicit Label() calls are required so that it resolves in @rules_python
 # context instead of @rules_testing context.

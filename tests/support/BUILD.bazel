@@ -17,6 +17,10 @@
 # Otherwise, you'll probably have to manually call Label() on these targets
 # to force them to resolve in the proper context.
 # ====================
+
+load("//python:py_runtime.bzl", "py_runtime")
+load("//python:py_runtime_pair.bzl", "py_runtime_pair")
+
 platform(
     name = "mac",
     constraint_values = [
@@ -62,4 +66,25 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
     ],
+)
+
+py_runtime(
+    name = "platform_runtime",
+    implementation_name = "fakepy",
+    interpreter_path = "/fake/python3.9",
+    interpreter_version_info = {
+        "major": "4",
+        "minor": "5",
+    },
+)
+
+py_runtime_pair(
+    name = "platform_runtime_pair",
+    py3_runtime = ":platform_runtime",
+)
+
+toolchain(
+    name = "platform_toolchain",
+    toolchain = ":platform_runtime_pair",
+    toolchain_type = "//python:toolchain_type",
 )

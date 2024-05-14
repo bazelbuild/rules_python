@@ -14,6 +14,13 @@
 """Implementation of py_library rule."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
+load(
+    "//python/private:toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
+)
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
@@ -57,14 +64,25 @@ def py_library_impl(ctx, *, semantics):
     """
     check_native_allowed(ctx)
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
-    output_sources = depset(semantics.maybe_precompile(ctx, direct_sources))
-    runfiles = collect_runfiles(ctx = ctx, files = output_sources)
+    precompile_result = semantics.maybe_precompile(ctx, direct_sources)
+    direct_pyc_files = depset(precompile_result.pyc_files)
+    default_outputs = depset(precompile_result.keep_srcs, transitive = [direct_pyc_files])
+
+    extra_runfiles_depsets = [depset(precompile_result.keep_srcs)]
+    if ctx.attr._precompile_add_to_runfiles_flag[BuildSettingInfo].value == PrecompileAddToRunfilesFlag.ALWAYS:
+        extra_runfiles_depsets.append(direct_pyc_files)
+
+    runfiles = collect_runfiles(
+        ctx = ctx,
+        files = depset(transitive = extra_runfiles_depsets),
+    )
 
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
         ctx,
         direct_sources = depset(direct_sources),
         imports = collect_imports(ctx, semantics),
+        direct_pyc_files = direct_pyc_files,
     )
 
     # TODO(b/253059598): Remove support for extra actions; https://github.com/bazelbuild/bazel/issues/16455
@@ -76,7 +94,7 @@ def py_library_impl(ctx, *, semantics):
         )
 
     return [
-        DefaultInfo(files = output_sources, runfiles = runfiles),
+        DefaultInfo(files = default_outputs, runfiles = runfiles),
         py_info,
         builtins_py_info,
         create_instrumented_files_info(ctx),
@@ -95,8 +113,23 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
     """
     return rule(
         attrs = dicts.add(LIBRARY_ATTRS, attrs),
+        toolchains = [
+            config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
+            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+        ],
         # TODO(b/253818097): fragments=py is only necessary so that
         # RequiredConfigFragmentsTest passes
         fragments = ["py"],
+        doc = """
+A library of Python code that can be depended upon.
+
+Default outputs:
+* The input Python sources
+* The precompiled artifacts from the sources.
+
+NOTE: Precompilation affects which of the default outputs are included in the
+resulting runfiles. See the precompile-related attributes and flags for
+more information.
+""",
         **kwargs
     )

@@ -15,9 +15,11 @@
 """Create the toolchain defs in a BUILD.bazel file."""
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-
-_py_toolchain_type = Label("@bazel_tools//tools/python:toolchain_type")
-_py_cc_toolchain_type = Label("//python/cc:toolchain_type")
+load(
+    ":toolchain_types.bzl",
+    "PY_CC_TOOLCHAIN_TYPE",
+    "TARGET_TOOLCHAIN_TYPE",
+)
 
 def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, **kwargs):
     """For internal use only.
@@ -65,7 +67,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         toolchain = "@{user_repository_name}//:python_runtimes".format(
             user_repository_name = user_repository_name,
         ),
-        toolchain_type = _py_toolchain_type,
+        toolchain_type = TARGET_TOOLCHAIN_TYPE,
         target_settings = target_settings,
         **kwargs
     )
@@ -75,7 +77,18 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         toolchain = "@{user_repository_name}//:py_cc_toolchain".format(
             user_repository_name = user_repository_name,
         ),
-        toolchain_type = _py_cc_toolchain_type,
+        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
         target_settings = target_settings,
         **kwargs
+    )
+
+    native.toolchain(
+        name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
+        # The target settings capture the Python version
+        target_settings = target_settings,
+        exec_compatible_with = kwargs.get("target_compatible_with"),
     )

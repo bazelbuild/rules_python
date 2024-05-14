@@ -1,4 +1,4 @@
-# Copyright 2023 The Bazel Authors. All rights reserved.
+# Copyright 2022 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Constants for referring to platforms."""
+"""Allows detecting of rules_python features that aren't easily detected."""
 
-# Explicit Label() calls are required so that it resolves in @rules_python
-# context instead of e.g. the @rules_testing context.
-MAC = Label("//tests/support:mac")
-LINUX = Label("//tests/support:linux")
-WINDOWS = Label("//tests/support:windows")
+features = struct(
+    precompile = True,
+)

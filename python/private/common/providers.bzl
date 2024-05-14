@@ -34,13 +34,47 @@ def _define_provider(doc, fields, **kwargs):
         return provider("Stub, not used", fields = []), None
     return provider(doc = doc, fields = fields, **kwargs)
 
+def _optional_int(value):
+    return int(value) if value != None else None
+
+def interpreter_version_info_struct_from_dict(info_dict):
+    """Create a struct of interpreter version info from a dict from an attribute.
+
+    Args:
+        info_dict: dict of versio info fields. See interpreter_version_info
+            provider field docs.
+
+    Returns:
+        struct of version info; see interpreter_version_info provider field docs.
+    """
+    info_dict = dict(info_dict)  # Copy in case the original is frozen
+    if info_dict:
+        if not ("major" in info_dict and "minor" in info_dict):
+            fail("interpreter_version_info must have at least two keys, 'major' and 'minor'")
+    version_info_struct = struct(
+        major = _optional_int(info_dict.pop("major", None)),
+        minor = _optional_int(info_dict.pop("minor", None)),
+        micro = _optional_int(info_dict.pop("micro", None)),
+        releaselevel = str(info_dict.pop("releaselevel")) if info_dict else None,
+        serial = _optional_int(info_dict.pop("serial", None)),
+    )
+
+    if len(info_dict.keys()) > 0:
+        fail("unexpected keys {} in interpreter_version_info".format(
+            str(info_dict.keys()),
+        ))
+
+    return version_info_struct
+
 def _PyRuntimeInfo_init(
         *,
+        implementation_name = None,
         interpreter_path = None,
         interpreter = None,
         files = None,
         coverage_tool = None,
         coverage_files = None,
+        pyc_tag = None,
         python_version,
         stub_shebang = None,
         bootstrap_template = None,
@@ -81,32 +115,16 @@ def _PyRuntimeInfo_init(
     if not stub_shebang:
         stub_shebang = DEFAULT_STUB_SHEBANG
 
-    if interpreter_version_info:
-        if not ("major" in interpreter_version_info and "minor" in interpreter_version_info):
-            fail("interpreter_version_info must have at least two keys, 'major' and 'minor'")
-
-        _interpreter_version_info = dict(**interpreter_version_info)
-        interpreter_version_info = struct(
-            major = int(_interpreter_version_info.pop("major")),
-            minor = int(_interpreter_version_info.pop("minor")),
-            micro = int(_interpreter_version_info.pop("micro")) if "micro" in _interpreter_version_info else None,
-            releaselevel = str(_interpreter_version_info.pop("releaselevel")) if "releaselevel" in _interpreter_version_info else None,
-            serial = int(_interpreter_version_info.pop("serial")) if "serial" in _interpreter_version_info else None,
-        )
-
-        if len(_interpreter_version_info.keys()) > 0:
-            fail("unexpected keys {} in interpreter_version_info".format(
-                str(_interpreter_version_info.keys()),
-            ))
-
     return {
         "bootstrap_template": bootstrap_template,
         "coverage_files": coverage_files,
         "coverage_tool": coverage_tool,
         "files": files,
+        "implementation_name": implementation_name,
         "interpreter": interpreter,
         "interpreter_path": interpreter_path,
-        "interpreter_version_info": interpreter_version_info,
+        "interpreter_version_info": interpreter_version_info_struct_from_dict(interpreter_version_info),
+        "pyc_tag": pyc_tag,
         "python_version": python_version,
         "stub_shebang": stub_shebang,
     }
@@ -143,6 +161,7 @@ the same conventions as the standard CPython interpreter.
             "The value of `interpreter` need not be included in this field. If " +
             "this is a platform runtime then this field is `None`."
         ),
+        "implementation_name": "Optional string; the Python implementation name (`sys.implementation.name`)",
         "interpreter": (
             "If this is an in-build runtime, this field is a `File` representing " +
             "the interpreter. Otherwise, this is `None`. Note that an in-build " +
@@ -166,6 +185,12 @@ the same conventions as the standard CPython interpreter.
             "  * releaselevel: optional str, the release level\n" +
             "  * serial: optional int, the serial number of the release"
         ),
+        "pyc_tag": """
+Optional string; the tag portion of a pyc filename, e.g. the `cpython-39` infix
+of `foo.cpython-39.pyc`. See PEP 3147. If not specified, it will be computed
+from `implementation_name` and `interpreter_version_info`. If no pyc_tag is
+available, then only source-less pyc generation will function correctly.
+""",
         "python_version": (
             "Indicates whether this runtime uses Python major version 2 or 3. " +
             "Valid values are (only) `\"PY2\"` and " +
@@ -194,7 +219,9 @@ def _PyInfo_init(
         uses_shared_libraries = False,
         imports = depset(),
         has_py2_only_sources = False,
-        has_py3_only_sources = False):
+        has_py3_only_sources = False,
+        direct_pyc_files = depset(),
+        transitive_pyc_files = depset()):
     _check_arg_type("transitive_sources", "depset", transitive_sources)
 
     # Verify it's postorder compatible, but retain is original ordering.
@@ -204,10 +231,14 @@ def _PyInfo_init(
     _check_arg_type("imports", "depset", imports)
     _check_arg_type("has_py2_only_sources", "bool", has_py2_only_sources)
     _check_arg_type("has_py3_only_sources", "bool", has_py3_only_sources)
+    _check_arg_type("direct_pyc_files", "depset", direct_pyc_files)
+    _check_arg_type("transitive_pyc_files", "depset", transitive_pyc_files)
     return {
+        "direct_pyc_files": direct_pyc_files,
         "has_py2_only_sources": has_py2_only_sources,
         "has_py3_only_sources": has_py2_only_sources,
         "imports": imports,
+        "transitive_pyc_files": transitive_pyc_files,
         "transitive_sources": transitive_sources,
         "uses_shared_libraries": uses_shared_libraries,
     }
@@ -216,6 +247,10 @@ PyInfo, _unused_raw_py_info_ctor = _define_provider(
     doc = "Encapsulates information provided by the Python rules.",
     init = _PyInfo_init,
     fields = {
+        "direct_pyc_files": """
+depset[File] of precompiled Python files that are considered directly provided
+by the target.
+""",
         "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
         "has_py3_only_sources": "Whether any of this target's transitive sources requires a Python 3 runtime.",
         "imports": """\
@@ -223,6 +258,10 @@ A depset of import path strings to be added to the `PYTHONPATH` of executable
 Python targets. These are accumulated from the transitive `deps`.
 The order of the depset is not guaranteed and may be changed in the future. It
 is recommended to use `default` order (the default).
+""",
+        "transitive_pyc_files": """
+depset[File] of direct and transitive precompiled Python files that are provied
+by the target.
 """,
         "transitive_sources": """\
 A (`postorder`-compatible) depset of `.py` files appearing in the target's
