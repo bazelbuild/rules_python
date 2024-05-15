@@ -31,10 +31,19 @@ def _dist_info(pkg):
         * @pypi//pylint
         * @pypi//pylint:pkg
         * Label("@pypi//pylint:pkg")
+        * Label("@pypi//pylint")
     """
 
-    # str() is called to convert Label objects
-    return str(pkg).replace(":pkg", "") + ":dist_info"
+    if type(pkg) == type(""):
+        label = native.package_relative_label(pkg)
+    else:
+        label = pkg
+
+    if hasattr(label, "same_package_label"):
+        return label.same_package_label("dist_info")
+    else:
+        # NOTE @aignas 2024-03-25: this is deprecated but kept for compatibility
+        return label.relative("dist_info")
 
 def py_console_script_binary(
         *,

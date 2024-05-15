@@ -1,3 +1,3 @@
 import a
-from b import run
 import test_util
+from b import run

@@ -35,6 +35,7 @@ filegroup(
         "BUILD.bazel",
         "MODULE.bazel",
         "WORKSPACE",
+        "WORKSPACE.bzlmod",
         "internal_deps.bzl",
         "internal_setup.bzl",
         "version.bzl",

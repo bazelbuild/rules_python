@@ -69,6 +69,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "config_settings_bzl",
+    srcs = ["config_settings.bzl"],
+    deps = [
+        "//python:versions_bzl",
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
     name = "coverage_deps_bzl",
     srcs = ["coverage_deps.bzl"],
     deps = [
@@ -111,6 +120,18 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pypi_index_bzl",
+    srcs = ["pypi_index.bzl"],
+    deps = [
+        ":auth_bzl",
+        ":normalize_name_bzl",
+        ":text_util_bzl",
+        "//python/pip_install:requirements_parser_bzl",
+        "//python/private/bzlmod:bazel_features_bzl",
+    ],
+)
+
+bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = [
         "py_cc_toolchain_macro.bzl",
@@ -122,6 +143,7 @@ bzl_library(
     ],
     deps = [
         ":py_cc_toolchain_info_bzl",
+        ":rules_cc_srcs_bzl",
         ":util_bzl",
     ],
 )
@@ -205,6 +227,7 @@ bzl_library(
         ":normalize_name_bzl",
         ":text_util_bzl",
         ":version_label_bzl",
+        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
     ],
 )
 
@@ -251,6 +274,9 @@ bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        "parse_whl_name_bzl",
+    ],
 )
 
 bzl_library(
@@ -267,6 +293,13 @@ bzl_library(
         # sources.
         "@bazel_tools//tools:bzl_srcs",
     ],
+)
+
+# @rules_cc does not offer a bzl_library target for @rules_cc//cc:defs.bzl
+bzl_library(
+    name = "rules_cc_srcs_bzl",
+    srcs = ["@rules_cc//cc:bzl_srcs"],
+    deps = [":bazel_tools_bzl"],
 )
 
 # Needed to define bzl_library targets for docgen. (We don't define the

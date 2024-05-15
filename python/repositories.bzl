@@ -62,6 +62,12 @@ def py_repositories():
             "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
         ],
     )
+    http_archive(
+        name = "rules_cc",
+        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
+        sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
+        strip_prefix = "rules_cc-0.0.9",
+    )
     pip_install_dependencies()
 
 ########
@@ -170,7 +176,7 @@ def _python_repository_impl(rctx):
             rctx.patch(patch, strip = 1)
 
     # Write distutils.cfg to the Python installation.
-    if "windows" in rctx.os.name:
+    if "windows" in platform:
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
         distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)
@@ -181,7 +187,7 @@ def _python_repository_impl(rctx):
 
     # Make the Python installation read-only.
     if not rctx.attr.ignore_root_user_error:
-        if "windows" not in rctx.os.name:
+        if "windows" not in platform:
             lib_dir = "lib" if "windows" not in platform else "Lib"
 
             repo_utils.execute_checked(
@@ -222,7 +228,28 @@ def _python_repository_impl(rctx):
         "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
     ]
 
-    if rctx.attr.ignore_root_user_error or "windows" in rctx.os.name:
+    if "linux" in platform:
+        # Workaround around https://github.com/indygreg/python-build-standalone/issues/231
+        for url in urls:
+            head_and_release, _, _ = url.rpartition("/")
+            _, _, release = head_and_release.rpartition("/")
+            if not release.isdigit():
+                # Maybe this is some custom toolchain, so skip this
+                break
+
+            if int(release) >= 20240224:
+                # Starting with this release the Linux toolchains have infinite symlink loop
+                # on host platforms that are not Linux. Delete the files no
+                # matter the host platform so that the cross-built artifacts
+                # are the same irrespective of the host platform we are
+                # building on.
+                #
+                # Link to the first affected release:
+                # https://github.com/indygreg/python-build-standalone/releases/tag/20240224
+                rctx.delete("share/terminfo")
+                break
+
+    if rctx.attr.ignore_root_user_error or "windows" in platform:
         glob_exclude += [
             # These pycache files are created on first use of the associated python files.
             # Exclude them from the glob because otherwise between the first time and second time a python toolchain is used,"
@@ -257,7 +284,7 @@ def _python_repository_impl(rctx):
         ]
 
     if rctx.attr.coverage_tool:
-        if "windows" in rctx.os.name:
+        if "windows" in platform:
             coverage_tool = None
         else:
             coverage_tool = '"{}"'.format(rctx.attr.coverage_tool)

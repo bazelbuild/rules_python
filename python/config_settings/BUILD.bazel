@@ -1,4 +1,3 @@
-load("//python:versions.bzl", "TOOL_VERSIONS")
 load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
@@ -12,5 +11,4 @@ filegroup(
 
 construct_config_settings(
     name = "construct_config_settings",
-    python_versions = TOOL_VERSIONS.keys(),
 )

@@ -38,10 +38,10 @@ def gazelle_deps():
     )
 
     go_repository(
-        name = "com_github_bmatcuk_doublestar",
-        importpath = "github.com/bmatcuk/doublestar",
-        sum = "h1:gPypJ5xD31uhX6Tf54sDPUOBXTqKH4c9aPY66CyQrS0=",
-        version = "v1.3.4",
+        name = "com_github_bmatcuk_doublestar_v4",
+        importpath = "github.com/bmatcuk/doublestar/v4",
+        sum = "h1:FH9SifrbvJhnlQpztAx++wlkk70QBf0iBWDwNy7PA4I=",
+        version = "v4.6.1",
     )
 
     go_repository(

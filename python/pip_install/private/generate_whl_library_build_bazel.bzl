@@ -63,14 +63,14 @@ filegroup(
 )
 
 filegroup(
-    name = "{whl_file_impl_label}",
+    name = "{whl_file_label}",
     srcs = ["{whl_name}"],
     data = {whl_file_deps},
     visibility = {impl_vis},
 )
 
 py_library(
-    name = "{py_library_impl_label}",
+    name = "{py_library_label}",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude={srcs_exclude},
@@ -88,16 +88,6 @@ py_library(
     deps = {dependencies},
     tags = {tags},
     visibility = {impl_vis},
-)
-
-alias(
-   name = "{py_library_public_label}",
-   actual = "{py_library_actual_label}",
-)
-
-alias(
-   name = "{whl_file_public_label}",
-   actual = "{whl_file_actual_label}",
 )
 """
 
@@ -223,7 +213,7 @@ selects.config_setting_group(
 
 def generate_whl_library_build_bazel(
         *,
-        repo_prefix,
+        dep_template,
         whl_name,
         dependencies,
         dependencies_by_platform,
@@ -236,7 +226,7 @@ def generate_whl_library_build_bazel(
     """Generate a BUILD file for an unzipped Wheel
 
     Args:
-        repo_prefix: the repo prefix that should be used for dependency lists.
+        dep_template: the dependency template that should be used for dependency lists.
         whl_name: the whl_name that this is generated for.
         dependencies: a list of PyPI packages that are dependencies to the py_library.
         dependencies_by_platform: a dict[str, list] of PyPI packages that may vary by platform.
@@ -338,51 +328,71 @@ def generate_whl_library_build_bazel(
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, PY_LIBRARY_PUBLIC_LABEL),
+        tmpl = dep_template.format(name = "{}", target = PY_LIBRARY_PUBLIC_LABEL),
     )
 
     whl_file_deps = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
-        tmpl = "@{}{{}}//:{}".format(repo_prefix, WHEEL_FILE_PUBLIC_LABEL),
+        tmpl = dep_template.format(name = "{}", target = WHEEL_FILE_PUBLIC_LABEL),
     )
 
     # If this library is a member of a group, its public label aliases need to
     # point to the group implementation rule not the implementation rules. We
     # also need to mark the implementation rules as visible to the group
     # implementation.
-    if group_name:
-        group_repo = repo_prefix + "_groups"
-        library_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), PY_LIBRARY_PUBLIC_LABEL)
-        whl_impl_label = "@%s//:%s_%s" % (group_repo, normalize_name(group_name), WHEEL_FILE_PUBLIC_LABEL)
-        impl_vis = "@%s//:__pkg__" % (group_repo,)
+    if group_name and "//:" in dep_template:
+        # This is the legacy behaviour where the group library is outside the hub repo
+        label_tmpl = dep_template.format(
+            name = "_groups",
+            target = normalize_name(group_name) + "_{}",
+        )
+        impl_vis = [dep_template.format(
+            name = "_groups",
+            target = "__pkg__",
+        )]
+        additional_content.extend([
+            "",
+            render.alias(
+                name = PY_LIBRARY_PUBLIC_LABEL,
+                actual = repr(label_tmpl.format(PY_LIBRARY_PUBLIC_LABEL)),
+            ),
+            "",
+            render.alias(
+                name = WHEEL_FILE_PUBLIC_LABEL,
+                actual = repr(label_tmpl.format(WHEEL_FILE_PUBLIC_LABEL)),
+            ),
+        ])
+        py_library_label = PY_LIBRARY_IMPL_LABEL
+        whl_file_label = WHEEL_FILE_IMPL_LABEL
+
+    elif group_name:
+        py_library_label = PY_LIBRARY_PUBLIC_LABEL
+        whl_file_label = WHEEL_FILE_PUBLIC_LABEL
+        impl_vis = [dep_template.format(name = "", target = "__subpackages__")]
 
     else:
-        library_impl_label = PY_LIBRARY_IMPL_LABEL
-        whl_impl_label = WHEEL_FILE_IMPL_LABEL
-        impl_vis = "//visibility:private"
+        py_library_label = PY_LIBRARY_PUBLIC_LABEL
+        whl_file_label = WHEEL_FILE_PUBLIC_LABEL
+        impl_vis = ["//visibility:public"]
 
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
                 loads = "\n".join(loads),
-                py_library_public_label = PY_LIBRARY_PUBLIC_LABEL,
-                py_library_impl_label = PY_LIBRARY_IMPL_LABEL,
-                py_library_actual_label = library_impl_label,
+                py_library_label = py_library_label,
                 dependencies = render.indent(lib_dependencies, " " * 4).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
-                whl_file_public_label = WHEEL_FILE_PUBLIC_LABEL,
-                whl_file_impl_label = WHEEL_FILE_IMPL_LABEL,
-                whl_file_actual_label = whl_impl_label,
+                whl_file_label = whl_file_label,
                 tags = repr(tags),
                 data_label = DATA_LABEL,
                 dist_info_label = DIST_INFO_LABEL,
                 entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
-                impl_vis = repr([impl_vis]),
+                impl_vis = repr(impl_vis),
             ),
         ] + additional_content,
     )

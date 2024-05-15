@@ -34,11 +34,10 @@ var pyKinds = map[string]rule.KindInfo{
 	pyBinaryKind: {
 		MatchAny: true,
 		NonEmptyAttrs: map[string]bool{
-			"deps":       true,
-			"main":       true,
-			"srcs":       true,
-			"imports":    true,
-			"visibility": true,
+			"deps":    true,
+			"main":    true,
+			"srcs":    true,
+			"imports": true,
 		},
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs: map[string]bool{
@@ -52,10 +51,9 @@ var pyKinds = map[string]rule.KindInfo{
 		MatchAny:   false,
 		MatchAttrs: []string{"srcs"},
 		NonEmptyAttrs: map[string]bool{
-			"deps":       true,
-			"srcs":       true,
-			"imports":    true,
-			"visibility": true,
+			"deps":    true,
+			"srcs":    true,
+			"imports": true,
 		},
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs: map[string]bool{
@@ -68,11 +66,10 @@ var pyKinds = map[string]rule.KindInfo{
 	pyTestKind: {
 		MatchAny: false,
 		NonEmptyAttrs: map[string]bool{
-			"deps":       true,
-			"main":       true,
-			"srcs":       true,
-			"imports":    true,
-			"visibility": true,
+			"deps":    true,
+			"main":    true,
+			"srcs":    true,
+			"imports": true,
 		},
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs: map[string]bool{

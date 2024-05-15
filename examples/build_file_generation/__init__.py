@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sphinx  # noqa
 from flask import Flask, jsonify
 from random_number_generator import generate_random_number
-import sphinx  # noqa
 
 app = Flask(__name__)
 
-@app.route('/random-number', methods=['GET'])
-def get_random_number():
-    return jsonify({'number': generate_random_number.generate_random_number()})
 
-"""Start the python web server"""
+@app.route("/random-number", methods=["GET"])
+def get_random_number():
+    return jsonify({"number": generate_random_number.generate_random_number()})
+
+
 def main():
+    """Start the python web server"""
     app.run()

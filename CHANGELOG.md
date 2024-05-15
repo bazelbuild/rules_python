@@ -19,24 +19,118 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
+
 ### Changed
 
 ### Fixed
 
+* (gazelle) Remove `visibility` from `NonEmptyAttr`.
+  Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
+  be automatically deleted correctly. For example, if `python_generation_mode`
+  is set to package, when `__init__.py` is deleted, the `py_library` generated
+  for this package before will be deleted automatically.
 * remove bzlmod `pip.parse(annotations)` attribute
 
 ### Added
 
-* New Python versions available: `3.11.8`, `3.12.2` using
-  https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
-* (gazelle) Added a new `python_visibility` directive to control visibility
-  of generated targets by appending additional visibility labels.
+## [0.32.2] - 2024-05-14
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
+[0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2
+
+### Fixed
+
+* Workaround existence of infinite symlink loops on case insensitive filesystems when targeting linux platforms with recent Python toolchains. Works around an upstream [issue][indygreg-231]. Fixes [#1800][rules_python_1800].
+
+[indygreg-231]: https://github.com/indygreg/python-build-standalone/issues/231
+[rules_python_1800]: https://github.com/bazelbuild/rules_python/issues/1800
+
+## [0.32.0] - 2024-05-12
+
+[0.32.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.0
 
 ### Changed
 
+* (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
+  sorted in the attributes section. We are also removing values that are not
+  default in order to reduce the size of the lock file.
 * (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
+* (deps): Bumped bazel_features to 1.9.1 to detect optional support
+  non-blocking downloads.
+* (deps): Updated `pip_tools` to >= 7.4.0
+* (toolchains): Change some old toolchain versions to use [20240224] release to
+  include security fixes `3.8.18`, `3.9.18` and `3.10.13`
+* (toolchains): Bump default toolchain versions to:
+    * `3.8 -> 3.8.19`
+    * `3.9 -> 3.9.19`
+    * `3.10 -> 3.10.14`
+    * `3.11 -> 3.11.9`
+    * `3.12 -> 3.12.3`
+
+### Fixed
+
+* (whl_library): Fix the experimental_target_platforms overriding for platform
+  specific wheels when the wheels are for any python interpreter version. Fixes
+  [#1810](https://github.com/bazelbuild/rules_python/issues/1810).
+* (whl_library): Stop generating duplicate dependencies when encountering
+  duplicates in the METADATA. Fixes
+  [#1873](https://github.com/bazelbuild/rules_python/issues/1873).
+* (gazelle) In `project` or `package` generation modes, do not generate `py_test`
+  rules when there are no test files and do not set `main = "__test__.py"` when
+  that file doesn't exist.
+* (whl_library) The group redirection is only added when the package is part of
+  the group potentially fixing aspects that want to traverse a `py_library` graph.
+  Fixes [#1760](https://github.com/bazelbuild/rules_python/issues/1760).
+* (bzlmod) Setting a particular micro version for the interpreter and the
+  `pip.parse` extension is now possible, see the
+  `examples/pip_parse/MODULE.bazel` for how to do it.
+  See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
+* (refactor) The pre-commit developer workflow should now pass `isort` and `black`
+  checks (see [#1674](https://github.com/bazelbuild/rules_python/issues/1674)).
+
+### Added
+
+* (toolchains) Added armv7 platform definition for python toolchains.
+* (toolchains) New Python versions available: `3.11.8`, `3.12.2` using the [20240224] release.
+* (toolchains) New Python versions available: `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`, `3.12.3` using
+  the [20240415] release.
+* (gazelle) Added a new `python_visibility` directive to control visibility
+  of generated targets by appending additional visibility labels.
+* (gazelle) Added a new `python_default_visibility` directive to control the
+  _default_ visibility of generated targets. See the [docs][python_default_visibility]
+  for details.
+* (gazelle) Added a new `python_test_file_pattern` directive. This directive tells
+  gazelle which python files should be mapped to the `py_test` rule. See the
+  [original issue][test_file_pattern_issue] and the [docs][test_file_pattern_docs]
+  for details.
+* (wheel) Add support for `data_files` attributes in py_wheel rule
+  ([#1777](https://github.com/bazelbuild/rules_python/issues/1777))
+* (py_wheel) `bzlmod` installations now provide a `twine` setup for the default
+  Python toolchain in `rules_python` for version 3.11.
+* (bzlmod) New `experimental_index_url`, `experimental_extra_index_urls` and
+  `experimental_index_url_overrides` to `pip.parse` for using the bazel
+  downloader. If you see any issues, report in
+  [#1357](https://github.com/bazelbuild/rules_python/issues/1357). The URLs for
+  the whl and sdist files will be written to the lock file. Controlling whether
+  the downloading of metadata is done in parallel can be done using
+  `parallel_download` attribute.
+* (gazelle) Add a new annotation `include_dep`. Also add documentation for
+  annotations to `gazelle/README.md`.
+* (deps): `rules_python` depends now on `rules_cc` 0.0.9
+* (pip_parse): A new flag `use_hub_alias_dependencies` has been added that is going
+  to become default in the next release. This makes use of `dep_template` flag
+  in the `whl_library` rule. This also affects the
+  `experimental_requirement_cycles` feature where the dependencies that are in
+  a group would be only accessible via the hub repo aliases. If you still
+  depend on legacy labels instead of the hub repo aliases and you use the
+  `experimental_requirement_cycles`, now is a good time to migrate.
+
+[python_default_visibility]: gazelle/README.md#directive-python_default_visibility
+[test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
+[test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
+[20240224]: https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+[20240415]: https://github.com/indygreg/python-build-standalone/releases/tag/20240415.
+
 
 ## [0.31.0] - 2024-02-12
 
@@ -256,7 +350,6 @@ A brief description of the categories of changes:
 * (gazelle) `file` generation mode can now also add `__init__.py` to the srcs
   attribute for every target in the package. This is enabled through a separate
   directive `python_generation_mode_per_file_include_init`.
-
 
 ## [0.27.0] - 2023-11-16
 

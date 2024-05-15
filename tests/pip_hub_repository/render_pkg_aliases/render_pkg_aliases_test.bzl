@@ -65,6 +65,8 @@ def _test_legacy_aliases(env):
 
     want_key = "foo/BUILD.bazel"
     want_content = """\
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
 package(default_visibility = ["//visibility:public"])
 
 alias(
@@ -108,6 +110,8 @@ def _test_bzlmod_aliases(env):
 
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
 package(default_visibility = ["//visibility:public"])
 
 alias(
@@ -117,40 +121,48 @@ alias(
 
 alias(
     name = "pkg",
-    actual = select(
+    actual = selects.with_or(
         {
-            "//:my_config_setting": "@pypi_32_bar_baz//:pkg",
-            "//conditions:default": "@pypi_32_bar_baz//:pkg",
+            (
+                "//:my_config_setting",
+                "//conditions:default",
+            ): "@pypi_32_bar_baz//:pkg",
         },
     ),
 )
 
 alias(
     name = "whl",
-    actual = select(
+    actual = selects.with_or(
         {
-            "//:my_config_setting": "@pypi_32_bar_baz//:whl",
-            "//conditions:default": "@pypi_32_bar_baz//:whl",
+            (
+                "//:my_config_setting",
+                "//conditions:default",
+            ): "@pypi_32_bar_baz//:whl",
         },
     ),
 )
 
 alias(
     name = "data",
-    actual = select(
+    actual = selects.with_or(
         {
-            "//:my_config_setting": "@pypi_32_bar_baz//:data",
-            "//conditions:default": "@pypi_32_bar_baz//:data",
+            (
+                "//:my_config_setting",
+                "//conditions:default",
+            ): "@pypi_32_bar_baz//:data",
         },
     ),
 )
 
 alias(
     name = "dist_info",
-    actual = select(
+    actual = selects.with_or(
         {
-            "//:my_config_setting": "@pypi_32_bar_baz//:dist_info",
-            "//conditions:default": "@pypi_32_bar_baz//:dist_info",
+            (
+                "//:my_config_setting",
+                "//conditions:default",
+            ): "@pypi_32_bar_baz//:dist_info",
         },
     ),
 )"""
@@ -178,6 +190,8 @@ def _test_bzlmod_aliases_with_no_default_version(env):
 
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
 package(default_visibility = ["//visibility:public"])
 
 _NO_MATCH_ERROR = \"\"\"\\
@@ -206,7 +220,7 @@ alias(
 
 alias(
     name = "pkg",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
@@ -217,7 +231,7 @@ alias(
 
 alias(
     name = "whl",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
@@ -228,7 +242,7 @@ alias(
 
 alias(
     name = "data",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
@@ -239,7 +253,7 @@ alias(
 
 alias(
     name = "dist_info",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
@@ -273,6 +287,8 @@ def _test_bzlmod_aliases_for_non_root_modules(env):
 
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
 package(default_visibility = ["//visibility:public"])
 
 _NO_MATCH_ERROR = \"\"\"\\
@@ -301,7 +317,7 @@ alias(
 
 alias(
     name = "pkg",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:pkg",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
@@ -312,7 +328,7 @@ alias(
 
 alias(
     name = "whl",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:whl",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
@@ -323,7 +339,7 @@ alias(
 
 alias(
     name = "data",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:data",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
@@ -334,7 +350,7 @@ alias(
 
 alias(
     name = "dist_info",
-    actual = select(
+    actual = selects.with_or(
         {
             "@@//python/config_settings:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
             "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
@@ -371,6 +387,50 @@ def _test_aliases_are_created_for_all_wheels(env):
     env.expect.that_dict(actual).keys().contains_exactly(want_files)
 
 _tests.append(_test_aliases_are_created_for_all_wheels)
+
+def _test_aliases_with_groups(env):
+    actual = render_pkg_aliases(
+        default_version = "3.2",
+        aliases = {
+            "bar": [
+                whl_alias(version = "3.1", repo = "pypi_31_bar"),
+                whl_alias(version = "3.2", repo = "pypi_32_bar"),
+            ],
+            "baz": [
+                whl_alias(version = "3.1", repo = "pypi_31_baz"),
+                whl_alias(version = "3.2", repo = "pypi_32_baz"),
+            ],
+            "foo": [
+                whl_alias(version = "3.1", repo = "pypi_32_foo"),
+                whl_alias(version = "3.2", repo = "pypi_31_foo"),
+            ],
+        },
+        requirement_cycles = {
+            "group": ["bar", "baz"],
+        },
+    )
+
+    want_files = [
+        "bar/BUILD.bazel",
+        "foo/BUILD.bazel",
+        "baz/BUILD.bazel",
+        "_groups/BUILD.bazel",
+    ]
+    env.expect.that_dict(actual).keys().contains_exactly(want_files)
+
+    want_key = "_groups/BUILD.bazel"
+
+    # Just check that it contains a private whl
+    env.expect.that_str(actual[want_key]).contains("//bar:_whl")
+
+    want_key = "bar/BUILD.bazel"
+
+    # Just check that it contains a private whl
+    env.expect.that_str(actual[want_key]).contains("name = \"_whl\"")
+    env.expect.that_str(actual[want_key]).contains("name = \"whl\"")
+    env.expect.that_str(actual[want_key]).contains("\"//_groups:group_whl\"")
+
+_tests.append(_test_aliases_with_groups)
 
 def render_pkg_aliases_test_suite(name):
     """Create the test suite.

@@ -37,17 +37,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -67,21 +67,11 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 """
     actual = generate_whl_library_build_bazel(
-        repo_prefix = "pypi_",
+        dep_template = "@pypi_{name}//:{target}",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {},
@@ -113,7 +103,7 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
@@ -130,11 +120,11 @@ filegroup(
             "//conditions:default": [],
         },
     ),
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -165,17 +155,7 @@ py_library(
         },
     ),
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 config_setting(
@@ -236,7 +216,7 @@ config_setting(
 )
 """
     actual = generate_whl_library_build_bazel(
-        repo_prefix = "pypi_",
+        dep_template = "@pypi_{name}//:{target}",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {
@@ -275,17 +255,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=["srcs_exclude_all"],
@@ -305,17 +285,7 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 copy_file(
@@ -335,7 +305,7 @@ copy_file(
 # SOMETHING SPECIAL AT THE END
 """
     actual = generate_whl_library_build_bazel(
-        repo_prefix = "pypi_",
+        dep_template = "@pypi_{name}//:{target}",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {},
@@ -373,17 +343,17 @@ filegroup(
 )
 
 filegroup(
-    name = "_whl",
+    name = "whl",
     srcs = ["foo.whl"],
     data = [
         "@pypi_bar_baz//:whl",
         "@pypi_foo//:whl",
     ],
-    visibility = ["//visibility:private"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "_pkg",
+    name = "pkg",
     srcs = glob(
         ["site-packages/**/*.py"],
         exclude=[],
@@ -403,17 +373,7 @@ py_library(
         "@pypi_foo//:pkg",
     ],
     tags = ["tag1", "tag2"],
-    visibility = ["//visibility:private"],
-)
-
-alias(
-   name = "pkg",
-   actual = "_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "_whl",
+    visibility = ["//visibility:public"],
 )
 
 py_binary(
@@ -426,7 +386,7 @@ py_binary(
 )
 """
     actual = generate_whl_library_build_bazel(
-        repo_prefix = "pypi_",
+        dep_template = "@pypi_{name}//:{target}",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {},
@@ -502,16 +462,6 @@ py_library(
     visibility = ["@pypi__groups//:__pkg__"],
 )
 
-alias(
-   name = "pkg",
-   actual = "@pypi__groups//:qux_pkg",
-)
-
-alias(
-   name = "whl",
-   actual = "@pypi__groups//:qux_whl",
-)
-
 config_setting(
     name = "is_linux_x86_64",
     constraint_values = [
@@ -520,9 +470,19 @@ config_setting(
     ],
     visibility = ["//visibility:private"],
 )
+
+alias(
+    name = "pkg",
+    actual = "@pypi__groups//:qux_pkg",
+)
+
+alias(
+    name = "whl",
+    actual = "@pypi__groups//:qux_whl",
+)
 """
     actual = generate_whl_library_build_bazel(
-        repo_prefix = "pypi_",
+        dep_template = "@pypi_{name}//:{target}",
         whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz", "qux"],
         dependencies_by_platform = {
@@ -540,6 +500,98 @@ config_setting(
     env.expect.that_str(actual.replace("@@", "@")).equals(want)
 
 _tests.append(_test_group_member)
+
+def _test_group_member_deps_to_hub(env):
+    want = """\
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "dist_info",
+    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+)
+
+filegroup(
+    name = "data",
+    srcs = glob(["data/**"], allow_empty = True),
+)
+
+filegroup(
+    name = "whl",
+    srcs = ["foo.whl"],
+    data = ["@pypi//bar_baz:whl"] + select(
+        {
+            "@platforms//os:linux": ["@pypi//box:whl"],
+            ":is_linux_x86_64": [
+                "@pypi//box:whl",
+                "@pypi//box_amd64:whl",
+            ],
+            "//conditions:default": [],
+        },
+    ),
+    visibility = ["@pypi//:__subpackages__"],
+)
+
+py_library(
+    name = "pkg",
+    srcs = glob(
+        ["site-packages/**/*.py"],
+        exclude=[],
+        # Empty sources are allowed to support wheels that don't have any
+        # pure-Python code, e.g. pymssql, which is written in Cython.
+        allow_empty = True,
+    ),
+    data = [] + glob(
+        ["site-packages/**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+    ),
+    # This makes this directory a top-level in the python import
+    # search path for anything that depends on this.
+    imports = ["site-packages"],
+    deps = ["@pypi//bar_baz:pkg"] + select(
+        {
+            "@platforms//os:linux": ["@pypi//box:pkg"],
+            ":is_linux_x86_64": [
+                "@pypi//box:pkg",
+                "@pypi//box_amd64:pkg",
+            ],
+            "//conditions:default": [],
+        },
+    ),
+    tags = [],
+    visibility = ["@pypi//:__subpackages__"],
+)
+
+config_setting(
+    name = "is_linux_x86_64",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    visibility = ["//visibility:private"],
+)
+"""
+    actual = generate_whl_library_build_bazel(
+        dep_template = "@pypi//{name}:{target}",
+        whl_name = "foo.whl",
+        dependencies = ["foo", "bar-baz", "qux"],
+        dependencies_by_platform = {
+            "linux_x86_64": ["box", "box-amd64"],
+            "windows_x86_64": ["fox"],
+            "@platforms//os:linux": ["box"],  # buildifier: disable=unsorted-dict-items to check that we sort inside the test
+        },
+        tags = [],
+        entry_points = {},
+        data_exclude = [],
+        annotation = None,
+        group_name = "qux",
+        group_deps = ["foo", "fox", "qux"],
+    )
+    env.expect.that_str(actual.replace("@@", "@")).equals(want)
+
+_tests.append(_test_group_member_deps_to_hub)
 
 def generate_build_bazel_test_suite(name):
     """Create the test suite.

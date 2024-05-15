@@ -4,15 +4,16 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "bazel_features", version = "1.1.1")
+bazel_dep(name = "bazel_features", version = "1.9.1")
 bazel_dep(name = "bazel_skylib", version = "1.3.0")
+bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.4")
 
 # Those are loaded only when using py_proto_library
-bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
+bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
-internal_deps = use_extension("@rules_python//python/private/bzlmod:internal_deps.bzl", "internal_deps")
+internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 internal_deps.install()
 use_repo(
     internal_deps,
@@ -38,7 +39,7 @@ use_repo(
 
 # We need to do another use_extension call to expose the "pythons_hub"
 # repo.
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python = use_extension("//python/extensions:python.bzl", "python")
 
 # The default toolchain to use if nobody configures a toolchain.
 # NOTE: This is not a stable version. It is provided for convenience, but will
@@ -48,14 +49,34 @@ python.toolchain(
     is_default = True,
     python_version = "3.11",
 )
-use_repo(python, "pythons_hub")
+use_repo(python, "python_3_11", "python_versions", "pythons_hub")
 
 # This call registers the Python toolchains.
 register_toolchains("@pythons_hub//:all")
 
+#####################
+# Install twine for our own runfiles wheel publishing and allow bzlmod users to use it.
+
+pip = use_extension("//python/extensions:pip.bzl", "pip")
+pip.parse(
+    experimental_index_url = "https://pypi.org/simple",
+    hub_name = "rules_python_publish_deps",
+    python_version = "3.11",
+    requirements_darwin = "//tools/publish:requirements_darwin.txt",
+    requirements_lock = "//tools/publish:requirements.txt",
+    requirements_windows = "//tools/publish:requirements_windows.txt",
+)
+use_repo(pip, "rules_python_publish_deps")
+
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+
+# Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
+# We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
+bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_name = "io_bazel_rules_go")
+bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
 
 dev_pip = use_extension(
     "//python/extensions:pip.bzl",
@@ -63,6 +84,8 @@ dev_pip = use_extension(
     dev_dependency = True,
 )
 dev_pip.parse(
+    envsubst = ["PIP_INDEX_URL"],
+    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -77,6 +100,16 @@ dev_pip.parse(
     python_version = "3.11",
     requirements_lock = "//docs/sphinx:requirements.txt",
 )
+dev_pip.parse(
+    envsubst = ["PIP_INDEX_URL"],
+    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
+    hub_name = "pypiserver",
+    python_version = "3.11",
+    requirements_lock = "//examples/wheel:requirements_server.txt",
+)
+use_repo(dev_pip, "dev_pip", "pypiserver")
+
+# Bazel integration test setup below
 
 bazel_binaries = use_extension(
     "@rules_bazel_integration_test//:extensions.bzl",

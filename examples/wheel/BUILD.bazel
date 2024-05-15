@@ -17,7 +17,10 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//examples/wheel/private:wheel_utils.bzl", "directory_writer", "make_variable_tags")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
+load("//python:pip.bzl", "compile_pip_requirements")
 load("//python:versions.bzl", "gen_python_config_settings")
+load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
 package(default_visibility = ["//visibility:public"])
 
@@ -56,6 +59,10 @@ py_wheel(
     # Package data. We're building "example_minimal_library-0.0.1-py3-none-any.whl"
     distribution = "example_minimal_library",
     python_tag = "py3",
+    # NOTE: twine_binary = "//tools/publish:twine" does not work on non-bzlmod
+    # setups because the `//tools/publish:twine` produces multiple files and is
+    # unsuitable as the `src` to the underlying native_binary rule.
+    twine = None if BZLMOD_ENABLED else "@rules_python_publish_deps_twine//:pkg",
     version = "0.0.1",
     deps = [
         "//examples/wheel/lib:module_with_data",
@@ -312,6 +319,20 @@ py_wheel(
     deps = [":example_pkg"],
 )
 
+# Package just a specific py_libraries, without their dependencies
+py_wheel(
+    name = "minimal_data_files",
+    testonly = True,  # Set this to verify the generated .dist target doesn't break things
+
+    # Re-using some files already checked into the repo.
+    data_files = {
+        "//examples/wheel:NOTICE": "scripts/NOTICE",
+        "README.md": "data/target/path/README.md",
+    },
+    distribution = "minimal_data_files",
+    version = "0.0.1",
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -321,6 +342,7 @@ py_test(
         ":custom_package_root_multi_prefix_reverse_order",
         ":customized",
         ":filename_escaping",
+        ":minimal_data_files",
         ":minimal_with_py_library",
         ":minimal_with_py_library_with_stamp",
         ":minimal_with_py_package",
@@ -332,4 +354,40 @@ py_test(
     deps = [
         "//python/runfiles",
     ],
+)
+
+# Test wheel publishing
+
+compile_pip_requirements(
+    name = "requirements_server",
+    src = "requirements_server.in",
+)
+
+py_test(
+    name = "test_publish",
+    srcs = ["test_publish.py"],
+    data = [
+        ":minimal_with_py_library",
+        ":minimal_with_py_library.publish",
+        ":pypiserver",
+    ],
+    env = {
+        "PUBLISH_PATH": "$(location :minimal_with_py_library.publish)",
+        "SERVER_PATH": "$(location :pypiserver)",
+        "WHEEL_PATH": "$(rootpath :minimal_with_py_library)",
+    },
+    target_compatible_with = select({
+        "@platforms//os:linux": [],
+        "@platforms//os:macos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        "@pypiserver//pypiserver",
+    ],
+)
+
+py_console_script_binary(
+    name = "pypiserver",
+    pkg = "@pypiserver//pypiserver",
+    script = "pypi-server",
 )

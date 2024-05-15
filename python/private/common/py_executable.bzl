@@ -14,6 +14,7 @@
 """Common functionality between test/binary executables."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@rules_cc//cc:defs.bzl", "cc_common")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":attributes.bzl",
@@ -52,9 +53,6 @@ load(
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
 )
-
-# TODO: Load cc_common from rules_cc
-_cc_common = cc_common
 
 _py_builtins = py_internal
 
@@ -183,7 +181,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         data_runfiles = runfiles_details.data_runfiles.merge(extra_exec_runfiles),
     )
 
-    legacy_providers, modern_providers = _create_providers(
+    return _create_providers(
         ctx = ctx,
         executable = executable,
         runfiles_details = runfiles_details,
@@ -196,10 +194,6 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         inherited_environment = inherited_environment,
         semantics = semantics,
         output_groups = exec_result.output_groups,
-    )
-    return struct(
-        legacy_providers = legacy_providers,
-        providers = modern_providers,
     )
 
 def _get_build_info(ctx, cc_toolchain):
@@ -563,10 +557,10 @@ def _create_shared_native_deps_dso(
     linkstamps = py_internal.linking_context_linkstamps(cc_info.linking_context)
 
     partially_disabled_thin_lto = (
-        _cc_common.is_enabled(
+        cc_common.is_enabled(
             feature_name = "thin_lto_linkstatic_tests_use_shared_nonlto_backends",
             feature_configuration = feature_configuration,
-        ) and not _cc_common.is_enabled(
+        ) and not cc_common.is_enabled(
             feature_name = "thin_lto_all_linkstatic_use_shared_nonlto_backends",
             feature_configuration = feature_configuration,
         )
@@ -749,9 +743,7 @@ def _create_providers(
         semantics: BinarySemantics struct; see create_binary_semantics()
 
     Returns:
-        A two-tuple of:
-        1. A dict of legacy providers.
-        2. A list of modern providers.
+        A list of modern providers.
     """
     providers = [
         DefaultInfo(
@@ -821,13 +813,13 @@ def _create_providers(
     providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
-    extra_legacy_providers, extra_providers = semantics.get_extra_providers(
+    extra_providers = semantics.get_extra_providers(
         ctx,
         main_py = main_py,
         runtime_details = runtime_details,
     )
     providers.extend(extra_providers)
-    return extra_legacy_providers, providers
+    return providers
 
 def _create_run_environment_info(ctx, inherited_environment):
     expanded_env = {}
@@ -882,7 +874,7 @@ def cc_configure_features(ctx, *, cc_toolchain, extra_features):
     requested_features.extend(ctx.features)
     if "legacy_whole_archive" not in ctx.disabled_features:
         requested_features.append("legacy_whole_archive")
-    feature_configuration = _cc_common.configure_features(
+    feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
         requested_features = requested_features,
