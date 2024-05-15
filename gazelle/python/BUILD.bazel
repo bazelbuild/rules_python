@@ -1,4 +1,5 @@
 load("@bazel_gazelle//:def.bzl", "gazelle_binary")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load(":gazelle_test.bzl", "gazelle_test")
 
@@ -47,12 +48,11 @@ go_library(
     ],
 )
 
-genrule(
+copy_file(
     name = "stdlib_list",
-    srcs = ["@python_stdlib_list_3_11//file"],
-    outs = ["stdlib_list.txt"],
-    cmd_bash = "cat $(SRCS) > $@",
-    cmd_bat = "type $(SRCS) > $@",
+    src = "@python_stdlib_list_3_11//file",
+    out = "stdlib_list.txt",
+    allow_symlink = True,
 )
 
 # gazelle:exclude testdata/
