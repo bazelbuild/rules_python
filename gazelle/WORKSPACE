@@ -40,5 +40,5 @@ py_repositories()
 
 load("//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
-# gazelle:repository_macro deps.bzl%gazelle_deps
+# gazelle:repository_macro deps.bzl%go_deps
 _py_gazelle_deps()
