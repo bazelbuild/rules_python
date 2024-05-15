@@ -23,13 +23,12 @@ import (
 
 func TestParseImportStatements(t *testing.T) {
 	t.Parallel()
-	type unit struct {
+	units := []struct {
 		name     string
 		code     string
 		filepath string
 		result   []module
-	}
-	units := []unit{
+	}{
 		{
 			name:     "not has import",
 			code:     "a = 1\nb = 2",
@@ -150,12 +149,11 @@ func TestParseImportStatements(t *testing.T) {
 
 func TestParseComments(t *testing.T) {
 	t.Parallel()
-	type unit struct {
+	units := []struct {
 		name   string
 		code   string
 		result []comment
-	}
-	units := []unit{
+	}{
 		{
 			name:   "not has comment",
 			code:   "a = 1\nb = 2",
@@ -191,12 +189,11 @@ func TestParseComments(t *testing.T) {
 
 func TestParseMain(t *testing.T) {
 	t.Parallel()
-	type unit struct {
+	units := []struct {
 		name   string
 		code   string
 		result bool
-	}
-	units := []unit{
+	}{
 		{
 			name:   "not has main",
 			code:   "a = 1\nb = 2",
