@@ -17,6 +17,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load(
     ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "PY_CC_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )
@@ -87,7 +88,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
             user_repository_name = user_repository_name,
         ),
-        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
+        toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
         # The target settings capture the Python version
         target_settings = target_settings,
         exec_compatible_with = kwargs.get("target_compatible_with"),

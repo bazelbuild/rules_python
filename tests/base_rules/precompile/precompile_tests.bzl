@@ -14,6 +14,7 @@
 
 """Tests for precompiling behavior."""
 
+load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
@@ -22,7 +23,9 @@ load("//python:py_binary.bzl", "py_binary")
 load("//python:py_info.bzl", "PyInfo")
 load("//python:py_library.bzl", "py_library")
 load("//python:py_test.bzl", "py_test")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
 load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
+load("//tests/base_rules:util.bzl", pt_util = "util")
 load(
     "//tests/support:support.bzl",
     "PLATFORM_TOOLCHAIN",
@@ -34,6 +37,9 @@ load(
 _tests = []
 
 def _test_precompile_enabled_setup(name, py_rule, **kwargs):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_rule,
         name = name + "_subject",
@@ -95,6 +101,9 @@ def _test_precompile_enabled_py_library(name):
 _tests.append(_test_precompile_enabled_py_library)
 
 def _test_pyc_only(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_subject",
@@ -132,6 +141,9 @@ def _test_pyc_only_impl(env, target):
     )
 
 def _test_precompile_if_generated(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_subject",
@@ -170,6 +182,9 @@ def _test_precompile_if_generated_impl(env, target):
     )
 
 def _test_omit_source_if_generated_source(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_subject",
@@ -209,6 +224,9 @@ def _test_omit_source_if_generated_source_impl(env, target):
     )
 
 def _test_precompile_add_to_runfiles_decided_elsewhere(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_binary",
@@ -251,6 +269,9 @@ def _test_precompile_add_to_runfiles_decided_elsewhere_impl(env, targets):
     ])
 
 def _test_precompiler_action(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_subject",

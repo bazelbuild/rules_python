@@ -18,8 +18,8 @@ NOTE: The transitive loads of this should be kept minimal. This avoids loading
 unnecessary files when all that are needed are flag definitions.
 """
 
-load("//python/private:enum.bzl", "enum")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//python/private:enum.bzl", "enum")
 
 def _precompile_flag_get_effective_value(ctx):
     value = ctx.attr._precompile_flag[BuildSettingInfo].value
