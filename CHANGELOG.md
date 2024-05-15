@@ -22,8 +22,10 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* **BREAKING** (gazelle): Remove gazelle plugin's python deps and make it hermetic. Use a new helper
-  based on tree-sitter and written in go for syntax analysis.
+
+* (gazelle): Remove gazelle plugin's python deps and make it hermetic. 
+  Introduced a new Go-based helper leveraging tree-sitter for syntax analysis.
+  Implemented the use of `pypi/stdlib-list` for standard library module verification.
 
 ### Fixed
 

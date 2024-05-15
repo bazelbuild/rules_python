@@ -153,7 +153,7 @@ func TestParseComments(t *testing.T) {
 			result: []comment{"# a = 1", "# b = 2"},
 		},
 		{
-			name:   "has comment in def",
+			name:   "has comment in if",
 			code:   "if True:\n  # a = 1\n  # b = 2",
 			result: []comment{"# a = 1", "# b = 2"},
 		},

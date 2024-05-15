@@ -24,7 +24,7 @@ go_library(
     #
     # See following for more info:
     # https://github.com/bazelbuild/bazel-gazelle/issues/1513
-    embedsrcs = ["stdlib_list.txt"],  # keep
+    embedsrcs = ["stdlib_list.txt"],  # keep # TODO: use user-defined version?
     importpath = "github.com/bazelbuild/rules_python/gazelle/python",
     visibility = ["//visibility:public"],
     deps = [
@@ -49,7 +49,7 @@ go_library(
 
 genrule(
     name = "stdlib_list",
-    srcs = ["@python_stdlib_list//file"],
+    srcs = ["@python_stdlib_list_3_11//file"],
     outs = ["stdlib_list.txt"],
     cmd_bash = "cat $(SRCS) > $@",
     cmd_bat = "type $(SRCS) > $@",
@@ -93,7 +93,10 @@ filegroup(
 
 go_test(
     name = "default_test",
-    srcs = ["file_parser_test.go"],
+    srcs = [
+        "file_parser_test.go",
+        "std_modules_test.go",
+    ],
     embed = [":python"],
     deps = [
         "@com_github_stretchr_testify//assert",

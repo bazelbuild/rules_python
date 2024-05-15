@@ -11,6 +11,19 @@ import (
 	"github.com/smacker/go-tree-sitter/python"
 )
 
+const (
+	sitterNodeTypeString              = "string"
+	sitterNodeTypeComment             = "comment"
+	sitterNodeTypeIdentifier          = "identifier"
+	sitterNodeTypeDottedName          = "dotted_name"
+	sitterNodeTypeIfStatement         = "if_statement"
+	sitterNodeTypeAliasedImport       = "aliased_import"
+	sitterNodeTypeWildcardImport      = "wildcard_import"
+	sitterNodeTypeImportStatement     = "import_statement"
+	sitterNodeTypeComparisonOperator  = "comparison_operator"
+	sitterNodeTypeImportFromStatement = "import_from_statement"
+)
+
 type ParserOutput struct {
 	FileName string
 	Modules  []module
@@ -46,20 +59,20 @@ func (p *FileParser) parseMain(ctx context.Context, node *sitter.Node) bool {
 			return false
 		}
 		child := node.Child(i)
-		if child.Type() == "if_statement" && child.Child(1).Type() == "comparison_operator" &&
-			child.Child(1).Child(1).Type() == "==" {
+		if child.Type() == sitterNodeTypeIfStatement &&
+			child.Child(1).Type() == sitterNodeTypeComparisonOperator && child.Child(1).Child(1).Type() == "==" {
 			statement := child.Child(1)
 			a, b := statement.Child(0), statement.Child(2)
 			// convert "'__main__' == __name__" to "__name__ == '__main__'"
-			if b.Type() == "identifier" {
+			if b.Type() == sitterNodeTypeIdentifier {
 				a, b = b, a
 			}
-			if a.Type() == "identifier" && a.Content(p.code) == "__name__" &&
+			if a.Type() == sitterNodeTypeIdentifier && a.Content(p.code) == "__name__" &&
 				// at github.com/smacker/go-tree-sitter@latest (after v0.0.0-20240422154435-0628b34cbf9c we used)
 				// "__main__" is the second child of b. But now, it isn't.
 				// we cannot use the latest go-tree-sitter because of the top level reference in scanner.c.
 				// https://github.com/smacker/go-tree-sitter/blob/04d6b33fe138a98075210f5b770482ded024dc0f/python/scanner.c#L1
-				b.Type() == "string" && string(p.code[b.StartByte()+1:b.EndByte()-1]) == "__main__" {
+				b.Type() == sitterNodeTypeString && string(p.code[b.StartByte()+1:b.EndByte()-1]) == "__main__" {
 				return true
 			}
 		}
@@ -68,14 +81,15 @@ func (p *FileParser) parseMain(ctx context.Context, node *sitter.Node) bool {
 }
 
 func parseImportStatement(node *sitter.Node, code []byte) (module, bool) {
-	if node.Type() == "dotted_name" {
+	switch node.Type() {
+	case sitterNodeTypeDottedName:
 		return module{
 			Name:       node.Content(code),
 			LineNumber: node.StartPoint().Row + 1,
 		}, true
-	} else if node.Type() == "aliased_import" {
+	case sitterNodeTypeAliasedImport:
 		return parseImportStatement(node.Child(0), code)
-	} else if node.Type() == "wildcard_import" {
+	case sitterNodeTypeWildcardImport:
 		return module{
 			Name:       "*",
 			LineNumber: node.StartPoint().Row + 1,
@@ -85,7 +99,7 @@ func parseImportStatement(node *sitter.Node, code []byte) (module, bool) {
 }
 
 func (p *FileParser) parseImportStatements(node *sitter.Node) bool {
-	if node.Type() == "import_statement" {
+	if node.Type() == sitterNodeTypeImportStatement {
 		for j := 1; j < int(node.ChildCount()); j++ {
 			m, ok := parseImportStatement(node.Child(j), p.code)
 			if !ok {
@@ -97,7 +111,7 @@ func (p *FileParser) parseImportStatements(node *sitter.Node) bool {
 			}
 			p.output.Modules = append(p.output.Modules, m)
 		}
-	} else if node.Type() == "import_from_statement" {
+	} else if node.Type() == sitterNodeTypeImportFromStatement {
 		from := node.Child(1).Content(p.code)
 		if strings.HasPrefix(from, ".") {
 			return true
@@ -119,7 +133,7 @@ func (p *FileParser) parseImportStatements(node *sitter.Node) bool {
 }
 
 func (p *FileParser) parseComments(node *sitter.Node) bool {
-	if node.Type() == "comment" {
+	if node.Type() == sitterNodeTypeComment {
 		p.output.Comments = append(p.output.Comments, comment(node.Content(p.code)))
 		return true
 	}
