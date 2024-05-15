@@ -93,6 +93,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 data = mods.data,
                 data_exclude_glob = mods.data_exclude_glob,
                 srcs_exclude_glob = mods.srcs_exclude_glob,
+                extra_targets = mods.extra_targets,
             ))
 
         _whl_mods_repo(
@@ -100,7 +101,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, annotations_map, simpleapi_cache):
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -153,6 +154,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     if hub_name not in whl_map:
         whl_map[hub_name] = {}
+    if hub_name not in annotations_map:
+        annotations_map[hub_name] = {}
 
     whl_modifications = {}
     if pip_attr.whl_modifications != None:
@@ -208,6 +211,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         # to.
         annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
+
+        if annotation:
+            annotations_map[hub_name][annotation] = whl_name
 
         group_name = whl_group_mapping.get(whl_name)
         group_deps = requirement_cycles.get(group_name, [])
@@ -310,7 +316,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 version = major_minor,
                 # Call Label() to canonicalize because its used in a different context
                 config_setting = Label("//python/config_settings:is_python_" + major_minor),
-            ),
+                # extra_targets will be set from the annotations json in _pip_repository_impl
+                extra_targets = [],
+            )
         )
 
 def _pip_impl(module_ctx):
@@ -420,6 +428,7 @@ def _pip_impl(module_ctx):
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
     hub_group_map = {}
+    hub_annotations_map = {}
 
     simpleapi_cache = {}
 
@@ -458,7 +467,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
+            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, hub_annotations_map, simpleapi_cache)
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
@@ -470,6 +479,7 @@ def _pip_impl(module_ctx):
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
             groups = hub_group_map.get(hub_name),
+            whl_annotations = hub_annotations_map.get(hub_name),
         )
 
 def _pip_parse_ext_attrs():
@@ -636,6 +646,11 @@ cannot have a child module that uses the same `hub_name`.
             doc = "The whl name that the modifications are used for.",
             mandatory = True,
         ),
+        "extra_targets": attr.string_list(
+            doc = """\
+(list, optional): Extra labels from additive_build_content to include when rendering pkg aliases.
+""",
+        )
     }
     return attrs
 

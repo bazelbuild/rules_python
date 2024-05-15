@@ -134,6 +134,10 @@ def _render_common_aliases(*, name, aliases, default_version = None, group_name 
             actual = repr(":pkg"),
         ),
     )
+    targets = [DATA_LABEL, DIST_INFO_LABEL]
+    for alias in aliases:
+        targets.extend(alias.extra_targets)
+    targets = {k: None for k in targets}.keys()
     lines.extend(
         [
             _render_whl_library_alias(
@@ -146,9 +150,7 @@ def _render_common_aliases(*, name, aliases, default_version = None, group_name 
             for target_name, name in {
                 PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
                 WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-                DATA_LABEL: DATA_LABEL,
-                DIST_INFO_LABEL: DIST_INFO_LABEL,
-            }.items()
+            }.items() + [(target, target) for target in targets]
         ],
     )
     if group_name:

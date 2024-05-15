@@ -26,15 +26,20 @@ exports_files(["requirements.bzl"])
 
 def _pip_repository_impl(rctx):
     bzl_packages = rctx.attr.whl_map.keys()
-    aliases = render_pkg_aliases(
-        aliases = {
-            key: [whl_alias(**v) for v in json.decode(values)]
-            for key, values in rctx.attr.whl_map.items()
-        },
+    aliases = {
+        key: [whl_alias(**v) for v in json.decode(values)]
+        for key, values in rctx.attr.whl_map.items()
+    }
+    for label, whl in rctx.attr.whl_annotations.items():
+        extra_targets = struct(**json.decode(rctx.read(rctx.path(label)))).extra_targets
+        for alias in aliases[whl]:
+            alias.extra_targets.extend(extra_targets)
+    rendered_aliases = render_pkg_aliases(
+        aliases = aliases,
         default_version = rctx.attr.default_version,
         requirement_cycles = rctx.attr.groups,
     )
-    for path, contents in aliases.items():
+    for path, contents in rendered_aliases.items():
         rctx.file(path, contents)
 
     # NOTE: we are using the canonical name with the double '@' in order to
@@ -82,6 +87,10 @@ setting.""",
 The wheel map where values are json.encoded strings of the whl_map constructed
 in the pip.parse tag class.
 """,
+    ),
+    "whl_annotations": attr.label_keyed_string_dict(
+        mandatory = False,
+        doc = """Map of JSON file annotation label to wheel name. extra_targets to alias are extracted from this.""",
     ),
     "_template": attr.label(
         default = ":requirements.bzl.tmpl",
