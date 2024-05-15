@@ -23,9 +23,7 @@ load("//python:py_binary.bzl", "py_binary")
 load("//python:py_info.bzl", "PyInfo")
 load("//python:py_library.bzl", "py_library")
 load("//python:py_test.bzl", "py_test")
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
 load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
-load("//tests/base_rules:util.bzl", pt_util = "util")
 load(
     "//tests/support:support.bzl",
     "PLATFORM_TOOLCHAIN",

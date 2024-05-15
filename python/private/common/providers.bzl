@@ -55,7 +55,7 @@ def interpreter_version_info_struct_from_dict(info_dict):
         major = _optional_int(info_dict.pop("major", None)),
         minor = _optional_int(info_dict.pop("minor", None)),
         micro = _optional_int(info_dict.pop("micro", None)),
-        releaselevel = str(info_dict.pop("releaselevel")) if info_dict else None,
+        releaselevel = str(info_dict.pop("releaselevel")) if "releaselevel" in info_dict else None,
         serial = _optional_int(info_dict.pop("serial", None)),
     )
 
