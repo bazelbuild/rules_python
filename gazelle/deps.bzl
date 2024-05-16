@@ -25,6 +25,7 @@ def go_repository(name, **kwargs):
         _go_repository(name = name, **kwargs)
 
 def python_stdlib_list_deps():
+    "Fetch python stdlib list dependencies"
     http_file(
         name = "python_stdlib_list_3_8",
         sha256 = "ee6dc367011ff298b906dbaab408940aa57086d5f8f47278f4b7523b9aa13ae3",

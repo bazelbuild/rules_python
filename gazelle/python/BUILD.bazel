@@ -52,11 +52,11 @@ copy_file(
     name = "stdlib_list",
     src = select(
         {
-            "@rules_python//python/config_settings:is_python_3.8": "@python_stdlib_list_3_8//file",
-            "@rules_python//python/config_settings:is_python_3.9": "@python_stdlib_list_3_9//file",
             "@rules_python//python/config_settings:is_python_3.10": "@python_stdlib_list_3_10//file",
             "@rules_python//python/config_settings:is_python_3.11": "@python_stdlib_list_3_11//file",
             "@rules_python//python/config_settings:is_python_3.12": "@python_stdlib_list_3_12//file",
+            "@rules_python//python/config_settings:is_python_3.8": "@python_stdlib_list_3_8//file",
+            "@rules_python//python/config_settings:is_python_3.9": "@python_stdlib_list_3_9//file",
             # This is the same behaviour as previously
             "//conditions:default": "@python_stdlib_list_3_11//file",
         },
