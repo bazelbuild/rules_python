@@ -28,6 +28,12 @@ A brief description of the categories of changes:
 
 ### Fixed
 
+* (gazelle) Remove `visibility` from `NonEmptyAttr`.
+  Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
+  be automatically deleted correctly. For example, if `python_generation_mode`
+  is set to package, when `__init__.py` is deleted, the `py_library` generated
+  for this package before will be deleted automatically.
+
 ### Added
 * (rules) Precompiling Python source at build time is available, but is
   disabled by default, for now. Set
