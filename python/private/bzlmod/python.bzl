@@ -14,6 +14,7 @@
 
 "Python toolchain module extensions for use with bzlmod"
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
 load("//python/private:util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
@@ -229,6 +230,11 @@ def _python_impl(module_ctx):
             name = "rules_python_bzlmod_debug",
             debug_info = json.encode_indent(debug_info),
         )
+
+    if bazel_features.external_deps.extension_metadata_has_reproducible:
+        return module_ctx.extension_metadata(reproducible = True)
+    else:
+        return None
 
 def _fail_duplicate_module_toolchain_version(version, module):
     fail(("Duplicate module toolchain version: module '{module}' attempted " +

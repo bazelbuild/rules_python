@@ -45,7 +45,7 @@ bzl_library(
 
 bzl_library(
     name = "bazel_features_bzl",
-    srcs = ["@bazel_features//:bzl_files"],
+    deps = ["@bazel_features//:features"],
 )
 
 bzl_library(
