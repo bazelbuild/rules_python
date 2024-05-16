@@ -14,17 +14,12 @@
 
 """A simple precompiler to generate deterministic pyc files for Bazel."""
 
+# NOTE: Imports specific to the persistent worker should only be imported
+# when a persistent worker is used. Avoiding the unnecessary imports
+# saves significant startup time for non-worker invocations.
 import argparse
-import asyncio
-import itertools
-import json
-import logging
-import os.path
 import py_compile
 import sys
-import traceback
-
-_logger = logging.getLogger("precompiler")
 
 
 def _create_parser():
@@ -59,12 +54,6 @@ def _compile(options):
         )
 
     for src, src_name, pyc in zip(options.srcs, options.src_names, options.pycs):
-        _logger.info(
-            "precompiling: src=%s, optimize=%s, invalidation=%s",
-            src,
-            options.optimize,
-            invalidation_mode,
-        )
         py_compile.compile(
             src,
             pyc,
@@ -259,6 +248,15 @@ def main(args):
     options = _create_parser().parse_args(args)
 
     if options.persistent_worker:
+        global asyncio, itertools, json, logging, os, traceback, _logger
+        import asyncio
+        import itertools
+        import json
+        import logging
+        import os.path
+        import traceback
+
+        _logger = logging.getLogger("precompiler")
         # Only configure logging for workers. This prevents non-worker
         # invocations from spamming stderr with logging info
         logging.basicConfig(level=getattr(logging, options.log_level))
