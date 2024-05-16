@@ -27,11 +27,12 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
-	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
+
+	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 )
 
 const (
@@ -267,6 +268,23 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					generateImportsAttribute().build()
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
+			}
+		}
+
+		// If we're doing per-file generation, srcs could be empty at this point, meaning we shouldn't make a py_library.
+		// If there is already a package named py_library target before, we should generate an empty py_library.
+		if srcs.Empty() {
+			if args.File == nil {
+				return
+			}
+			generateEmptyLibrary := false
+			for _, r := range args.File.Rules {
+				if r.Kind() == actualPyLibraryKind && r.Name() == pyLibraryTargetName {
+					generateEmptyLibrary = true
+				}
+			}
+			if !generateEmptyLibrary {
+				return
 			}
 		}
 
