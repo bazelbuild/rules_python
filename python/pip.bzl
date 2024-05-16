@@ -262,6 +262,38 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
         pip_parses = pip_parses,
     )
 
+def _whl_filegroup_impl(ctx):
+    out_dir = ctx.actions.declare_directory(ctx.attr.name)
+    ctx.actions.run_shell(
+        outputs = [out_dir],
+        inputs = [ctx.file.whl],
+        tools = [ctx.executable._get_wheel_records_tool],
+        arguments = [ctx.attr.pattern],
+        command = '{tool} {wheel} "$1" | xargs unzip -q -d {out_dir} {wheel}'.format(
+            tool = ctx.executable._get_wheel_records_tool.path,
+            wheel = ctx.file.whl.path,
+            out_dir = out_dir.path,
+        ),
+    )
+    return [DefaultInfo(
+        files = depset([out_dir]),
+        runfiles = ctx.runfiles(files = [out_dir]),
+    )]
+
+whl_filegroup = rule(
+    _whl_filegroup_impl,
+    doc = "Extract files matching a regex pattern from a wheel file.",
+    attrs = {
+        "pattern": attr.string(default = "", doc = "Only files that match this pattern will be extracted."),
+        "whl": attr.label(mandatory = True, allow_single_file = True, doc = "The wheel to extract files from."),
+        "_get_wheel_records_tool": attr.label(
+            default = Label("//python/pip_install/tools/wheel_installer:get_wheel_records"),
+            cfg = "exec",
+            executable = True,
+        ),
+    },
+)
+
 # Extra utilities visible to rules_python users.
 pip_utils = struct(
     normalize_name = normalize_name,

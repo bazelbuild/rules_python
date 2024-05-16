@@ -562,7 +562,7 @@ class Wheel:
         self._path = path
 
     @property
-    def path(self) -> str:
+    def path(self) -> Path:
         return self._path
 
     @property
@@ -582,6 +582,17 @@ class Wheel:
     def version(self) -> str:
         # TODO Also available as installer.sources.WheelSource.version
         return str(self.metadata["Version"])
+
+    @property
+    def record(self) -> dict[str, tuple[str, int]]:
+        with installer.sources.WheelFile.open(self.path) as wheel_source:
+            record_content = wheel_source.read_dist_info("RECORD")
+        return {
+            file: (filehash, int(filelen))
+            for line in record_content.splitlines()
+            for file, filehash, filelen in [line.split(",")]
+            if filehash  # Skip RECORD itself, which has no hash or length
+        }
 
     def entry_points(self) -> Dict[str, Tuple[str, str]]:
         """Returns the entrypoints defined in the current wheel
