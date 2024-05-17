@@ -41,10 +41,8 @@ const (
 	gazelleBinaryName = "gazelle_binary"
 )
 
-var gazellePath string
-
 func TestGazelleBinary(t *testing.T) {
-	gazellePath = mustFindGazelle()
+	gazellePath := mustFindGazelle()
 	tests := map[string][]bazel.RunfileEntry{}
 
 	runfiles, err := bazel.ListRunfiles()
@@ -67,13 +65,12 @@ func TestGazelleBinary(t *testing.T) {
 	if len(tests) == 0 {
 		t.Fatal("no tests found")
 	}
-
 	for testName, files := range tests {
-		testPath(t, testName, files)
+		testPath(t, gazellePath, testName, files)
 	}
 }
 
-func testPath(t *testing.T, name string, files []bazel.RunfileEntry) {
+func testPath(t *testing.T, gazellePath, name string, files []bazel.RunfileEntry) {
 	t.Run(name, func(t *testing.T) {
 		t.Parallel()
 		var inputs, goldens []testtools.FileSpec

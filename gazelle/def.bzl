@@ -15,13 +15,5 @@
 """This module contains the Gazelle runtime dependencies for the Python extension.
 """
 
-load("@bazel_skylib//lib:modules.bzl", "modules")
-load(":deps.bzl", "python_stdlib_list_deps")
-
 GAZELLE_PYTHON_RUNTIME_DEPS = [
 ]
-
-non_module_deps = modules.as_extension(
-    python_stdlib_list_deps,
-    doc = "This extension registers python stdlib list dependencies.",
-)
