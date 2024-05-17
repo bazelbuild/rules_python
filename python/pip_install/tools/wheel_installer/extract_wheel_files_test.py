@@ -1,16 +1,15 @@
+import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.tools.wheel_installer import get_wheel_records, wheel
+from python.pip_install.tools.wheel_installer import extract_wheel_files
 
-_WHEEL = wheel.Wheel(
-    Path("examples/wheel/example_minimal_package-0.0.1-py3-none-any.whl")
-)
+_WHEEL = Path("examples/wheel/example_minimal_package-0.0.1-py3-none-any.whl")
 
 
 class WheelRecordTest(unittest.TestCase):
     def test_get_wheel_record(self) -> None:
-        record = _WHEEL.record
+        record = extract_wheel_files.get_record(_WHEEL)
         expected = {
             "examples/wheel/lib/data.txt": (
                 "sha256=9vJKEdfLu8bZRArKLroPZJh1XKkK3qFMXiM79MBL2Sg",
@@ -42,9 +41,22 @@ class WheelRecordTest(unittest.TestCase):
 
     def test_get_files(self) -> None:
         pattern = "(examples/wheel/lib/.*\.txt$|.*main)"
-        files = get_wheel_records.get_files(_WHEEL, pattern)
+        record = extract_wheel_files.get_record(_WHEEL)
+        files = extract_wheel_files.get_files(record, pattern)
         expected = ["examples/wheel/lib/data.txt", "examples/wheel/main.py"]
         self.assertEqual(files, expected)
+
+    def test_extract(self) -> None:
+        files = {"examples/wheel/lib/data.txt", "examples/wheel/main.py"}
+        with tempfile.TemporaryDirectory() as tmpdir:
+            outdir = Path(tmpdir)
+            extract_wheel_files.extract_files(_WHEEL, files, outdir)
+            extracted_files = {
+                f.relative_to(outdir).as_posix()
+                for f in outdir.glob("**/*")
+                if f.is_file()
+            }
+        self.assertEqual(extracted_files, files)
 
 
 if __name__ == "__main__":

@@ -264,16 +264,17 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
 
 def _whl_filegroup_impl(ctx):
     out_dir = ctx.actions.declare_directory(ctx.attr.name)
-    ctx.actions.run_shell(
+    ctx.actions.run(
         outputs = [out_dir],
         inputs = [ctx.file.whl],
-        tools = [ctx.executable._get_wheel_records_tool],
-        arguments = [ctx.attr.pattern],
-        command = '{tool} {wheel} "$1" | xargs unzip -q -d {out_dir} {wheel}'.format(
-            tool = ctx.executable._get_wheel_records_tool.path,
-            wheel = ctx.file.whl.path,
-            out_dir = out_dir.path,
-        ),
+        tools = [ctx.executable._extract_wheel_files_tool],
+        arguments = [
+            ctx.file.whl.path,
+            out_dir.path,
+            ctx.attr.pattern,
+        ],
+        executable = ctx.executable._extract_wheel_files_tool,
+        mnemonic = "ExtractWheelFiles",
     )
     return [DefaultInfo(
         files = depset([out_dir]),
@@ -286,8 +287,8 @@ whl_filegroup = rule(
     attrs = {
         "pattern": attr.string(default = "", doc = "Only files that match this pattern will be extracted."),
         "whl": attr.label(mandatory = True, allow_single_file = True, doc = "The wheel to extract files from."),
-        "_get_wheel_records_tool": attr.label(
-            default = Label("//python/pip_install/tools/wheel_installer:get_wheel_records"),
+        "_extract_wheel_files_tool": attr.label(
+            default = Label("//python/pip_install/tools/wheel_installer:extract_wheel_files"),
             cfg = "exec",
             executable = True,
         ),
