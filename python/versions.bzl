@@ -536,6 +536,14 @@ PLATFORMS = {
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
         arch = "ppc64le",
     ),
+    "riscv64-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:riscv64",
+        ],
+        os_name = LINUX_NAME,
+        arch = "riscv64",
+    ),
     "s390x-unknown-linux-gnu": struct(
         compatible_with = [
             "@platforms//os:linux",
