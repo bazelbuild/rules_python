@@ -22,7 +22,7 @@ import py_compile
 import sys
 
 
-def _create_parser():
+def _create_parser() -> "argparse.Namespace":
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
     parser.add_argument("--invalidation_mode")
     parser.add_argument("--optimize", type=int)
@@ -38,7 +38,7 @@ def _create_parser():
     return parser
 
 
-def _compile(options):
+def _compile(options: "argparse.Namespace") -> None:
     try:
         invalidation_mode = getattr(
             py_compile.PycInvalidationMode, options.invalidation_mode.upper()
@@ -65,15 +65,26 @@ def _compile(options):
     return 0
 
 
+# A stub type alias for readability.
+# See the Bazel WorkRequest object definition:
+# https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/worker_protocol.proto
+JsonWorkerRequest = object
+
+# A stub type alias for readability.
+# See the Bazel WorkResponse object definition:
+# https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/worker_protocol.proto
+JsonWorkerResponse = object
+
+
 class _SerialPersistentWorker:
     """Simple, synchronous, serial persistent worker."""
 
-    def __init__(self, instream, outstream):
+    def __init__(self, instream: "typing.TextIO", outstream: "typing.TextIO"):
         self._instream = instream
         self._outstream = outstream
         self._parser = _create_parser()
 
-    def run(self):
+    def run(self) -> None:
         try:
             while True:
                 request = None
@@ -102,13 +113,13 @@ class _SerialPersistentWorker:
         finally:
             _logger.info("Worker shutting down")
 
-    def _get_next_request(self):
+    def _get_next_request(self) -> "object | None":
         line = self._instream.readline()
         if not line:
             return None
         return json.loads(line)
 
-    def _process_request(self, request):
+    def _process_request(self, request: "JsonWorkRequest") -> "JsonWorkResponse | None":
         if request.get("cancel"):
             return None
         options = self._options_from_request(request)
@@ -119,7 +130,9 @@ class _SerialPersistentWorker:
         }
         return response
 
-    def _options_from_request(self, request):
+    def _options_from_request(
+        self, request: "JsonWorkResponse"
+    ) -> "argparse.Namespace":
         options = self._parser.parse_args(request["arguments"])
         if request.get("sandboxDir"):
             prefix = request["sandboxDir"]
@@ -127,7 +140,7 @@ class _SerialPersistentWorker:
             options.pycs = [os.path.join(prefix, v) for v in options.pycs]
         return options
 
-    def _send_response(self, response):
+    def _send_response(self, response: "JsonWorkResponse") -> None:
         self._outstream.write(json.dumps(response) + "\n")
         self._outstream.flush()
 
@@ -135,7 +148,7 @@ class _SerialPersistentWorker:
 class _AsyncPersistentWorker:
     """Asynchronous, concurrent, persistent worker."""
 
-    def __init__(self, reader, writer):
+    def __init__(self, reader: "typing.TextIO", writer: "typing.TextIO"):
         self._reader = reader
         self._writer = writer
         self._parser = _create_parser()
@@ -143,12 +156,14 @@ class _AsyncPersistentWorker:
         self._task_to_request_id = {}
 
     @classmethod
-    async def main(cls, instream, outstream):
+    async def main(cls, instream: "typing.TextIO", outstream: "typing.TextIO") -> None:
         reader, writer = await cls._connect_streams(instream, outstream)
         await cls(reader, writer).run()
 
     @classmethod
-    async def _connect_streams(cls, instream, outstream):
+    async def _connect_streams(
+        cls, instream: "typing.TextIO", outstream: "typing.TextIO"
+    ) -> "tuple[asyncio.StreamReader, asyncio.StreamWriter]":
         loop = asyncio.get_event_loop()
         reader = asyncio.StreamReader()
         protocol = asyncio.StreamReaderProtocol(reader)
@@ -160,7 +175,7 @@ class _AsyncPersistentWorker:
         writer = asyncio.StreamWriter(w_transport, w_protocol, reader, loop)
         return reader, writer
 
-    async def run(self):
+    async def run(self) -> None:
         while True:
             _logger.info("pending requests: %s", len(self._request_id_to_task))
             request = await self._get_next_request()
@@ -172,19 +187,19 @@ class _AsyncPersistentWorker:
             self._task_to_request_id[task] = request_id
             task.add_done_callback(self._handle_task_done)
 
-    async def _get_next_request(self):
+    async def _get_next_request(self) -> "JsonWorkRequest":
         _logger.debug("awaiting line")
         line = await self._reader.readline()
         _logger.debug("recv line: %s", line)
         return json.loads(line)
 
-    def _handle_task_done(self, task):
+    def _handle_task_done(self, task: "asyncio.Task") -> None:
         request_id = self._task_to_request_id[task]
         _logger.info("task done: %s %s", request_id, task)
         del self._task_to_request_id[task]
         del self._request_id_to_task[request_id]
 
-    async def _process_request(self, request):
+    async def _process_request(self, request: "JsonWorkRequest") -> None:
         _logger.info("request %s: start: %s", request.get("requestId"), request)
         try:
             if request.get("cancel", False):
@@ -210,7 +225,7 @@ class _AsyncPersistentWorker:
                 }
             )
 
-    async def _process_cancel_request(self, request):
+    async def _process_cancel_request(self, request: "JsonWorkRequest") -> None:
         request_id = request.get("requestId", 0)
         task = self._request_id_to_task.get(request_id)
         if not task:
@@ -220,7 +235,7 @@ class _AsyncPersistentWorker:
         task.cancel()
         self._send_response({"requestId": request_id, "wasCancelled": True})
 
-    async def _process_compile_request(self, request):
+    async def _process_compile_request(self, request: "JsonWorkRequest") -> None:
         options = self._options_from_request(request)
         # _compile performs a varity of blocking IO calls, so run it separately
         await asyncio.to_thread(_compile, options)
@@ -231,7 +246,7 @@ class _AsyncPersistentWorker:
             }
         )
 
-    def _options_from_request(self, request):
+    def _options_from_request(self, request: "JsonWorkRequest") -> "argparse.Namespace":
         options = self._parser.parse_args(request["arguments"])
         if request.get("sandboxDir"):
             prefix = request["sandboxDir"]
@@ -239,14 +254,19 @@ class _AsyncPersistentWorker:
             options.pycs = [os.path.join(prefix, v) for v in options.pycs]
         return options
 
-    def _send_response(self, response):
+    def _send_response(self, response: "JsonWorkResponse") -> None:
         _logger.info("request %s: respond: %s", response.get("requestId"), response)
         self._writer.write(json.dumps(response).encode("utf8") + b"\n")
 
 
-def main(args):
+def main(args: "list[str]") -> int:
     options = _create_parser().parse_args(args)
 
+    # Persistent workers are started with the `--persistent_worker` flag.
+    # See the following docs for details on persistent workers:
+    # https://bazel.build/remote/persistent
+    # https://bazel.build/remote/multiplex
+    # https://bazel.build/remote/creating
     if options.persistent_worker:
         global asyncio, itertools, json, logging, os, traceback, _logger
         import asyncio

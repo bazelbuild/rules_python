@@ -63,3 +63,28 @@ implementation. If you find it has bugs or hangs, please report them. In the
 meantime, the flag `--worker_extra_flag=PyPrecompile=--worker_impl=serial` can
 be used to switch to a synchronous/serial implementation that may not perform
 as well, but is less likely to have issues.
+
+The `execution_requirements` keys of most relevance are:
+* `supports-workers`: 1 or 0, to indicate if a regular persistent worker is
+  desired.
+* `supports-multiplex-workers`: 1 o 0, to indicate if a multiplexed persistent
+  worker is desired.
+* `requires-worker-protocol`: json or proto; the rules_python precompiler
+  currently only supports json.
+* `supports-multiplex-sandboxing`: 1 or 0, to indicate if sanboxing is of the
+  worker is supported.
+* `supports-worker-cancellation`: 1 or 1, to indicate if requests to the worker
+  can be cancelled.
+
+Note that any execution requirements values can be specified in the flag.
+
+## Known issues, caveats, and idiosyncracies
+
+* Precompiled files may not be used in certain cases prior to Python 3.11. This
+  occurs due Python adding the directory of the binary's main `.py` file, which
+  causes the module to be found in the workspace source directory instead of
+  within the binary's runfiles directory (where the pyc files are).
+* The pyc filename does not include the optimization level (e.g.
+  `foo.cpython-39.opt-2.pyc`). This works fine (it's all byte code), but also
+  means the interpreter `-O` argument can't be used -- doing so will cause the
+  interpreter to look for the non-existent `opt-N` named files.
