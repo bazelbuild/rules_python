@@ -33,6 +33,8 @@ A brief description of the categories of changes:
 
 ### Added
 
+* (toolchains) Added riscv64 platform definition for python toolchains.
+
 ## [0.32.2] - 2024-05-14
 
 [0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2
