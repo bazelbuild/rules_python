@@ -19,6 +19,35 @@ A brief description of the categories of changes:
 
 ## Unreleased
 
+[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
+
+### Changed
+
+### Fixed
+
+* (gazelle) Remove `visibility` from `NonEmptyAttr`.
+  Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
+  be automatically deleted correctly. For example, if `python_generation_mode`
+  is set to package, when `__init__.py` is deleted, the `py_library` generated
+  for this package before will be deleted automatically.
+
+### Added
+
+## [0.32.2] - 2024-05-14
+
+[0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2
+
+### Fixed
+
+* Workaround existence of infinite symlink loops on case insensitive filesystems when targeting linux platforms with recent Python toolchains. Works around an upstream [issue][indygreg-231]. Fixes [#1800][rules_python_1800].
+
+[indygreg-231]: https://github.com/indygreg/python-build-standalone/issues/231
+[rules_python_1800]: https://github.com/bazelbuild/rules_python/issues/1800
+
+## [0.32.0] - 2024-05-12
+
+[0.32.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.0
+
 ### Changed
 
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now
@@ -29,12 +58,23 @@ A brief description of the categories of changes:
   non-blocking downloads.
 * (deps): Bumped `bazel_skylib` to 1.6.1
 * (deps): Updated `pip_tools` to >= 7.4.0
+* (toolchains): Change some old toolchain versions to use [20240224] release to
+  include security fixes `3.8.18`, `3.9.18` and `3.10.13`
+* (toolchains): Bump default toolchain versions to:
+    * `3.8 -> 3.8.19`
+    * `3.9 -> 3.9.19`
+    * `3.10 -> 3.10.14`
+    * `3.11 -> 3.11.9`
+    * `3.12 -> 3.12.3`
 
 ### Fixed
 
 * (whl_library): Fix the experimental_target_platforms overriding for platform
   specific wheels when the wheels are for any python interpreter version. Fixes
   [#1810](https://github.com/bazelbuild/rules_python/issues/1810).
+* (whl_library): Stop generating duplicate dependencies when encountering
+  duplicates in the METADATA. Fixes
+  [#1873](https://github.com/bazelbuild/rules_python/issues/1873).
 * (gazelle) In `project` or `package` generation modes, do not generate `py_test`
   rules when there are no test files and do not set `main = "__test__.py"` when
   that file doesn't exist.
@@ -51,9 +91,9 @@ A brief description of the categories of changes:
 ### Added
 
 * (toolchains) Added armv7 platform definition for python toolchains.
-
-* New Python versions available: `3.11.8`, `3.12.2` using
-  https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+* (toolchains) New Python versions available: `3.11.8`, `3.12.2` using the [20240224] release.
+* (toolchains) New Python versions available: `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`, `3.12.3` using
+  the [20240415] release.
 * (gazelle) Added a new `python_visibility` directive to control visibility
   of generated targets by appending additional visibility labels.
 * (gazelle) Added a new `python_default_visibility` directive to control the
@@ -85,10 +125,11 @@ A brief description of the categories of changes:
   depend on legacy labels instead of the hub repo aliases and you use the
   `experimental_requirement_cycles`, now is a good time to migrate.
 
-[0.XX.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.XX.0
 [python_default_visibility]: gazelle/README.md#directive-python_default_visibility
 [test_file_pattern_issue]: https://github.com/bazelbuild/rules_python/issues/1816
 [test_file_pattern_docs]: gazelle/README.md#directive-python_test_file_pattern
+[20240224]: https://github.com/indygreg/python-build-standalone/releases/tag/20240224.
+[20240415]: https://github.com/indygreg/python-build-standalone/releases/tag/20240415.
 
 
 ## [0.31.0] - 2024-02-12
