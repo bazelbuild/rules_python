@@ -30,6 +30,7 @@ filegroup(
         "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
+        "//python/private/whl_filegroup:distribution",
         "//tools/build_defs/python/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
