@@ -645,6 +645,10 @@ def python_register_toolchains(
                 toolchain_repo_name = toolchain_repo_name,
                 platform = platform,
             ))
+            native.register_toolchains("@{toolchain_repo_name}//:{platform}_py_exec_tools_toolchain".format(
+                toolchain_repo_name = toolchain_repo_name,
+                platform = platform,
+            ))
 
     host_toolchain(
         name = name + "_host",

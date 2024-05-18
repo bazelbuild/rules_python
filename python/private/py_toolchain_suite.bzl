@@ -94,3 +94,8 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         target_settings = target_settings,
         exec_compatible_with = kwargs.get("target_compatible_with"),
     )
+
+    # NOTE: When adding a new toolchain, for WORKSPACE builds to see the
+    # toolchain, the name must be added to the native.register_toolchains()
+    # call in python/repositories.bzl. Bzlmod doesn't need anything; it will
+    # register `:all`.
