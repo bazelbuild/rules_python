@@ -80,6 +80,9 @@ Note that any execution requirements values can be specified in the flag.
 
 ## Known issues, caveats, and idiosyncracies
 
+* Precompiling requires Bazel 7+ with the Pystar rule implementation enabled.
+* Mixing rules_python PyInfo with Bazel builtin PyInfo will result in pyc files
+  being dropped.
 * Precompiled files may not be used in certain cases prior to Python 3.11. This
   occurs due Python adding the directory of the binary's main `.py` file, which
   causes the module to be found in the workspace source directory instead of
