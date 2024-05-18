@@ -59,8 +59,10 @@ the `srcs` of Python targets as required.
         ),
         "_launcher": attr.label(
             cfg = "target",
-            default = "@bazel_tools//tools/launcher:launcher",
-            executable = True,
+            # NOTE: This is an executable, but is only used for Windows. It
+            # can't have executable=True because the backing target is an
+            # empty target for other platforms.
+            default = "//tools/launcher:launcher",
         ),
         "_py_interpreter": attr.label(
             # The configuration_field args are validated when called;
@@ -332,10 +334,11 @@ def _create_windows_exe_launcher(
     launch_info.add(python_binary_path, format = "python_bin_path=%s")
     launch_info.add("1" if use_zip_file else "0", format = "use_zip_file=%s")
 
+    launcher = ctx._launcher[DefaultInfo].files_to_run.executable
     ctx.actions.run(
         executable = ctx.executable._windows_launcher_maker,
-        arguments = [ctx.executable._launcher.path, launch_info, output.path],
-        inputs = [ctx.executable._launcher],
+        arguments = [launcher.path, launch_info, output.path],
+        inputs = [launcher],
         outputs = [output],
         mnemonic = "PyBuildLauncher",
         progress_message = "Creating launcher for %{label}",
