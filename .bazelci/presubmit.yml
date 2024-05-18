@@ -138,6 +138,7 @@ tasks:
     name: "Default test: Mac, Pystar, workspace"
     platform: macos
     build_flags:
+      - "--noenable_bzlmod"
       - "--toolchain_resolution_debug=.*"
   pystar_windows_workspace:
     <<: *reusable_config
