@@ -1,4 +1,4 @@
-"""List files from a wheel's RECORD."""
+"""Extract files from a wheel's RECORD."""
 
 import re
 import sys
