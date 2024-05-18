@@ -5,13 +5,13 @@ module(
     compatibility_level = 1,
 )
 
-# Install rules_python, which allows us to define how bazel should work with python files.
-# See ../bzlmod/MODULE.bazel
+# Install rules_python, which allows us to define how Bazel should work with python files.
+# See ../bzlmod/MODULE.bazel for another example.
 # In the old WORKSPACE file, this would be 4 items:
 #   1.  `load` the http_archive rule
-#   2.  run the http_archive rule, grapping rules_python from github
-#   3.  load the py_repositories target from rules_python
-#   4.  execute py_respositories()
+#   2.  Run the http_archive rule, grabbing rules_python from GitHub
+#   3.  Load the py_repositories target from rules_python
+#   4.  Execute py_respositories()
 # See ../pip_parse/WORKSPACE and ../pip_parse_vendored for more complete examples.
 bazel_dep(name = "rules_python", version = "0.31.0")
 
@@ -25,7 +25,7 @@ local_path_override(
 ### END EXAMPLE-ONLY BLOCK ###
 
 # Gazelle for auto BUILD generation. See
-# ../../gazelle/README.md
+# ../../gazelle/README.md for another example.
 # First install the gazelle config that's specific to python.
 bazel_dep(name = "rules_python_gazelle_plugin", version = "0.31.0")  # same version as rules_python
 
@@ -55,7 +55,7 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
 # Configure how we fetch python dependencies via pip
 pip.parse(
-    # Use the bazel downloader for pulling pypi packages.
+    # Use the Bazel downloader for pulling PyPI packages.
     experimental_index_url = "https://pypi.org/simple",
     # This hub name is what gets used in other BUILD files with `load()`.
     hub_name = "pypi",
