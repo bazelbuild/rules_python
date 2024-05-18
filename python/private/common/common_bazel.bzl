@@ -70,7 +70,6 @@ def maybe_precompile(ctx, srcs):
     # fail, just skip precompiling, as its mostly just an optimization.
     exec_tools_toolchain = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE]
     if exec_tools_toolchain == None or exec_tools_toolchain.exec_tools.precompiler == None:
-        print("==== precompiler toolchain not available, tc=", exec_tools_toolchain)
         precompile = PrecompileAttr.DISABLED
     else:
         precompile = PrecompileAttr.get_effective_value(ctx)
