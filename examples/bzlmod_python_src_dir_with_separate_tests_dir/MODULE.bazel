@@ -66,5 +66,8 @@ pip.parse(
     requirements_lock = "//:requirements.lock",
 )
 
-# Same as WORKSPACE install_deps() - actually install the python deps.
+# Similar to WORKSPACE install_deps(), though the Python package installation doesn't
+# happen immediately.
+# This exposes the repo to be used by the module, and Bazel lazily installs the Python
+# packages that the repo defines.
 use_repo(pip, "pypi")
