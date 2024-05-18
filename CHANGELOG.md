@@ -23,6 +23,11 @@ A brief description of the categories of changes:
 
 ### Changed
 
+* (deps): Bumped `bazel_skylib` to 1.6.1.
+* (bzlmod): The `python` and internal `rules_python` extensions have been
+  marked as `reproducible` and will not include any lock file entries from now
+  on.
+
 ### Fixed
 
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
@@ -54,7 +59,7 @@ A brief description of the categories of changes:
   sorted in the attributes section. We are also removing values that are not
   default in order to reduce the size of the lock file.
 * (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
-* (deps): Bumped bazel_features to 1.9.1 to detect optional support
+* (deps): Bumped `bazel_features` to 1.9.1 to detect optional support
   non-blocking downloads.
 * (deps): Updated `pip_tools` to >= 7.4.0
 * (toolchains): Change some old toolchain versions to use [20240224] release to
