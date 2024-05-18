@@ -137,7 +137,7 @@ tasks:
     <<: *pystar_base
     name: "Default test: Mac, Pystar, workspace"
     platform: macos
-    test_flags:
+    build_flags:
       - "--toolchain_resolution_debug=.*"
   pystar_windows_workspace:
     <<: *reusable_config
