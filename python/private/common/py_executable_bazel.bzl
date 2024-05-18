@@ -334,7 +334,7 @@ def _create_windows_exe_launcher(
     launch_info.add(python_binary_path, format = "python_bin_path=%s")
     launch_info.add("1" if use_zip_file else "0", format = "use_zip_file=%s")
 
-    launcher = ctx._launcher[DefaultInfo].files_to_run.executable
+    launcher = ctx.attr._launcher[DefaultInfo].files_to_run.executable
     ctx.actions.run(
         executable = ctx.executable._windows_launcher_maker,
         arguments = [launcher.path, launch_info, output.path],
