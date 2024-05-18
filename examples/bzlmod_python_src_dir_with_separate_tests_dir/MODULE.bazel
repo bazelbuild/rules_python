@@ -6,7 +6,7 @@ module(
 )
 
 # Install rules_python, which allows us to define how bazel should work with python files.
-# See https://github.com/bazelbuild/rules_python/blob/main/examples/bzlmod/MODULE.bazel
+# See ../bzlmod/MODULE.bazel
 # In the old WORKSPACE file, this would be 4 items:
 #   1.  `load` the http_archive rule
 #   2.  run the http_archive rule, grapping rules_python from github
@@ -24,7 +24,7 @@ local_path_override(
 ### END EXAMPLE-ONLY BLOCK ###
 
 # Gazelle for auto BUILD generation. See
-# https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# ../../gazelle/README.md
 # First install the gazelle config that's specific to python.
 bazel_dep(name = "rules_python_gazelle_plugin", version = "0.31.0")  # same version as rules_python
 
