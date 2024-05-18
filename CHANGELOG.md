@@ -22,6 +22,9 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
+  `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
+  tools.
 
 * (deps): Bumped `bazel_skylib` to 1.6.1.
 * (bzlmod): The `python` and internal `rules_python` extensions have been
@@ -37,6 +40,28 @@ A brief description of the categories of changes:
   for this package before will be deleted automatically.
 
 ### Added
+* (rules) Precompiling Python source at build time is available. but is
+  disabled by default, for now. Set
+  `@rules_python//python/config_settings:precompile=enabled` to enable it
+  by default. A subsequent release will enable it by default. See the
+  [Precompiling docs][precompile-docs] and API reference docs for more
+  information on precompiling. Note this requires Bazel 7+ and the Pystar rule
+  implementation enabled.
+  ([#1761](https://github.com/bazelbuild/rules_python/issues/1761))
+* (rules) Attributes and flags to control precompile behavior: `precompile`,
+  `precompile_optimize_level`, `precompile_source_retention`,
+  `precompile_invalidation_mode`, and `pyc_collection`
+* (toolchains) The target runtime toolchain (`//python:toolchain_type`) has
+  two new optional attributes: `pyc_tag` (tells the pyc filename infix to use) and
+  `implementation_name` (tells the Python implementation name).
+* (toolchains) A toolchain type for build tools has been added:
+  `//python:exec_tools_toolchain_type`.
+* (providers) `PyInfo` has two new attributes: `direct_pyc_files` and
+  `transitive_pyc_files`, which tell the pyc files a target makes available
+  directly and transitively, respectively.
+* `//python:features.bzl` added to allow easy feature-detection in the future.
+
+[precompile-docs]: /precompiling
 
 ## [0.32.2] - 2024-05-14
 
