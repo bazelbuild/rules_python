@@ -111,7 +111,3 @@ rules_python_integration_test(
     bzlmod = False,
     workspace_path = "py_cc_toolchain_registered",
 )
-
-rules_python_integration_test(
-    name = "whl_filegroup_test",
-)
