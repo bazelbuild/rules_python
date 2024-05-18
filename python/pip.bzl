@@ -25,10 +25,12 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
+load("//python/private/whl_filegroup:whl_filegroup.bzl", _whl_filegroup = "whl_filegroup")
 
 compile_pip_requirements = _compile_pip_requirements
 package_annotation = _package_annotation
 pip_parse = pip_repository
+whl_filegroup = _whl_filegroup
 
 def _multi_pip_parse_impl(rctx):
     rules_python = rctx.attr._rules_python_workspace.workspace_name
@@ -261,39 +263,6 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
         default_version = default_version,
         pip_parses = pip_parses,
     )
-
-def _whl_filegroup_impl(ctx):
-    out_dir = ctx.actions.declare_directory(ctx.attr.name)
-    ctx.actions.run(
-        outputs = [out_dir],
-        inputs = [ctx.file.whl],
-        tools = [ctx.executable._extract_wheel_files_tool],
-        arguments = [
-            ctx.file.whl.path,
-            out_dir.path,
-            ctx.attr.pattern,
-        ],
-        executable = ctx.executable._extract_wheel_files_tool,
-        mnemonic = "ExtractWheelFiles",
-    )
-    return [DefaultInfo(
-        files = depset([out_dir]),
-        runfiles = ctx.runfiles(files = [out_dir]),
-    )]
-
-whl_filegroup = rule(
-    _whl_filegroup_impl,
-    doc = "Extract files matching a regex pattern from a wheel file.",
-    attrs = {
-        "pattern": attr.string(default = "", doc = "Only files that match this pattern will be extracted."),
-        "whl": attr.label(mandatory = True, allow_single_file = True, doc = "The wheel to extract files from."),
-        "_extract_wheel_files_tool": attr.label(
-            default = Label("//python/pip_install/tools/wheel_installer:extract_wheel_files"),
-            cfg = "exec",
-            executable = True,
-        ),
-    },
-)
 
 # Extra utilities visible to rules_python users.
 pip_utils = struct(

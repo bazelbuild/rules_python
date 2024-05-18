@@ -26,20 +26,6 @@ py_binary(
     deps = [":lib"],
 )
 
-py_binary(
-    name = "extract_wheel_files",
-    srcs = ["extract_wheel_files.py"],
-    visibility = ["//visibility:public"],
-)
-
-py_test(
-    name = "extract_wheel_files_test",
-    size = "small",
-    srcs = ["extract_wheel_files_test.py"],
-    data = ["//examples/wheel:minimal_with_py_package"],
-    deps = [":extract_wheel_files"],
-)
-
 py_test(
     name = "arguments_test",
     size = "small",

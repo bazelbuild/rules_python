@@ -1,0 +1,23 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:defs.bzl", "py_binary", "py_test")
+
+package(default_visibility = ["//:__subpackages__"])
+
+bzl_library(
+    name = "whl_filegroup_bzl",
+    srcs = ["whl_filegroup.bzl"],
+)
+
+py_binary(
+    name = "extract_wheel_files",
+    srcs = ["extract_wheel_files.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "extract_wheel_files_test",
+    size = "small",
+    srcs = ["extract_wheel_files_test.py"],
+    data = ["//examples/wheel:minimal_with_py_package"],
+    deps = [":extract_wheel_files"],
+)

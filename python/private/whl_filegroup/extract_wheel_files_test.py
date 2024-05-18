@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.tools.wheel_installer import extract_wheel_files
+from python.private.whl_filegroup import extract_wheel_files
 
 _WHEEL = Path("examples/wheel/example_minimal_package-0.0.1-py3-none-any.whl")
 
