@@ -13,13 +13,18 @@
 # limitations under the License.
 """Code that support testing of rules_python code."""
 
-# Explicit Label() calls are required so that it resolves in @rules_python
+# NOTE: Explicit Label() calls are required so that it resolves in @rules_python
 # context instead of e.g. the @rules_testing context.
+# NOTE: Some labels require str() around Label() because they are passed onto
+# rules_testing or as config_setting values, which don't support Label in some
+# places.
+
 MAC = Label("//tests/support:mac")
 LINUX = Label("//tests/support:linux")
 WINDOWS = Label("//tests/support:windows")
 
-PLATFORM_TOOLCHAIN = Label("//tests/support:platform_toolchain")
+PLATFORM_TOOLCHAIN = str(Label("//tests/support:platform_toolchain"))
+CC_TOOLCHAIN = str(Label("//tests/cc:all"))
 
 # str() around Label() is necessary because rules_testing's config_settings
 # doesn't accept yet Label objects.

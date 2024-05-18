@@ -26,11 +26,14 @@ load("//python:py_test.bzl", "py_test")
 load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load(
     "//tests/support:support.bzl",
+    "CC_TOOLCHAIN",
     "PLATFORM_TOOLCHAIN",
     "PRECOMPILE",
     "PRECOMPILE_ADD_TO_RUNFILES",
     "PRECOMPILE_SOURCE_RETENTION",
 )
+
+_TEST_TOOLCHAINS = [PLATFORM_TOOLCHAIN, CC_TOOLCHAIN]
 
 _tests = []
 
@@ -57,7 +60,7 @@ def _test_precompile_enabled_setup(name, py_rule, **kwargs):
         impl = _test_precompile_enabled_impl,
         target = name + "_subject",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
         },
     )
 
@@ -114,7 +117,7 @@ def _test_pyc_only(name):
         name = name,
         impl = _test_pyc_only_impl,
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             ##PRECOMPILE_SOURCE_RETENTION: "omit_source",
         },
         target = name + "_subject",
@@ -157,7 +160,7 @@ def _test_precompile_if_generated(name):
         impl = _test_precompile_if_generated_impl,
         target = name + "_subject",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
         },
     )
 
@@ -198,7 +201,7 @@ def _test_omit_source_if_generated_source(name):
         impl = _test_omit_source_if_generated_source_impl,
         target = name + "_subject",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             PRECOMPILE_SOURCE_RETENTION: "omit_if_generated_source",
         },
     )
@@ -246,7 +249,7 @@ def _test_precompile_add_to_runfiles_decided_elsewhere(name):
             "library": name + "_lib",
         },
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             PRECOMPILE_ADD_TO_RUNFILES: "decided_elsewhere",
             PRECOMPILE: "enabled",
         },
@@ -284,7 +287,7 @@ def _test_precompiler_action(name):
         impl = _test_precompiler_action_impl,
         target = name + "_subject",
         config_settings = {
-            "//command_line_option:extra_toolchains": [str(PLATFORM_TOOLCHAIN)],
+            "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
         },
     )
 

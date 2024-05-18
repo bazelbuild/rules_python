@@ -83,7 +83,9 @@ Note that any execution requirements values can be specified in the flag.
 * Precompiled files may not be used in certain cases prior to Python 3.11. This
   occurs due Python adding the directory of the binary's main `.py` file, which
   causes the module to be found in the workspace source directory instead of
-  within the binary's runfiles directory (where the pyc files are).
+  within the binary's runfiles directory (where the pyc files are). This can
+  usually be worked around by removing `sys.path[0]` (or otherwise ensuring the
+  runfiles directory comes before the repos source directory in `sys.path`).
 * The pyc filename does not include the optimization level (e.g.
   `foo.cpython-39.opt-2.pyc`). This works fine (it's all byte code), but also
   means the interpreter `-O` argument can't be used -- doing so will cause the
