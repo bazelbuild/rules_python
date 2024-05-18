@@ -262,7 +262,13 @@ def filter_to_py_srcs(srcs):
     return [f for f in srcs if f.extension == "py"]
 
 def collect_imports(ctx, semantics):
-    return depset(direct = semantics.get_imports(ctx), transitive = [
+    if hasattr(ctx.attr, "_runfiles"):
+        # Executable rules have a private _runfiles attribute so they can pull
+        # in the runfiles library.
+        base = [ctx.attr._runfiles[PyInfo].imports]
+    else:
+        base = []
+    return depset(direct = semantics.get_imports(ctx), transitive = base + [
         dep[PyInfo].imports
         for dep in ctx.attr.deps
         if PyInfo in dep
