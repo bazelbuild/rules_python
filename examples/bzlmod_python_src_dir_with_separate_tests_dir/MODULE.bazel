@@ -12,6 +12,7 @@ module(
 #   2.  run the http_archive rule, grapping rules_python from github
 #   3.  load the py_repositories target from rules_python
 #   4.  execute py_respositories()
+# See ../pip_parse/WORKSPACE and ../pip_parse_vendored for more complete examples.
 bazel_dep(name = "rules_python", version = "0.31.0")
 
 ### THIS BLOCK IS ONLY REQUIRED FOR EXAMPLES ###
