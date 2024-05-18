@@ -209,6 +209,7 @@ def _precompile(ctx, src, *, use_pycache):
             "PYTHONSAFEPATH": "1",  # Helps avoid incorrect import issues
         },
         execution_requirements = execution_requirements,
+        toolchain = EXEC_TOOLS_TOOLCHAIN_TYPE,
     )
     return pyc
 
