@@ -8,18 +8,15 @@
 
 "Python toolchain module extension for internal rule use"
 
+load("@bazel_skylib//lib:modules.bzl", "modules")
 load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 
-# buildifier: disable=unused-variable
-def _internal_deps_impl(module_ctx):
+def _internal_deps():
     internal_config_repo(name = "rules_python_internal")
     pip_install_dependencies()
 
-internal_deps = module_extension(
-    doc = "This extension to register internal rules_python dependecies.",
-    implementation = _internal_deps_impl,
-    tag_classes = {
-        "install": tag_class(attrs = dict()),
-    },
+internal_deps = modules.as_extension(
+    _internal_deps,
+    doc = "This extension registers internal rules_python dependencies.",
 )
