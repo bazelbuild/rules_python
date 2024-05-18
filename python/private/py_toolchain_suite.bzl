@@ -83,6 +83,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         **kwargs
     )
 
+    print("==== register exec_tools_toolchain: ts=", target_settings, "kwargs=", kwargs)
     native.toolchain(
         name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
         toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
