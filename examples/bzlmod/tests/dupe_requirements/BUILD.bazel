@@ -11,7 +11,7 @@ py_test(
 
 compile_pip_requirements(
     name = "requirements",
-    src = "requirements.in",
+    srcs = ["requirements.in"],
     requirements_txt = "requirements.txt",
     # This is to make the requirements diff test not run on CI. The content we
     # need in requirements.txt isn't exactly what will be generated.
