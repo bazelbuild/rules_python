@@ -42,6 +42,8 @@ A brief description of the categories of changes:
   version dependency select statements when the `experimental_target_platforms`
   includes the Python ABI. The default python version case within the select is
   also now handled correctly, stabilizing the implementation.
+* (gazelle) Fix Gazelle failing on Windows with
+  "panic: runtime error: invalid memory address or nil pointer dereference"
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
@@ -120,8 +122,6 @@ A brief description of the categories of changes:
   See [#1371](https://github.com/bazelbuild/rules_python/issues/1371).
 * (refactor) The pre-commit developer workflow should now pass `isort` and `black`
   checks (see [#1674](https://github.com/bazelbuild/rules_python/issues/1674)).
-* (gazelle) Fix Gazelle failing on Windows with
-  "panic: runtime error: invalid memory address or nil pointer dereference"
 
 ### Added
 
