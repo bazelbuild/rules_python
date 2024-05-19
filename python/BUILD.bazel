@@ -72,6 +72,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "features_bzl",
+    srcs = ["features.bzl"],
+)
+
+bzl_library(
     name = "packaging_bzl",
     srcs = ["packaging.bzl"],
     deps = [
@@ -290,6 +295,11 @@ alias(
 alias(
     name = "toolchain_type",
     actual = "@bazel_tools//tools/python:toolchain_type",
+)
+
+toolchain_type(
+    name = "exec_tools_toolchain_type",
+    visibility = ["//visibility:public"],
 )
 
 # Definitions for a Python toolchain that, at execution time, attempts to detect

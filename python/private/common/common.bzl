@@ -29,8 +29,6 @@ _coverage_common = coverage_common
 _py_builtins = py_internal
 PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
-TOOLCHAIN_TYPE = "@bazel_tools//tools/python:toolchain_type"
-
 # Extensions without the dot
 _PYTHON_SOURCE_EXTENSIONS = ["py"]
 
@@ -338,7 +336,7 @@ def collect_runfiles(ctx, files):
         collect_default = True,
     )
 
-def create_py_info(ctx, *, direct_sources, imports):
+def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
     """Create PyInfo provider.
 
     Args:
@@ -346,6 +344,7 @@ def create_py_info(ctx, *, direct_sources, imports):
         direct_sources: depset of Files; the direct, raw `.py` sources for the
             target. This should only be Python source files. It should not
             include pyc files.
+        direct_pyc_files: depset of Files; the direct `.pyc` sources for the target.
         imports: depset of strings; the import path values to propagate.
 
     Returns:
@@ -358,6 +357,7 @@ def create_py_info(ctx, *, direct_sources, imports):
     has_py3_only_sources = ctx.attr.srcs_version in ("PY3", "PY3ONLY")
     transitive_sources_depsets = []  # list of depsets
     transitive_sources_files = []  # list of Files
+    transitive_pyc_depsets = [direct_pyc_files]  # list of depsets
     for target in ctx.attr.deps:
         # PyInfo may not be present e.g. cc_library rules.
         if PyInfo in target or BuiltinPyInfo in target:
@@ -366,6 +366,10 @@ def create_py_info(ctx, *, direct_sources, imports):
             uses_shared_libraries = uses_shared_libraries or info.uses_shared_libraries
             has_py2_only_sources = has_py2_only_sources or info.has_py2_only_sources
             has_py3_only_sources = has_py3_only_sources or info.has_py3_only_sources
+
+            # BuiltinPyInfo doesn't have this field.
+            if hasattr(info, "transitive_pyc_files"):
+                transitive_pyc_depsets.append(info.transitive_pyc_files)
         else:
             # TODO(b/228692666): Remove this once non-PyInfo targets are no
             # longer supported in `deps`.
@@ -412,11 +416,17 @@ def create_py_info(ctx, *, direct_sources, imports):
         has_py2_only_sources = has_py2_only_sources,
         has_py3_only_sources = has_py3_only_sources,
         uses_shared_libraries = uses_shared_libraries,
+        direct_pyc_files = direct_pyc_files,
+        transitive_pyc_files = depset(transitive = transitive_pyc_depsets),
     )
 
     # TODO(b/203567235): Set `uses_shared_libraries` field, though the Bazel
     # docs indicate it's unused in Bazel and may be removed.
     py_info = PyInfo(**py_info_kwargs)
+
+    # Remove args that BuiltinPyInfo doesn't support
+    py_info_kwargs.pop("direct_pyc_files")
+    py_info_kwargs.pop("transitive_pyc_files")
     builtin_py_info = BuiltinPyInfo(**py_info_kwargs)
 
     return py_info, deps_transitive_sources, builtin_py_info
