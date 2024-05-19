@@ -16,7 +16,7 @@ package pythonconfig
 
 import (
 	"fmt"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
@@ -126,7 +126,7 @@ type Configs map[string]*Config
 
 // ParentForPackage returns the parent Config for the given Bazel package.
 func (c *Configs) ParentForPackage(pkg string) *Config {
-	dir := filepath.Dir(pkg)
+	dir := path.Dir(pkg)
 	if dir == "." {
 		dir = ""
 	}

@@ -193,5 +193,10 @@ def acceptance_tests():
                 ),
                 python_version = python_version,
                 target_compatible_with = meta.compatible_with,
-                tags = ["acceptance-test"],
+                tags = [
+                    "acceptance-test",
+                    # For some inexplicable reason, these fail locally with
+                    # sandboxing enabled, but not on CI.
+                    "no-sandbox",
+                ],
             )

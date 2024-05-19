@@ -22,16 +22,57 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
+  `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
+  tools.
+* (deps): Bumped `bazel_skylib` to 1.6.1.
+* (bzlmod): The `python` and internal `rules_python` extensions have been
+  marked as `reproducible` and will not include any lock file entries from now
+  on.
 
 ### Fixed
-
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
   Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
   be automatically deleted correctly. For example, if `python_generation_mode`
   is set to package, when `__init__.py` is deleted, the `py_library` generated
   for this package before will be deleted automatically.
+* (whl_library): Use `is_python_config_setting` to correctly handle multi-python
+  version dependency select statements when the `experimental_target_platforms`
+  includes the Python ABI. The default python version case within the select is
+  also now handled correctly, stabilizing the implementation.
+* (gazelle) Fix Gazelle failing on Windows with
+  "panic: runtime error: invalid memory address or nil pointer dereference"
 
 ### Added
+* (rules) Precompiling Python source at build time is available. but is
+  disabled by default, for now. Set
+  `@rules_python//python/config_settings:precompile=enabled` to enable it
+  by default. A subsequent release will enable it by default. See the
+  [Precompiling docs][precompile-docs] and API reference docs for more
+  information on precompiling. Note this requires Bazel 7+ and the Pystar rule
+  implementation enabled.
+  ([#1761](https://github.com/bazelbuild/rules_python/issues/1761))
+* (rules) Attributes and flags to control precompile behavior: `precompile`,
+  `precompile_optimize_level`, `precompile_source_retention`,
+  `precompile_invalidation_mode`, and `pyc_collection`
+* (toolchains) The target runtime toolchain (`//python:toolchain_type`) has
+  two new optional attributes: `pyc_tag` (tells the pyc filename infix to use) and
+  `implementation_name` (tells the Python implementation name).
+* (toolchains) A toolchain type for build tools has been added:
+  `//python:exec_tools_toolchain_type`.
+* (providers) `PyInfo` has two new attributes: `direct_pyc_files` and
+  `transitive_pyc_files`, which tell the pyc files a target makes available
+  directly and transitively, respectively.
+* `//python:features.bzl` added to allow easy feature-detection in the future.
+* (pip) Allow specifying the requirements by (os, arch) and add extra
+  validations when parsing the inputs. This is a non-breaking change for most
+  users unless they have been passing multiple `requirements_*` files together
+  with `extra_pip_args = ["--platform=manylinux_2_4_x86_64"]`, that was an
+  invalid usage previously but we were not failing the build. From now on this
+  is explicitly disallowed.
+
+[precompile-docs]: /precompiling
+
 
 * (toolchains) Added riscv64 platform definition for python toolchains.
 
@@ -56,7 +97,7 @@ A brief description of the categories of changes:
   sorted in the attributes section. We are also removing values that are not
   default in order to reduce the size of the lock file.
 * (coverage) Bump `coverage.py` to [7.4.3](https://github.com/nedbat/coveragepy/blob/master/CHANGES.rst#version-743--2024-02-23).
-* (deps): Bumped bazel_features to 1.9.1 to detect optional support
+* (deps): Bumped `bazel_features` to 1.9.1 to detect optional support
   non-blocking downloads.
 * (deps): Updated `pip_tools` to >= 7.4.0
 * (toolchains): Change some old toolchain versions to use [20240224] release to

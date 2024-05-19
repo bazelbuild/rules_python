@@ -128,8 +128,17 @@ pip.parse(
     ],
     hub_name = "pip",
     python_version = "3.9",
-    requirements_lock = "//:requirements_lock_3_9.txt",
-    requirements_windows = "//:requirements_windows_3_9.txt",
+    # The requirements files for each platform that we want to support.
+    requirements_by_platform = {
+        # Default requirements file for needs to explicitly provide the platforms
+        "//:requirements_lock_3_9.txt": "linux_*,osx_*",
+        # This API allows one to specify additional platforms that the users
+        # configure the toolchains for themselves. In this example we add
+        # `windows_aarch64` to illustrate that `rules_python` won't fail to
+        # process the value, but it does not mean that this example will work
+        # on Windows ARM.
+        "//:requirements_windows_3_9.txt": "windows_x86_64,windows_aarch64",
+    },
     # These modifications were created above and we
     # are providing pip.parse with the label of the mod
     # and the name of the wheel.
@@ -193,14 +202,3 @@ local_path_override(
     module_name = "other_module",
     path = "other_module",
 )
-
-# =====
-# Config for testing duplicate packages in requirements
-# =====
-#
-pip.parse(
-    hub_name = "dupe_requirements",
-    python_version = "3.9",  # Must match whatever is marked is_default=True
-    requirements_lock = "//tests/dupe_requirements:requirements.txt",
-)
-use_repo(pip, "dupe_requirements")

@@ -21,8 +21,8 @@ _tests = []
 
 def _test_simple(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -86,9 +86,9 @@ _tests.append(_test_simple)
 
 def _test_dep_selects(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
-load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/config_settings:config_settings.bzl", "is_python_config_setting")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -113,9 +113,9 @@ filegroup(
             "@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:whl"],
             "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
             "@platforms//os:windows": ["@pypi_win_dep//:whl"],
-            ":is_cp310_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
-            ":is_cp39_anyos_aarch64": ["@pypi_py39_arm_dep//:whl"],
-            ":is_cp39_linux_anyarch": ["@pypi_py39_linux_dep//:whl"],
+            ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
+            ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:whl"],
+            ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:whl"],
             ":is_linux_x86_64": ["@pypi_linux_intel_dep//:whl"],
             "//conditions:default": [],
         },
@@ -147,9 +147,9 @@ py_library(
             "@//python/config_settings:is_python_3.9": ["@pypi_py39_dep//:pkg"],
             "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
             "@platforms//os:windows": ["@pypi_win_dep//:pkg"],
-            ":is_cp310_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
-            ":is_cp39_anyos_aarch64": ["@pypi_py39_arm_dep//:pkg"],
-            ":is_cp39_linux_anyarch": ["@pypi_py39_linux_dep//:pkg"],
+            ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
+            ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:pkg"],
+            ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:pkg"],
             ":is_linux_x86_64": ["@pypi_linux_intel_dep//:pkg"],
             "//conditions:default": [],
         },
@@ -158,8 +158,9 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-config_setting(
-    name = "is_linux_ppc",
+is_python_config_setting(
+    name = "is_python_3.10_linux_ppc",
+    python_version = "3.10",
     constraint_values = [
         "@platforms//cpu:ppc",
         "@platforms//os:linux",
@@ -167,42 +168,17 @@ config_setting(
     visibility = ["//visibility:private"],
 )
 
-selects.config_setting_group(
-    name = "is_cp310_linux_ppc",
-    match_all = [
-        ":is_linux_ppc",
-        "@//python/config_settings:is_python_3.10",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-config_setting(
-    name = "is_anyos_aarch64",
+is_python_config_setting(
+    name = "is_python_3.9_anyos_aarch64",
+    python_version = "3.9",
     constraint_values = ["@platforms//cpu:aarch64"],
     visibility = ["//visibility:private"],
 )
 
-selects.config_setting_group(
-    name = "is_cp39_anyos_aarch64",
-    match_all = [
-        ":is_anyos_aarch64",
-        "@//python/config_settings:is_python_3.9",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-config_setting(
-    name = "is_linux_anyarch",
+is_python_config_setting(
+    name = "is_python_3.9_linux_anyarch",
+    python_version = "3.9",
     constraint_values = ["@platforms//os:linux"],
-    visibility = ["//visibility:private"],
-)
-
-selects.config_setting_group(
-    name = "is_cp39_linux_anyarch",
-    match_all = [
-        ":is_linux_anyarch",
-        "@//python/config_settings:is_python_3.9",
-    ],
     visibility = ["//visibility:private"],
 )
 
@@ -239,8 +215,8 @@ _tests.append(_test_dep_selects)
 
 def _test_with_annotation(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -327,8 +303,8 @@ _tests.append(_test_with_annotation)
 
 def _test_with_entry_points(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -401,8 +377,8 @@ _tests.append(_test_with_entry_points)
 
 def _test_group_member(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -503,8 +479,8 @@ _tests.append(_test_group_member)
 
 def _test_group_member_deps_to_hub(env):
     want = """\
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 

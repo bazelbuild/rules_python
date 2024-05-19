@@ -37,6 +37,7 @@ bzl_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//python/private:util_bzl",
+        "//python/private/bzlmod:bazel_features_bzl",
         "//python/private/bzlmod:python_bzl",
     ],
 )

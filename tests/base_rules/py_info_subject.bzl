@@ -31,9 +31,11 @@ def py_info_subject(info, *, meta):
     # buildifier: disable=uninitialized
     public = struct(
         # go/keep-sorted start
+        direct_pyc_files = lambda *a, **k: _py_info_subject_direct_pyc_files(self, *a, **k),
         has_py2_only_sources = lambda *a, **k: _py_info_subject_has_py2_only_sources(self, *a, **k),
         has_py3_only_sources = lambda *a, **k: _py_info_subject_has_py3_only_sources(self, *a, **k),
         imports = lambda *a, **k: _py_info_subject_imports(self, *a, **k),
+        transitive_pyc_files = lambda *a, **k: _py_info_subject_transitive_pyc_files(self, *a, **k),
         transitive_sources = lambda *a, **k: _py_info_subject_transitive_sources(self, *a, **k),
         uses_shared_libraries = lambda *a, **k: _py_info_subject_uses_shared_libraries(self, *a, **k),
         # go/keep-sorted end
@@ -43,6 +45,16 @@ def py_info_subject(info, *, meta):
         meta = meta,
     )
     return public
+
+def _py_info_subject_direct_pyc_files(self):
+    """Returns a `DepsetFileSubject` for the `direct_pyc_files` attribute.
+
+    Method: PyInfoSubject.direct_pyc_files
+    """
+    return subjects.depset_file(
+        self.actual.direct_pyc_files,
+        meta = self.meta.derive("direct_pyc_files()"),
+    )
 
 def _py_info_subject_has_py2_only_sources(self):
     """Returns a `BoolSubject` for the `has_py2_only_sources` attribute.
@@ -72,6 +84,16 @@ def _py_info_subject_imports(self):
     return subjects.collection(
         self.actual.imports.to_list(),
         meta = self.meta.derive("imports()"),
+    )
+
+def _py_info_subject_transitive_pyc_files(self):
+    """Returns a `DepsetFileSubject` for the `transitive_pyc_files` attribute.
+
+    Method: PyInfoSubject.transitive_pyc_files
+    """
+    return subjects.depset_file(
+        self.actual.transitive_pyc_files,
+        meta = self.meta.derive("transitive_pyc_files()"),
     )
 
 def _py_info_subject_transitive_sources(self):

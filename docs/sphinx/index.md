@@ -60,6 +60,7 @@ pypi-dependencies
 toolchains
 pip
 coverage
+precompiling
 gazelle
 Contributing <contributing>
 support

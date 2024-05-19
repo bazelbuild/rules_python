@@ -5,7 +5,7 @@ module(
 )
 
 bazel_dep(name = "bazel_features", version = "1.9.1")
-bazel_dep(name = "bazel_skylib", version = "1.3.0")
+bazel_dep(name = "bazel_skylib", version = "1.6.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.4")
 
@@ -14,7 +14,6 @@ bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
 
 internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
-internal_deps.install()
 use_repo(
     internal_deps,
     "rules_python_internal",
@@ -62,9 +61,11 @@ pip.parse(
     experimental_index_url = "https://pypi.org/simple",
     hub_name = "rules_python_publish_deps",
     python_version = "3.11",
-    requirements_darwin = "//tools/publish:requirements_darwin.txt",
-    requirements_lock = "//tools/publish:requirements.txt",
-    requirements_windows = "//tools/publish:requirements_windows.txt",
+    requirements_by_platform = {
+        "//tools/publish:requirements.txt": "linux_*",
+        "//tools/publish:requirements_darwin.txt": "osx_*",
+        "//tools/publish:requirements_windows.txt": "windows_*",
+    },
 )
 use_repo(pip, "rules_python_publish_deps")
 
