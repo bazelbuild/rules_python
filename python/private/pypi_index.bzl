@@ -17,8 +17,6 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@bazel_skylib//lib:sets.bzl", "sets")
-load("//python/pip_install:requirements_parser.bzl", parse_requirements = "parse")
 load(":auth.bzl", "get_auth")
 load(":envsubst.bzl", "envsubst")
 load(":normalize_name.bzl", "normalize_name")
@@ -68,7 +66,7 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
     async_downloads = {}
     contents = {}
     index_urls = [attr.index_url] + attr.extra_index_urls
-    for pkg in get_packages_from_requirements(attr.sources):
+    for pkg in attr.sources:
         pkg_normalized = normalize_name(pkg)
 
         success = False
@@ -203,62 +201,6 @@ def _read_index_result(ctx, result, output, url, cache, cache_key):
         return struct(success = True, output = output, cache_key = cache_key)
     else:
         return struct(success = False)
-
-def get_packages_from_requirements(requirements_files):
-    """Get Simple API sources from a list of requirements files and merge them.
-
-    Args:
-        requirements_files(list[str]): A list of requirements files contents.
-
-    Returns:
-        A list.
-    """
-    want_packages = sets.make()
-    for contents in requirements_files:
-        parse_result = parse_requirements(contents)
-        for distribution, _ in parse_result.requirements:
-            # NOTE: we'll be querying the PyPI servers multiple times if the
-            # requirements contains non-normalized names, but this is what user
-            # is specifying to us.
-            sets.insert(want_packages, distribution)
-
-    return sets.to_list(want_packages)
-
-def get_simpleapi_sources(line):
-    """Get PyPI sources from a requirements.txt line.
-
-    We interpret the spec described in
-    https://pip.pypa.io/en/stable/reference/requirement-specifiers/#requirement-specifiers
-
-    Args:
-        line(str): The requirements.txt entry.
-
-    Returns:
-        A struct with shas attribute containing a list of shas to download from pypi_index.
-    """
-    head, _, maybe_hashes = line.partition(";")
-    _, _, version = head.partition("==")
-    version = version.partition(" ")[0].strip()
-
-    if "@" in head:
-        shas = []
-    else:
-        maybe_hashes = maybe_hashes or line
-        shas = [
-            sha.strip()
-            for sha in maybe_hashes.split("--hash=sha256:")[1:]
-        ]
-
-    if head == line:
-        head = line.partition("--hash=")[0].strip()
-    else:
-        head = head + ";" + maybe_hashes.partition("--hash=")[0].strip()
-
-    return struct(
-        requirement = line if not shas else head,
-        version = version,
-        shas = sorted(shas),
-    )
 
 def parse_simple_api_html(*, url, content):
     """Get the package URLs for given shas by parsing the Simple API HTML.

@@ -16,41 +16,9 @@
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
-load("//python/private:pypi_index.bzl", "get_simpleapi_sources", "parse_simple_api_html")  # buildifier: disable=bzl-visibility
+load("//python/private:pypi_index.bzl", "parse_simple_api_html")  # buildifier: disable=bzl-visibility
 
 _tests = []
-
-def _test_no_simple_api_sources(env):
-    inputs = [
-        "foo==0.0.1",
-        "foo==0.0.1 @ https://someurl.org",
-        "foo==0.0.1 @ https://someurl.org --hash=sha256:deadbeef",
-        "foo==0.0.1 @ https://someurl.org; python_version < 2.7 --hash=sha256:deadbeef",
-    ]
-    for input in inputs:
-        got = get_simpleapi_sources(input)
-        env.expect.that_collection(got.shas).contains_exactly([])
-        env.expect.that_str(got.version).equals("0.0.1")
-
-_tests.append(_test_no_simple_api_sources)
-
-def _test_simple_api_sources(env):
-    tests = {
-        "foo==0.0.2 --hash=sha256:deafbeef    --hash=sha256:deadbeef": [
-            "deadbeef",
-            "deafbeef",
-        ],
-        "foo[extra]==0.0.2; (python_version < 2.7 or something_else == \"@\") --hash=sha256:deafbeef    --hash=sha256:deadbeef": [
-            "deadbeef",
-            "deafbeef",
-        ],
-    }
-    for input, want_shas in tests.items():
-        got = get_simpleapi_sources(input)
-        env.expect.that_collection(got.shas).contains_exactly(want_shas)
-        env.expect.that_str(got.version).equals("0.0.2")
-
-_tests.append(_test_simple_api_sources)
 
 def _generate_html(*items):
     return """\

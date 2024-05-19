@@ -25,14 +25,12 @@ A brief description of the categories of changes:
 * (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
   `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
   tools.
-
 * (deps): Bumped `bazel_skylib` to 1.6.1.
 * (bzlmod): The `python` and internal `rules_python` extensions have been
   marked as `reproducible` and will not include any lock file entries from now
   on.
 
 ### Fixed
-
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
   Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
   be automatically deleted correctly. For example, if `python_generation_mode`
@@ -66,8 +64,15 @@ A brief description of the categories of changes:
   `transitive_pyc_files`, which tell the pyc files a target makes available
   directly and transitively, respectively.
 * `//python:features.bzl` added to allow easy feature-detection in the future.
+* (pip) Allow specifying the requirements by (os, arch) and add extra
+  validations when parsing the inputs. This is a non-breaking change for most
+  users unless they have been passing multiple `requirements_*` files together
+  with `extra_pip_args = ["--platform=manylinux_2_4_x86_64"]`, that was an
+  invalid usage previously but we were not failing the build. From now on this
+  is explicitly disallowed.
 
 [precompile-docs]: /precompiling
+
 
 ## [0.32.2] - 2024-05-14
 
