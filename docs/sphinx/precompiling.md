@@ -1,13 +1,11 @@
 # Precompiling
 
-Precompiling is compiling Python source files (`.py` files) into byte code (`.pyc`
-files) at build
-time instead of runtime. Doing it at build time can improve performance by
-skipping that work at runtime.
+Precompiling is compiling Python source files (`.py` files) into byte code
+(`.pyc` files) at build time instead of runtime. Doing it at build time can
+improve performance by skipping that work at runtime.
 
-Precompiling is enabled by default, so there typically isn't anything special
-you must do to use it.
-
+Precompiling is disabled by default, so you must enable it using flags or
+attributes to use it.
 
 ## Overhead of precompiling
 
