@@ -42,6 +42,8 @@ A brief description of the categories of changes:
   version dependency select statements when the `experimental_target_platforms`
   includes the Python ABI. The default python version case within the select is
   also now handled correctly, stabilizing the implementation.
+* (gazelle) Fix Gazelle failing on Windows with
+  "panic: runtime error: invalid memory address or nil pointer dereference"
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
