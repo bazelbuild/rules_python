@@ -70,11 +70,9 @@ A brief description of the categories of changes:
   with `extra_pip_args = ["--platform=manylinux_2_4_x86_64"]`, that was an
   invalid usage previously but we were not failing the build. From now on this
   is explicitly disallowed.
+* (toolchains) Added riscv64 platform definition for python toolchains.
 
 [precompile-docs]: /precompiling
-
-
-* (toolchains) Added riscv64 platform definition for python toolchains.
 
 ## [0.32.2] - 2024-05-14
 
