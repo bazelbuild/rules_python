@@ -56,7 +56,6 @@ class ArgumentsTestCase(unittest.TestCase):
         parser = arguments.parser()
         args = parser.parse_args(
             args=[
-                "--platform=host",
                 "--platform=linux_*",
                 "--platform=osx_*",
                 "--platform=windows_*",

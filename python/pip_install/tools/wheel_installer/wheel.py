@@ -59,7 +59,7 @@ class Arch(Enum):
     ppc64le = ppc
 
     @classmethod
-    def interpreter(cls) -> "OS":
+    def interpreter(cls) -> "Arch":
         "Return the currently running interpreter architecture."
         # FIXME @aignas 2023-12-13: Hermetic toolchain on Windows 3.11.6
         # is returning an empty string here, so lets default to x86_64
@@ -94,12 +94,6 @@ class Platform:
     arch: Optional[Arch] = None
     minor_version: Optional[int] = None
 
-    def __post_init__(self):
-        if not self.os and not self.arch and not self.minor_version:
-            raise ValueError(
-                "At least one of os, arch, minor_version must be specified"
-            )
-
     @classmethod
     def all(
         cls,
@@ -125,7 +119,13 @@ class Platform:
             A list of parsed values which makes the signature the same as
             `Platform.all` and `Platform.from_string`.
         """
-        return [cls(os=OS.interpreter(), arch=Arch.interpreter())]
+        return [
+            Platform(
+                os=OS.interpreter(),
+                arch=Arch.interpreter(),
+                minor_version=host_interpreter_minor_version(),
+            )
+        ]
 
     def all_specializations(self) -> Iterator["Platform"]:
         """Return the platform itself and all its unambiguous specializations.
@@ -160,9 +160,9 @@ class Platform:
 
     def __str__(self) -> str:
         if self.minor_version is None:
-            assert (
-                self.os is not None
-            ), f"if minor_version is None, OS must be specified, got {repr(self)}"
+            if self.os is None and self.arch is None:
+                return "//conditions:default"
+
             if self.arch is None:
                 return f"@platforms//os:{self.os}"
             else:
@@ -207,6 +207,7 @@ class Platform:
                         minor_version=minor_version,
                     )
                 )
+
             else:
                 ret.update(
                     cls.all(
@@ -252,6 +253,8 @@ class Platform:
             return "Darwin"
         elif self.os == OS.windows:
             return "Windows"
+        else:
+            return ""
 
     # derived from OS and Arch
     @property
@@ -416,7 +419,9 @@ class Deps:
         if len(self._target_versions) < 2:
             return
 
-        platforms = [Platform(minor_version=v) for v in self._target_versions]
+        platforms = [Platform()] + [
+            Platform(minor_version=v) for v in self._target_versions
+        ]
 
         # If the dep is targeting all target python versions, lets add it to
         # the common dependency list to simplify the select statements.
@@ -534,14 +539,22 @@ class Deps:
             ):
                 continue
 
-            if match_arch:
+            if match_arch and self._add_version_select:
+                self._add(req.name, plat)
+                if plat.minor_version == host_interpreter_minor_version():
+                    self._add(req.name, Platform(plat.os, plat.arch))
+            elif match_arch:
                 self._add(req.name, plat)
             elif match_os and self._add_version_select:
                 self._add(req.name, Platform(plat.os, minor_version=plat.minor_version))
+                if plat.minor_version == host_interpreter_minor_version():
+                    self._add(req.name, Platform(plat.os))
             elif match_os:
                 self._add(req.name, Platform(plat.os))
             elif match_version and self._add_version_select:
                 self._add(req.name, Platform(minor_version=plat.minor_version))
+                if plat.minor_version == host_interpreter_minor_version():
+                    self._add(req.name, Platform())
             elif match_version:
                 self._add(req.name, None)
 
