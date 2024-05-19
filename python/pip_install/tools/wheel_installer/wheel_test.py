@@ -1,5 +1,6 @@
 import unittest
 from random import shuffle
+from unittest import mock
 
 from python.pip_install.tools.wheel_installer import wheel
 
@@ -216,22 +217,28 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], py38_deps.deps)
         self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
 
-    def test_can_get_version_select(self):
+    @mock.patch(
+        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+    )
+    def test_can_get_version_select(self, mock_host_interpreter_version):
         requires_dist = [
             "bar",
             "baz; python_version < '3.8'",
+            "baz_new; python_version >= '3.8'",
             "posix_dep; os_name=='posix'",
             "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
         ]
+        mock_host_interpreter_version.return_value = 7
+
+        self.maxDiff = None
 
         deps = wheel.Deps(
             "foo",
             requires_dist=requires_dist,
             platforms=[
-                wheel.Platform(
-                    os=wheel.OS.linux, arch=wheel.Arch.x86_64, minor_version=minor
-                )
+                wheel.Platform(os=os, arch=wheel.Arch.x86_64, minor_version=minor)
                 for minor in [7, 8, 9]
+                for os in [wheel.OS.linux, wheel.OS.windows]
             ],
         )
         got = deps.build()
@@ -239,20 +246,38 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar"], got.deps)
         self.assertEqual(
             {
+                "//conditions:default": ["baz"],
                 "@//python/config_settings:is_python_3.7": ["baz"],
+                "@//python/config_settings:is_python_3.8": ["baz_new"],
+                "@//python/config_settings:is_python_3.9": ["baz_new"],
+                "@platforms//os:linux": ["baz", "posix_dep"],
                 "cp37_linux_anyarch": ["baz", "posix_dep"],
-                "cp38_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
-                "cp39_linux_anyarch": ["posix_dep", "posix_dep_with_version"],
+                "cp38_linux_anyarch": [
+                    "baz_new",
+                    "posix_dep",
+                    "posix_dep_with_version",
+                ],
+                "cp39_linux_anyarch": [
+                    "baz_new",
+                    "posix_dep",
+                    "posix_dep_with_version",
+                ],
             },
             got.deps_select,
         )
 
-    def test_deps_spanning_all_target_py_versions_are_added_to_common(self):
+    @mock.patch(
+        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+    )
+    def test_deps_spanning_all_target_py_versions_are_added_to_common(
+        self, mock_host_version
+    ):
         requires_dist = [
             "bar",
             "baz (<2,>=1.11) ; python_version < '3.8'",
             "baz (<2,>=1.14) ; python_version >= '3.8'",
         ]
+        mock_host_version.return_value = 8
 
         deps = wheel.Deps(
             "foo",
@@ -264,7 +289,12 @@ class DepsTest(unittest.TestCase):
         self.assertEqual(["bar", "baz"], got.deps)
         self.assertEqual({}, got.deps_select)
 
-    def test_deps_are_not_duplicated(self):
+    @mock.patch(
+        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+    )
+    def test_deps_are_not_duplicated(self, mock_host_version):
+        mock_host_version.return_value = 7
+
         # See an example in
         # https://files.pythonhosted.org/packages/76/9e/db1c2d56c04b97981c06663384f45f28950a73d9acf840c4006d60d0a1ff/opencv_python-4.9.0.80-cp37-abi3-win32.whl.metadata
         requires_dist = [
@@ -281,14 +311,21 @@ class DepsTest(unittest.TestCase):
         deps = wheel.Deps(
             "foo",
             requires_dist=requires_dist,
-            platforms=wheel.Platform.from_string(["cp310_*"]),
+            platforms=wheel.Platform.from_string(["cp37_*", "cp310_*"]),
         )
         got = deps.build()
 
         self.assertEqual(["bar"], got.deps)
         self.assertEqual({}, got.deps_select)
 
-    def test_deps_are_not_duplicated_when_encountering_platform_dep_first(self):
+    @mock.patch(
+        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+    )
+    def test_deps_are_not_duplicated_when_encountering_platform_dep_first(
+        self, mock_host_version
+    ):
+        mock_host_version.return_value = 7
+
         # Note, that we are sorting the incoming `requires_dist` and we need to ensure that we are not getting any
         # issues even if the platform-specific line comes first.
         requires_dist = [
@@ -299,7 +336,7 @@ class DepsTest(unittest.TestCase):
         deps = wheel.Deps(
             "foo",
             requires_dist=requires_dist,
-            platforms=wheel.Platform.from_string(["cp310_*"]),
+            platforms=wheel.Platform.from_string(["cp37_*", "cp310_*"]),
         )
         got = deps.build()
 
