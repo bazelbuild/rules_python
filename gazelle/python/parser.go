@@ -101,7 +101,7 @@ func newPython3Parser(
 
 // parseSingle parses a single Python file and returns the extracted modules
 // from the import statements as well as the parsed comments.
-func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, error) {
+func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	pyFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFilenames.Add(pyFilename)
 	return p.parse(pyFilenames)
@@ -109,7 +109,7 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string
 
 // parse parses multiple Python files and returns the extracted modules from
 // the import statements as well as the parsed comments.
-func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, error) {
+func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	parserMutex.Lock()
 	defer parserMutex.Unlock()
 
@@ -122,28 +122,30 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 	}
 	encoder := json.NewEncoder(parserStdin)
 	if err := encoder.Encode(&req); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
 	reader := bufio.NewReader(parserStdout)
 	data, err := reader.ReadBytes(0)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 	data = data[:len(data)-1]
 	var allRes []parserResponse
 	if err := json.Unmarshal(data, &allRes); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to parse: %w", err)
 	}
 
 	mainModules := make(map[string]*treeset.Set, len(allRes))
+	allAnnotations := new(annotations)
+	allAnnotations.ignore = make(map[string]struct{})
 	for _, res := range allRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
 		annotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
+			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
 
 		for _, m := range res.Modules {
@@ -164,9 +166,32 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 				mainModules[res.FileName].Add(m)
 			}
 		}
+
+		// Collect all annotations from each file into a single annotations struct.
+		for k, v := range annotations.ignore {
+			allAnnotations.ignore[k] = v
+		}
+		allAnnotations.includeDeps = append(allAnnotations.includeDeps, annotations.includeDeps...)
 	}
 
-	return modules, mainModules, nil
+	allAnnotations.includeDeps = removeDupesFromStringTreeSetSlice(allAnnotations.includeDeps)
+
+	return modules, mainModules, allAnnotations, nil
+}
+
+// removeDupesFromStringTreeSetSlice takes a []string, makes a set out of the
+// elements, and then returns a new []string with all duplicates removed. Order
+// is preserved.
+func removeDupesFromStringTreeSetSlice(array []string) []string {
+	s := treeset.NewWith(godsutils.StringComparator)
+	for _, v := range array {
+		s.Add(v)
+	}
+	dedupe := make([]string, s.Size())
+	for i, v := range s.Values() {
+		dedupe[i] = fmt.Sprint(v)
+	}
+	return dedupe
 }
 
 // parserResponse represents a response returned by the parser.py for a given
@@ -211,7 +236,8 @@ const (
 	// The Gazelle annotation prefix.
 	annotationPrefix string = "gazelle:"
 	// The ignore annotation kind. E.g. '# gazelle:ignore <module_name>'.
-	annotationKindIgnore annotationKind = "ignore"
+	annotationKindIgnore     annotationKind = "ignore"
+	annotationKindIncludeDep annotationKind = "include_dep"
 )
 
 // comment represents a Python comment.
@@ -247,12 +273,15 @@ type annotation struct {
 type annotations struct {
 	// The parsed modules to be ignored by Gazelle.
 	ignore map[string]struct{}
+	// Labels that Gazelle should include as deps of the generated target.
+	includeDeps []string
 }
 
 // annotationsFromComments returns all the annotations parsed out of the
 // comments of a Python module.
 func annotationsFromComments(comments []comment) (*annotations, error) {
 	ignore := make(map[string]struct{})
+	includeDeps := []string{}
 	for _, comment := range comments {
 		annotation, err := comment.asAnnotation()
 		if err != nil {
@@ -269,10 +298,21 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 					ignore[m] = struct{}{}
 				}
 			}
+			if annotation.kind == annotationKindIncludeDep {
+				targets := strings.Split(annotation.value, ",")
+				for _, t := range targets {
+					if t == "" {
+						continue
+					}
+					t = strings.TrimSpace(t)
+					includeDeps = append(includeDeps, t)
+				}
+			}
 		}
 	}
 	return &annotations{
-		ignore: ignore,
+		ignore:      ignore,
+		includeDeps: includeDeps,
 	}, nil
 }
 

@@ -20,7 +20,7 @@ load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
-load("//tests/support:test_platforms.bzl", "WINDOWS")
+load("//tests/support:support.bzl", "WINDOWS")
 
 _BuiltinPyRuntimeInfo = PyRuntimeInfo
 
