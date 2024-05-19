@@ -42,6 +42,8 @@ A brief description of the categories of changes:
   also now handled correctly, stabilizing the implementation.
 * (gazelle) Fix Gazelle failing on Windows with
   "panic: runtime error: invalid memory address or nil pointer dereference"
+* (bzlmod) remove `pip.parse(annotations)` attribute as it is unused and has been
+  replaced by whl_modifications.
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
