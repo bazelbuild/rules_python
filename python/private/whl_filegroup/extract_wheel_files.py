@@ -42,7 +42,7 @@ def extract_files(whl_path: Path, files: Iterable[str], outdir: Path) -> None:
 
 
 def main() -> None:
-    if 3 < len(sys.argv) < 3:
+    if len(sys.argv) not in {3, 4}:
         print(
             f"Usage: {sys.argv[0]} <wheel> <out_dir> [regex_pattern]",
             file=sys.stderr,
