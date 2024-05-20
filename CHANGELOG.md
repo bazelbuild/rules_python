@@ -80,6 +80,9 @@ A brief description of the categories of changes:
 
 [precompile-docs]: /precompiling
 
+* (whl_filegroup) Added a new `whl_filegroup` rule to extract files from a wheel file.
+  This is useful to extract headers for use in a `cc_library`.
+
 ## [0.32.2] - 2024-05-14
 
 [0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2

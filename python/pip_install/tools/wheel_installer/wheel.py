@@ -575,7 +575,7 @@ class Wheel:
         self._path = path
 
     @property
-    def path(self) -> str:
+    def path(self) -> Path:
         return self._path
 
     @property
