@@ -4,6 +4,10 @@ load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
 load("//python:pip.bzl", "whl_filegroup")
 
+load(":whl_filegroup_tests.bzl", "whl_filegroup_test_suite")
+
+whl_filegroup_test_suite(name = "whl_filegroup_tests")
+
 py_test(
     name = "extract_wheel_files_test",
     size = "small",
@@ -49,7 +53,7 @@ py_wheel(
 whl_filegroup(
     name = "filegroup",
     pattern = "tests/whl_filegroup/include/.*\\.h",
-    whl = "wheel",
+    whl = ":wheel",
 )
 
 cc_library(
