@@ -34,16 +34,11 @@ local_repository(
     path = "..",
 )
 
-load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
+load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
-python_register_toolchains(
-    name = "python_3_11",
-    python_version = "3.11",
-)
-
 load("//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
-# gazelle:repository_macro deps.bzl%gazelle_deps
+# gazelle:repository_macro deps.bzl%go_deps
 _py_gazelle_deps()

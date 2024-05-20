@@ -15,18 +15,13 @@
 package python
 
 import (
-	"github.com/bazelbuild/bazel-gazelle/language"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// Python satisfies the language.Language interface. It is the Gazelle extension
-// for Python rules.
-type Python struct {
-	Configurer
-	Resolver
-}
-
-// NewLanguage initializes a new Python that satisfies the language.Language
-// interface. This is the entrypoint for the extension initialization.
-func NewLanguage() language.Language {
-	return &Python{}
+func TestIsStdModule(t *testing.T) {
+	assert.True(t, isStdModule(module{Name: "unittest"}))
+	assert.True(t, isStdModule(module{Name: "os.path"}))
+	assert.False(t, isStdModule(module{Name: "foo"}))
 }

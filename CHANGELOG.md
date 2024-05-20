@@ -30,6 +30,10 @@ A brief description of the categories of changes:
   marked as `reproducible` and will not include any lock file entries from now
   on.
 
+* (gazelle): Remove gazelle plugin's python deps and make it hermetic. 
+  Introduced a new Go-based helper leveraging tree-sitter for syntax analysis.
+  Implemented the use of `pypi/stdlib-list` for standard library module verification.
+
 ### Fixed
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
   Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
