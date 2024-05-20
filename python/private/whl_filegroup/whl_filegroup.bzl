@@ -46,8 +46,8 @@ cc_library(
 """,
     attrs = {
         "pattern": attr.string(default = "", doc = "Only file paths matching this regex pattern will be extracted."),
-        "whl": attr.label(mandatory = True, allow_single_file = True, doc = "The wheel to extract files from."),
         "runfiles": attr.bool(default = False, doc = "Whether to include the output TreeArtifact in this target's runfiles."),
+        "whl": attr.label(mandatory = True, allow_single_file = True, doc = "The wheel to extract files from."),
         "_extract_wheel_files_tool": attr.label(
             default = Label("//python/private/whl_filegroup:extract_wheel_files"),
             cfg = "exec",

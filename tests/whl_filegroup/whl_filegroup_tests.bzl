@@ -16,8 +16,8 @@ def _test_runfiles(name):
         name = name,
         impl = _test_runfiles_impl,
         targets = {
-            "with_runfiles": name + "_subject_runfiles_True",
             "no_runfiles": name + "_subject_runfiles_False",
+            "with_runfiles": name + "_subject_runfiles_True",
         },
     )
 
