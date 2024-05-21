@@ -9,7 +9,7 @@
 
 Module documentation
 
-:::{bzl:function} myfunc(foo, bar=False, baz=[]) -> FooObj
+::::::{bzl:function} myfunc(foo, bar=False, baz=[]) -> FooObj
 
 This is a bazel function.
 
@@ -34,7 +34,12 @@ This is a bazel function.
   {bzl:return-type}`list | int`
   description
 
+:::{deprecated} unspecified
+
+Some doc about the deprecation
 :::
+
+::::::
 
 :::{bzl:function} mylongfunc(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
 

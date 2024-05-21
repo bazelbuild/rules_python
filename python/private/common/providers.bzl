@@ -283,11 +283,15 @@ def _PyCcLinkParamsProvider_init(cc_info):
 
 # buildifier: disable=name-conventions
 PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = _define_provider(
-    doc = ("Python-wrapper to forward CcInfo.linking_context. This is to " +
+    doc = ("Python-wrapper to forward {obj}`CcInfo.linking_context`. This is to " +
            "allow Python targets to propagate C++ linking information, but " +
            "without the Python target appearing to be a valid C++ rule dependency"),
     init = _PyCcLinkParamsProvider_init,
     fields = {
-        "cc_info": "A CcInfo instance; it has only linking_context set",
+        "cc_info": """
+:type: CcInfo
+
+Linking information; it has only {obj}`CcInfo.linking_context` set.
+""",
     },
 )

@@ -23,7 +23,7 @@ Next, we're going to document some rules.
   :mandatory: true
   :::
 
-  {required-providers}`LangInfo | [OtherLangInfo, AnotherLangInfo]`
+  {required-providers}`"Display <//lang:provider.bzl%LangInfo>"`
 
 :attr ra2:
   {type}`attr.label`

@@ -18,7 +18,9 @@ PyCcToolchainInfo = provider(
     doc = "C/C++ information about the Python runtime.",
     fields = {
         "headers": """\
-(struct) Information about the header files, with fields:
+:type: struct
+
+Information about the header files, struct with fields:
   * providers_map: a dict of string to provider instances. The key should be
     a fully qualified name (e.g. `@rules_foo//bar:baz.bzl#MyInfo`) of the
     provider to uniquely identify its type.
@@ -39,7 +41,9 @@ PyCcToolchainInfo = provider(
     represents).
 """,
         "libs": """\
-(struct) Information about C libraries, with fields:
+:type: struct
+
+Information about C libraries, struct with fields:
   * providers_map: A dict of string to provider instances. The key should be
     a fully qualified name (e.g. `@rules_foo//bar:baz.bzl#MyInfo`) of the
     provider to uniquely identify its type.
@@ -59,6 +63,10 @@ PyCcToolchainInfo = provider(
     e.g. `:current_py_cc_headers` to act as the underlying headers target it
     represents).
 """,
-        "python_version": "(str) The Python Major.Minor version.",
+        "python_version": """
+:type: str
+
+The Python Major.Minor version.
+""",
     },
 )

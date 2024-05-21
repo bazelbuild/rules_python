@@ -19,7 +19,7 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
 
-def sphinx_stardocs(name, docs, footer = None, **kwargs):
+def sphinx_stardocs(name, docs, **kwargs):
     """Generate Sphinx-friendly Markdown docs using Stardoc for bzl libraries.
 
     A `build_test` for the docs is also generated to ensure Stardoc is able
@@ -39,7 +39,6 @@ def sphinx_stardocs(name, docs, footer = None, **kwargs):
             * A `dict` with keys `input` and `dep`. The `input` key is a string
               label to the bzl file to generate docs for. The `dep` key is a
               string label to a `bzl_library` providing the necessary dependencies.
-        footer: optional [`label`] File to append to generated docs.
         **kwargs: Additional kwargs to pass onto each `sphinx_stardoc` target
     """
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_stardocs")
@@ -60,7 +59,6 @@ def sphinx_stardocs(name, docs, footer = None, **kwargs):
         doc_name = "_{}_{}".format(name.lstrip("_"), out_name.replace("/", "_"))
         _sphinx_stardoc(
             name = doc_name,
-            footer = footer,
             out = out_name,
             **stardoc_kwargs
         )
@@ -77,7 +75,7 @@ def sphinx_stardocs(name, docs, footer = None, **kwargs):
         **common_kwargs
     )
 
-def _sphinx_stardoc(*, name, out, footer = None, public_load_path = None, **kwargs):
+def _sphinx_stardoc(*, name, out, public_load_path = None, **kwargs):
     stardoc_name = "_{}_stardoc".format(name.lstrip("_"))
     stardoc_pb = stardoc_name + ".binaryproto"
 
@@ -95,7 +93,6 @@ def _sphinx_stardoc(*, name, out, footer = None, public_load_path = None, **kwar
         name = name,
         src = stardoc_pb,
         output = out,
-        footer = footer,
         public_load_path = public_load_path,
     )
 
@@ -108,9 +105,6 @@ def _stardoc_proto_to_markdown_impl(ctx):
     args.add("--proto", ctx.file.src)
     args.add("--output", ctx.outputs.output)
 
-    if ctx.file.footer:
-        args.add("--footer", ctx.file.footer)
-        inputs.append(ctx.file.footer)
     if ctx.attr.public_load_path:
         args.add("--public-load-path={}".format(ctx.attr.public_load_path))
 
@@ -126,7 +120,6 @@ def _stardoc_proto_to_markdown_impl(ctx):
 _stardoc_proto_to_markdown = rule(
     implementation = _stardoc_proto_to_markdown_impl,
     attrs = {
-        "footer": attr.label(allow_single_file = True),
         "output": attr.output(mandatory = True),
         "public_load_path": attr.string(),
         "src": attr.label(allow_single_file = True, mandatory = True),

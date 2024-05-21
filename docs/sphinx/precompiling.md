@@ -29,14 +29,15 @@ incrementally control precompiling on a per-binry basis.
 
 To use this approach, the two basic steps are:
 1. Disable pyc files from being automatically added to runfiles:
-   `--@rules_python//python/config_settings:precompile_add_to_runfiles=decided_elsewhere`,
+   {bzl:obj}`--@rules_python//python/config_settings:precompile_add_to_runfiles=decided_elsewhere`,
 2. Set the `pyc_collection` attribute on the binaries/tests that should or should
    not use precompiling.
 
-The default for the `pyc_collection` attribute is controlled by a flag, so you
-can use an opt-in or opt-out approach by setting the flag:
-* targets must opt-out: `--@rules_python//python/config_settings:pyc_collection=include_pyc`,
-* targets must opt-in: `--@rules_python//python/config_settings:pyc_collection=disabled`,
+The default for the `pyc_collection` attribute is controlled by the flag
+{bzl:obj}`--@rules_python//python/config_settings:pyc_collection`, so you
+can use an opt-in or opt-out approach by setting its value:
+* targets must opt-out: `--@rules_python//python/config_settings:pyc_collection=include_pyc`
+* targets must opt-in: `--@rules_python//python/config_settings:pyc_collection=disabled`
 
 ## Advanced precompiler customization
 
