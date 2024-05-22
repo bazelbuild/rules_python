@@ -51,14 +51,14 @@ mechanisms are available:
 * The execution requirements can be customized using
   `--@rules_python//tools/precompiler:execution_requirements`. This is a list
   flag that can be repeated. Each entry is a key=value that is added to the
-  execution requirements of the `PyPrecompile` action. Note that this flag
+  execution requirements of the `PyCompile` action. Note that this flag
   is specific to the rules_python precompiler. If a custom binary is used,
   this flag will have to be propagated from the custom binary using the
   `testing.ExecutionInfo` provider; refer to the `py_interpreter_program` an
 
 The default precompiler implementation is an asynchronous/concurrent
 implementation. If you find it has bugs or hangs, please report them. In the
-meantime, the flag `--worker_extra_flag=PyPrecompile=--worker_impl=serial` can
+meantime, the flag `--worker_extra_flag=PyCompile=--worker_impl=serial` can
 be used to switch to a synchronous/serial implementation that may not perform
 as well, but is less likely to have issues.
 

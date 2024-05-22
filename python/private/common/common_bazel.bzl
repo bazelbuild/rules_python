@@ -200,7 +200,7 @@ def _precompile(ctx, src, *, use_pycache):
         arguments = [precompiler_startup_args, precompile_request_args],
         inputs = [src],
         outputs = [pyc],
-        mnemonic = "PyPrecompile",
+        mnemonic = "PyCompile",
         progress_message = "Python precompiling %{input} into %{output}",
         tools = tools,
         env = env | {
