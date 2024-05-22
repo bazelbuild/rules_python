@@ -24,7 +24,7 @@ load(
 )
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
+load("//python/private:parse_requirements.bzl", "add_dists_to_requirements", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
@@ -170,7 +170,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         extra_pip_args = pip_attr.extra_pip_args,
     )
 
-    index_urls = {}
     if pip_attr.experimental_index_url:
         if pip_attr.download_only:
             fail("Currently unsupported to use `download_only` and `experimental_index_url`")
@@ -194,6 +193,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             cache = simpleapi_cache,
             parallel_download = pip_attr.parallel_download,
         )
+        add_dists_to_requirements(requirements_by_platform, index_urls)
 
     repository_platform = host_platform(module_ctx.os)
     for whl_name, requirements in requirements_by_platform.items():
@@ -255,28 +255,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         )
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
-        if index_urls:
-            whls = []
-            sdist = None
-            for sha256 in requirement.srcs.shas:
-                # For now if the artifact is marked as yanked we just ignore it.
-                #
-                # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-
-                maybe_whl = index_urls[whl_name].whls.get(sha256)
-                if maybe_whl and not maybe_whl.yanked:
-                    whls.append(maybe_whl)
-                    continue
-
-                maybe_sdist = index_urls[whl_name].sdists.get(sha256)
-                if maybe_sdist and not maybe_sdist.yanked:
-                    sdist = maybe_sdist
-                    continue
-
-                print("WARNING: Could not find a whl or an sdist with sha256={}".format(sha256))  # buildifier: disable=print
-
+        if requirement.whls or requirement.sdists:
             distribution = select_whl(
-                whls = whls,
+                whls = requirement.whls,
                 want_abis = [
                     "none",
                     "abi3",
@@ -285,7 +266,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     "cp" + major_minor.replace(".", "") + "m",
                 ],
                 want_platform = repository_platform,
-            ) or sdist
+            ) or requirement.sdists[0] if requirement.sdists else None
 
             if distribution:
                 whl_library_args["requirement"] = requirement.srcs.requirement

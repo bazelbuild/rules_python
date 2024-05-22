@@ -96,6 +96,8 @@ def _test_simple(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdists = [],
             ),
         ],
     })
@@ -136,6 +138,8 @@ def _test_dupe_requirements(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdists = [],
             ),
         ],
     })
@@ -173,6 +177,8 @@ def _test_multi_os(env):
                     version = "0.0.1",
                 ),
                 target_platforms = ["windows_x86_64"],
+                whls = [],
+                sdists = [],
             ),
         ],
         "foo": [
@@ -195,6 +201,8 @@ def _test_multi_os(env):
                     "osx_aarch64",
                     "osx_x86_64",
                 ],
+                whls = [],
+                sdists = [],
             ),
             struct(
                 distribution = "foo",
@@ -207,6 +215,8 @@ def _test_multi_os(env):
                     version = "0.0.2",
                 ),
                 target_platforms = ["windows_x86_64"],
+                whls = [],
+                sdists = [],
             ),
         ],
     })
@@ -264,6 +274,8 @@ def _test_multi_os_download_only_platform(env):
                     version = "0.0.3",
                 ),
                 target_platforms = ["linux_x86_64"],
+                whls = [],
+                sdists = [],
             ),
         ],
     })
@@ -316,6 +328,8 @@ def _test_os_arch_requirements_with_default(env):
                     version = "0.0.3",
                 ),
                 target_platforms = ["linux_aarch64", "linux_x86_64"],
+                whls = [],
+                sdists = [],
             ),
             struct(
                 distribution = "foo",
@@ -328,6 +342,8 @@ def _test_os_arch_requirements_with_default(env):
                     version = "",
                 ),
                 target_platforms = ["linux_super_exotic"],
+                whls = [],
+                sdists = [],
             ),
             struct(
                 distribution = "foo",
@@ -347,6 +363,8 @@ def _test_os_arch_requirements_with_default(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdists = [],
             ),
         ],
     })
