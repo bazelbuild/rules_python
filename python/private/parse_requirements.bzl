@@ -84,6 +84,9 @@ def _default_platforms(*, filter):
     if not filter:
         fail("Must specific a filter string, got: {}".format(filter))
 
+    if filter.startswith("cp3"):
+        _, _, filter = filter.partition("_")
+
     sanitized = filter.replace("*", "").replace("_", "")
     if sanitized and not sanitized.isalnum():
         fail("The platform filter can only contain '*', '_' and alphanumerics")

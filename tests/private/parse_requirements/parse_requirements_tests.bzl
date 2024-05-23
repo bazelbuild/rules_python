@@ -111,6 +111,47 @@ def _test_simple(env):
 
 _tests.append(_test_simple)
 
+def _test_platform_markers_with_python_version(env):
+    got = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_lock": "cp39_linux_*",
+        },
+    )
+    got_alternative = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_lock": "linux_*",
+        },
+    )
+    env.expect.that_dict(got).contains_exactly({
+        "foo": [
+            struct(
+                distribution = "foo",
+                download = False,
+                extra_pip_args = [],
+                requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
+                srcs = struct(
+                    requirement = "foo[extra]==0.0.1",
+                    shas = ["deadbeef"],
+                    version = "0.0.1",
+                ),
+                target_platforms = [
+                    "linux_aarch64",
+                    "linux_arm",
+                    "linux_ppc",
+                    "linux_s390x",
+                    "linux_x86_64",
+                ],
+                whls = [],
+                sdists = [],
+            ),
+        ],
+    })
+    env.expect.that_dict(got).contains_exactly(got_alternative)
+
+_tests.append(_test_platform_markers_with_python_version)
+
 def _test_dupe_requirements(env):
     got = parse_requirements(
         ctx = _mock_ctx(),
