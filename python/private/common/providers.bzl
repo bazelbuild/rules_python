@@ -248,26 +248,43 @@ PyInfo, _unused_raw_py_info_ctor = _define_provider(
     init = _PyInfo_init,
     fields = {
         "direct_pyc_files": """
-depset[File] of precompiled Python files that are considered directly provided
+:type: depset[File]
+
+Precompiled Python files that are considered directly provided
 by the target.
 """,
-        "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
-        "has_py3_only_sources": "Whether any of this target's transitive sources requires a Python 3 runtime.",
+        "has_py2_only_sources": """
+:type: bool
+
+Whether any of this target's transitive sources requires a Python 2 runtime.
+""",
+        "has_py3_only_sources": """
+:type: bool
+
+Whether any of this target's transitive sources requires a Python 3 runtime.
+""",
         "imports": """\
+:type: depset[str]
+
 A depset of import path strings to be added to the `PYTHONPATH` of executable
 Python targets. These are accumulated from the transitive `deps`.
 The order of the depset is not guaranteed and may be changed in the future. It
 is recommended to use `default` order (the default).
 """,
         "transitive_pyc_files": """
-depset[File] of direct and transitive precompiled Python files that are provied
-by the target.
+:type: depset[File]
+
+Direct and transitive precompiled Python files that are provided by the target.
 """,
         "transitive_sources": """\
+:type: depset[File]
+
 A (`postorder`-compatible) depset of `.py` files appearing in the target's
 `srcs` and the `srcs` of the target's transitive `deps`.
 """,
         "uses_shared_libraries": """
+:type: bool
+
 Whether any of this target's transitive `deps` has a shared library file (such
 as a `.so` file).
 

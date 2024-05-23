@@ -14,7 +14,7 @@ Values:
 * `auto`: Automatically decide the effective value based on environment,
   target platform, etc.
 * `enabled`: Compile Python source files at build time. Note that
-  `--precompile_add_to_runfiles` affects how the compiled files are included into
+  {bzl:obj}`--precompile_add_to_runfiles` affects how the compiled files are included into
   a downstream binary.
 * `disabled`: Don't compile Python source files at build time.
 * `if_generated_source`: Compile Python source files, but only if they're a
@@ -47,13 +47,13 @@ Determines if a target adds its compiled files to its runfiles.
 
 When a target compiles its files, but doesn't add them to its own runfiles, it
 relies on a downstream target to retrieve them from
-`PyInfo.transitive_pyc_files`
+{bzl:obj}`PyInfo.transitive_pyc_files`
 
 Values:
 * `always`: Always include the compiled files in the target's runfiles.
 * `decided_elsewhere`: Don't include the compiled files in the target's
-  runfiles; they are still added to `PyInfo.transitive_pyc_files`. See also:
-  `py_binary.pyc_collection` attribute. This is useful for allowing
+  runfiles; they are still added to {bzl:obj}`PyInfo.transitive_pyc_files`. See
+  also: {bzl:obj}`py_binary.pyc_collection` attribute. This is useful for allowing
   incrementally enabling precompilation on a per-binary basis.
 :::
 
