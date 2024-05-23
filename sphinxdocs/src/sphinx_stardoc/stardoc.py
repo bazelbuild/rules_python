@@ -54,6 +54,9 @@ def _position_iter(values: Collection[_T]) -> tuple[bool, bool, _T]:
         yield i == 0, i == last_i, value
 
 
+# TODO: Remove this. Use @repo//pkg:file.bzl%symbol to identify things instead
+# of dots. This more directly reflects the bzl concept and avoids issues with
+# e.g. repos, directories, or files containing dots themselves.
 def _label_to_dotted_name(label: str) -> str:
     """Convert an absolute label to a dotted name.
 
