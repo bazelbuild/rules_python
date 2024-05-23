@@ -18,21 +18,6 @@ A starlark implementation of the wheel platform tag parsing to get the target pl
 
 load(":parse_whl_name.bzl", "parse_whl_name")
 
-# Taken from https://peps.python.org/pep-0600/
-_LEGACY_ALIASES = {
-    "manylinux1_i686": "manylinux_2_5_i686",
-    "manylinux1_x86_64": "manylinux_2_5_x86_64",
-    "manylinux2010_i686": "manylinux_2_12_i686",
-    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
-    "manylinux2014_aarch64": "manylinux_2_17_aarch64",
-    "manylinux2014_armv7l": "manylinux_2_17_armv7l",
-    "manylinux2014_i686": "manylinux_2_17_i686",
-    "manylinux2014_ppc64": "manylinux_2_17_ppc64",
-    "manylinux2014_ppc64le": "manylinux_2_17_ppc64le",
-    "manylinux2014_s390x": "manylinux_2_17_s390x",
-    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
-}
-
 # The order of the dictionaries is to keep definitions with their aliases next to each
 # other
 _CPU_ALIASES = {
@@ -48,6 +33,7 @@ _CPU_ALIASES = {
     "ppc64": "ppc",
     "ppc64le": "ppc",
     "s390x": "s390x",
+    "arm": "arm",
     "armv6l": "arm",
     "armv7l": "arm",
 }  # buildifier: disable=unsorted-dict-items
@@ -118,13 +104,98 @@ def _whl_priority(value):
     # Windows does not have multiple wheels for the same target platform
     return (False, False, 0, 0)
 
-def select_whl(*, whls, want_abis, want_platform):
+def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = []):
+    """Select a subset of wheels suitable for target platforms from a list.
+
+    Args:
+        whls(list[struct]): A list of candidates.
+        want_version(str, optional): An optional parameter to filter whls by version.
+        want_abis(list[str]): A list of ABIs that are supported.
+        want_platforms(str): The platforms
+
+    Returns:
+        None or a struct with `url`, `sha256` and `filename` attributes for the
+        selected whl. If no match is found, None is returned.
+    """
+    if not whls:
+        return {}
+
+    want_platforms_normalized = []
+
+    version_limit = -1
+    if want_version:
+        version_limit = int(want_version.split(".")[1])
+
+    candidates = {}
+    any_whls = []
+    for whl in whls:
+        parsed = parse_whl_name(whl.filename)
+
+        if want_abis and parsed.abi_tag not in want_abis:
+            # Filter out incompatible ABIs
+            continue
+
+        if parsed.platform_tag == "any" or not want_platforms:
+            whl_version_min = 0
+            if parsed.python_tag.startswith("cp3"):
+                whl_version_min = int(parsed.python_tag[len("cp3"):])
+
+            if version_limit != -1 and whl_version_min > version_limit:
+                continue
+            elif version_limit != -1 and parsed.abi_tag in ["none", "abi3"]:
+                # We want to prefer by version and then we want to prefer abi3 over none
+                any_whls.append((whl_version_min, parsed.abi_tag == "abi3", whl))
+                continue
+
+            candidates["any"] = whl
+            continue
+
+        compatible = False
+        for p in whl_target_platforms(parsed.platform_tag):
+            if want_platforms and not want_platforms_normalized:
+                want_platforms_normalized = [
+                    _normalize_platform(p)
+                    for p in want_platforms
+                ]
+            if p.target_platform in want_platforms_normalized:
+                compatible = True
+                break
+
+        if compatible:
+            candidates[parsed.platform_tag] = whl
+
+    if any_whls:
+        # Overwrite the previously select any whl with the best fitting one.
+        # The any_whls will be only populated if we pass the want_version
+        # parameter.
+        _, _, whl = sorted(any_whls)[-1]
+        candidates["any"] = whl
+
+    return candidates
+
+def _normalize_platform(platform):
+    cpus = _cpu_from_tag(platform)
+    if len(cpus) != 1:
+        fail("Expected the '{}' platform to only map to a single CPU, but got: {}".format(
+            platform,
+            cpus,
+        ))
+
+    for prefix, os in _OS_PREFIXES.items():
+        if platform.startswith(prefix):
+            return "{}_{}".format(os, cpus[0])
+
+    # If it is not known, just return it back
+    return platform
+
+def select_whl(*, whls, want_abis, want_platform, want_version = None):
     """Select a suitable wheel from a list.
 
     Args:
         whls(list[struct]): A list of candidates.
         want_abis(list[str]): A list of ABIs that are supported.
         want_platform(str): The target platform.
+        want_version(str, optional): The python version to restrict the search.
 
     Returns:
         None or a struct with `url`, `sha256` and `filename` attributes for the
@@ -133,53 +204,22 @@ def select_whl(*, whls, want_abis, want_platform):
     if not whls:
         return None
 
-    candidates = {}
-    for whl in whls:
-        parsed = parse_whl_name(whl.filename)
-        if parsed.abi_tag not in want_abis:
-            # Filter out incompatible ABIs
-            continue
+    candidates = select_whls(
+        whls = whls,
+        want_abis = want_abis,
+        want_platforms = [want_platform],
+        want_version = want_version,
+    )
 
-        platform_tags = list({_LEGACY_ALIASES.get(p, p): True for p in parsed.platform_tag.split(".")})
+    target_whl_platform = sorted(
+        # For now we don't support `musl`.
+        [k for k in candidates.keys() if "musl" not in k],
+        key = _whl_priority,
+    )
+    if not target_whl_platform:
+        return None
 
-        for tag in platform_tags:
-            candidates[tag] = whl
-
-    # For most packages - if they supply 'any' wheel and there are no other
-    # compatible wheels with the selected abis, we can just return the value.
-    if len(candidates) == 1 and "any" in candidates:
-        return struct(
-            url = candidates["any"].url,
-            sha256 = candidates["any"].sha256,
-            filename = candidates["any"].filename,
-        )
-
-    target_plats = {}
-    has_any = "any" in candidates
-    for platform_tag, whl in candidates.items():
-        if platform_tag == "any":
-            continue
-
-        if "musl" in platform_tag:
-            # Ignore musl wheels for now
-            continue
-
-        platform_tag = ".".join({_LEGACY_ALIASES.get(p, p): True for p in platform_tag.split(".")})
-        platforms = whl_target_platforms(platform_tag)
-        for p in platforms:
-            target_plats.setdefault("{}_{}".format(p.os, p.cpu), []).append(platform_tag)
-
-    for p, platform_tags in target_plats.items():
-        if has_any:
-            platform_tags.append("any")
-
-        target_plats[p] = sorted(platform_tags, key = _whl_priority)
-
-    want = target_plats.get(want_platform)
-    if not want:
-        return want
-
-    return candidates[want[0]]
+    return candidates[target_whl_platform[0]]
 
 def whl_target_platforms(platform_tag, abi_tag = ""):
     """Parse the wheel abi and platform tags and return (os, cpu) tuples.

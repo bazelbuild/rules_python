@@ -171,6 +171,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
     )
 
     if pip_attr.experimental_index_url:
+        # TODO @aignas 2024-05-22: move this to a separate function.
         if pip_attr.download_only:
             fail("Currently unsupported to use `download_only` and `experimental_index_url`")
 
@@ -258,6 +259,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         if requirement.whls or requirement.sdists:
             distribution = select_whl(
                 whls = requirement.whls,
+                want_version = major_minor,
                 want_abis = [
                     "none",
                     "abi3",

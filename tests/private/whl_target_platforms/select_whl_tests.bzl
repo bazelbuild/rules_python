@@ -67,18 +67,25 @@ WHL_LIST = [
         "pkg-0.0.1-cp39-cp39-musllinux_1_1_x86_64.whl",
         "pkg-0.0.1-cp39-cp39-win32.whl",
         "pkg-0.0.1-cp39-cp39-win_amd64.whl",
+        "pkg-0.0.1-cp39-abi3-any.whl",
         "pkg-0.0.1-py3-abi3-any.whl",
         "pkg-0.0.1-py3-none-any.whl",
     ]
 ]
 
-def _match(env, got, want_filename):
-    if want_filename:
-        env.expect.that_str(got.filename).equals(want_filename)
-        env.expect.that_str(got.sha256).equals("sha256://" + want_filename)
-        env.expect.that_str(got.url).equals("https://" + want_filename)
-    else:
-        env.expect.that_int(got).equals(None)
+def _match(env, got, *want_filenames):
+    got = [got] if got else []
+
+    if not want_filenames:
+        env.expect.that_collection(got).has_size(len(want_filenames))
+        return
+
+    got_filenames = [g.filename for g in got]
+    env.expect.that_collection(got_filenames).contains_exactly(want_filenames)
+
+    if got:
+        env.expect.that_str(got[0].sha256).equals("sha256://" + want_filenames[0])
+        env.expect.that_str(got[0].url).equals("https://" + want_filenames[0])
 
 _tests = []
 
@@ -89,9 +96,11 @@ def _test_selecting(env):
     got = select_whl(whls = WHL_LIST, want_abis = ["abi3"], want_platform = "ignored")
     _match(env, got, "pkg-0.0.1-py3-abi3-any.whl")
 
-    # Check the selection failure
-    got = select_whl(whls = WHL_LIST, want_abis = ["cp39"], want_platform = "fancy_exotic")
-    _match(env, got, None)
+    got = select_whl(whls = WHL_LIST, want_abis = ["abi3"], want_platform = "ignored", want_version = "3.8")
+    _match(env, got, "pkg-0.0.1-py3-abi3-any.whl")
+
+    got = select_whl(whls = WHL_LIST, want_abis = ["abi3"], want_platform = "ignored", want_version = "3.9")
+    _match(env, got, "pkg-0.0.1-cp39-abi3-any.whl")
 
     # Check we match the ABI and not the py version
     got = select_whl(whls = WHL_LIST, want_abis = ["cp37m"], want_platform = "linux_x86_64")
