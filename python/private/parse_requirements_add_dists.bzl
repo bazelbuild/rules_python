@@ -22,7 +22,7 @@ am keeping it together with parse_requirements.bzl.
 
 load(":whl_target_platforms.bzl", "select_whls")
 
-def parse_requirements_dists(requirements_by_platform, index_urls, python_version):
+def parse_requirements_add_dists(requirements_by_platform, index_urls, python_version):
     """Populate dists based on the information from the PyPI index.
 
     This function will modify the given requirements_by_platform data structure.
