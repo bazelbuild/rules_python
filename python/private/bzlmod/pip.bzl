@@ -24,7 +24,8 @@ load(
 )
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:parse_requirements.bzl", "add_dists_to_requirements", "host_platform", "parse_requirements", "select_requirement")
+load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
+load("//python/private:parse_requirements_add_dists.bzl", "parse_requirements_add_dists")
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
@@ -171,7 +172,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
     )
 
     if pip_attr.experimental_index_url:
-        # TODO @aignas 2024-05-22: move this to a separate function.
         if pip_attr.download_only:
             fail("Currently unsupported to use `download_only` and `experimental_index_url`")
 
@@ -194,7 +194,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             cache = simpleapi_cache,
             parallel_download = pip_attr.parallel_download,
         )
-        add_dists_to_requirements(requirements_by_platform, index_urls)
+        parse_requirements_add_dists(
+            requirements_by_platform,
+            index_urls,
+            python_version = major_minor,
+        )
 
     repository_platform = host_platform(module_ctx.os)
     for whl_name, requirements in requirements_by_platform.items():
@@ -259,14 +263,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         if requirement.whls or requirement.sdists:
             distribution = select_whl(
                 whls = requirement.whls,
-                want_version = major_minor,
-                want_abis = [
-                    "none",
-                    "abi3",
-                    "cp" + major_minor.replace(".", ""),
-                    # Older python versions have wheels for the `*m` ABI.
-                    "cp" + major_minor.replace(".", "") + "m",
-                ],
                 want_platform = repository_platform,
             ) or requirement.sdists[0] if requirement.sdists else None
 

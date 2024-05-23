@@ -76,7 +76,6 @@ def _whl_priority(value):
         value, _, _ = value.partition(".")
 
     if "any" == value:
-        # This is just a big value that should be larger than any other value returned by this function
         return (True, False, 0, 0)
 
     if "linux" in value:
@@ -120,8 +119,6 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
     if not whls:
         return {}
 
-    want_platforms_normalized = []
-
     version_limit = -1
     if want_version:
         version_limit = int(want_version.split(".")[1])
@@ -152,12 +149,7 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
 
         compatible = False
         for p in whl_target_platforms(parsed.platform_tag):
-            if want_platforms and not want_platforms_normalized:
-                want_platforms_normalized = [
-                    _normalize_platform(p)
-                    for p in want_platforms
-                ]
-            if p.target_platform in want_platforms_normalized:
+            if p.target_platform in want_platforms:
                 compatible = True
                 break
 
@@ -171,31 +163,14 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
         _, _, whl = sorted(any_whls)[-1]
         candidates["any"] = whl
 
-    return candidates
+    return candidates.values()
 
-def _normalize_platform(platform):
-    cpus = _cpu_from_tag(platform)
-    if len(cpus) != 1:
-        fail("Expected the '{}' platform to only map to a single CPU, but got: {}".format(
-            platform,
-            cpus,
-        ))
-
-    for prefix, os in _OS_PREFIXES.items():
-        if platform.startswith(prefix):
-            return "{}_{}".format(os, cpus[0])
-
-    # If it is not known, just return it back
-    return platform
-
-def select_whl(*, whls, want_abis, want_platform, want_version = None):
+def select_whl(*, whls, want_platform):
     """Select a suitable wheel from a list.
 
     Args:
         whls(list[struct]): A list of candidates.
-        want_abis(list[str]): A list of ABIs that are supported.
         want_platform(str): The target platform.
-        want_version(str, optional): The python version to restrict the search.
 
     Returns:
         None or a struct with `url`, `sha256` and `filename` attributes for the
@@ -204,16 +179,22 @@ def select_whl(*, whls, want_abis, want_platform, want_version = None):
     if not whls:
         return None
 
-    candidates = select_whls(
+    # TODO @aignas 2024-05-23: once we do the selection in the hub repo using
+    # an actual select, then this function will be the one that is used within
+    # the repository context instead of `select_whl`.
+    whls = select_whls(
         whls = whls,
-        want_abis = want_abis,
         want_platforms = [want_platform],
-        want_version = want_version,
     )
 
+    candidates = {
+        parse_whl_name(w.filename).platform_tag: w
+        for w in whls
+        if "musllinux_" not in w.filename
+    }
+
     target_whl_platform = sorted(
-        # For now we don't support `musl`.
-        [k for k in candidates.keys() if "musl" not in k],
+        candidates.keys(),
         key = _whl_priority,
     )
     if not target_whl_platform:
