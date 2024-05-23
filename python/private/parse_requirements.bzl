@@ -85,6 +85,8 @@ def _default_platforms(*, filter):
         fail("Must specific a filter string, got: {}".format(filter))
 
     if filter.startswith("cp3"):
+        # TODO @aignas 2024-05-23: properly handle python versions in the filter.
+        # For now we are just dropping it to ensure that we don't fail.
         _, _, filter = filter.partition("_")
 
     sanitized = filter.replace("*", "").replace("_", "")
