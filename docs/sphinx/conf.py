@@ -27,7 +27,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
-    "sphinx_stardoc.stardoc",
+    "sphinx_bzl.bzl",
 ]
 
 # Adapted from the template code:

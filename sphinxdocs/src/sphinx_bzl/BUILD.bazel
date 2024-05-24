@@ -6,7 +6,7 @@ package(
 
 # NOTE: This provides the library on its own, not its dependencies.
 py_library(
-    name = "sphinx_stardoc",
+    name = "sphinx_bzl",
     srcs = glob(["*.py"]),
     imports = [".."],
     # Allow depending on it in sphinx_binary targets

@@ -123,7 +123,7 @@ sphinx_build_binary(
         requirement("myst_parser"),
         requirement("readthedocs_sphinx_ext"),
         requirement("typing_extensions"),
-        "//sphinxdocs/src/sphinx_stardoc",
+        "//sphinxdocs/src/sphinx_bzl",
     ],
 )
 
