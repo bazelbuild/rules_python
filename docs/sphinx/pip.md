@@ -150,7 +150,7 @@ ARG=$1  # but we don't do anything with it as it's always "get"
 # formatting is optional
 echo '{'
 echo '  "headers": {'
-echo '    "Authorization": ["Basic dGVzdDoxMjPCow=="]
+echo '    "Authorization": ["Basic dGVzdDoxMjPCow=="]'
 echo '  }'
 echo '}'
 ```

@@ -20,8 +20,11 @@
 # places.
 
 MAC = Label("//tests/support:mac")
+MAC_X86_64 = Label("//tests/support:mac_x86_64")
 LINUX = Label("//tests/support:linux")
+LINUX_X86_64 = Label("//tests/support:linux_x86_64")
 WINDOWS = Label("//tests/support:windows")
+WINDOWS_X86_64 = Label("//tests/support:windows_x86_64")
 
 PLATFORM_TOOLCHAIN = str(Label("//tests/support:platform_toolchain"))
 CC_TOOLCHAIN = str(Label("//tests/cc:all"))

@@ -1,6 +1,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//python/private:flags.bzl",
+    "BootstrapImplFlag",
     "PrecompileAddToRunfilesFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
@@ -49,6 +50,15 @@ string_flag(
     name = "pyc_collection",
     build_setting_default = PycCollectionFlag.DISABLED,
     values = sorted(PycCollectionFlag.__members__.values()),
+    # NOTE: Only public because its an implicit dependency
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "bootstrap_impl",
+    # todo: default to deprecated_one_stage initially
+    build_setting_default = BootstrapImplFlag.SCRIPT,
+    values = sorted(BootstrapImplFlag.__members__.values()),
     # NOTE: Only public because its an implicit dependency
     visibility = ["//visibility:public"],
 )

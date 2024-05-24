@@ -46,7 +46,8 @@ incremental fashion.
 
 Breaking changes are allowed, but follow a process to introduce them over
 a series of releases to so users can still incrementally upgrade. See the
-[Breaking Changes](contributing#breaking-changes) doc for the process.
+[Breaking Changes](#breaking-changes) doc for the process.
+
 
 ## Experimental Features
 
