@@ -626,6 +626,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
                 # Stardoc doesn't provide accurate info, so the reconstructed
                 # signature might not be valid syntax. Rather than fail, just
                 # provide a plain-text description of the approximate signature.
+                # See https://github.com/bazelbuild/stardoc/issues/225
                 sig_node += addnodes.desc_parameterlist(
                     # Offset by 1 to remove the surrounding parentheses
                     params_text[1:-1],
