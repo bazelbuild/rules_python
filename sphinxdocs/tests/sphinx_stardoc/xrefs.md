@@ -48,3 +48,11 @@ Various tests of cross referencing support
 * rule: {obj}`lang.rule.my_rule`
 * rule attr: {obj}`lang.rule.my_rule.ra1`
 * provider: {obj}`lang.provider.LangInfo`
+
+## Using origin keys
+
+* provider using `{type}`: {type}`"@rules_python//sphinxdocs/tests/sphinx_stardoc:bzl_rule.bzl%GenericInfo"`
+
+## Any xref
+
+* {any}`LangInfo`

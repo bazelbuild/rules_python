@@ -130,6 +130,10 @@ bzl_library(
 bzl_library(
     name = "py_cc_link_params_info_bzl",
     srcs = ["py_cc_link_params_info.bzl"],
+    deps = [
+        "//python/private/common:providers_bzl",
+        "@rules_python_internal//:rules_python_config_bzl",
+    ],
 )
 
 bzl_library(
@@ -185,6 +189,7 @@ bzl_library(
         "//python/private:reexports_bzl",
         "//python/private:util_bzl",
         "//python/private/common:providers_bzl",
+        "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
 

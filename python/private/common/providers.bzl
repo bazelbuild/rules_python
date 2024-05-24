@@ -144,63 +144,86 @@ the same conventions as the standard CPython interpreter.
 """,
     init = _PyRuntimeInfo_init,
     fields = {
-        "bootstrap_template": (
-            "See py_runtime_rule.bzl%py_runtime.bootstrap_template for docs."
-        ),
-        "coverage_files": (
-            "The files required at runtime for using `coverage_tool`. " +
-            "Will be `None` if no `coverage_tool` was provided."
-        ),
-        "coverage_tool": (
-            "If set, this field is a `File` representing tool used for collecting code coverage information from python tests. Otherwise, this is `None`."
-        ),
-        "files": (
-            "If this is an in-build runtime, this field is a `depset` of `File`s" +
-            "that need to be added to the runfiles of an executable target that " +
-            "uses this runtime (in particular, files needed by `interpreter`). " +
-            "The value of `interpreter` need not be included in this field. If " +
-            "this is a platform runtime then this field is `None`."
-        ),
-        "implementation_name": "Optional string; the Python implementation name (`sys.implementation.name`)",
-        "interpreter": (
-            "If this is an in-build runtime, this field is a `File` representing " +
-            "the interpreter. Otherwise, this is `None`. Note that an in-build " +
-            "runtime can use either a prebuilt, checked-in interpreter or an " +
-            "interpreter built from source."
-        ),
-        "interpreter_path": (
-            "If this is a platform runtime, this field is the absolute " +
-            "filesystem path to the interpreter on the target platform. " +
-            "Otherwise, this is `None`."
-        ),
-        "interpreter_version_info": (
-            "Version information about the interpreter this runtime provides. " +
-            "It should match the format given by `sys.version_info`, however " +
-            "for simplicity, the micro, releaselevel, and serial values are " +
-            "optional." +
-            "A struct with the following fields:\n" +
-            "  * major: int, the major version number\n" +
-            "  * minor: int, the minor version number\n" +
-            "  * micro: optional int, the micro version number\n" +
-            "  * releaselevel: optional str, the release level\n" +
-            "  * serial: optional int, the serial number of the release"
-        ),
-        "pyc_tag": """
-Optional string; the tag portion of a pyc filename, e.g. the `cpython-39` infix
-of `foo.cpython-39.pyc`. See PEP 3147. If not specified, it will be computed
-from `implementation_name` and `interpreter_version_info`. If no pyc_tag is
-available, then only source-less pyc generation will function correctly.
+        "bootstrap_template": """
+:type: File
+
+See py_runtime_rule.bzl%py_runtime.bootstrap_template for docs.
 """,
-        "python_version": (
-            "Indicates whether this runtime uses Python major version 2 or 3. " +
-            "Valid values are (only) `\"PY2\"` and " +
-            "`\"PY3\"`."
-        ),
-        "stub_shebang": (
-            "\"Shebang\" expression prepended to the bootstrapping Python stub " +
-            "script used when executing `py_binary` targets.  Does not " +
-            "apply to Windows."
-        ),
+        "coverage_files": """
+:type: depset[File] | None
+
+The files required at runtime for using `coverage_tool`. Will be `None` if no
+`coverage_tool` was provided.
+""",
+        "coverage_tool": """
+:type: File | None
+
+If set, this field is a `File` representing tool used for collecting code
+coverage information from python tests. Otherwise, this is `None`.
+""",
+        "files": """
+:type: depset[File] | None
+
+If this is an in-build runtime, this field is a `depset` of `File`s that need to
+be added to the runfiles of an executable target that uses this runtime (in
+particular, files needed by `interpreter`). The value of `interpreter` need not
+be included in this field. If this is a platform runtime then this field is
+`None`.
+""",
+        "implementation_name": """
+:type: str | None
+
+The Python implementation name (`sys.implementation.name`)
+""",
+        "interpreter": """
+:type: File | None
+
+If this is an in-build runtime, this field is a `File` representing the
+interpreter. Otherwise, this is `None`. Note that an in-build runtime can use
+either a prebuilt, checked-in interpreter or an interpreter built from source.
+""",
+        "interpreter_path": """
+:type: str | None
+
+If this is a platform runtime, this field is the absolute filesystem path to the
+interpreter on the target platform. Otherwise, this is `None`.
+""",
+        "interpreter_version_info": """
+:type: struct
+
+Version information about the interpreter this runtime provides.
+It should match the format given by `sys.version_info`, however
+for simplicity, the micro, releaselevel, and serial values are
+optional.
+A struct with the following fields:
+* `major`: {type}`int`, the major version number
+* `minor`: {type}`int`, the minor version number
+* `micro`: {type}`int | None`, the micro version number
+* `releaselevel`: {type}`str | None`, the release level
+* `serial`: {type}`int | None`, the serial number of the release
+""",
+        "pyc_tag": """
+:type: str | None
+
+The tag portion of a pyc filename, e.g. the `cpython-39` infix
+of `foo.cpython-39.pyc`. See PEP 3147. If not specified, it will be computed
+from {obj}`implementation_name` and {obj}`interpreter_version_info`. If no
+pyc_tag is available, then only source-less pyc generation will function
+correctly.
+""",
+        "python_version": """
+:type: str
+
+Indicates whether this runtime uses Python major version 2 or 3. Valid values
+are (only) `"PY2"` and `"PY3"`.
+""",
+        "stub_shebang": """
+:type: str
+
+"Shebang" expression prepended to the bootstrapping Python stub
+script used when executing {obj}`py_binary` targets.  Does not
+apply to Windows.
+""",
     },
 )
 
@@ -248,26 +271,43 @@ PyInfo, _unused_raw_py_info_ctor = _define_provider(
     init = _PyInfo_init,
     fields = {
         "direct_pyc_files": """
-depset[File] of precompiled Python files that are considered directly provided
+:type: depset[File]
+
+Precompiled Python files that are considered directly provided
 by the target.
 """,
-        "has_py2_only_sources": "Whether any of this target's transitive sources requires a Python 2 runtime.",
-        "has_py3_only_sources": "Whether any of this target's transitive sources requires a Python 3 runtime.",
+        "has_py2_only_sources": """
+:type: bool
+
+Whether any of this target's transitive sources requires a Python 2 runtime.
+""",
+        "has_py3_only_sources": """
+:type: bool
+
+Whether any of this target's transitive sources requires a Python 3 runtime.
+""",
         "imports": """\
+:type: depset[str]
+
 A depset of import path strings to be added to the `PYTHONPATH` of executable
 Python targets. These are accumulated from the transitive `deps`.
 The order of the depset is not guaranteed and may be changed in the future. It
 is recommended to use `default` order (the default).
 """,
         "transitive_pyc_files": """
-depset[File] of direct and transitive precompiled Python files that are provied
-by the target.
+:type: depset[File]
+
+Direct and transitive precompiled Python files that are provided by the target.
 """,
         "transitive_sources": """\
+:type: depset[File]
+
 A (`postorder`-compatible) depset of `.py` files appearing in the target's
 `srcs` and the `srcs` of the target's transitive `deps`.
 """,
         "uses_shared_libraries": """
+:type: bool
+
 Whether any of this target's transitive `deps` has a shared library file (such
 as a `.so` file).
 
@@ -283,11 +323,15 @@ def _PyCcLinkParamsProvider_init(cc_info):
 
 # buildifier: disable=name-conventions
 PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = _define_provider(
-    doc = ("Python-wrapper to forward CcInfo.linking_context. This is to " +
+    doc = ("Python-wrapper to forward {obj}`CcInfo.linking_context`. This is to " +
            "allow Python targets to propagate C++ linking information, but " +
            "without the Python target appearing to be a valid C++ rule dependency"),
     init = _PyCcLinkParamsProvider_init,
     fields = {
-        "cc_info": "A CcInfo instance; it has only linking_context set",
+        "cc_info": """
+:type: CcInfo
+
+Linking information; it has only {obj}`CcInfo.linking_context` set.
+""",
     },
 )

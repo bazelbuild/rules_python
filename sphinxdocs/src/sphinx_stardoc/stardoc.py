@@ -133,6 +133,9 @@ class _ObjectEntry:
             self.search_priority,
         )
 
+    def __repr__(self):
+        return f"ObjectEntry({self.full_id=}, {self.object_type=}, {self.display_name=}, {self.index_entry.docname=})"
+
 
 # A simple helper just to document what the index tuple nodes are.
 def _index_node_tuple(
@@ -241,8 +244,12 @@ class _TypeExprParser(ast.NodeVisitor):
     def visit_Constant(self, node: ast.Constant):
         if node.value is None:
             self._append(self.make_xref("None"))
+        elif isinstance(node.value, str):
+            self._append(self.make_xref(node.value))
         else:
-            raise InvalidValueError(f"Unexpected Constant node value: {node.value}")
+            raise InvalidValueError(
+                f"Unexpected Constant node value: ({type(node.value)}) {node.value=}"
+            )
 
     def visit_Name(self, node: ast.Name):
         xref_node = self.make_xref(node.id)
@@ -470,8 +477,9 @@ class _BzlAttrInfo(sphinx_docutils.SphinxDirective):
 
     def run(self):
         content_node = docutils_nodes.paragraph("", "")
-        if "mandatory" in self.options:
-            content_node += docutils_nodes.paragraph("", "mandatory (must be non-None)")
+        content_node += docutils_nodes.paragraph(
+            "", "mandatory" if "mandatory" in self.options else "optional"
+        )
         if "executable" in self.options:
             content_node += docutils_nodes.paragraph("", "Must be an executable")
 
@@ -495,6 +503,10 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
       * `foo(arg1, arg2)`
       * `foo(arg1, arg2=default) -> returntype`
     """
+
+    option_spec = sphinx_directives.ObjectDescription.option_spec | {
+        "origin-key": docutils_directives.unchanged,
+    }
 
     @override
     def before_content(self) -> None:
@@ -588,7 +600,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
 
         if type_expr := self.options.get("type"):
 
-            def make_xref(name):
+            def make_xref(name, title=None):
                 content_node = addnodes.desc_type(name, name)
                 return addnodes.pending_xref(
                     "",
@@ -608,25 +620,53 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
             sig_node += attr_annotation_node
 
         if params_text:
-            signature = inspect.signature_from_str(params_text)
+            try:
+                signature = inspect.signature_from_str(params_text)
+            except SyntaxError:
+                # Stardoc doesn't provide accurate info, so the reconstructed
+                # signature might not be valid syntax. Rather than fail, just
+                # provide a plain-text description of the approximate signature.
+                # See https://github.com/bazelbuild/stardoc/issues/225
+                sig_node += addnodes.desc_parameterlist(
+                    # Offset by 1 to remove the surrounding parentheses
+                    params_text[1:-1],
+                    params_text[1:-1],
+                )
+            else:
+                last_kind = None
+                paramlist_node = addnodes.desc_parameterlist()
+                for param in signature.parameters.values():
+                    if param.kind == param.KEYWORD_ONLY and last_kind in (
+                        param.POSITIONAL_OR_KEYWORD,
+                        param.POSITIONAL_ONLY,
+                        None,
+                    ):
+                        # Add separator for keyword only parameter: *
+                        paramlist_node += addnodes.desc_parameter(
+                            "", "", addnodes.desc_sig_operator("", "*")
+                        )
 
-            paramlist_node = addnodes.desc_parameterlist()
-            for param in signature.parameters.values():
-                node = addnodes.desc_parameter()
-                node += addnodes.desc_sig_name(rawsource="", text=param.name)
-                if param.default is not param.empty:
-                    node += addnodes.desc_sig_operator("", "=")
-                    node += docutils_nodes.inline(
-                        "",
-                        param.default,
-                        classes=["default_value"],
-                        support_smartquotes=False,
-                    )
-                paramlist_node += node
-            sig_node += paramlist_node
+                    last_kind = param.kind
+                    node = addnodes.desc_parameter()
+                    if param.kind == param.VAR_POSITIONAL:
+                        node += addnodes.desc_sig_operator("", "*")
+                    elif param.kind == param.VAR_KEYWORD:
+                        node += addnodes.desc_sig_operator("", "**")
 
-            if signature.return_annotation is not signature.empty:
-                sig_node += addnodes.desc_returns("", signature.return_annotation)
+                    node += addnodes.desc_sig_name(rawsource="", text=param.name)
+                    if param.default is not param.empty:
+                        node += addnodes.desc_sig_operator("", "=")
+                        node += docutils_nodes.inline(
+                            "",
+                            param.default,
+                            classes=["default_value"],
+                            support_smartquotes=False,
+                        )
+                    paramlist_node += node
+                sig_node += paramlist_node
+
+                if signature.return_annotation is not signature.empty:
+                    sig_node += addnodes.desc_returns("", signature.return_annotation)
 
         obj_id = _BzlObjectId.from_env(self.env, relative_name)
 
@@ -685,9 +725,22 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
             ),
         )
 
-        self.env.get_domain(self.domain).add_object(
-            object_entry, alt_names=self._get_alt_names(object_entry)
-        )
+        alt_names = []
+        if origin_key := self.options.get("origin-key"):
+            alt_names.append(
+                origin_key
+                # Options require \@ for leading @, but don't
+                # remove the escaping slash, so we have to do it manually
+                .lstrip("\\")
+                .lstrip("@")
+                .replace("//", "/")
+                .replace(".bzl%", ".")
+                .replace("/", ".")
+                .replace(":", ".")
+            )
+        alt_names.extend(self._get_alt_names(object_entry))
+
+        self.env.get_domain(self.domain).add_object(object_entry, alt_names=alt_names)
 
     def _get_additional_index_types(self):
         return []
@@ -1079,6 +1132,8 @@ class _BzlTarget(_BzlObject):
         return ""
 
 
+# TODO: Integrate with the option directive, since flags are options, afterall.
+# https://www.sphinx-doc.org/en/master/usage/domains/standard.html#directive-option
 class _BzlFlag(_BzlTarget):
     """Documents a flag"""
 
@@ -1319,10 +1374,11 @@ class _BzlDomain(domains.Domain):
     label = "Bzl"
 
     # NOTE: Most every object type has "obj" as one of the roles because
-    # an object type's role determine what reftypes can refer to it. By having
-    # "obj" for all of them, it allows writing :bzl:obj`foo` to restrict
-    # object searching to the bzl domain. Under the hood, this domain translates
-    # requests for the :any: role as lookups for :obj:
+    # an object type's role determine what reftypes (cross referencing) can
+    # refer to it. By having "obj" for all of them, it allows writing
+    # :bzl:obj`foo` to restrict object searching to the bzl domain. Under the
+    # hood, this domain translates requests for the :any: role as lookups for
+    # :obj:.
     # NOTE: We also use these object types for categorizing things in the
     # generated index page.
     object_types = {
@@ -1334,17 +1390,16 @@ class _BzlDomain(domains.Domain):
         "module-extension": domains.ObjType(
             "module extension", "module_extension", "obj"
         ),
-        "provider": domains.ObjType("provider", "provider", "obj"),
-        "provider-field": domains.ObjType(
-            "provider field", "field", "obj"
-        ),  # provider field
+        # Providers are close enough to types that we include "type". This
+        # also makes :type: Foo work in directive options.
+        "provider": domains.ObjType("provider", "provider", "type", "obj"),
+        "provider-field": domains.ObjType("provider field", "field", "obj"),
         "repo-rule": domains.ObjType("repository rule", "repo_rule", "obj"),
         "rule": domains.ObjType("rule", "rule", "obj"),
         "tag-class": domains.ObjType("tag class", "tag_class", "obj"),
         "target": domains.ObjType("target", "target", "obj"),  # target in a build file
-        "flag": domains.ObjType(
-            "flag", "flag", "target", "obj"
-        ),  # flag-target in a build file
+        # Flags are also targets, so include "target" for xref'ing
+        "flag": domains.ObjType("flag", "flag", "target", "obj"),
         # types are objects that have a constructor and methods/attrs
         "type": domains.ObjType("type", "type", "obj"),
     }
@@ -1393,7 +1448,7 @@ class _BzlDomain(domains.Domain):
         # Objects within each doc
         # dict[str, dict[str, _ObjectEntry]]
         "doc_names": {},
-        # Objects by a shorter name
+        # Objects by a shorter or alternative name
         # dict[str, _ObjectEntry]
         "alt_names": {},
     }
@@ -1420,9 +1475,16 @@ class _BzlDomain(domains.Domain):
         node: addnodes.pending_xref,
         contnode: docutils_nodes.Element,
     ) -> list[tuple[str, docutils_nodes.Element]]:
-        ref_node = self.resolve_xref(
-            env, fromdocname, builder, "obj", target, node, contnode
+        del env, node  # Unused
+        entry = self._find_entry_for_xref(fromdocname, "obj", target)
+        if not entry:
+            return []
+        to_docname = entry.index_entry.docname
+        to_anchor = entry.index_entry.anchor
+        ref_node = sphinx_nodes.make_refnode(
+            builder, fromdocname, to_docname, to_anchor, contnode, title=to_anchor
         )
+
         matches = [(f"bzl:{entry.object_type}", ref_node)]
         return matches
 
@@ -1454,14 +1516,21 @@ class _BzlDomain(domains.Domain):
     def _find_entry_for_xref(
         self, fromdocname: str, object_type: str, target: str
     ) -> _ObjectEntry | None:
-        # Normalize labels to dotted notation
+        # Normalize a variety of formats to the dotted format used internally.
+        # --@foo//:bar flags
+        # --@foo//:bar=value labels
+        # //foo:bar.bzl labels
         target = (
-            target.lstrip("@/:")
+            target.lstrip("@/:-")
             .replace("//", "/")
             .replace(".bzl%", ".")
             .replace("/", ".")
             .replace(":", ".")
         )
+        # Elide the value part of --foo=bar flags
+        # Note that the flag value could contain `=`
+        if "=" in target:
+            target = target[: target.find("=")]
         if target in self.data["doc_names"].get(fromdocname, {}):
             return self.data["doc_names"][fromdocname][target]
 
@@ -1486,7 +1555,11 @@ class _BzlDomain(domains.Domain):
             alt_names,
         )
         if entry.full_id in self.data["objects"]:
-            raise Exception(f"Object {entry.full_id} already registered")
+            existing = self.data["objects"][entry.full_id]
+            raise Exception(
+                f"Object {entry.full_id} already registered: "
+                + f"existing={existing}, incoming={entry}"
+            )
         self.data["objects"][entry.full_id] = entry
         self.data["objects_by_type"].setdefault(entry.object_type, {})
         self.data["objects_by_type"][entry.object_type][entry.full_id] = entry

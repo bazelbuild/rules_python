@@ -22,3 +22,5 @@ python bzl:doc 1 reference/be/python -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
 target-name bzl:doc 1 concepts/labels#target-names -
+CcInfo bzl:provider 1 rules/lib/providers/CcInfo -
+CcInfo.linking_context bzl:provider-field 1 rules/lib/providers/CcInfo#linking_context -

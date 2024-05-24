@@ -1,4 +1,7 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
+load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
 sphinx_docs(
     name = "docs",
@@ -6,7 +9,7 @@ sphinx_docs(
         include = [
             "*.md",
         ],
-    ),
+    ) + [":bzl_docs"],
     config = "conf.py",
     formats = [
         "html",
@@ -22,7 +25,31 @@ sphinx_docs(
         "@platforms//os:linux": [],
         "@platforms//os:macos": [],
         "//conditions:default": ["@platforms//:incompatible"],
-    }),
+    }) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"],
+)
+
+sphinx_stardocs(
+    name = "bzl_docs",
+    docs = {
+        "bzl_function.md": dict(
+            dep = ":all_bzl",
+            input = "//sphinxdocs/tests/sphinx_stardoc:bzl_function.bzl",
+        ),
+        "bzl_providers.md": dict(
+            dep = ":all_bzl",
+            input = "//sphinxdocs/tests/sphinx_stardoc:bzl_providers.bzl",
+        ),
+        "bzl_rule.md": dict(
+            dep = ":all_bzl",
+            input = "//sphinxdocs/tests/sphinx_stardoc:bzl_rule.bzl",
+        ),
+    },
+    target_compatible_with = [] if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"],
+)
+
+bzl_library(
+    name = "all_bzl",
+    srcs = glob(["*.bzl"]),
 )
 
 sphinx_build_binary(
