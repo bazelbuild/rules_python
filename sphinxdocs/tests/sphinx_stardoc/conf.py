@@ -8,7 +8,7 @@
 project = "Sphinx Stardoc Test"
 
 extensions = [
-    "sphinx_stardoc.stardoc",
+    "sphinx_bzl.bzl",
     "myst_parser",
     "sphinx.ext.intersphinx",
 ]
