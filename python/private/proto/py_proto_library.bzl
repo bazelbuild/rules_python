@@ -58,7 +58,7 @@ def _py_proto_aspect_impl(target, ctx):
 
     # Check Proto file names
     for proto in target[ProtoInfo].direct_sources:
-        if proto.is_source and "-" in proto.dirname:
+        if proto.is_source and "-" in proto.owner.package:
             fail("Cannot generate Python code for a .proto whose path contains '-' ({}).".format(
                 proto.path,
             ))
