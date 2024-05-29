@@ -38,7 +38,7 @@ you should read the dev-only library module section.
 
 ```
 bazel_dep(name="rules_python", version=...)
-python = use_extension("@rules_python//extensions:python.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(python_version = "3.12", is_default = True)
 ```
@@ -63,7 +63,7 @@ specify `dev_dependency = True` to the bzlmod APIs:
 bazel_dep(name = "rules_python", version=..., dev_dependency = True)
 
 python = use_extension(
-    "@rules_python//extensions:python.bzl",
+    "@rules_python//python/extensions:python.bzl",
     "python",
     dev_dependency = True
 )
@@ -109,7 +109,7 @@ the version-aware rules for `py_binary`.
 # MODULE.bazel
 bazel_dep(name = "rules_python", version=...)
 
-python = use_extension("@rules_python//extensions:python.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(python_version = "3.12")
 
 # BUILD.bazel
