@@ -63,7 +63,7 @@ specify `dev_dependency = True` to the bzlmod APIs:
 bazel_dep(name = "rules_python", version=..., dev_dependency = True)
 
 python = use_extension(
-    "@@rules_python//python/extensions:python.bzl",
+    "@rules_python//python/extensions:python.bzl",
     "python",
     dev_dependency = True
 )
