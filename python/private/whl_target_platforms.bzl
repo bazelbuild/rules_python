@@ -128,6 +128,15 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
     for whl in whls:
         parsed = parse_whl_name(whl.filename)
 
+        is_python_implementation_compatible = True
+        for tag in parsed.python_tag.split("."):
+            if not tag[:2] in ["py", "cp"]:
+                is_python_implementation_compatible = False
+                break
+
+        if not is_python_implementation_compatible:
+            continue
+
         if want_abis and parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
             continue

@@ -71,6 +71,8 @@ WHL_LIST = [
         "pkg-0.0.1-py310-abi3-any.whl",
         "pkg-0.0.1-py3-abi3-any.whl",
         "pkg-0.0.1-py3-none-any.whl",
+        # Also add other interpreters to ensure that we don't get them
+        "pkg-0.0.1-pp37.pp38.pp39-none-any.whl",
     ]
 ]
 
