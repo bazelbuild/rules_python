@@ -68,6 +68,7 @@ WHL_LIST = [
         "pkg-0.0.1-cp39-cp39-win32.whl",
         "pkg-0.0.1-cp39-cp39-win_amd64.whl",
         "pkg-0.0.1-cp39-abi3-any.whl",
+        "pkg-0.0.1-py310-abi3-any.whl",
         "pkg-0.0.1-py3-abi3-any.whl",
         "pkg-0.0.1-py3-none-any.whl",
     ]
@@ -125,6 +126,13 @@ def _test_select_by_supported_py_version(env):
         env,
         got,
         "pkg-0.0.1-cp39-abi3-any.whl",
+    )
+
+    got = select_whls(whls = WHL_LIST, want_abis = ["abi3"], want_platforms = ["ignored"], want_version = "3.10")
+    _match(
+        env,
+        got,
+        "pkg-0.0.1-py310-abi3-any.whl",
     )
 
 _tests.append(_test_select_by_supported_py_version)

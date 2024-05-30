@@ -134,8 +134,8 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
 
         if parsed.platform_tag == "any" or not want_platforms:
             whl_version_min = 0
-            if parsed.python_tag.startswith("cp3"):
-                whl_version_min = int(parsed.python_tag[len("cp3"):])
+            if parsed.python_tag.startswith("cp3") or parsed.python_tag.startswith("py3"):
+                whl_version_min = int(parsed.python_tag[len("xx3"):] or 0)
 
             if version_limit != -1 and whl_version_min > version_limit:
                 continue
