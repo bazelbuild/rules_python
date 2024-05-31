@@ -16,6 +16,8 @@
 Python proto library.
 """
 
-load("//python/private/proto:py_proto_library.bzl", _py_proto_library = "py_proto_library")
+load("@protobuf//bazel:py_proto_library.bzl", _py_proto_library = "py_proto_library")
 
-py_proto_library = _py_proto_library
+def py_proto_library(*, deprecation = "Use py_proto_library from protobuf repository", **kwargs):
+    _py_proto_library(deprecation = deprecation, **kwargs)
+

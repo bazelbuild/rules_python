@@ -112,7 +112,7 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//python/private/proto:py_proto_library_bzl",
+        "@protobuf//bazel:py_proto_library_bzl",
     ],
 )
 
