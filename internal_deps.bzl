@@ -165,7 +165,7 @@ def rules_python_internal_deps():
     )
 
     http_archive(
-        name = "protobuf",
+        name = "com_google_protobuf",
         sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
         strip_prefix = "protobuf-27.0",
         urls = [
