@@ -1,5 +1,5 @@
-load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_python//python:proto.bzl", "py_proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 
 py_proto_library(
     name = "pricetag_proto_py_pb2",
@@ -13,5 +13,5 @@ proto_library(
     # https://bazel.build/reference/be/protocol-buffer#proto_library.strip_import_prefix
     strip_import_prefix = "/example.com",
     visibility = ["//visibility:public"],
-    deps = ["@protobuf//:any_proto"],
+    deps = ["@com_google_protobuf//:any_proto"],
 )

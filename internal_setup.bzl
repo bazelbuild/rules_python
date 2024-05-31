@@ -17,7 +17,7 @@
 load("@bazel_features//:deps.bzl", "bazel_features_deps")
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
-load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("@rules_bazel_integration_test//bazel_integration_test:deps.bzl", "bazel_integration_test_rules_dependencies")
 load("@rules_bazel_integration_test//bazel_integration_test:repo_defs.bzl", "bazel_binaries")
 load("//:version.bzl", "SUPPORTED_BAZEL_VERSIONS")
