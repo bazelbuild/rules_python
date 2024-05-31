@@ -155,7 +155,7 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-   macos:
+  macos:
     <<: *reusable_config
     name: "Default: MacOS"
     platform: macos
@@ -190,7 +190,7 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-   rbe:
+  rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
     platform: rbe_ubuntu1604
@@ -260,7 +260,7 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-   integration_test_bzlmod_macos:
+  integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: macOS"
@@ -429,7 +429,7 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-   integration_test_py_proto_library_macos_workspace:
+  integration_test_py_proto_library_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
     name: "examples/py_proto_library: MacOS, workspace"
