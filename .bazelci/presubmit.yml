@@ -151,7 +151,11 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-  macos:
+    test_flags:
+      # For protobuf compilation
+      - '--host_copt=-Wno-deprecated-declarations'
+      - '--copt=-Wno-deprecated-declarations'
+   macos:
     <<: *reusable_config
     name: "Default: MacOS"
     platform: macos
@@ -183,7 +187,10 @@ tasks:
       # on Bazel 5.4 and earlier. To workaround this, manually specify the
       # build kite cc toolchain.
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
-  rbe:
+      # For protobuf compilation
+      - '--host_copt=-Wno-deprecated-declarations'
+      - '--copt=-Wno-deprecated-declarations'
+   rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
     platform: rbe_ubuntu1604
@@ -249,7 +256,11 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-  integration_test_bzlmod_macos:
+    test_flags:
+      # For protobuf compilation
+      - '--host_copt=-Wno-deprecated-declarations'
+      - '--copt=-Wno-deprecated-declarations'
+   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: macOS"
@@ -414,7 +425,11 @@ tasks:
       # For protobuf compilation
       - '--host_copt=-Wno-deprecated-declarations'
       - '--copt=-Wno-deprecated-declarations'
-  integration_test_py_proto_library_macos_workspace:
+    test_flags:
+      # For protobuf compilation
+      - '--host_copt=-Wno-deprecated-declarations'
+      - '--copt=-Wno-deprecated-declarations'
+   integration_test_py_proto_library_macos_workspace:
     <<: *reusable_build_test_all
     <<: *common_workspace_flags
     name: "examples/py_proto_library: MacOS, workspace"
