@@ -103,7 +103,7 @@ def _whl_priority(value):
     # Windows does not have multiple wheels for the same target platform
     return (False, False, 0, 0)
 
-def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = []):
+def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = [], logger = None):
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
@@ -111,6 +111,7 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
         want_version(str): An optional parameter to filter whls by version. Defaults to '3.0'.
         want_abis(list[str]): A list of ABIs that are supported.
         want_platforms(str): The platforms
+        logger: A logger for printing diagnostic messages.
 
     Returns:
         None or a struct with `url`, `sha256` and `filename` attributes for the
@@ -127,6 +128,9 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
     for whl in whls:
         parsed = parse_whl_name(whl.filename)
 
+        if logger:
+            logger.trace("Deciding whether to use '{}'".format(whl.filename))
+
         supported_implementations = {}
         whl_version_min = 0
         for tag in parsed.python_tag.split("."):
@@ -142,13 +146,19 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
                 whl_version_min = version
 
         if not ("cp" in supported_implementations or "py" in supported_implementations):
+            if logger:
+                logger.trace("Discarding the whl because the whl does not support CPython, whl supported implementations are: {}".format(supported_implementations))
             continue
 
         if want_abis and parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
+            if logger:
+                logger.trace("Discarding the whl because the whl abi did not match")
             continue
 
         if version_limit != -1 and whl_version_min > version_limit:
+            if logger:
+                logger.trace("Discarding the whl because the whl supported python version is too high")
             continue
 
         compatible = False
@@ -161,6 +171,8 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
                     break
 
         if not compatible:
+            if logger:
+                logger.trace("Discarding the whl because the whl does not support the desired platforms: {}".format(want_platforms))
             continue
 
         for implementation in supported_implementations:

@@ -100,7 +100,30 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
+def _new_logger(verbosity_level = None):
+    verbosity = {
+        "DEBUG": 2,
+        "INFO": 1,
+        "TRACE": 3,
+    }.get(verbosity_level, 0)
+
+    # buildifier: disable=print
+    def _log(enabled_on_verbosity, level, *args):
+        if verbosity < enabled_on_verbosity:
+            return
+        print("{}: ".format(level.upper()), *args)
+
+    return struct(
+        trace = lambda *args: _log(3, "TRACE", *args),
+        debug = lambda *args: _log(2, "DEBUG", *args),
+        info = lambda *args: _log(1, "INFO", *args),
+        # buildifier: disable=print
+        warn = lambda *args: print("WARNING: ", *args),
+        fail = lambda *args: fail(*args),
+    )
+
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
+    logger = _new_logger(pip_attr.verbosity)
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -198,6 +221,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             requirements_by_platform,
             index_urls,
             python_version = major_minor,
+            logger = logger,
         )
 
     repository_platform = host_platform(module_ctx.os)
@@ -261,10 +285,21 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
         if requirement.whls or requirement.sdists:
+            logger.debug("Selecting a compatible dist for {} from dists:\n{}".format(
+                repository_platform,
+                json.encode(
+                    struct(
+                        whls = requirement.whls,
+                        sdists = requirement.sdists,
+                    ),
+                ),
+            ))
             distribution = select_whl(
                 whls = requirement.whls,
                 want_platform = repository_platform,
             ) or (requirement.sdists[0] if requirement.sdists else None)
+
+            logger.debug("Selected: {}".format(distribution))
 
             if distribution:
                 whl_library_args["requirement"] = requirement.srcs.requirement
@@ -282,7 +317,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 # This is no-op because pip is not used to download the wheel.
                 whl_library_args.pop("download_only", None)
             else:
-                print("WARNING: falling back to pip for installing the right file for {}".format(requirement.requirement_line))  # buildifier: disable=print
+                logger.warn("falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.
@@ -548,6 +583,13 @@ The Python version the dependencies are targetting, in Major.Minor format
 If an interpreter isn't explicitly provided (using `python_interpreter` or
 `python_interpreter_target`), then the version specified here must have
 a corresponding `python.toolchain()` configured.
+""",
+        ),
+        "verbosity": attr.string(
+            default = "",
+            values = ["TRACE", "DEBUG", "INFO"],
+            doc = """
+The verbosity with which we should print diagnostic messages when 'quiet = False'.
 """,
         ),
         "whl_modifications": attr.label_keyed_string_dict(

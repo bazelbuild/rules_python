@@ -22,7 +22,7 @@ am keeping it together with parse_requirements.bzl.
 
 load(":whl_target_platforms.bzl", "select_whls")
 
-def parse_requirements_add_dists(requirements_by_platform, index_urls, python_version):
+def parse_requirements_add_dists(requirements_by_platform, index_urls, python_version, logger = None):
     """Populate dists based on the information from the PyPI index.
 
     This function will modify the given requirements_by_platform data structure.
@@ -31,6 +31,7 @@ def parse_requirements_add_dists(requirements_by_platform, index_urls, python_ve
         requirements_by_platform: The result of parse_requirements function.
         index_urls: The result of simpleapi_download.
         python_version: The version of the python interpreter.
+        logger: A logger for printing diagnostic info.
     """
     for whl_name, requirements in requirements_by_platform.items():
         for requirement in requirements:
@@ -55,7 +56,8 @@ def parse_requirements_add_dists(requirements_by_platform, index_urls, python_ve
                     sdist = maybe_sdist
                     continue
 
-                print("WARNING: Could not find a whl or an sdist with sha256={}".format(sha256))  # buildifier: disable=print
+                if logger:
+                    logger.warn("Could not find a whl or an sdist with sha256={}".format(sha256))
 
             # Filter out the wheels that are incompatible with the target_platforms.
             whls = select_whls(
@@ -69,6 +71,7 @@ def parse_requirements_add_dists(requirements_by_platform, index_urls, python_ve
                 ],
                 want_platforms = requirement.target_platforms,
                 want_version = python_version,
+                logger = logger,
             )
 
             requirement.whls.extend(whls)
