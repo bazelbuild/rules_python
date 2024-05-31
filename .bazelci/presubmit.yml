@@ -179,6 +179,8 @@ tasks:
       - "--build_tag_filters=-docs"
     build_targets:
       # For protobuf compilation
+      - "--"
+      - "..."
       - '-//python:proto_bzl'
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
@@ -189,6 +191,8 @@ tasks:
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
     test_targets:
       # For protobuf compilation
+      - "--"
+      - "..."
       - '-//python:proto_bzl'
   rbe:
     <<: *reusable_config
@@ -196,11 +200,15 @@ tasks:
     platform: rbe_ubuntu1604
     build_targets:
       # For protobuf compilation
+      - "--"
+      - "..."
       - '-//python:proto_bzl'
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
     test_targets:
       # For protobuf compilation
+      - "--"
+      - "..."
       - '-//python:proto_bzl'
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
@@ -256,10 +264,14 @@ tasks:
     platform: debian11
     build_targets:
       # For protobuf compilation
-      - '-//python:proto_bzl'
+      - "--"
+      - "..."
+      - "-//py_proto_library/..."
     test_targets:
       # For protobuf compilation
-      - '-//python:proto_bzl'
+      - "--"
+      - "..."
+      - "-//py_proto_library/..."
   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
