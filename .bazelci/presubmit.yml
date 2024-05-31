@@ -202,12 +202,14 @@ tasks:
       - "--"
       - "..."
       - '-//sphinxdocs/...' # protobuf compilation fails
+      - '@com_google_protobuf//...'
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
     test_targets:
       - "--"
       - "..."
       - '-//sphinxdocs/...' # protobuf compilation fails
+      - '@com_google_protobuf//...'
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version
