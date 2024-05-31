@@ -29,14 +29,15 @@ incrementally control precompiling on a per-binry basis.
 
 To use this approach, the two basic steps are:
 1. Disable pyc files from being automatically added to runfiles:
-   `--@rules_python//python/config_settings:precompile_add_to_runfiles=decided_elsewhere`,
+   {bzl:obj}`--@rules_python//python/config_settings:precompile_add_to_runfiles=decided_elsewhere`,
 2. Set the `pyc_collection` attribute on the binaries/tests that should or should
    not use precompiling.
 
-The default for the `pyc_collection` attribute is controlled by a flag, so you
-can use an opt-in or opt-out approach by setting the flag:
-* targets must opt-out: `--@rules_python//python/config_settings:pyc_collection=include_pyc`,
-* targets must opt-in: `--@rules_python//python/config_settings:pyc_collection=disabled`,
+The default for the `pyc_collection` attribute is controlled by the flag
+{bzl:obj}`--@rules_python//python/config_settings:pyc_collection`, so you
+can use an opt-in or opt-out approach by setting its value:
+* targets must opt-out: `--@rules_python//python/config_settings:pyc_collection=include_pyc`
+* targets must opt-in: `--@rules_python//python/config_settings:pyc_collection=disabled`
 
 ## Advanced precompiler customization
 
@@ -51,14 +52,14 @@ mechanisms are available:
 * The execution requirements can be customized using
   `--@rules_python//tools/precompiler:execution_requirements`. This is a list
   flag that can be repeated. Each entry is a key=value that is added to the
-  execution requirements of the `PyPrecompile` action. Note that this flag
+  execution requirements of the `PyCompile` action. Note that this flag
   is specific to the rules_python precompiler. If a custom binary is used,
   this flag will have to be propagated from the custom binary using the
   `testing.ExecutionInfo` provider; refer to the `py_interpreter_program` an
 
 The default precompiler implementation is an asynchronous/concurrent
 implementation. If you find it has bugs or hangs, please report them. In the
-meantime, the flag `--worker_extra_flag=PyPrecompile=--worker_impl=serial` can
+meantime, the flag `--worker_extra_flag=PyCompile=--worker_impl=serial` can
 be used to switch to a synchronous/serial implementation that may not perform
 as well, but is less likely to have issues.
 

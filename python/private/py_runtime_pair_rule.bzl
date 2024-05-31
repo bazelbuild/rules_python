@@ -98,15 +98,12 @@ unusable for building Python code using that version.
 Usually the wrapped runtimes are declared using the `py_runtime` rule, but any
 rule returning a `PyRuntimeInfo` provider may be used.
 
-This rule returns a `platform_common.ToolchainInfo` provider with the following
-schema:
+This rule returns a {obj}`ToolchainInfo` provider with fields:
 
-```python
-platform_common.ToolchainInfo(
-    py2_runtime = <PyRuntimeInfo or None>,
-    py3_runtime = <PyRuntimeInfo or None>,
-)
-```
+* `py2_runtime`: {type}`PyRuntimeInfo | None`, runtime information for a
+  Python 2 runtime.
+* `py3_runtime`: {type}`PyRuntimeInfo | None`. runtime information for a
+  Python 3 runtime.
 
 Example usage:
 

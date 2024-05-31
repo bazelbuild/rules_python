@@ -10,4 +10,5 @@ dependencies = [
     "sphinx_rtd_theme",
     "readthedocs-sphinx-ext",
     "absl-py",
+    "typing-extensions"
 ]
