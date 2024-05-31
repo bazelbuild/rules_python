@@ -103,12 +103,12 @@ def _whl_priority(value):
     # Windows does not have multiple wheels for the same target platform
     return (False, False, 0, 0)
 
-def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = []):
+def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = []):
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
         whls(list[struct]): A list of candidates.
-        want_version(str, optional): An optional parameter to filter whls by version.
+        want_version(str): An optional parameter to filter whls by version. Defaults to '3.0'.
         want_abis(list[str]): A list of ABIs that are supported.
         want_platforms(str): The platforms
 
@@ -124,55 +124,70 @@ def select_whls(*, whls, want_version = None, want_abis = [], want_platforms = [
         version_limit = int(want_version.split(".")[1])
 
     candidates = {}
-    any_whls = []
     for whl in whls:
         parsed = parse_whl_name(whl.filename)
 
-        is_python_implementation_compatible = True
+        supported_implementations = {}
+        whl_version_min = 0
         for tag in parsed.python_tag.split("."):
-            if not tag[:2] in ["py", "cp"]:
-                is_python_implementation_compatible = False
-                break
+            supported_implementations[tag[:2]] = None
 
-        if not is_python_implementation_compatible:
+            if tag.startswith("cp3") or tag.startswith("py3"):
+                version = int(tag[len("..3"):] or 0)
+            else:
+                # tag.startswith("cp2") or tag.startswith("py2")
+                continue
+
+            if whl_version_min == 0 or version < whl_version_min:
+                whl_version_min = version
+
+        if not ("cp" in supported_implementations or "py" in supported_implementations):
             continue
 
         if want_abis and parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
             continue
 
-        if parsed.platform_tag == "any" or not want_platforms:
-            whl_version_min = 0
-            if parsed.python_tag.startswith("cp3") or parsed.python_tag.startswith("py3"):
-                whl_version_min = int(parsed.python_tag[len("xx3"):] or 0)
-
-            if version_limit != -1 and whl_version_min > version_limit:
-                continue
-            elif version_limit != -1 and parsed.abi_tag in ["none", "abi3"]:
-                # We want to prefer by version and then we want to prefer abi3 over none
-                any_whls.append((whl_version_min, parsed.abi_tag == "abi3", whl))
-                continue
-
-            candidates["any"] = whl
+        if version_limit != -1 and whl_version_min > version_limit:
             continue
 
         compatible = False
-        for p in whl_target_platforms(parsed.platform_tag):
-            if p.target_platform in want_platforms:
-                compatible = True
-                break
+        if parsed.platform_tag == "any":
+            compatible = True
+        else:
+            for p in whl_target_platforms(parsed.platform_tag):
+                if p.target_platform in want_platforms:
+                    compatible = True
+                    break
 
-        if compatible:
-            candidates[parsed.platform_tag] = whl
+        if not compatible:
+            continue
 
-    if any_whls:
-        # Overwrite the previously select any whl with the best fitting one.
-        # The any_whls will be only populated if we pass the want_version
-        # parameter.
-        _, _, whl = sorted(any_whls)[-1]
-        candidates["any"] = whl
+        for implementation in supported_implementations:
+            candidates.setdefault(
+                (
+                    parsed.abi_tag,
+                    parsed.platform_tag,
+                ),
+                {},
+            ).setdefault(
+                (
+                    # prefer cp implementation
+                    implementation == "cp",
+                    # prefer higher versions
+                    whl_version_min,
+                    # prefer abi3 over none
+                    parsed.abi_tag != "none",
+                    # prefer cpx abi over abi3
+                    parsed.abi_tag != "abi3",
+                ),
+                [],
+            ).append(whl)
 
-    return candidates.values()
+    return [
+        candidates[key][sorted(v)[-1]][-1]
+        for key, v in candidates.items()
+    ]
 
 def select_whl(*, whls, want_platform):
     """Select a suitable wheel from a list.
@@ -193,6 +208,7 @@ def select_whl(*, whls, want_platform):
     # the repository context instead of `select_whl`.
     whls = select_whls(
         whls = whls,
+        want_version = "",
         want_platforms = [want_platform],
     )
 
