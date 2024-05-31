@@ -117,7 +117,7 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
         selected whl. If no match is found, None is returned.
     """
     if not whls:
-        return {}
+        return []
 
     version_limit = -1
     if want_version:
