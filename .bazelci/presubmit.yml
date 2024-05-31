@@ -196,6 +196,8 @@ tasks:
     <<: *reusable_config
     name: "RBE: Ubuntu"
     platform: rbe_ubuntu1604
+    build_flags:
+      - "--build_tag_filters=-docs"
     build_targets:
       - "--"
       - "..."
