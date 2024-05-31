@@ -180,7 +180,7 @@ tasks:
     build_targets:
       - "--"
       - "..."
-      - '-//sphinxdoc/...' # protobuf compilation fails
+      - '-//sphinxdocs/...' # protobuf compilation fails
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test,-docs"
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
@@ -191,7 +191,7 @@ tasks:
     test_targets:
       - "--"
       - "..."
-      - '-//sphinxdoc/...' # protobuf compilation fails
+      - '-//sphinxdocs/...' # protobuf compilation fails
   rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
@@ -200,14 +200,14 @@ tasks:
       # For protobuf compilation
       - "--"
       - "..."
-      - '-//sphinxdoc/...' # protobuf compilation fails
+      - '-//sphinxdocs/...' # protobuf compilation fails
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
     test_targets:
       # For protobuf compilation
       - "--"
       - "..."
-      - '-//sphinxdoc/...' # protobuf compilation fails
+      - '-//sphinxdocs/...' # protobuf compilation fails
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version
