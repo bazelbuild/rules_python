@@ -29,7 +29,7 @@ behavior.
 load("//python/pip_install:requirements_parser.bzl", "parse")
 load(":normalize_name.bzl", "normalize_name")
 load(":pypi_index_sources.bzl", "get_simpleapi_sources")
-load(":whl_target_platforms.bzl", "whl_target_platforms")
+load(":whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
 
 # This includes the vendored _translate_cpu and _translate_os from
 # @platforms//host:extension.bzl at version 0.0.9 so that we don't
@@ -147,6 +147,9 @@ def parse_requirements(
         requirements_lock = None,
         requirements_windows = None,
         extra_pip_args = [],
+        get_index_urls = None,
+        python_version = None,
+        logger = None,
         fail_fn = fail):
     """Get the requirements with platforms that the requirements apply to.
 
@@ -161,6 +164,12 @@ def parse_requirements(
         requirements_windows (label): The requirements file for windows OS.
         extra_pip_args (string list): Extra pip arguments to perform extra validations and to
             be joined with args fined in files.
+        get_index_urls: Callable[[ctx, list[str]], dict], a callable to get all
+            of the distribution URLs from a PyPI index. Accepts ctx and
+            distribution names to query.
+        python_version: str or None. This is needed when the get_index_urls is
+            specified. It should be of the form "3.x.x",
+        logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
         fail_fn (Callable[[str], None]): A failure function used in testing failure cases.
 
     Returns:
@@ -317,26 +326,47 @@ def parse_requirements(
             )
             for_req.target_platforms.append(target_platform)
 
-    return {
-        whl_name: [
-            struct(
-                distribution = r.distribution,
-                srcs = r.srcs,
-                requirement_line = r.requirement_line,
-                target_platforms = sorted(r.target_platforms),
-                extra_pip_args = r.extra_pip_args,
-                download = r.download,
-                # Note, some lock file formats have URLs and dists stored in
-                # the file, this field can be used for storing those values in
-                # the future. This is also going to be used by the pypi_index
-                # helper.
-                whls = [],
-                sdists = [],
+    index_urls = {}
+    if get_index_urls:
+        if not python_version:
+            fail_fn("'python_version' must be provided")
+            return None
+
+        index_urls = get_index_urls(
+            ctx,
+            # Use list({}) as a way to have a set
+            list({
+                req.distribution: None
+                for reqs in requirements_by_platform.values()
+                for req in reqs.values()
+            }),
+        )
+
+    ret = {}
+    for whl_name, reqs in requirements_by_platform.items():
+        ret[whl_name] = []
+        for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
+            whls, sdist = _add_dists(
+                r,
+                index_urls.get(whl_name),
+                python_version = python_version,
+                logger = logger,
             )
-            for r in sorted(reqs.values(), key = lambda r: r.requirement_line)
-        ]
-        for whl_name, reqs in requirements_by_platform.items()
-    }
+
+            ret.setdefault(whl_name, []).append(
+                struct(
+                    distribution = r.distribution,
+                    srcs = r.srcs,
+                    requirement_line = r.requirement_line,
+                    target_platforms = sorted(r.target_platforms),
+                    extra_pip_args = r.extra_pip_args,
+                    download = r.download,
+                    whls = whls,
+                    sdist = sdist,
+                ),
+            )
+
+    return ret
 
 def select_requirement(requirements, *, platform):
     """A simple function to get a requirement for a particular platform.
@@ -383,3 +413,58 @@ def host_platform(repository_os):
         _translate_os(repository_os.name.lower()),
         _translate_cpu(repository_os.arch.lower()),
     )
+
+def _add_dists(requirement, index_urls, python_version, logger = None):
+    """Populate dists based on the information from the PyPI index.
+
+    This function will modify the given requirements_by_platform data structure.
+
+    Args:
+        requirement: The result of parse_requirements function.
+        index_urls: The result of simpleapi_download.
+        python_version: The version of the python interpreter.
+        logger: A logger for printing diagnostic info.
+    """
+    if not index_urls:
+        return [], None
+
+    whls = []
+    sdist = None
+
+    # TODO @aignas 2024-05-22: it is in theory possible to add all
+    # requirements by version instead of by sha256. This may be useful
+    # for some projects.
+    for sha256 in requirement.srcs.shas:
+        # For now if the artifact is marked as yanked we just ignore it.
+        #
+        # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
+
+        maybe_whl = index_urls.whls.get(sha256)
+        if maybe_whl and not maybe_whl.yanked:
+            whls.append(maybe_whl)
+            continue
+
+        maybe_sdist = index_urls.sdists.get(sha256)
+        if maybe_sdist and not maybe_sdist.yanked:
+            sdist = maybe_sdist
+            continue
+
+        if logger:
+            logger.warn("Could not find a whl or an sdist with sha256={}".format(sha256))
+
+    # Filter out the wheels that are incompatible with the target_platforms.
+    whls = select_whls(
+        whls = whls,
+        want_abis = [
+            "none",
+            "abi3",
+            "cp" + python_version.replace(".", ""),
+            # Older python versions have wheels for the `*m` ABI.
+            "cp" + python_version.replace(".", "") + "m",
+        ],
+        want_platforms = requirement.target_platforms,
+        want_python_version = python_version,
+        logger = logger,
+    )
+
+    return whls, sdist

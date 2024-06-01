@@ -97,7 +97,7 @@ def _test_simple(env):
                     "windows_x86_64",
                 ],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -144,7 +144,7 @@ def _test_platform_markers_with_python_version(env):
                     "linux_x86_64",
                 ],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -180,7 +180,7 @@ def _test_dupe_requirements(env):
                     "windows_x86_64",
                 ],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -219,7 +219,7 @@ def _test_multi_os(env):
                 ),
                 target_platforms = ["windows_x86_64"],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
         "foo": [
@@ -243,7 +243,7 @@ def _test_multi_os(env):
                     "osx_x86_64",
                 ],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -257,7 +257,7 @@ def _test_multi_os(env):
                 ),
                 target_platforms = ["windows_x86_64"],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -316,7 +316,7 @@ def _test_multi_os_download_only_platform(env):
                 ),
                 target_platforms = ["linux_x86_64"],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -370,7 +370,7 @@ def _test_os_arch_requirements_with_default(env):
                 ),
                 target_platforms = ["linux_aarch64", "linux_x86_64"],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -384,7 +384,7 @@ def _test_os_arch_requirements_with_default(env):
                 ),
                 target_platforms = ["linux_super_exotic"],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -405,7 +405,7 @@ def _test_os_arch_requirements_with_default(env):
                     "windows_x86_64",
                 ],
                 whls = [],
-                sdists = [],
+                sdist = None,
             ),
         ],
     })
@@ -423,6 +423,18 @@ def _test_os_arch_requirements_with_default(env):
     ).equals("0.0.3")
 
 _tests.append(_test_os_arch_requirements_with_default)
+
+def _test_fail_no_python_version(env):
+    errors = []
+    parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_lock = "requirements_lock",
+        get_index_urls = lambda _, __: {},
+        fail_fn = errors.append,
+    )
+    env.expect.that_str(errors[0]).equals("'python_version' must be provided")
+
+_tests.append(_test_fail_no_python_version)
 
 def parse_requirements_test_suite(name):
     """Create the test suite.
