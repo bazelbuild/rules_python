@@ -229,6 +229,8 @@ def select_whl(*, whls, want_platform):
     candidates = {
         parse_whl_name(w.filename).platform_tag: w
         for w in whls
+        # TODO @aignas 2024-06-01: to be addressed in #1837, where we add the necessary
+        # config settings.
         if "musllinux_" not in w.filename
     }
 
