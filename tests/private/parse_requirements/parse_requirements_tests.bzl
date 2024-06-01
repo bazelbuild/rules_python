@@ -96,6 +96,8 @@ def _test_simple(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdist = None,
             ),
         ],
     })
@@ -108,6 +110,47 @@ def _test_simple(env):
     ).equals("0.0.1")
 
 _tests.append(_test_simple)
+
+def _test_platform_markers_with_python_version(env):
+    got = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_lock": "cp39_linux_*",
+        },
+    )
+    got_alternative = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_lock": "linux_*",
+        },
+    )
+    env.expect.that_dict(got).contains_exactly({
+        "foo": [
+            struct(
+                distribution = "foo",
+                download = False,
+                extra_pip_args = [],
+                requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
+                srcs = struct(
+                    requirement = "foo[extra]==0.0.1",
+                    shas = ["deadbeef"],
+                    version = "0.0.1",
+                ),
+                target_platforms = [
+                    "linux_aarch64",
+                    "linux_arm",
+                    "linux_ppc",
+                    "linux_s390x",
+                    "linux_x86_64",
+                ],
+                whls = [],
+                sdist = None,
+            ),
+        ],
+    })
+    env.expect.that_dict(got).contains_exactly(got_alternative)
+
+_tests.append(_test_platform_markers_with_python_version)
 
 def _test_dupe_requirements(env):
     got = parse_requirements(
@@ -136,6 +179,8 @@ def _test_dupe_requirements(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdist = None,
             ),
         ],
     })
@@ -173,6 +218,8 @@ def _test_multi_os(env):
                     version = "0.0.1",
                 ),
                 target_platforms = ["windows_x86_64"],
+                whls = [],
+                sdist = None,
             ),
         ],
         "foo": [
@@ -195,6 +242,8 @@ def _test_multi_os(env):
                     "osx_aarch64",
                     "osx_x86_64",
                 ],
+                whls = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -207,6 +256,8 @@ def _test_multi_os(env):
                     version = "0.0.2",
                 ),
                 target_platforms = ["windows_x86_64"],
+                whls = [],
+                sdist = None,
             ),
         ],
     })
@@ -264,6 +315,8 @@ def _test_multi_os_download_only_platform(env):
                     version = "0.0.3",
                 ),
                 target_platforms = ["linux_x86_64"],
+                whls = [],
+                sdist = None,
             ),
         ],
     })
@@ -316,6 +369,8 @@ def _test_os_arch_requirements_with_default(env):
                     version = "0.0.3",
                 ),
                 target_platforms = ["linux_aarch64", "linux_x86_64"],
+                whls = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -328,6 +383,8 @@ def _test_os_arch_requirements_with_default(env):
                     version = "",
                 ),
                 target_platforms = ["linux_super_exotic"],
+                whls = [],
+                sdist = None,
             ),
             struct(
                 distribution = "foo",
@@ -347,6 +404,8 @@ def _test_os_arch_requirements_with_default(env):
                     "osx_x86_64",
                     "windows_x86_64",
                 ],
+                whls = [],
+                sdist = None,
             ),
         ],
     })
@@ -364,6 +423,18 @@ def _test_os_arch_requirements_with_default(env):
     ).equals("0.0.3")
 
 _tests.append(_test_os_arch_requirements_with_default)
+
+def _test_fail_no_python_version(env):
+    errors = []
+    parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_lock = "requirements_lock",
+        get_index_urls = lambda _, __: {},
+        fail_fn = errors.append,
+    )
+    env.expect.that_str(errors[0]).equals("'python_version' must be provided")
+
+_tests.append(_test_fail_no_python_version)
 
 def parse_requirements_test_suite(name):
     """Create the test suite.

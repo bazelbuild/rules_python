@@ -16,6 +16,30 @@
 A starlark implementation of a Wheel filename parsing.
 """
 
+# Taken from https://peps.python.org/pep-0600/
+_LEGACY_ALIASES = {
+    "manylinux1_i686": "manylinux_2_5_i686",
+    "manylinux1_x86_64": "manylinux_2_5_x86_64",
+    "manylinux2010_i686": "manylinux_2_12_i686",
+    "manylinux2010_x86_64": "manylinux_2_12_x86_64",
+    "manylinux2014_aarch64": "manylinux_2_17_aarch64",
+    "manylinux2014_armv7l": "manylinux_2_17_armv7l",
+    "manylinux2014_i686": "manylinux_2_17_i686",
+    "manylinux2014_ppc64": "manylinux_2_17_ppc64",
+    "manylinux2014_ppc64le": "manylinux_2_17_ppc64le",
+    "manylinux2014_s390x": "manylinux_2_17_s390x",
+    "manylinux2014_x86_64": "manylinux_2_17_x86_64",
+}
+
+def normalize_platform_tag(tag):
+    """Resolve legacy aliases to modern equivalents for easier parsing elsewhere."""
+    return ".".join(list({
+        # The `list({})` usage here is to use it as a string set, where we will
+        # deduplicate, but otherwise retain the order of the tags.
+        _LEGACY_ALIASES.get(p, p): None
+        for p in tag.split(".")
+    }))
+
 def parse_whl_name(file):
     """Parse whl file name into a struct of constituents.
 
@@ -68,5 +92,5 @@ def parse_whl_name(file):
         build_tag = build_tag,
         python_tag = python_tag,
         abi_tag = abi_tag,
-        platform_tag = platform_tag,
+        platform_tag = normalize_platform_tag(platform_tag),
     )

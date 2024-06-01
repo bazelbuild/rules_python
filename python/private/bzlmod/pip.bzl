@@ -28,6 +28,7 @@ load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirem
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
+load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private:whl_target_platforms.bzl", "select_whl")
 load(":pip_repository.bzl", "pip_repository")
@@ -100,6 +101,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         )
 
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
+    logger = repo_utils.logger(module_ctx)
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -160,32 +162,18 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     # Create a new wheel library for each of the different whls
 
-    requirements_by_platform = parse_requirements(
-        module_ctx,
-        requirements_by_platform = pip_attr.requirements_by_platform,
-        requirements_linux = pip_attr.requirements_linux,
-        requirements_lock = pip_attr.requirements_lock,
-        requirements_osx = pip_attr.requirements_darwin,
-        requirements_windows = pip_attr.requirements_windows,
-        extra_pip_args = pip_attr.extra_pip_args,
-    )
-
-    index_urls = {}
+    get_index_urls = None
     if pip_attr.experimental_index_url:
         if pip_attr.download_only:
             fail("Currently unsupported to use `download_only` and `experimental_index_url`")
 
-        index_urls = simpleapi_download(
-            module_ctx,
+        get_index_urls = lambda ctx, distributions: simpleapi_download(
+            ctx,
             attr = struct(
                 index_url = pip_attr.experimental_index_url,
                 extra_index_urls = pip_attr.experimental_extra_index_urls or [],
                 index_url_overrides = pip_attr.experimental_index_url_overrides or {},
-                sources = list({
-                    req.distribution: None
-                    for reqs in requirements_by_platform.values()
-                    for req in reqs
-                }),
+                sources = distributions,
                 envsubst = pip_attr.envsubst,
                 # Auth related info
                 netrc = pip_attr.netrc,
@@ -194,6 +182,19 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             cache = simpleapi_cache,
             parallel_download = pip_attr.parallel_download,
         )
+
+    requirements_by_platform = parse_requirements(
+        module_ctx,
+        requirements_by_platform = pip_attr.requirements_by_platform,
+        requirements_linux = pip_attr.requirements_linux,
+        requirements_lock = pip_attr.requirements_lock,
+        requirements_osx = pip_attr.requirements_darwin,
+        requirements_windows = pip_attr.requirements_windows,
+        extra_pip_args = pip_attr.extra_pip_args,
+        get_index_urls = get_index_urls,
+        python_version = major_minor,
+        logger = logger,
+    )
 
     repository_platform = host_platform(module_ctx.os)
     for whl_name, requirements in requirements_by_platform.items():
@@ -255,37 +256,22 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         )
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
-        if index_urls:
-            whls = []
-            sdist = None
-            for sha256 in requirement.srcs.shas:
-                # For now if the artifact is marked as yanked we just ignore it.
-                #
-                # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-
-                maybe_whl = index_urls[whl_name].whls.get(sha256)
-                if maybe_whl and not maybe_whl.yanked:
-                    whls.append(maybe_whl)
-                    continue
-
-                maybe_sdist = index_urls[whl_name].sdists.get(sha256)
-                if maybe_sdist and not maybe_sdist.yanked:
-                    sdist = maybe_sdist
-                    continue
-
-                print("WARNING: Could not find a whl or an sdist with sha256={}".format(sha256))  # buildifier: disable=print
-
+        if requirement.whls or requirement.sdist:
+            logger.debug(lambda: "Selecting a compatible dist for {} from dists:\n{}".format(
+                repository_platform,
+                json.encode(
+                    struct(
+                        whls = requirement.whls,
+                        sdist = requirement.sdist,
+                    ),
+                ),
+            ))
             distribution = select_whl(
-                whls = whls,
-                want_abis = [
-                    "none",
-                    "abi3",
-                    "cp" + major_minor.replace(".", ""),
-                    # Older python versions have wheels for the `*m` ABI.
-                    "cp" + major_minor.replace(".", "") + "m",
-                ],
+                whls = requirement.whls,
                 want_platform = repository_platform,
-            ) or sdist
+            ) or requirement.sdist
+
+            logger.debug(lambda: "Selected: {}".format(distribution))
 
             if distribution:
                 whl_library_args["requirement"] = requirement.srcs.requirement
@@ -303,7 +289,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 # This is no-op because pip is not used to download the wheel.
                 whl_library_args.pop("download_only", None)
             else:
-                print("WARNING: falling back to pip for installing the right file for {}".format(requirement.requirement_line))  # buildifier: disable=print
+                logger.warn("falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.

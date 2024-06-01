@@ -18,6 +18,7 @@ This code should only be loaded and used during the repository phase.
 """
 
 REPO_DEBUG_ENV_VAR = "RULES_PYTHON_REPO_DEBUG"
+REPO_VERBOSITY_ENV_VAR = "RULES_PYTHON_REPO_DEBUG_VERBOSITY"
 
 def _is_repo_debug_enabled(rctx):
     """Tells if debbugging output is requested during repo operatiosn.
@@ -40,6 +41,42 @@ def _debug_print(rctx, message_cb):
     """
     if _is_repo_debug_enabled(rctx):
         print(message_cb())  # buildifier: disable=print
+
+def _logger(rctx):
+    """Creates a logger instance for printing messages.
+
+    Args:
+        rctx: repository_ctx object.
+
+    Returns:
+        A struct with attributes logging: trace, debug, info, warn, fail.
+    """
+    if _is_repo_debug_enabled(rctx):
+        verbosity_level = "DEBUG"
+    else:
+        verbosity_level = "WARN"
+
+    env_var_verbosity = rctx.os.environ.get(REPO_VERBOSITY_ENV_VAR)
+    verbosity_level = env_var_verbosity or verbosity_level
+
+    verbosity = {
+        "DEBUG": 2,
+        "INFO": 1,
+        "TRACE": 3,
+    }.get(verbosity_level, 0)
+
+    def _log(enabled_on_verbosity, level, message_cb):
+        if verbosity < enabled_on_verbosity:
+            return
+
+        print("\nrules_python: {}: ".format(level.upper()), message_cb())  # buildifier: disable=print
+
+    return struct(
+        trace = lambda message_cb: _log(3, "TRACE", message_cb),
+        debug = lambda message_cb: _log(2, "DEBUG", message_cb),
+        info = lambda message_cb: _log(1, "INFO", message_cb),
+        warn = lambda message_cb: _log(0, "WARNING", message_cb),
+    )
 
 def _execute_internal(
         rctx,
@@ -232,4 +269,5 @@ repo_utils = struct(
     is_repo_debug_enabled = _is_repo_debug_enabled,
     debug_print = _debug_print,
     which_checked = _which_checked,
+    logger = _logger,
 )

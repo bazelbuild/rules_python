@@ -49,6 +49,8 @@ A brief description of the categories of changes:
   "panic: runtime error: invalid memory address or nil pointer dereference"
 * (bzlmod) remove `pip.parse(annotations)` attribute as it is unused and has been
   replaced by whl_modifications.
+* (pip) Correctly select wheels when the python tag includes minor versions.
+  See ([#1930](https://github.com/bazelbuild/rules_python/issues/1930))
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
