@@ -256,13 +256,13 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         )
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
-        if requirement.whls or requirement.sdists:
+        if requirement.whls or requirement.sdist:
             logger.debug(lambda: "Selecting a compatible dist for {} from dists:\n{}".format(
                 repository_platform,
                 json.encode(
                     struct(
                         whls = requirement.whls,
-                        sdists = requirement.sdists,
+                        sdist = requirement.sdist,
                     ),
                 ),
             ))
