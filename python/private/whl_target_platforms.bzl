@@ -129,7 +129,7 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
         parsed = parse_whl_name(whl.filename)
 
         if logger:
-            logger.trace("Deciding whether to use '{}'".format(whl.filename))
+            logger.trace(lambda: "Deciding whether to use '{}'".format(whl.filename))
 
         supported_implementations = {}
         whl_version_min = 0
@@ -147,18 +147,18 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
 
         if not ("cp" in supported_implementations or "py" in supported_implementations):
             if logger:
-                logger.trace("Discarding the whl because the whl does not support CPython, whl supported implementations are: {}".format(supported_implementations))
+                logger.trace(lambda: "Discarding the whl because the whl does not support CPython, whl supported implementations are: {}".format(supported_implementations))
             continue
 
         if want_abis and parsed.abi_tag not in want_abis:
             # Filter out incompatible ABIs
             if logger:
-                logger.trace("Discarding the whl because the whl abi did not match")
+                logger.trace(lambda: "Discarding the whl because the whl abi did not match")
             continue
 
         if version_limit != -1 and whl_version_min > version_limit:
             if logger:
-                logger.trace("Discarding the whl because the whl supported python version is too high")
+                logger.trace(lambda: "Discarding the whl because the whl supported python version is too high")
             continue
 
         compatible = False
@@ -172,7 +172,7 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
 
         if not compatible:
             if logger:
-                logger.trace("Discarding the whl because the whl does not support the desired platforms: {}".format(want_platforms))
+                logger.trace(lambda: "Discarding the whl because the whl does not support the desired platforms: {}".format(want_platforms))
             continue
 
         for implementation in supported_implementations:

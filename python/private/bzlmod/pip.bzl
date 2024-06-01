@@ -29,6 +29,7 @@ load("//python/private:parse_requirements_add_dists.bzl", "parse_requirements_ad
 load("//python/private:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
+load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private:whl_target_platforms.bzl", "select_whl")
 load(":pip_repository.bzl", "pip_repository")
@@ -100,30 +101,8 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _new_logger(verbosity_level = None):
-    verbosity = {
-        "DEBUG": 2,
-        "INFO": 1,
-        "TRACE": 3,
-    }.get(verbosity_level, 0)
-
-    # buildifier: disable=print
-    def _log(enabled_on_verbosity, level, *args):
-        if verbosity < enabled_on_verbosity:
-            return
-        print("{}: ".format(level.upper()), *args)
-
-    return struct(
-        trace = lambda *args: _log(3, "TRACE", *args),
-        debug = lambda *args: _log(2, "DEBUG", *args),
-        info = lambda *args: _log(1, "INFO", *args),
-        # buildifier: disable=print
-        warn = lambda *args: print("WARNING: ", *args),
-        fail = lambda *args: fail(*args),
-    )
-
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
-    logger = _new_logger(pip_attr.verbosity)
+    logger = repo_utils.logger(module_ctx)
     python_interpreter_target = pip_attr.python_interpreter_target
 
     # if we do not have the python_interpreter set in the attributes
@@ -285,7 +264,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
 
         if requirement.whls or requirement.sdists:
-            logger.debug("Selecting a compatible dist for {} from dists:\n{}".format(
+            logger.debug(lambda: "Selecting a compatible dist for {} from dists:\n{}".format(
                 repository_platform,
                 json.encode(
                     struct(
@@ -299,7 +278,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 want_platform = repository_platform,
             ) or (requirement.sdists[0] if requirement.sdists else None)
 
-            logger.debug("Selected: {}".format(distribution))
+            logger.debug(lambda: "Selected: {}".format(distribution))
 
             if distribution:
                 whl_library_args["requirement"] = requirement.srcs.requirement
