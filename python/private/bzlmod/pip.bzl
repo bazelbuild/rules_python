@@ -276,6 +276,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             distribution = select_whl(
                 whls = requirement.whls,
                 want_platform = repository_platform,
+                # NOTE @aignas 2024-06-01: we use a list for sdists because the parent
+                # container is a struct, which is immutable and having a list
+                # allows to store things after the fact. We ever only expect to
+                # have a single element in the requirements.sdists list.
             ) or (requirement.sdists[0] if requirement.sdists else None)
 
             logger.debug(lambda: "Selected: {}".format(distribution))
