@@ -344,7 +344,6 @@ def parse_requirements(
 
     ret = {}
     for whl_name, reqs in requirements_by_platform.items():
-        ret[whl_name] = []
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
                 r,
