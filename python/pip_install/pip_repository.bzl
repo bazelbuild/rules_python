@@ -584,7 +584,17 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
     ),
     "quiet": attr.bool(
         default = True,
-        doc = "If True, suppress printing stdout and stderr output to the terminal.",
+        doc = """\
+If True, suppress printing stdout and stderr output to the terminal.
+
+If you would like to get more diagnostic output, please use:
+
+    RULES_PYTHON_REPO_DEBUG=1
+
+or
+
+    RULES_PYTHON_REPO_DEBUG_VERBOSITY=<INFO|DEBUG|TRACE>
+""",
     ),
     "repo_prefix": attr.string(
         doc = """

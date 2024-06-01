@@ -557,13 +557,6 @@ If an interpreter isn't explicitly provided (using `python_interpreter` or
 a corresponding `python.toolchain()` configured.
 """,
         ),
-        "verbosity": attr.string(
-            default = "",
-            values = ["TRACE", "DEBUG", "INFO"],
-            doc = """
-The verbosity with which we should print diagnostic messages when 'quiet = False'.
-""",
-        ),
         "whl_modifications": attr.label_keyed_string_dict(
             mandatory = False,
             doc = """\

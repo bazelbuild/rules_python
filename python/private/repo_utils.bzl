@@ -51,13 +51,13 @@ def _logger(rctx):
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
     """
-    debug_value = rctx.os.environ.get(REPO_DEBUG_ENV_VAR)
-    if debug_value == "1":
+    if _is_repo_debug_enabled(rctx):
         verbosity_level = "DEBUG"
     else:
         verbosity_level = "WARN"
 
-    verbosity_level = rctx.os.environ.get(REPO_VERBOSITY_ENV_VAR) or verbosity_level
+    env_var_verbosity = rctx.os.environ.get(REPO_VERBOSITY_ENV_VAR)
+    verbosity_level = env_var_verbosity or verbosity_level
 
     verbosity = {
         "DEBUG": 2,
@@ -69,7 +69,7 @@ def _logger(rctx):
         if verbosity < enabled_on_verbosity:
             return
 
-        print("{}: ".format(level.upper()), message_cb())  # buildifier: disable=print
+        print("\nrules_python: {}: ".format(level.upper()), message_cb())  # buildifier: disable=print
 
     return struct(
         trace = lambda message_cb: _log(3, "TRACE", message_cb),
