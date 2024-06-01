@@ -141,14 +141,6 @@ bzl_library(
 )
 
 bzl_library(
-    name = "parse_requirements_add_dists_bzl",
-    srcs = ["parse_requirements_add_dists.bzl"],
-    deps = [
-        ":whl_target_platforms_bzl",
-    ],
-)
-
-bzl_library(
     name = "parse_whl_name_bzl",
     srcs = ["parse_whl_name.bzl"],
 )
