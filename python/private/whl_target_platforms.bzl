@@ -107,15 +107,16 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
-        whls(list[struct]): A list of candidates.
+        whls(list[struct]): A list of candidates which have a `filename`
+            attribute containing the `whl` filename.
         want_version(str): An optional parameter to filter whls by version. Defaults to '3.0'.
         want_abis(list[str]): A list of ABIs that are supported.
         want_platforms(str): The platforms
         logger: A logger for printing diagnostic messages.
 
     Returns:
-        None or a struct with `url`, `sha256` and `filename` attributes for the
-        selected whl. If no match is found, None is returned.
+        A filtered list of items from the `whls` arg where `filename` matches
+        the selected criteria. If no match is found, an empty list is returned.
     """
     if not whls:
         return []
