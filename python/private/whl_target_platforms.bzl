@@ -140,7 +140,8 @@ def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platf
             if tag.startswith("cp3") or tag.startswith("py3"):
                 version = int(tag[len("..3"):] or 0)
             else:
-                # tag.startswith("cp2") or tag.startswith("py2")
+                # In this case it should be eithor "cp2" or "py2" and we will default
+                # to `whl_version_min` = 0
                 continue
 
             if whl_version_min == 0 or version < whl_version_min:
