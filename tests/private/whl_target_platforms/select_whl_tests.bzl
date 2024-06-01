@@ -135,7 +135,7 @@ def _test_select_abi3(env):
 _tests.append(_test_select_abi3)
 
 def _test_select_by_supported_py_version(env):
-    for want_version, match in {
+    for want_python_version, match in {
         "3.11": "pkg-0.0.1-py311-abi3-any.whl",
         "3.8": "pkg-0.0.1-py3-abi3-any.whl",
     }.items():
@@ -147,14 +147,14 @@ def _test_select_by_supported_py_version(env):
             ],
             want_abis = ["abi3"],
             want_platforms = ["ignored"],
-            want_version = want_version,
+            want_python_version = want_python_version,
         )
         _match(env, got, match)
 
 _tests.append(_test_select_by_supported_py_version)
 
 def _test_select_by_supported_cp_version(env):
-    for want_version, match in {
+    for want_python_version, match in {
         "3.11": "pkg-0.0.1-cp311-abi3-any.whl",
         "3.8": "pkg-0.0.1-py3-abi3-any.whl",
     }.items():
@@ -167,14 +167,14 @@ def _test_select_by_supported_cp_version(env):
             ],
             want_abis = ["abi3"],
             want_platforms = ["ignored"],
-            want_version = want_version,
+            want_python_version = want_python_version,
         )
         _match(env, got, match)
 
 _tests.append(_test_select_by_supported_cp_version)
 
 def _test_supported_cp_version_manylinux(env):
-    for want_version, match in {
+    for want_python_version, match in {
         "3.11": "pkg-0.0.1-cp311-none-manylinux_x86_64.whl",
         "3.8": "pkg-0.0.1-py3-none-manylinux_x86_64.whl",
     }.items():
@@ -187,7 +187,7 @@ def _test_supported_cp_version_manylinux(env):
             ],
             want_abis = ["none"],
             want_platforms = ["linux_x86_64"],
-            want_version = want_version,
+            want_python_version = want_python_version,
         )
         _match(env, got, match)
 
@@ -207,7 +207,7 @@ _tests.append(_test_ignore_unsupported)
 
 def _test_match_abi_and_not_py_version(env):
     # Check we match the ABI and not the py version
-    got = _select_whls(whls = WHL_LIST, want_abis = ["cp37m"], want_platforms = ["linux_x86_64"], want_version = "3.7")
+    got = _select_whls(whls = WHL_LIST, want_abis = ["cp37m"], want_platforms = ["linux_x86_64"], want_python_version = "3.7")
     _match(
         env,
         got,
@@ -221,7 +221,7 @@ _tests.append(_test_match_abi_and_not_py_version)
 
 def _test_select_filename_with_many_tags(env):
     # Check we can select a filename with many platform tags
-    got = _select_whls(whls = WHL_LIST, want_abis = ["cp39"], want_platforms = ["linux_x86_32"], want_version = "3.9")
+    got = _select_whls(whls = WHL_LIST, want_abis = ["cp39"], want_platforms = ["linux_x86_32"], want_python_version = "3.9")
     _match(
         env,
         got,
@@ -239,7 +239,7 @@ def _test_osx_prefer_arch_specific(env):
         whls = WHL_LIST,
         want_abis = ["cp311"],
         want_platforms = ["osx_x86_64", "osx_x86_32"],
-        want_version = "3.11",
+        want_python_version = "3.11",
     )
     _match(
         env,
@@ -250,7 +250,7 @@ def _test_osx_prefer_arch_specific(env):
     got = _select_whl(whls = got, want_platform = "osx_x86_64")
     _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_10_9_x86_64.whl")
 
-    got = _select_whls(whls = WHL_LIST, want_abis = ["cp311"], want_platforms = ["osx_aarch64"], want_version = "3.11")
+    got = _select_whls(whls = WHL_LIST, want_abis = ["cp311"], want_platforms = ["osx_aarch64"], want_python_version = "3.11")
     _match(
         env,
         got,
@@ -264,7 +264,7 @@ _tests.append(_test_osx_prefer_arch_specific)
 
 def _test_osx_fallback_to_universal2(env):
     # Check that we can use the universal2 if the arm wheel is not available
-    got = _select_whls(whls = [w for w in WHL_LIST if "arm64" not in w], want_abis = ["cp311"], want_platforms = ["osx_aarch64"], want_version = "3.11")
+    got = _select_whls(whls = [w for w in WHL_LIST if "arm64" not in w], want_abis = ["cp311"], want_platforms = ["osx_aarch64"], want_python_version = "3.11")
     _match(
         env,
         got,
@@ -277,7 +277,7 @@ _tests.append(_test_osx_fallback_to_universal2)
 
 def _test_prefer_manylinux_wheels(env):
     # Check we prefer platform specific wheels
-    got = _select_whls(whls = WHL_LIST, want_abis = ["none", "abi3", "cp39"], want_platforms = ["linux_x86_64"], want_version = "3.9")
+    got = _select_whls(whls = WHL_LIST, want_abis = ["none", "abi3", "cp39"], want_platforms = ["linux_x86_64"], want_python_version = "3.9")
     _match(
         env,
         got,
