@@ -70,7 +70,7 @@ def parse_requirements_add_dists(requirements_by_platform, index_urls, python_ve
                     "cp" + python_version.replace(".", "") + "m",
                 ],
                 want_platforms = requirement.target_platforms,
-                want_version = python_version,
+                want_python_version = python_version,
                 logger = logger,
             )
 

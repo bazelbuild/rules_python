@@ -103,13 +103,13 @@ def _whl_priority(value):
     # Windows does not have multiple wheels for the same target platform
     return (False, False, 0, 0)
 
-def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = [], logger = None):
+def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platforms = [], logger = None):
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
         whls(list[struct]): A list of candidates which have a `filename`
             attribute containing the `whl` filename.
-        want_version(str): An optional parameter to filter whls by version. Defaults to '3.0'.
+        want_python_version(str): An optional parameter to filter whls by python version. Defaults to '3.0'.
         want_abis(list[str]): A list of ABIs that are supported.
         want_platforms(str): The platforms
         logger: A logger for printing diagnostic messages.
@@ -122,8 +122,8 @@ def select_whls(*, whls, want_version = "3.0", want_abis = [], want_platforms = 
         return []
 
     version_limit = -1
-    if want_version:
-        version_limit = int(want_version.split(".")[1])
+    if want_python_version:
+        version_limit = int(want_python_version.split(".")[1])
 
     candidates = {}
     for whl in whls:
@@ -221,7 +221,7 @@ def select_whl(*, whls, want_platform):
     # the repository context instead of `select_whl`.
     whls = select_whls(
         whls = whls,
-        want_version = "",
+        want_python_version = "",
         want_platforms = [want_platform],
     )
 
