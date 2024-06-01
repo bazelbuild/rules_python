@@ -34,6 +34,8 @@ _LEGACY_ALIASES = {
 def normalize_platform_tag(tag):
     """Resolve legacy aliases to modern equivalents for easier parsing elsewhere."""
     return ".".join(list({
+        # The `list({})` usage here is to use it as a string set, where we will
+        # deduplicate, but otherwise retain the order of the tags.
         _LEGACY_ALIASES.get(p, p): None
         for p in tag.split(".")
     }))
