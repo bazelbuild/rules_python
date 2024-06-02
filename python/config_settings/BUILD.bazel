@@ -56,8 +56,7 @@ string_flag(
 
 string_flag(
     name = "bootstrap_impl",
-    # todo: default to deprecated_one_stage initially
-    build_setting_default = BootstrapImplFlag.SCRIPT,
+    build_setting_default = BootstrapImplFlag.SYSTEM_PYTHON,
     values = sorted(BootstrapImplFlag.__members__.values()),
     # NOTE: Only public because its an implicit dependency
     visibility = ["//visibility:public"],

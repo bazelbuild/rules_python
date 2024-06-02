@@ -239,7 +239,6 @@ def main():
     if is_windows():
         main_rel_path = main_rel_path.replace("/", os.sep)
 
-    # todo: need to cleanup the created directory
     module_space = create_module_space()
     print_verbose("extracted runfiles to:", module_space)
 
