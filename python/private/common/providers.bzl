@@ -18,7 +18,7 @@ load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
-DEFAULT_BOOTSTRAP_TEMPLATE = Label("//python/private:python_bootstrap_template.txt")
+DEFAULT_BOOTSTRAP_TEMPLATE = Label("//python/private:bootstrap_template")
 
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
 
@@ -78,7 +78,9 @@ def _PyRuntimeInfo_init(
         python_version,
         stub_shebang = None,
         bootstrap_template = None,
-        interpreter_version_info = None):
+        interpreter_version_info = None,
+        stage2_bootstrap_template = None,
+        zip_main_template = None):
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of interpreter or interpreter_path must be specified")
 
@@ -126,7 +128,9 @@ def _PyRuntimeInfo_init(
         "interpreter_version_info": interpreter_version_info_struct_from_dict(interpreter_version_info),
         "pyc_tag": pyc_tag,
         "python_version": python_version,
+        "stage2_bootstrap_template": stage2_bootstrap_template,
         "stub_shebang": stub_shebang,
+        "zip_main_template": zip_main_template,
     }
 
 # TODO(#15897): Rename this to PyRuntimeInfo when we're ready to replace the Java
@@ -147,7 +151,45 @@ the same conventions as the standard CPython interpreter.
         "bootstrap_template": """
 :type: File
 
-See py_runtime_rule.bzl%py_runtime.bootstrap_template for docs.
+A template of code responsible for the initial startup of a program.
+
+This code is responsible for:
+
+* Locating the target interpreter. Typically it is in runfiles, but not always.
+* Setting necessary environment variables, command line flags, or other
+  configuration that can't be modified after the interpreter starts.
+* Invoking the appropriate entry point. This is usually a second-stage bootstrap
+  that performs additional setup prior to running a program's actual entry point.
+
+The {obj}`--bootstrap_impl` flag affects how this stage 1 bootstrap
+is expected to behave and the substutitions performed.
+
+* `--bootstrap_impl=system_python` substitutions: `%is_zipfile%`, `%python_binary%`,
+  `%target%`, `%workspace_name`, `%coverage_tool%`, `%import_all%`, `%imports%`,
+  `%main%`, `%shebang%`
+* `--bootstrap_impl=script` substititions: `%is_zipfile%`, `%python_binary%`,
+  `%target%`, `%workspace_name`, `%shebang%, `%stage2_bootstrap%`
+
+Substitution definitions:
+
+* `%shebang%`: The shebang to use with the bootstrap; the bootstrap template
+  may choose to ignore this.
+* `%stage2_bootstrap%`: A runfiles-relative path to the stage 2 bootstrap.
+* `%python_binary%`: The path to the target Python interpreter. There are three
+  types of paths:
+  * An absolute path to a system interpreter (e.g. begins with `/`).
+  * A runfiles-relative path to an interpreter (e.g. `somerepo/bin/python3`)
+  * A program to search for on PATH, i.e. a word without spaces, e.g. `python3`.
+* `%workspace_name%`: The name of the workspace the target belongs to.
+* `%is_zipfile%`: The string `1` if this template is prepended to a zipfile to
+  create a self-executable zip file. The string `0` otherwise.
+
+For the other substitution definitions, see the {obj}`stage2_bootstrap_template`
+docs.
+
+:::{versionchanged} 0.33.0
+The set of substitutions depends on {obj}`--bootstrap_impl`
+:::
 """,
         "coverage_files": """
 :type: depset[File] | None
@@ -217,12 +259,57 @@ correctly.
 Indicates whether this runtime uses Python major version 2 or 3. Valid values
 are (only) `"PY2"` and `"PY3"`.
 """,
+        "stage2_bootstrap_template": """
+:type: File
+
+A template of Python code that runs under the desired interpreter and is
+responsible for orchestrating calling the program's actual main code. This
+bootstrap is responsible for affecting the current runtime's state, such as
+import paths or enabling coverage, so that, when it runs the program's actual
+main code, it works properly under Bazel.
+
+The following substitutions are made during template expansion:
+* `%main%`: A runfiles-relative path to the program's actual main file. This
+  can be a `.py` or `.pyc` file, depending on precompile settings.
+* `%coverage_tool%`: Runfiles-relative path to the coverage library's entry point.
+  If coverage is not enabled or available, an empty string.
+* `%import_all%`: The string `True` if all repositories in the runfiles should
+  be added to sys.path. The string `False` otherwise.
+* `%imports%`: A colon-delimited string of runfiles-relative paths to add to
+  sys.path.
+* `%target%`: The name of the target this is for.
+* `%workspace_name%`: The name of the workspace the target belongs to.
+
+:::{versionadded} 0.33.0
+:::
+""",
         "stub_shebang": """
 :type: str
 
 "Shebang" expression prepended to the bootstrapping Python stub
 script used when executing {obj}`py_binary` targets.  Does not
 apply to Windows.
+""",
+        "zip_main_template": """
+:type: File
+
+A template of Python code that becomes a zip file's top-level `__main__.py`
+file. The top-level `__main__.py` file is used when the zip file is explicitly
+passed to a Python interpreter. See PEP 441 for more information about zipapp
+support. Note that py_binary-generated zip files are self-executing and
+skip calling `__main__.py`.
+
+The following substitutions are made during template expansion:
+* `%stage2_bootstrap%`: A runfiles-relative string to the stage 2 bootstrap file.
+* `%python_binary%`: The path to the target Python interpreter. There are three
+  types of paths:
+  * An absolute path to a system interpreter (e.g. begins with `/`).
+  * A runfiles-relative path to an interpreter (e.g. `somerepo/bin/python3`)
+  * A program to search for on PATH, i.e. a word without spaces, e.g. `python3`.
+* `%workspace_name%`: The name of the workspace for the built target.
+
+:::{versionadded} 0.33.0
+:::
 """,
     },
 )

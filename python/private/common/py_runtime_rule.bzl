@@ -102,19 +102,20 @@ def _py_runtime_impl(ctx):
         files = runtime_files if hermetic else None,
         coverage_tool = coverage_tool,
         coverage_files = coverage_files,
-        pyc_tag = pyc_tag,
         python_version = python_version,
         stub_shebang = ctx.attr.stub_shebang,
         bootstrap_template = ctx.file.bootstrap_template,
-        interpreter_version_info = interpreter_version_info,
-        implementation_name = ctx.attr.implementation_name,
     )
     builtin_py_runtime_info_kwargs = dict(py_runtime_info_kwargs)
 
-    # Pop these because they don't exist on BuiltinPyRuntimeInfo
-    builtin_py_runtime_info_kwargs.pop("interpreter_version_info")
-    builtin_py_runtime_info_kwargs.pop("pyc_tag")
-    builtin_py_runtime_info_kwargs.pop("implementation_name")
+    # There are all args that BuiltinPyRuntimeInfo doesn't support
+    py_runtime_info_kwargs.update(dict(
+        implementation_name = ctx.attr.implementation_name,
+        interpreter_version_info = interpreter_version_info,
+        pyc_tag = pyc_tag,
+        stage2_bootstrap_template = ctx.file.stage2_bootstrap_template,
+        zip_main_template = ctx.file.zip_main_template,
+    ))
 
     if not IS_BAZEL_7_OR_HIGHER:
         builtin_py_runtime_info_kwargs.pop("bootstrap_template")
@@ -290,6 +291,17 @@ However, in the future this attribute will be mandatory and have no default
 value.
             """,
         ),
+        "stage2_bootstrap_template": attr.label(
+            default = "//python/private:stage2_bootstrap_template",
+            allow_single_file = True,
+            doc = """
+The template to use when two stage bootstrapping is enabled
+
+:::{seealso}
+{obj}`PyRuntimeInfo.stage2_bootstrap_template` and {obj}`--bootstrap_impl`
+:::
+""",
+        ),
         "stub_shebang": attr.string(
             default = DEFAULT_STUB_SHEBANG,
             doc = """
@@ -300,6 +312,19 @@ See https://github.com/bazelbuild/bazel/issues/8685 for
 motivation.
 
 Does not apply to Windows.
+""",
+        ),
+        "zip_main_template": attr.label(
+            default = "//python/private:zip_main_template",
+            allow_single_file = True,
+            doc = """
+The template to use for a zip's top-level `__main__.py` file.
+
+This becomes the entry point executed when `python foo.zip` is run.
+
+:::{seealso}
+The {obj}`PyRuntimeInfo.zip_main_template` field.
+:::
 """,
         ),
     }),

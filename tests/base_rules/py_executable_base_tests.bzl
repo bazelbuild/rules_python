@@ -20,7 +20,7 @@ load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
-load("//tests/support:support.bzl", "WINDOWS")
+load("//tests/support:support.bzl", "WINDOWS_X86_64")
 
 _BuiltinPyRuntimeInfo = PyRuntimeInfo
 
@@ -50,7 +50,7 @@ def _test_basic_windows(name, config):
             "//command_line_option:cpu": "windows_x86_64",
             "//command_line_option:crosstool_top": Label("//tests/cc:cc_toolchain_suite"),
             "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
-            "//command_line_option:platforms": [WINDOWS],
+            "//command_line_option:platforms": [WINDOWS_X86_64],
         },
         attr_values = {"target_compatible_with": target_compatible_with},
     )

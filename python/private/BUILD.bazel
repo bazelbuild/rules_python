@@ -376,8 +376,53 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "stage1_bootstrap_template",
+    srcs = ["stage1_bootstrap_template.sh"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "stage2_bootstrap_template",
+    srcs = ["stage2_bootstrap_template.py"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "zip_main_template",
+    srcs = ["zip_main_template.py"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+# NOTE: Windows builds don't use this bootstrap. Instead, a native Windows
+# program locates some Python exe and runs `python.exe foo.zip` which
+# runs the __main__.py in the zip file.
+alias(
+    name = "bootstrap_template",
+    actual = select({
+        ":is_script_bootstrap_enabled": "stage1_bootstrap_template.sh",
+        "//conditions:default": "python_bootstrap_template.txt",
+    }),
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
 # Used to determine the use of `--stamp` in Starlark rules
 stamp_build_setting(name = "stamp")
+
+config_setting(
+    name = "is_script_bootstrap_enabled",
+    flag_values = {
+        "//python/config_settings:bootstrap_impl": "script",
+    },
+)
 
 print_toolchains_checksums(name = "print_toolchains_checksums")
 

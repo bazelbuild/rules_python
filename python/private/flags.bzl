@@ -21,6 +21,16 @@ unnecessary files when all that are needed are flag definitions.
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python/private:enum.bzl", "enum")
 
+def _bootstrap_impl_flag_get_value(ctx):
+    return ctx.attr._bootstrap_impl_flag[BuildSettingInfo].value
+
+# buildifier: disable=name-conventions
+BootstrapImplFlag = enum(
+    SYSTEM_PYTHON = "system_python",
+    SCRIPT = "script",
+    get_value = _bootstrap_impl_flag_get_value,
+)
+
 def _precompile_flag_get_effective_value(ctx):
     value = ctx.attr._precompile_flag[BuildSettingInfo].value
     if value == PrecompileFlag.AUTO:

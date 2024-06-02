@@ -1,3 +1,5 @@
+:::{default-domain} bzl
+:::
 :::{bzl:currentfile} //python/config_settings:BUILD.bazel
 :::
 
@@ -66,3 +68,32 @@ Values:
 * `include_pyc`: Include `PyInfo.transitive_pyc_files` as part of the binary.
 * `disabled`: Don't include `PyInfo.transitive_pyc_files` as part of the binary.
 :::
+
+::::{bzl:flag} bootstrap_impl
+Determine how programs implement their startup process.
+
+Values:
+* `system_python`: Use a bootstrap that requires a system Python available
+  in order to start programs. This requires
+  {obj}`PyRuntimeInfo.bootstrap_template` to be a Python program.
+* `script`: Use a bootstrap that uses an arbitrary executable script (usually a
+  shell script) instead of requiring it be a Python program.
+
+:::{note}
+The `script` bootstrap requires the toolchain to provide the `PyRuntimeInfo`
+provider from `rules_python`. This loosely translates to using Bazel 7+ with a
+toolchain created by rules_python. Most notably, WORKSPACE builds default to
+using a legacy toolchain built into Bazel itself which doesn't support the
+script bootstrap. If not available, the `system_python` bootstrap will be used
+instead.
+:::
+
+:::{seealso}
+{obj}`PyRuntimeInfo.bootstrap_template` and
+{obj}`PyRuntimeInfo.stage2_bootstrap_template`
+:::
+
+:::{versionadded} 0.33.0
+:::
+
+::::
