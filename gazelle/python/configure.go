@@ -182,7 +182,8 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				config.SetDefaultVisibility(strings.Split(labels, ","))
 			}
 		case pythonconfig.Visibility:
-			config.AppendVisibility(strings.TrimSpace(d.Value))
+			labels := strings.ReplaceAll(strings.TrimSpace(d.Value), "$python_root$", config.PythonProjectRoot())
+			config.AppendVisibility(labels)
 		case pythonconfig.TestFilePattern:
 			value := strings.TrimSpace(d.Value)
 			if value == "" {

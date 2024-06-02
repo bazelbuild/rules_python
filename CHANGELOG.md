@@ -83,6 +83,8 @@ A brief description of the categories of changes:
   invalid usage previously but we were not failing the build. From now on this
   is explicitly disallowed.
 * (toolchains) Added riscv64 platform definition for python toolchains.
+* (gazelle) The `python_visibility` directive now supports the `$python_root$`
+  placeholder, just like the `python_default_visibility` directive does.
 * (rules) A new bootstrap implementation that doesn't require a system Python
   is available. It can be enabled by setting
   {obj}`--@rules_python//python:config_settings:bootstrap_impl=two_phase`. It
