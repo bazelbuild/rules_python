@@ -103,6 +103,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
     logger = repo_utils.logger(module_ctx)
     python_interpreter_target = pip_attr.python_interpreter_target
+    is_hub_reproducible = True
 
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
@@ -274,6 +275,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             logger.debug(lambda: "Selected: {}".format(distribution))
 
             if distribution:
+                is_hub_reproducible = False
                 whl_library_args["requirement"] = requirement.srcs.requirement
                 whl_library_args["urls"] = [distribution.url]
                 whl_library_args["sha256"] = distribution.sha256
@@ -302,6 +304,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                 config_setting = Label("//python/config_settings:is_python_" + major_minor),
             ),
         )
+
+    return is_hub_reproducible
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -412,6 +416,7 @@ def _pip_impl(module_ctx):
     hub_group_map = {}
 
     simpleapi_cache = {}
+    is_extension_reproducible = True
 
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
@@ -448,7 +453,8 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
+            is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
+            is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
 
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
@@ -461,6 +467,26 @@ def _pip_impl(module_ctx):
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
             groups = hub_group_map.get(hub_name),
         )
+
+    if bazel_features.external_deps.extension_metadata_has_reproducible:
+        # If we are not using the `experimental_index_url feature, the extension is fully
+        # deterministic and we don't need to create a lock entry for it.
+        #
+        # In order to be able to dogfood the `experimental_index_url` feature before it gets
+        # stabilized, we have created the `_pip_non_reproducible` function, that will result
+        # in extra entries in the lock file.
+        return module_ctx.extension_metadata(reproducible = is_extension_reproducible)
+    else:
+        return None
+
+def _pip_non_reproducible(module_ctx):
+    _pip_impl(module_ctx)
+
+    if bazel_features.external_deps.extension_metadata_has_reproducible:
+        # We allow for calling the PyPI index and that will go into the MODULE.bazel.lock file
+        return module_ctx.extension_metadata(reproducible = False)
+    else:
+        return None
 
 def _pip_parse_ext_attrs():
     attrs = dict({
@@ -661,17 +687,6 @@ Apply any overrides (e.g. patches) to a given Python distribution defined by
 other tags in this extension.""",
 )
 
-def _extension_extra_args():
-    args = {}
-
-    if bazel_features.external_deps.module_extension_has_os_arch_dependent:
-        args = args | {
-            "arch_dependent": True,
-            "os_dependent": True,
-        }
-
-    return args
-
 pip = module_extension(
     doc = """\
 This extension is used to make dependencies from pip available.
@@ -714,7 +729,54 @@ extension.
 """,
         ),
     },
-    **_extension_extra_args()
+)
+
+pip_internal = module_extension(
+    doc = """\
+This extension is used to make dependencies from pypi available.
+
+For now this is intended to be used internally so that usage of the `pip`
+extension in `rules_python` does not affect the evaluations of the extension
+for the consumers.
+
+pip.parse:
+To use, call `pip.parse()` and specify `hub_name` and your requirements file.
+Dependencies will be downloaded and made available in a repo named after the
+`hub_name` argument.
+
+Each `pip.parse()` call configures a particular Python version. Multiple calls
+can be made to configure different Python versions, and will be grouped by
+the `hub_name` argument. This allows the same logical name, e.g. `@pypi//numpy`
+to automatically resolve to different, Python version-specific, libraries.
+
+pip.whl_mods:
+This tag class is used to help create JSON files to describe modifications to
+the BUILD files for wheels.
+""",
+    implementation = _pip_non_reproducible,
+    tag_classes = {
+        "override": _override_tag,
+        "parse": tag_class(
+            attrs = _pip_parse_ext_attrs(),
+            doc = """\
+This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
+This tag class reuses most of the pypi attributes that are found in
+@rules_python//python/pip_install:pip_repository.bzl.
+The exception is it does not use the arg 'repo_prefix'.  We set the repository
+prefix for the user and the alias arg is always True in bzlmod.
+""",
+        ),
+        "whl_mods": tag_class(
+            attrs = _whl_mod_attrs(),
+            doc = """\
+This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
+JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
+create different modifications based on the type of attribute. Previously to bzlmod these
+JSON files where referred to as annotations, and were renamed to whl_modifications in this
+extension.
+""",
+        ),
+    },
 )
 
 def _whl_mods_repo_impl(rctx):

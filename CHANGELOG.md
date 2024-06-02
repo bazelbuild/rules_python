@@ -51,6 +51,12 @@ A brief description of the categories of changes:
   replaced by whl_modifications.
 * (pip) Correctly select wheels when the python tag includes minor versions.
   See ([#1930](https://github.com/bazelbuild/rules_python/issues/1930))
+* (pip.parse): The lock file is now reproducible on any host platform if the
+  `experimental_index_url` is not used by any of the modules in the dependency
+  chain. To make the lock file identical on each `os` and `arch`, please use
+  the `experimental_index_url` feature which will fetch metadata from PyPI or a
+  different private index and write the contents to the lock file. Fixes
+  [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
