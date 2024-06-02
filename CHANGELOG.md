@@ -31,7 +31,7 @@ A brief description of the categories of changes:
   marked as `reproducible` and will not include any lock file entries from now
   on.
 
-* (gazelle): Remove gazelle plugin's python deps and make it hermetic. 
+* (gazelle): Remove gazelle plugin's python deps and make it hermetic.
   Introduced a new Go-based helper leveraging tree-sitter for syntax analysis.
   Implemented the use of `pypi/stdlib-list` for standard library module verification.
 
@@ -80,6 +80,8 @@ A brief description of the categories of changes:
   invalid usage previously but we were not failing the build. From now on this
   is explicitly disallowed.
 * (toolchains) Added riscv64 platform definition for python toolchains.
+* (gazelle) The `python_visibility` directive now supports the `$python_root$`
+  placeholder, just like the `python_default_visibility` directive does.
 
 [precompile-docs]: /precompiling
 
