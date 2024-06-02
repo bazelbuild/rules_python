@@ -182,7 +182,7 @@ def create_cc_details_struct(
         cc_toolchain = cc_toolchain,
     )
 
-def create_executable_result_struct(*, extra_files_to_build, output_groups):
+def create_executable_result_struct(*, extra_files_to_build, output_groups, extra_runfiles = None):
     """Creates a `CreateExecutableResult` struct.
 
     This is the return value type of the semantics create_executable function.
@@ -192,6 +192,7 @@ def create_executable_result_struct(*, extra_files_to_build, output_groups):
             included as default outputs.
         output_groups: dict[str, depset[File]]; additional output groups that
             should be returned.
+        extra_runfiles: A runfiles object of additional runfiles to include.
 
     Returns:
         A `CreateExecutableResult` struct.
@@ -199,6 +200,7 @@ def create_executable_result_struct(*, extra_files_to_build, output_groups):
     return struct(
         extra_files_to_build = extra_files_to_build,
         output_groups = output_groups,
+        extra_runfiles = extra_runfiles,
     )
 
 def union_attrs(*attr_dicts, allow_none = False):

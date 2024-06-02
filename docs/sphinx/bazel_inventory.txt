@@ -10,7 +10,7 @@ bool bzl:type 1 rules/lib/bool -
 int bzl:type 1 rules/lib/int -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
-label bzl:doc 1 concepts/labels -
+label bzl:type 1 concepts/labels -
 attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
 attr.int bzl:type 1 rules/lib/toplevel/attr#int -
 attr.label bzl:type 1 rules/lib/toplevel/attr#label -
@@ -21,6 +21,7 @@ list bzl:type 1 rules/lib/list -
 python bzl:doc 1 reference/be/python -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
-target-name bzl:doc 1 concepts/labels#target-names -
+Name bzl:type 1 concepts/labels#target-names -
 CcInfo bzl:provider 1 rules/lib/providers/CcInfo -
 CcInfo.linking_context bzl:provider-field 1 rules/lib/providers/CcInfo#linking_context -
+ToolchainInfo bzl:type 1 rules/lib/providers/ToolchainInfo.html -

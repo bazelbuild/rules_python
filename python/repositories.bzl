@@ -185,7 +185,10 @@ def _python_repository_impl(rctx):
     elif rctx.attr.distutils_content:
         rctx.file(distutils_path, rctx.attr.distutils_content)
 
-    # Make the Python installation read-only.
+    # Make the Python installation read-only. This is to prevent issues due to
+    # pycs being generated at runtime:
+    # * The pycs are not deterministic (they contain timestamps)
+    # * Multiple processes trying to write the same pycs can result in errors.
     if not rctx.attr.ignore_root_user_error:
         if "windows" not in platform:
             lib_dir = "lib" if "windows" not in platform else "Lib"
@@ -200,6 +203,9 @@ def _python_repository_impl(rctx):
                 op = "python_repository.TestReadOnly",
                 arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
             )
+
+            # The issue with running as root is the installation is no longer
+            # read-only, so the problems due to pyc can resurface.
             if exec_result.return_code == 0:
                 stdout = repo_utils.execute_checked_stdout(
                     rctx,

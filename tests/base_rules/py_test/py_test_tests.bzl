@@ -21,12 +21,25 @@ load(
     "create_executable_tests",
 )
 load("//tests/base_rules:util.bzl", pt_util = "util")
-load("//tests/support:support.bzl", "LINUX", "MAC")
+load("//tests/support:support.bzl", "LINUX_X86_64", "MAC_X86_64")
 
 # Explicit Label() calls are required so that it resolves in @rules_python
 # context instead of @rules_testing context.
 _FAKE_CC_TOOLCHAIN = Label("//tests/cc:cc_toolchain_suite")
 _FAKE_CC_TOOLCHAINS = [str(Label("//tests/cc:all"))]
+
+# The Windows CI currently runs as root, which breaks when
+# the analysis tests try to install (but not use, because
+# these are analysis tests) a runtime for another platform.
+# This is because the toolchain install has an assert to
+# verify the runtime install is read-only, which it can't
+# be when running as root.
+_SKIP_WINDOWS = {
+    "target_compatible_with": select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+}
 
 _tests = []
 
@@ -52,8 +65,9 @@ def _test_mac_requires_darwin_for_execution(name, config):
             "//command_line_option:cpu": "darwin_x86_64",
             "//command_line_option:crosstool_top": _FAKE_CC_TOOLCHAIN,
             "//command_line_option:extra_toolchains": _FAKE_CC_TOOLCHAINS,
-            "//command_line_option:platforms": [MAC],
+            "//command_line_option:platforms": [MAC_X86_64],
         },
+        attr_values = _SKIP_WINDOWS,
     )
 
 def _test_mac_requires_darwin_for_execution_impl(env, target):
@@ -84,8 +98,9 @@ def _test_non_mac_doesnt_require_darwin_for_execution(name, config):
             "//command_line_option:cpu": "k8",
             "//command_line_option:crosstool_top": _FAKE_CC_TOOLCHAIN,
             "//command_line_option:extra_toolchains": _FAKE_CC_TOOLCHAINS,
-            "//command_line_option:platforms": [LINUX],
+            "//command_line_option:platforms": [LINUX_X86_64],
         },
+        attr_values = _SKIP_WINDOWS,
     )
 
 def _test_non_mac_doesnt_require_darwin_for_execution_impl(env, target):

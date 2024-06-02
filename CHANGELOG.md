@@ -1,3 +1,6 @@
+:::{default-domain} bzl
+:::
+
 # rules_python Changelog
 
 This is a human-friendly changelog in a keepachangelog.com style format.
@@ -82,6 +85,16 @@ A brief description of the categories of changes:
 * (toolchains) Added riscv64 platform definition for python toolchains.
 * (gazelle) The `python_visibility` directive now supports the `$python_root$`
   placeholder, just like the `python_default_visibility` directive does.
+* (rules) A new bootstrap implementation that doesn't require a system Python
+  is available. It can be enabled by setting
+  {obj}`--@rules_python//python:config_settings:bootstrap_impl=two_phase`. It
+  will become the default in a subsequent release.
+  ([#691](https://github.com/bazelbuild/rules_python/issues/691))
+* (providers) `PyRuntimeInfo` has two new attributes:
+  {obj}`PyRuntimeInfo.stage2_bootstrap_template` and
+  {obj}`PyRuntimeInfo.zip_main_template`.
+* (toolchains) A replacement for the Bazel-builtn autodetecting toolchain is
+  available. The `//python:autodetecting_toolchain` alias now uses it.
 
 [precompile-docs]: /precompiling
 

@@ -1,0 +1,118 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
+  set -x
+fi
+
+# runfiles-relative path
+STAGE2_BOOTSTRAP="%stage2_bootstrap%"
+
+# runfiles-relative path, absolute path, or single word
+PYTHON_BINARY='%python_binary%'
+
+# 0 or 1
+IS_ZIPFILE="%is_zipfile%"
+
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  zip_dir=$(mktemp -d --suffix Bazel.runfiles_)
+
+  if [[ -n "$zip_dir" && -z "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
+    trap 'rm -fr "$zip_dir"' EXIT
+  fi
+  # unzip emits a warning and exits with code 1 when there is extraneous data,
+  # like this bootstrap prelude code, but otherwise successfully extracts, so
+  # we have to ignore its exit code and suppress stderr.
+  # The alternative requires having to copy ourselves elsewhere with the prelude
+  # stripped (because zip can't extract from a stream). We avoid that because
+  # it's wasteful.
+  ( unzip -q -d "$zip_dir" "$0" 2>/dev/null || /bin/true )
+
+  RUNFILES_DIR="$zip_dir/runfiles"
+  if [[ ! -d "$RUNFILES_DIR" ]]; then
+    echo "Runfiles dir not found: zip extraction likely failed"
+    echo "Run with RULES_PYTHON_BOOTSTRAP_VERBOSE=1 to aid debugging"
+    exit 1
+  fi
+
+else
+  function find_runfiles_root() {
+    if [[ -n "${RUNFILES_DIR:-}" ]]; then
+      echo "$RUNFILES_DIR"
+      return 0
+    elif [[ "${RUNFILES_MANIFEST_FILE:-}" = *".runfiles_manifest" ]]; then
+      echo "${RUNFILES_MANIFEST_FILE%%.runfiles_manifest}"
+      return 0
+    elif [[ "${RUNFILES_MANIFEST_FILE:-}" = *".runfiles/MANIFEST" ]]; then
+      echo "${RUNFILES_MANIFEST_FILE%%.runfiles/MANIFEST}"
+      return 0
+    fi
+
+    stub_filename="$1"
+    # A relative path to our executable, as happens with
+    # a build action or bazel-bin/ invocation
+    if [[ "$stub_filename" != /* ]]; then
+      stub_filename="$PWD/$stub_filename"
+    fi
+
+    while true; do
+      module_space="${stub_filename}.runfiles"
+      if [[ -d "$module_space" ]]; then
+        echo "$module_space"
+        return 0
+      fi
+      if [[ "$stub_filename" == *.runfiles/* ]]; then
+        echo "${stub_filename%.runfiles*}.runfiles"
+        return 0
+      fi
+      if [[ ! -L "$stub_filename" ]]; then
+        break
+      fi
+      target=$(realpath $maybe_runfiles_root)
+      stub_filename="$target"
+    done
+    echo >&2 "Unable to find runfiles directory for $1"
+    exit 1
+  }
+  RUNFILES_DIR=$(find_runfiles_root $0)
+fi
+
+
+function find_python_interpreter() {
+  runfiles_root="$1"
+  interpreter_path="$2"
+  if [[ "$interpreter_path" == /* ]]; then
+    # An absolute path, i.e. platform runtime
+    echo "$interpreter_path"
+  elif [[ "$interpreter_path" == */* ]]; then
+    # A runfiles-relative path
+    echo "$runfiles_root/$interpreter_path"
+  else
+    # A plain word, e.g. "python3". Rely on searching PATH
+    echo "$interpreter_path"
+  fi
+}
+
+python_exe=$(find_python_interpreter $RUNFILES_DIR $PYTHON_BINARY)
+stage2_bootstrap="$RUNFILES_DIR/$STAGE2_BOOTSTRAP"
+
+declare -a interpreter_env
+declare -a interpreter_args
+
+# Don't prepend a potentially unsafe path to sys.path
+# See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
+# NOTE: Only works for 3.11+
+interpreter_env+=("PYTHONSAFEPATH=1")
+
+export RUNFILES_DIR
+# NOTE: We use <(...) to pass the Python program as a file so that stdin can
+# still be passed along as normal.
+env \
+  "${interpreter_env[@]}" \
+  "$python_exe" \
+  "${interpreter_args[@]}" \
+  "$stage2_bootstrap" \
+  "$@"
+
+exit $?

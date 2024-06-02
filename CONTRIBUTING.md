@@ -175,6 +175,7 @@ Issues should be triaged as follows:
   functionality, should also be filed in this repository but without the
   `core-rules` label.
 
+(breaking-changes)=
 ## Breaking Changes
 
 Breaking changes are generally permitted, but we follow a 3-step process for
