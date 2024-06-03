@@ -3,11 +3,18 @@
 
 # //python/config_settings
 
+:::{bzl:flag} python_version
+Determines the default hermetic Python toolchain version. This can be set to
+one of the values that `rules_python` maintains.
+:::
+
 :::{bzl:flag} precompile
 Determines if Python source files should be compiled at build time.
 
-NOTE: The flag value is overridden by the target level `precompile` attribute,
+```{note}
+The flag value is overridden by the target level `precompile` attribute,
 except for the case of `force_enabled` and `forced_disabled`.
+```
 
 Values:
 
@@ -31,8 +38,10 @@ Values:
 Determines, when a source file is compiled, if the source file is kept
 in the resulting output or not.
 
-NOTE: This flag is overridden by the target level `precompile_source_retention`
+```{note}
+This flag is overridden by the target level `precompile_source_retention`
 attribute.
+```
 
 Values:
 
@@ -60,9 +69,61 @@ Values:
 :::{bzl:flag} pyc_collection
 Determine if `py_binary` collects transitive pyc files.
 
-NOTE: This flag is overridden by the target level `pyc_collection` attribute.
+```{note}
+This flag is overridden by the target level `pyc_collection` attribute.
+```
 
 Values:
 * `include_pyc`: Include `PyInfo.transitive_pyc_files` as part of the binary.
 * `disabled`: Don't include `PyInfo.transitive_pyc_files` as part of the binary.
+:::
+
+:::{bzl:flag} py_linux_libc
+Set what libc is used for the target platform. This will affect which whl binaries will be pulled and what toolchain will be auto-detected. Currently `rules_python` only supplies toolchains compatible with `glibc`.
+
+Values:
+* `glibc`: Use `glibc`, default.
+* `muslc`: Use `muslc`.
+:::
+
+:::{bzl:flag} pip_whl
+Set what distributions are used in the `pip` integration.
+
+Values:
+* `auto`: Prefer `whl` distributions if they are compatible with a target
+  platform, but fallback to `sdist`. This is the default.
+* `only`: Only use `whl` distributions and error out if it is not available.
+* `no`: Only use `sdist` distributions. The wheels will be built non-hermetically in the `whl_library` repository rule.
+:::
+
+:::{bzl:flag} pip_whl_osx_arch
+Set what wheel types we should prefer when building on the OSX platform.
+
+Values:
+* `arch`: Prefer architecture specific wheels.
+* `universal`: Prefer universal wheels that usually are bigger and contain binaries for both, Intel and ARM architectures in the same wheel.
+:::
+
+:::{bzl:flag} pip_whl_glibc_version
+Set the minimum `glibc` version that the `py_binary` using `whl` distributions from a PyPI index should support.
+
+Values:
+* `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
+* `X.Y`: The string representation of a `glibc` version. The allowed values depend on the `requirements.txt` lock file contents.
+:::
+
+:::{bzl:flag} pip_whl_muslc_version
+Set the minimum `muslc` version that the `py_binary` using `whl` distributions from a PyPI index should support.
+
+Values:
+* `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
+* `X.Y`: The string representation of a `muslc` version. The allowed values depend on the `requirements.txt` lock file contents.
+:::
+
+:::{bzl:flag} pip_whl_osx_version
+Set the minimum `osx` version that the `py_binary` using `whl` distributions from a PyPI index should support.
+
+Values:
+* `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
+* `X.Y`: The string representation of the MacOS version. The allowed values depend on the `requirements.txt` lock file contents.
 :::

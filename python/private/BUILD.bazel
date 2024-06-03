@@ -146,6 +146,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pip_flags_bzl",
+    srcs = ["pip_flags.bzl"],
+    deps = [
+        ":enum_bzl",
+    ],
+)
+
+bzl_library(
     name = "pip_repo_name_bzl",
     srcs = ["pip_repo_name.bzl"],
     deps = [
