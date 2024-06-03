@@ -482,13 +482,20 @@ def _pip_impl(module_ctx):
 def _pip_non_reproducible(module_ctx):
     _pip_impl(module_ctx)
 
-    if bazel_features.external_deps.extension_metadata_has_reproducible:
-        # We allow for calling the PyPI index and that will go into the MODULE.bazel.lock file
-        return module_ctx.extension_metadata(reproducible = False)
-    else:
-        return None
+    # We default to calling the PyPI index and that will go into the
+    # MODULE.bazel.lock file, hence return nothing here.
+    return None
 
-def _pip_parse_ext_attrs():
+def _pip_parse_ext_attrs(**kwargs):
+    """Get the attributes for the pip extension.
+
+    Args:
+        **kwargs: A kwarg for setting defaults for the specific attributes. The
+        key is expected to be the same as the attribute key.
+
+    Returns:
+        A dict of attributes.
+    """
     attrs = dict({
         "experimental_extra_index_urls": attr.string_list(
             doc = """\
@@ -503,6 +510,7 @@ This is equivalent to `--extra-index-urls` `pip` option.
             default = [],
         ),
         "experimental_index_url": attr.string(
+            default = kwargs.get("experimental_index_url", ""),
             doc = """\
 The index URL to use for downloading wheels using bazel downloader. This value is going
 to be subject to `envsubst` substitutions if necessary.
@@ -757,7 +765,9 @@ the BUILD files for wheels.
     tag_classes = {
         "override": _override_tag,
         "parse": tag_class(
-            attrs = _pip_parse_ext_attrs(),
+            attrs = _pip_parse_ext_attrs(
+                experimental_index_url = "https://pypi.org/simple",
+            ),
             doc = """\
 This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
 This tag class reuses most of the pypi attributes that are found in
