@@ -371,17 +371,17 @@ class PlatformTest(unittest.TestCase):
 
     def test_can_get_all_for_py_version(self):
         cp39 = wheel.Platform.all(minor_version=9)
-        self.assertEqual(15, len(cp39), f"Got {cp39}")
+        self.assertEqual(18, len(cp39), f"Got {cp39}")
         self.assertEqual(cp39, wheel.Platform.from_string("cp39_*"))
 
     def test_can_get_all_for_os(self):
         linuxes = wheel.Platform.all(wheel.OS.linux, minor_version=9)
-        self.assertEqual(5, len(linuxes))
+        self.assertEqual(6, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("cp39_linux_*"))
 
     def test_can_get_all_for_os_for_host_python(self):
         linuxes = wheel.Platform.all(wheel.OS.linux)
-        self.assertEqual(5, len(linuxes))
+        self.assertEqual(6, len(linuxes))
         self.assertEqual(linuxes, wheel.Platform.from_string("linux_*"))
 
     def test_specific_version_specializations(self):
@@ -425,6 +425,7 @@ class PlatformTest(unittest.TestCase):
             wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.aarch64),
             wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.ppc),
             wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.s390x),
+            wheel.Platform(os=wheel.OS.linux, arch=wheel.Arch.arm),
         ]
         self.assertEqual(want, all_specializations)
 
@@ -441,6 +442,7 @@ class PlatformTest(unittest.TestCase):
             wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.aarch64),
             wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.ppc),
             wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.s390x),
+            wheel.Platform(os=wheel.OS.osx, arch=wheel.Arch.arm),
         ]
         self.assertEqual(want, all_specializations)
 
