@@ -22,6 +22,9 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (deps) Upgrade the `pip_install` dependencies to pick up a new version of pip.
 * (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
   `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
