@@ -32,7 +32,7 @@ def define_autodetecting_toolchain(name):
     # buildifier: disable=native-py
     py_runtime(
         name = "_autodetecting_py3_runtime",
-        interpreter = ":py3wrapper.sh",
+        interpreter = "//python/private:autodetecting_toolchain_interpreter.sh",
         python_version = "PY3",
         stub_shebang = "#!/usr/bin/env python3",
         visibility = ["//visibility:private"],

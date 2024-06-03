@@ -91,7 +91,7 @@ def FindPythonBinary(module_space):
 
 def PrintVerbose(*args):
   if os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"):
-    print("bootstrap:", *args, file=sys.stderr)
+    print("bootstrap:", *args, file=sys.stderr, flush=True)
 
 def PrintVerboseCoverage(*args):
   """Print output if VERBOSE_COVERAGE is non-empty in the environment."""

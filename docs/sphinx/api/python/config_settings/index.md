@@ -1,3 +1,5 @@
+:::{default-domain} bzl
+:::
 :::{bzl:currentfile} //python/config_settings:BUILD.bazel
 :::
 
@@ -8,13 +10,13 @@ Determines the default hermetic Python toolchain version. This can be set to
 one of the values that `rules_python` maintains.
 :::
 
-:::{bzl:flag} precompile
+::::{bzl:flag} precompile
 Determines if Python source files should be compiled at build time.
 
-```{note}
+:::{note}
 The flag value is overridden by the target level `precompile` attribute,
 except for the case of `force_enabled` and `forced_disabled`.
-```
+:::
 
 Values:
 
@@ -32,16 +34,16 @@ Values:
 * `force_disabled`: Like `disabled`, except overrides target-level setting. This
   is useful useful for development, testing enabling precompilation more
   broadly, or as an escape hatch if build-time compiling is not available.
-:::
+::::
 
-:::{bzl:flag} precompile_source_retention
+::::{bzl:flag} precompile_source_retention
 Determines, when a source file is compiled, if the source file is kept
 in the resulting output or not.
 
-```{note}
+:::{note}
 This flag is overridden by the target level `precompile_source_retention`
 attribute.
-```
+:::
 
 Values:
 
@@ -49,7 +51,7 @@ Values:
 * `omit_source`: Don't include the orignal py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
   file, but omit it if it's a generated file.
-:::
+::::
 
 :::{bzl:flag} precompile_add_to_runfiles
 Determines if a target adds its compiled files to its runfiles.
@@ -66,27 +68,29 @@ Values:
   incrementally enabling precompilation on a per-binary basis.
 :::
 
-:::{bzl:flag} pyc_collection
+::::{bzl:flag} pyc_collection
 Determine if `py_binary` collects transitive pyc files.
 
-```{note}
+:::{note}
 This flag is overridden by the target level `pyc_collection` attribute.
-```
+:::
 
 Values:
 * `include_pyc`: Include `PyInfo.transitive_pyc_files` as part of the binary.
 * `disabled`: Don't include `PyInfo.transitive_pyc_files` as part of the binary.
-:::
+::::
 
-:::{bzl:flag} py_linux_libc
+::::{bzl:flag} py_linux_libc
 Set what libc is used for the target platform. This will affect which whl binaries will be pulled and what toolchain will be auto-detected. Currently `rules_python` only supplies toolchains compatible with `glibc`.
 
 Values:
 * `glibc`: Use `glibc`, default.
 * `muslc`: Use `muslc`.
+:::{versionadded} 0.33.0
 :::
+::::
 
-:::{bzl:flag} pip_whl
+::::{bzl:flag} pip_whl
 Set what distributions are used in the `pip` integration.
 
 Values:
@@ -94,36 +98,76 @@ Values:
   platform, but fallback to `sdist`. This is the default.
 * `only`: Only use `whl` distributions and error out if it is not available.
 * `no`: Only use `sdist` distributions. The wheels will be built non-hermetically in the `whl_library` repository rule.
+:::{versionadded} 0.33.0
 :::
+::::
 
-:::{bzl:flag} pip_whl_osx_arch
+::::{bzl:flag} pip_whl_osx_arch
 Set what wheel types we should prefer when building on the OSX platform.
 
 Values:
 * `arch`: Prefer architecture specific wheels.
 * `universal`: Prefer universal wheels that usually are bigger and contain binaries for both, Intel and ARM architectures in the same wheel.
+:::{versionadded} 0.33.0
 :::
+::::
 
-:::{bzl:flag} pip_whl_glibc_version
+::::{bzl:flag} pip_whl_glibc_version
 Set the minimum `glibc` version that the `py_binary` using `whl` distributions from a PyPI index should support.
 
 Values:
 * `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
 * `X.Y`: The string representation of a `glibc` version. The allowed values depend on the `requirements.txt` lock file contents.
+:::{versionadded} 0.33.0
 :::
+::::
 
-:::{bzl:flag} pip_whl_muslc_version
+::::{bzl:flag} pip_whl_muslc_version
 Set the minimum `muslc` version that the `py_binary` using `whl` distributions from a PyPI index should support.
 
 Values:
 * `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
 * `X.Y`: The string representation of a `muslc` version. The allowed values depend on the `requirements.txt` lock file contents.
+:::{versionadded} 0.33.0
 :::
+::::
 
-:::{bzl:flag} pip_whl_osx_version
+::::{bzl:flag} pip_whl_osx_version
 Set the minimum `osx` version that the `py_binary` using `whl` distributions from a PyPI index should support.
 
 Values:
 * `""`: Select the lowest available version of each wheel giving you the maximum compatibility. This is the default.
 * `X.Y`: The string representation of the MacOS version. The allowed values depend on the `requirements.txt` lock file contents.
+
+:::{versionadded} 0.33.0
 :::
+::::
+
+::::{bzl:flag} bootstrap_impl
+Determine how programs implement their startup process.
+
+Values:
+* `system_python`: Use a bootstrap that requires a system Python available
+  in order to start programs. This requires
+  {obj}`PyRuntimeInfo.bootstrap_template` to be a Python program.
+* `script`: Use a bootstrap that uses an arbitrary executable script (usually a
+  shell script) instead of requiring it be a Python program.
+
+:::{note}
+The `script` bootstrap requires the toolchain to provide the `PyRuntimeInfo`
+provider from `rules_python`. This loosely translates to using Bazel 7+ with a
+toolchain created by rules_python. Most notably, WORKSPACE builds default to
+using a legacy toolchain built into Bazel itself which doesn't support the
+script bootstrap. If not available, the `system_python` bootstrap will be used
+instead.
+:::
+
+:::{seealso}
+{obj}`PyRuntimeInfo.bootstrap_template` and
+{obj}`PyRuntimeInfo.stage2_bootstrap_template`
+:::
+
+:::{versionadded} 0.33.0
+:::
+
+::::

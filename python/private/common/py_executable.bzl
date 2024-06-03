@@ -118,6 +118,10 @@ Valid values are:
             values = ["PY2", "PY3"],
             doc = "Defunct, unused, does nothing.",
         ),
+        "_bootstrap_impl_flag": attr.label(
+            default = "//python/config_settings:bootstrap_impl",
+            providers = [BuildSettingInfo],
+        ),
         "_pyc_collection_flag": attr.label(
             default = "//python/config_settings:pyc_collection",
             providers = [BuildSettingInfo],
@@ -212,7 +216,9 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         runfiles_details = runfiles_details,
     )
 
-    extra_exec_runfiles = ctx.runfiles(transitive_files = exec_result.extra_files_to_build)
+    extra_exec_runfiles = exec_result.extra_runfiles.merge(
+        ctx.runfiles(transitive_files = exec_result.extra_files_to_build),
+    )
     runfiles_details = struct(
         default_runfiles = runfiles_details.default_runfiles.merge(extra_exec_runfiles),
         data_runfiles = runfiles_details.data_runfiles.merge(extra_exec_runfiles),

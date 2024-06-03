@@ -1,3 +1,6 @@
+:::{default-domain} bzl
+:::
+
 # rules_python Changelog
 
 This is a human-friendly changelog in a keepachangelog.com style format.
@@ -30,7 +33,7 @@ A brief description of the categories of changes:
 * (bzlmod): The `python` and internal `rules_python` extensions have been
   marked as `reproducible` and will not include any lock file entries from now
   on.
-* (gazelle): Remove gazelle plugin's python deps and make it hermetic. 
+* (gazelle): Remove gazelle plugin's python deps and make it hermetic.
   Introduced a new Go-based helper leveraging tree-sitter for syntax analysis.
   Implemented the use of `pypi/stdlib-list` for standard library module verification.
 * (pip.parse): Do not ignore yanked packages when using `experimental_index_url`.
@@ -94,6 +97,18 @@ A brief description of the categories of changes:
   invalid usage previously but we were not failing the build. From now on this
   is explicitly disallowed.
 * (toolchains) Added riscv64 platform definition for python toolchains.
+* (gazelle) The `python_visibility` directive now supports the `$python_root$`
+  placeholder, just like the `python_default_visibility` directive does.
+* (rules) A new bootstrap implementation that doesn't require a system Python
+  is available. It can be enabled by setting
+  {obj}`--@rules_python//python:config_settings:bootstrap_impl=two_phase`. It
+  will become the default in a subsequent release.
+  ([#691](https://github.com/bazelbuild/rules_python/issues/691))
+* (providers) `PyRuntimeInfo` has two new attributes:
+  {obj}`PyRuntimeInfo.stage2_bootstrap_template` and
+  {obj}`PyRuntimeInfo.zip_main_template`.
+* (toolchains) A replacement for the Bazel-builtn autodetecting toolchain is
+  available. The `//python:autodetecting_toolchain` alias now uses it.
 * (pip): Support fetching and using the wheels for other platforms. This
   supports customizing whether the linux wheels are pulled for `musl` or
   `glibc`, whether `universal2` or arch-specific MacOS wheels are preferred and

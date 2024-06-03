@@ -360,6 +360,19 @@ py_library(
 
 ```
 
+This directive also supports the `$python_root$` placeholder that
+`# gazelle:python_default_visibility` supports.
+
+```starlark
+# gazlle:python_visibility //$python_root$/foo:bar
+
+py_library(
+    ...
+    visibility = ["//this_is_my_python_root/foo:bar"],
+    ...
+)
+```
+
 
 #### Directive: `python_test_file_pattern`:
 
