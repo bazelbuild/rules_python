@@ -15,6 +15,7 @@
 """Create the toolchain defs in a BUILD.bazel file."""
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load(":config_settings.bzl", "is_python_config_setting")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
@@ -22,7 +23,7 @@ load(
     "TARGET_TOOLCHAIN_TYPE",
 )
 
-def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, **kwargs):
+def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, flag_values, **kwargs):
     """For internal use only.
 
     Args:
@@ -30,6 +31,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         user_repository_name: The name of the user repository.
         python_version: The full (X.Y.Z) version of the interpreter.
         set_python_version_constraint: True or False as a string.
+        flag_values: Extra flag values to match for this toolchain.
         **kwargs: extra args passed to the `toolchain` calls.
 
     """
@@ -38,23 +40,54 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
     # string as we cannot have list of bools in build rule attribues.
     # This if statement does not appear to work unless it is in the
     # toolchain file.
-    if set_python_version_constraint == "True":
+    if set_python_version_constraint in ["True", "False"]:
         major_minor, _, _ = python_version.rpartition(".")
 
-        selects.config_setting_group(
-            name = prefix + "_version_setting",
-            match_any = [
-                Label("//python/config_settings:is_python_%s" % v)
-                for v in [
-                    major_minor,
-                    python_version,
-                ]
-            ],
+        match_any = []
+        for i, v in enumerate([major_minor, python_version]):
+            name = "{prefix}_{python_version}_{i}".format(
+                prefix = prefix,
+                python_version = python_version,
+                i = i,
+            )
+            match_any.append(name)
+            if flag_values:
+                is_python_config_setting(
+                    name = name,
+                    python_version = v,
+                    flag_values = flag_values,
+                    visibility = ["//visibility:private"],
+                )
+            else:
+                native.alias(
+                    name = name,
+                    actual = Label("//python/config_settings:is_python_%s" % v),
+                    visibility = ["//visibility:private"],
+                )
+
+        if set_python_version_constraint == "False":
+            name = "{prefix}_version_setting_no_python_version".format(prefix = prefix)
+            match_any.append(name)
+            native.config_setting(
+                name = name,
+                flag_values = flag_values | {
+                    str(Label("//python/config_settings:python_version")): "",
+                },
+                visibility = ["//visibility:private"],
+            )
+
+        name = "{prefix}_version_setting_{python_version}".format(
+            prefix = prefix,
+            python_version = python_version,
             visibility = ["//visibility:private"],
         )
-        target_settings = [prefix + "_version_setting"]
-    elif set_python_version_constraint == "False":
-        target_settings = []
+        selects.config_setting_group(
+            name = name,
+            match_any = match_any,
+            visibility = ["//visibility:private"],
+        )
+
+        target_settings = [name]
     else:
         fail(("Invalid set_python_version_constraint value: got {} {}, wanted " +
               "either the string 'True' or the string 'False'; " +

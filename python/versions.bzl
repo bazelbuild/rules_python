@@ -501,6 +501,7 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
+        flag_values = {},
         os_name = MACOS_NAME,
         # Matches the value returned from:
         # repository_ctx.execute(["uname", "-m"]).stdout.strip()
@@ -511,6 +512,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:aarch64",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         # Note: this string differs between OSX and Linux
         # Matches the value returned from:
@@ -522,6 +526,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:armv7",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         arch = "armv7",
     ),
@@ -530,6 +537,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:ppc",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         # Note: this string differs between OSX and Linux
         # Matches the value returned from:
@@ -541,6 +551,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:riscv64",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         arch = "riscv64",
     ),
@@ -549,6 +562,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:s390x",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         # Note: this string differs between OSX and Linux
         # Matches the value returned from:
@@ -560,6 +576,7 @@ PLATFORMS = {
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
+        flag_values = {},
         os_name = MACOS_NAME,
         arch = "x86_64",
     ),
@@ -568,6 +585,7 @@ PLATFORMS = {
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
         ],
+        flag_values = {},
         os_name = WINDOWS_NAME,
         arch = "x86_64",
     ),
@@ -576,6 +594,9 @@ PLATFORMS = {
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
         ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
         os_name = LINUX_NAME,
         arch = "x86_64",
     ),

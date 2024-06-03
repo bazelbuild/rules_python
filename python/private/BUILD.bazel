@@ -252,6 +252,8 @@ bzl_library(
     name = "py_toolchain_suite_bzl",
     srcs = ["py_toolchain_suite.bzl"],
     deps = [
+        ":config_settings_bzl",
+        ":text_util_bzl",
         ":toolchain_types_bzl",
         "@bazel_skylib//lib:selects",
     ],
