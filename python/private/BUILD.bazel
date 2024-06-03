@@ -146,6 +146,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pip_repo_name_bzl",
+    srcs = ["pip_repo_name.bzl"],
+    deps = [
+        ":normalize_name_bzl",
+        ":parse_whl_name_bzl",
+    ],
+)
+
+bzl_library(
     name = "pypi_index_bzl",
     srcs = ["pypi_index.bzl"],
     deps = [
