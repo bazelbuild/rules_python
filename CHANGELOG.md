@@ -57,6 +57,8 @@ A brief description of the categories of changes:
   the `experimental_index_url` feature which will fetch metadata from PyPI or a
   different private index and write the contents to the lock file. Fixes
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
+* (pip.parse): Install `yanked` packages and print a warning instead of
+  ignoring them. This better matches the behaviour of `uv pip install`.
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
