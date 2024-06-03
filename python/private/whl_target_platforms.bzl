@@ -265,6 +265,16 @@ def whl_target_platforms(platform_tag, abi_tag = ""):
     if abi_tag not in ["", "none", "abi3"]:
         abi = abi_tag
 
+    # TODO @aignas 2024-05-29: this code is present in many places, I think
+    _, _, tail = platform_tag.partition("_")
+    maybe_arch = tail
+    major, _, tail = tail.partition("_")
+    minor, _, tail = tail.partition("_")
+    if not tail or not major.isdigit() or not minor.isdigit():
+        tail = maybe_arch
+        major = 0
+        minor = 0
+
     for prefix, os in _OS_PREFIXES.items():
         if platform_tag.startswith(prefix):
             return [
@@ -272,6 +282,7 @@ def whl_target_platforms(platform_tag, abi_tag = ""):
                     os = os,
                     cpu = cpu,
                     abi = abi,
+                    version = (int(major), int(minor)),
                     target_platform = "_".join([abi, os, cpu] if abi else [os, cpu]),
                 )
                 for cpu in cpus
