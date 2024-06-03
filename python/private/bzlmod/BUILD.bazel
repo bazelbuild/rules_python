@@ -36,6 +36,7 @@ bzl_library(
         "//python/private:normalize_name_bzl",
         "//python/private:parse_requirements_bzl",
         "//python/private:parse_whl_name_bzl",
+        "//python/private:pip_repo_name_bzl",
         "//python/private:version_label_bzl",
         ":bazel_features_bzl",
     ] + [
