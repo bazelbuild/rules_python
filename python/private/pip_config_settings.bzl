@@ -81,7 +81,8 @@ def pip_config_settings(
         osx_versions = [],
         target_platforms = [],
         name = None,
-        visibility = None):
+        visibility = None,
+        config_setting_rule = None):
     """Generate all of the pip config settings.
 
     Args:
@@ -98,6 +99,8 @@ def pip_config_settings(
             constraint values for each condition.
         visibility (list[str], optional): The visibility to be passed to the
             exposed labels. All other labels will be private.
+        config_setting_rule (rule): The config setting rule to use for creating the
+            objects. Can be overridden for unit tests reasons.
     """
 
     glibc_versions = [""] + glibc_versions
@@ -130,6 +133,7 @@ def pip_config_settings(
             name = "sdist" + suffix,
             constraint_values = constraint_values,
             visibility = visibility,
+            config_setting_rule = config_setting_rule,
         )
         for python_version in python_versions:
             _sdist_config_setting(
@@ -137,6 +141,7 @@ def pip_config_settings(
                 python_version = python_version,
                 constraint_values = constraint_values,
                 visibility = visibility,
+                config_setting_rule = config_setting_rule,
             )
 
         for python_version in [""] + python_versions:
@@ -152,6 +157,7 @@ def pip_config_settings(
                 constraint_values = constraint_values,
                 python_version = python_version,
                 visibility = visibility,
+                config_setting_rule = config_setting_rule,
             )
 
 def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
@@ -271,8 +277,9 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _whl_config_setting(*, name, flag_values, visibility, **kwargs):
-    _config_setting_or(
+def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = None, **kwargs):
+    config_setting_rule = config_setting_rule or _config_setting_or
+    config_setting_rule(
         name = name,
         flag_values = flag_values | {
             FLAGS.pip_whl: UseWhlFlag.ONLY,
@@ -285,8 +292,9 @@ def _whl_config_setting(*, name, flag_values, visibility, **kwargs):
         **kwargs
     )
 
-def _sdist_config_setting(*, name, visibility, **kwargs):
-    _config_setting_or(
+def _sdist_config_setting(*, name, visibility, config_setting_rule = None, **kwargs):
+    config_setting_rule = config_setting_rule or _config_setting_or
+    config_setting_rule(
         name = name,
         flag_values = {FLAGS.pip_whl: UseWhlFlag.NO},
         default = {FLAGS.pip_whl: UseWhlFlag.AUTO},
