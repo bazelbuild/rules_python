@@ -68,6 +68,9 @@ A brief description of the categories of changes:
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
 * (pip.parse): Install `yanked` packages and print a warning instead of
   ignoring them. This better matches the behaviour of `uv pip install`.
+* (toolchains): Now matching of the default toolchain is more robust and explicit
+  and should fix rare edge-cases where the host toolchain autodetection would fail
+  due to some reasons.
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
