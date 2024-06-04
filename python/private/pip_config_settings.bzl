@@ -82,6 +82,7 @@ def pip_config_settings(
         target_platforms = [],
         name = None,
         visibility = None,
+        alias_rule = None,
         config_setting_rule = None):
     """Generate all of the pip config settings.
 
@@ -99,6 +100,8 @@ def pip_config_settings(
             constraint values for each condition.
         visibility (list[str], optional): The visibility to be passed to the
             exposed labels. All other labels will be private.
+        alias_rule (rule): The alias rule to use for creating the
+            objects. Can be overridden for unit tests reasons.
         config_setting_rule (rule): The config setting rule to use for creating the
             objects. Can be overridden for unit tests reasons.
     """
@@ -111,9 +114,11 @@ def pip_config_settings(
         for t in target_platforms
     ]
 
+    alias_rule = alias_rule or native.alias
+
     for version in python_versions:
         is_python = "is_python_{}".format(version)
-        native.alias(
+        alias_rule(
             name = is_python,
             actual = Label("//python/config_settings:" + is_python),
             visibility = visibility,
@@ -280,7 +285,7 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = None, **kwargs):
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
-        name = name,
+        name = "is_" + name,
         flag_values = flag_values | {
             FLAGS.pip_whl: UseWhlFlag.ONLY,
         },
@@ -295,7 +300,7 @@ def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = 
 def _sdist_config_setting(*, name, visibility, config_setting_rule = None, **kwargs):
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
-        name = name,
+        name = "is_" + name,
         flag_values = {FLAGS.pip_whl: UseWhlFlag.NO},
         default = {FLAGS.pip_whl: UseWhlFlag.AUTO},
         visibility = visibility,
@@ -303,7 +308,6 @@ def _sdist_config_setting(*, name, visibility, config_setting_rule = None, **kwa
     )
 
 def _config_setting_or(*, name, flag_values, default, visibility, **kwargs):
-    name = "is_" + name
     match_name = "_{}".format(name)
     default_name = "_{}_default".format(name)
 
