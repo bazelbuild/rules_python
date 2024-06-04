@@ -881,6 +881,10 @@ def _test_config_settings_exist(env):
         for abi_tag in abis:
             for platform_tag, kwargs in {
                 "any": {},
+                "macosx_11_0_arm64": {
+                    "osx_versions": [(11, 0)],
+                    "target_platforms": ["osx_aarch64"],
+                },
                 "manylinux_2_17_x86_64": {
                     "glibc_versions": [(2, 17), (2, 18)],
                     "target_platforms": ["linux_x86_64"],
@@ -888,6 +892,10 @@ def _test_config_settings_exist(env):
                 "manylinux_2_18_x86_64": {
                     "glibc_versions": [(2, 17), (2, 18)],
                     "target_platforms": ["linux_x86_64"],
+                },
+                "musllinux_1_1_aarch64": {
+                    "muslc_versions": [(1, 2), (1, 1), (1, 0)],
+                    "target_platforms": ["linux_aarch64"],
                 },
             }.items():
                 aliases = [
