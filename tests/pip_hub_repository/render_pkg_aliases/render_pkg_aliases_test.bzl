@@ -17,6 +17,10 @@
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load(
+    "//python/private:pip_config_settings.bzl",
+    "pip_config_settings",
+)  # buildifier: disable=bzl-visibility
+load(
     "//python/private:render_pkg_aliases.bzl",
     "get_filename_config_settings",
     "get_whl_flag_versions",
@@ -864,6 +868,56 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
     env.expect.that_collection(got).contains_exactly(want)
 
 _tests.append(_test_multiplatform_whl_aliases_filename_versioned)
+
+def _test_config_settings_exist(env):
+    for py_tag in ["py2.py3", "py3", "py311", "cp311"]:
+        if py_tag == "py2.py3":
+            abis = ["none"]
+        elif py_tag.startswith("py"):
+            abis = ["none", "abi3"]
+        else:
+            abis = ["none", "abi3", "cp311"]
+
+        for abi_tag in abis:
+            for platform_tag, kwargs in {
+                "any": {},
+                "manylinux_2_17_x86_64": {
+                    "glibc_versions": [(2, 17), (2, 18)],
+                    "target_platforms": ["linux_x86_64"],
+                },
+                "manylinux_2_18_x86_64": {
+                    "glibc_versions": [(2, 17), (2, 18)],
+                    "target_platforms": ["linux_x86_64"],
+                },
+            }.items():
+                aliases = [
+                    whl_alias(
+                        repo = "repo",
+                        filename = "foo-0.0.1-{}-{}-{}.whl".format(py_tag, abi_tag, platform_tag),
+                        version = "3.11",
+                    ),
+                ]
+                available_config_settings = []
+                mock_rule = lambda name, **kwargs: available_config_settings.append(name)
+                pip_config_settings(
+                    python_versions = ["3.11"],
+                    alias_rule = mock_rule,
+                    config_setting_rule = mock_rule,
+                    **kwargs
+                )
+
+                got_aliases = multiplatform_whl_aliases(
+                    aliases = aliases,
+                    default_version = None,
+                    glibc_versions = kwargs.get("glibc_versions", []),
+                    muslc_versions = kwargs.get("muslc_versions", []),
+                    osx_versions = kwargs.get("osx_versions", []),
+                )
+                got = [a.config_setting.partition(":")[-1] for a in got_aliases]
+
+                env.expect.that_collection(available_config_settings).contains_at_least(got)
+
+_tests.append(_test_config_settings_exist)
 
 def render_pkg_aliases_test_suite(name):
     """Create the test suite.
