@@ -165,19 +165,11 @@ def rules_python_internal_deps():
     )
 
     http_archive(
-        name = "rules_proto",
-        sha256 = "904a8097fae42a690c8e08d805210e40cccb069f5f9a0f6727cf4faa7bed2c9c",
-        strip_prefix = "rules_proto-6.0.0-rc1",
-        url = "https://github.com/bazelbuild/rules_proto/releases/download/6.0.0-rc1/rules_proto-6.0.0-rc1.tar.gz",
-    )
-
-    http_archive(
         name = "com_google_protobuf",
-        sha256 = "75be42bd736f4df6d702a0e4e4d30de9ee40eac024c4b845d17ae4cc831fe4ae",
-        strip_prefix = "protobuf-21.7",
+        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
+        strip_prefix = "protobuf-27.0",
         urls = [
-            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
-            "https://github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
         ],
     )
 
