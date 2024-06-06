@@ -25,6 +25,7 @@ load(
     "get_filename_config_settings",
     "get_whl_flag_versions",
     "multiplatform_whl_aliases",
+    "render_multiplatform_pkg_aliases",
     "render_pkg_aliases",
     "whl_alias",
 )  # buildifier: disable=bzl-visibility
@@ -110,7 +111,8 @@ alias(
 _tests.append(_test_legacy_aliases)
 
 def _test_bzlmod_aliases(env):
-    actual = render_pkg_aliases(
+    # Use this function as it is used in pip_repository
+    actual = render_multiplatform_pkg_aliases(
         default_config_setting = "//:my_config_setting",
         aliases = {
             "bar-baz": [
@@ -178,13 +180,27 @@ alias(
     ),
 )"""
 
+    env.expect.that_str(actual.pop("_config/BUILD.bazel")).equals(
+        """\
+load("@rules_python//python/private:pip_config_settings.bzl", "pip_config_settings")
+
+pip_config_settings(
+    name = "pip_config_settings",
+    glibc_versions = [],
+    muslc_versions = [],
+    osx_versions = [],
+    python_versions = ["3.2"],
+    target_platforms = [],
+    visibility = ["//:__subpackages__"],
+)""",
+    )
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
     env.expect.that_str(actual[want_key]).equals(want_content)
 
 _tests.append(_test_bzlmod_aliases)
 
 def _test_bzlmod_aliases_with_no_default_version(env):
-    actual = render_pkg_aliases(
+    actual = render_multiplatform_pkg_aliases(
         default_config_setting = None,
         aliases = {
             "bar-baz": [
@@ -272,6 +288,7 @@ alias(
     ),
 )"""
 
+    actual.pop("_config/BUILD.bazel")
     env.expect.that_collection(actual.keys()).contains_exactly([want_key])
     env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
 

@@ -410,9 +410,7 @@ pip_config_settings(
     python_versions = {python_versions},
     target_platforms = {target_platforms},
     visibility = ["//:__subpackages__"],
-)
-
-""".format(
+)""".format(
         glibc_versions = render.indent(render.list(glibc_versions)).lstrip(),
         muslc_versions = render.indent(render.list(muslc_versions)).lstrip(),
         osx_versions = render.indent(render.list(osx_versions)).lstrip(),
