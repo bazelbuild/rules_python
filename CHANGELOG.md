@@ -45,7 +45,11 @@ A brief description of the categories of changes:
   to allowing to correctly fetch the wheels for the right platform. See the
   updated docs on how to use the feature. This is work towards addressing
   [#735](https://github.com/bazelbuild/rules_python/issues/735) and
-  [#260](https://github.com/bazelbuild/rules_python/issues/260).
+  [#260](https://github.com/bazelbuild/rules_python/issues/260). The spoke
+  repository names when using this flag will have a structure of
+  `{pip_hub_prefix}_{wheel_name}_{py_tag}_{abi_tag}_{platform_tag}_{sha256}`,
+  which is an implementation detail which should not be relied on and is there
+  purely for better debugging experience.
 
 ### Fixed
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
