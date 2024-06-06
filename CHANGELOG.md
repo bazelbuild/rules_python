@@ -25,6 +25,9 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 * (deps) Upgrade the `pip_install` dependencies to pick up a new version of pip.
 * (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
   `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
@@ -68,9 +71,11 @@ A brief description of the categories of changes:
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
 * (pip.parse): Install `yanked` packages and print a warning instead of
   ignoring them. This better matches the behaviour of `uv pip install`.
-* (toolchains): Now matching of the default toolchain is more robust and explicit
-  and should fix rare edge-cases where the host toolchain autodetection would fail
-  due to some reasons.
+* (toolchains): Now matching of the default hermetic toolchain is more robust
+  and explicit and should fix rare edge-cases where the host toolchain
+  autodetection would match a different toolchain than expected. This may yield
+  to toolchain selection failures when the python toolchain is not registered,
+  but is requested via `//python/config_settings:python_version` flag setting.
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
