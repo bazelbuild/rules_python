@@ -16,8 +16,15 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:versions.bzl", "TOOL_VERSIONS")
 load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
+
+# NOTE @aignas 2024-06-04: we are using here something that is registered in the MODULE.Bazel
+# and if you find tests failing, it could be because of the toolchain resolution issues here.
+#
+# If the toolchain is not resolved then you will have a weird message telling
+# you that your transition target does not have a PyRuntime provider, which is
+# caused by there not being a toolchain detected for the target.
+_PYTHON_VERSION = "3.11"
 
 _tests = []
 
@@ -26,7 +33,7 @@ def _test_py_test_with_transition(name):
         py_test_transitioned,
         name = name + "_subject",
         srcs = [name + "_subject.py"],
-        python_version = TOOL_VERSIONS.keys()[0],
+        python_version = _PYTHON_VERSION,
     )
 
     analysis_test(
@@ -46,7 +53,7 @@ def _test_py_binary_with_transition(name):
         py_binary_transitioned,
         name = name + "_subject",
         srcs = [name + "_subject.py"],
-        python_version = TOOL_VERSIONS.keys()[0],
+        python_version = _PYTHON_VERSION,
     )
 
     analysis_test(

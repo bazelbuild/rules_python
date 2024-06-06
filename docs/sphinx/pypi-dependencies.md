@@ -1,3 +1,6 @@
+:::{default-domain} bzl
+:::
+
 # Using dependencies from PyPI
 
 Using PyPI packages (aka "pip install") involves two main steps.
@@ -25,19 +28,21 @@ pip.parse(
 use_repo(pip, "my_deps")
 ```
 For more documentation, including how the rules can update/create a requirements
-file, see the bzlmod examples under the {gh-path}`examples` folder.
+file, see the bzlmod examples under the {gh-path}`examples` folder or the documentation
+for the {obj}`@rules_python//python/extensions:pip.bzl` extension.
 
+```{note}
 We are using a host-platform compatible toolchain by default to setup pip dependencies.
 During the setup phase, we create some symlinks, which may be inefficient on Windows
 by default. In that case use the following `.bazelrc` options to improve performance if
 you have admin privileges:
-```
-startup --windows_enable_symlinks
-```
+
+    startup --windows_enable_symlinks
 
 This will enable symlinks on Windows and help with bootstrap performance of setting up the 
 hermetic host python interpreter on this platform. Linux and OSX users should see no
 difference.
+```
 
 ### Using a WORKSPACE file
 
@@ -59,16 +64,67 @@ load("@my_deps//:requirements.bzl", "install_deps")
 install_deps()
 ```
 
+(vendoring-requirements)=
+#### Vendoring the requirements.bzl file
+
+In some cases you may not want to generate the requirements.bzl file as a repository rule
+while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module
+such as a ruleset, you may want to include the requirements.bzl file rather than make your users
+install the WORKSPACE setup to generate it.
+See https://github.com/bazelbuild/rules_python/issues/608
+
+This is the same workflow as Gazelle, which creates `go_repository` rules with
+[`update-repos`](https://github.com/bazelbuild/bazel-gazelle#update-repos)
+
+To do this, use the "write to source file" pattern documented in
+https://blog.aspect.dev/bazel-can-write-to-the-source-folder
+to put a copy of the generated requirements.bzl into your project.
+Then load the requirements.bzl file directly rather than from the generated repository.
+See the example in rules_python/examples/pip_parse_vendored.
+
+(per-os-arch-requirements)=
+### Requirements for a specific OS/Architecture
+
+In some cases you may need to use different requirements files for different OS, Arch combinations. This is enabled via the `requirements_by_platform` attribute in `pip.parse` extension and the `pip_parse` repository rule. The keys of the dictionary are labels to the file and the values are a list of comma separated target (os, arch) tuples.
+
+For example:
+```starlark
+    # ...
+    requirements_by_platform = {
+        "requirements_linux_x86_64.txt": "linux_x86_64",
+        "requirements_osx.txt": "osx_*",
+        "requirements_linux_exotic.txt": "linux_exotic",
+        "requirements_some_platforms.txt": "linux_aarch64,windows_*",
+    },
+    # For the list of standard platforms that the rules_python has toolchains for, default to
+    # the following requirements file.
+    requirements_lock = "requirements_lock.txt",
+```
+
+In case of duplicate platforms, `rules_python` will raise an error as there has
+to be unambiguous mapping of the requirement files to the (os, arch) tuples.
+
+An alternative way is to use per-OS requirement attributes.
+```starlark
+    # ...
+    requirements_windows = "requirements_windows.txt",
+    requirements_darwin = "requirements_darwin.txt",
+    # For the remaining platforms (which is basically only linux OS), use this file.
+    requirements_lock = "requirements_lock.txt",
+)
+```
+
 ### pip rules
 
-Note that since `pip_parse` is a repository rule and therefore executes pip at
-WORKSPACE-evaluation time, Bazel has no information about the Python toolchain
-and cannot enforce that the interpreter used to invoke pip matches the
-interpreter used to run `py_binary` targets. By default, `pip_parse` uses the
-system command `"python3"`. To override this, pass in the `python_interpreter`
-attribute or `python_interpreter_target` attribute to `pip_parse`.
+Note that since `pip_parse` and `pip.parse` are executed at evaluation time,
+Bazel has no information about the Python toolchain and cannot enforce that the
+interpreter used to invoke `pip` matches the interpreter used to run
+`py_binary` targets. By default, `pip_parse` uses the system command
+`"python3"`. To override this, pass in the `python_interpreter` attribute or
+`python_interpreter_target` attribute to `pip_parse`. The `pip.parse` `bzlmod` extension
+by default uses the hermetic python toolchain for the host platform.
 
-You can have multiple `pip_parse`s in the same workspace.  Or use the pip
+You can have multiple `pip_parse`s in the same workspace, or use the pip
 extension multiple times when using bzlmod. This configuration will create
 multiple external repos that have no relation to one another and may result in
 downloading the same wheels numerous times.
@@ -111,7 +167,7 @@ want to use `requirement()`, you can use the library
 labels directly instead. For `pip_parse`, the labels are of the following form:
 
 ```starlark
-@{name}_{package}//:pkg
+@{name}//{package}
 ```
 
 Here `name` is the `name` attribute that was passed to `pip_parse` and
@@ -121,30 +177,67 @@ update `name` from "old" to "new", then you can run the following
 buildozer command:
 
 ```shell
-buildozer 'substitute deps @old_([^/]+)//:pkg @new_${1}//:pkg' //...:*
+buildozer 'substitute deps @old//([^/]+) @new//${1}' //...:*
 ```
 
 [requirements-drawbacks]: https://github.com/bazelbuild/rules_python/issues/414
+
+### Entry points
+
+If you would like to access [entry points][whl_ep], see the `py_console_script_binary` rule documentation,
+which can help you create a `py_binary` target for a particular console script exposed by a package.
+
+[whl_ep]: https://packaging.python.org/specifications/entry-points/
 
 ### 'Extras' dependencies
 
 Any 'extras' specified in the requirements lock file will be automatically added
 as transitive dependencies of the package. In the example above, you'd just put
-`requirement("useful_dep")`.
+`requirement("useful_dep")` or `@pypi//useful_dep`.
 
-### Packaging cycles
+### Consuming Wheel Dists Directly
 
-Sometimes PyPi packages contain dependency cycles -- for instance `sphinx`
-depends on `sphinxcontrib-serializinghtml`. When using them as `requirement()`s,
-ala
+If you need to depend on the wheel dists themselves, for instance, to pass them
+to some other packaging tool, you can get a handle to them with the
+`whl_requirement` macro. For example:
+
+```starlark
+load("@pypi//:requirements.bzl", "whl_requirement")
+
+filegroup(
+    name = "whl_files",
+    data = [
+        # This is equivalent to "@pypi//boto3:whl"
+        whl_requirement("boto3"),
+    ]
+)
+```
+
+### Creating a filegroup of files within a whl
+
+The rule {obj}`whl_filegroup` exists as an easy way to extract the necessary files
+from a whl file without the need to modify the `BUILD.bazel` contents of the
+whl repositories generated via `pip_repository`. Use it similarly to the `filegroup`
+above. See the API docs for more information.
+
+(advance-topics)=
+## Advanced topics
+
+(circular-deps)=
+### Circular dependencies
+
+Sometimes PyPi packages contain dependency cycles -- for instance a particular
+version `sphinx` (this is no longer the case in the latest version as of
+2024-06-02) depends on `sphinxcontrib-serializinghtml`. When using them as
+`requirement()`s, ala
 
 ```
 py_binary(
-  name = "doctool",
-  ...
-  deps = [
-    requirement("sphinx"),
-   ]
+    name = "doctool",
+    ...
+    deps = [
+        requirement("sphinx"),
+    ],
 )
 ```
 
@@ -166,15 +259,15 @@ issues by specifying groups of packages which form cycles. `pip_parse` will
 transparently fix the cycles for you and provide the cyclic dependencies
 simultaneously.
 
-```
+```starlark
 pip_parse(
-  ...
-  experimental_requirement_cycles = {
-    "sphinx": [
-      "sphinx",
-      "sphinxcontrib-serializinghtml",
-    ]
-  },
+    ...
+    experimental_requirement_cycles = {
+        "sphinx": [
+            "sphinx",
+            "sphinxcontrib-serializinghtml",
+        ]
+    },
 )
 ```
 
@@ -183,17 +276,17 @@ be distinct. `apache-airflow` for instance has dependency cycles with a number
 of its optional dependencies, which means those optional dependencies must all
 be a part of the `airflow` cycle. For instance --
 
-```
+```starlark
 pip_parse(
-  ...
-  experimental_requirement_cycles = {
-    "airflow": [
-      "apache-airflow",
-      "apache-airflow-providers-common-sql",
-      "apache-airflow-providers-postgres",
-      "apache-airflow-providers-sqlite",
-    ]
-  }
+    ...
+    experimental_requirement_cycles = {
+        "airflow": [
+            "apache-airflow",
+            "apache-airflow-providers-common-sql",
+            "apache-airflow-providers-postgres",
+            "apache-airflow-providers-sqlite",
+        ]
+    }
 )
 ```
 
@@ -213,17 +306,98 @@ leg of the dependency manually. For instance by making
 `apache-airflow-providers-postgres` not explicitly depend on `apache-airflow` or
 perhaps `apache-airflow-providers-common-sql`.
 
-## Consuming Wheel Dists Directly
 
-If you need to depend on the wheel dists themselves, for instance, to pass them
-to some other packaging tool, you can get a handle to them with the
-`whl_requirement` macro. For example:
+(bazel-downloader)=
+### Bazel downloader and multi-platform wheel hub repository.
 
-```starlark
-filegroup(
-    name = "whl_files",
-    data = [
-        whl_requirement("boto3"),
-    ]
-)
+The `bzlmod` `pip.parse` call supports pulling information from `PyPI` (or a
+compatible mirror) and it will ensure that the [bazel
+downloader][bazel_downloader] is used for downloading the wheels. This allows
+the users to use the [credential helper](#credential-helper) to authenticate
+with the mirror and it also ensures that the distribution downloads are cached.
+It also avoids using `pip` altogether and results in much faster dependency
+fetching.
+
+This can be enabled by `experimental_index_url` and related flags as shown in
+the {gh-path}`examples/bzlmod/MODULE.bazel` example.
+
+When using this feature during the `pip` extension evaluation you will see the accessed indexes similar to below:
+```console
+Loading: 0 packages loaded
+    currently loading: docs/sphinx
+    Fetching module extension pip in @@//python/extensions:pip.bzl; starting
+    Fetching https://pypi.org/simple/twine/
 ```
+
+This does not mean that `rules_python` is fetching the wheels eagerly, but it
+rather means that it is calling the PyPI server to get the Simple API response
+to get the list of all available source and wheel distributions. Once it has
+got all of the available distributions, it will select the right ones depending
+on the `sha256` values in your `requirements_lock.txt` file. The compatible
+distribution URLs will be then written to the `MODULE.bazel.lock` file. Currently
+users wishing to use the lock file with `rules_python` with this feature have
+to set an environment variable `RULES_PYTHON_OS_ARCH_LOCK_FILE=0` which will
+become default in the next release.
+
+Fetching the distribution information from the PyPI allows `rules_python` to
+know which `whl` should be used on which target platform and it will determine
+that by parsing the `whl` filename based on [PEP600], [PEP656] standards. This
+allows the user to configure the behaviour by using the following publicly
+available flags:
+* {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
+* {obj}`--@rules_python//python/config_settings:pip_whl` for selecting `whl` distribution preference.
+* {obj}`--@rules_python//python/config_settings:pip_whl_osx_arch` for selecting MacOS wheel preference.
+* {obj}`--@rules_python//python/config_settings:pip_whl_glibc_version` for selecting the GLIBC version compatibility.
+* {obj}`--@rules_python//python/config_settings:pip_whl_muslc_version` for selecting the musl version compatibility.
+* {obj}`--@rules_python//python/config_settings:pip_whl_osx_version` for selecting MacOS version compatibility.
+
+[bazel_downloader]: https://bazel.build/rules/lib/builtins/repository_ctx#download
+[pep600]: https://peps.python.org/pep-0600/
+[pep656]: https://peps.python.org/pep-0656/
+
+(credential-helper)=
+### Credential Helper
+
+The "use Bazel downloader for python wheels" experimental feature includes support for the Bazel
+[Credential Helper][cred-helper-design].
+
+Your python artifact registry may provide a credential helper for you. Refer to your index's docs
+to see if one is provided.
+
+See the [Credential Helper Spec][cred-helper-spec] for details.
+
+[cred-helper-design]: https://github.com/bazelbuild/proposals/blob/main/designs/2022-06-07-bazel-credential-helpers.md
+[cred-helper-spec]: https://github.com/EngFlow/credential-helper-spec/blob/main/spec.md
+
+
+#### Basic Example:
+
+The simplest form of a credential helper is a bash script that accepts an arg and spits out JSON to
+stdout. For a service like Google Artifact Registry that uses ['Basic' HTTP Auth][rfc7617] and does
+not provide a credential helper that conforms to the [spec][cred-helper-spec], the script might
+look like:
+
+```bash
+#!/bin/bash
+# cred_helper.sh
+ARG=$1  # but we don't do anything with it as it's always "get"
+
+# formatting is optional
+echo '{'
+echo '  "headers": {'
+echo '    "Authorization": ["Basic dGVzdDoxMjPCow=="]'
+echo '  }'
+echo '}'
+```
+
+Configure Bazel to use this credential helper for your python index `example.com`:
+
+```
+# .bazelrc
+build --credential_helper=example.com=/full/path/to/cred_helper.sh
+```
+
+Bazel will call this file like `cred_helper.sh get` and use the returned JSON to inject headers
+into whatever HTTP(S) request it performs against `example.com`.
+
+[rfc7617]: https://datatracker.ietf.org/doc/html/rfc7617

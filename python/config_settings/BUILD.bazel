@@ -7,6 +7,13 @@ load(
     "PrecompileSourceRetentionFlag",
     "PycCollectionFlag",
 )
+load(
+    "//python/private:pip_flags.bzl",
+    "INTERNAL_FLAGS",
+    "UniversalWhlFlag",
+    "UseWhlFlag",
+    "WhlLibcFlag",
+)
 load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
@@ -61,3 +68,63 @@ string_flag(
     # NOTE: Only public because its an implicit dependency
     visibility = ["//visibility:public"],
 )
+
+# This is used for pip and hermetic toolchain resolution.
+string_flag(
+    name = "py_linux_libc",
+    build_setting_default = WhlLibcFlag.GLIBC,
+    values = sorted(WhlLibcFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub and toolchain repos.
+    visibility = ["//visibility:public"],
+)
+
+# pip.parse related flags
+
+string_flag(
+    name = "pip_whl",
+    build_setting_default = UseWhlFlag.AUTO,
+    values = sorted(UseWhlFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "pip_whl_osx_arch",
+    build_setting_default = UniversalWhlFlag.ARCH,
+    values = sorted(UniversalWhlFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "pip_whl_glibc_version",
+    build_setting_default = "",
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "pip_whl_muslc_version",
+    build_setting_default = "",
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "pip_whl_osx_version",
+    build_setting_default = "",
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+# private pip whl related flags. Their values cannot be changed and they
+# are an implementation detail of how `pip_config_settings` work.
+[
+    string_flag(
+        name = "_internal_pip_" + flag,
+        build_setting_default = "",
+        values = [""],
+        visibility = ["//visibility:public"],
+    )
+    for flag in INTERNAL_FLAGS
+]

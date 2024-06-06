@@ -14,7 +14,11 @@
 
 ""
 
-load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
+load(
+    "//python/private:render_pkg_aliases.bzl",
+    "render_multiplatform_pkg_aliases",
+    "whl_alias",
+)
 load("//python/private:text_util.bzl", "render")
 
 _BUILD_FILE_CONTENTS = """\
@@ -26,12 +30,13 @@ exports_files(["requirements.bzl"])
 
 def _pip_repository_impl(rctx):
     bzl_packages = rctx.attr.whl_map.keys()
-    aliases = render_pkg_aliases(
+    aliases = render_multiplatform_pkg_aliases(
         aliases = {
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
         default_version = rctx.attr.default_version,
+        default_config_setting = "//_config:is_python_" + rctx.attr.default_version,
         requirement_cycles = rctx.attr.groups,
     )
     for path, contents in aliases.items():

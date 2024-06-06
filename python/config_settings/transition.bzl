@@ -53,12 +53,14 @@ def _transition_py_impl(ctx):
         for file in target[DefaultInfo].default_runfiles.files.to_list():
             if file.short_path == expected_target_path:
                 zipfile = file
-        zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
-        ctx.actions.symlink(
-            is_executable = True,
-            output = zipfile_symlink,
-            target_file = zipfile,
-        )
+
+        if zipfile:
+            zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
+            ctx.actions.symlink(
+                is_executable = True,
+                output = zipfile_symlink,
+                target_file = zipfile,
+            )
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
@@ -75,7 +77,10 @@ def _transition_py_impl(ctx):
     elif BuiltinPyRuntimeInfo in target:
         py_runtime_info = target[BuiltinPyRuntimeInfo]
     else:
-        fail("target {} does not have rules_python PyRuntimeInfo or builtin PyRuntimeInfo".format(target))
+        fail(
+            "target {} does not have rules_python PyRuntimeInfo or builtin PyRuntimeInfo. ".format(target) +
+            "There is likely no toolchain being matched to your configuration, use --toolchain_resolution_debug parameter to get more information",
+        )
 
     providers = [
         DefaultInfo(

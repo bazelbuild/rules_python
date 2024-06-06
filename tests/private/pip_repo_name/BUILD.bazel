@@ -1,0 +1,3 @@
+load(":pip_repo_name_tests.bzl", "pip_repo_name_test_suite")
+
+pip_repo_name_test_suite(name = "pip_repo_name_tests")
