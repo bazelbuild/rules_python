@@ -63,6 +63,8 @@ A brief description of the categories of changes:
   the `experimental_index_url` feature which will fetch metadata from PyPI or a
   different private index and write the contents to the lock file. Fixes
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
+* (doc) Fix the `WORKSPACE` requirement vendoring example. Fixes
+  [#1918](https://github.com/bazelbuild/rules_python/issues/1918).
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
