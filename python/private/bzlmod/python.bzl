@@ -45,7 +45,7 @@ def _left_pad_zero(index, length):
 def _print_warn(msg):
     print("WARNING:", msg)
 
-def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
+def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error, **kwargs):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
@@ -53,6 +53,7 @@ def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_e
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
         ignore_root_user_error = ignore_root_user_error,
+        **kwargs
     )
     return struct(
         python_version = toolchain_attr.python_version,
@@ -87,6 +88,26 @@ def _python_impl(module_ctx):
     # ignore_root_user_error takes its default value: False
     if not module_ctx.modules[0].tags.toolchain:
         ignore_root_user_error = False
+
+    toolchain_override_kwargs = {}
+    for mod in module_ctx.modules:
+        for override_attr in mod.tags.override_toolchains:
+            if not mod.is_root:
+                fail("overrides are only supported in root modules")
+            if "tools_version" not in toolchain_override_kwargs:
+                toolchain_override_kwargs["tool_versions"] = {}
+            if override_attr.python_version:
+                toolchain_override_kwargs["tool_versions"].update({
+                    override_attr.python_version: {
+                        "sha256": {
+                            override_attr.target_arch: override_attr.sha256,
+                        },
+                        "strip_prefix": override_attr.strip_prefix,
+                        "url": override_attr.url,
+                    },
+                })
+            if override_attr.base_url:
+                toolchain_override_kwargs["base_url"] = override_attr.base_url
 
     for mod in module_ctx.modules:
         module_toolchain_versions = []
@@ -151,12 +172,21 @@ def _python_impl(module_ctx):
                     )
                 toolchain_info = None
             else:
-                toolchain_info = _python_register_toolchains(
-                    toolchain_name,
-                    toolchain_attr,
-                    module = mod,
-                    ignore_root_user_error = ignore_root_user_error,
-                )
+                if mod.is_root:
+                    toolchain_info = _python_register_toolchains(
+                        toolchain_name,
+                        toolchain_attr,
+                        module = mod,
+                        ignore_root_user_error = ignore_root_user_error,
+                        **toolchain_override_kwargs
+                    )
+                else:
+                    toolchain_info = _python_register_toolchains(
+                        toolchain_name,
+                        toolchain_attr,
+                        module = mod,
+                        ignore_root_user_error = ignore_root_user_error,
+                    )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
                     debug_info["toolchains_registered"].append({
@@ -277,6 +307,38 @@ python = module_extension(
 """,
     implementation = _python_impl,
     tag_classes = {
+        "override_toolchains": tag_class(
+            doc = """Tag class used to override Python toolchains.
+Use this tag class to override one or more Python toolchains. This class
+is also potentially called by sub modules. The following covers different
+business rules and use cases.""",
+            attrs = {
+                "base_url": attr.string(
+                    doc = "base url for the python interpreter",
+                    mandatory = False,
+                ),
+                "python_version": attr.string(
+                    doc = "Python version to override",
+                    mandatory = False,
+                ),
+                "sha256": attr.string(
+                    doc = "sha256 for the python interpreter",
+                    mandatory = False,
+                ),
+                "strip_prefix": attr.string(
+                    doc = "strip prefix for the python interpreter",
+                    mandatory = False,
+                ),
+                "target_arch": attr.string(
+                    doc = "Architectures of the Python interpreter",
+                    mandatory = False,
+                ),
+                "url": attr.string(
+                    doc = "url for the python interpreter",
+                    mandatory = False,
+                ),
+            },
+        ),
         "toolchain": tag_class(
             doc = """Tag class used to register Python toolchains.
 Use this tag class to register one or more Python toolchains. This class
