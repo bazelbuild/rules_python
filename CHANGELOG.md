@@ -50,6 +50,10 @@ A brief description of the categories of changes:
   `{pip_hub_prefix}_{wheel_name}_{py_tag}_{abi_tag}_{platform_tag}_{sha256}`,
   which is an implementation detail which should not be relied on and is there
   purely for better debugging experience.
+* (bzlmod) The `pythons_hub//:interpreters.bzl` no longer has platform-specific
+  labels where left there for compatibility reasons. Move to
+  `python_{version}_host` keys if you would like to have access to a Python
+  interpreter that can be used in a repository rule context.
 
 ### Fixed
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.

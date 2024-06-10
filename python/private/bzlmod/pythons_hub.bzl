@@ -14,12 +14,9 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
-load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/private:full_version.bzl", "full_version")
 load(
     "//python/private:toolchains_repo.bzl",
-    "get_host_os_arch",
-    "get_host_platform",
     "python_toolchain_build_file_content",
 )
 
@@ -83,7 +80,7 @@ DEFAULT_PYTHON_VERSION = "{default_python_version}"
 """
 
 _line_for_hub_template = """\
-    "{key}": Label("@{name}_{platform}//:{path}"),
+    "{name}_host": Label("@{name}_host//:python"),
 """
 
 def _hub_repo_impl(rctx):
@@ -101,28 +98,11 @@ def _hub_repo_impl(rctx):
         executable = False,
     )
 
-    (os, arch) = get_host_os_arch(rctx)
-    platform = get_host_platform(os, arch)
-    is_windows = (os == WINDOWS_NAME)
-    path = "python.exe" if is_windows else "bin/python3"
-
     # Create a dict that is later used to create
     # a symlink to a interpreter.
     interpreter_labels = "".join([
-        _line_for_hub_template.format(
-            key = name + ("" if platform_str != "host" else "_host"),
-            name = name,
-            platform = platform_str,
-            path = p,
-        )
+        _line_for_hub_template.format(name = name)
         for name in rctx.attr.toolchain_user_repository_names
-        for platform_str, p in {
-            # NOTE @aignas 2023-12-21: maintaining the `platform` specific key
-            # here may be unneeded in the long term, but I am not sure if there
-            # are other users that depend on it.
-            platform: path,
-            "host": "python",
-        }.items()
     ])
 
     rctx.file(
