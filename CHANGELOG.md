@@ -51,7 +51,7 @@ A brief description of the categories of changes:
   which is an implementation detail which should not be relied on and is there
   purely for better debugging experience.
 * (bzlmod) The `pythons_hub//:interpreters.bzl` no longer has platform-specific
-  labels where left there for compatibility reasons. Move to
+  labels which where left there for compatibility reasons. Move to
   `python_{version}_host` keys if you would like to have access to a Python
   interpreter that can be used in a repository rule context.
 
