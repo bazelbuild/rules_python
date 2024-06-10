@@ -80,6 +80,8 @@ A brief description of the categories of changes:
   autodetection would match a different toolchain than expected. This may yield
   to toolchain selection failures when the python toolchain is not registered,
   but is requested via `//python/config_settings:python_version` flag setting.
+* (doc) Fix the `WORKSPACE` requirement vendoring example. Fixes
+  [#1918](https://github.com/bazelbuild/rules_python/issues/1918).
 
 ### Added
 * (rules) Precompiling Python source at build time is available. but is

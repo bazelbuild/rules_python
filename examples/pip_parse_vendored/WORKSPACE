@@ -1,4 +1,4 @@
-workspace(name = "pip_repository_annotations_example")
+workspace(name = "pip_parse_vendored_example")
 
 local_repository(
     name = "rules_python",
@@ -23,7 +23,8 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # verify by inspection; the environment variables at a later time, when we download the
 # packages, will be the ones that take effect.
 pip_parse(
-    name = "pip",
+    # We choose a unique name here to make sure we can do some cleanup on it.
+    name = "pip_deps_to_be_vendored",
     envsubst = ["PIP_RETRIES"],
     extra_pip_args = ["--retries=${PIP_RETRIES:-5}"],
     python_interpreter_target = "@python39_host//:python",
