@@ -451,6 +451,18 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
         if logger:
             logger.warn("Could not find a whl or an sdist with sha256={}".format(sha256))
 
+    yanked = {}
+    for dist in whls + [sdist]:
+        if dist and dist.yanked:
+            yanked.setdefault(dist.yanked, []).append(dist.filename)
+    if yanked:
+        logger.warn(lambda: "\n".join([
+            "the following distributions got yanked:",
+        ] + [
+            "reason: {}\n  {}".format(reason, "\n".join(sorted(dists)))
+            for reason, dists in yanked.items()
+        ]))
+
     # Filter out the wheels that are incompatible with the target_platforms.
     whls = select_whls(
         whls = whls,

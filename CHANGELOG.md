@@ -36,10 +36,20 @@ A brief description of the categories of changes:
 * (bzlmod): The `python` and internal `rules_python` extensions have been
   marked as `reproducible` and will not include any lock file entries from now
   on.
-
 * (gazelle): Remove gazelle plugin's python deps and make it hermetic.
   Introduced a new Go-based helper leveraging tree-sitter for syntax analysis.
   Implemented the use of `pypi/stdlib-list` for standard library module verification.
+* (pip.parse): Do not ignore yanked packages when using `experimental_index_url`.
+  This is to mimic what `uv` is doing. We will print a warning instead.
+* (pip.parse): Add references to all supported wheels when using `experimental_index_url`
+  to allowing to correctly fetch the wheels for the right platform. See the
+  updated docs on how to use the feature. This is work towards addressing
+  [#735](https://github.com/bazelbuild/rules_python/issues/735) and
+  [#260](https://github.com/bazelbuild/rules_python/issues/260). The spoke
+  repository names when using this flag will have a structure of
+  `{pip_hub_prefix}_{wheel_name}_{py_tag}_{abi_tag}_{platform_tag}_{sha256}`,
+  which is an implementation detail which should not be relied on and is there
+  purely for better debugging experience.
 
 ### Fixed
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
@@ -63,6 +73,13 @@ A brief description of the categories of changes:
   the `experimental_index_url` feature which will fetch metadata from PyPI or a
   different private index and write the contents to the lock file. Fixes
   [#1643](https://github.com/bazelbuild/rules_python/issues/1643).
+* (pip.parse): Install `yanked` packages and print a warning instead of
+  ignoring them. This better matches the behaviour of `uv pip install`.
+* (toolchains): Now matching of the default hermetic toolchain is more robust
+  and explicit and should fix rare edge-cases where the host toolchain
+  autodetection would match a different toolchain than expected. This may yield
+  to toolchain selection failures when the python toolchain is not registered,
+  but is requested via `//python/config_settings:python_version` flag setting.
 * (doc) Fix the `WORKSPACE` requirement vendoring example. Fixes
   [#1918](https://github.com/bazelbuild/rules_python/issues/1918).
 
@@ -106,6 +123,14 @@ A brief description of the categories of changes:
   {obj}`PyRuntimeInfo.zip_main_template`.
 * (toolchains) A replacement for the Bazel-builtn autodetecting toolchain is
   available. The `//python:autodetecting_toolchain` alias now uses it.
+* (pip): Support fetching and using the wheels for other platforms. This
+  supports customizing whether the linux wheels are pulled for `musl` or
+  `glibc`, whether `universal2` or arch-specific MacOS wheels are preferred and
+  it also allows to select a particular `libc` version. All of this is done via
+  the `string_flags` in `@rules_python//python/config_settings`. If there are
+  no wheels that are supported for the target platform, `rules_python` will
+  fallback onto building the `sdist` from source. This behaviour can be
+  disabled if desired using one of the available string flags as well.
 
 [precompile-docs]: /precompiling
 

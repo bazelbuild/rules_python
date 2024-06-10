@@ -51,6 +51,7 @@ class Arch(Enum):
     aarch64 = 3
     ppc = 4
     s390x = 5
+    arm = 6
     amd64 = x86_64
     arm64 = aarch64
     i386 = x86_32

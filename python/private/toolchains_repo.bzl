@@ -31,6 +31,7 @@ load(
     "WINDOWS_NAME",
 )
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
+load("//python/private:text_util.bzl", "render")
 
 def get_repository_name(repository_workspace):
     dummy_label = "//:_"
@@ -64,10 +65,15 @@ py_toolchain_suite(
     user_repository_name = "{user_repository_name}_{platform}",
     prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
+    flag_values = {flag_values},
     python_version = "{python_version}",
     set_python_version_constraint = "{set_python_version_constraint}",
 )""".format(
-            compatible_with = meta.compatible_with,
+            compatible_with = render.indent(render.list(meta.compatible_with)).lstrip(),
+            flag_values = render.indent(render.dict(
+                meta.flag_values,
+                key_repr = lambda x: repr(str(x)),  # this is to correctly display labels
+            )).lstrip(),
             platform = platform,
             set_python_version_constraint = set_python_version_constraint,
             user_repository_name = user_repository_name,

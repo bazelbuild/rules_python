@@ -96,7 +96,9 @@ dev_pip.parse(
     },
     hub_name = "dev_pip",
     python_version = "3.11",
-    requirements_lock = "//docs/sphinx:requirements.txt",
+    requirements_by_platform = {
+        "//docs/sphinx:requirements.txt": "linux_*,osx_*",
+    },
 )
 dev_pip.parse(
     hub_name = "pypiserver",
