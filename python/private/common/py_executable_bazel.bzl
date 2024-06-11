@@ -16,6 +16,7 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//python/private:flags.bzl", "BootstrapImplFlag")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
 load(
     ":common.bzl",
@@ -78,7 +79,7 @@ the `srcs` of Python targets as required.
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
         "_py_toolchain_type": attr.label(
-            default = "@bazel_tools//tools/python:toolchain_type",
+            default = TARGET_TOOLCHAIN_TYPE,
         ),
         "_windows_launcher_maker": attr.label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
