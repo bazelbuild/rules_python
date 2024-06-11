@@ -14,6 +14,8 @@
 
 """Public entry point for current_py_toolchain rule."""
 
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
+
 def _current_py_toolchain_impl(ctx):
     toolchain = ctx.toolchains[ctx.attr._toolchain]
 
@@ -50,9 +52,9 @@ current_py_toolchain = rule(
     """,
     implementation = _current_py_toolchain_impl,
     attrs = {
-        "_toolchain": attr.string(default = str(Label("@bazel_tools//tools/python:toolchain_type"))),
+        "_toolchain": attr.string(default = str(TARGET_TOOLCHAIN_TYPE)),
     },
     toolchains = [
-        str(Label("@bazel_tools//tools/python:toolchain_type")),
+        str(TARGET_TOOLCHAIN_TYPE),
     ],
 )
