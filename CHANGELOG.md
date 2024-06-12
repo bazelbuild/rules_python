@@ -25,6 +25,19 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* Nothing yet
+
+### Fixed
+* Nothing yet
+
+### Removed
+* Nothing yet
+
+## [0.33.0] - 2024-06-12
+
+[0.33.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.0
+
+### Changed
 * (deps) Upgrade the `pip_install` dependencies to pick up a new version of pip.
 * (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
   `py_library` now depend on the `//python:exec_tools_toolchain_type` for build
@@ -132,11 +145,10 @@ A brief description of the categories of changes:
   no wheels that are supported for the target platform, `rules_python` will
   fallback onto building the `sdist` from source. This behaviour can be
   disabled if desired using one of the available string flags as well.
-
-[precompile-docs]: /precompiling
-
 * (whl_filegroup) Added a new `whl_filegroup` rule to extract files from a wheel file.
   This is useful to extract headers for use in a `cc_library`.
+
+[precompile-docs]: /precompiling
 
 ## [0.32.2] - 2024-05-14
 
