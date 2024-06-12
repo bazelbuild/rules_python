@@ -270,7 +270,6 @@ def _create_executable(
             ctx,
             output = executable,
             zip_file = zip_file,
-            python_binary_path = runtime_details.executable_interpreter_path,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
         )
