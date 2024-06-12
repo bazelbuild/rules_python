@@ -33,6 +33,14 @@ A brief description of the categories of changes:
 ### Removed
 * Nothing yet
 
+## [0.33.1] - 2024-06-13
+
+[0.33.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.1
+
+### Fixed
+* (py_binary) Fix building of zip file when using `--build_python_zip`
+  argument. Fixes [#1954](https://github.com/bazelbuild/rules_python/issues/1954).
+
 ## [0.33.0] - 2024-06-12
 
 [0.33.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.0
