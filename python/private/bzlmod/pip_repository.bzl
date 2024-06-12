@@ -29,7 +29,7 @@ exports_files(["requirements.bzl"])
 """
 
 def _pip_repository_impl(rctx):
-    bzl_packages = rctx.attr.whl_map.keys()
+    bzl_packages = rctx.attr.packages or rctx.attr.whl_map.keys()
     aliases = render_multiplatform_pkg_aliases(
         aliases = {
             key: [whl_alias(**v) for v in json.decode(values)]
@@ -76,6 +76,12 @@ setting.""",
     ),
     "groups": attr.string_list_dict(
         mandatory = False,
+    ),
+    "packages": attr.string_list(
+        mandatory = False,
+        doc = """\
+The list of packages that will be exposed via all_*requirements macros. Defaults to whl_map keys.
+""",
     ),
     "repo_name": attr.string(
         mandatory = True,

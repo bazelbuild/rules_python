@@ -100,7 +100,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache):
+def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
     logger = repo_utils.logger(module_ctx)
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -244,7 +244,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         if get_index_urls:
             # TODO @aignas 2024-05-26: move to a separate function
             found_something = False
+            is_exposed = False
             for requirement in requirements:
+                is_exposed = is_exposed or requirement.is_exposed
+
                 for distribution in requirement.whls + [requirement.sdist]:
                     if not distribution:
                         # sdist may be None
@@ -289,6 +292,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     )
 
             if found_something:
+                if is_exposed:
+                    exposed_packages.setdefault(hub_name, {})[whl_name] = None
                 continue
 
         requirement = select_requirement(
@@ -430,6 +435,7 @@ def _pip_impl(module_ctx):
     # Where hub, whl, and pip are the repo names
     hub_whl_map = {}
     hub_group_map = {}
+    exposed_packages = {}
 
     simpleapi_cache = {}
     is_extension_reproducible = True
@@ -469,7 +475,7 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
+            is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache, exposed_packages)
             is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
 
     for hub_name, whl_map in hub_whl_map.items():
@@ -481,6 +487,7 @@ def _pip_impl(module_ctx):
                 for key, value in whl_map.items()
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
+            packages = sorted(exposed_packages.get(hub_name, {})),
             groups = hub_group_map.get(hub_name),
         )
 

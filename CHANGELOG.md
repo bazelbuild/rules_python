@@ -28,7 +28,20 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* Nothing yet
+* (bzlmod): When using `experimental_index_url` the `all_requirements`,
+  `all_whl_requirements` and `all_data_requirements` will now only include
+  common packages that are available on all target platforms. This is to ensure
+  that packages that are only present for some platforms are pulled only via
+  the `deps` of the materialized `py_library`. If you would like to include
+  platform specific packages, using a `select` statement with references to the
+  specific package will still work (e.g.
+  ```
+  my_attr = all_requirements + select(
+      {
+          "@platforms//os:linux": ["@pypi//foo_available_only_on_linux"],
+          "//conditions:default": [],
+      }
+  )`.
 
 ### Removed
 * Nothing yet
