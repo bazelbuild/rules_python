@@ -25,7 +25,9 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (rules) `py_proto_library` is deprecated in favour of the
+  implementation in https://github.com/protocolbuffers/protobuf. It will be
+  removed in the future release.
 
 ### Fixed
 * Nothing yet
