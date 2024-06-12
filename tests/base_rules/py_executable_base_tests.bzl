@@ -69,7 +69,11 @@ _tests.append(_test_basic_windows)
 
 def _test_basic_zip(name, config):
     if rp_config.enable_pystar:
-        target_compatible_with = []
+        target_compatible_with = select({
+            # Disable the new test on windows because we have _test_basic_windows.
+            "@platforms//os:windows": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        })
     else:
         target_compatible_with = ["@platforms//:incompatible"]
     rt_util.helper_target(
