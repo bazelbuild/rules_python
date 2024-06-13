@@ -25,7 +25,7 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 
 ### Fixed
 * Nothing yet
