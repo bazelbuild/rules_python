@@ -11,7 +11,7 @@ bazel_dep(name = "platforms", version = "0.0.4")
 
 # Those are loaded only when using py_proto_library
 bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
-bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "23.1", repo_name = "com_google_protobuf")
 
 internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 use_repo(

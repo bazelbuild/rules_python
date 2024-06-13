@@ -173,11 +173,10 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "com_google_protobuf",
-        sha256 = "75be42bd736f4df6d702a0e4e4d30de9ee40eac024c4b845d17ae4cc831fe4ae",
-        strip_prefix = "protobuf-21.7",
+        sha256 = "72bae766561149f8507a81647f91fc519d2a60309613f004ed307cb5f9b1242b",
+        strip_prefix = "protobuf-23.1",
         urls = [
-            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
-            "https://github.com/protocolbuffers/protobuf/archive/v21.7.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/releases/download/v23.1/protobuf-23.1.tar.gz",
         ],
     )
 
