@@ -137,7 +137,7 @@ A brief description of the categories of changes:
   placeholder, just like the `python_default_visibility` directive does.
 * (rules) A new bootstrap implementation that doesn't require a system Python
   is available. It can be enabled by setting
-  {obj}`--@rules_python//python:config_settings:bootstrap_impl=two_phase`. It
+  {obj}`--@rules_python//python/config_settings:bootstrap_impl=script`. It
   will become the default in a subsequent release.
   ([#691](https://github.com/bazelbuild/rules_python/issues/691))
 * (providers) `PyRuntimeInfo` has two new attributes:
