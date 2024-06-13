@@ -35,6 +35,7 @@ bzl_library(
         "//python/private:enum_bzl",
         "//python/private:flags_bzl",
         "//python/private:reexports_bzl",
+        "//python/private:rules_cc_srcs_bzl",
         "@bazel_skylib//rules:common_settings",
     ],
 )
