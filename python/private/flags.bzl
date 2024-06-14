@@ -34,7 +34,7 @@ BootstrapImplFlag = enum(
 def _precompile_flag_get_effective_value(ctx):
     value = ctx.attr._precompile_flag[BuildSettingInfo].value
     if value == PrecompileFlag.AUTO:
-        value = PrecompileFlag.DISABLED
+        value = PrecompileFlag.IF_GENERATED_SOURCE
     return value
 
 # Determines if Python source files should be compiled at build time.

@@ -1,3 +1,4 @@
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//python/private:flags.bzl",
@@ -128,3 +129,45 @@ string_flag(
     )
     for flag in INTERNAL_FLAGS
 ]
+
+config_setting(
+    name = "_precompile_enabled",
+    flag_values = {
+        ":precompile": PrecompileFlag.ENABLED,
+    },
+    # Only public because it is used in toolchain definition
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "_precompile_enabled_generated_source",
+    flag_values = {
+        ":precompile": PrecompileFlag.IF_GENERATED_SOURCE,
+    },
+    # Only public because it is used in toolchain definition
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "_precompile_enabled_force",
+    flag_values = {
+        ":precompile": PrecompileFlag.FORCE_ENABLED,
+    },
+    # Only public because it is used in toolchain definition
+    visibility = ["//visibility:public"],
+)
+
+# FIXME @aignas 2024-06-14: this currently does not handle the `auto` value of
+# the flag correctly. Right now the behaviour is to disable the pre-compilation
+# via the _precompile_flag_get_effective_value function default to disabled if
+# it the flag is "AUTO", however we may need to revisit this.
+selects.config_setting_group(
+    name = "is_precompile_enabled",
+    match_any = [
+        ":_precompile_enabled",
+        ":_precompile_enabled_force",
+        ":_precompile_enabled_generated_source",
+    ],
+    # Only public because it is used in toolchain definition
+    visibility = ["//visibility:public"],
+)

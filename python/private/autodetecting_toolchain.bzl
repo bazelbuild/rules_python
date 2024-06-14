@@ -16,6 +16,7 @@
 
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 
 def define_autodetecting_toolchain(name):
     """Defines the autodetecting Python toolchain.
@@ -65,6 +66,6 @@ def define_autodetecting_toolchain(name):
     native.toolchain(
         name = name,
         toolchain = ":_autodetecting_py_runtime_pair",
-        toolchain_type = ":toolchain_type",
+        toolchain_type = TARGET_TOOLCHAIN_TYPE,
         visibility = ["//visibility:public"],
     )
