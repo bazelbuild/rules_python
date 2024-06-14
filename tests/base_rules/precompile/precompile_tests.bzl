@@ -61,7 +61,6 @@ def _test_precompile_enabled_setup(name, py_rule, **kwargs):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE: "enabled",
         },
     )
 
@@ -120,7 +119,6 @@ def _test_pyc_only(name):
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             ##PRECOMPILE_SOURCE_RETENTION: "omit_source",
-            PRECOMPILE: "enabled",
         },
         target = name + "_subject",
     )
@@ -163,7 +161,6 @@ def _test_precompile_if_generated(name):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE: "enabled",
         },
     )
 
@@ -206,7 +203,6 @@ def _test_omit_source_if_generated_source(name):
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             PRECOMPILE_SOURCE_RETENTION: "omit_if_generated_source",
-            PRECOMPILE: "enabled",
         },
     )
 
@@ -292,7 +288,6 @@ def _test_precompiler_action(name):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE: "enabled",
         },
     )
 
