@@ -28,7 +28,14 @@ A brief description of the categories of changes:
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 
 ### Fixed
-* Nothing yet
+* (precompile) The toolchains are no longer automatically matched if the
+  precompiling feature is disabled. It can be enabled as described in the
+  updated docs. What is more, the autodetecting toolchain should be registered
+  via `--extra_toolchains=@rules_python//python/autodetecting_toolchain:all`
+  instead of
+  `--extra_toolchains=@rules_python//python:autodetecting_toolchain`. The old
+  target is going to work, but may be removed in the future release.
+  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
 
 ### Removed
 * Nothing yet

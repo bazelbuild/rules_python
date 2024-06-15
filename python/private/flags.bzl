@@ -37,6 +37,15 @@ def _precompile_flag_get_effective_value(ctx):
         value = PrecompileFlag.DISABLED
     return value
 
+# Determines if the Python source precompilation toolchain should be registered.
+# buildifier: disable=name-conventions
+PrecompileToolchainFlag = enum(
+    # Enable registering the precompilation toolchains using the hermetic toolchain.
+    ENABLED = "enabled",
+    # Disable registering the precompilation toolchains using the hermetic toolchain.
+    DISABLED = "disabled",
+)
+
 # Determines if Python source files should be compiled at build time.
 #
 # NOTE: The flag value is overridden by the target-level attribute, except

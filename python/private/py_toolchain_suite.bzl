@@ -100,14 +100,19 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         **kwargs
     )
 
+    is_precompile_enabled = Label("//python/config_settings:is_precompile_toolchain_enabled")
     native.toolchain(
         name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
         toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
             user_repository_name = user_repository_name,
         ),
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
-        # The target settings capture the Python version
-        target_settings = target_settings,
+        # The target settings capture the Python version, the select works like a
+        # (target_settings AND is_precompile_enabled)
+        target_settings = select({
+            is_precompile_enabled: target_settings,
+            "//conditions:default": [is_precompile_enabled],
+        }),
         exec_compatible_with = kwargs.get("target_compatible_with"),
     )
 

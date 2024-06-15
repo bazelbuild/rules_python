@@ -16,6 +16,12 @@
 
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
+load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
+load(
+    ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    "TARGET_TOOLCHAIN_TYPE",
+)
 
 def define_autodetecting_toolchain(name):
     """Defines the autodetecting Python toolchain.
@@ -65,6 +71,22 @@ def define_autodetecting_toolchain(name):
     native.toolchain(
         name = name,
         toolchain = ":_autodetecting_py_runtime_pair",
-        toolchain_type = ":toolchain_type",
+        toolchain_type = TARGET_TOOLCHAIN_TYPE,
+        visibility = ["//visibility:public"],
+    )
+
+    is_precompile_enabled = Label("//python/config_settings:is_precompile_toolchain_enabled")
+    py_exec_tools_toolchain(
+        name = "_autodetecting_py3_exec_toolchain",
+        exec_interpreter = "//python/private:autodetecting_toolchain_interpreter.sh",
+        exec_interpreter_version_info = None,
+        precompiler = Label("//tools/precompiler:precompiler"),
+        visibility = ["//visibility:private"],
+    )
+    native.toolchain(
+        name = name + "exec",
+        toolchain = ":_autodetecting_py3_exec_toolchain",
+        toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
+        target_settings = [is_precompile_enabled],
         visibility = ["//visibility:public"],
     )

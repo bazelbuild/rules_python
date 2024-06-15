@@ -5,6 +5,7 @@ load(
     "PrecompileAddToRunfilesFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
+    "PrecompileToolchainFlag",
     "PycCollectionFlag",
 )
 load(
@@ -27,6 +28,23 @@ filegroup(
 
 construct_config_settings(
     name = "construct_config_settings",
+)
+
+string_flag(
+    name = "precompile_toolchain",
+    build_setting_default = PrecompileToolchainFlag.DISABLED,
+    values = sorted(PrecompileToolchainFlag.__members__.values()),
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "is_precompile_toolchain_enabled",
+    flag_values = {
+        "precompile_toolchain": PrecompileToolchainFlag.ENABLED,
+    },
+    # NOTE: Only public because it is used in py_toolchain_suite from toolchain
+    # repositories
+    visibility = ["//visibility:public"],
 )
 
 string_flag(
