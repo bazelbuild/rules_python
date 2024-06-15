@@ -131,15 +131,6 @@ string_flag(
 ]
 
 config_setting(
-    name = "_precompile_auto",
-    flag_values = {
-        ":precompile": PrecompileFlag.AUTO,
-    },
-    # Only public because it is used in toolchain definition
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
     name = "_precompile_enabled",
     flag_values = {
         ":precompile": PrecompileFlag.ENABLED,
@@ -173,7 +164,6 @@ config_setting(
 selects.config_setting_group(
     name = "is_precompile_enabled",
     match_any = [
-        ":_precompile_auto",
         ":_precompile_enabled",
         ":_precompile_enabled_force",
         ":_precompile_enabled_generated_source",
