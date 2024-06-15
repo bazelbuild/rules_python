@@ -107,10 +107,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         ),
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
         # The target settings capture the Python version
-        target_settings = select({
-            Label("//python/config_settings:is_precompile_enabled"): target_settings,
-            "//conditions:default": [Label("//python/config_settings:is_precompile_enabled")],
-        }),
+        target_settings = target_settings,
         exec_compatible_with = kwargs.get("target_compatible_with"),
     )
 
