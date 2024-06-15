@@ -55,7 +55,7 @@ def _pip_repository_impl(rctx):
             for p in bzl_packages
         ]),
         "%%ALL_REQUIREMENTS%%": render.list([
-            macro_tmpl.format(p, p)
+            macro_tmpl.format(p, "pkg")
             for p in bzl_packages
         ]),
         "%%ALL_WHL_REQUIREMENTS_BY_PACKAGE%%": render.dict({
