@@ -32,12 +32,6 @@ NOTE: What interpreter is used depends on the toolchain constraints. Ensure
 the proper target constraints are being applied when obtaining this from
 the toolchain.
 """,
-        "exec_interpreter_version_info": """
-struct of interpreter version info for `exec_interpreter`. Note this
-is for the exec interpreter, not the target interpreter. For version information
-about the target Python runtime, use the `//python:toolchain_type` toolchain
-information.
-""",
         "precompiler": """
 Optional Target. The tool to use for generating pyc files. If not available,
 precompiling will not be available.
