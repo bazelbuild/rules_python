@@ -26,4 +26,4 @@ provides:
 
 ::::{target} autodetecting_toolchain
 
-Deprecated, see `{bzl:target}//python/autodetecting_toolchain:all`.
+Deprecated, see {bzl:obj}`@rules_python//python/autodetecting_toolchain:all`.
