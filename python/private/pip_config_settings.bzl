@@ -39,7 +39,6 @@ Note, that here the specialization of musl vs manylinux wheels is the same in
 order to ensure that the matching fails if the user requests for `musl` and we don't have it or vice versa.
 """
 
-load(":config_settings.bzl", "is_python_config_setting")
 load(
     ":pip_flags.bzl",
     "INTERNAL_FLAGS",
@@ -116,7 +115,7 @@ def pip_config_settings(
 
     alias_rule = alias_rule or native.alias
 
-    for version in python_versions:
+    for version in ["default"] + python_versions:
         is_python = "is_python_{}".format(version)
         alias_rule(
             name = is_python,
@@ -174,16 +173,18 @@ def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
     flag_values = {}
 
     for n, f in {
-        "{}_none_any{}".format(py, suffix): None,
+        "{}_none_any{}".format(py, suffix): _flags.whl_py2_py3,
         "{}3_none_any{}".format(py, suffix): _flags.whl_py3,
         "{}3_abi3_any{}".format(py, suffix): _flags.whl_py3_abi3,
         "{}_none_any{}".format(pycp, suffix): _flags.whl_pycp3x,
         "{}_abi3_any{}".format(pycp, suffix): _flags.whl_pycp3x_abi3,
         "{}_cp_any{}".format(pycp, suffix): _flags.whl_pycp3x_abicp,
     }.items():
-        if f and f in flag_values:
-            fail("BUG")
-        elif f:
+        if f in flag_values:
+            # This should never happen as all of the different whls should have
+            # unique flag values.
+            fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
+        else:
             flag_values[f] = ""
 
         _whl_config_setting(
@@ -205,9 +206,11 @@ def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
             "{}_abi3_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abi3,
             "{}_cp_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abicp,
         }.items():
-            if f and f in flag_values:
-                fail("BUG")
-            elif f:
+            if f in flag_values:
+                # This should never happen as all of the different whls should have
+                # unique flag values.
+                fail("BUG: the flag {} is attempted to be added twice to the list".format(f))
+            else:
                 flag_values[f] = ""
 
             _whl_config_setting(
@@ -290,7 +293,6 @@ def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = 
             FLAGS.pip_whl: UseWhlFlag.ONLY,
         },
         default = flag_values | {
-            _flags.whl_py2_py3: "",
             FLAGS.pip_whl: UseWhlFlag.AUTO,
         },
         visibility = visibility,
@@ -333,34 +335,18 @@ def _config_setting_or(*, name, flag_values, default, visibility, **kwargs):
         **kwargs
     )
 
-def _config_setting(python_version = "", **kwargs):
+def _config_setting(*, name, python_version = "", **kwargs):
     if python_version:
-        # NOTE @aignas 2024-05-26: with this we are getting about 24k internal
-        # config_setting targets in our unit tests. Whilst the number of the
-        # external dependencies does not dictate this number, it does mean that
-        # bazel will take longer to parse stuff. This would be especially
-        # noticeable in repos, which use multiple hub repos within a single
-        # workspace.
-        #
-        # A way to reduce the number of targets would be:
-        # * put them to a central location and teach this code to just alias them,
-        #   maybe we should create a pip_config_settings repo within the pip
-        #   extension, which would collect config settings for all hub_repos.
-        # * put them in rules_python - this has the drawback of exposing things like
-        #   is_cp3.10_linux and users may start depending upon the naming
-        #   convention and this API is very unstable.
-        is_python_config_setting(
-            python_version = python_version,
-            **kwargs
-        )
+        actual = name.replace("is_cp{}".format(python_version), "_is")
     else:
-        # We need this to ensure that there are no ambiguous matches when python_version
-        # is unset, which usually happens when we are not using the python version aware
-        # rules.
-        flag_values = kwargs.pop("flag_values", {}) | {
-            FLAGS.python_version: "",
-        }
-        native.config_setting(
-            flag_values = flag_values,
-            **kwargs
-        )
+        native.config_setting(name = "_" + name, **kwargs)
+        actual = "_" + name
+
+    is_python = ":is_python_" + (python_version or "default")
+    native.alias(
+        name = name,
+        actual = select({
+            is_python: ":" + actual,
+            "//conditions:default": is_python,
+        }),
+    )
