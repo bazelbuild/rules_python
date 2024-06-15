@@ -30,8 +30,11 @@ A brief description of the categories of changes:
 ### Fixed
 * The targets would depend on the `exec_tools_toolchain_type` toolchain if it
   was registered even though the pre-compilation was not enabled. This has been
-  fixed so that users setting `precompile:disabled` can opt-out of that. Works around
-  [#1967](https://github.com/bazelbuild/rules_python/issues/1967).
+  fixed to not be the case anymore. Fixes
+  [#1967](https://github.com/bazelbuild/rules_python/issues/1967). Users
+  wanting to use the `precompile` feature may have to set the config setting to
+  always do the precompilation and per-target pre-compilation is for now
+  disabled.
 
 ### Removed
 * Nothing yet
