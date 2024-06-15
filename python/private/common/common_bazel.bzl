@@ -65,14 +65,7 @@ def maybe_precompile(ctx, srcs):
         * `py_to_pyc_map`: dict of src File input to pyc File output. If a source
           file wasn't precompiled, it won't be in the dict.
     """
-
-    # The exec tools toolchain and precompiler are optional. Rather than
-    # fail, just skip precompiling, as its mostly just an optimization.
-    exec_tools_toolchain = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE]
-    if exec_tools_toolchain == None or exec_tools_toolchain.exec_tools.precompiler == None:
-        precompile = PrecompileAttr.DISABLED
-    else:
-        precompile = PrecompileAttr.get_effective_value(ctx)
+    precompile = PrecompileAttr.get_effective_value(ctx)
 
     source_retention = PrecompileSourceRetentionAttr.get_effective_value(ctx)
 
@@ -98,6 +91,12 @@ def maybe_precompile(ctx, srcs):
             (source_retention == PrecompileSourceRetentionAttr.OMIT_IF_GENERATED_SOURCE and not is_generated_source)
         )
         if should_precompile:
+            # The exec tools toolchain and precompiler are optional. Rather than
+            # fail, just skip precompiling, as its mostly just an optimization.
+            exec_tools_toolchain = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE]
+            if exec_tools_toolchain == None or exec_tools_toolchain.exec_tools.precompiler == None:
+                precompile = PrecompileAttr.DISABLED
+                break
             pyc = _precompile(ctx, src, use_pycache = keep_source)
             result.pyc_files.append(pyc)
             result.py_to_pyc_map[src] = pyc
