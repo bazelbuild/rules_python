@@ -31,6 +31,7 @@ CC_TOOLCHAIN = str(Label("//tests/cc:all"))
 
 # str() around Label() is necessary because rules_testing's config_settings
 # doesn't accept yet Label objects.
+PRECOMPILE_TOOLCHAIN = str(Label("//python/config_settings:precompile_toolchain"))
 PRECOMPILE = str(Label("//python/config_settings:precompile"))
 PYC_COLLECTION = str(Label("//python/config_settings:pyc_collection"))
 PRECOMPILE_SOURCE_RETENTION = str(Label("//python/config_settings:precompile_source_retention"))
