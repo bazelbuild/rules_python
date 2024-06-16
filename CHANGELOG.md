@@ -26,9 +26,10 @@ A brief description of the categories of changes:
 
 ### Changed
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
+* (bzlmod): optimize the creation of config settings used in pip to
+  reduce the total number of targets in the hub repo.
 
 ### Fixed
-* Nothing yet
 
 ### Removed
 * Nothing yet
