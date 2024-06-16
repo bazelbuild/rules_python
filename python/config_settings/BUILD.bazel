@@ -88,6 +88,33 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "is_pip_whl_auto",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.AUTO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_no",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.NO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_only",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.ONLY,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
 string_flag(
     name = "pip_whl_osx_arch",
     build_setting_default = UniversalWhlFlag.ARCH,

@@ -43,7 +43,6 @@ load(
     ":pip_flags.bzl",
     "INTERNAL_FLAGS",
     "UniversalWhlFlag",
-    "UseWhlFlag",
     "WhlLibcFlag",
 )
 
@@ -58,6 +57,9 @@ FLAGS = struct(
             "pip_whl_osx_arch",
             "pip_whl_osx_version",
             "py_linux_libc",
+            "is_pip_whl_no",
+            "is_pip_whl_only",
+            "is_pip_whl_auto",
         ]
     }
 )
@@ -289,12 +291,8 @@ def _whl_config_setting(*, name, flag_values, config_setting_rule = None, **kwar
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
         name = "is_" + name,
-        flag_values = flag_values | {
-            FLAGS.pip_whl: UseWhlFlag.ONLY,
-        },
-        default = flag_values | {
-            FLAGS.pip_whl: UseWhlFlag.AUTO,
-        },
+        flag_values = flag_values,
+        use_whl_flag = FLAGS.is_pip_whl_only,
         **kwargs
     )
 
@@ -302,18 +300,18 @@ def _sdist_config_setting(*, name, config_setting_rule = None, **kwargs):
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
         name = "is_" + name,
-        flag_values = {FLAGS.pip_whl: UseWhlFlag.NO},
-        default = {FLAGS.pip_whl: UseWhlFlag.AUTO},
+        use_whl_flag = FLAGS.is_pip_whl_no,
         **kwargs
     )
 
-def _config_setting_or(*, name, flag_values, default, visibility, python_version = "", **kwargs):
+def _config_setting_or(*, name, use_whl_flag, python_version = "", **kwargs):
     if python_version:
         _name = name.replace("is_cp{}".format(python_version), "_is")
     else:
         _name = "_" + name
 
     is_python = ":is_python_" + (python_version or "default")
+    visibility = kwargs.get("visibility")
     native.alias(
         name = name,
         actual = select({
@@ -329,24 +327,19 @@ def _config_setting_or(*, name, flag_values, default, visibility, python_version
         return
 
     match_name = "_{}_1".format(name)
-    default_name = "_{}_2".format(name)
     native.config_setting(
         name = match_name,
-        flag_values = flag_values,
-        visibility = visibility,
-        **kwargs
-    )
-    native.config_setting(
-        name = default_name,
-        flag_values = default,
-        visibility = visibility,
+        flag_values = {
+            _flags.dist: "",
+        } | kwargs.pop("flag_values", {}),
         **kwargs
     )
     native.alias(
         name = _name,
         actual = select({
-            match_name: match_name,
-            "//conditions:default": default_name,
+            FLAGS.is_pip_whl_auto: match_name,
+            use_whl_flag: match_name,
+            "//conditions:default": use_whl_flag,
         }),
         visibility = visibility,
     )
