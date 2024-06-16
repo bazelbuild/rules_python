@@ -51,7 +51,6 @@ FLAGS = struct(
         f: str(Label("//python/config_settings:" + f))
         for f in [
             "python_version",
-            "pip_whl",
             "pip_whl_glibc_version",
             "pip_whl_muslc_version",
             "pip_whl_osx_arch",
@@ -116,6 +115,7 @@ def pip_config_settings(
     ]
 
     alias_rule = alias_rule or native.alias
+    config_setting_rule = config_setting_rule or _dist_config_setting
 
     for version in ["default"] + python_versions:
         is_python = "is_python_{}".format(version)
@@ -135,22 +135,16 @@ def pip_config_settings(
             constraint_values.append("@platforms//cpu:" + cpu)
             suffix += "_" + cpu
 
-        _sdist_config_setting(
-            name = "sdist" + suffix,
-            constraint_values = constraint_values,
-            visibility = visibility,
-            config_setting_rule = config_setting_rule,
-        )
-        for python_version in python_versions:
-            _sdist_config_setting(
-                name = "cp{}_sdist{}".format(python_version, suffix),
+        for python_version in [""] + python_versions:
+            sdist = "cp{}_sdist".format(python_version) if python_version else "sdist"
+            config_setting_rule(
+                name = "is_{}{}".format(sdist, suffix),
                 python_version = python_version,
+                flag_values = {_flags.dist: ""},
+                is_pip_whl = FLAGS.is_pip_whl_no,
                 constraint_values = constraint_values,
                 visibility = visibility,
-                config_setting_rule = config_setting_rule,
             )
-
-        for python_version in [""] + python_versions:
             _whl_config_settings(
                 suffix = suffix,
                 plat_flag_values = _plat_flag_values(
@@ -162,25 +156,28 @@ def pip_config_settings(
                 ),
                 constraint_values = constraint_values,
                 python_version = python_version,
+                is_pip_whl = FLAGS.is_pip_whl_only,
                 visibility = visibility,
                 config_setting_rule = config_setting_rule,
             )
 
-def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
+def _whl_config_settings(*, suffix, plat_flag_values, config_setting_rule, **kwargs):
     # With the following three we cover different per-version wheels
     python_version = kwargs.get("python_version")
     py = "cp{}_py".format(python_version) if python_version else "py"
     pycp = "cp{}_cp3x".format(python_version) if python_version else "cp3x"
 
-    flag_values = {}
+    flag_values = {
+        _flags.dist: "",
+    }
 
-    for n, f in {
-        "{}_none_any{}".format(py, suffix): _flags.whl_py2_py3,
-        "{}3_none_any{}".format(py, suffix): _flags.whl_py3,
-        "{}3_abi3_any{}".format(py, suffix): _flags.whl_py3_abi3,
-        "{}_none_any{}".format(pycp, suffix): _flags.whl_pycp3x,
-        "{}_abi3_any{}".format(pycp, suffix): _flags.whl_pycp3x_abi3,
-        "{}_cp_any{}".format(pycp, suffix): _flags.whl_pycp3x_abicp,
+    for name, f in {
+        "is_{}_none_any{}".format(py, suffix): _flags.whl_py2_py3,
+        "is_{}3_none_any{}".format(py, suffix): _flags.whl_py3,
+        "is_{}3_abi3_any{}".format(py, suffix): _flags.whl_py3_abi3,
+        "is_{}_none_any{}".format(pycp, suffix): _flags.whl_pycp3x,
+        "is_{}_abi3_any{}".format(pycp, suffix): _flags.whl_pycp3x_abi3,
+        "is_{}_cp_any{}".format(pycp, suffix): _flags.whl_pycp3x_abicp,
     }.items():
         if f in flag_values:
             # This should never happen as all of the different whls should have
@@ -189,8 +186,8 @@ def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
         else:
             flag_values[f] = ""
 
-        _whl_config_setting(
-            name = n,
+        config_setting_rule(
+            name = name,
             flag_values = flag_values,
             **kwargs
         )
@@ -200,13 +197,13 @@ def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
     for (suffix, flag_values) in plat_flag_values:
         flag_values = flag_values | generic_flag_values
 
-        for n, f in {
-            "{}_none_{}".format(py, suffix): _flags.whl_plat,
-            "{}3_none_{}".format(py, suffix): _flags.whl_plat_py3,
-            "{}3_abi3_{}".format(py, suffix): _flags.whl_plat_py3_abi3,
-            "{}_none_{}".format(pycp, suffix): _flags.whl_plat_pycp3x,
-            "{}_abi3_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abi3,
-            "{}_cp_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abicp,
+        for name, f in {
+            "is_{}_none_{}".format(py, suffix): _flags.whl_plat,
+            "is_{}3_none_{}".format(py, suffix): _flags.whl_plat_py3,
+            "is_{}3_abi3_{}".format(py, suffix): _flags.whl_plat_py3_abi3,
+            "is_{}_none_{}".format(pycp, suffix): _flags.whl_plat_pycp3x,
+            "is_{}_abi3_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abi3,
+            "is_{}_cp_{}".format(pycp, suffix): _flags.whl_plat_pycp3x_abicp,
         }.items():
             if f in flag_values:
                 # This should never happen as all of the different whls should have
@@ -215,8 +212,8 @@ def _whl_config_settings(*, suffix, plat_flag_values, **kwargs):
             else:
                 flag_values[f] = ""
 
-            _whl_config_setting(
-                name = n,
+            config_setting_rule(
+                name = name,
                 flag_values = flag_values,
                 **kwargs
             )
@@ -287,29 +284,23 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _whl_config_setting(*, name, flag_values, config_setting_rule = None, **kwargs):
-    config_setting_rule = config_setting_rule or _config_setting_or
-    config_setting_rule(
-        name = "is_" + name,
-        flag_values = flag_values,
-        use_whl_flag = FLAGS.is_pip_whl_only,
-        **kwargs
-    )
+def _dist_config_setting(*, name, is_pip_whl, python_version = "", **kwargs):
+    """A macro to create a target that matches is_pip_whl_auto and one more value.
 
-def _sdist_config_setting(*, name, config_setting_rule = None, **kwargs):
-    config_setting_rule = config_setting_rule or _config_setting_or
-    config_setting_rule(
-        name = "is_" + name,
-        use_whl_flag = FLAGS.is_pip_whl_no,
-        **kwargs
-    )
-
-def _config_setting_or(*, name, use_whl_flag, python_version = "", **kwargs):
+    Args:
+        name: The name of the public target.
+        is_pip_whl: The config setting to match in addition to
+            `is_pip_whl_auto` when evaluating the config setting.
+        python_version: The python version to match.
+        **kwargs: The kwargs passed to the config_setting rule. Visibility of
+            the main alias target is also taken from the kwargs.
+    """
     if python_version:
         _name = name.replace("is_cp{}".format(python_version), "_is")
     else:
         _name = "_" + name
 
+    # First match by the python version
     is_python = ":is_python_" + (python_version or "default")
     visibility = kwargs.get("visibility")
     native.alias(
@@ -326,20 +317,17 @@ def _config_setting_or(*, name, use_whl_flag, python_version = "", **kwargs):
         # `python_version` setting.
         return
 
-    match_name = "_{}_1".format(name)
-    native.config_setting(
-        name = match_name,
-        flag_values = {
-            _flags.dist: "",
-        } | kwargs.pop("flag_values", {}),
-        **kwargs
-    )
+    config_setting_name = "_{}_setting".format(name)
+    native.config_setting(name = config_setting_name, **kwargs)
+
+    # Next match by the `pip_whl` flag value and then match by the flags that
+    # are intrinsic to the distribution.
     native.alias(
         name = _name,
         actual = select({
-            FLAGS.is_pip_whl_auto: match_name,
-            use_whl_flag: match_name,
-            "//conditions:default": use_whl_flag,
+            "//conditions:default": FLAGS.is_pip_whl_auto,
+            FLAGS.is_pip_whl_auto: config_setting_name,
+            is_pip_whl: config_setting_name,
         }),
         visibility = visibility,
     )
