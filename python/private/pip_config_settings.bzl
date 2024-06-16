@@ -285,7 +285,7 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = None, **kwargs):
+def _whl_config_setting(*, name, flag_values, config_setting_rule = None, **kwargs):
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
         name = "is_" + name,
@@ -295,58 +295,58 @@ def _whl_config_setting(*, name, flag_values, visibility, config_setting_rule = 
         default = flag_values | {
             FLAGS.pip_whl: UseWhlFlag.AUTO,
         },
-        visibility = visibility,
         **kwargs
     )
 
-def _sdist_config_setting(*, name, visibility, config_setting_rule = None, **kwargs):
+def _sdist_config_setting(*, name, config_setting_rule = None, **kwargs):
     config_setting_rule = config_setting_rule or _config_setting_or
     config_setting_rule(
         name = "is_" + name,
         flag_values = {FLAGS.pip_whl: UseWhlFlag.NO},
         default = {FLAGS.pip_whl: UseWhlFlag.AUTO},
-        visibility = visibility,
         **kwargs
     )
 
-def _config_setting_or(*, name, flag_values, default, visibility, **kwargs):
-    match_name = "_{}".format(name)
-    default_name = "_{}_default".format(name)
-
-    native.alias(
-        name = name,
-        actual = select({
-            "//conditions:default": default_name,
-            match_name: match_name,
-        }),
-        visibility = visibility,
-    )
-
-    _config_setting(
-        name = match_name,
-        flag_values = flag_values,
-        visibility = visibility,
-        **kwargs
-    )
-    _config_setting(
-        name = default_name,
-        flag_values = default,
-        visibility = visibility,
-        **kwargs
-    )
-
-def _config_setting(*, name, python_version = "", **kwargs):
+def _config_setting_or(*, name, flag_values, default, visibility, python_version = "", **kwargs):
     if python_version:
-        actual = name.replace("is_cp{}".format(python_version), "_is")
+        _name = name.replace("is_cp{}".format(python_version), "_is")
     else:
-        native.config_setting(name = "_" + name, **kwargs)
-        actual = "_" + name
+        _name = "_" + name
 
     is_python = ":is_python_" + (python_version or "default")
     native.alias(
         name = name,
         actual = select({
-            is_python: ":" + actual,
+            is_python: _name,
             "//conditions:default": is_python,
         }),
+        visibility = visibility,
+    )
+
+    if python_version:
+        # Reuse the config_setting targets that we use with the default
+        # `python_version` setting.
+        return
+
+    match_name = "_{}_1".format(name)
+    default_name = "_{}_2".format(name)
+    native.config_setting(
+        name = match_name,
+        flag_values = flag_values,
+        visibility = visibility,
+        **kwargs
+    )
+    native.config_setting(
+        name = default_name,
+        flag_values = default,
+        visibility = visibility,
+        **kwargs
+    )
+    native.alias(
+        name = _name,
+        actual = select({
+            match_name: match_name,
+            "//conditions:default": default_name,
+        }),
+        visibility = visibility,
     )
