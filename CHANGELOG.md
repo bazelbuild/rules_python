@@ -30,6 +30,7 @@ A brief description of the categories of changes:
   reduce the total number of targets in the hub repo.
 
 ### Fixed
+* Nothing yet
 
 ### Removed
 * Nothing yet
