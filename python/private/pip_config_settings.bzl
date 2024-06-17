@@ -291,17 +291,13 @@ def _dist_config_setting(*, name, is_pip_whl, is_python, python_version, native 
         **kwargs: The kwargs passed to the config_setting rule. Visibility of
             the main alias target is also taken from the kwargs.
     """
-    name = "is_cp{}_{}".format(python_version, name) if python_version else "is_{}".format(name)
-    if python_version:
-        _name = name.replace("is_cp{}".format(python_version), "_is")
-    else:
-        _name = "_" + name
+    _name = "_is_" + name
 
-    # First match by the python version
     visibility = kwargs.get("visibility")
     native.alias(
-        name = name,
+        name = "is_cp{}_{}".format(python_version, name) if python_version else "is_{}".format(name),
         actual = select({
+            # First match by the python version
             is_python: _name,
             "//conditions:default": is_python,
         }),
@@ -313,7 +309,7 @@ def _dist_config_setting(*, name, is_pip_whl, is_python, python_version, native 
         # `python_version` setting.
         return
 
-    config_setting_name = "_{}_setting".format(name)
+    config_setting_name = _name + "_setting"
     native.config_setting(name = config_setting_name, **kwargs)
 
     # Next match by the `pip_whl` flag value and then match by the flags that
