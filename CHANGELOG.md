@@ -30,6 +30,11 @@ A brief description of the categories of changes:
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 
+### Added
+* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
+  allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
+  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
+
 ### Removed
 * Nothing yet
 
