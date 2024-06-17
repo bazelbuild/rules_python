@@ -926,8 +926,10 @@ def _test_config_settings_exist(env):
                 mock_rule = lambda name, **kwargs: available_config_settings.append(name)
                 pip_config_settings(
                     python_versions = ["3.11"],
-                    alias_rule = mock_rule,
-                    config_setting_rule = mock_rule,
+                    native = struct(
+                        alias = mock_rule,
+                        config_setting = mock_rule,
+                    ),
                     **kwargs
                 )
 
