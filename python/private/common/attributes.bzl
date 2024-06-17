@@ -335,7 +335,7 @@ in the resulting output or not. Valid values are:
 
 * `inherit`: Inherit the value from the `--precompile_source_retention` flag.
 * `keep_source`: Include the original Python source.
-* `omit_source`: Don't include the orignal py source.
+* `omit_source`: Don't include the original py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
   file, but omit it if it's a generated file.
 """,
