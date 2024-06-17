@@ -17,6 +17,7 @@ package pythonconfig
 import (
 	"fmt"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
@@ -77,6 +78,13 @@ const (
 	// TestFilePattern represents the directive that controls which python
 	// files are mapped to `py_test` targets.
 	TestFilePattern = "python_test_file_pattern"
+	// LabelConvention represents the directive that defines the format of the
+	// labels to third-party dependencies.
+	LabelConvention = "python_label_convention"
+	// LabelNormalization represents the directive that controls how distribution
+	// names of labels to third-party dependencies are normalized. Supported values
+	// are 'none', 'pep503' and 'snake_case' (default). See LabelNormalizationType.
+	LabelNormalization = "python_label_normalization"
 )
 
 // GenerationModeType represents one of the generation modes for the Python
@@ -96,7 +104,8 @@ const (
 )
 
 const (
-	packageNameNamingConventionSubstitution = "$package_name$"
+	packageNameNamingConventionSubstitution     = "$package_name$"
+	distributionNameLabelConventionSubstitution = "$distribution_name$"
 )
 
 const (
@@ -104,20 +113,16 @@ const (
 	DefaultVisibilityFmtString = "//%s:__subpackages__"
 	// The default globs used to determine pt_test targets.
 	DefaultTestFilePatternString = "*_test.py,test_*.py"
+	// The default convention of label of third-party dependencies.
+	DefaultLabelConvention = "$distribution_name$"
+	// The default normalization applied to distribution names of third-party dependency labels.
+	DefaultLabelNormalizationType = SnakeCaseLabelNormalizationType
 )
 
 // defaultIgnoreFiles is the list of default values used in the
 // python_ignore_files option.
 var defaultIgnoreFiles = map[string]struct{}{
 	"setup.py": {},
-}
-
-func SanitizeDistribution(distributionName string) string {
-	sanitizedDistribution := strings.ToLower(distributionName)
-	sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, "-", "_")
-	sanitizedDistribution = strings.ReplaceAll(sanitizedDistribution, ".", "_")
-
-	return sanitizedDistribution
 }
 
 // Configs is an extension of map[string]*Config. It provides finding methods
@@ -156,7 +161,17 @@ type Config struct {
 	defaultVisibility            []string
 	visibility                   []string
 	testFilePattern              []string
+	labelConvention              string
+	labelNormalization           LabelNormalizationType
 }
+
+type LabelNormalizationType int
+
+const (
+	NoLabelNormalizationType LabelNormalizationType = iota
+	Pep503LabelNormalizationType
+	SnakeCaseLabelNormalizationType
+)
 
 // New creates a new Config.
 func New(
@@ -180,6 +195,8 @@ func New(
 		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
 		visibility:                   []string{},
 		testFilePattern:              strings.Split(DefaultTestFilePatternString, ","),
+		labelConvention:              DefaultLabelConvention,
+		labelNormalization:           DefaultLabelNormalizationType,
 	}
 }
 
@@ -209,6 +226,8 @@ func (c *Config) NewChild() *Config {
 		defaultVisibility:            c.defaultVisibility,
 		visibility:                   c.visibility,
 		testFilePattern:              c.testFilePattern,
+		labelConvention:              c.labelConvention,
+		labelNormalization:           c.labelNormalization,
 	}
 }
 
@@ -263,10 +282,8 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				} else if gazelleManifest.PipRepository != nil {
 					distributionRepositoryName = gazelleManifest.PipRepository.Name
 				}
-				sanitizedDistribution := SanitizeDistribution(distributionName)
 
-				// @<repository_name>//<distribution_name>
-				lbl := label.New(distributionRepositoryName, sanitizedDistribution, sanitizedDistribution)
+				lbl := currentCfg.FormatThirdPartyDependency(distributionRepositoryName, distributionName)
 				return lbl.String(), true
 			}
 		}
@@ -442,4 +459,46 @@ func (c *Config) SetTestFilePattern(patterns []string) {
 // TestFilePattern returns the patterns that should be mapped to 'py_test' rules.
 func (c *Config) TestFilePattern() []string {
 	return c.testFilePattern
+}
+
+// SetLabelConvention sets the label convention used for third-party dependencies.
+func (c *Config) SetLabelConvention(convention string) {
+	c.labelConvention = convention
+}
+
+// LabelConvention returns the label convention used for third-party dependencies.
+func (c *Config) LabelConvention() string {
+	return c.labelConvention
+}
+
+// SetLabelConvention sets the label normalization applied to distribution names of third-party dependencies.
+func (c *Config) SetLabelNormalization(normalizationType LabelNormalizationType) {
+	c.labelNormalization = normalizationType
+}
+
+// LabelConvention returns the label normalization applied to distribution names of third-party dependencies.
+func (c *Config) LabelNormalization() LabelNormalizationType {
+	return c.labelNormalization
+}
+
+// FormatThirdPartyDependency returns a label to a third-party dependency performing all formating and normalization.
+func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionName string) label.Label {
+	var normDistributionName string
+	switch norm := c.LabelNormalization(); norm {
+	case SnakeCaseLabelNormalizationType:
+		normDistributionName = strings.ToLower(distributionName)
+		normDistributionName = strings.ReplaceAll(normDistributionName, "-", "_")
+		normDistributionName = strings.ReplaceAll(normDistributionName, ".", "_")
+	case Pep503LabelNormalizationType:
+		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-normalization
+		normDistributionName = strings.ToLower(distributionName)
+		normDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normDistributionName, "-")
+	default:
+		fallthrough
+	case NoLabelNormalizationType:
+		normDistributionName = distributionName
+	}
+
+	conventionalDistributionName := strings.ReplaceAll(c.labelConvention, distributionNameLabelConventionSubstitution, normDistributionName)
+	return label.New(repositoryName, conventionalDistributionName, conventionalDistributionName)
 }
