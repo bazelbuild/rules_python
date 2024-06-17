@@ -243,6 +243,9 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
 def _get_build_info(ctx, cc_toolchain):
     build_info_files = py_internal.cc_toolchain_build_info_files(cc_toolchain)
     if cc_helper.is_stamping_enabled(ctx):
+        # Makes the target depend on BUILD_INFO_KEY, which helps to discover stamped targets
+        # See b/326620485 for more details.
+        ctx.version_file  # buildifier: disable=no-effect
         return build_info_files.non_redacted_build_info_files.to_list()
     else:
         return build_info_files.redacted_build_info_files.to_list()
