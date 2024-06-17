@@ -551,15 +551,7 @@ def _get_native_deps_details(ctx, *, semantics, cc_details, is_test):
 
     dso = ctx.actions.declare_file(semantics.get_native_deps_dso_name(ctx))
     share_native_deps = py_internal.share_native_deps(ctx)
-    cc_feature_config = cc_configure_features(
-        ctx,
-        cc_toolchain = cc_details.cc_toolchain,
-        # See b/171276569#comment18: this feature string is just to allow
-        # Google's RBE to know the link action is for the Python case so it can
-        # take special actions (though as of Jun 2022, no special action is
-        # taken).
-        extra_features = ["native_deps_link"],
-    )
+    cc_feature_config = cc_details.feature_config
     if share_native_deps:
         linked_lib = _create_shared_native_deps_dso(
             ctx,
@@ -918,7 +910,12 @@ def create_base_executable_rule(*, attrs, fragments = [], **kwargs):
         **kwargs
     )
 
-def cc_configure_features(ctx, *, cc_toolchain, extra_features):
+def cc_configure_features(
+        ctx,
+        *,
+        cc_toolchain,
+        extra_features,
+        linking_mode = "static_linking_mode"):
     """Configure C++ features for Python purposes.
 
     Args:
@@ -926,11 +923,14 @@ def cc_configure_features(ctx, *, cc_toolchain, extra_features):
         cc_toolchain: The CcToolchain the target is using.
         extra_features: list of strings; additional features to request be
             enabled.
+        linking_mode: str; either "static_linking_mode" or
+            "dynamic_linking_mode". Specifies the linking mode feature for
+            C++ linking.
 
     Returns:
         struct of the feature configuration and all requested features.
     """
-    requested_features = ["static_linking_mode"]
+    requested_features = [linking_mode]
     requested_features.extend(extra_features)
     requested_features.extend(ctx.features)
     if "legacy_whole_archive" not in ctx.disabled_features:
