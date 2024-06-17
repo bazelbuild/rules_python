@@ -182,7 +182,7 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
     )
 
     native.config_setting(
-        name = "is_python_default",
+        name = "is_python_version_unset",
         flag_values = {
             Label("//python/config_settings:python_version"): "",
         },
