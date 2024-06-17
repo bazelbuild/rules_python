@@ -270,7 +270,7 @@ def parse_requirements(
         contents = ctx.read(file)
 
         # Parse the requirements file directly in starlark to get the information
-        # needed for the whl_libary declarations later.
+        # needed for the whl_library declarations later.
         parse_result = parse(contents)
 
         # Replicate a surprising behavior that WORKSPACE builds allowed:

@@ -36,7 +36,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
     """
 
     # We have to use a String value here because bzlmod is passing in a
-    # string as we cannot have list of bools in build rule attribues.
+    # string as we cannot have list of bools in build rule attributes.
     # This if statement does not appear to work unless it is in the
     # toolchain file.
     if set_python_version_constraint in ["True", "False"]:
