@@ -14,9 +14,9 @@
 
 "pip module extension for use with bzlmod"
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
@@ -329,7 +329,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 _UV_DEPS = {
     "linux_aarch64": (
         "https://files.pythonhosted.org/packages/00/82/3d0acad7ebd4098aaa23f163b492b47fd9321b2681c55918fe5f18856513/uv-0.2.12-py3-none-manylinux_2_28_aarch64.whl",
-        "05d809516b651997a151585c9bbd150d888e71976a734781a3dde95430c1cab2"
+        "05d809516b651997a151585c9bbd150d888e71976a734781a3dde95430c1cab2",
     ),
     "linux_x86_64": (
         "https://files.pythonhosted.org/packages/d9/85/e608bfe78772afa3f9807a074203982131ff9c12e279bb3bc502e14d51ab/uv-0.2.12-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
