@@ -31,6 +31,9 @@ A brief description of the categories of changes:
 
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
+* (rules) Auto exec groups are enabled. This allows actions run by the rules,
+  such as precompiling, to pick an execution platform separately from what
+  other toolchains support.
 
 ### Removed
 * Nothing yet

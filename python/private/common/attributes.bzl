@@ -361,6 +361,9 @@ in the resulting output or not. Valid values are:
             default = "//python/config_settings:precompile_source_retention",
             providers = [BuildSettingInfo],
         ),
+        # Force enabling auto exec groups, see
+        # https://bazel.build/extending/auto-exec-groups#how-enable-particular-rule
+        "_use_auto_exec_groups": attr.bool(default = True),
     },
     allow_none = True,
 )
