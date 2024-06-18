@@ -28,10 +28,10 @@ def _create_py_runtime_info_without_interpreter_version_info_impl(ctx):
 _create_py_runtime_info_without_interpreter_version_info = rule(
     implementation = _create_py_runtime_info_without_interpreter_version_info_impl,
     attrs = {
-        "interpreter": attr.label(allow_single_file = True, default = "interpreter.sh"),
-        "files": attr.label_list(allow_files = True, default = ["data.txt"]),
-        "python_version": attr.string(default = "PY3"),
         "bootstrap_template": attr.label(allow_single_file = True, default = "bootstrap.txt"),
+        "files": attr.label_list(allow_files = True, default = ["data.txt"]),
+        "interpreter": attr.label(allow_single_file = True, default = "interpreter.sh"),
+        "python_version": attr.string(default = "PY3"),
     },
 )
 
@@ -48,7 +48,8 @@ def _test_can_create_py_runtime_info_without_interpreter_version_info(name):
     )
 
 def _test_can_create_py_runtime_info_without_interpreter_version_info_impl(env, target):
-    pass
+    # If we get this for, construction succeeded, so nothing to check
+    _ = env, target  # @unused
 
 _tests.append(_test_can_create_py_runtime_info_without_interpreter_version_info)
 
