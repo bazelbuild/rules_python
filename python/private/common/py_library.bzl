@@ -102,25 +102,7 @@ def py_library_impl(ctx, *, semantics):
         create_output_group_info(py_info.transitive_sources, extra_groups = {}),
     ]
 
-def create_py_library_rule(*, attrs = {}, **kwargs):
-    """Creates a py_library rule.
-
-    Args:
-        attrs: dict of rule attributes.
-        **kwargs: Additional kwargs to pass onto the rule() call.
-    Returns:
-        A rule object
-    """
-    return rule(
-        attrs = dicts.add(LIBRARY_ATTRS, attrs),
-        toolchains = [
-            config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
-            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
-        ],
-        # TODO(b/253818097): fragments=py is only necessary so that
-        # RequiredConfigFragmentsTest passes
-        fragments = ["py"],
-        doc = """
+_DEFAULT_PY_LIBRARY_DOC = """
 A library of Python code that can be depended upon.
 
 Default outputs:
@@ -130,6 +112,28 @@ Default outputs:
 NOTE: Precompilation affects which of the default outputs are included in the
 resulting runfiles. See the precompile-related attributes and flags for
 more information.
-""",
+"""
+
+def create_py_library_rule(*, attrs = {}, **kwargs):
+    """Creates a py_library rule.
+
+    Args:
+        attrs: dict of rule attributes.
+        **kwargs: Additional kwargs to pass onto the rule() call.
+    Returns:
+        A rule object
+    """
+
+    # Within Google, the doc attribute is overridden
+    kwargs.setdefault("doc", _DEFAULT_PY_LIBRARY_DOC)
+    return rule(
+        attrs = dicts.add(LIBRARY_ATTRS, attrs),
+        toolchains = [
+            config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
+            config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
+        ],
+        # TODO(b/253818097): fragments=py is only necessary so that
+        # RequiredConfigFragmentsTest passes
+        fragments = ["py"],
         **kwargs
     )

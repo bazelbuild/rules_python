@@ -335,7 +335,7 @@ in the resulting output or not. Valid values are:
 
 * `inherit`: Inherit the value from the `--precompile_source_retention` flag.
 * `keep_source`: Include the original Python source.
-* `omit_source`: Don't include the orignal py source.
+* `omit_source`: Don't include the original py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
   file, but omit it if it's a generated file.
 """,
@@ -361,6 +361,9 @@ in the resulting output or not. Valid values are:
             default = "//python/config_settings:precompile_source_retention",
             providers = [BuildSettingInfo],
         ),
+        # Force enabling auto exec groups, see
+        # https://bazel.build/extending/auto-exec-groups#how-enable-particular-rule
+        "_use_auto_exec_groups": attr.bool(default = True),
     },
     allow_none = True,
 )

@@ -544,7 +544,7 @@ def get_filename_config_settings(
             suffixes = target_platforms
         else:
             prefixes = ["{}_{}".format(py, abi)]
-            suffixes = _whl_config_setting_sufixes(
+            suffixes = _whl_config_setting_suffixes(
                 platform_tag = parsed.platform_tag,
                 glibc_versions = glibc_versions,
                 muslc_versions = muslc_versions,
@@ -578,7 +578,7 @@ def get_filename_config_settings(
     else:
         return [":is_{}".format(p) for p in prefixes], setting_supported_versions
 
-def _whl_config_setting_sufixes(
+def _whl_config_setting_suffixes(
         platform_tag,
         glibc_versions,
         muslc_versions,

@@ -18,8 +18,7 @@ load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
     name = "distribution",
-    srcs = glob(["*.bzl"]) + [
-        "BUILD.bazel",
+    srcs = glob(["**"]) + [
         "//python/config_settings/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
@@ -33,7 +32,7 @@ string_flag(
     name = "precompile",
     build_setting_default = PrecompileFlag.AUTO,
     values = sorted(PrecompileFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -41,7 +40,7 @@ string_flag(
     name = "precompile_source_retention",
     build_setting_default = PrecompileSourceRetentionFlag.KEEP_SOURCE,
     values = sorted(PrecompileSourceRetentionFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -49,7 +48,7 @@ string_flag(
     name = "precompile_add_to_runfiles",
     build_setting_default = PrecompileAddToRunfilesFlag.ALWAYS,
     values = sorted(PrecompileAddToRunfilesFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -57,7 +56,7 @@ string_flag(
     name = "pyc_collection",
     build_setting_default = PycCollectionFlag.DISABLED,
     values = sorted(PycCollectionFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -65,7 +64,7 @@ string_flag(
     name = "bootstrap_impl",
     build_setting_default = BootstrapImplFlag.SYSTEM_PYTHON,
     values = sorted(BootstrapImplFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -84,6 +83,33 @@ string_flag(
     name = "pip_whl",
     build_setting_default = UseWhlFlag.AUTO,
     values = sorted(UseWhlFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_auto",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.AUTO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_no",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.NO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_only",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.ONLY,
+    },
     # NOTE: Only public because it is used in pip hub repos.
     visibility = ["//visibility:public"],
 )

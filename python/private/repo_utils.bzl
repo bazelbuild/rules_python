@@ -86,7 +86,7 @@ def _execute_internal(
         arguments,
         environment = {},
         **kwargs):
-    """Execute a subprocess with debugging instrumention.
+    """Execute a subprocess with debugging instrumentation.
 
     Args:
         rctx: repository_ctx object

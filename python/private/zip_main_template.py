@@ -2,7 +2,7 @@
 #
 # NOTE: This file is a "stage 1" bootstrap, so it's responsible for locating the
 # desired runtime and having it run the stage 2 bootstrap. This means it can't
-# assume much about the current runtime and environment. e.g, the current
+# assume much about the current runtime and environment. e.g., the current
 # runtime may not be the correct one, the zip may not have been extract, the
 # runfiles env vars may not be set, etc.
 #
