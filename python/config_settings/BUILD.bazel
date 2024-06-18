@@ -18,8 +18,7 @@ load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
     name = "distribution",
-    srcs = glob(["*.bzl"]) + [
-        "BUILD.bazel",
+    srcs = glob(["**"]) + [
         "//python/config_settings/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
