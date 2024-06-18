@@ -26,6 +26,18 @@ package(default_visibility = ["//visibility:public"])
 
 # Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
 exports_files(["requirements.bzl"])
+
+sh_binary(
+    name = "pin",
+    srcs = ["pin.sh"],
+    data = [
+        "{pin_tool_label}",
+    ],
+    args = [
+        "$(location {pin_tool_label})",
+    ],
+    visibility = ["//visibility:public"],
+)
 """
 
 def _pip_repository_impl(rctx):
@@ -48,7 +60,10 @@ def _pip_repository_impl(rctx):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
+    rctx.template("pin.sh", rctx.attr._pin)
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS.format(
+        pin_tool_label = rctx.attr.pin_tool_label,
+    ))
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
             macro_tmpl.format(p, "data")
@@ -90,6 +105,10 @@ in the pip.parse tag class.
     ),
     "_template": attr.label(
         default = ":requirements.bzl.tmpl",
+    ),
+    "_pin": attr.label(default = ":pin.sh"),
+    "pin_tool_label": attr.string(
+        mandatory = True,
     ),
 }
 
