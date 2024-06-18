@@ -33,7 +33,7 @@ A brief description of the categories of changes:
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 
 ### Removed
-* Nothing yet
+* (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
 
 ## [0.33.1] - 2024-06-13
 
