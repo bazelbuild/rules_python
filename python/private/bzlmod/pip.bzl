@@ -339,6 +339,10 @@ _UV_DEPS = {
         "https://files.pythonhosted.org/packages/ff/f5/df24800e195f10e41aeb4a89f38488aca76c22d0f87c3eb8bf309f940aa3/uv-0.2.12-py3-none-macosx_10_12_x86_64.whl",
         "85d2b9649c14014d6c54ecfb5d36f57e5c0e890957078ed4937e03569141d99b",
     ),
+    "windows_x86_64": (
+        "https://files.pythonhosted.org/packages/c8/bc/a905f3d4b961781ead58243bd4f3c6cd2fcb2deaa55c565a64ba7d06cd20/uv-0.2.12-py3-none-win_amd64.whl",
+        "ca95af397769422e11e87dc147be1262a54d3a13d8837b69c80fad20f1ff9af4",
+    ),
 }
 
 # Repository to retrieve tools for pinning dependencies.
