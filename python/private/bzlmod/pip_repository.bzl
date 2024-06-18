@@ -92,6 +92,9 @@ setting.""",
     "groups": attr.string_list_dict(
         mandatory = False,
     ),
+    "pin_tool_label": attr.string(
+        mandatory = True,
+    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
@@ -103,12 +106,9 @@ The wheel map where values are json.encoded strings of the whl_map constructed
 in the pip.parse tag class.
 """,
     ),
+    "_pin": attr.label(default = ":pin.sh"),
     "_template": attr.label(
         default = ":requirements.bzl.tmpl",
-    ),
-    "_pin": attr.label(default = ":pin.sh"),
-    "pin_tool_label": attr.string(
-        mandatory = True,
     ),
 }
 
