@@ -233,12 +233,12 @@ use `python3` from the environment a binary runs within. This provides extremely
 limited functionality to the rules (at build time, nothing is knowable about
 the Python runtime).
 
-Bazel itself automatically registers `@bazel_tools//python/autodetecting_toolchain:all`
+Bazel itself automatically registers `@bazel_tools//tools/python:autodetecting_toolchain`
 as the lowest priority toolchain. For WORKSPACE builds, if no other toolchain
 is registered, that toolchain will be used. For bzlmod builds, rules_python
 automatically registers a higher-priority toolchain; it won't be used unless
 there is a toolchain misconfiguration somewhere.
 
 To aid migration off the Bazel-builtin toolchain, rules_python provides
-{obj}`@rules_python//python/autodetecting_toolchain:all`. This is an equivalent
+{obj}`@rules_python//python:autodetecting_toolchain`. This is an equivalent
 toolchain, but is implemented using rules_python's objects.

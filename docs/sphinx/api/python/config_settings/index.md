@@ -10,13 +10,18 @@ Determines the default hermetic Python toolchain version. This can be set to
 one of the values that `rules_python` maintains.
 :::
 
-::::{bzl:flag} precompile_toolchain
-Determines if the precompile toolchains are used.
+::::{bzl:flag} exec_tools_toolchain
+Determines if the {obj}`exec_tools_toolchain_type` toolchain is enabled.
+
+:::{note}
+* Note that this only affects the rules_python generated toolchains.
+:::
 
 Values:
 
 * `enabled`: Allow matching of the registered toolchains at build time.
-* `disabled`: Don't match registered precompile toolchains at build time.
+* `disabled`: Prevent the toolchain from being matched at build time.
+
 :::{versionadded} 0.33.2
 :::
 ::::

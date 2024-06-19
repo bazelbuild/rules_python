@@ -27,11 +27,11 @@ load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load(
     "//tests/support:support.bzl",
     "CC_TOOLCHAIN",
+    "EXEC_TOOLS_TOOLCHAIN",
     "PLATFORM_TOOLCHAIN",
     "PRECOMPILE",
     "PRECOMPILE_ADD_TO_RUNFILES",
     "PRECOMPILE_SOURCE_RETENTION",
-    "PRECOMPILE_TOOLCHAIN",
 )
 
 _TEST_TOOLCHAINS = [PLATFORM_TOOLCHAIN, CC_TOOLCHAIN]
@@ -62,7 +62,7 @@ def _test_precompile_enabled_setup(name, py_rule, **kwargs):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
     )
 
@@ -121,7 +121,7 @@ def _test_pyc_only(name):
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             ##PRECOMPILE_SOURCE_RETENTION: "omit_source",
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
         target = name + "_subject",
     )
@@ -164,7 +164,7 @@ def _test_precompile_if_generated(name):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
     )
 
@@ -207,7 +207,7 @@ def _test_omit_source_if_generated_source(name):
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             PRECOMPILE_SOURCE_RETENTION: "omit_if_generated_source",
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
     )
 
@@ -257,7 +257,7 @@ def _test_precompile_add_to_runfiles_decided_elsewhere(name):
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             PRECOMPILE_ADD_TO_RUNFILES: "decided_elsewhere",
             PRECOMPILE: "enabled",
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
     )
 
@@ -294,7 +294,7 @@ def _test_precompiler_action(name):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
-            PRECOMPILE_TOOLCHAIN: "enabled",
+            EXEC_TOOLS_TOOLCHAIN: "enabled",
         },
     )
 

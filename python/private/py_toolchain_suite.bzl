@@ -22,6 +22,8 @@ load(
     "TARGET_TOOLCHAIN_TYPE",
 )
 
+_IS_EXEC_TOOLCHAIN_ENABLED = Label("//python/config_settings:is_exec_tools_toolchain_enabled")
+
 def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, flag_values, **kwargs):
     """For internal use only.
 
@@ -100,7 +102,6 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         **kwargs
     )
 
-    is_precompile_enabled = Label("//python/config_settings:is_precompile_toolchain_enabled")
     native.toolchain(
         name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
         toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
@@ -110,8 +111,14 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
         # The target settings capture the Python version, the select works like a
         # (target_settings AND is_precompile_enabled)
         target_settings = select({
-            is_precompile_enabled: target_settings,
-            "//conditions:default": [is_precompile_enabled],
+            _IS_EXEC_TOOLCHAIN_ENABLED: target_settings,
+            # Whatever the default is, it has to map to a `config_setting`
+            # that will never match. Since the default branch is only taken if
+            # _IS_EXEC_TOOLCHAIN_ENABLED is false, then it will never match
+            # when later evaluated during toolchain resolution.
+            # Note that @platforms//:incompatible can't be used here because
+            # the RHS must be a `config_setting`.
+            "//conditions:default": [_IS_EXEC_TOOLCHAIN_ENABLED],
         }),
         exec_compatible_with = kwargs.get("target_compatible_with"),
     )

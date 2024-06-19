@@ -24,6 +24,7 @@ that @rules_python//python is only concerned with the core rules.
 """
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python/private:autodetecting_toolchain.bzl", "define_autodetecting_toolchain")
 load(":current_py_toolchain.bzl", "current_py_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -318,15 +319,11 @@ toolchain_type(
 # safe if you know for a fact that your build is completely compatible with the
 # version of the `python` command installed on the target platform.
 
-alias(
-    name = "autodetecting_toolchain",
-    actual = "//python/autodetecting_toolchain",
-    deprecation = "Use //python/autodetecting_toolchain:all instead; targets under //docs are internal.",
-)
+define_autodetecting_toolchain(name = "autodetecting_toolchain")
 
 alias(
     name = "autodetecting_toolchain_nonstrict",
-    actual = "//python/autodetecting_toolchain",
+    actual = ":autodetecting_toolchain",
 )
 
 # ========= Packaging rules =========
