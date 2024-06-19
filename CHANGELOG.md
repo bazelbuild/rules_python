@@ -30,6 +30,11 @@ A brief description of the categories of changes:
   reduce the total number of targets in the hub repo.
 
 ### Fixed
+* (toolchains) The {obj}`exec_tools_toolchain_type` is disabled by default.
+  To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
+  This toolchain must be enabled for precompilation to work. This toolchain will
+  be enabled by default in a future release.
+  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
