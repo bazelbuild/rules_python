@@ -15,8 +15,6 @@
 "pip module extension for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
 load(
     "//python/pip_install:pip_repository.bzl",
@@ -325,56 +323,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     return is_hub_reproducible
 
-# TODO(groodt): Add more platforms
-_UV_DEPS = {
-    "linux_aarch64": (
-        "https://files.pythonhosted.org/packages/00/82/3d0acad7ebd4098aaa23f163b492b47fd9321b2681c55918fe5f18856513/uv-0.2.12-py3-none-manylinux_2_28_aarch64.whl",
-        "05d809516b651997a151585c9bbd150d888e71976a734781a3dde95430c1cab2",
-    ),
-    "linux_x86_64": (
-        "https://files.pythonhosted.org/packages/d9/85/e608bfe78772afa3f9807a074203982131ff9c12e279bb3bc502e14d51ab/uv-0.2.12-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "78d5329094de1f6b503bffe00abcdf1aaa7b3e4aa2aa373e128d7faf39b98de9",
-    ),
-    "osx_x86_64": (
-        "https://files.pythonhosted.org/packages/ff/f5/df24800e195f10e41aeb4a89f38488aca76c22d0f87c3eb8bf309f940aa3/uv-0.2.12-py3-none-macosx_10_12_x86_64.whl",
-        "85d2b9649c14014d6c54ecfb5d36f57e5c0e890957078ed4937e03569141d99b",
-    ),
-    "windows_x86_64": (
-        "https://files.pythonhosted.org/packages/c8/bc/a905f3d4b961781ead58243bd4f3c6cd2fcb2deaa55c565a64ba7d06cd20/uv-0.2.12-py3-none-win_amd64.whl",
-        "ca95af397769422e11e87dc147be1262a54d3a13d8837b69c80fad20f1ff9af4",
-    ),
-}
-
-# Repository to retrieve tools for pinning dependencies.
-# We currently use uv as a dependency for the pinning tool.
-def _fetch_pin_dependencies(python_version, platform):
-    url, sha256 = _UV_DEPS.get(platform)
-    py_version_label = "cp" + version_label(python_version)
-
-    name = "{py_version_label}_{platform}_uv".format(
-        py_version_label = py_version_label,
-        platform = platform,
-    )
-    maybe(
-        http_archive,
-        name = name,
-        build_file_content = """
-filegroup(
-    name = "uv",
-    srcs = glob(["*/scripts/uv"]),
-    visibility = ["//visibility:public"],
-)
-""",
-        sha256 = sha256,
-        type = "zip",
-        urls = [url],
-    )
-
-    return "@{py_version_label}_{platform}_uv//:uv".format(
-        py_version_label = py_version_label,
-        platform = platform,
-    )
-
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
@@ -524,10 +472,6 @@ def _pip_impl(module_ctx):
             is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache)
             is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
 
-    # Register repository for pin tooling
-    repository_platform = host_platform(module_ctx.os)
-    pin_tool_label = _fetch_pin_dependencies(_major_minor_version(DEFAULT_PYTHON_VERSION), repository_platform)
-
     for hub_name, whl_map in hub_whl_map.items():
         pip_repository(
             name = hub_name,
@@ -538,7 +482,6 @@ def _pip_impl(module_ctx):
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
             groups = hub_group_map.get(hub_name),
-            pin_tool_label = pin_tool_label,
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:

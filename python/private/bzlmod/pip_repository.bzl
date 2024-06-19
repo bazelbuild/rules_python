@@ -62,7 +62,7 @@ def _pip_repository_impl(rctx):
 
     rctx.template("pin.sh", rctx.attr._pin)
     rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS.format(
-        pin_tool_label = rctx.attr.pin_tool_label,
+        pin_tool_label = str(rctx.attr._pin_tool),
     ))
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
@@ -92,9 +92,6 @@ setting.""",
     "groups": attr.string_list_dict(
         mandatory = False,
     ),
-    "pin_tool_label": attr.string(
-        mandatory = True,
-    ),
     "repo_name": attr.string(
         mandatory = True,
         doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
@@ -107,6 +104,7 @@ in the pip.parse tag class.
 """,
     ),
     "_pin": attr.label(default = ":pin.sh"),
+    "_pin_tool": attr.label(default = "@rules_python_uv//:uv"),
     "_template": attr.label(
         default = ":requirements.bzl.tmpl",
     ),

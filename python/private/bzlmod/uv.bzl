@@ -75,7 +75,7 @@ uv = module_extension(
                     mandatory = True,
                 ),
                 "hub_name": attr.string(
-                    default = "uv",
+                    default = "rules_python_uv",
                 ),
                 "url_template": attr.string(
                     default = "https://github.com/astral-sh/uv/releases/download/{version}/{file}",

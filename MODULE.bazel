@@ -113,14 +113,10 @@ use_repo(dev_pip, "dev_pip", "pypiserver")
 # in a way where bzlmod and non-bzlmod pathways would have different files but
 # we could share the same `pip_compile` rule. We still have tests using
 # WORKSPACE, so they would break if that was the case.
-uv = use_extension(
-    "//python/private/bzlmod:uv.bzl",
-    "uv",
-    dev_dependency = True,
-)
+uv = use_extension("//python/private/bzlmod:uv.bzl", "uv")
 uv.install(
     # When updating, clear the sha values and observe the terminal output warnings when running
-    # bazel run @uv
+    # bazel run @rules_python_uv//:uv
     files = {
         "uv-aarch64-apple-darwin.tar.gz": "35e320cfa41c8902d66e2c491b5b2d2414e1c6443177c660736de657c66fb2c2",
         "uv-aarch64-unknown-linux-gnu.tar.gz": "62b24363f21c07e02f62cf8e298ee6ec30e844006f3a52ac55c02903c755586d",
@@ -132,7 +128,7 @@ uv.install(
     },
     version = "0.1.39",
 )
-use_repo(uv, "uv")
+use_repo(uv, "rules_python_uv")
 
 # Bazel integration test setup below
 

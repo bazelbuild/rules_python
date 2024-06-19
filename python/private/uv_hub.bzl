@@ -78,7 +78,7 @@ def _impl(rctx):
                         "@platforms//os:windows": "uv.exe",
                         "//conditions:default": "uv",
                     }),
-                    visibility = render.list(["@rules_python//:__subpackages__"]),
+                    visibility = render.list(["//visibility:public"]),
                 ),
             ] + [
                 render.call(
