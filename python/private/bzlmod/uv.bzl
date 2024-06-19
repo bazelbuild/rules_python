@@ -53,7 +53,7 @@ def _impl(module_ctx):
                             "'dict_set files {}:{}'".format(k, v)
                             for k, v in want_files.items()
                         ] + [
-                            "MODULE.bazel:<linenumber where uv.install starts>",
+                            "MODULE.bazel:%uv.install",
                         ]),
                     ],
                 ))
