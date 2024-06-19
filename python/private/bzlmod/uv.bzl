@@ -14,7 +14,6 @@
 
 """A simple extension to install `uv` to be used within the `pip` bzlmod extension."""
 
-load("//python/private:text_util.bzl", "render")
 load("//python/private:uv_hub.bzl", "uv_hub")
 
 def _impl(module_ctx):
@@ -47,7 +46,15 @@ def _impl(module_ctx):
                 print("\n".join(
                     [
                         "WARNING: Update the uv.install 'files' attribute to be:",
-                        render.indent("files = {},".format(render.dict(want_files))),
+                        " ".join([
+                            "buildozer",
+                            "'remove files'",
+                        ] + [
+                            "'dict_set files {}:{}'".format(k, v)
+                            for k, v in want_files.items()
+                        ] + [
+                            "MODULE.bazel:<linenumber where uv.install starts>",
+                        ]),
                     ],
                 ))
 

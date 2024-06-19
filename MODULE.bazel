@@ -115,18 +115,16 @@ use_repo(dev_pip, "dev_pip", "pypiserver")
 # WORKSPACE, so they would break if that was the case.
 uv = use_extension("//python/private/bzlmod:uv.bzl", "uv")
 uv.install(
-    # When updating, clear the sha values and observe the terminal output warnings when running
-    # bazel run @rules_python_uv//:uv
     files = {
-        "uv-aarch64-apple-darwin.tar.gz": "35e320cfa41c8902d66e2c491b5b2d2414e1c6443177c660736de657c66fb2c2",
-        "uv-aarch64-unknown-linux-gnu.tar.gz": "62b24363f21c07e02f62cf8e298ee6ec30e844006f3a52ac55c02903c755586d",
-        "uv-powerpc64le-unknown-linux-gnu.tar.gz": "07b1856e71c35f93ef5359c54f63d819841762316bf4d7c2774e178412d9090c",
-        "uv-s390x-unknown-linux-gnu.tar.gz": "773725ad1e02d6f4c90494fad5309a7cb4ce03b2e377fad336fecd895bc42dd2",
-        "uv-x86_64-apple-darwin.tar.gz": "cf5393f17de6961c7140d68f80e09c1f43ef47f8fac923ccd41896cce698f296",
-        "uv-x86_64-pc-windows-msvc.zip": "a44eb417b0c1e1c7cffd7349b8019d684f6200d0b5cfaef7dc322e8312bb254c",
-        "uv-x86_64-unknown-linux-gnu.tar.gz": "e748caea4ddafd3aebba771f4e8f51fe5aa517b71151a648269b3be982a349a1",
+        "uv-aarch64-apple-darwin.tar.gz": "f588388d2b13f77e4526e619f618a306b6b026a96975fbfb2c6dd1ded134cb72",
+        "uv-aarch64-unknown-linux-gnu.tar.gz": "f342442088a56a8a5e4af6781501870bed1b388b37ac2e9deb250cd1d0dc1845",
+        "uv-powerpc64le-unknown-linux-gnu.tar.gz": "0f38a41264be0ef325f8d438f34ea95c002736b3c092e3276518a2253c4ff923",
+        "uv-s390x-unknown-linux-gnu.tar.gz": "dc843c32e51ee3fb46381699bffbc4b6040c51083a1dc7d6c597582b84956aa7",
+        "uv-x86_64-apple-darwin.tar.gz": "6262eba42ebb9035a574b74c5ea253a41353fb4b6b264600e3b05b1a7f4cabc0",
+        "uv-x86_64-pc-windows-msvc.zip": "898ce45b3767ea97429426a7bd0ec54d070eb9e29ff2b072bdcf288bf6ddc9a1",
+        "uv-x86_64-unknown-linux-gnu.tar.gz": "3f96048fa1b82eca14d45bbcc86714cd0dee19a73ef9311da6707faa308ec25f",
     },
-    version = "0.1.39",
+    version = "0.2.13",
 )
 use_repo(uv, "rules_python_uv")
 
