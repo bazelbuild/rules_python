@@ -43,6 +43,17 @@ A brief description of the categories of changes:
 ### Removed
 * Nothing yet
 
+## [0.33.2] - 2024-06-13
+
+[0.33.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.2
+
+### Fixed
+* (toolchains) The {obj}`exec_tools_toolchain_type` is disabled by default.
+  To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
+  This toolchain must be enabled for precompilation to work. This toolchain will
+  be enabled by default in a future release.
+  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
+
 ## [0.33.1] - 2024-06-13
 
 [0.33.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.1
