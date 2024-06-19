@@ -41,13 +41,13 @@ def interpreter_version_info_struct_from_dict(info_dict):
     """Create a struct of interpreter version info from a dict from an attribute.
 
     Args:
-        info_dict: dict of versio info fields. See interpreter_version_info
+        info_dict: (dict | None) of version info fields. See interpreter_version_info
             provider field docs.
 
     Returns:
         struct of version info; see interpreter_version_info provider field docs.
     """
-    info_dict = dict(info_dict)  # Copy in case the original is frozen
+    info_dict = dict(info_dict or {})  # Copy in case the original is frozen
     if info_dict:
         if not ("major" in info_dict and "minor" in info_dict):
             fail("interpreter_version_info must have at least two keys, 'major' and 'minor'")

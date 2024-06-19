@@ -39,6 +39,8 @@ A brief description of the categories of changes:
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
   other toolchains support.
+* (providers) {obj}`PyRuntimeInfo` doesn't require passing the
+  `interpreter_version_info` arg.
 
 ### Removed
 * Nothing yet
