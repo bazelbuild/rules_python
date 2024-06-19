@@ -107,12 +107,6 @@ dev_pip.parse(
 )
 use_repo(dev_pip, "dev_pip", "pypiserver")
 
-# uv setup - because we support WORKSPACE and bzlmod, we cannot use rules_uv,
-# loading rules_uv from any of the `bzlmod` files may break the users who don't
-# have uv registered in their repos and I could not figure out how to load it
-# in a way where bzlmod and non-bzlmod pathways would have different files but
-# we could share the same `pip_compile` rule. We still have tests using
-# WORKSPACE, so they would break if that was the case.
 uv = use_extension("//python/private/bzlmod:uv.bzl", "uv")
 uv.install(
     files = {
