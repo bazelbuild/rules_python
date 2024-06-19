@@ -57,7 +57,7 @@ def _py_interpreter_program_impl(ctx):
 
 py_interpreter_program = rule(
     doc = """
-Binary-like rule that doesn't require a toolchain becaues its part of
+Binary-like rule that doesn't require a toolchain because its part of
 implementing build tools for the toolchain. This rule expects the Python
 interprter to be externally provided.
 

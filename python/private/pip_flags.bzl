@@ -54,6 +54,7 @@ WhlLibcFlag = enum(
 )
 
 INTERNAL_FLAGS = [
+    "dist",
     "whl_plat",
     "whl_plat_py3",
     "whl_plat_py3_abi3",
