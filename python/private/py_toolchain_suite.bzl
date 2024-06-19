@@ -108,8 +108,6 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
             user_repository_name = user_repository_name,
         ),
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
-        # The target settings capture the Python version, the select works like a
-        # (target_settings AND is_precompile_enabled)
         target_settings = select({
             _IS_EXEC_TOOLCHAIN_ENABLED: target_settings,
             # Whatever the default is, it has to map to a `config_setting`
