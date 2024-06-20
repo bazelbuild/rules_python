@@ -38,7 +38,7 @@ A brief description of the categories of changes:
   `interpreter_version_info` arg.
 
 ### Removed
-* Nothing yet
+* (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
 
 ## [0.33.2] - 2024-06-13
 
