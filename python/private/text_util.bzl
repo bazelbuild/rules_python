@@ -96,6 +96,14 @@ def _render_tuple(items, *, value_repr = repr):
         ")",
     ])
 
+def _render_call(rule, **kwargs):
+    return "\n".join(
+        ["{}(".format(rule)] + [
+            _indent("{} = {},".format(k, v))
+            for k, v in kwargs.items()
+        ] + [")"],
+    )
+
 render = struct(
     alias = _render_alias,
     dict = _render_dict,
@@ -103,4 +111,5 @@ render = struct(
     list = _render_list,
     select = _render_select,
     tuple = _render_tuple,
+    call = _render_call,
 )
