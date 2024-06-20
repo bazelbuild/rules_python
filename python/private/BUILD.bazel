@@ -16,6 +16,7 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 load("//python:versions.bzl", "print_toolchains_checksums")
+load(":py_exec_tools_toolchain.bzl", "current_interpreter_executable")
 load(":stamp.bzl", "stamp_build_setting")
 
 package(
@@ -59,6 +60,7 @@ bzl_library(
     name = "autodetecting_toolchain_bzl",
     srcs = ["autodetecting_toolchain.bzl"],
     deps = [
+        ":toolchain_types_bzl",
         "//python:py_runtime_bzl",
         "//python:py_runtime_pair_bzl",
     ],
@@ -462,4 +464,13 @@ py_library(
     visibility = [
         "//tests/entry_points:__pkg__",
     ],
+)
+
+# The current toolchain's interpreter as an excutable, usable with
+# executable=True attributes.
+current_interpreter_executable(
+    name = "current_interpreter_executable",
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_exec_tools_toolchain.
+    visibility = ["//visibility:public"],
 )

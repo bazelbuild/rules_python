@@ -30,11 +30,6 @@ def data_requirement(name):
 def dist_info_requirement(name):
     return "@my_project_pip_deps_vendored_{}//:{}".format(pip_utils.normalize_name(name), "dist_info")
 
-def entry_point(pkg, script = None):
-    if not script:
-        script = pkg
-    return "@my_project_pip_deps_vendored_" + pip_utils.normalize_name(pkg) + "//:rules_python_wheel_entry_point_" + script
-
 def _get_annotation(requirement):
     # This expects to parse `setuptools==58.2.0     --hash=sha256:2551203ae6955b9876741a26ab3e767bb3242dafe86a32a749ea0d78b6792f11`
     # down to `setuptools`.

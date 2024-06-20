@@ -14,15 +14,12 @@
 
 """Rule that defines a toolchain for build tools."""
 
-load("//python/private/common:providers.bzl", "interpreter_version_info_struct_from_dict")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 load(":py_exec_tools_info.bzl", "PyExecToolsInfo")
 
 def _py_exec_tools_toolchain_impl(ctx):
     return [platform_common.ToolchainInfo(exec_tools = PyExecToolsInfo(
         exec_interpreter = ctx.attr.exec_interpreter,
-        exec_interpreter_version_info = interpreter_version_info_struct_from_dict(
-            ctx.attr.exec_interpreter_version_info,
-        ),
         precompiler = ctx.attr.precompiler,
     ))]
 
@@ -30,13 +27,9 @@ py_exec_tools_toolchain = rule(
     implementation = _py_exec_tools_toolchain_impl,
     attrs = {
         "exec_interpreter": attr.label(
+            default = "//python/private:current_interpreter_executable",
             cfg = "exec",
-            allow_files = True,
-            doc = "See PyExecToolsInfo.exec_interpreter",
-            executable = True,
-        ),
-        "exec_interpreter_version_info": attr.string_dict(
-            doc = "See PyExecToolsInfo.exec_interpreter_version_info",
+            doc = "See PyexecToolsInfo.exec_interpreter.",
         ),
         "precompiler": attr.label(
             allow_files = True,
@@ -44,4 +37,27 @@ py_exec_tools_toolchain = rule(
             doc = "See PyExecToolsInfo.precompiler",
         ),
     },
+)
+
+def _current_interpreter_executable_impl(ctx):
+    toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
+    runtime = toolchain.py3_runtime
+    if runtime.interpreter:
+        executable = ctx.actions.declare_file(ctx.label.name)
+        ctx.actions.symlink(output = executable, target_file = runtime.interpreter, is_executable = True)
+    else:
+        executable = ctx.actions.declare_symlink(ctx.label.name)
+        ctx.actions.symlink(output = executable, target_path = runtime.interpreter_path)
+    return [
+        toolchain,
+        DefaultInfo(
+            executable = executable,
+            runfiles = ctx.runfiles([executable], transitive_files = runtime.files),
+        ),
+    ]
+
+current_interpreter_executable = rule(
+    implementation = _current_interpreter_executable_impl,
+    toolchains = [TARGET_TOOLCHAIN_TYPE],
+    executable = True,
 )
