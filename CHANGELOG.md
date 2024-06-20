@@ -28,6 +28,9 @@ A brief description of the categories of changes:
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 * (bzlmod): optimize the creation of config settings used in pip to
   reduce the total number of targets in the hub repo.
+* (toolchains) The exec tools toolchain now finds its interpreter by reusing
+  the regular interpreter toolchain. This avoids having to duplicate specifying
+  where the runtime for the exec tools toolchain is.
 
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.

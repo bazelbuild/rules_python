@@ -399,12 +399,6 @@ py_cc_toolchain(
 
 py_exec_tools_toolchain(
     name = "py_exec_tools_toolchain",
-    exec_interpreter = "{python_path}",
-    exec_interpreter_version_info = {{
-        "major": "{interpreter_version_info_major}",
-        "minor": "{interpreter_version_info_minor}",
-        "micro": "{interpreter_version_info_micro}",
-    }},
     precompiler = "@rules_python//tools/precompiler:precompiler",
 )
 """.format(
