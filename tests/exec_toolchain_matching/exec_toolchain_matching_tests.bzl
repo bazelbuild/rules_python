@@ -18,12 +18,11 @@ load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
-load("//python/private:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load("//python/private:toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
-load("//tests/support:support.bzl", "LINUX", "LINUX_X86_64", "MAC", "MAC_X86_64", "PYTHON_VERSION")
+load("//tests/support:support.bzl", "LINUX", "MAC", "PYTHON_VERSION")
 
-_LookupInfo = provider()
+_LookupInfo = provider()  # buildifier: disable=provider-params
 
 def _lookup_toolchains_impl(ctx):
     return [_LookupInfo(
@@ -127,9 +126,9 @@ def _test_exec_matches_target_python_version(name):
         target = name + "_subject",
         impl = _test_exec_matches_target_python_version_impl,
         config_settings = {
-            "//command_line_option:extra_execution_platforms": [MAC],
+            "//command_line_option:extra_execution_platforms": [str(MAC)],
             "//command_line_option:extra_toolchains": ["//tests/exec_toolchain_matching:all"],
-            "//command_line_option:platforms": [LINUX],
+            "//command_line_option:platforms": [str(LINUX)],
             PYTHON_VERSION: "3.12",
         },
     )
@@ -143,10 +142,11 @@ def _test_exec_matches_target_python_version_impl(env, target):
     env.expect.that_str(target_runtime.interpreter_path).equals("/linux/python3.12")
     env.expect.that_str(exec_runtime.interpreter_path).equals("/mac/python3.12")
 
-    target_version = target_runtime.interpreter_version_info
-    exec_version = exec_runtime.interpreter_version_info
+    if IS_BAZEL_7_OR_HIGHER:
+        target_version = target_runtime.interpreter_version_info
+        exec_version = exec_runtime.interpreter_version_info
 
-    env.expect.that_bool(target_version == exec_version)
+        env.expect.that_bool(target_version == exec_version)
 
 def exec_toolchain_matching_test_suite(name):
     test_suite(name = name, tests = _tests)

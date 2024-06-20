@@ -15,7 +15,6 @@
 """Rule that defines a toolchain for build tools."""
 
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
-load("//python/private/common:providers.bzl", "interpreter_version_info_struct_from_dict")
 load(":py_exec_tools_info.bzl", "PyExecToolsInfo")
 
 def _py_exec_tools_toolchain_impl(ctx):
@@ -27,15 +26,15 @@ def _py_exec_tools_toolchain_impl(ctx):
 py_exec_tools_toolchain = rule(
     implementation = _py_exec_tools_toolchain_impl,
     attrs = {
-        "precompiler": attr.label(
-            allow_files = True,
-            cfg = "exec",
-            doc = "See PyExecToolsInfo.precompiler",
-        ),
         "exec_interpreter": attr.label(
             default = "//python/private:current_interpreter_executable",
             cfg = "exec",
             doc = "See PyexecToolsInfo.exec_interpreter.",
+        ),
+        "precompiler": attr.label(
+            allow_files = True,
+            cfg = "exec",
+            doc = "See PyExecToolsInfo.precompiler",
         ),
     },
 )
