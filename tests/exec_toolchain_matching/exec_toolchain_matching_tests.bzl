@@ -100,7 +100,7 @@ def _test_exec_matches_target_python_version(name):
     native.toolchain(
         name = "00_exec_3.11_any",
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
-        toolchain = ":exec_3.12_any",
+        toolchain = ":exec_3.11_any",
         target_settings = ["//python/config_settings:is_python_3.11"],
     )
 
