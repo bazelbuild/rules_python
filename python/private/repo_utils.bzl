@@ -117,6 +117,7 @@ def _execute_internal(
         env_str = _env_to_str(environment),
     ))
 
+    rctx.report_progress("Running {}".format(op))
     result = rctx.execute(arguments, environment = environment, **kwargs)
 
     if fail_on_error and result.return_code != 0:
