@@ -64,15 +64,6 @@ default_test_runner(
 # TODO: add compile_pip_requirements_test_from_external_repo
 
 rules_python_integration_test(
-    name = "pip_repository_entry_points_workspace_test",
-    timeout = "long",
-    bzlmod = False,
-    # The dependencies needed for this test are not cross-platform: https://github.com/bazelbuild/rules_python/issues/260
-    tags = ["fix-windows"],
-    workspace_path = "pip_repository_entry_points",
-)
-
-rules_python_integration_test(
     name = "compile_pip_requirements_test",
 )
 

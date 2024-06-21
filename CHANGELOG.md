@@ -26,9 +26,19 @@ A brief description of the categories of changes:
 
 ### Changed
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
+* (bzlmod): optimize the creation of config settings used in pip to
+  reduce the total number of targets in the hub repo.
+* (toolchains) The exec tools toolchain now finds its interpreter by reusing
+  the regular interpreter toolchain. This avoids having to duplicate specifying
+  where the runtime for the exec tools toolchain is.
 
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
+* (rules) Auto exec groups are enabled. This allows actions run by the rules,
+  such as precompiling, to pick an execution platform separately from what
+  other toolchains support.
+* (providers) {obj}`PyRuntimeInfo` doesn't require passing the
+  `interpreter_version_info` arg.
 
 ### Added
 * (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
@@ -36,7 +46,18 @@ A brief description of the categories of changes:
   with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
 
 ### Removed
-* Nothing yet
+* (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
+
+## [0.33.2] - 2024-06-13
+
+[0.33.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.2
+
+### Fixed
+* (toolchains) The {obj}`exec_tools_toolchain_type` is disabled by default.
+  To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
+  This toolchain must be enabled for precompilation to work. This toolchain will
+  be enabled by default in a future release.
+  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
 
 ## [0.33.1] - 2024-06-13
 

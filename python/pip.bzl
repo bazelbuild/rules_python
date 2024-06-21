@@ -106,9 +106,6 @@ def data_requirement(name):
 def dist_info_requirement(name):
     return "{macro_tmpl}".format(pip_utils.normalize_name(name), "dist_info")
 
-def entry_point(pkg, script = None):
-    fail("Not implemented yet")
-
 def install_deps(**whl_library_kwargs):
 {install_deps_calls}
     for wheel_name in _wheel_names:

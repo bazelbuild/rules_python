@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//python/private:flags.bzl",
     "BootstrapImplFlag",
+    "ExecToolsToolchainFlag",
     "PrecompileAddToRunfilesFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
@@ -18,8 +19,7 @@ load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
     name = "distribution",
-    srcs = glob(["*.bzl"]) + [
-        "BUILD.bazel",
+    srcs = glob(["**"]) + [
         "//python/config_settings/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
@@ -27,6 +27,25 @@ filegroup(
 
 construct_config_settings(
     name = "construct_config_settings",
+)
+
+string_flag(
+    name = "exec_tools_toolchain",
+    build_setting_default = ExecToolsToolchainFlag.DISABLED,
+    values = sorted(ExecToolsToolchainFlag.__members__.values()),
+    # NOTE: Only public because it is used in py_toolchain_suite from toolchain
+    # repositories
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "is_exec_tools_toolchain_enabled",
+    flag_values = {
+        "exec_tools_toolchain": ExecToolsToolchainFlag.ENABLED,
+    },
+    # NOTE: Only public because it is used in py_toolchain_suite from toolchain
+    # repositories
+    visibility = ["//visibility:public"],
 )
 
 string_flag(
@@ -84,6 +103,33 @@ string_flag(
     name = "pip_whl",
     build_setting_default = UseWhlFlag.AUTO,
     values = sorted(UseWhlFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_auto",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.AUTO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_no",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.NO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_only",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.ONLY,
+    },
     # NOTE: Only public because it is used in pip hub repos.
     visibility = ["//visibility:public"],
 )

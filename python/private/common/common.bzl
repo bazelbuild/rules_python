@@ -153,7 +153,9 @@ def create_cc_details_struct(
         cc_info_for_self_link,
         cc_info_with_extra_link_time_libraries,
         extra_runfiles,
-        cc_toolchain):
+        cc_toolchain,
+        feature_config,
+        **kwargs):
     """Creates a CcDetails struct.
 
     Args:
@@ -170,6 +172,12 @@ def create_cc_details_struct(
             part of `cc_info_with_extra_link_time_libraries`; should be added to
             runfiles.
         cc_toolchain: CcToolchain that should be used when building.
+        feature_config: struct from cc_configure_features(); see
+            //python/private/common:py_executable.bzl%cc_configure_features.
+        **kwargs: Additional keys/values to set in the returned struct. This is to
+            facilitate extensions with less patching. Any added fields should
+            pick names that are unlikely to collide if the CcDetails API has
+            additional fields added.
 
     Returns:
         A `CcDetails` struct.
@@ -180,6 +188,8 @@ def create_cc_details_struct(
         cc_info_with_extra_link_time_libraries = cc_info_with_extra_link_time_libraries,
         extra_runfiles = extra_runfiles,
         cc_toolchain = cc_toolchain,
+        feature_config = feature_config,
+        **kwargs
     )
 
 def create_executable_result_struct(*, extra_files_to_build, output_groups, extra_runfiles = None):
