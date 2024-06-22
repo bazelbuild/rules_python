@@ -291,11 +291,6 @@ bzl_library(
     srcs = ["version_label.bzl"],
 )
 
-bzl_library(
-    name = "labels_bzl",
-    srcs = ["labels.bzl"],
-)
-
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
 bzl_library(
     name = "bazel_tools_bzl",

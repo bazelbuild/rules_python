@@ -14,8 +14,10 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private:labels.bzl",
+    "//python/private/pypi:labels.bzl",
     "DATA_LABEL",
     "DIST_INFO_LABEL",
     "PY_LIBRARY_IMPL_LABEL",
@@ -24,8 +26,6 @@ load(
     "WHEEL_FILE_IMPL_LABEL",
     "WHEEL_FILE_PUBLIC_LABEL",
 )
-load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:text_util.bzl", "render")
 
 _COPY_FILE_TEMPLATE = """\
 copy_file(

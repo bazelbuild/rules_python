@@ -14,15 +14,15 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a group_library."""
 
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private:labels.bzl",
+    "//python/private/pypi:labels.bzl",
     "PY_LIBRARY_IMPL_LABEL",
     "PY_LIBRARY_PUBLIC_LABEL",
     "WHEEL_FILE_IMPL_LABEL",
     "WHEEL_FILE_PUBLIC_LABEL",
 )
-load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:text_util.bzl", "render")
 
 _PRELUDE = """\
 load("@rules_python//python:defs.bzl", "py_library")
