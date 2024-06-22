@@ -17,9 +17,10 @@ A file that houses private functions used in the `bzlmod` extension with the sam
 """
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load(":auth.bzl", "get_auth")
-load(":envsubst.bzl", "envsubst")
-load(":normalize_name.bzl", "normalize_name")
+load("//python/private:auth.bzl", "get_auth")
+load("//python/private:envsubst.bzl", "envsubst")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load(":parse_simpleapi_html.bzl", "parse_simpleapi_html")
 
 def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
     """Download Simple API HTML.
@@ -71,7 +72,7 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
 
         success = False
         for index_url in index_urls:
-            result = read_simple_api(
+            result = _read_simpleapi(
                 ctx = ctx,
                 url = "{}/{}/".format(
                     index_url_overrides.get(pkg_normalized, index_url).rstrip("/"),
@@ -122,7 +123,7 @@ def simpleapi_download(ctx, *, attr, cache, parallel_download = True):
 
     return contents
 
-def read_simple_api(ctx, url, attr, cache, **download_kwargs):
+def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     """Read SimpleAPI.
 
     Args:
@@ -195,98 +196,9 @@ def _read_index_result(ctx, result, output, url, cache, cache_key):
 
     content = ctx.read(output)
 
-    output = parse_simple_api_html(url = url, content = content)
+    output = parse_simpleapi_html(url = url, content = content)
     if output:
         cache.setdefault(cache_key, output)
         return struct(success = True, output = output, cache_key = cache_key)
     else:
         return struct(success = False)
-
-def parse_simple_api_html(*, url, content):
-    """Get the package URLs for given shas by parsing the Simple API HTML.
-
-    Args:
-        url(str): The URL that the HTML content can be downloaded from.
-        content(str): The Simple API HTML content.
-
-    Returns:
-        A list of structs with:
-        * filename: The filename of the artifact.
-        * url: The URL to download the artifact.
-        * sha256: The sha256 of the artifact.
-        * metadata_sha256: The whl METADATA sha256 if we can download it. If this is
-          present, then the 'metadata_url' is also present. Defaults to "".
-        * metadata_url: The URL for the METADATA if we can download it. Defaults to "".
-    """
-    sdists = {}
-    whls = {}
-    lines = content.split("<a href=\"")
-
-    _, _, api_version = lines[0].partition("name=\"pypi:repository-version\" content=\"")
-    api_version, _, _ = api_version.partition("\"")
-
-    # We must assume the 1.0 if it is not present
-    # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#clients
-    api_version = api_version or "1.0"
-    api_version = tuple([int(i) for i in api_version.split(".")])
-
-    if api_version >= (2, 0):
-        # We don't expect to have version 2.0 here, but have this check in place just in case.
-        # https://packaging.python.org/en/latest/specifications/simple-repository-api/#versioning-pypi-s-simple-api
-        fail("Unsupported API version: {}".format(api_version))
-
-    for line in lines[1:]:
-        dist_url, _, tail = line.partition("#sha256=")
-        sha256, _, tail = tail.partition("\"")
-
-        # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
-        yanked = "data-yanked" in line
-
-        maybe_metadata, _, tail = tail.partition(">")
-        filename, _, tail = tail.partition("<")
-
-        metadata_sha256 = ""
-        metadata_url = ""
-        for metadata_marker in ["data-core-metadata", "data-dist-info-metadata"]:
-            metadata_marker = metadata_marker + "=\"sha256="
-            if metadata_marker in maybe_metadata:
-                # Implement https://peps.python.org/pep-0714/
-                _, _, tail = maybe_metadata.partition(metadata_marker)
-                metadata_sha256, _, _ = tail.partition("\"")
-                metadata_url = dist_url + ".metadata"
-                break
-
-        if filename.endswith(".whl"):
-            whls[sha256] = struct(
-                filename = filename,
-                url = _absolute_url(url, dist_url),
-                sha256 = sha256,
-                metadata_sha256 = metadata_sha256,
-                metadata_url = _absolute_url(url, metadata_url),
-                yanked = yanked,
-            )
-        else:
-            sdists[sha256] = struct(
-                filename = filename,
-                url = _absolute_url(url, dist_url),
-                sha256 = sha256,
-                metadata_sha256 = "",
-                metadata_url = "",
-                yanked = yanked,
-            )
-
-    return struct(
-        sdists = sdists,
-        whls = whls,
-    )
-
-def _absolute_url(index_url, candidate):
-    if not candidate.startswith(".."):
-        return candidate
-
-    candidate_parts = candidate.split("..")
-    last = candidate_parts[-1]
-    for _ in range(len(candidate_parts) - 1):
-        index_url, _, _ = index_url.rstrip("/").rpartition("/")
-
-    return "{}/{}".format(index_url, last.strip("/"))

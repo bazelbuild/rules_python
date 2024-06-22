@@ -31,7 +31,7 @@ bzl_library(
     deps = [
         ":pip_repository_bzl",
         "//python/pip_install:pip_repository_bzl",
-        "//python/private:pypi_index_bzl",
+        "//python/private/pypi:simpleapi_download_bzl",
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private/pypi:parse_requirements_bzl",

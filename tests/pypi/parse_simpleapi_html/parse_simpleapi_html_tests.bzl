@@ -16,7 +16,7 @@
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
-load("//python/private:pypi_index.bzl", "parse_simple_api_html")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:parse_simpleapi_html.bzl", "parse_simpleapi_html")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -42,7 +42,7 @@ def _generate_html(*items):
         ]),
     )
 
-def _test_parse_simple_api_html(env):
+def _test_sdist(env):
     # buildifier: disable=unsorted-dict-items
     tests = [
         (
@@ -65,7 +65,7 @@ def _test_parse_simple_api_html(env):
 
     for (input, want) in tests:
         html = _generate_html(input)
-        got = parse_simple_api_html(url = input.url, content = html)
+        got = parse_simpleapi_html(url = input.url, content = html)
         env.expect.that_collection(got.sdists).has_size(1)
         env.expect.that_collection(got.whls).has_size(0)
         if not got:
@@ -85,9 +85,9 @@ def _test_parse_simple_api_html(env):
         actual.url().equals(want.url)
         actual.yanked().equals(want.yanked)
 
-_tests.append(_test_parse_simple_api_html)
+_tests.append(_test_sdist)
 
-def _test_parse_simple_api_html_whls(env):
+def _test_whls(env):
     # buildifier: disable=unsorted-dict-items
     tests = [
         (
@@ -189,7 +189,7 @@ def _test_parse_simple_api_html_whls(env):
 
     for (input, want) in tests:
         html = _generate_html(input)
-        got = parse_simple_api_html(url = input.url, content = html)
+        got = parse_simpleapi_html(url = input.url, content = html)
         env.expect.that_collection(got.sdists).has_size(0)
         env.expect.that_collection(got.whls).has_size(1)
         if not got:
@@ -213,9 +213,9 @@ def _test_parse_simple_api_html_whls(env):
         actual.url().equals(want.url)
         actual.yanked().equals(want.yanked)
 
-_tests.append(_test_parse_simple_api_html_whls)
+_tests.append(_test_whls)
 
-def pypi_index_test_suite(name):
+def parse_simpleapi_html_test_suite(name):
     """Create the test suite.
 
     Args:
