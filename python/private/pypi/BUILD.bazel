@@ -35,3 +35,8 @@ bzl_library(
     name = "index_sources_bzl",
     srcs = ["index_sources.bzl"],
 )
+
+bzl_library(
+    name = "parse_requirements_txt_bzl",
+    srcs = ["parse_requirements_txt.bzl"],
+)

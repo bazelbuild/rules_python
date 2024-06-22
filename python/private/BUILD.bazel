@@ -138,8 +138,8 @@ bzl_library(
     deps = [
         ":normalize_name_bzl",
         ":whl_target_platforms_bzl",
-        "//python/pip_install:requirements_parser_bzl",
         "//python/private/pypi:index_sources_bzl",
+        "//python/private/pypi:parse_requirements_txt_bzl",
     ],
 )
 
@@ -172,7 +172,6 @@ bzl_library(
         ":auth_bzl",
         ":normalize_name_bzl",
         ":text_util_bzl",
-        "//python/pip_install:requirements_parser_bzl",
         "//python/private/bzlmod:bazel_features_bzl",
     ],
 )

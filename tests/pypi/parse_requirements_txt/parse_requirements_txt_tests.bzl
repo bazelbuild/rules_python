@@ -15,83 +15,83 @@
 "Unit tests for yaml.bzl"
 
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
-load("//python/pip_install:requirements_parser.bzl", "parse")
+load("//python/private/pypi:parse_requirements_txt.bzl", "parse_requirements_txt")  # buildifier: disable=bzl-visibility
 
 def _parse_basic_test_impl(ctx):
     env = unittest.begin(ctx)
 
     # Base cases
-    asserts.equals(env, [], parse("").requirements)
-    asserts.equals(env, [], parse("\n").requirements)
+    asserts.equals(env, [], parse_requirements_txt("").requirements)
+    asserts.equals(env, [], parse_requirements_txt("\n").requirements)
 
     # Various requirement specifiers (https://pip.pypa.io/en/stable/reference/requirement-specifiers/#requirement-specifiers)
-    asserts.equals(env, [("SomeProject", "SomeProject")], parse("SomeProject\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject == 1.3")], parse("SomeProject == 1.3\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject >= 1.2, < 2.0")], parse("SomeProject >= 1.2, < 2.0\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject[foo, bar]")], parse("SomeProject[foo, bar]\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject ~= 1.4.2")], parse("SomeProject ~= 1.4.2\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject == 5.4 ; python_version < '3.8'")], parse("SomeProject == 5.4 ; python_version < '3.8'\n").requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject ; sys_platform == 'win32'")], parse("SomeProject ; sys_platform == 'win32'\n").requirements)
-    asserts.equals(env, [("requests", "requests [security] >= 2.8.1, == 2.8.* ; python_version < 2.7")], parse("requests [security] >= 2.8.1, == 2.8.* ; python_version < 2.7\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject")], parse_requirements_txt("SomeProject\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject == 1.3")], parse_requirements_txt("SomeProject == 1.3\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject >= 1.2, < 2.0")], parse_requirements_txt("SomeProject >= 1.2, < 2.0\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject[foo, bar]")], parse_requirements_txt("SomeProject[foo, bar]\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject ~= 1.4.2")], parse_requirements_txt("SomeProject ~= 1.4.2\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject == 5.4 ; python_version < '3.8'")], parse_requirements_txt("SomeProject == 5.4 ; python_version < '3.8'\n").requirements)
+    asserts.equals(env, [("SomeProject", "SomeProject ; sys_platform == 'win32'")], parse_requirements_txt("SomeProject ; sys_platform == 'win32'\n").requirements)
+    asserts.equals(env, [("requests", "requests [security] >= 2.8.1, == 2.8.* ; python_version < 2.7")], parse_requirements_txt("requests [security] >= 2.8.1, == 2.8.* ; python_version < 2.7\n").requirements)
 
     # Multiple requirements
-    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse("""\
+    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse_requirements_txt("""\
 FooProject==1.0.0
 BarProject==2.0.0
 """).requirements)
 
-    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse("""\
+    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse_requirements_txt("""\
 FooProject==1.0.0
 
 BarProject==2.0.0
 """).requirements)
 
     # Comments
-    asserts.equals(env, [("SomeProject", "SomeProject")], parse("""\
+    asserts.equals(env, [("SomeProject", "SomeProject")], parse_requirements_txt("""\
 # This is a comment
 SomeProject
 """).requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject")], parse("""\
+    asserts.equals(env, [("SomeProject", "SomeProject")], parse_requirements_txt("""\
 SomeProject
 # This is a comment
 """).requirements)
-    asserts.equals(env, [("SomeProject", "SomeProject == 1.3")], parse("""\
+    asserts.equals(env, [("SomeProject", "SomeProject == 1.3")], parse_requirements_txt("""\
 SomeProject == 1.3 # This is a comment
 """).requirements)
-    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse("""\
+    asserts.equals(env, [("FooProject", "FooProject==1.0.0"), ("BarProject", "BarProject==2.0.0")], parse_requirements_txt("""\
 FooProject==1.0.0
 # Comment
 BarProject==2.0.0 #Comment
 """).requirements)
-    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49")], parse("""\
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49")], parse_requirements_txt("""\
 requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49
 """).requirements)
 
     # Multiline
-    asserts.equals(env, [("certifi", "certifi==2021.10.8     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569")], parse("""\
+    asserts.equals(env, [("certifi", "certifi==2021.10.8     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569")], parse_requirements_txt("""\
 certifi==2021.10.8 \
     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872 \
     --hash=sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569
     # via requests
 """).requirements)
-    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49     --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd")], parse("""\
+    asserts.equals(env, [("requests", "requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49     --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd")], parse_requirements_txt("""\
 requests @ https://github.com/psf/requests/releases/download/v2.29.0/requests-2.29.0.tar.gz#sha1=3897c249b51a1a405d615a8c9cb92e5fdbf0dd49 \
     --hash=sha256:eca58eb564b134e4ff521a02aa6f566c653835753e1fc8a50a20cb6bee4673cd
     # via requirements.txt
 """).requirements)
 
     # Options
-    asserts.equals(env, ["--pre"], parse("--pre\n").options)
-    asserts.equals(env, ["--find-links", "/my/local/archives"], parse("--find-links /my/local/archives\n").options)
-    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse("""\
+    asserts.equals(env, ["--pre"], parse_requirements_txt("--pre\n").options)
+    asserts.equals(env, ["--find-links", "/my/local/archives"], parse_requirements_txt("--find-links /my/local/archives\n").options)
+    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse_requirements_txt("""\
 --pre
 --find-links /my/local/archives
 """).options)
-    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse("""\
+    asserts.equals(env, ["--pre", "--find-links", "/my/local/archives"], parse_requirements_txt("""\
 --pre # Comment
 --find-links /my/local/archives
 """).options)
-    asserts.equals(env, struct(requirements = [("FooProject", "FooProject==1.0.0")], options = ["--pre", "--find-links", "/my/local/archives"]), parse("""\
+    asserts.equals(env, struct(requirements = [("FooProject", "FooProject==1.0.0")], options = ["--pre", "--find-links", "/my/local/archives"]), parse_requirements_txt("""\
 --pre # Comment
 FooProject==1.0.0
 --find-links /my/local/archives
@@ -116,7 +116,7 @@ def _parse_requirements_lockfile_test_impl(ctx):
         ("urllib3", "urllib3==1.26.7     --hash=sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece     --hash=sha256:c4fdf4019605b6e5423637e01bc9fe4daef873709a7973e195ceba0a62bbc844"),
         ("yamllint", "yamllint==1.26.3     --hash=sha256:3934dcde484374596d6b52d8db412929a169f6d9e52e20f9ade5bf3523d9b96e"),
         ("setuptools", "setuptools==59.6.0     --hash=sha256:22c7348c6d2976a52632c67f7ab0cdf40147db7789f9aed18734643fe9cf3373     --hash=sha256:4ce92f1e1f8f01233ee9952c04f6b81d1e02939d6e1b488428154974a4d0783e"),
-    ], parse("""\
+    ], parse_requirements_txt("""\
 #
 # This file is autogenerated by pip-compile with python 3.9
 # To update, run:
@@ -220,5 +220,5 @@ parse_requirements_lockfile_test = unittest.make(
     attrs = {},
 )
 
-def parse_tests(name):
+def parse_requirements_txt_test_suite(name):
     unittest.suite(name, parse_basic_test, parse_requirements_lockfile_test)

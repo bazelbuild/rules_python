@@ -26,8 +26,8 @@ file for the host platform to be backwards compatible with the legacy
 behavior.
 """
 
-load("//python/pip_install:requirements_parser.bzl", "parse")
 load("//python/private/pypi:index_sources.bzl", "index_sources")
+load("//python/private/pypi:parse_requirements_txt.bzl", "parse_requirements_txt")
 load(":normalize_name.bzl", "normalize_name")
 load(":whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
 
@@ -271,7 +271,7 @@ def parse_requirements(
 
         # Parse the requirements file directly in starlark to get the information
         # needed for the whl_library declarations later.
-        parse_result = parse(contents)
+        parse_result = parse_requirements_txt(contents)
 
         # Replicate a surprising behavior that WORKSPACE builds allowed:
         # Defining a repo with the same name multiple times, but only the last
