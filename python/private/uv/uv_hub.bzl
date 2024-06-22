@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A simple extension to install `uv` to be used within the `pip` bzlmod extension."""
+"Repository rules to create a hub repository for uv"
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load(":text_util.bzl", "render")
+load("//python/private:text_util.bzl", "render")
 
 def _get_cpu(f):
     f = f.lower()
@@ -62,7 +62,7 @@ def _impl(rctx):
                 """load("@bazel_skylib//rules:native_binary.bzl", "native_binary")""",
                 render.call(
                     rule = "native_binary",
-                    name = repr("uv"),
+                    name = repr("bin"),
                     src = render.select(
                         {
                             ":is_" + os_arch: "@{}_{}//:{}".format(
@@ -157,7 +157,7 @@ def _uv_archive(hub_name, file, url, sha256):
         ),
     )
 
-def uv_hub(name, filenames, urls, add_host_hub = False):
+def uv_hub(name, filenames, urls, add_host_hub = True):
     """Create a uv hub repository for using the tool in rules.
 
     Args:

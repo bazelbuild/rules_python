@@ -94,6 +94,7 @@ use_repo(pip, "whl_mods_hub")
 # Alternatively, `python_interpreter_target` can be used to directly specify
 # the Python interpreter to run to resolve dependencies.
 pip.parse(
+    dependencies_file = ":requirements.in",
     # We can use `envsubst in the above
     envsubst = ["PIP_INDEX_URL"],
     # Use the bazel downloader to query the simple API for downloading the sources
@@ -148,6 +149,7 @@ pip.parse(
     },
 )
 pip.parse(
+    dependencies_file = ":requirements.in",
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -197,8 +199,8 @@ pip.override(
 )
 use_repo(pip, "pip")
 
-bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
-local_path_override(
-    module_name = "other_module",
-    path = "other_module",
-)
+# bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
+# local_path_override(
+#     module_name = "other_module",
+#     path = "other_module",
+# )

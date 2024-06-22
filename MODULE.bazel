@@ -68,8 +68,8 @@ pip.parse(
 )
 use_repo(pip, "rules_python_publish_deps")
 
-uv = use_extension("//python/private/bzlmod:uv.bzl", "uv")
-uv.install(
+uv = use_extension("//python/private/uv:uv.bzl", "uv")
+uv.download(
     files = {
         "uv-aarch64-apple-darwin.tar.gz": "f588388d2b13f77e4526e619f618a306b6b026a96975fbfb2c6dd1ded134cb72",
         "uv-aarch64-unknown-linux-gnu.tar.gz": "f342442088a56a8a5e4af6781501870bed1b388b37ac2e9deb250cd1d0dc1845",

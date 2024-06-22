@@ -482,6 +482,7 @@ def _pip_impl(module_ctx):
             },
             default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
             groups = hub_group_map.get(hub_name),
+            dependencies_file = pip_attr.dependencies_file,  # buildifier: disable=uninitialized
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
@@ -513,6 +514,10 @@ def _pip_parse_ext_attrs(**kwargs):
         A dict of attributes.
     """
     attrs = dict({
+        "dependencies_file": attr.label(
+            mandatory = True,
+            allow_single_file = [".in", ".toml"],
+        ),
         "experimental_extra_index_urls": attr.string_list(
             doc = """\
 The extra index URLs to use for downloading wheels using bazel downloader.

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A simple extension to install `uv` to be used within the `pip` bzlmod extension."""
+"""A module extension for downloading uv."""
 
-load("//python/private:uv_hub.bzl", "uv_hub")
+load("//python/private/uv:uv_hub.bzl", "uv_hub")
 
 def _impl(module_ctx):
     repos = []
     dev_repos = []
     for mod in module_ctx.modules:
-        for tag in mod.tags.install:
+        for tag in mod.tags.download:
             print_warning = False
             want_files = {}
             urls = {}
@@ -45,7 +45,7 @@ def _impl(module_ctx):
                 # buildifier: disable=print
                 print("\n".join(
                     [
-                        "WARNING: Update the uv.install 'files' attribute to be:",
+                        "WARNING: Update the uv.download 'files' attribute to be:",
                         " ".join([
                             "buildozer",
                             "'remove files'",
@@ -53,7 +53,7 @@ def _impl(module_ctx):
                             "'dict_set files {}:{}'".format(k, v)
                             for k, v in want_files.items()
                         ] + [
-                            "MODULE.bazel:%uv.install",
+                            "MODULE.bazel:%uv.download",
                         ]),
                     ],
                 ))
@@ -76,7 +76,7 @@ def _impl(module_ctx):
 uv = module_extension(
     implementation = _impl,
     tag_classes = {
-        "install": tag_class(
+        "download": tag_class(
             attrs = {
                 "files": attr.string_dict(
                     mandatory = True,
@@ -91,5 +91,5 @@ uv = module_extension(
             },
         ),
     },
-    doc = """A module extension for installing uv.""",
+    doc = """A module extension for downloading uv.""",
 )

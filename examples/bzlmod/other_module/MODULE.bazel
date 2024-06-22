@@ -46,6 +46,7 @@ use_repo(
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
+    dependencies_file = ":requirements.in",
     hub_name = "other_module_pip",
     # NOTE: This version must be different than the root module's
     # default python version.
