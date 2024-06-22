@@ -16,7 +16,7 @@
 
 load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private/pypi:render_pkg_aliases.bzl",
+    ":render_pkg_aliases.bzl",
     "render_multiplatform_pkg_aliases",
     "whl_alias",
 )
@@ -28,7 +28,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(["requirements.bzl"])
 """
 
-def _pip_repository_impl(rctx):
+def _impl(rctx):
     bzl_packages = rctx.attr.whl_map.keys()
     aliases = render_multiplatform_pkg_aliases(
         aliases = {
@@ -66,35 +66,33 @@ def _pip_repository_impl(rctx):
         "%%NAME%%": rctx.attr.repo_name,
     })
 
-pip_repository_attrs = {
-    "default_version": attr.string(
-        mandatory = True,
-        doc = """\
+hub_repository = repository_rule(
+    attrs = {
+        "default_version": attr.string(
+            mandatory = True,
+            doc = """\
 This is the default python version in the format of X.Y. This should match
 what is setup by the 'python' extension using the 'is_default = True'
 setting.""",
-    ),
-    "groups": attr.string_list_dict(
-        mandatory = False,
-    ),
-    "repo_name": attr.string(
-        mandatory = True,
-        doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
-    ),
-    "whl_map": attr.string_dict(
-        mandatory = True,
-        doc = """\
+        ),
+        "groups": attr.string_list_dict(
+            mandatory = False,
+        ),
+        "repo_name": attr.string(
+            mandatory = True,
+            doc = "The apparent name of the repo. This is needed because in bzlmod, the name attribute becomes the canonical name.",
+        ),
+        "whl_map": attr.string_dict(
+            mandatory = True,
+            doc = """\
 The wheel map where values are json.encoded strings of the whl_map constructed
 in the pip.parse tag class.
 """,
-    ),
-    "_template": attr.label(
-        default = ":requirements.bzl.tmpl",
-    ),
-}
-
-pip_repository = repository_rule(
-    attrs = pip_repository_attrs,
+        ),
+        "_template": attr.label(
+            default = ":requirements.bzl.tmpl.bzlmod",
+        ),
+    },
     doc = """A rule for bzlmod mulitple pip repository creation. PRIVATE USE ONLY.""",
-    implementation = _pip_repository_impl,
+    implementation = _impl,
 )
