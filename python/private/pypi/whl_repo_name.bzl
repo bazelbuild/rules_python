@@ -15,10 +15,10 @@
 """A function to convert a dist name to a valid bazel repo name.
 """
 
-load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
-load(":normalize_name.bzl", "normalize_name")
+load("//python/private:normalize_name.bzl", "normalize_name")
+load(":parse_whl_name.bzl", "parse_whl_name")
 
-def pip_repo_name(prefix, filename, sha256):
+def whl_repo_name(prefix, filename, sha256):
     """Return a valid whl_library repo name given a distribution filename.
 
     Args:

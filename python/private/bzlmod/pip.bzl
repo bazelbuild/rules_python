@@ -24,13 +24,13 @@ load(
 )
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:pip_repo_name.bzl", "pip_repo_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:version_label.bzl", "version_label")
 load("//python/private/pypi:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:whl_repo_name.bzl", "whl_repo_name")
 load(":pip_repository.bzl", "pip_repository")
 
 def _parse_version(version):
@@ -268,7 +268,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     # This is no-op because pip is not used to download the wheel.
                     whl_library_args.pop("download_only", None)
 
-                    repo_name = pip_repo_name(pip_name, distribution.filename, distribution.sha256)
+                    repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
                     whl_library_args["requirement"] = requirement.srcs.requirement
                     whl_library_args["urls"] = [distribution.url]
                     whl_library_args["sha256"] = distribution.sha256

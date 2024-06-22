@@ -15,24 +15,24 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:pip_repo_name.bzl", "pip_repo_name")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:whl_repo_name.bzl", "whl_repo_name")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
 def _test_simple(env):
-    got = pip_repo_name("prefix", "foo-1.2.3-py3-none-any.whl", "deadbeef")
+    got = whl_repo_name("prefix", "foo-1.2.3-py3-none-any.whl", "deadbeef")
     env.expect.that_str(got).equals("prefix_foo_py3_none_any_deadbeef")
 
 _tests.append(_test_simple)
 
 def _test_sdist(env):
-    got = pip_repo_name("prefix", "foo-1.2.3.tar.gz", "deadbeef000deadbeef")
+    got = whl_repo_name("prefix", "foo-1.2.3.tar.gz", "deadbeef000deadbeef")
     env.expect.that_str(got).equals("prefix_foo_sdist_deadbeef")
 
 _tests.append(_test_sdist)
 
 def _test_platform_whl(env):
-    got = pip_repo_name(
+    got = whl_repo_name(
         "prefix",
         "foo-1.2.3-cp39.cp310-abi3-manylinux1_x86_64.manylinux_2_17_x86_64.whl",
         "deadbeef000deadbeef",
@@ -43,7 +43,7 @@ def _test_platform_whl(env):
 
 _tests.append(_test_platform_whl)
 
-def pip_repo_name_test_suite(name):
+def whl_repo_name_test_suite(name):
     """Create the test suite.
 
     Args:
