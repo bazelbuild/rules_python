@@ -239,7 +239,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             quiet = (pip_attr.quiet, True),
             timeout = (pip_attr.timeout, 600),
         )
-        whl_library_args.update({k: v for k, (v, default) in maybe_args_with_default.items() if v == default})
+        whl_library_args.update({
+            k: v
+            for k, (v, default) in maybe_args_with_default.items()
+            if v != default
+        })
 
         if get_index_urls:
             # TODO @aignas 2024-05-26: move to a separate function
