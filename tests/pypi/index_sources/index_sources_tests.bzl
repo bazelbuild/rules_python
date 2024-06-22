@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:pypi_index_sources.bzl", "get_simpleapi_sources")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:index_sources.bzl", "index_sources")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -27,7 +27,7 @@ def _test_no_simple_api_sources(env):
         "foo==0.0.1 @ https://someurl.org; python_version < 2.7 --hash=sha256:deadbeef",
     ]
     for input in inputs:
-        got = get_simpleapi_sources(input)
+        got = index_sources(input)
         env.expect.that_collection(got.shas).contains_exactly([])
         env.expect.that_str(got.version).equals("0.0.1")
 
@@ -45,13 +45,13 @@ def _test_simple_api_sources(env):
         ],
     }
     for input, want_shas in tests.items():
-        got = get_simpleapi_sources(input)
+        got = index_sources(input)
         env.expect.that_collection(got.shas).contains_exactly(want_shas)
         env.expect.that_str(got.version).equals("0.0.2")
 
 _tests.append(_test_simple_api_sources)
 
-def pypi_index_sources_test_suite(name):
+def index_sources_test_suite(name):
     """Create the test suite.
 
     Args:

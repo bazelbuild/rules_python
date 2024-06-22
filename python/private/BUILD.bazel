@@ -31,6 +31,7 @@ filegroup(
         "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
+        "//python/private/pypi:distribution",
         "//python/private/whl_filegroup:distribution",
         "//tools/build_defs/python/private:distribution",
     ],
@@ -136,9 +137,9 @@ bzl_library(
     srcs = ["parse_requirements.bzl"],
     deps = [
         ":normalize_name_bzl",
-        ":pypi_index_sources_bzl",
         ":whl_target_platforms_bzl",
         "//python/pip_install:requirements_parser_bzl",
+        "//python/private/pypi:index_sources_bzl",
     ],
 )
 
@@ -174,11 +175,6 @@ bzl_library(
         "//python/pip_install:requirements_parser_bzl",
         "//python/private/bzlmod:bazel_features_bzl",
     ],
-)
-
-bzl_library(
-    name = "pypi_index_sources_bzl",
-    srcs = ["pypi_index_sources.bzl"],
 )
 
 bzl_library(

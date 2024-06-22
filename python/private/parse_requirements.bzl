@@ -27,8 +27,8 @@ behavior.
 """
 
 load("//python/pip_install:requirements_parser.bzl", "parse")
+load("//python/private/pypi:index_sources.bzl", "index_sources")
 load(":normalize_name.bzl", "normalize_name")
-load(":pypi_index_sources.bzl", "get_simpleapi_sources")
 load(":whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
 
 # This includes the vendored _translate_cpu and _translate_os from
@@ -317,7 +317,7 @@ def parse_requirements(
                 (requirement_line, ",".join(extra_pip_args)),
                 struct(
                     distribution = distribution,
-                    srcs = get_simpleapi_sources(requirement_line),
+                    srcs = index_sources(requirement_line),
                     requirement_line = requirement_line,
                     target_platforms = [],
                     extra_pip_args = extra_pip_args,

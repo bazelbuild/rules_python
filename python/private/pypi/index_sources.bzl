@@ -16,7 +16,7 @@
 A file that houses private functions used in the `bzlmod` extension with the same name.
 """
 
-def get_simpleapi_sources(line):
+def index_sources(line):
     """Get PyPI sources from a requirements.txt line.
 
     We interpret the spec described in
