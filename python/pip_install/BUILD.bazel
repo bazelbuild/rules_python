@@ -73,9 +73,7 @@ filegroup(
 
 filegroup(
     name = "bzl",
-    srcs = glob(["*.bzl"]) + [
-        "//python/pip_install/private:bzl_srcs",
-    ],
+    srcs = glob(["*.bzl"]),
     visibility = ["//:__subpackages__"],
 )
 
