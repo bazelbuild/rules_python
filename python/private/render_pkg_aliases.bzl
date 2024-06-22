@@ -17,7 +17,7 @@
 This is used in bzlmod and non-bzlmod setups."""
 
 load(
-    "//python/pip_install/private:generate_group_library_build_bazel.bzl",
+    "//python/private/pypi:generate_group_library_build_bazel.bzl",
     "generate_group_library_build_bazel",
 )  # buildifier: disable=bzl-visibility
 load(

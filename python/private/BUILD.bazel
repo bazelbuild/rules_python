@@ -243,7 +243,7 @@ bzl_library(
         ":normalize_name_bzl",
         ":text_util_bzl",
         ":version_label_bzl",
-        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
+        "//python/private/pypi:generate_group_library_build_bazel_bzl",
     ],
 )
 

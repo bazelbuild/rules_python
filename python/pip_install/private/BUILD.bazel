@@ -25,24 +25,6 @@ srcs_module(
 )
 
 bzl_library(
-    name = "generate_whl_library_build_bazel_bzl",
-    srcs = ["generate_whl_library_build_bazel.bzl"],
-    deps = [
-        "//python/private:normalize_name_bzl",
-        "//python/private/pypi:labels_bzl",
-    ],
-)
-
-bzl_library(
-    name = "generate_group_library_build_bazel_bzl",
-    srcs = ["generate_group_library_build_bazel.bzl"],
-    deps = [
-        "//python/private:normalize_name_bzl",
-        "//python/private/pypi:labels_bzl",
-    ],
-)
-
-bzl_library(
     name = "srcs_bzl",
     srcs = ["srcs.bzl"],
 )

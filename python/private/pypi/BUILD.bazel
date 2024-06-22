@@ -44,6 +44,24 @@ bzl_library(
 )
 
 bzl_library(
+    name = "generate_whl_library_build_bazel_bzl",
+    srcs = ["generate_whl_library_build_bazel.bzl"],
+    deps = [
+        ":labels_bzl",
+        "//python/private:normalize_name_bzl",
+    ],
+)
+
+bzl_library(
+    name = "generate_group_library_build_bazel_bzl",
+    srcs = ["generate_group_library_build_bazel.bzl"],
+    deps = [
+        ":labels_bzl",
+        "//python/private:normalize_name_bzl",
+    ],
+)
+
+bzl_library(
     name = "index_sources_bzl",
     srcs = ["index_sources.bzl"],
 )

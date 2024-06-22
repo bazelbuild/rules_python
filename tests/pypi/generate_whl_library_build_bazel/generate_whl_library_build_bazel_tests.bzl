@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/pip_install/private:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -569,7 +569,7 @@ config_setting(
 
 _tests.append(_test_group_member_deps_to_hub)
 
-def generate_build_bazel_test_suite(name):
+def generate_whl_library_build_bazel_test_suite(name):
     """Create the test suite.
 
     Args:

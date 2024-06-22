@@ -17,7 +17,7 @@
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private/pypi:labels.bzl",
+    ":labels.bzl",
     "DATA_LABEL",
     "DIST_INFO_LABEL",
     "PY_LIBRARY_IMPL_LABEL",
