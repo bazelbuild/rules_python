@@ -19,11 +19,12 @@ symbols should not be used and they are either undocumented here or marked as
 for internal use only.
 """
 
-load("//python/pip_install:pip_repository.bzl", "pip_repository", _package_annotation = "package_annotation")
 load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private/pypi:package_annotation.bzl", _package_annotation = "package_annotation")
+load("//python/private/pypi:pip_repository.bzl", "pip_repository")
 load("//python/private/pypi:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
 load("//python/private/whl_filegroup:whl_filegroup.bzl", _whl_filegroup = "whl_filegroup")
 
