@@ -16,8 +16,9 @@
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
 load(
-    "//python/private:render_pkg_aliases.bzl",
+    "//python/private/pypi:render_pkg_aliases.bzl",
     "get_filename_config_settings",
     "get_whl_flag_versions",
     "multiplatform_whl_aliases",
@@ -25,7 +26,6 @@ load(
     "render_pkg_aliases",
     "whl_alias",
 )  # buildifier: disable=bzl-visibility
-load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
 
 def _normalize_label_strings(want):
     """normalize expected strings.

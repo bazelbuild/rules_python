@@ -54,8 +54,8 @@ bzl_library(
     srcs = ["pip_repository.bzl"],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//python/private:render_pkg_aliases_bzl",
         "//python/private:text_util_bzl",
+        "//python/private/pypi:render_pkg_aliases_bzl",
     ],
 )
 

@@ -24,7 +24,7 @@ load("//python/pip_install:requirements.bzl", _compile_pip_requirements = "compi
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:full_version.bzl", "full_version")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
+load("//python/private/pypi:render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
 load("//python/private/whl_filegroup:whl_filegroup.bzl", _whl_filegroup = "whl_filegroup")
 
 compile_pip_requirements = _compile_pip_requirements

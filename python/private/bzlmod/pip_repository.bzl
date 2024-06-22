@@ -14,12 +14,12 @@
 
 ""
 
+load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private:render_pkg_aliases.bzl",
+    "//python/private/pypi:render_pkg_aliases.bzl",
     "render_multiplatform_pkg_aliases",
     "whl_alias",
 )
-load("//python/private:text_util.bzl", "render")
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])

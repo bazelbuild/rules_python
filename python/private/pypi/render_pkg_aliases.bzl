@@ -16,12 +16,14 @@
 
 This is used in bzlmod and non-bzlmod setups."""
 
+load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:text_util.bzl", "render")
 load(
-    "//python/private/pypi:generate_group_library_build_bazel.bzl",
+    ":generate_group_library_build_bazel.bzl",
     "generate_group_library_build_bazel",
 )  # buildifier: disable=bzl-visibility
 load(
-    "//python/private/pypi:labels.bzl",
+    ":labels.bzl",
     "DATA_LABEL",
     "DIST_INFO_LABEL",
     "PY_LIBRARY_IMPL_LABEL",
@@ -29,10 +31,8 @@ load(
     "WHEEL_FILE_IMPL_LABEL",
     "WHEEL_FILE_PUBLIC_LABEL",
 )
-load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
-load("//python/private/pypi:whl_target_platforms.bzl", "whl_target_platforms")
-load(":normalize_name.bzl", "normalize_name")
-load(":text_util.bzl", "render")
+load(":parse_whl_name.bzl", "parse_whl_name")
+load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
 No matching wheel for current configuration's Python version.
