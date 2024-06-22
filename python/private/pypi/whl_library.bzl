@@ -29,6 +29,7 @@ load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 def _construct_pypath(rctx):
     """Helper function to construct a PYTHONPATH.
@@ -348,6 +349,30 @@ def _whl_library_impl(rctx):
 
     metadata = json.decode(rctx.read("metadata.json"))
     rctx.delete("metadata.json")
+
+    # NOTE @aignas 2024-06-22: this has to live on until we stop supporting
+    # passing `twine` as a `:pkg` library via the `WORKSPACE` builds.
+    #
+    # See ../../packaging.bzl line 190
+    entry_points = {}
+    for item in metadata["entry_points"]:
+        name = item["name"]
+        module = item["module"]
+        attribute = item["attribute"]
+
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] + "_py" if name.endswith(".py") else name
+        entry_point_target_name = (
+            _WHEEL_ENTRY_POINT_PREFIX + "_" + entry_point_without_py
+        )
+        entry_point_script_name = entry_point_target_name + ".py"
+
+        rctx.file(
+            entry_point_script_name,
+            _generate_entry_point_contents(module, attribute),
+        )
+        entry_points[entry_point_without_py] = entry_point_script_name
 
     build_file_contents = generate_whl_library_build_bazel(
         dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
