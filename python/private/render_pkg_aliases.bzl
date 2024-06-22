@@ -21,6 +21,7 @@ load(
     "generate_group_library_build_bazel",
 )  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:whl_target_platforms.bzl", "whl_target_platforms")
 load(
     ":labels.bzl",
     "DATA_LABEL",
@@ -32,7 +33,6 @@ load(
 )
 load(":normalize_name.bzl", "normalize_name")
 load(":text_util.bzl", "render")
-load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 NO_MATCH_ERROR_MESSAGE_TEMPLATE = """\
 No matching wheel for current configuration's Python version.

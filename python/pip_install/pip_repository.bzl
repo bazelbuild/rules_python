@@ -29,8 +29,8 @@ load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
-load("//python/private:whl_target_platforms.bzl", "whl_target_platforms")
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
 

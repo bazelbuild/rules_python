@@ -45,3 +45,9 @@ bzl_library(
     name = "parse_whl_name_bzl",
     srcs = ["parse_whl_name.bzl"],
 )
+
+bzl_library(
+    name = "whl_target_platforms_bzl",
+    srcs = ["whl_target_platforms.bzl"],
+    deps = [":parse_whl_name_bzl"],
+)

@@ -28,8 +28,8 @@ behavior.
 
 load("//python/private/pypi:index_sources.bzl", "index_sources")
 load("//python/private/pypi:parse_requirements_txt.bzl", "parse_requirements_txt")
+load("//python/private/pypi:whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
 load(":normalize_name.bzl", "normalize_name")
-load(":whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
 
 # This includes the vendored _translate_cpu and _translate_os from
 # @platforms//host:extension.bzl at version 0.0.9 so that we don't

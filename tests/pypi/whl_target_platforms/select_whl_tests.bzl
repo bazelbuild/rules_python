@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:whl_target_platforms.bzl", "select_whls")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:whl_target_platforms.bzl", "select_whls")  # buildifier: disable=bzl-visibility
 
 WHL_LIST = [
     "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl",
