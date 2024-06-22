@@ -11,5 +11,5 @@
 /python/private/toolchains_repo.bzl @f0rmiga
 /python/tests/toolchains/ @f0rmiga
 
-# pip_parse related code
-/python/pip_install/ @hrfuller
+# PyPI integration related code
+/python/private/pypi/ @aignas
