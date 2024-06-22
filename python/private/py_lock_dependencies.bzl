@@ -16,22 +16,29 @@
 
 def _py_lock_dependencies(ctx):
     uv = ctx.toolchains["//python/private/uv:toolchain_type"].uv
+    python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
+    dependencies_file = ctx.file.dependencies_file
+
     args = ctx.actions.args()
     args.add("pip")
     args.add("compile")
+
+    # uv will use this python for operations where it needs to execute python code. See: UV_PYTHON and https://github.com/astral-sh/uv?tab=readme-ov-file#installing-into-arbitrary-python-environments
+    args.add("--python", python)
     args.add("--python-platform", "windows")
     args.add("--python-version", "3.9")
     args.add("--no-strip-extras")
     args.add("--generate-hashes")
     requirements_out = ctx.actions.declare_file(ctx.label.name + ".requirements.out")
     args.add("--output-file", requirements_out)
-    args.add(ctx.file.dependencies_file)
+    args.add(dependencies_file)
 
     ctx.actions.run(
         executable = uv.files_to_run,
         arguments = [args],
-        inputs = [ctx.file.dependencies_file],
+        inputs = [dependencies_file],
         outputs = [requirements_out],
+        tools = [python],
     )
 
     return [DefaultInfo(
@@ -46,6 +53,7 @@ py_lock_dependencies = rule(
         "overrides_file": attr.label(allow_single_file = True),
     },
     toolchains = [
+        "@bazel_tools//tools/python:toolchain_type",
         "//python/private/uv:toolchain_type",
     ],
 )
