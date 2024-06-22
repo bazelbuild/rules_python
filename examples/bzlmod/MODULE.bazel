@@ -81,7 +81,7 @@ pip.whl_mods(
         "@@//whl_mods:data/copy_file.txt": "copied_content/file.txt",
     },
     data = [":generated_file"],
-    data_exclude_glob = ["site-packages/*.dist-info/WHEEL"],
+    data_exclude_glob = ["*.dist-info/WHEEL"],
     hub_name = "whl_mods_hub",
     whl_name = "wheel",
 )

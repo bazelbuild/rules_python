@@ -82,7 +82,7 @@ class PipRepositoryAnnotationsTest(unittest.TestCase):
         current_wheel_version = "0.38.4"
 
         r = runfiles.Create()
-        dist_info_dir = "pip_repository_annotations_example/external/{}/site-packages/wheel-{}.dist-info".format(
+        dist_info_dir = "pip_repository_annotations_example/external/{}/wheel-{}.dist-info".format(
             self.wheel_pkg_dir(),
             current_wheel_version,
         )

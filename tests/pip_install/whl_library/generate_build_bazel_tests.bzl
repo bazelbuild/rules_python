@@ -28,7 +28,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -49,19 +49,19 @@ filegroup(
 py_library(
     name = "pkg",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude=[],
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
-        ["site-packages/**/*"],
-        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+        ["**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "*.whl", "**/__pycache__/**", "bin/**/*", "BUILD.bazel", "WORKSPACE", "rules_python_wheel_entry_point*.py"],
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = [
         "@pypi_bar_baz//:pkg",
         "@pypi_foo//:pkg",
@@ -94,7 +94,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -126,19 +126,19 @@ filegroup(
 py_library(
     name = "pkg",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude=[],
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
-        ["site-packages/**/*"],
-        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+        ["**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "*.whl", "**/__pycache__/**", "bin/**/*", "BUILD.bazel", "WORKSPACE", "rules_python_wheel_entry_point*.py"],
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = [
         "@pypi_bar_baz//:pkg",
         "@pypi_foo//:pkg",
@@ -222,7 +222,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -243,19 +243,19 @@ filegroup(
 py_library(
     name = "pkg",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude=["srcs_exclude_all"],
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = ["file_dest", "exec_dest"] + glob(
-        ["site-packages/**/*"],
-        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "data_exclude_all"],
+        ["**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "*.whl", "**/__pycache__/**", "bin/**/*", "BUILD.bazel", "WORKSPACE", "rules_python_wheel_entry_point*.py", "data_exclude_all"],
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = [
         "@pypi_bar_baz//:pkg",
         "@pypi_foo//:pkg",
@@ -310,7 +310,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -331,19 +331,19 @@ filegroup(
 py_library(
     name = "pkg",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude=[],
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
-        ["site-packages/**/*"],
-        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+        ["**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "*.whl", "**/__pycache__/**", "bin/**/*", "BUILD.bazel", "WORKSPACE", "rules_python_wheel_entry_point*.py"],
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = [
         "@pypi_bar_baz//:pkg",
         "@pypi_foo//:pkg",
@@ -384,7 +384,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
+    srcs = glob(["*.dist-info/**"], allow_empty = True),
 )
 
 filegroup(
@@ -411,19 +411,19 @@ filegroup(
 py_library(
     name = "_pkg",
     srcs = glob(
-        ["site-packages/**/*.py"],
+        ["**/*.py"],
         exclude=[],
         # Empty sources are allowed to support wheels that don't have any
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
     data = [] + glob(
-        ["site-packages/**/*"],
-        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+        ["**/*"],
+        exclude=["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD", "*.whl", "**/__pycache__/**", "bin/**/*", "BUILD.bazel", "WORKSPACE", "rules_python_wheel_entry_point*.py"],
     ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
-    imports = ["site-packages"],
+    imports = ["."],
     deps = ["@pypi_bar_baz//:pkg"] + select(
         {
             "@platforms//os:linux": ["@pypi_box//:pkg"],

@@ -632,8 +632,8 @@ class Wheel:
 
     def unzip(self, directory: str) -> None:
         installation_schemes = {
-            "purelib": "/site-packages",
-            "platlib": "/site-packages",
+            "purelib": "/",
+            "platlib": "/",
             "headers": "/include",
             "scripts": "/bin",
             "data": "/data",

@@ -98,7 +98,7 @@ class PipWhlModsTest(unittest.TestCase):
         current_wheel_version = "0.40.0"
 
         r = runfiles.Create()
-        dist_info_dir = "{}/site-packages/wheel-{}.dist-info".format(
+        dist_info_dir = "{}/wheel-{}.dist-info".format(
             self._wheel_pkg_dir,
             current_wheel_version,
         )
@@ -135,7 +135,7 @@ class PipWhlModsTest(unittest.TestCase):
 
         # This test verifies that the patches are applied to the wheel.
         r = runfiles.Create()
-        metadata_path = "{}/site-packages/requests-{}.dist-info/METADATA".format(
+        metadata_path = "{}/requests-{}.dist-info/METADATA".format(
             self._requests_pkg_dir,
             current_wheel_version,
         )

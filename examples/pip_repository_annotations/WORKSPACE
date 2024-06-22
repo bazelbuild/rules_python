@@ -45,7 +45,7 @@ write_file(
         copy_executables = {"@pip_repository_annotations_example//:data/copy_executable.py": "copied_content/executable.py"},
         copy_files = {"@pip_repository_annotations_example//:data/copy_file.txt": "copied_content/file.txt"},
         data = [":generated_file"],
-        data_exclude_glob = ["site-packages/*.dist-info/WHEEL"],
+        data_exclude_glob = ["*.dist-info/WHEEL"],
     ),
 }
 
