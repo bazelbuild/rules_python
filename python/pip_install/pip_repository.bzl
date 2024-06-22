@@ -667,7 +667,7 @@ True will become default in a subsequent release.
 """,
     ),
     "_template": attr.label(
-        default = ":pip_repository_requirements.bzl.tpl",
+        default = ":pip_repository_requirements.bzl.tmpl",
     ),
 }
 

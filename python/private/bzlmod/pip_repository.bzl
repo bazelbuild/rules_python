@@ -88,7 +88,7 @@ in the pip.parse tag class.
 """,
     ),
     "_template": attr.label(
-        default = ":requirements.bzl.tpl",
+        default = ":requirements.bzl.tmpl",
     ),
 }
 
