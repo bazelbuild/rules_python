@@ -191,8 +191,8 @@ def _pip_repository_impl(rctx):
             p: macro_tmpl.format(p, "whl")
             for p in bzl_packages
         }),
-        "%%ANNOTATIONS%%": render.dict(annotations),
-        "%%CONFIG%%": render.dict(config),
+        "%%ANNOTATIONS%%": render.dict(dict(sorted(annotations.items()))),
+        "%%CONFIG%%": render.dict(dict(sorted(config.items()))),
         "%%EXTRA_PIP_ARGS%%": json.encode(options),
         "%%IMPORTS%%": "\n".join(imports),
         "%%MACRO_TMPL%%": macro_tmpl,
