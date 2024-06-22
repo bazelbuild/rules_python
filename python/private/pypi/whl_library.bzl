@@ -386,12 +386,40 @@ def _whl_library_impl(rctx):
             "pypi_name=" + metadata["name"],
             "pypi_version=" + metadata["version"],
         ],
-        entry_points = {},
+        entry_points = entry_points,
         annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
     )
     rctx.file("BUILD.bazel", build_file_contents)
 
     return
+
+def _generate_entry_point_contents(
+        module,
+        attribute,
+        shebang = "#!/usr/bin/env python3"):
+    """Generate the contents of an entry point script.
+
+    Args:
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    contents = """\
+{shebang}
+import sys
+from {module} import {attribute}
+if __name__ == "__main__":
+    sys.exit({attribute}())
+""".format(
+        shebang = shebang,
+        module = module,
+        attribute = attribute,
+    )
+    return contents
 
 # NOTE @aignas 2024-03-21: The usage of dict({}, **common) ensures that all args to `dict` are unique
 whl_library_attrs = dict({
