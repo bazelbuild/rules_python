@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:whl_target_platforms.bzl", "select_whl", "select_whls")  # buildifier: disable=bzl-visibility
+load("//python/private:whl_target_platforms.bzl", "select_whls")  # buildifier: disable=bzl-visibility
 
 WHL_LIST = [
     "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl",
@@ -78,11 +78,6 @@ def _match(env, got, *want_filenames):
     if got:
         # Check that we pass the original structs
         env.expect.that_str(got[0].other).equals("dummy")
-
-def _select_whl(**kwargs):
-    """A small wrapper to make the tests more DRY."""
-    got_single = select_whl(**kwargs)
-    return [got_single] if got_single else []
 
 def _select_whls(whls, **kwargs):
     return select_whls(
@@ -214,8 +209,6 @@ def _test_match_abi_and_not_py_version(env):
         "pkg-0.0.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
         "pkg-0.0.1-cp37-cp37m-musllinux_1_1_x86_64.whl",
     )
-    got = _select_whl(whls = got, want_platform = "linux_x86_64")
-    _match(env, got, "pkg-0.0.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")
 
 _tests.append(_test_match_abi_and_not_py_version)
 
@@ -228,8 +221,6 @@ def _test_select_filename_with_many_tags(env):
         "pkg-0.0.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl",
         "pkg-0.0.1-cp39-cp39-musllinux_1_1_i686.whl",
     )
-    got = _select_whl(whls = got, want_platform = "linux_x86_32")
-    _match(env, got, "pkg-0.0.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl")
 
 _tests.append(_test_select_filename_with_many_tags)
 
@@ -247,8 +238,6 @@ def _test_osx_prefer_arch_specific(env):
         "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl",
         "pkg-0.0.1-cp311-cp311-macosx_10_9_x86_64.whl",
     )
-    got = _select_whl(whls = got, want_platform = "osx_x86_64")
-    _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_10_9_x86_64.whl")
 
     got = _select_whls(whls = WHL_LIST, want_abis = ["cp311"], want_platforms = ["osx_aarch64"], want_python_version = "3.11")
     _match(
@@ -257,8 +246,6 @@ def _test_osx_prefer_arch_specific(env):
         "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl",
         "pkg-0.0.1-cp311-cp311-macosx_11_0_arm64.whl",
     )
-    got = _select_whl(whls = got, want_platform = "osx_aarch64")
-    _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_11_0_arm64.whl")
 
 _tests.append(_test_osx_prefer_arch_specific)
 
@@ -270,8 +257,6 @@ def _test_osx_fallback_to_universal2(env):
         got,
         "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl",
     )
-    got = _select_whl(whls = got, want_platform = "osx_aarch64")
-    _match(env, got, "pkg-0.0.1-cp311-cp311-macosx_10_9_universal2.whl")
 
 _tests.append(_test_osx_fallback_to_universal2)
 
@@ -286,8 +271,6 @@ def _test_prefer_manylinux_wheels(env):
         "pkg-0.0.1-cp39-abi3-any.whl",
         "pkg-0.0.1-py3-none-any.whl",
     )
-    got = _select_whl(whls = got, want_platform = "linux_x86_64")
-    _match(env, got, "pkg-0.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl")
 
 _tests.append(_test_prefer_manylinux_wheels)
 
