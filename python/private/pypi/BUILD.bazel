@@ -43,8 +43,8 @@ bzl_library(
     name = "bzlmod_bzl",
     srcs = ["bzlmod.bzl"],
     deps = [
-        ":hub_repository_bzl",
         ":attrs_bzl",
+        ":hub_repository_bzl",
         ":parse_requirements_bzl",
         ":parse_whl_name_bzl",
         ":pip_repository_attrs_bzl",
