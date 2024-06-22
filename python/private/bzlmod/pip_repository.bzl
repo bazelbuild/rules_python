@@ -63,7 +63,6 @@ def _pip_repository_impl(rctx):
             for p in bzl_packages
         }),
         "%%MACRO_TMPL%%": macro_tmpl,
-        "%%NAME%%": rctx.attr.repo_name,
     })
 
 pip_repository_attrs = {
@@ -89,7 +88,7 @@ in the pip.parse tag class.
 """,
     ),
     "_template": attr.label(
-        default = ":requirements.bzl.tmpl",
+        default = ":requirements.bzl.tpl",
     ),
 }
 
