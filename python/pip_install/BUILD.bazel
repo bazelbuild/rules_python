@@ -66,7 +66,6 @@ filegroup(
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
         "pip_repository_requirements.bzl.tmpl",
-        "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
     ],
@@ -91,17 +90,6 @@ filegroup(
         "//python/pip_install/private:bzl_srcs",
     ],
     visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "py_srcs",
-    srcs = [
-        "//python/pip_install/tools/dependency_resolver:py_srcs",
-        "//python/pip_install/tools/wheel_installer:py_srcs",
-        "//python/private:repack_whl.py",
-        "//tools:wheelmaker.py",
-    ],
-    visibility = ["//python/pip_install/private:__pkg__"],
 )
 
 exports_files(

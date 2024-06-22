@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load(":whl_library_utils_goal.bzl", "whl_library_utils_goal")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -129,6 +130,22 @@ bzl_library(
         "//python/private:text_util_bzl",
         "//python/private/bzlmod:bazel_features_bzl",
     ],
+)
+
+filegroup(
+    name = "whl_library_utils_srcs",
+    srcs = [
+        ":repack_whl.py",
+        "//python/pip_install/tools/dependency_resolver:py_srcs",
+        "//python/pip_install/tools/wheel_installer:py_srcs",
+        "//tools:wheelmaker.py",
+    ],
+)
+
+whl_library_utils_goal(
+    name = "whl_library_utils",
+    srcs = ":whl_library_utils_srcs",
+    dest = "whl_library_utils.bzl",
 )
 
 bzl_library(

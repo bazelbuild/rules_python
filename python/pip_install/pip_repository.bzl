@@ -18,7 +18,6 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/pip_install:repositories.bzl", "all_requirements")
-load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
@@ -30,6 +29,7 @@ load("//python/private/pypi:parse_requirements.bzl", "host_platform", "parse_req
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
 load("//python/private/pypi:patch_whl.bzl", "patch_whl")
 load("//python/private/pypi:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
+load("//python/private/pypi:whl_library_utils.bzl", "PY_SRCS")
 load("//python/private/pypi:whl_target_platforms.bzl", "whl_target_platforms")
 
 CPPFLAGS = "CPPFLAGS"
@@ -611,7 +611,7 @@ DEPRECATED. Only left for people who vendor requirements.bzl.
     "_py_srcs": attr.label_list(
         doc = "Python sources used in the repository rule",
         allow_files = True,
-        default = PIP_INSTALL_PY_SRCS,
+        default = PY_SRCS,
     ),
 }
 

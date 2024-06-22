@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for `rules_python` pip rules"""
+"""Utilities for `rules_python` whl_library repository rule"""
+
+load("//python/private:text_util.bzl", "render")
 
 _SRCS_TEMPLATE = """\
-\"\"\"A generated file containing all source files used for `@rules_python//python/pip_install:pip_repository.bzl` rules
+\"\"\"A generated file containing all source files used for `@rules_python//python/private/pypi:whl_library.bzl` rules
 
-This file is auto-generated from the `@rules_python//python/pip_install/private:srcs_module.update` target. Please
+This file is auto-generated from the `@rules_python//tests/pypi/whl_library_utils:srcs.update` target. Please
 `bazel run` this target to apply any updates. Note that doing so will discard any local modifications.
 "\"\"
 
 # Each source file is tracked as a target so `pip_repository` rules will know to automatically rebuild if any of the
 # sources changed.
-PIP_INSTALL_PY_SRCS = [
-    {srcs}
-]
+PY_SRCS = {srcs}
 """
 
 def _src_label(file):
@@ -45,7 +45,7 @@ def _srcs_module_impl(ctx):
     ctx.actions.write(
         output = output,
         content = _SRCS_TEMPLATE.format(
-            srcs = "\n    ".join(["\"{}\",".format(src) for src in srcs]),
+            srcs = render.list(srcs),
         ),
     )
 
@@ -91,12 +91,12 @@ def _srcs_updater_impl(ctx):
     )
 
 _srcs_updater = rule(
-    doc = "A rule for writing a `srcs.bzl` file back to the repository",
+    doc = "A rule for writing a `whl_library_utils.bzl` file back to the repository",
     implementation = _srcs_updater_impl,
     attrs = {
         "dest": attr.label(
             doc = "The target file to write the new `input` to.",
-            allow_single_file = ["srcs.bzl"],
+            allow_single_file = ["whl_library_utils.bzl"],
             mandatory = True,
         ),
         "input": attr.label(
@@ -108,7 +108,7 @@ _srcs_updater = rule(
     executable = True,
 )
 
-def srcs_module(name, dest, **kwargs):
+def whl_library_utils_goal(name, dest, **kwargs):
     """A helper rule to ensure `pip_repository` rules are always up to date
 
     Args:
