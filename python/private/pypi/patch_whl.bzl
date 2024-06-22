@@ -27,7 +27,8 @@ other patches ensures that the users have overview on exactly what has changed
 within the wheel.
 """
 
-load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private:repo_utils.bzl", "repo_utils")
+load(":parse_whl_name.bzl", "parse_whl_name")
 
 _rules_python_root = Label("//:BUILD.bazel")
 
@@ -40,7 +41,7 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         whl_path: The whl file name to be patched.
         patches: a label-keyed-int dict that has the patch files as keys and
             the patch_strip as the value.
-        **kwargs: extras passed to rctx.execute.
+        **kwargs: extras passed to repo_utils.execute_checked.
 
     Returns:
         value of the repackaging action.
@@ -75,11 +76,12 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
 
     record_patch = rctx.path("RECORD.patch")
 
-    result = rctx.execute(
-        [
+    repo_utils.execute_checked(
+        rctx,
+        arguments = [
             python_interpreter,
             "-m",
-            "python.private.repack_whl",
+            "python.private.pypi.repack_whl",
             "--record-patch",
             record_patch,
             whl_input,
@@ -90,16 +92,6 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
         },
         **kwargs
     )
-
-    if result.return_code:
-        fail(
-            "repackaging .whl {whl} failed: with exit code '{return_code}':\n{stdout}\n\nstderr:\n{stderr}".format(
-                whl = whl_input.basename,
-                stdout = result.stdout,
-                stderr = result.stderr,
-                return_code = result.return_code,
-            ),
-        )
 
     if record_patch.exists:
         record_patch_contents = rctx.read(record_patch)

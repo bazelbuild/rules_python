@@ -127,12 +127,6 @@ bzl_library(
 )
 
 bzl_library(
-    name = "patch_whl_bzl",
-    srcs = ["patch_whl.bzl"],
-    deps = ["//python/private/pypi:parse_whl_name_bzl"],
-)
-
-bzl_library(
     name = "py_cc_toolchain_bzl",
     srcs = [
         "py_cc_toolchain_macro.bzl",

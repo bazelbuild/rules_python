@@ -22,13 +22,13 @@ load("//python/pip_install/private:srcs.bzl", "PIP_INSTALL_PY_SRCS")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:patch_whl.bzl", "patch_whl")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load("//python/private/pypi:generate_group_library_build_bazel.bzl", "generate_group_library_build_bazel")
 load("//python/private/pypi:generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load("//python/private/pypi:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:patch_whl.bzl", "patch_whl")
 load("//python/private/pypi:render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
 load("//python/private/pypi:whl_target_platforms.bzl", "whl_target_platforms")
 
@@ -858,6 +858,7 @@ def _whl_library_impl(rctx):
 
         whl_path = patch_whl(
             rctx,
+            op = "whl_library.PatchWhl({}, {})".format(rctx.attr.name, rctx.attr.requirement),
             python_interpreter = python_interpreter,
             whl_path = whl_path,
             patches = patches,
