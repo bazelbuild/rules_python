@@ -18,7 +18,7 @@ NOTE: The transitive loads of this should be kept minimal. This avoids loading
 unnecessary files when all that are needed are flag definitions.
 """
 
-load(":enum.bzl", "enum")
+load("//python/private:enum.bzl", "enum")
 
 # Determines if we should use whls for third party
 #

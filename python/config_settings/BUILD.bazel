@@ -9,7 +9,7 @@ load(
     "PycCollectionFlag",
 )
 load(
-    "//python/private:pip_flags.bzl",
+    "//python/private/pypi:flags.bzl",
     "INTERNAL_FLAGS",
     "UniversalWhlFlag",
     "UseWhlFlag",

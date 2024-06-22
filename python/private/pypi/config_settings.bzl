@@ -39,12 +39,7 @@ Note, that here the specialization of musl vs manylinux wheels is the same in
 order to ensure that the matching fails if the user requests for `musl` and we don't have it or vice versa.
 """
 
-load(
-    ":pip_flags.bzl",
-    "INTERNAL_FLAGS",
-    "UniversalWhlFlag",
-    "WhlLibcFlag",
-)
+load(":flags.bzl", "INTERNAL_FLAGS", "UniversalWhlFlag", "WhlLibcFlag")
 
 FLAGS = struct(
     **{
@@ -73,7 +68,7 @@ _flags = struct(
     }
 )
 
-def pip_config_settings(
+def config_settings(
         *,
         python_versions = [],
         glibc_versions = [],

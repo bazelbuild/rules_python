@@ -309,7 +309,7 @@ def render_multiplatform_pkg_aliases(*, aliases, default_version = None, **kwarg
         aliases = config_setting_aliases,
         **kwargs
     )
-    contents["_config/BUILD.bazel"] = _render_pip_config_settings(**flag_versions)
+    contents["_config/BUILD.bazel"] = _render_config_settings(**flag_versions)
     return contents
 
 def multiplatform_whl_aliases(*, aliases, default_version = None, **kwargs):
@@ -398,12 +398,12 @@ def multiplatform_whl_aliases(*, aliases, default_version = None, **kwargs):
     ret.extend(versioned.values())
     return ret
 
-def _render_pip_config_settings(python_versions = [], target_platforms = [], osx_versions = [], glibc_versions = [], muslc_versions = []):
+def _render_config_settings(python_versions = [], target_platforms = [], osx_versions = [], glibc_versions = [], muslc_versions = []):
     return """\
-load("@rules_python//python/private:pip_config_settings.bzl", "pip_config_settings")
+load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings")
 
-pip_config_settings(
-    name = "pip_config_settings",
+config_settings(
+    name = "config_settings",
     glibc_versions = {glibc_versions},
     muslc_versions = {muslc_versions},
     osx_versions = {osx_versions},

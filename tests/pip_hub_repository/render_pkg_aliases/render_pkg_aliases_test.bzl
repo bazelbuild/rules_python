@@ -17,10 +17,6 @@
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load(
-    "//python/private:pip_config_settings.bzl",
-    "pip_config_settings",
-)  # buildifier: disable=bzl-visibility
-load(
     "//python/private:render_pkg_aliases.bzl",
     "get_filename_config_settings",
     "get_whl_flag_versions",
@@ -29,6 +25,7 @@ load(
     "render_pkg_aliases",
     "whl_alias",
 )  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
 
 def _normalize_label_strings(want):
     """normalize expected strings.
@@ -182,10 +179,10 @@ alias(
 
     env.expect.that_str(actual.pop("_config/BUILD.bazel")).equals(
         """\
-load("@rules_python//python/private:pip_config_settings.bzl", "pip_config_settings")
+load("@rules_python//python/private/pypi:config_settings.bzl", "config_settings")
 
-pip_config_settings(
-    name = "pip_config_settings",
+config_settings(
+    name = "config_settings",
     glibc_versions = [],
     muslc_versions = [],
     osx_versions = [],
@@ -722,7 +719,6 @@ def _test_cp37_abi3_linux_x86_64(env):
         python_default = True,
         want = [
             ":is_cp3x_abi3_linux_x86_64",
-            # TODO @aignas 2024-05-29: update the pip_config_settings to generate this
             ":is_cp3.2_cp3x_abi3_linux_x86_64",
         ],
     )
@@ -924,7 +920,7 @@ def _test_config_settings_exist(env):
                 ]
                 available_config_settings = []
                 mock_rule = lambda name, **kwargs: available_config_settings.append(name)
-                pip_config_settings(
+                config_settings(
                     python_versions = ["3.11"],
                     native = struct(
                         alias = mock_rule,

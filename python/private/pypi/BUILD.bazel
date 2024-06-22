@@ -32,6 +32,18 @@ filegroup(
 )
 
 bzl_library(
+    name = "config_settings_bzl",
+    srcs = ["config_settings.bzl"],
+    deps = ["flags_bzl"],
+)
+
+bzl_library(
+    name = "flags_bzl",
+    srcs = ["flags.bzl"],
+    deps = ["//python/private:enum_bzl"],
+)
+
+bzl_library(
     name = "index_sources_bzl",
     srcs = ["index_sources.bzl"],
 )

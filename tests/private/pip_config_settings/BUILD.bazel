@@ -1,5 +1,0 @@
-load(":pip_config_settings_tests.bzl", "pip_config_settings_test_suite")
-
-pip_config_settings_test_suite(
-    name = "pip_config_settings",
-)

@@ -17,7 +17,7 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
 load("@rules_testing//lib:util.bzl", test_util = "util")
-load("//python/private:pip_config_settings.bzl", "pip_config_settings")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
 
 def _subject_impl(ctx):
     _ = ctx  # @unused
@@ -520,13 +520,13 @@ def _test_all(name):
 
 _tests.append(_test_all)
 
-def pip_config_settings_test_suite(name):  # buildifier: disable=function-docstring
+def config_settings_test_suite(name):  # buildifier: disable=function-docstring
     test_suite(
         name = name,
         tests = _tests,
     )
 
-    pip_config_settings(
+    config_settings(
         name = "dummy",
         python_versions = ["3.8", "3.9", "3.10"],
         glibc_versions = [(2, 14), (2, 17)],
