@@ -37,6 +37,17 @@ bzl_library(
 )
 
 bzl_library(
+    name = "parse_requirements_bzl",
+    srcs = ["parse_requirements.bzl"],
+    deps = [
+        ":index_sources_bzl",
+        ":parse_requirements_txt_bzl",
+        ":whl_target_platforms_bzl",
+        "//python/private:normalize_name_bzl",
+    ],
+)
+
+bzl_library(
     name = "parse_requirements_txt_bzl",
     srcs = ["parse_requirements_txt.bzl"],
 )

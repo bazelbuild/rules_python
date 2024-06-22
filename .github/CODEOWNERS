@@ -13,3 +13,4 @@
 
 # PyPI integration related code
 /python/private/pypi/ @aignas
+/tests/pypi/ @aignas

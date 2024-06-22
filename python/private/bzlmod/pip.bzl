@@ -24,12 +24,12 @@ load(
 )
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
-load("//python/private:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private:pip_repo_name.bzl", "pip_repo_name")
 load("//python/private:pypi_index.bzl", "simpleapi_download")
 load("//python/private:render_pkg_aliases.bzl", "whl_alias")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:version_label.bzl", "version_label")
+load("//python/private/pypi:parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository.bzl", "pip_repository")
 

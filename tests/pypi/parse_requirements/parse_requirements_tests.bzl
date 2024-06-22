@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:parse_requirements.bzl", "parse_requirements", "select_requirement")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:parse_requirements.bzl", "parse_requirements", "select_requirement")  # buildifier: disable=bzl-visibility
 
 def _mock_ctx():
     testdata = {
