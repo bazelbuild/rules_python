@@ -16,7 +16,7 @@
 A starlark implementation of the wheel platform tag parsing to get the target platform.
 """
 
-load(":parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
 
 # The order of the dictionaries is to keep definitions with their aliases next to each
 # other

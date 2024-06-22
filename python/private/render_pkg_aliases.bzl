@@ -20,6 +20,7 @@ load(
     "//python/pip_install/private:generate_group_library_build_bazel.bzl",
     "generate_group_library_build_bazel",
 )  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
 load(
     ":labels.bzl",
     "DATA_LABEL",
@@ -30,7 +31,6 @@ load(
     "WHEEL_FILE_PUBLIC_LABEL",
 )
 load(":normalize_name.bzl", "normalize_name")
-load(":parse_whl_name.bzl", "parse_whl_name")
 load(":text_util.bzl", "render")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 

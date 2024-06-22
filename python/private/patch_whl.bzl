@@ -27,7 +27,7 @@ other patches ensures that the users have overview on exactly what has changed
 within the wheel.
 """
 
-load("//python/private:parse_whl_name.bzl", "parse_whl_name")
+load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")
 
 _rules_python_root = Label("//:BUILD.bazel")
 

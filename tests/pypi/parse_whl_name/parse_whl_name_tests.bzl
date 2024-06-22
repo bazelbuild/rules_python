@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:parse_whl_name.bzl", "parse_whl_name")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:parse_whl_name.bzl", "parse_whl_name")  # buildifier: disable=bzl-visibility
 
 _tests = []
 

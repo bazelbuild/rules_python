@@ -40,3 +40,8 @@ bzl_library(
     name = "parse_requirements_txt_bzl",
     srcs = ["parse_requirements_txt.bzl"],
 )
+
+bzl_library(
+    name = "parse_whl_name_bzl",
+    srcs = ["parse_whl_name.bzl"],
+)
