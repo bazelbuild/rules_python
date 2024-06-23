@@ -1,3 +1,4 @@
+load("@aspect_rules_py//py:defs.bzl", "py_pytest_main")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 # gazelle:python_extension enabled
@@ -25,4 +26,9 @@ py_test(
         "bar/bar_test.py",
         "foo/bar/bar_test.py",
     ],
+)
+
+py_pytest_main(
+    name = "__test__",
+    deps = ["@root_pip_deps//pytest"],
 )

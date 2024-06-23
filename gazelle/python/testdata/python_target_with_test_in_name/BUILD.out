@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@aspect_rules_py//py:defs.bzl", "py_pytest_main")
 
 py_library(
     name = "python_target_with_test_in_name",
@@ -19,4 +20,9 @@ py_test(
     name = "test_reality",
     srcs = ["test_reality.py"],
     deps = [":python_target_with_test_in_name"],
+)
+
+py_pytest_main(
+    name = "__test__",
+    deps = ["@gazelle_python_test//pytest"],
 )

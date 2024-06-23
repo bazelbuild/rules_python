@@ -268,6 +268,15 @@ func (c *Config) SetGazelleManifest(gazelleManifest *manifest.Manifest) {
 	c.gazelleManifest = gazelleManifest
 }
 
+func (c *Config) GetGazelleManifest() *manifest.Manifest {
+	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
+		if currentCfg.gazelleManifest != nil {
+			return currentCfg.gazelleManifest
+		}
+	}
+	return nil
+}
+
 // FindThirdPartyDependency scans the gazelle manifests for the current config
 // and the parent configs up to the root finding if it can resolve the module
 // name.

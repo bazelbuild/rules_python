@@ -93,6 +93,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	actualPyBinaryKind := GetActualKindName(pyBinaryKind, args)
 	actualPyLibraryKind := GetActualKindName(pyLibraryKind, args)
 	actualPyTestKind := GetActualKindName(pyTestKind, args)
+	actualPyTestMainKind := GetActualKindName(pyTestMainKind, args)
 
 	pythonProjectRoot := cfg.PythonProjectRoot()
 
@@ -474,6 +475,31 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 		result.Gen = append(result.Gen, pyTest)
 		result.Imports = append(result.Imports, pyTest.PrivateAttr(config.GazelleImportsKey))
+	}
+
+	if len(pyTestTargets) > 0 {
+		if m := cfg.GetGazelleManifest(); m != nil {
+			pipName := m.PipDepsRepositoryName
+			if m.PipRepository != nil {
+				pipName = m.PipRepository.Name
+			}
+			pyPyTestMain := createPyTestMainTarget(pipName)
+
+			// Check if a target with the same name we are generating already
+			// exists, and if it is of a different kind from the one we are
+			// generating. If so, we have to throw an error since Gazelle won't
+			// generate it correctly.
+			if err := ensureNoCollision(args.File, pyPyTestMain.Name(), actualPyTestMainKind); err != nil {
+				fqTarget := label.New("", args.Rel, pyPyTestMain.Name())
+				err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+					"Use the '# gazelle:%s' directive to change the naming convention.",
+					fqTarget.String(), actualPyTestMainKind, err, pythonconfig.TestNamingConvention)
+				collisionErrors.Add(err)
+			}
+
+			result.Gen = append(result.Gen, pyPyTestMain)
+			result.Imports = append(result.Imports, pyPyTestMain.PrivateAttr(config.GazelleImportsKey))
+		}
 	}
 
 	if !collisionErrors.Empty() {
