@@ -176,6 +176,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "pip_compile_bzl",
+    srcs = ["pip_compile.bzl"],
+    deps = [
+        ":deps_bzl",
+        "//python:defs_bzl",
+    ],
+)
+
+bzl_library(
     name = "pip_repository_bzl",
     srcs = ["pip_repository.bzl"],
     deps = [

@@ -32,10 +32,7 @@ bzl_library(
 bzl_library(
     name = "requirements_bzl",
     srcs = ["requirements.bzl"],
-    deps = [
-        ":repositories_bzl",
-        "//python:defs_bzl",
-    ],
+    deps = ["//python/private/pypi:pip_compile_bzl"],
 )
 
 bzl_library(
