@@ -223,6 +223,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "toolchain",
+    srcs = [":toolchain.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
     name = "versions_bzl",
     srcs = ["versions.bzl"],
     visibility = ["//:__subpackages__"],
@@ -335,4 +341,17 @@ exports_files([
 
 current_py_toolchain(
     name = "current_py_toolchain",
+)
+
+toolchain_type(
+    name = "uv_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+resolved_toolchain(
+    name = "uv_resolved_toolchain",
+    # Marked manual so that `bazel test //...` passes
+    # even if no toolchain is registered.
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

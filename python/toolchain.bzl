@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"uv toolchain module extension"
+"""All toolchains re-exported here"""
 
-def _uv_toolchain_impl(ctx):
-    return [platform_common.ToolchainInfo(
-        uv = ctx.attr.uv,
-    )]
+load("//python/private/pypi:uv_toolchain.bzl", _UvToolchainInfo = "UvToolchainInfo", _uv_toolchain = "uv_toolchain")
 
-uv_toolchain = rule(
-    implementation = _uv_toolchain_impl,
-    attrs = {
-        "uv": attr.label(executable = True, cfg = "exec"),
-    },
-)
+UvToolchainInfo = _UvToolchainInfo
+
+uv_toolchain = _uv_toolchain

@@ -236,3 +236,21 @@ bzl_library(
     srcs = ["whl_target_platforms.bzl"],
     deps = [":parse_whl_name_bzl"],
 )
+
+bzl_library(
+    name = "toolchains_repo",
+    srcs = ["toolchains_repo.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
+
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
+
+bzl_library(
+    name = "resolved_toolchain",
+    srcs = ["resolved_toolchain.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
