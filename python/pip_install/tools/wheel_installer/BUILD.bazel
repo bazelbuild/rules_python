@@ -1,5 +1,5 @@
 load("//python:defs.bzl", "py_binary", "py_library", "py_test")
-load("//python/pip_install:repositories.bzl", "requirement")
+load("//python/private/pypi:deps.bzl", "requirement")
 
 py_library(
     name = "lib",

@@ -42,9 +42,7 @@ bzl_library(
     name = "repositories_bzl",
     srcs = ["repositories.bzl"],
     deps = [
-        "//:version_bzl",
-        "//python/private:bazel_tools_bzl",
-        "@bazel_skylib//lib:versions",
+        "//python/private/pypi:deps_bzl",
     ],
 )
 

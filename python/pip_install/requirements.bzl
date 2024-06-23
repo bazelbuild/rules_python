@@ -15,7 +15,7 @@
 """Rules to verify and update pip-compile locked requirements.txt"""
 
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
-load("//python/pip_install:repositories.bzl", "requirement")
+load("//python/private/pypi:deps.bzl", "requirement")
 
 def compile_pip_requirements(
         name,

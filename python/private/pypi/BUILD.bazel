@@ -29,7 +29,10 @@ filegroup(
 filegroup(
     name = "bzl",
     srcs = glob(["**/*.bzl"]),
-    visibility = ["//python/private:__pkg__"],
+    visibility = [
+        "//python/private:__pkg__",
+        "//tools/private:__pkg__",
+    ],
 )
 
 # Keep sorted by library name and keep the files named by the main symbol they export
@@ -64,6 +67,14 @@ bzl_library(
     name = "config_settings_bzl",
     srcs = ["config_settings.bzl"],
     deps = ["flags_bzl"],
+)
+
+bzl_library(
+    name = "deps_bzl",
+    srcs = ["deps.bzl"],
+    deps = [
+        "//python/private:bazel_tools_bzl",
+    ],
 )
 
 bzl_library(
@@ -223,13 +234,13 @@ bzl_library(
     srcs = ["whl_library.bzl"],
     deps = [
         ":attrs_bzl",
+        ":deps_bzl",
         ":generate_whl_library_build_bazel_bzl",
         ":parse_whl_name_bzl",
         ":patch_whl_bzl",
         ":whl_target_platforms_bzl",
         "//python:repositories_bzl",
         "//python:versions_bzl",
-        "//python/pip_install:repositories_bzl",
         "//python/private:auth_bzl",
         "//python/private:envsubst_bzl",
         "//python/private:repo_utils_bzl",
