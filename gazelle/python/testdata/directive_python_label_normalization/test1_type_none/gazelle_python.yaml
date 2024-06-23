@@ -2,21 +2,5 @@ manifest:
   modules_mapping:
     # Weird google.cloud.storage here on purpose to make normalization apparent
     google.cloud.storage: google.cloud.storage
-    google.cloud.storage.__init__: google.cloud.storage
-    google.cloud.storage._helpers: google.cloud.storage
-    google.cloud.storage._http: google.cloud.storage
-    google.cloud.storage._signing: google.cloud.storage
-    google.cloud.storage.acl: google.cloud.storage
-    google.cloud.storage.batch: google.cloud.storage
-    google.cloud.storage.blob: google.cloud.storage
-    google.cloud.storage.bucket: google.cloud.storage
-    google.cloud.storage.client: google.cloud.storage
-    google.cloud.storage.constants: google.cloud.storage
-    google.cloud.storage.fileio: google.cloud.storage
-    google.cloud.storage.hmac_key: google.cloud.storage
-    google.cloud.storage.iam: google.cloud.storage
-    google.cloud.storage.notification: google.cloud.storage
-    google.cloud.storage.retry: google.cloud.storage
-    google.cloud.storage.version: google.cloud.storage
   pip_repository:
     name: gazelle_python_test
