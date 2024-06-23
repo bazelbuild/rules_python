@@ -15,7 +15,7 @@ Overriding the default is only permitted in the root module.
 def _uv_toolchain_extension(module_ctx):
     registrations = {}
     for mod in module_ctx.modules:
-        for toolchain in mod.tags.uv_toolchain:
+        for toolchain in mod.tags.toolchain:
             if toolchain.name != _DEFAULT_NAME and not mod.is_root:
                 fail("""\
                 Only the root module may override the default name for the uv toolchain.

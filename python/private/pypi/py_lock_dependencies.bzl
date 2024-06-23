@@ -15,7 +15,9 @@
 "Rule for locking third-party dependencies."
 
 def _py_lock_dependencies(ctx):
-    uv = ctx.toolchains["//python/private/uv:toolchain_type"].uv
+    info = ctx.toolchains["//python/:uv_toolchain_type"].uvtoolchaininfo
+    uv = info.uv_path
+
     python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
     dependencies_file = ctx.file.dependencies_file
 

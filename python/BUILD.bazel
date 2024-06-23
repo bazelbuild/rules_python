@@ -25,6 +25,7 @@ that @rules_python//python is only concerned with the core rules.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python/private:autodetecting_toolchain.bzl", "define_autodetecting_toolchain")
+load("//python/private/pypi:resolved_toolchain.bzl", "uv_resolved_toolchain")
 load(":current_py_toolchain.bzl", "current_py_toolchain")
 
 package(default_visibility = ["//visibility:public"])
@@ -348,7 +349,7 @@ toolchain_type(
     visibility = ["//visibility:public"],
 )
 
-resolved_toolchain(
+uv_resolved_toolchain(
     name = "uv_resolved_toolchain",
     # Marked manual so that `bazel test //...` passes
     # even if no toolchain is registered.
