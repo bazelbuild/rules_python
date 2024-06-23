@@ -52,7 +52,6 @@ filegroup(
     name = "distribution",
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
-        "pip_repository_requirements.bzl.tmpl",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
     ],
