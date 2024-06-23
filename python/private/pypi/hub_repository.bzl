@@ -23,9 +23,16 @@ load(
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
+load("@rules_python//python/private:py_lock_dependencies.bzl", "py_lock_dependencies")
 
 # Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
 exports_files(["requirements.bzl"])
+
+py_lock_dependencies(
+    name = "lock",
+    dependencies_file = "{dependencies_file}",
+    visibility = ["//visibility:public"],
+)
 """
 
 def _impl(rctx):
@@ -48,7 +55,9 @@ def _impl(rctx):
     # `requirement`, et al. macros.
     macro_tmpl = "@@{name}//{{}}:{{}}".format(name = rctx.attr.name)
 
-    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS)
+    rctx.file("BUILD.bazel", _BUILD_FILE_CONTENTS.format(
+        dependencies_file = str(rctx.attr.dependencies_file),
+    ))
     rctx.template("requirements.bzl", rctx.attr._template, substitutions = {
         "%%ALL_DATA_REQUIREMENTS%%": render.list([
             macro_tmpl.format(p, "data")
@@ -67,6 +76,9 @@ def _impl(rctx):
 
 hub_repository = repository_rule(
     attrs = {
+        "constraints_file": attr.label(
+            allow_single_file = [".txt"],
+        ),
         "default_version": attr.string(
             mandatory = True,
             doc = """\
@@ -74,8 +86,15 @@ This is the default python version in the format of X.Y. This should match
 what is setup by the 'python' extension using the 'is_default = True'
 setting.""",
         ),
+        "dependencies_file": attr.label(
+            mandatory = True,
+            allow_single_file = [".in", ".toml"],
+        ),
         "groups": attr.string_list_dict(
             mandatory = False,
+        ),
+        "overrides_file": attr.label(
+            allow_single_file = [".txt"],
         ),
         "repo_name": attr.string(
             mandatory = True,
