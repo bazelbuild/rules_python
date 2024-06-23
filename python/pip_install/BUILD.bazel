@@ -50,12 +50,6 @@ filegroup(
 )
 
 filegroup(
-    name = "repositories",
-    srcs = ["repositories.bzl"],
-    visibility = ["//tools/private/update_deps:__pkg__"],
-)
-
-filegroup(
     name = "bzl",
     srcs = glob(["*.bzl"]),
     visibility = ["//:__subpackages__"],
