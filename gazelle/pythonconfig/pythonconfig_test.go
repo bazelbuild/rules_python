@@ -52,6 +52,51 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 			},
 			want: "@pip//to_be_sanitized",
 		},
+		"noop normalization / mixed": {
+			input: testInput{
+				DistributionName:   "not-TO-be.sanitized",
+				RepositoryName:     "pip",
+				LabelNormalization: NoLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//not-TO-be.sanitized",
+		},
+		"pep503 / upper case": {
+			input: testInput{
+				DistributionName:   "DistWithUpperCase",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//distwithuppercase",
+		},
+		"pep503 / underscores": {
+			input: testInput{
+				DistributionName:   "dist_with_underscores",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//dist-with-underscores",
+		},
+		"pep503 / dots": {
+			input: testInput{
+				DistributionName:   "dist.with.dots",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//dist-with-dots",
+		},
+		"pep503 / mixed": {
+			input: testInput{
+				DistributionName:   "To-be.sanitized",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//to-be-sanitized",
+		},
 	}
 
 	for name, tc := range tests {
