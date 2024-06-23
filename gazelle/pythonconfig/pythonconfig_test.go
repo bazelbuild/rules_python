@@ -52,6 +52,15 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 			},
 			want: "@pip//to_be_sanitized",
 		},
+		"default / upper case / custom prefix & suffix": {
+			input: testInput{
+				DistributionName:   "DistWithUpperCase",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    "pReFiX-$distribution_name$-sUfFiX",
+			},
+			want: "@pip//prefix_distwithuppercase_suffix",
+		},
 		"noop normalization / mixed": {
 			input: testInput{
 				DistributionName:   "not-TO-be.sanitized",
@@ -60,6 +69,15 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 				LabelConvention:    DefaultLabelConvention,
 			},
 			want: "@pip//not-TO-be.sanitized",
+		},
+		"noop normalization / mixed / custom prefix & suffix": {
+			input: testInput{
+				DistributionName:   "not-TO-be.sanitized",
+				RepositoryName:     "pip",
+				LabelNormalization: NoLabelNormalizationType,
+				LabelConvention:    "pre___$distribution_name$___fix",
+			},
+			want: "@pip//pre___not-TO-be.sanitized___fix",
 		},
 		"pep503 / upper case": {
 			input: testInput{
@@ -96,6 +114,15 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 				LabelConvention:    DefaultLabelConvention,
 			},
 			want: "@pip//to-be-sanitized",
+		},
+		"pep503 / underscores / custom prefix & suffix": {
+			input: testInput{
+				DistributionName:   "dist_with_underscores",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    "pre___$distribution_name$___fix",
+			},
+			want: "@pip//pre-dist-with-underscores-fix",
 		},
 	}
 

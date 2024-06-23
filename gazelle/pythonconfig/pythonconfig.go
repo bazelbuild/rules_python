@@ -483,22 +483,23 @@ func (c *Config) LabelNormalization() LabelNormalizationType {
 
 // FormatThirdPartyDependency returns a label to a third-party dependency performing all formating and normalization.
 func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionName string) label.Label {
-	var normDistributionName string
+	conventionalDistributionName := strings.ReplaceAll(c.labelConvention, distributionNameLabelConventionSubstitution, distributionName)
+
+	var normConventionalDistributionName string
 	switch norm := c.LabelNormalization(); norm {
 	case SnakeCaseLabelNormalizationType:
-		normDistributionName = strings.ToLower(distributionName)
-		normDistributionName = strings.ReplaceAll(normDistributionName, "-", "_")
-		normDistributionName = strings.ReplaceAll(normDistributionName, ".", "_")
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)
+		normConventionalDistributionName = strings.ReplaceAll(normConventionalDistributionName, "-", "_")
+		normConventionalDistributionName = strings.ReplaceAll(normConventionalDistributionName, ".", "_")
 	case Pep503LabelNormalizationType:
 		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-normalization
-		normDistributionName = strings.ToLower(distributionName)
-		normDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normDistributionName, "-")
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)
+		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-")
 	default:
 		fallthrough
 	case NoLabelNormalizationType:
-		normDistributionName = distributionName
+		normConventionalDistributionName = conventionalDistributionName
 	}
 
-	conventionalDistributionName := strings.ReplaceAll(c.labelConvention, distributionNameLabelConventionSubstitution, normDistributionName)
-	return label.New(repositoryName, conventionalDistributionName, conventionalDistributionName)
+	return label.New(repositoryName, normConventionalDistributionName, normConventionalDistributionName)
 }
