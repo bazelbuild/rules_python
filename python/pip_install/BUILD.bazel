@@ -56,12 +56,6 @@ filegroup(
 )
 
 filegroup(
-    name = "requirements_txt",
-    srcs = ["tools/requirements.txt"],
-    visibility = ["//tools/private/update_deps:__pkg__"],
-)
-
-filegroup(
     name = "bzl",
     srcs = glob(["*.bzl"]),
     visibility = ["//:__subpackages__"],

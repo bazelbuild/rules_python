@@ -41,6 +41,12 @@ filegroup(
     ],
 )
 
+filegroup(
+    name = "requirements_txt",
+    srcs = ["requirements.txt"],
+    visibility = ["//tools/private/update_deps:__pkg__"],
+)
+
 # Keep sorted by library name and keep the files named by the main symbol they export
 
 bzl_library(
