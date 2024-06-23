@@ -13,7 +13,7 @@ Documentation for rules_python is at <https://rules-python.readthedocs.io> and i
 
 Examples live in the [examples](examples) directory.
 
-The core rules are stable. Their implementation in Bazel is subject to Bazel's
+The core rules are stable. Their implementation is subject to Bazel's
 [backward compatibility policy](https://docs.bazel.build/versions/master/backward-compatibility.html).
 This repository aims to follow [semantic versioning](https://semver.org).
 
