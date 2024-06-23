@@ -22,23 +22,10 @@ bzl_library(
     name = "pip_repository_bzl",
     srcs = ["pip_repository.bzl"],
     deps = [
-        ":repositories_bzl",
-        "//python:repositories_bzl",
-        "//python:versions_bzl",
-        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
-        "//python/pip_install/private:generate_whl_library_build_bazel_bzl",
-        "//python/pip_install/private:srcs_bzl",
-        "//python/private:bzlmod_enabled_bzl",
-        "//python/private:envsubst_bzl",
-        "//python/private:normalize_name_bzl",
-        "//python/private:parse_requirements_bzl",
-        "//python/private:parse_whl_name_bzl",
-        "//python/private:patch_whl_bzl",
-        "//python/private:render_pkg_aliases_bzl",
-        "//python/private:repo_utils_bzl",
-        "//python/private:toolchains_repo_bzl",
-        "//python/private:whl_target_platforms_bzl",
-        "@bazel_skylib//lib:sets",
+        "//python/private/pypi:group_library_bzl",
+        "//python/private/pypi:package_annotation_bzl",
+        "//python/private/pypi:pip_repository_bzl",
+        "//python/private/pypi:whl_library_bzl",
     ],
 )
 
@@ -49,11 +36,6 @@ bzl_library(
         ":repositories_bzl",
         "//python:defs_bzl",
     ],
-)
-
-bzl_library(
-    name = "requirements_parser_bzl",
-    srcs = ["requirements_parser.bzl"],
 )
 
 bzl_library(
@@ -71,7 +53,6 @@ filegroup(
     srcs = glob(["*.bzl"]) + [
         "BUILD.bazel",
         "pip_repository_requirements.bzl.tmpl",
-        "//python/pip_install/private:distribution",
         "//python/pip_install/tools/dependency_resolver:distribution",
         "//python/pip_install/tools/wheel_installer:distribution",
     ],
@@ -92,21 +73,8 @@ filegroup(
 
 filegroup(
     name = "bzl",
-    srcs = glob(["*.bzl"]) + [
-        "//python/pip_install/private:bzl_srcs",
-    ],
+    srcs = glob(["*.bzl"]),
     visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "py_srcs",
-    srcs = [
-        "//python/pip_install/tools/dependency_resolver:py_srcs",
-        "//python/pip_install/tools/wheel_installer:py_srcs",
-        "//python/private:repack_whl.py",
-        "//tools:wheelmaker.py",
-    ],
-    visibility = ["//python/pip_install/private:__pkg__"],
 )
 
 exports_files(
