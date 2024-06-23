@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"Rule for locking third-party dependencies."
+"Rule for locking third-party dependencies with uv."
 
-def _py_lock_dependencies(ctx):
-    info = ctx.toolchains["//python/:uv_toolchain_type"].uvtoolchaininfo
+def _uv_pip_compile(ctx):
+    info = ctx.toolchains["//python:uv_toolchain_type"].uvtoolchaininfo
     uv = info.uv_path
 
     python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
@@ -35,8 +35,9 @@ def _py_lock_dependencies(ctx):
     args.add("--output-file", requirements_out)
     args.add(dependencies_file)
 
+    print(uv)
     ctx.actions.run(
-        executable = uv.files_to_run,
+        executable = uv,
         arguments = [args],
         inputs = [dependencies_file],
         outputs = [requirements_out],
@@ -47,8 +48,8 @@ def _py_lock_dependencies(ctx):
         files = depset([requirements_out]),
     )]
 
-py_lock_dependencies = rule(
-    implementation = _py_lock_dependencies,
+uv_pip_compile = rule(
+    implementation = _uv_pip_compile,
     attrs = {
         "constraints_file": attr.label(allow_single_file = True),
         "dependencies_file": attr.label(allow_single_file = True),
@@ -56,6 +57,6 @@ py_lock_dependencies = rule(
     },
     toolchains = [
         "@bazel_tools//tools/python:toolchain_type",
-        "//python/private/uv:toolchain_type",
+        "//python:uv_toolchain_type",
     ],
 )

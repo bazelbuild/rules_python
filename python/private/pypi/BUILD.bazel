@@ -301,3 +301,9 @@ bzl_library(
     srcs = ["resolved_toolchain.bzl"],
     visibility = ["//python:__subpackages__"],
 )
+
+bzl_library(
+    name = "uv_pip_compile",
+    srcs = ["uv_pip_compile.bzl"],
+    visibility = ["//visibility:public"],
+)

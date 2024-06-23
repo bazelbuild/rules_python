@@ -42,7 +42,7 @@ def _uv_toolchain_impl(ctx):
 
     if ctx.attr.uv_tool:
         uv_files = ctx.attr.uv_tool.files.to_list()
-        uv_path = _to_manifest_path(ctx, tool_files[0])
+        uv_path = _to_manifest_path(ctx, uv_files[0])
 
     # Make the $(UV_BIN) variable available in places like genrules.
     # See https://docs.bazel.build/versions/main/be/make-variables.html#custom_variables

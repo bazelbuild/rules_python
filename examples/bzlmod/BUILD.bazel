@@ -11,6 +11,7 @@ load("@python_3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@python_versions//3.10:defs.bzl", compile_pip_requirements_3_10 = "compile_pip_requirements")
 load("@python_versions//3.9:defs.bzl", compile_pip_requirements_3_9 = "compile_pip_requirements")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("@rules_python//python/private/pypi:uv_pip_compile.bzl", "uv_pip_compile")
 
 # This stanza calls a rule that generates targets for managing pip dependencies
 # with pip-compile.
@@ -19,6 +20,11 @@ compile_pip_requirements_3_9(
     src = "requirements.in",
     requirements_txt = "requirements_lock_3_9.txt",
     requirements_windows = "requirements_windows_3_9.txt",
+)
+
+uv_pip_compile(
+    name = "spike_uv_pip_compile",
+    dependencies_file = "requirements.in",
 )
 
 # This stanza calls a rule that generates targets for managing pip dependencies
