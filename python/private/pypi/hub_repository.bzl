@@ -23,7 +23,6 @@ load(
 
 _BUILD_FILE_CONTENTS = """\
 package(default_visibility = ["//visibility:public"])
-load("@rules_python//python/private:py_lock_dependencies.bzl", "py_lock_dependencies")
 
 # Ensure the `requirements.bzl` source can be accessed by stardoc, since users load() from it
 exports_files(["requirements.bzl"])
