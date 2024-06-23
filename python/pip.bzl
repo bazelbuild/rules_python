@@ -37,6 +37,9 @@ pip_utils = struct(
     normalize_name = normalize_name,
 )
 
-# The following are only exported here because they are used from elsewhere, not intended for private use
+# The following are only exported here because they are used from
+# multi_toolchain_aliases repository_rule, not intended for public use.
+#
+# See ./private/toolchains_repo.bzl
 multi_pip_parse = _multi_pip_parse
 whl_library_alias = _whl_library_alias
