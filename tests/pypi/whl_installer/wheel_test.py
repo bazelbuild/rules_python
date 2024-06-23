@@ -2,7 +2,7 @@ import unittest
 from random import shuffle
 from unittest import mock
 
-from python.pip_install.tools.wheel_installer import wheel
+from python.private.pypi.whl_installer import wheel
 
 
 class DepsTest(unittest.TestCase):
@@ -218,7 +218,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_can_get_version_select(self, mock_host_interpreter_version):
         requires_dist = [
@@ -267,7 +267,7 @@ class DepsTest(unittest.TestCase):
         )
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_spanning_all_target_py_versions_are_added_to_common(
         self, mock_host_version
@@ -290,7 +290,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({}, got.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_are_not_duplicated(self, mock_host_version):
         mock_host_version.return_value = 7
@@ -319,7 +319,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({}, got.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_are_not_duplicated_when_encountering_platform_dep_first(
         self, mock_host_version
