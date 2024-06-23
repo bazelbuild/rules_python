@@ -63,7 +63,6 @@ def _impl(rctx):
             for p in bzl_packages
         }),
         "%%MACRO_TMPL%%": macro_tmpl,
-        "%%NAME%%": rctx.attr.repo_name,
     })
 
 hub_repository = repository_rule(
