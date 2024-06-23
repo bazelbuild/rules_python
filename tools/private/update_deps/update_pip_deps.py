@@ -129,7 +129,7 @@ def main():
         "--requirements-txt",
         type=path_from_runfiles,
         default=os.environ.get("REQUIREMENTS_TXT"),
-        help="The requirements.txt path for the pip_install tools, defaults to the value taken from REQUIREMENTS_TXT",
+        help="The requirements.txt path for the pypi tools, defaults to the value taken from REQUIREMENTS_TXT",
     )
     parser.add_argument(
         "--deps-bzl",

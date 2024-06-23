@@ -93,7 +93,7 @@ def pip_compile(
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
-    pip_compile = Label("//python/pip_install/tools/dependency_resolver:dependency_resolver.py")
+    pip_compile = Label("//python/private/pypi/dependency_resolver:dependency_resolver.py")
 
     loc = "$(rlocationpath {})"
 

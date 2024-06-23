@@ -27,7 +27,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from pip._vendor.packaging.utils import canonicalize_name
 
-from python.pip_install.tools.wheel_installer import arguments, namespace_pkgs, wheel
+from python.private.pypi.whl_installer import arguments, namespace_pkgs, wheel
 
 
 def _configure_reproducible_wheels() -> None:

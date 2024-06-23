@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import json
 import unittest
 
-from python.pip_install.tools.wheel_installer import arguments, wheel
+from python.private.pypi.whl_installer import arguments, wheel
 
 
 class ArgumentsTestCase(unittest.TestCase):
     def test_arguments(self) -> None:
         parser = arguments.parser()
-        repo_name = "foo"
-        repo_prefix = "pypi_"
         index_url = "--index_url=pypi.org/simple"
         extra_pip_args = [index_url]
         requirement = "foo==1.0.0 --hash=sha256:deadbeef"

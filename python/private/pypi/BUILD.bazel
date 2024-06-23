@@ -21,7 +21,13 @@ licenses(["notice"])
 
 filegroup(
     name = "distribution",
-    srcs = glob(["**"]),
+    srcs = glob(
+        ["**"],
+        exclude = ["requirements.txt"],
+    ) + [
+        "//python/private/pypi/dependency_resolver:distribution",
+        "//python/private/pypi/whl_installer:distribution",
+    ],
     visibility = ["//python/private:__pkg__"],
 )
 

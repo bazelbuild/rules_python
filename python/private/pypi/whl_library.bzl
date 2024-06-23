@@ -241,7 +241,7 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "python.pip_install.tools.wheel_installer.wheel_installer",
+        "python.private.pypi.whl_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
     ]

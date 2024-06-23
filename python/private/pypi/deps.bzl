@@ -107,8 +107,7 @@ py_library(
     srcs = glob(["**/*.py"]),
     data = glob(["**/*"], exclude=[
         # These entries include those put into user-installed dependencies by
-        # data_exclude in /python/pip_install/tools/bazel.py
-        # to avoid non-determinism following pip install's behavior.
+        # data_exclude to avoid non-determinism.
         "**/*.py",
         "**/*.pyc",
         "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created

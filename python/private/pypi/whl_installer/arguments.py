@@ -17,7 +17,7 @@ import json
 import pathlib
 from typing import Any, Dict, Set
 
-from python.pip_install.tools.wheel_installer import wheel
+from python.private.pypi.whl_installer import wheel
 
 
 def parser(**kwargs: Any) -> argparse.ArgumentParser:

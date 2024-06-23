@@ -50,12 +50,12 @@ py_binary(
     name = "update_pip_deps",
     srcs = ["update_pip_deps.py"],
     data = [
-        "//python/pip_install:requirements_txt",
         "//python/private/pypi:deps_bzl",
+        "//python/private/pypi:requirements_txt",
     ],
     env = {
         "DEPS_BZL": "$(rlocationpath //python/private/pypi:deps_bzl)",
-        "REQUIREMENTS_TXT": "$(rlocationpath //python/pip_install:requirements_txt)",
+        "REQUIREMENTS_TXT": "$(rlocationpath //python/private/pypi:requirements_txt)",
     },
     imports = ["../../.."],
     deps = [
