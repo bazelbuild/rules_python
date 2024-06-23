@@ -101,7 +101,7 @@ bzl_library(
         "//python/pip_install:requirements_bzl",
         "//python/private:bzlmod_enabled_bzl",
         "//python/private:full_version_bzl",
-        "//python/private:render_pkg_aliases_bzl",
+        "//python/private/pypi:render_pkg_aliases_bzl",
         "//python/private/whl_filegroup:whl_filegroup_bzl",
     ],
 )

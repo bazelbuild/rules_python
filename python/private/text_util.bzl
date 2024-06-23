@@ -36,6 +36,9 @@ def _render_alias(name, actual, *, visibility = None):
     ])
 
 def _render_dict(d, *, key_repr = repr, value_repr = repr):
+    if not d:
+        return "{}"
+
     return "\n".join([
         "{",
         _indent("\n".join([
