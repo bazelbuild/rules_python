@@ -297,6 +297,15 @@ def _test_files_to_build_impl(env, target):
             "{package}/{test_name}_subject.py",
         ])
 
+        # Convention and historical behavior is that the first default output is
+        # the executable, so verify that is the case.
+        # rules_testing DepsetFileSubject.contains_exactly doesn't provide an
+        # in_order() call, nor access to the underlying depset, so we have to
+        # do things manually.
+        first_default_output = target[DefaultInfo].files.to_list()[0]
+        executable = target[DefaultInfo].files_to_run.executable
+        env.expect.that_file(first_default_output).equals(executable)
+
 def _test_name_cannot_end_in_py(name, config):
     # Bazel 5 will crash with a Java stacktrace when the native Python
     # rules have an error.
