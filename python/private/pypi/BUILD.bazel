@@ -94,7 +94,7 @@ bzl_library(
     srcs = ["flags.bzl"],
     deps = [
         "//python/private:enum_bzl",
-        "@bazel_skylib//lib:common_settings",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 
