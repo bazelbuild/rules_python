@@ -1,16 +1,11 @@
 # NB: Last matching rule takes precedence in CODEOWNERS.
 
-* @rickeylev
+* @rickeylev, @aignas
 
 # Directory containing the Gazelle extension and Go code.
 /gazelle/ @f0rmiga
 /examples/build_file_generation/ @f0rmiga
 
-# Toolchains
-/python/repositories.bzl @f0rmiga
-/python/private/toolchains_repo.bzl @f0rmiga
-/python/tests/toolchains/ @f0rmiga
-
 # PyPI integration related code
-/python/private/pypi/ @aignas
-/tests/pypi/ @aignas
+/python/private/pypi/ @groodt
+/tests/pypi/ @groodt
