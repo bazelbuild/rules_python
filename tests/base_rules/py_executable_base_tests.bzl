@@ -18,6 +18,7 @@ load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 load("//tests/support:support.bzl", "LINUX_X86_64", "WINDOWS_X86_64")
@@ -297,14 +298,15 @@ def _test_files_to_build_impl(env, target):
             "{package}/{test_name}_subject.py",
         ])
 
-        # Convention and historical behavior is that the first default output is
-        # the executable, so verify that is the case.
-        # rules_testing DepsetFileSubject.contains_exactly doesn't provide an
-        # in_order() call, nor access to the underlying depset, so we have to
-        # do things manually.
-        first_default_output = target[DefaultInfo].files.to_list()[0]
-        executable = target[DefaultInfo].files_to_run.executable
-        env.expect.that_file(first_default_output).equals(executable)
+        if IS_BAZEL_7_OR_HIGHER:
+            # As of Bazel 7, the first default output is the executable, so
+            # verify that is the case. rules_testing
+            # DepsetFileSubject.contains_exactly doesn't provide an in_order()
+            # call, nor access to the underlying depset, so we have to do things
+            # manually.
+            first_default_output = target[DefaultInfo].files.to_list()[0]
+            executable = target[DefaultInfo].files_to_run.executable
+            env.expect.that_file(first_default_output).equals(executable)
 
 def _test_name_cannot_end_in_py(name, config):
     # Bazel 5 will crash with a Java stacktrace when the native Python
