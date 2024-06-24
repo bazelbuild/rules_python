@@ -39,6 +39,8 @@ A brief description of the categories of changes:
   other toolchains support.
 * (providers) {obj}`PyRuntimeInfo` doesn't require passing the
   `interpreter_version_info` arg.
+* (bzlmod) Correctly pass `isolated`, `quiet` and `timeout` values to `whl_library`
+  and drop the defaults from the lock file.
 
 ### Added
 * (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
