@@ -68,3 +68,12 @@ INTERNAL_FLAGS = [
     "whl_pycp3x_abi3",
     "whl_pycp3x_abicp",
 ]
+
+def define_pypi_internal_flags(name):
+    for flag in INTERNAL_FLAGS:
+        string_flag(
+            name = "_internal_pip_" + flag,
+            build_setting_default = "",
+            values = [""],
+            visibility = ["//visibility:public"],
+        )

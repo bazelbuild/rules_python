@@ -10,10 +10,10 @@ load(
 )
 load(
     "//python/private/pypi:flags.bzl",
-    "INTERNAL_FLAGS",
     "UniversalWhlFlag",
     "UseWhlFlag",
     "WhlLibcFlag",
+    "define_pypi_internal_flags",
 )
 load(":config_settings.bzl", "construct_config_settings")
 
@@ -163,14 +163,6 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
-# private pip whl related flags. Their values cannot be changed and they
-# are an implementation detail of how `pip_config_settings` work.
-[
-    string_flag(
-        name = "_internal_pip_" + flag,
-        build_setting_default = "",
-        values = [""],
-        visibility = ["//visibility:public"],
-    )
-    for flag in INTERNAL_FLAGS
-]
+define_pypi_internal_flags(
+    name = "define_pypi_internal_flags",
+)
