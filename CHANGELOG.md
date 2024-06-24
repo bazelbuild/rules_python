@@ -41,6 +41,7 @@ A brief description of the categories of changes:
   `interpreter_version_info` arg.
 * (bzlmod) Correctly pass `isolated`, `quiet` and `timeout` values to `whl_library`
   and drop the defaults from the lock file.
+* (rules) The first element of the default outputs is now the executable again.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
