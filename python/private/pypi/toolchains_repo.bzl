@@ -21,6 +21,12 @@ UV_PLATFORMS = {
             "@platforms//cpu:aarch64",
         ],
     ),
+    "aarch64-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+    ),
     "x86_64-apple-darwin": struct(
         compatible_with = [
             "@platforms//os:macos",

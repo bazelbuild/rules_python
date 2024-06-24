@@ -16,7 +16,7 @@
 
 def _uv_pip_compile(ctx):
     info = ctx.toolchains["//python:uv_toolchain_type"].uvtoolchaininfo
-    uv = info.uv_path
+    uv = info.binary
 
     python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
     dependencies_file = ctx.file.dependencies_file
@@ -35,7 +35,6 @@ def _uv_pip_compile(ctx):
     args.add("--output-file", requirements_out)
     args.add(dependencies_file)
 
-    print(uv)
     ctx.actions.run(
         executable = uv,
         arguments = [args],

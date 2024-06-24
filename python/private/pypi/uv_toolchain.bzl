@@ -17,45 +17,24 @@
 UvToolchainInfo = provider(
     doc = "Information about how to invoke the uv executable.",
     fields = {
-        "uv_files": """Files required in runfiles to make the uv executable available.
-
-May be empty if the uv_path points to a locally installed uv binary.""",
-        "uv_path": "Path to the uv executable.",
+        "binary": "Executable uv binary",
+        "version": "Uv version",
     },
 )
 
-# Avoid using non-normalized paths (workspace/../other_workspace/path)
-def _to_manifest_path(ctx, file):
-    if file.short_path.startswith("../"):
-        return "external/" + file.short_path[3:]
-    else:
-        return ctx.workspace_name + "/" + file.short_path
-
 def _uv_toolchain_impl(ctx):
-    if ctx.attr.uv_tool and ctx.attr.uv_path:
-        fail("Can only set one of uv_tool or uv_path but both were set.")
-    if not ctx.attr.uv_tool and not ctx.attr.uv_path:
-        fail("Must set one of uv_tool or uv_path.")
+    binary = ctx.executable.uv
 
-    uv_files = []
-    uv_path = ctx.attr.uv_path
-
-    if ctx.attr.uv_tool:
-        uv_files = ctx.attr.uv_tool.files.to_list()
-        uv_path = _to_manifest_path(ctx, uv_files[0])
-
-    # Make the $(UV_BIN) variable available in places like genrules.
-    # See https://docs.bazel.build/versions/main/be/make-variables.html#custom_variables
     templatevariableinfo = platform_common.TemplateVariableInfo({
-        "UV_BIN": uv_path,
+        "UV_BIN": binary.path,
     })
     defaultinfo = DefaultInfo(
-        files = depset(uv_files),
-        runfiles = ctx.runfiles(files = uv_files),
+        files = depset([binary]),
+        runfiles = ctx.runfiles(files = [binary]),
     )
     uvtoolchaininfo = UvToolchainInfo(
-        uv_path = uv_path,
-        uv_files = uv_files,
+        binary = binary,
+        version = ctx.attr.version.removeprefix("v"),
     )
 
     # Export all the providers inside our ToolchainInfo
@@ -74,15 +53,14 @@ def _uv_toolchain_impl(ctx):
 uv_toolchain = rule(
     implementation = _uv_toolchain_impl,
     attrs = {
-        "uv_path": attr.string(
-            doc = "Path to an existing uv executable",
-            mandatory = False,
-        ),
-        "uv_tool": attr.label(
-            doc = "A hermetically downloaded executable target for the target platform.",
+        "uv": attr.label(
+            doc = "A static uv binary.",
             mandatory = False,
             allow_single_file = True,
+            executable = True,
+            cfg = "exec",
         ),
+        "version": attr.string(mandatory = True, doc = "Version of the uv binary."),
     },
     doc = "Defines a uv toolchain.",
 )
