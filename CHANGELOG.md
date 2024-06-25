@@ -44,6 +44,7 @@ A brief description of the categories of changes:
 * (whl_library) Correctly handle arch-specific dependencies when we encounter a
   platform specific wheel and use `experimental_target_platforms`.
   Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
+* (rules) The first element of the default outputs is now the executable again.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
