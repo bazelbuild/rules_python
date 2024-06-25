@@ -41,6 +41,9 @@ A brief description of the categories of changes:
   `interpreter_version_info` arg.
 * (bzlmod) Correctly pass `isolated`, `quiet` and `timeout` values to `whl_library`
   and drop the defaults from the lock file.
+* (whl_library) Correctly handle arch-specific dependencies when we encounter a
+  platform specific wheel and use `experimental_target_platforms`.
+  Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
 * (rules) The first element of the default outputs is now the executable again.
 
 ### Removed
@@ -55,7 +58,7 @@ A brief description of the categories of changes:
   To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
   This toolchain must be enabled for precompilation to work. This toolchain will
   be enabled by default in a future release.
-  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
+  Fixes [#1967](https://github.com/bazelbuild/rules_python/issues/1967).
 
 ## [0.33.1] - 2024-06-13
 
