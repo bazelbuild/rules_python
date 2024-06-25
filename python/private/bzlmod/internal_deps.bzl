@@ -9,12 +9,12 @@
 "Python toolchain module extension for internal rule use"
 
 load("@bazel_skylib//lib:modules.bzl", "modules")
-load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:internal_config_repo.bzl", "internal_config_repo")
+load("//python/private/pypi:deps.bzl", "pypi_deps")
 
 def _internal_deps():
     internal_config_repo(name = "rules_python_internal")
-    pip_install_dependencies()
+    pypi_deps()
 
 internal_deps = modules.as_extension(
     _internal_deps,

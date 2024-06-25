@@ -2,24 +2,24 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//python/private:flags.bzl",
     "BootstrapImplFlag",
+    "ExecToolsToolchainFlag",
     "PrecompileAddToRunfilesFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
     "PycCollectionFlag",
 )
 load(
-    "//python/private:pip_flags.bzl",
-    "INTERNAL_FLAGS",
+    "//python/private/pypi:flags.bzl",
     "UniversalWhlFlag",
     "UseWhlFlag",
     "WhlLibcFlag",
+    "define_pypi_internal_flags",
 )
 load(":config_settings.bzl", "construct_config_settings")
 
 filegroup(
     name = "distribution",
-    srcs = glob(["*.bzl"]) + [
-        "BUILD.bazel",
+    srcs = glob(["**"]) + [
         "//python/config_settings/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
@@ -30,10 +30,29 @@ construct_config_settings(
 )
 
 string_flag(
+    name = "exec_tools_toolchain",
+    build_setting_default = ExecToolsToolchainFlag.DISABLED,
+    values = sorted(ExecToolsToolchainFlag.__members__.values()),
+    # NOTE: Only public because it is used in py_toolchain_suite from toolchain
+    # repositories
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "is_exec_tools_toolchain_enabled",
+    flag_values = {
+        "exec_tools_toolchain": ExecToolsToolchainFlag.ENABLED,
+    },
+    # NOTE: Only public because it is used in py_toolchain_suite from toolchain
+    # repositories
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
     name = "precompile",
     build_setting_default = PrecompileFlag.AUTO,
     values = sorted(PrecompileFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -41,7 +60,7 @@ string_flag(
     name = "precompile_source_retention",
     build_setting_default = PrecompileSourceRetentionFlag.KEEP_SOURCE,
     values = sorted(PrecompileSourceRetentionFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -49,7 +68,7 @@ string_flag(
     name = "precompile_add_to_runfiles",
     build_setting_default = PrecompileAddToRunfilesFlag.ALWAYS,
     values = sorted(PrecompileAddToRunfilesFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -57,7 +76,7 @@ string_flag(
     name = "pyc_collection",
     build_setting_default = PycCollectionFlag.DISABLED,
     values = sorted(PycCollectionFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -65,7 +84,7 @@ string_flag(
     name = "bootstrap_impl",
     build_setting_default = BootstrapImplFlag.SYSTEM_PYTHON,
     values = sorted(BootstrapImplFlag.__members__.values()),
-    # NOTE: Only public because its an implicit dependency
+    # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )
 
@@ -84,6 +103,33 @@ string_flag(
     name = "pip_whl",
     build_setting_default = UseWhlFlag.AUTO,
     values = sorted(UseWhlFlag.__members__.values()),
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_auto",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.AUTO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_no",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.NO,
+    },
+    # NOTE: Only public because it is used in pip hub repos.
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_pip_whl_only",
+    flag_values = {
+        ":pip_whl": UseWhlFlag.ONLY,
+    },
     # NOTE: Only public because it is used in pip hub repos.
     visibility = ["//visibility:public"],
 )
@@ -117,14 +163,6 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
-# private pip whl related flags. Their values cannot be changed and they
-# are an implementation detail of how `pip_config_settings` work.
-[
-    string_flag(
-        name = "_internal_pip_" + flag,
-        build_setting_default = "",
-        values = [""],
-        visibility = ["//visibility:public"],
-    )
-    for flag in INTERNAL_FLAGS
-]
+define_pypi_internal_flags(
+    name = "define_pypi_internal_flags",
+)

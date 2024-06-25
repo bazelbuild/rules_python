@@ -116,7 +116,7 @@ def gazelle_python_manifest(
         attrs = {
             "env": {
                 "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
-                "_TEST_MANIFEST_GENERATOR_HASH": "$(rootpath {})".format(manifest_generator_hash),
+                "_TEST_MANIFEST_GENERATOR_HASH": "$(rlocationpath {})".format(manifest_generator_hash),
                 "_TEST_REQUIREMENTS": "$(rootpath {})".format(requirements),
             },
             "size": "small",
@@ -130,7 +130,10 @@ def gazelle_python_manifest(
                 manifest_generator_hash,
             ],
             rundir = ".",
-            deps = [Label("//manifest")],
+            deps = [
+                Label("//manifest"),
+                Label("@com_github_bazelbuild_rules_go//go/runfiles"),
+            ],
             # kwargs could contain test-specific attributes like size or timeout
             **dict(attrs, **kwargs)
         )

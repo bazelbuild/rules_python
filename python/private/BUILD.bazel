@@ -16,6 +16,7 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 load("//python:versions.bzl", "print_toolchains_checksums")
+load(":py_exec_tools_toolchain.bzl", "current_interpreter_executable")
 load(":stamp.bzl", "stamp_build_setting")
 
 package(
@@ -30,6 +31,7 @@ filegroup(
         "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
+        "//python/private/pypi:distribution",
         "//python/private/whl_filegroup:distribution",
         "//tools/build_defs/python/private:distribution",
     ],
@@ -59,6 +61,7 @@ bzl_library(
     name = "autodetecting_toolchain_bzl",
     srcs = ["autodetecting_toolchain.bzl"],
     deps = [
+        ":toolchain_types_bzl",
         "//python:py_runtime_bzl",
         "//python:py_runtime_pair_bzl",
     ],
@@ -121,62 +124,6 @@ bzl_library(
 bzl_library(
     name = "normalize_name_bzl",
     srcs = ["normalize_name.bzl"],
-)
-
-bzl_library(
-    name = "patch_whl_bzl",
-    srcs = ["patch_whl.bzl"],
-    deps = [":parse_whl_name_bzl"],
-)
-
-bzl_library(
-    name = "parse_requirements_bzl",
-    srcs = ["parse_requirements.bzl"],
-    deps = [
-        ":normalize_name_bzl",
-        ":pypi_index_sources_bzl",
-        ":whl_target_platforms_bzl",
-        "//python/pip_install:requirements_parser_bzl",
-    ],
-)
-
-bzl_library(
-    name = "parse_whl_name_bzl",
-    srcs = ["parse_whl_name.bzl"],
-)
-
-bzl_library(
-    name = "pip_flags_bzl",
-    srcs = ["pip_flags.bzl"],
-    deps = [
-        ":enum_bzl",
-    ],
-)
-
-bzl_library(
-    name = "pip_repo_name_bzl",
-    srcs = ["pip_repo_name.bzl"],
-    deps = [
-        ":normalize_name_bzl",
-        ":parse_whl_name_bzl",
-    ],
-)
-
-bzl_library(
-    name = "pypi_index_bzl",
-    srcs = ["pypi_index.bzl"],
-    deps = [
-        ":auth_bzl",
-        ":normalize_name_bzl",
-        ":text_util_bzl",
-        "//python/pip_install:requirements_parser_bzl",
-        "//python/private/bzlmod:bazel_features_bzl",
-    ],
-)
-
-bzl_library(
-    name = "pypi_index_sources_bzl",
-    srcs = ["pypi_index_sources.bzl"],
 )
 
 bzl_library(
@@ -284,17 +231,6 @@ bzl_library(
 )
 
 bzl_library(
-    name = "render_pkg_aliases_bzl",
-    srcs = ["render_pkg_aliases.bzl"],
-    deps = [
-        ":normalize_name_bzl",
-        ":text_util_bzl",
-        ":version_label_bzl",
-        "//python/pip_install/private:generate_group_library_build_bazel_bzl",
-    ],
-)
-
-bzl_library(
     name = "repo_utils_bzl",
     srcs = ["repo_utils.bzl"],
 )
@@ -336,20 +272,6 @@ bzl_library(
 bzl_library(
     name = "version_label_bzl",
     srcs = ["version_label.bzl"],
-)
-
-bzl_library(
-    name = "whl_target_platforms_bzl",
-    srcs = ["whl_target_platforms.bzl"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "parse_whl_name_bzl",
-    ],
-)
-
-bzl_library(
-    name = "labels_bzl",
-    srcs = ["labels.bzl"],
 )
 
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
@@ -462,4 +384,13 @@ py_library(
     visibility = [
         "//tests/entry_points:__pkg__",
     ],
+)
+
+# The current toolchain's interpreter as an excutable, usable with
+# executable=True attributes.
+current_interpreter_executable(
+    name = "current_interpreter_executable",
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_exec_tools_toolchain.
+    visibility = ["//visibility:public"],
 )

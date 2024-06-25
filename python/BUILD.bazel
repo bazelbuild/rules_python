@@ -39,6 +39,7 @@ filegroup(
         "//python/constraints:distribution",
         "//python/entry_points:distribution",
         "//python/extensions:distribution",
+        "//python/pip_install:distribution",
         "//python/private:distribution",
         "//python/runfiles:distribution",
     ],
@@ -96,12 +97,12 @@ bzl_library(
     name = "pip_bzl",
     srcs = ["pip.bzl"],
     deps = [
-        "//python/pip_install:pip_repository_bzl",
-        "//python/pip_install:repositories_bzl",
-        "//python/pip_install:requirements_bzl",
-        "//python/private:bzlmod_enabled_bzl",
-        "//python/private:full_version_bzl",
-        "//python/private:render_pkg_aliases_bzl",
+        "//python/private:normalize_name_bzl",
+        "//python/private/pypi:multi_pip_parse_bzl",
+        "//python/private/pypi:package_annotation_bzl",
+        "//python/private/pypi:pip_compile_bzl",
+        "//python/private/pypi:pip_repository_bzl",
+        "//python/private/pypi:whl_library_alias_bzl",
         "//python/private/whl_filegroup:whl_filegroup_bzl",
     ],
 )
@@ -210,7 +211,6 @@ bzl_library(
     srcs = ["repositories.bzl"],
     deps = [
         ":versions_bzl",
-        "//python/pip_install:repositories_bzl",
         "//python/private:auth_bzl",
         "//python/private:bazel_tools_bzl",
         "//python/private:bzlmod_enabled_bzl",
@@ -219,6 +219,7 @@ bzl_library(
         "//python/private:internal_config_repo_bzl",
         "//python/private:repo_utils_bzl",
         "//python/private:toolchains_repo_bzl",
+        "//python/private/pypi:deps_bzl",
     ],
 )
 

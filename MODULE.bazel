@@ -11,13 +11,11 @@ bazel_dep(name = "platforms", version = "0.0.4")
 
 # Those are loaded only when using py_proto_library
 bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
-bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf")
 
 internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 use_repo(
     internal_deps,
-    "rules_python_internal",
-    # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
     "pypi__build",
     "pypi__click",
     "pypi__colorama",
@@ -33,7 +31,7 @@ use_repo(
     "pypi__tomli",
     "pypi__wheel",
     "pypi__zipp",
-    # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
+    "rules_python_internal",
 )
 
 # We need to do another use_extension call to expose the "pythons_hub"

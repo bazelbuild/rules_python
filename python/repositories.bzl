@@ -19,7 +19,6 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python/pip_install:repositories.bzl", "pip_install_dependencies")
 load("//python/private:auth.bzl", "get_auth")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:coverage_deps.bzl", "coverage_dep")
@@ -33,6 +32,7 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
+load("//python/private/pypi:deps.bzl", "pypi_deps")
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -68,7 +68,7 @@ def py_repositories():
         sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
         strip_prefix = "rules_cc-0.0.9",
     )
-    pip_install_dependencies()
+    pypi_deps()
 
 ########
 # Remaining content of the file is only used to support toolchains.
@@ -399,12 +399,6 @@ py_cc_toolchain(
 
 py_exec_tools_toolchain(
     name = "py_exec_tools_toolchain",
-    exec_interpreter = "{python_path}",
-    exec_interpreter_version_info = {{
-        "major": "{interpreter_version_info_major}",
-        "minor": "{interpreter_version_info_minor}",
-        "micro": "{interpreter_version_info_micro}",
-    }},
     precompiler = "@rules_python//tools/precompiler:precompiler",
 )
 """.format(

@@ -270,7 +270,6 @@ def _create_executable(
             ctx,
             output = executable,
             zip_file = zip_file,
-            python_binary_path = runtime_details.executable_interpreter_path,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
         )
@@ -561,6 +560,7 @@ def _get_cc_details_for_binary(ctx, extra_deps):
         extra_runfiles = ctx.runfiles(),
         # Though the rules require the CcToolchain, it isn't actually used.
         cc_toolchain = None,
+        feature_config = None,
     )
 
 def _get_interpreter_path(ctx, *, runtime, flag_interpreter_path):

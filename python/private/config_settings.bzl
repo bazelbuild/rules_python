@@ -181,6 +181,14 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         visibility = ["//visibility:public"],
     )
 
+    native.config_setting(
+        name = "is_python_version_unset",
+        flag_values = {
+            Label("//python/config_settings:python_version"): "",
+        },
+        visibility = ["//visibility:public"],
+    )
+
     for version, matching_versions in VERSION_FLAG_VALUES.items():
         is_python_config_setting(
             name = "is_python_{}".format(version),

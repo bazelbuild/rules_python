@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -29,33 +28,7 @@ bzl_library(
     name = "pip_bzl",
     srcs = ["pip.bzl"],
     deps = [
-        ":pip_repository_bzl",
-        "//python/pip_install:pip_repository_bzl",
-        "//python/private:pypi_index_bzl",
-        "//python/private:full_version_bzl",
-        "//python/private:normalize_name_bzl",
-        "//python/private:parse_requirements_bzl",
-        "//python/private:parse_whl_name_bzl",
-        "//python/private:pip_repo_name_bzl",
-        "//python/private:version_label_bzl",
-        ":bazel_features_bzl",
-    ] + [
-        "@pythons_hub//:interpreters_bzl",
-    ] if BZLMOD_ENABLED else [],
-)
-
-bzl_library(
-    name = "bazel_features_bzl",
-    deps = ["@bazel_features//:features"],
-)
-
-bzl_library(
-    name = "pip_repository_bzl",
-    srcs = ["pip_repository.bzl"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//python/private:render_pkg_aliases_bzl",
-        "//python/private:text_util_bzl",
+        "//python/private/pypi:bzlmod_bzl",
     ],
 )
 
@@ -66,6 +39,8 @@ bzl_library(
         ":pythons_hub_bzl",
         "//python:repositories_bzl",
         "//python/private:toolchains_repo_bzl",
+        "//python/private:util_bzl",
+        "@bazel_features//:features",
     ],
 )
 
