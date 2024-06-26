@@ -751,7 +751,7 @@ def _uv_repo_impl(repository_ctx):
     if filename.endswith(".tar.gz"):
         strip_prefix = filename[:-len(".tar.gz")]
     else:
-        strip_prefix = None
+        strip_prefix = ""
 
     repository_ctx.download_and_extract(
         url = url,
