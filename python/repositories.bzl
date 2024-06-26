@@ -739,15 +739,14 @@ def _uv_repo_impl(repository_ctx):
     platform = repository_ctx.attr.platform
     uv_version = repository_ctx.attr.uv_version
 
-    suffix = ".zip" if platform == "windows" else ".tar.gz"
+    suffix = ".zip" if "windows" in platform else ".tar.gz"
     filename = "uv-{platform}{suffix}".format(
         platform = platform,
         suffix = suffix,
     )
-    url = "https://github.com/astral-sh/uv/releases/download/{version}/uv-{platform}{suffix}".format(
+    url = "https://github.com/astral-sh/uv/releases/download/{version}/{filename}".format(
         version = uv_version,
-        platform = platform,
-        suffix = suffix,
+        filename = filename,
     )
     if filename.endswith(".tar.gz"):
         strip_prefix = filename[:-len(".tar.gz")]

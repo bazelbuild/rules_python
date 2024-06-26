@@ -39,3 +39,12 @@ bzl_library(
         "//python/private/bzlmod:python_bzl",
     ],
 )
+
+bzl_library(
+    name = "uv_bzl",
+    srcs = ["uv.bzl"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//python/private/bzlmod:python_bzl",
+    ],
+)

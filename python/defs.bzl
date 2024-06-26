@@ -21,6 +21,7 @@ load("//python:py_runtime.bzl", _py_runtime = "py_runtime")
 load("//python:py_runtime_info.bzl", internal_PyRuntimeInfo = "PyRuntimeInfo")
 load("//python:py_runtime_pair.bzl", _py_runtime_pair = "py_runtime_pair")
 load("//python:py_test.bzl", _py_test = "py_test")
+load("//python/private/pypi:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")
 load(":current_py_toolchain.bzl", _current_py_toolchain = "current_py_toolchain")
 load(":py_import.bzl", _py_import = "py_import")
 
@@ -47,3 +48,5 @@ py_binary = _py_binary
 py_test = _py_test
 
 py_runtime = _py_runtime
+
+uv_pip_compile = _uv_pip_compile

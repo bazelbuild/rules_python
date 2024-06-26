@@ -14,6 +14,17 @@
 
 "Rule for locking third-party dependencies with uv."
 
+script_template = """\
+{uv} pip compile \
+--python {python} \
+--python-platform windows \
+--python-version 3.9 \
+--no-strip-extras \
+--generate-hashes \
+--output-file - \
+{dependencies_file}
+"""
+
 def _uv_pip_compile(ctx):
     info = ctx.toolchains["//python:uv_toolchain_type"].uvtoolchaininfo
     uv = info.binary
@@ -21,30 +32,58 @@ def _uv_pip_compile(ctx):
     python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
     dependencies_file = ctx.file.dependencies_file
 
-    args = ctx.actions.args()
-    args.add("pip")
-    args.add("compile")
+    # Option 1: Build action option.
+    # Not really appropriate, but it executes.
+
+    # args = ctx.actions.args()
+    # args.add("pip")
+    # args.add("compile")
 
     # uv will use this python for operations where it needs to execute python code. See: UV_PYTHON and https://github.com/astral-sh/uv?tab=readme-ov-file#installing-into-arbitrary-python-environments
-    args.add("--python", python)
-    args.add("--python-platform", "windows")
-    args.add("--python-version", "3.9")
-    args.add("--no-strip-extras")
-    args.add("--generate-hashes")
-    requirements_out = ctx.actions.declare_file(ctx.label.name + ".requirements.out")
-    args.add("--output-file", requirements_out)
-    args.add(dependencies_file)
+    # args.add("--python", python)
+    # args.add("--python-platform", "windows")
+    # args.add("--python-version", "3.9")
+    # args.add("--no-strip-extras")
+    # args.add("--generate-hashes")
+    #requirements_out = ctx.actions.declare_file(ctx.label.name + ".requirements.out")
+    # args.add("--output-file", requirements_out)
+    # args.add(dependencies_file)
 
-    ctx.actions.run(
-        executable = uv,
-        arguments = [args],
-        inputs = [dependencies_file],
-        outputs = [requirements_out],
-        tools = [python],
+    # ctx.actions.run(
+    #     executable = uv,
+    #     arguments = [args],
+    #     inputs = [dependencies_file],
+    #     outputs = [requirements_out],
+    #     tools = [python],
+    # )
+
+    # Option 2: Run action option.
+    # Works to exec uv --version, but will need rest of arguments plumbed through.
+
+    # executable = ctx.actions.declare_file("%s-uv" % ctx.label.name)
+    # ctx.actions.symlink(
+    #     is_executable = True,
+    #     output = executable,
+    #     target_file = uv,
+    # )
+
+    # Option 3: Run action option.
+    # Works to exec uv with some (but not all) arguments plumbed through. Output to a directory of the resolved output needs to be done.
+    executable = ctx.actions.declare_file("{name}-{uv_name}".format(
+        name = ctx.label.name,
+        uv_name = uv.basename,
+    ))
+    script_content = script_template.format(
+        uv = uv.path,
+        python = python.path,
+        dependencies_file = dependencies_file.path,
     )
+    ctx.actions.write(executable, script_content, is_executable = True)
 
     return [DefaultInfo(
-        files = depset([requirements_out]),
+        files = depset([executable]),
+        executable = executable,
+        runfiles = ctx.runfiles([uv, dependencies_file, python]),
     )]
 
 uv_pip_compile = rule(
@@ -58,4 +97,5 @@ uv_pip_compile = rule(
         "@bazel_tools//tools/python:toolchain_type",
         "//python:uv_toolchain_type",
     ],
+    executable = True,
 )

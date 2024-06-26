@@ -291,6 +291,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "uv_extension",
+    srcs = ["uv_extension.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
+
+bzl_library(
     name = "versions",
     srcs = ["versions.bzl"],
     visibility = ["//python:__subpackages__"],
