@@ -58,7 +58,7 @@ uv_toolchain = rule(
             mandatory = False,
             allow_single_file = True,
             executable = True,
-            cfg = "exec",
+            cfg = "target",
         ),
         "version": attr.string(mandatory = True, doc = "Version of the uv binary."),
     },
