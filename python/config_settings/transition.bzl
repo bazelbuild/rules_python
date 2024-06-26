@@ -43,24 +43,45 @@ def _transition_py_impl(ctx):
         output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
-    zipfile_symlink = None
+    symlinks = []
     if target_is_windows:
+        files = target[DefaultInfo].default_runfiles.files.to_list()
+
+        def try_get_file_from_path(short_path):
+            for file in files:
+                if file.short_path == short_path:
+                    return file
+            return None
+
         # Under Windows, the expected "<name>.zip" does not exist, so we have to
         # create the symlink ourselves to achieve the same behaviour as in macOS
         # and Linux.
-        zipfile = None
-        expected_target_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
-        for file in target[DefaultInfo].default_runfiles.files.to_list():
-            if file.short_path == expected_target_path:
-                zipfile = file
-
-        if zipfile:
-            zipfile_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
+        expected_zip_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
+        zip_file = try_get_file_from_path(expected_zip_path)
+        if zip_file:
+            zip_file_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
             ctx.actions.symlink(
                 is_executable = True,
-                output = zipfile_symlink,
-                target_file = zipfile,
+                output = zip_file_symlink,
+                target_file = zip_file,
             )
+            symlinks.append(zip_file_symlink)
+
+        else:
+            # In case --build_python_zip=false, bootstrap script needs to be symlinked as well.
+            expected_bootstrap_path = target[DefaultInfo].files_to_run.executable.short_path[:-4]
+            bootstrap_file = try_get_file_from_path(expected_bootstrap_path)
+            if bootstrap_file:
+                bootstrap_file_symlink = ctx.actions.declare_file(ctx.attr.name)
+                ctx.actions.symlink(
+                    output = bootstrap_file_symlink,
+                    target_file = bootstrap_file,
+                )
+                symlinks.append(bootstrap_file_symlink)
+
+            else:
+                fail("Bootstrap file should have been generated.")
+
     env = {}
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
@@ -85,8 +106,8 @@ def _transition_py_impl(ctx):
     providers = [
         DefaultInfo(
             executable = executable,
-            files = depset([zipfile_symlink] if zipfile_symlink else [], transitive = [target[DefaultInfo].files]),
-            runfiles = ctx.runfiles([zipfile_symlink] if zipfile_symlink else []).merge(target[DefaultInfo].default_runfiles),
+            files = depset(symlinks, transitive = [target[DefaultInfo].files]),
+            runfiles = ctx.runfiles(symlinks).merge(target[DefaultInfo].default_runfiles),
         ),
         py_info,
         py_runtime_info,
