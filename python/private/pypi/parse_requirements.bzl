@@ -449,7 +449,7 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
             continue
 
         if logger:
-            logger.warn("Could not find a whl or an sdist with sha256={}".format(sha256))
+            logger.warn(lambda: "Could not find a whl or an sdist with sha256={}".format(sha256))
 
     yanked = {}
     for dist in whls + [sdist]:
