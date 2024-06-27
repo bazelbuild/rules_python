@@ -372,6 +372,8 @@ config_setting(
 bool_setting(
     name = "visible_for_testing",
     build_setting_default = False,
+    # This is only because it is an implicit dependency by the toolchains.
+    visibility = ["//visibility:public"],
 )
 
 print_toolchains_checksums(name = "print_toolchains_checksums")
