@@ -18,7 +18,7 @@ load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
 load("//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
 load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
-load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
+load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "PY_CC_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 
 _IS_EXEC_TOOLCHAIN_ENABLED = Label("//python/config_settings:is_exec_tools_toolchain_enabled")
 
@@ -36,6 +36,7 @@ def define_runtime_env_toolchain(name):
     Args:
         name: The name of the toolchain to introduce.
     """
+    base_name = name.replace("_toolchain", "")
 
     # buildifier: disable=native-py
     py_runtime(
@@ -78,30 +79,31 @@ def define_runtime_env_toolchain(name):
     )
 
     py_exec_tools_toolchain(
-        name = name + "_exec_impl",
+        name = "_runtime_env_py_exec_tools_toolchain_impl",
         precompiler = Label("//tools/precompiler:precompiler"),
         visibility = ["//visibility:private"],
     )
-
-    native.cc_library(
-        name = "empty_lib",
-    )
-    py_cc_toolchain(
-        name = name + "_cc_impl",
-        headers = ":empty_lib",
-        libs = ":empty_lib",
-        python_version = "0.0",
-    )
     native.toolchain(
-        name = name + "_exec",
-        toolchain = name + "_exec_impl",
+        name = base_name + "_py_exec_tools_toolchain",
+        toolchain = "_runtime_env_py_exec_tools_toolchain_impl",
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
         target_settings = [_IS_EXEC_TOOLCHAIN_ENABLED],
         visibility = ["//visibility:public"],
     )
+
+    native.cc_library(
+        name = "_empty_cc_lib",
+        visibility = ["//visibility:private"],
+    )
+    py_cc_toolchain(
+        name = "_runtime_env_py_cc_toolchain_impl",
+        headers = ":_empty_cc_lib",
+        libs = ":_empty_cc_lib",
+        python_version = "0.0",
+    )
     native.toolchain(
-        name = name + "_cc",
-        toolchain = name + "_cc_impl",
-        toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
+        name = base_name + "_py_cc_toolchain",
+        toolchain = ":_runtime_env_py_cc_toolchain_impl",
+        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
         visibility = ["//visibility:public"],
     )

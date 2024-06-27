@@ -75,16 +75,15 @@ def _test_runtime_env_toolchain_matches(name):
     )
 
 def _test_runtime_env_toolchain_matches_impl(env, target):
-    #env.expect.that_target(target).py3_runtime
-    meta = env.expect.meta.derive(format_str_kwargs = {"package": target.label.package})
-
     env.expect.that_str(
         str(target[_LookupInfo].target.toolchain_label),
-    ).contains("runtime_env_toolchain")
+    ).contains("runtime_env_py_runtime_pair")
     env.expect.that_str(
         str(target[_LookupInfo].exec.toolchain_label),
-    ).contains("runtime_env_toolchain")
-    print(target[_LookupInfo].cc.toolchain_label)
+    ).contains("runtime_env_py_exec_tools")
+    env.expect.that_str(
+        str(target[_LookupInfo].cc.toolchain_label),
+    ).contains("runtime_env_py_cc")
 
 _tests.append(_test_runtime_env_toolchain_matches)
 
