@@ -58,8 +58,8 @@ A brief description of the categories of changes:
   disabled.
 
 ### Added
-* (toolchains) TODO: doc how to enable the replacement toolchain
-  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
+* (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a
+  drop-in replacement for the "autodetecting" toolchain.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
