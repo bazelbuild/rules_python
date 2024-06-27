@@ -327,7 +327,7 @@ alias(
 
 alias(
     name = "autodetecting_toolchain_nonstrict",
-    actual = "//python/runtime_env_toolchains:all",
+    actual = "//python/runtime_env_toolchains:runtime_env_toolchain",
     deprecation = "Use //python/runtime_env_toolchains:all instead",
 )
 
