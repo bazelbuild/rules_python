@@ -23,7 +23,7 @@ load(
     "PY_CC_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )  # buildifier: disable=bzl-visibility
-load("//tests/support:support.bzl", "EXEC_TOOLS_TOOLCHAIN")
+load("//tests/support:support.bzl", "CC_TOOLCHAIN", "EXEC_TOOLS_TOOLCHAIN", "VISIBLE_FOR_TESTING")
 
 _LookupInfo = provider()  # buildifier: disable=provider-params
 
@@ -58,10 +58,14 @@ def _test_runtime_env_toolchain_matches(name):
         target = name + "_subject",
         config_settings = {
             "//command_line_option:extra_toolchains": [
+                # NOTE: CC_TOOLCHAIN also defines a py cc toolchain, so it must
+                # come before the runtime_env_toolchains in this list so that
+                # the runtime_env one takes precedence.
+                CC_TOOLCHAIN,
                 str(Label("//python/runtime_env_toolchains:all")),
             ],
             EXEC_TOOLS_TOOLCHAIN: "enabled",
-            str(Label("//python/private:visible_for_testing")): True,
+            VISIBLE_FOR_TESTING: True,
         },
     )
 
