@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Definitions related to the Python toolchain."""
 
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
 load("//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
@@ -90,8 +90,7 @@ def define_runtime_env_toolchain(name):
         target_settings = [_IS_EXEC_TOOLCHAIN_ENABLED],
         visibility = ["//visibility:public"],
     )
-
-    native.cc_library(
+    cc_library(
         name = "_empty_cc_lib",
         visibility = ["//visibility:private"],
     )

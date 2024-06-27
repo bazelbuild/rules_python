@@ -14,27 +14,18 @@
 
 """Starlark tests for py_runtime rule."""
 
-load("@rules_python_internal//:rules_python_config.bzl", "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python:py_runtime.bzl", "py_runtime")
-load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load(
     "//python/private:toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "PY_CC_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
-)
-load("//tests:py_runtime_info_subject.bzl", "py_runtime_info_subject")
-load("//tests/base_rules:util.bzl", br_util = "util")
-load(
-    "//tests/support:support.bzl",
-    "EXEC_TOOLS_TOOLCHAIN",
-)
+)  # buildifier: disable=bzl-visibility
+load("//tests/support:support.bzl", "EXEC_TOOLS_TOOLCHAIN")
 
-_LookupInfo = provider()
+_LookupInfo = provider()  # buildifier: disable=provider-params
 
 def _use_toolchains_impl(ctx):
     return [
