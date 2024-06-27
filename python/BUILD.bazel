@@ -322,12 +322,13 @@ toolchain_type(
 alias(
     name = "autodetecting_toolchain",
     actual = "//python/runtime_env_toolchains:runtime_env_toolchain",
-    deprecation = "Use //python/autodetecting_toolchain:all instead; targets under //docs are internal.",
+    deprecation = "Use //python/runtime_env_toolchains:all instead",
 )
 
 alias(
     name = "autodetecting_toolchain_nonstrict",
-    actual = "//python/autodetecting_toolchain",
+    actual = "//python/runtime_env_toolchains:all",
+    deprecation = "Use //python/runtime_env_toolchains:all instead",
 )
 
 # ========= Packaging rules =========
