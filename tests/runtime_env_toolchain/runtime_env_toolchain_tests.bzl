@@ -23,7 +23,7 @@ load(
     "PY_CC_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )  # buildifier: disable=bzl-visibility
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/support:support.bzl", "CC_TOOLCHAIN", "EXEC_TOOLS_TOOLCHAIN", "VISIBLE_FOR_TESTING")
 
 _LookupInfo = provider()  # buildifier: disable=provider-params
