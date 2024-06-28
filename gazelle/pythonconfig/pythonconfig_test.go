@@ -34,6 +34,60 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 			},
 			want: "@pip//dist_with_dashes",
 		},
+		"default / repeating dashes inside": {
+			input: testInput{
+				DistributionName:   "friendly--bard",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//friendly_bard",
+		},
+		"default / repeating underscores inside": {
+			input: testInput{
+				DistributionName:   "hello___something",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello_something",
+		},
+		"default / prefix repeating underscores": {
+			input: testInput{
+				DistributionName:   "__hello-something",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello_something",
+		},
+		"default / suffix repeating underscores": {
+			input: testInput{
+				DistributionName:   "hello-something___",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello_something",
+		},
+		"default / prefix repeating dashes": {
+			input: testInput{
+				DistributionName:   "---hello-something",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello_something",
+		},
+		"default / suffix repeating dashes": {
+			input: testInput{
+				DistributionName:   "hello-something----",
+				RepositoryName:     "pip",
+				LabelNormalization: DefaultLabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello_something",
+		},
 		"default / dots": {
 			input: testInput{
 				DistributionName:   "dist.with.dots",
@@ -45,12 +99,12 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 		},
 		"default / mixed": {
 			input: testInput{
-				DistributionName:   "To-be.sanitized",
+				DistributionName:   "FrIeNdLy-._.-bArD",
 				RepositoryName:     "pip",
 				LabelNormalization: DefaultLabelNormalizationType,
 				LabelConvention:    DefaultLabelConvention,
 			},
-			want: "@pip//to_be_sanitized",
+			want: "@pip//friendly_bard",
 		},
 		"default / upper case / custom prefix & suffix": {
 			input: testInput{
@@ -96,6 +150,60 @@ func TestFormatThirdPartyDependency(t *testing.T) {
 				LabelConvention:    DefaultLabelConvention,
 			},
 			want: "@pip//dist-with-underscores",
+		},
+		"pep503 / repeating dashes inside": {
+			input: testInput{
+				DistributionName:   "friendly--bard",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//friendly-bard",
+		},
+		"pep503 / repeating underscores inside": {
+			input: testInput{
+				DistributionName:   "hello___something",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello-something",
+		},
+		"pep503 / prefix repeating underscores": {
+			input: testInput{
+				DistributionName:   "__hello-something",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello-something",
+		},
+		"pep503 / suffix repeating underscores": {
+			input: testInput{
+				DistributionName:   "hello-something___",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello-something",
+		},
+		"pep503 / prefix repeating dashes": {
+			input: testInput{
+				DistributionName:   "---hello-something",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello-something",
+		},
+		"pep503 / suffix repeating dashes": {
+			input: testInput{
+				DistributionName:   "hello-something----",
+				RepositoryName:     "pip",
+				LabelNormalization: Pep503LabelNormalizationType,
+				LabelConvention:    DefaultLabelConvention,
+			},
+			want: "@pip//hello-something",
 		},
 		"pep503 / dots": {
 			input: testInput{

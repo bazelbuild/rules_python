@@ -488,13 +488,15 @@ func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionN
 	var normConventionalDistributionName string
 	switch norm := c.LabelNormalization(); norm {
 	case SnakeCaseLabelNormalizationType:
+		// See /python/private/normalize_name.bzl
 		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)
-		normConventionalDistributionName = strings.ReplaceAll(normConventionalDistributionName, "-", "_")
-		normConventionalDistributionName = strings.ReplaceAll(normConventionalDistributionName, ".", "_")
+		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "_")
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "_")
 	case Pep503LabelNormalizationType:
-		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-normalization
-		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)
-		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-")
+		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName) // ... "should be lowercased"
+		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-") // ... "all runs of the characters ., -, or _ replaced with a single -"
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-") // ... "must start and end with a letter or number"
 	default:
 		fallthrough
 	case NoLabelNormalizationType:
