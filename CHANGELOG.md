@@ -31,9 +31,9 @@ A brief description of the categories of changes:
 * (toolchains) The exec tools toolchain now finds its interpreter by reusing
   the regular interpreter toolchain. This avoids having to duplicate specifying
   where the runtime for the exec tools toolchain is.
-* (toolchains) ({obj}`//python:autodetecting_toolchain`) is deprecated. It is replaced by
-  {obj}`//python/runtime_env_toolchains:all`. The old target will be removed
-  in a future release.
+* (toolchains) ({obj}`//python:autodetecting_toolchain`) is deprecated. It is
+  replaced by {obj}`//python/runtime_env_toolchains:all`. The old target will be
+  removed in a future release.
 
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
@@ -49,17 +49,10 @@ A brief description of the categories of changes:
   Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
 * (rules) The first element of the default outputs is now the executable again.
 * (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
-* The targets would depend on the `exec_tools_toolchain_type` toolchain if it
-  was registered even though the pre-compilation was not enabled. This has been
-  fixed to not be the case anymore. Fixes
-  [#1967](https://github.com/bazelbuild/rules_python/issues/1967). Users
-  wanting to use the `precompile` feature may have to set the config setting to
-  always do the precompilation and per-target pre-compilation is for now
-  disabled.
 
 ### Added
-* (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a
-  drop-in replacement for the "autodetecting" toolchain.
+* (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
+  replacement for the "autodetecting" toolchain.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
