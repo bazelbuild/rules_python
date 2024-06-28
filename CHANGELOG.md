@@ -31,6 +31,9 @@ A brief description of the categories of changes:
 * (toolchains) The exec tools toolchain now finds its interpreter by reusing
   the regular interpreter toolchain. This avoids having to duplicate specifying
   where the runtime for the exec tools toolchain is.
+* (toolchains) ({obj}`//python:autodetecting_toolchain`) is deprecated. It is
+  replaced by {obj}`//python/runtime_env_toolchains:all`. The old target will be
+  removed in a future release.
 
 ### Fixed
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
@@ -46,6 +49,10 @@ A brief description of the categories of changes:
   Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
 * (rules) The first element of the default outputs is now the executable again.
 * (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
+
+### Added
+* (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
+  replacement for the "autodetecting" toolchain.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
