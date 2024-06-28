@@ -14,6 +14,8 @@
 
 "Rule for locking third-party dependencies with uv."
 
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
+
 script_template = """\
 {uv} pip compile \
 --python {python} \
@@ -29,7 +31,7 @@ def _uv_pip_compile(ctx):
     info = ctx.toolchains["//python:uv_toolchain_type"].uvtoolchaininfo
     uv = info.binary
 
-    python = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"].py3_runtime.interpreter
+    python = ctx.toolchains[TARGET_TOOLCHAIN_TYPE].py3_runtime.interpreter
     dependencies_file = ctx.file.dependencies_file
 
     # Option 1: Build action option.
@@ -94,7 +96,7 @@ uv_pip_compile = rule(
         "overrides_file": attr.label(allow_single_file = True),
     },
     toolchains = [
-        "@bazel_tools//tools/python:toolchain_type",
+        TARGET_TOOLCHAIN_TYPE,
         "//python:uv_toolchain_type",
     ],
     executable = True,

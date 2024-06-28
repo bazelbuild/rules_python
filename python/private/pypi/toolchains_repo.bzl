@@ -57,15 +57,18 @@ def _toolchains_repo_impl(repository_ctx):
 
 """
 
+    # todo: sort this for more stable/predictable/friendly output
     for [platform, meta] in UV_PLATFORMS.items():
         build_content += """
+load("@rules_python//python/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
+
 # Declare a toolchain Bazel will select for running the tool in an action
 # on the execution platform.
 toolchain(
     name = "{platform}_uv_toolchain",
     exec_compatible_with = {compatible_with},
     toolchain = "@{user_repository_name}_{platform}//:uv_toolchain",
-    toolchain_type = "@rules_python//python:uv_toolchain_type",
+    toolchain_type = UV_TOOLCHAIN_TYPE,
 )
 """.format(
             platform = platform,
@@ -73,6 +76,7 @@ toolchain(
             compatible_with = meta.compatible_with,
         )
 
+    repository_ctx.file("REPO.bazel", "")
     repository_ctx.file("BUILD.bazel", build_content)
 
 uv_toolchains_repo = repository_rule(

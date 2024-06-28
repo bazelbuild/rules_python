@@ -767,6 +767,7 @@ def _uv_repo_impl(repository_ctx):
             version = uv_version,
         ),
     )
+    repository_ctx.file("REPO.bazel", "")
 
 uv_repositories = repository_rule(
     _uv_repo_impl,
@@ -786,7 +787,7 @@ def uv_register_toolchains(name, register = True, **kwargs):
         name: base name for all created repos, like "uv0_2_13"
         register: whether to call through to native.register_toolchains.
             Should be True for WORKSPACE users, but false when used under bzlmod extension
-        **kwargs: passed to each node_repositories call
+        **kwargs: passed to each uv_repositories call
     """
     for platform in UV_PLATFORMS.keys():
         uv_repositories(

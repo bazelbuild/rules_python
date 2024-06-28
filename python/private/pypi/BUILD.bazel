@@ -306,10 +306,12 @@ bzl_library(
     name = "resolved_toolchain",
     srcs = ["resolved_toolchain.bzl"],
     visibility = ["//python:__subpackages__"],
+    deps = ["//python/private:toolchain_types_bzl"],
 )
 
 bzl_library(
     name = "uv_pip_compile",
     srcs = ["uv_pip_compile.bzl"],
     visibility = ["//visibility:public"],
+    deps = ["//python/private:toolchain_types_bzl"],
 )
