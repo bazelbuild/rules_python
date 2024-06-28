@@ -240,5 +240,5 @@ automatically registers a higher-priority toolchain; it won't be used unless
 there is a toolchain misconfiguration somewhere.
 
 To aid migration off the Bazel-builtin toolchain, rules_python provides
-{obj}`@rules_python//python:autodetecting_toolchain`. This is an equivalent
+{obj}`@rules_python//python/runtime_env_toolchains:all`. This is an equivalent
 toolchain, but is implemented using rules_python's objects.

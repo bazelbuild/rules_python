@@ -181,6 +181,8 @@ def parse_requirements(
          * srcs: The Simple API downloadable source list.
          * requirement_line: The original requirement line.
          * target_platforms: The list of target platforms that this package is for.
+         * is_exposed: A boolean if the package should be exposed via the hub
+           repository.
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
@@ -266,6 +268,8 @@ def parse_requirements(
                 for p in DEFAULT_PLATFORMS
                 if p not in configured_platforms
             ]
+            for p in plats:
+                configured_platforms[p] = file
 
         contents = ctx.read(file)
 
@@ -344,6 +348,19 @@ def parse_requirements(
 
     ret = {}
     for whl_name, reqs in requirements_by_platform.items():
+        requirement_target_platforms = {}
+        for r in reqs.values():
+            for p in r.target_platforms:
+                requirement_target_platforms[p] = None
+
+        is_exposed = len(requirement_target_platforms) == len(configured_platforms)
+        if not is_exposed and logger:
+            logger.debug(lambda: "Package {} will not be exposed because it is only present on a subset of platforms: {} out of {}".format(
+                whl_name,
+                sorted(requirement_target_platforms),
+                sorted(configured_platforms),
+            ))
+
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
                 r,
@@ -362,6 +379,7 @@ def parse_requirements(
                     download = r.download,
                     whls = whls,
                     sdist = sdist,
+                    is_exposed = is_exposed,
                 ),
             )
 
@@ -449,7 +467,7 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
             continue
 
         if logger:
-            logger.warn("Could not find a whl or an sdist with sha256={}".format(sha256))
+            logger.warn(lambda: "Could not find a whl or an sdist with sha256={}".format(sha256))
 
     yanked = {}
     for dist in whls + [sdist]:

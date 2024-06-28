@@ -31,8 +31,25 @@ A brief description of the categories of changes:
 * (toolchains) The exec tools toolchain now finds its interpreter by reusing
   the regular interpreter toolchain. This avoids having to duplicate specifying
   where the runtime for the exec tools toolchain is.
+* (toolchains) ({obj}`//python:autodetecting_toolchain`) is deprecated. It is
+  replaced by {obj}`//python/runtime_env_toolchains:all`. The old target will be
+  removed in a future release.
 
 ### Fixed
+* (bzlmod): When using `experimental_index_url` the `all_requirements`,
+  `all_whl_requirements` and `all_data_requirements` will now only include
+  common packages that are available on all target platforms. This is to ensure
+  that packages that are only present for some platforms are pulled only via
+  the `deps` of the materialized `py_library`. If you would like to include
+  platform specific packages, using a `select` statement with references to the
+  specific package will still work (e.g.
+  ```
+  my_attr = all_requirements + select(
+      {
+          "@platforms//os:linux": ["@pypi//foo_available_only_on_linux"],
+          "//conditions:default": [],
+      }
+  )`.
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
@@ -41,6 +58,15 @@ A brief description of the categories of changes:
   `interpreter_version_info` arg.
 * (bzlmod) Correctly pass `isolated`, `quiet` and `timeout` values to `whl_library`
   and drop the defaults from the lock file.
+* (whl_library) Correctly handle arch-specific dependencies when we encounter a
+  platform specific wheel and use `experimental_target_platforms`.
+  Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
+* (rules) The first element of the default outputs is now the executable again.
+* (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
+
+### Added
+* (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
+  replacement for the "autodetecting" toolchain.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
@@ -54,7 +80,7 @@ A brief description of the categories of changes:
   To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
   This toolchain must be enabled for precompilation to work. This toolchain will
   be enabled by default in a future release.
-  Fixes [1967](https://github.com/bazelbuild/rules_python/issues/1967).
+  Fixes [#1967](https://github.com/bazelbuild/rules_python/issues/1967).
 
 ## [0.33.1] - 2024-06-13
 

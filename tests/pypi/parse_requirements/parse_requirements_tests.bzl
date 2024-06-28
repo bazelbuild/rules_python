@@ -98,6 +98,7 @@ def _test_simple(env):
                 ],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
@@ -145,6 +146,7 @@ def _test_platform_markers_with_python_version(env):
                 ],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
@@ -181,6 +183,7 @@ def _test_dupe_requirements(env):
                 ],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
@@ -220,6 +223,7 @@ def _test_multi_os(env):
                 target_platforms = ["windows_x86_64"],
                 whls = [],
                 sdist = None,
+                is_exposed = False,
             ),
         ],
         "foo": [
@@ -244,6 +248,7 @@ def _test_multi_os(env):
                 ],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
             struct(
                 distribution = "foo",
@@ -258,6 +263,7 @@ def _test_multi_os(env):
                 target_platforms = ["windows_x86_64"],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
@@ -317,6 +323,7 @@ def _test_multi_os_download_only_platform(env):
                 target_platforms = ["linux_x86_64"],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
@@ -371,6 +378,7 @@ def _test_os_arch_requirements_with_default(env):
                 target_platforms = ["linux_aarch64", "linux_x86_64"],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
             struct(
                 distribution = "foo",
@@ -385,6 +393,7 @@ def _test_os_arch_requirements_with_default(env):
                 target_platforms = ["linux_super_exotic"],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
             struct(
                 distribution = "foo",
@@ -406,6 +415,7 @@ def _test_os_arch_requirements_with_default(env):
                 ],
                 whls = [],
                 sdist = None,
+                is_exposed = True,
             ),
         ],
     })
