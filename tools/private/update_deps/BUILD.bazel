@@ -50,14 +50,12 @@ py_binary(
     name = "update_pip_deps",
     srcs = ["update_pip_deps.py"],
     data = [
-        "//:MODULE.bazel",
-        "//python/pip_install:repositories",
-        "//python/pip_install:requirements_txt",
+        "//python/private/pypi:deps.bzl",
+        "//python/private/pypi:requirements_txt",
     ],
     env = {
-        "MODULE_BAZEL": "$(rlocationpath //:MODULE.bazel)",
-        "REPOSITORIES_BZL": "$(rlocationpath //python/pip_install:repositories)",
-        "REQUIREMENTS_TXT": "$(rlocationpath //python/pip_install:requirements_txt)",
+        "DEPS_BZL": "$(rlocationpath //python/private/pypi:deps.bzl)",
+        "REQUIREMENTS_TXT": "$(rlocationpath //python/private/pypi:requirements_txt)",
     },
     imports = ["../../.."],
     deps = [

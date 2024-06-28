@@ -19,7 +19,7 @@ import tempfile
 import unittest
 from typing import Optional, Set
 
-from python.pip_install.tools.wheel_installer import namespace_pkgs
+from python.private.pypi.whl_installer import namespace_pkgs
 
 
 class TempDir:

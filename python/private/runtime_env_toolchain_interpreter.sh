@@ -8,8 +8,8 @@ set -u
 # We do lose the ability to set -o pipefail.
 
 FAILURE_HEADER="\
-Error occurred while attempting to use the default Python toolchain \
-(@rules_python//python:autodetecting_toolchain)."
+Error occurred while attempting to use the deprecated Python toolchain \
+(@rules_python//python/runtime_env_toolchain:all)."
 
 die() {
   echo "$FAILURE_HEADER" 1>&2

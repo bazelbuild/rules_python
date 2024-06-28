@@ -18,6 +18,7 @@ NOTE: The transitive loads of this should be kept minimal. This avoids loading
 unnecessary files when all that are needed are flag definitions.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//python/private:enum.bzl", "enum")
 
 # Determines if we should use whls for third party
@@ -68,3 +69,12 @@ INTERNAL_FLAGS = [
     "whl_pycp3x_abi3",
     "whl_pycp3x_abicp",
 ]
+
+def define_pypi_internal_flags(name):
+    for flag in INTERNAL_FLAGS:
+        string_flag(
+            name = "_internal_pip_" + flag,
+            build_setting_default = "",
+            values = [""],
+            visibility = ["//visibility:public"],
+        )

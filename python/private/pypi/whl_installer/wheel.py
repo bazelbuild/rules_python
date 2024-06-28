@@ -342,7 +342,12 @@ class Deps:
         self.name: str = Deps._normalize(name)
         self._platforms: Set[Platform] = platforms or set()
         self._target_versions = {p.minor_version for p in platforms or {}}
-        self._add_version_select = platforms and len(self._target_versions) > 2
+        self._default_minor_version = None
+        if platforms and len(self._target_versions) > 2:
+            # TODO @aignas 2024-06-23: enable this to be set via a CLI arg
+            # for being more explicit.
+            self._default_minor_version = host_interpreter_minor_version()
+
         if None in self._target_versions and len(self._target_versions) > 2:
             raise ValueError(
                 f"all python versions need to be specified explicitly, got: {platforms}"
@@ -540,21 +545,21 @@ class Deps:
             ):
                 continue
 
-            if match_arch and self._add_version_select:
+            if match_arch and self._default_minor_version:
                 self._add(req.name, plat)
-                if plat.minor_version == host_interpreter_minor_version():
+                if plat.minor_version == self._default_minor_version:
                     self._add(req.name, Platform(plat.os, plat.arch))
             elif match_arch:
-                self._add(req.name, plat)
-            elif match_os and self._add_version_select:
+                self._add(req.name, Platform(plat.os, plat.arch))
+            elif match_os and self._default_minor_version:
                 self._add(req.name, Platform(plat.os, minor_version=plat.minor_version))
-                if plat.minor_version == host_interpreter_minor_version():
+                if plat.minor_version == self._default_minor_version:
                     self._add(req.name, Platform(plat.os))
             elif match_os:
                 self._add(req.name, Platform(plat.os))
-            elif match_version and self._add_version_select:
+            elif match_version and self._default_minor_version:
                 self._add(req.name, Platform(minor_version=plat.minor_version))
-                if plat.minor_version == host_interpreter_minor_version():
+                if plat.minor_version == self._default_minor_version:
                     self._add(req.name, Platform())
             elif match_version:
                 self._add(req.name, None)

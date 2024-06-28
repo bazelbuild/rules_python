@@ -16,12 +16,12 @@
 
 load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python:versions.bzl", "WINDOWS_NAME")
-load("//python/pip_install:repositories.bzl", "all_requirements")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":attrs.bzl", "ATTRS", "use_isolated")
+load(":deps.bzl", "all_requirements")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
@@ -241,7 +241,7 @@ def _whl_library_impl(rctx):
     args = [
         python_interpreter,
         "-m",
-        "python.pip_install.tools.wheel_installer.wheel_installer",
+        "python.private.pypi.whl_installer.wheel_installer",
         "--requirement",
         rctx.attr.requirement,
     ]

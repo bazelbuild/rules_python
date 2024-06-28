@@ -19,7 +19,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from python.pip_install.tools.wheel_installer import wheel, wheel_installer
+from python.private.pypi.whl_installer import wheel_installer
 
 
 class TestRequirementExtrasParsing(unittest.TestCase):

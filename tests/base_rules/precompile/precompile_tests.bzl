@@ -122,6 +122,7 @@ def _test_pyc_only(name):
             "//command_line_option:extra_toolchains": _TEST_TOOLCHAINS,
             ##PRECOMPILE_SOURCE_RETENTION: "omit_source",
             EXEC_TOOLS_TOOLCHAIN: "enabled",
+            PRECOMPILE: "enabled",
         },
         target = name + "_subject",
     )

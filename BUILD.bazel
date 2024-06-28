@@ -40,7 +40,6 @@ filegroup(
         "internal_setup.bzl",
         "version.bzl",
         "//python:distribution",
-        "//python/pip_install:distribution",
         "//tools:distribution",
         "@rules_python_gazelle_plugin//:distribution",
     ],

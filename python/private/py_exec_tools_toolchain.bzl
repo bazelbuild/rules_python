@@ -14,14 +14,22 @@
 
 """Rule that defines a toolchain for build tools."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 load(":py_exec_tools_info.bzl", "PyExecToolsInfo")
 
 def _py_exec_tools_toolchain_impl(ctx):
-    return [platform_common.ToolchainInfo(exec_tools = PyExecToolsInfo(
-        exec_interpreter = ctx.attr.exec_interpreter,
-        precompiler = ctx.attr.precompiler,
-    ))]
+    extra_kwargs = {}
+    if ctx.attr._visible_for_testing[BuildSettingInfo].value:
+        extra_kwargs["toolchain_label"] = ctx.label
+
+    return [platform_common.ToolchainInfo(
+        exec_tools = PyExecToolsInfo(
+            exec_interpreter = ctx.attr.exec_interpreter,
+            precompiler = ctx.attr.precompiler,
+        ),
+        **extra_kwargs
+    )]
 
 py_exec_tools_toolchain = rule(
     implementation = _py_exec_tools_toolchain_impl,
@@ -35,6 +43,9 @@ py_exec_tools_toolchain = rule(
             allow_files = True,
             cfg = "exec",
             doc = "See PyExecToolsInfo.precompiler",
+        ),
+        "_visible_for_testing": attr.label(
+            default = "//python/private:visible_for_testing",
         ),
     },
 )

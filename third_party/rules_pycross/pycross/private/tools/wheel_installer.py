@@ -30,7 +30,7 @@ from installer import install
 from installer.destinations import SchemeDictionaryDestination
 from installer.sources import WheelFile
 
-from python.pip_install.tools.wheel_installer import namespace_pkgs
+from python.private.pypi.whl_installer import namespace_pkgs
 
 
 def setup_namespace_pkg_compatibility(wheel_dir: Path) -> None:

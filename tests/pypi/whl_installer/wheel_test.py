@@ -2,7 +2,7 @@ import unittest
 from random import shuffle
 from unittest import mock
 
-from python.pip_install.tools.wheel_installer import wheel
+from python.private.pypi.whl_installer import wheel
 
 
 class DepsTest(unittest.TestCase):
@@ -218,7 +218,43 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({"@platforms//os:linux": ["posix_dep"]}, py38_deps.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
+    )
+    def test_no_version_select_when_single_version(self, mock_host_interpreter_version):
+        requires_dist = [
+            "bar",
+            "baz; python_version >= '3.8'",
+            "posix_dep; os_name=='posix'",
+            "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
+            "arch_dep; platform_machine=='x86_64' and python_version >= '3.8'",
+        ]
+        mock_host_interpreter_version.return_value = 7
+
+        self.maxDiff = None
+
+        deps = wheel.Deps(
+            "foo",
+            requires_dist=requires_dist,
+            platforms=[
+                wheel.Platform(os=os, arch=wheel.Arch.x86_64, minor_version=minor)
+                for minor in [8]
+                for os in [wheel.OS.linux, wheel.OS.windows]
+            ],
+        )
+        got = deps.build()
+
+        self.assertEqual(["bar", "baz"], got.deps)
+        self.assertEqual(
+            {
+                "@platforms//os:linux": ["posix_dep", "posix_dep_with_version"],
+                "linux_x86_64": ["arch_dep", "posix_dep", "posix_dep_with_version"],
+                "windows_x86_64": ["arch_dep"],
+            },
+            got.deps_select,
+        )
+
+    @mock.patch(
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_can_get_version_select(self, mock_host_interpreter_version):
         requires_dist = [
@@ -227,6 +263,7 @@ class DepsTest(unittest.TestCase):
             "baz_new; python_version >= '3.8'",
             "posix_dep; os_name=='posix'",
             "posix_dep_with_version; os_name=='posix' and python_version >= '3.8'",
+            "arch_dep; platform_machine=='x86_64' and python_version < '3.8'",
         ]
         mock_host_interpreter_version.return_value = 7
 
@@ -251,6 +288,8 @@ class DepsTest(unittest.TestCase):
                 "@//python/config_settings:is_python_3.8": ["baz_new"],
                 "@//python/config_settings:is_python_3.9": ["baz_new"],
                 "@platforms//os:linux": ["baz", "posix_dep"],
+                "cp37_linux_x86_64": ["arch_dep", "baz", "posix_dep"],
+                "cp37_windows_x86_64": ["arch_dep", "baz"],
                 "cp37_linux_anyarch": ["baz", "posix_dep"],
                 "cp38_linux_anyarch": [
                     "baz_new",
@@ -262,12 +301,14 @@ class DepsTest(unittest.TestCase):
                     "posix_dep",
                     "posix_dep_with_version",
                 ],
+                "linux_x86_64": ["arch_dep", "baz", "posix_dep"],
+                "windows_x86_64": ["arch_dep", "baz"],
             },
             got.deps_select,
         )
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_spanning_all_target_py_versions_are_added_to_common(
         self, mock_host_version
@@ -290,7 +331,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({}, got.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_are_not_duplicated(self, mock_host_version):
         mock_host_version.return_value = 7
@@ -319,7 +360,7 @@ class DepsTest(unittest.TestCase):
         self.assertEqual({}, got.deps_select)
 
     @mock.patch(
-        "python.pip_install.tools.wheel_installer.wheel.host_interpreter_minor_version"
+        "python.private.pypi.whl_installer.wheel.host_interpreter_minor_version"
     )
     def test_deps_are_not_duplicated_when_encountering_platform_dep_first(
         self, mock_host_version
