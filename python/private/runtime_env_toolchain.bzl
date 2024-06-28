@@ -38,24 +38,24 @@ def define_runtime_env_toolchain(name):
     """
     base_name = name.replace("_toolchain", "")
 
-    # buildifier: disable=native-py
     py_runtime(
         name = "_runtime_env_py3_runtime",
         interpreter = "//python/private:runtime_env_toolchain_interpreter.sh",
         python_version = "PY3",
         stub_shebang = "#!/usr/bin/env python3",
         visibility = ["//visibility:private"],
+        tags = ["manual"],
     )
 
     # This is a dummy runtime whose interpreter_path triggers the native rule
     # logic to use the legacy behavior on Windows.
     # TODO(#7844): Remove this target.
-    # buildifier: disable=native-py
     py_runtime(
         name = "_magic_sentinel_runtime",
         interpreter_path = "/_magic_pyruntime_sentinel_do_not_use",
         python_version = "PY3",
         visibility = ["//visibility:private"],
+        tags = ["manual"],
     )
 
     py_runtime_pair(
@@ -69,6 +69,7 @@ def define_runtime_env_toolchain(name):
             "//conditions:default": ":_runtime_env_py3_runtime",
         }),
         visibility = ["//visibility:public"],
+        tags = ["manual"],
     )
 
     native.toolchain(
@@ -82,6 +83,7 @@ def define_runtime_env_toolchain(name):
         name = "_runtime_env_py_exec_tools_toolchain_impl",
         precompiler = Label("//tools/precompiler:precompiler"),
         visibility = ["//visibility:private"],
+        tags = ["manual"],
     )
     native.toolchain(
         name = base_name + "_py_exec_tools_toolchain",
@@ -93,12 +95,14 @@ def define_runtime_env_toolchain(name):
     cc_library(
         name = "_empty_cc_lib",
         visibility = ["//visibility:private"],
+        tags = ["manual"],
     )
     py_cc_toolchain(
         name = "_runtime_env_py_cc_toolchain_impl",
         headers = ":_empty_cc_lib",
         libs = ":_empty_cc_lib",
         python_version = "0.0",
+        tags = ["manual"],
     )
     native.toolchain(
         name = base_name + "_py_cc_toolchain",
