@@ -1,4 +1,5 @@
 load("//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
+load("//python/private:text_util.bzl", "render")
 
 _TOOLCHAIN_TEMPLATE = """
 load("@rules_python//python/private:py_toolchain_suite.bzl", "py_toolchain_suite2")
@@ -44,5 +45,27 @@ local_runtime_toolchain_repo = repository_rule(
         "runtime_repo_name": attr.string(),
         "target_compatible_with": attr.label_list(),
         "target_settings": attr.label_list(),
+    },
+)
+
+def _local_runtime_toolchains_repo(rctx):
+    rctx.file("WORKSPACE", "")
+    rctx.file("MODULE.bazel", "")
+    rctx.file("REPO.bazel", "")
+
+    rctx.file("BUILD.bazel", """
+load("@rules_python//python/private:py_toolchain_suite.bzl", "multi_py_toolchain_suite2")
+
+multi_py_toolchain_suite2(
+    repo_names = {names},
+)
+""".format(
+        names = render.list(rctx.attr.repo_names),
+    ))
+
+local_runtime_toolchains_repo = repository_rule(
+    implementation = _local_runtime_toolchains_repo,
+    attrs = {
+        "repo_names": attr.string_list(),
     },
 )

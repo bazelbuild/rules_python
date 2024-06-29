@@ -25,6 +25,8 @@ local_runtime_repo = use_repo_rule("@rules_python//python/private:local_runtime_
 
 local_runtime_toolchain_repo = use_repo_rule("@rules_python//python/private:local_runtime_toolchain_repo.bzl", "local_runtime_toolchain_repo")
 
+local_runtime_toolchains_repo = use_repo_rule("@rules_python//python/private:local_runtime_toolchain_repo.bzl", "local_runtime_toolchains_repo")
+
 local_runtime_repo(
     name = "usr_bin_python3",
     interpreter_path = "/usr/bin/python3",
@@ -35,15 +37,23 @@ local_runtime_repo(
     interpreter_path = "C:\\python3.exe",
 )
 
-local_runtime_toolchain_repo(
-    name = "usr_bin_python3_toolchain",
-    runtime_repo_name = "usr_bin_python3",
-    ## also_register_as_default = True,
-    ##target_compatible_with = ["@usr_bin_python3//:os"],
-    ##target_settings = ["@usr_bin_python3//:python_version"],
+##local_runtime_toolchain_repo(
+##    name = "usr_bin_python3_toolchain",
+##    runtime_repo_name = "usr_bin_python3",
+##    ## also_register_as_default = True,
+##    ##target_compatible_with = ["@usr_bin_python3//:os"],
+##    ##target_settings = ["@usr_bin_python3//:python_version"],
+##)
+local_runtime_toolchains_repo(
+    name = "local_toolchains",
+    repo_names = [
+        "usr_bin_python3",
+        #"win_python3",
+    ],
 )
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 use_repo(python, "rules_python_bzlmod_debug")
 
-register_toolchains("@usr_bin_python3_toolchain//:all")
+##register_toolchains("@usr_bin_python3_toolchain//:all")
+register_toolchains("@local_toolchains//:all")

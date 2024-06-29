@@ -166,3 +166,18 @@ def py_toolchain_suite2(prefix, user_repository_name, target_settings, target_co
         }),
         exec_compatible_with = kwargs.get("target_compatible_with"),
     )
+
+def multi_py_toolchain_suite2(repo_names):
+    for i, repo in enumerate(repo_names):
+        prefix = _left_pad_zero(i, 3)
+        py_toolchain_suite2(
+            prefix = prefix,
+            user_repository_name = repo,
+            target_compatible_with = ["@{}//:os".format(repo)],
+            target_settings = ["@{}//:is_matching_python_version".format(repo)],
+        )
+
+def _left_pad_zero(index, length):
+    if index < 0:
+        fail("index must be non-negative")
+    return ("0" * length + str(index))[-length:]
