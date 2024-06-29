@@ -274,6 +274,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "uv_versions_bzl",
+    srcs = ["uv_versions.bzl"],
+    visibility = ["//python:__subpackages__"],
+)
+
+bzl_library(
     name = "whl_library_alias_bzl",
     srcs = ["whl_library_alias.bzl"],
     deps = [
@@ -314,10 +320,4 @@ bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     deps = [":parse_whl_name_bzl"],
-)
-
-bzl_library(
-    name = "versions",
-    srcs = ["versions.bzl"],
-    visibility = ["//python:__subpackages__"],
 )
