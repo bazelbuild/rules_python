@@ -4,10 +4,24 @@ _TOOLCHAIN_TEMPLATE = """
 load("@rules_python//python/private:py_toolchain_suite.bzl", "py_toolchain_suite2")
 
 py_toolchain_suite2(
-    prefix = "{prefix}",
+    prefix = "{prefix}_versioned",
     user_repository_name = "{user_repository_name}",
-    python_version = "",
-    set_python_version_constraint = "False",
+    target_compatible_with = [
+        "@{user_repository_name}//:os",
+    ],
+    target_settings = [
+        "@{user_repository_name}//:is_matching_python_version",
+    ],
+    ##python_version = "",
+    ##set_python_version_constraint = "False",
+)
+py_toolchain_suite2(
+    prefix = "{prefix}_unversioned",
+    user_repository_name = "{user_repository_name}",
+    target_settings = [],
+    target_compatible_with = [
+        "@{user_repository_name}//:os",
+    ],
 )
 """
 
@@ -18,10 +32,10 @@ def _local_runtime_toolchain_repo(rctx):
     rctx.file("BUILD.bazel", _TOOLCHAIN_TEMPLATE.format(
         prefix = rctx.name,
         user_repository_name = rctx.attr.runtime_repo_name,
-        target_compatible_with = rctx.attr.target_compatible_with,
-        flag_values = {k: True for k in rctx.attr.target_settings},
-        python_version = "",
-        set_python_version_constraint = "False",
+        ##target_compatible_with = rctx.attr.target_compatible_with,
+        ##flag_values = {k: True for k in rctx.attr.target_settings},
+        ##python_version = "",
+        ##set_python_version_constraint = "False",
     ))
 
 local_runtime_toolchain_repo = repository_rule(

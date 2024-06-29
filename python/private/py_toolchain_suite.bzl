@@ -125,3 +125,44 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
     # toolchain, the name must be added to the native.register_toolchains()
     # call in python/repositories.bzl. Bzlmod doesn't need anything; it will
     # register `:all`.
+    #
+
+def py_toolchain_suite2(prefix, user_repository_name, target_settings, target_compatible_with, **kwargs):
+    native.toolchain(
+        name = "{prefix}_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:python_runtimes".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = TARGET_TOOLCHAIN_TYPE,
+        target_settings = target_settings,
+        **kwargs
+    )
+
+    native.toolchain(
+        name = "{prefix}_py_cc_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:py_cc_toolchain".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
+        target_settings = target_settings,
+        **kwargs
+    )
+
+    native.toolchain(
+        name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
+        toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
+            user_repository_name = user_repository_name,
+        ),
+        toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
+        target_settings = select({
+            _IS_EXEC_TOOLCHAIN_ENABLED: target_settings,
+            # Whatever the default is, it has to map to a `config_setting`
+            # that will never match. Since the default branch is only taken if
+            # _IS_EXEC_TOOLCHAIN_ENABLED is false, then it will never match
+            # when later evaluated during toolchain resolution.
+            # Note that @platforms//:incompatible can't be used here because
+            # the RHS must be a `config_setting`.
+            "//conditions:default": [_IS_EXEC_TOOLCHAIN_ENABLED],
+        }),
+        exec_compatible_with = kwargs.get("target_compatible_with"),
+    )
