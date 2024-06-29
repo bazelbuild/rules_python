@@ -28,7 +28,7 @@ script_template = """\
 """
 
 def _uv_pip_compile(ctx):
-    info = ctx.toolchains["//python:uv_toolchain_type"].uvtoolchaininfo
+    info = ctx.toolchains["//python/uv:uv_toolchain_type"].uvtoolchaininfo
     uv = info.binary
 
     python = ctx.toolchains[TARGET_TOOLCHAIN_TYPE].py3_runtime.interpreter

@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package(default_visibility = ["//visibility:public"])
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python/private/pypi:resolved_toolchain.bzl", "uv_resolved_toolchain")
+
+# For stardoc to reference the files
+exports_files(["defs.bzl"])
 
 toolchain_type(
     name = "uv_toolchain_type",
@@ -24,5 +28,17 @@ uv_resolved_toolchain(
     # Marked manual so that `bazel test //...` passes
     # even if no toolchain is registered.
     tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "defs",
+    srcs = ["defs.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "toolchain",
+    srcs = ["toolchain.bzl"],
     visibility = ["//visibility:public"],
 )
