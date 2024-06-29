@@ -25,29 +25,29 @@ UvToolchainInfo = provider(
 def _uv_toolchain_impl(ctx):
     binary = ctx.executable.uv
 
-    templatevariableinfo = platform_common.TemplateVariableInfo({
+    template_variable_info = platform_common.TemplateVariableInfo({
         "UV_BIN": binary.path,
     })
-    defaultinfo = DefaultInfo(
+    default_info = DefaultInfo(
         files = depset([binary]),
         runfiles = ctx.runfiles(files = [binary]),
     )
-    uvtoolchaininfo = UvToolchainInfo(
+    uv_toolchain_info = UvToolchainInfo(
         binary = binary,
         version = ctx.attr.version.removeprefix("v"),
     )
 
     # Export all the providers inside our ToolchainInfo
     # so the resolved_toolchain rule can grab and re-export them.
-    toolchaininfo = platform_common.ToolchainInfo(
-        uvtoolchaininfo = uvtoolchaininfo,
-        templatevariableinfo = templatevariableinfo,
-        defaultinfo = defaultinfo,
+    toolchain_info = platform_common.ToolchainInfo(
+        uv_toolchain_info = uv_toolchain_info,
+        template_variable_info = template_variable_info,
+        default_info = default_info,
     )
     return [
-        defaultinfo,
-        toolchaininfo,
-        templatevariableinfo,
+        default_info,
+        toolchain_info,
+        template_variable_info,
     ]
 
 uv_toolchain = rule(
