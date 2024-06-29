@@ -67,7 +67,7 @@ def _toolchains_repo_impl(repository_ctx):
     for index, [platform, meta] in enumerate(UV_PLATFORMS.items()):
         prefix = render.toolchain_prefix(index, "uv_toolchain", _TOOLCHAIN_INDEX_PAD_LENGTH)
         build_content += """
-load("@rules_python//python/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
+load("@rules_python//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
 # Declare a toolchain Bazel will select for running the tool in an action
 # on the execution platform.

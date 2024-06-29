@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//python/private/pypi:resolved_toolchain.bzl", "uv_resolved_toolchain")
+load("//python/uv/private:resolved_toolchain.bzl", "uv_resolved_toolchain")
 
 # For stardoc to reference the files
 exports_files(["defs.bzl"])
@@ -35,6 +35,13 @@ bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
     visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "extensions",
+    srcs = ["extensions.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [":repositories"],
 )
 
 bzl_library(

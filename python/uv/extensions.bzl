@@ -14,7 +14,7 @@
 
 "uv module extension"
 
-load("//python:repositories.bzl", "uv_register_toolchains")
+load("//python/uv:repositories.bzl", "uv_register_toolchains")
 
 _DEFAULT_NAME = "uv"
 

@@ -12,10 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""All toolchains re-exported here"""
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-load("//python/uv/private:uv_toolchain.bzl", _UvToolchainInfo = "UvToolchainInfo", _uv_toolchain = "uv_toolchain")
+bzl_library(
+    name = "toolchains_repo",
+    srcs = ["toolchains_repo.bzl"],
+    visibility = ["//python/uv:__subpackages__"],
+)
 
-UvToolchainInfo = _UvToolchainInfo
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
+    visibility = ["//python/uv:__subpackages__"],
+)
 
-uv_toolchain = _uv_toolchain
+bzl_library(
+    name = "resolved_toolchain",
+    srcs = ["resolved_toolchain.bzl"],
+    visibility = ["//python/uv:__subpackages__"],
+)

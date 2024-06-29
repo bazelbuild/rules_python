@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"uv module extension"
+"""Labels to identify toolchain types.
 
-load("//python/private/pypi:uv_extension.bzl", _uv = "uv")
+This is a separate file because things needing the toolchain types (in
+particular, toolchain() registrations) shouldn't need to load the entire
+implementation of the toolchain.
+"""
 
-uv = _uv
+UV_TOOLCHAIN_TYPE = Label("//python/uv:uv_toolchain_type")

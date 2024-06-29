@@ -21,4 +21,3 @@ implementation of the toolchain.
 TARGET_TOOLCHAIN_TYPE = Label("//python:toolchain_type")
 EXEC_TOOLS_TOOLCHAIN_TYPE = Label("//python:exec_tools_toolchain_type")
 PY_CC_TOOLCHAIN_TYPE = Label("//python/cc:toolchain_type")
-UV_TOOLCHAIN_TYPE = Label("//python/uv:uv_toolchain_type")

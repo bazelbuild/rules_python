@@ -15,7 +15,7 @@
 """This module implements an alias rule to the resolved toolchain.
 """
 
-load("//python/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
+load("//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
 _DOC = """\
 Exposes a concrete toolchain which is the result of Bazel resolving the
@@ -25,7 +25,7 @@ Workaround for https://github.com/bazelbuild/bazel/issues/14009
 
 # Forward all the providers
 def _uv_resolved_toolchain_impl(ctx):
-    toolchain_info = ctx.toolchains["//python:uv_toolchain_type"]
+    toolchain_info = ctx.toolchains["//python/uv:uv_toolchain_type"]
     return [
         toolchain_info,
         toolchain_info.defaultinfo,

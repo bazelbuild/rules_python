@@ -14,6 +14,6 @@
 
 """Experimental toolchain for uv"""
 
-load("//python/private/pypi:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")
+load("//python/uv/private:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")
 
 uv_pip_compile = _uv_pip_compile
