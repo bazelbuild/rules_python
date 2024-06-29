@@ -12,10 +12,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""All toolchains re-exported here"""
+"""This module implements the uv toolchain rule"""
 
-load("//python/uv/private:uv_toolchain.bzl", _UvToolchainInfo = "UvToolchainInfo", _uv_toolchain = "uv_toolchain")
+UvToolchainInfo = provider(
+    doc = "Information about how to invoke the uv executable.",
+    fields = {
+        "binary": "uv binary",
+        "version": "uv version",
+    },
+)
 
-UvToolchainInfo = _UvToolchainInfo
+def _uv_toolchain_impl(ctx):
+    binary = ctx.executable.uv
 
-uv_toolchain = _uv_toolchain
+    templatevariableinfo = platform_common.TemplateVariableInfo({
+        "UV_BIN": binary.path,
+    })
+    defaultinfo = DefaultInfo(
+        files = depset([binary]),
+        runfiles = ctx.runfiles(files = [binary]),
+    )
+    uvtoolchaininfo = UvToolchainInfo(
+        binary = binary,
+        version = ctx.attr.version.removeprefix("v"),
+    )
+
+    # Export all the providers inside our ToolchainInfo
+    # so the resolved_toolchain rule can grab and re-export them.
+    toolchaininfo = platform_common.ToolchainInfo(
+        uvtoolchaininfo = uvtoolchaininfo,
+        templatevariableinfo = templatevariableinfo,
+        defaultinfo = defaultinfo,
+    )
+    return [
+        defaultinfo,
+        toolchaininfo,
+        templatevariableinfo,
+    ]
+
+uv_toolchain = rule(
+    implementation = _uv_toolchain_impl,
+    attrs = {
+        "uv": attr.label(
+            doc = "A static uv binary.",
+            mandatory = False,
+            allow_single_file = True,
+            executable = True,
+            cfg = "target",
+        ),
+        "version": attr.string(mandatory = True, doc = "Version of the uv binary."),
+    },
+    doc = "Defines a uv toolchain.",
+)
