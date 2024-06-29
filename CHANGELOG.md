@@ -68,6 +68,11 @@ A brief description of the categories of changes:
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
 
+### Added
+* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
+  allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
+  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
+
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
 
