@@ -45,6 +45,16 @@ bzl_library(
 )
 
 bzl_library(
+    name = "repositories",
+    srcs = ["repositories.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//python/uv/private:toolchains_repo",
+        "//python/uv/private:versions",
+    ],
+)
+
+bzl_library(
     name = "toolchain",
     srcs = ["toolchain.bzl"],
     visibility = ["//visibility:public"],
