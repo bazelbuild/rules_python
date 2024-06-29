@@ -14,6 +14,6 @@
 
 "uv module extension"
 
-load("//python/private/bzlmod:uv.bzl", _uv = "uv")
+load("//python/private/pypi:uv_extension.bzl", _uv = "uv")
 
 uv = _uv
