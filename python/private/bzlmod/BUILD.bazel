@@ -53,11 +53,3 @@ bzl_library(
         "//python/private:py_toolchain_suite_bzl",
     ],
 )
-
-bzl_library(
-    name = "uv_bzl",
-    srcs = ["uv.bzl"],
-    deps = [
-        "//python/private/pypi:uv_extension.bzl",
-    ],
-)
