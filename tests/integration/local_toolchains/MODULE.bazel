@@ -46,9 +46,9 @@ local_runtime_repo(
 ##)
 local_runtime_toolchains_repo(
     name = "local_toolchains",
-    repo_names = [
+    runtimes = [
         "usr_bin_python3",
-        #"win_python3",
+        "win_python3",
     ],
 )
 

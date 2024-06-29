@@ -60,12 +60,13 @@ multi_py_toolchain_suite2(
     repo_names = {names},
 )
 """.format(
-        names = render.list(rctx.attr.repo_names),
+        names = render.list(rctx.attr.runtimes),
     ))
 
 local_runtime_toolchains_repo = repository_rule(
     implementation = _local_runtime_toolchains_repo,
     attrs = {
-        "repo_names": attr.string_list(),
+        "runtimes": attr.string_list(),
+        "default_runtimes": attr.string_list(),
     },
 )

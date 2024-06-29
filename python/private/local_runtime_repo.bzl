@@ -123,9 +123,21 @@ print(json.dumps(data))
 """
 
 def _local_runtime_repo_impl(rctx):
+    print("==== RUN RUNTIME REPO", rctx.name)
     interpreter_path = resolve_interpreter_path(rctx, rctx.attr)
     if not interpreter_path or not interpreter_path.exists:
-        fail("Unable to find interpreter from {}".format(rctx.attr.interpreter_path))
+        rctx.file("BUILD.bazel", _TOOLCHAIN_IMPL_TEMPLATE.format(
+            interpreter_path = "undefined",
+            implementation_name = "undefined",
+            lib_ext = "undefined",
+            major = "0",
+            minor = "0",
+            micro = "0",
+            actual_os = "@platforms//:incompatible",
+        ))
+        return
+
+        ##fail("Unable to find interpreter from {}".format(rctx.attr.interpreter_path))
 
     rctx.file("getinfo.py", _GET_INFO_PROGRAM)
     exec_result = repo_utils.execute_unchecked(
@@ -229,7 +241,7 @@ def resolve_interpreter_path(rctx_or_mctx, ctx_attr, required = True):
     Returns:
         A path object or None. The path may not exist.
     """
-    if "/" not in ctx_attr.interpreter_path:
+    if "/" not in ctx_attr.interpreter_path and "\\" not in ctx_attr.interpreter_path:
         interpreter_path = rctx_or_mctx.which(ctx_attr.interpreter_path)
     else:
         interpreter_path = rctx_or_mctx.path(ctx_attr.interpreter_path)
