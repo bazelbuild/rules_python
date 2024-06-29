@@ -10,7 +10,8 @@ load("@pip//:requirements.bzl", "all_data_requirements", "all_requirements", "al
 load("@python_3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@python_versions//3.10:defs.bzl", compile_pip_requirements_3_10 = "compile_pip_requirements")
 load("@python_versions//3.9:defs.bzl", compile_pip_requirements_3_9 = "compile_pip_requirements")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test", "uv_pip_compile")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+load("@rules_python//python/uv:defs.bzl", "uv_pip_compile")
 
 # This stanza calls a rule that generates targets for managing pip dependencies
 # with pip-compile.
