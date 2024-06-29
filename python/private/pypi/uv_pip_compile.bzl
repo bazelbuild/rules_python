@@ -14,7 +14,7 @@
 
 "Rule for locking third-party dependencies with uv."
 
-load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE", "UV_TOOLCHAIN_TYPE")
 
 script_template = """\
 {uv} pip compile \
@@ -97,7 +97,7 @@ uv_pip_compile = rule(
     },
     toolchains = [
         TARGET_TOOLCHAIN_TYPE,
-        "//python:uv_toolchain_type",
+        UV_TOOLCHAIN_TYPE,
     ],
     executable = True,
 )

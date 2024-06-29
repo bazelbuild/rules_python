@@ -34,7 +34,7 @@ load(
 )
 load("//python/private/pypi:deps.bzl", "pypi_deps")
 load("//python/private/pypi:toolchains_repo.bzl", "UV_PLATFORMS", "uv_toolchains_repo")
-load("//python/private/pypi:versions.bzl", "UV_TOOL_VERSIONS")
+load("//python/private/pypi:uv_versions.bzl", "UV_TOOL_VERSIONS")
 load(
     ":versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -767,9 +767,8 @@ def _uv_repo_impl(repository_ctx):
             version = uv_version,
         ),
     )
-    repository_ctx.file("REPO.bazel", "")
 
-uv_repositories = repository_rule(
+uv_repository = repository_rule(
     _uv_repo_impl,
     doc = "Fetch external tools needed for uv toolchain",
     attrs = {
@@ -790,7 +789,7 @@ def uv_register_toolchains(name, register = True, **kwargs):
         **kwargs: passed to each uv_repositories call
     """
     for platform in UV_PLATFORMS.keys():
-        uv_repositories(
+        uv_repository(
             name = name + "_" + platform,
             platform = platform,
             **kwargs

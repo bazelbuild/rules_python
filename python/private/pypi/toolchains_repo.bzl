@@ -14,6 +14,13 @@
 
 "Creates a repository to hold toolchains"
 
+load("//python/private:text_util.bzl", "render")
+
+# This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
+# targets using any of these toolchains due to the changed repository name.
+_MAX_NUM_TOOLCHAINS = 9999
+_TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
+
 UV_PLATFORMS = {
     "aarch64-apple-darwin": struct(
         compatible_with = [
@@ -57,26 +64,26 @@ def _toolchains_repo_impl(repository_ctx):
 
 """
 
-    # todo: sort this for more stable/predictable/friendly output
-    for [platform, meta] in UV_PLATFORMS.items():
+    for index, [platform, meta] in enumerate(UV_PLATFORMS.items()):
+        prefix = render.toolchain_prefix(index, "uv_toolchain", _TOOLCHAIN_INDEX_PAD_LENGTH)
         build_content += """
 load("@rules_python//python/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
 # Declare a toolchain Bazel will select for running the tool in an action
 # on the execution platform.
 toolchain(
-    name = "{platform}_uv_toolchain",
+    name = "{prefix}{platform}",
     exec_compatible_with = {compatible_with},
     toolchain = "@{user_repository_name}_{platform}//:uv_toolchain",
     toolchain_type = UV_TOOLCHAIN_TYPE,
 )
 """.format(
             platform = platform,
+            prefix = prefix,
             user_repository_name = repository_ctx.attr.user_repository_name,
             compatible_with = meta.compatible_with,
         )
 
-    repository_ctx.file("REPO.bazel", "")
     repository_ctx.file("BUILD.bazel", build_content)
 
 uv_toolchains_repo = repository_rule(

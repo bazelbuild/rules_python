@@ -15,7 +15,7 @@
 """This module implements an alias rule to the resolved toolchain.
 """
 
-load("//python/private:toolchain_types", "UV_TOOLCHAIN_TYPE")
+load("//python/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 
 _DOC = """\
 Exposes a concrete toolchain which is the result of Bazel resolving the

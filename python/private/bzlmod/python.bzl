@@ -16,6 +16,7 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
+load("//python/private:text_util.bzl", "render")
 load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
 load("//python/private:util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 load(":pythons_hub.bzl", "hub_repo")
@@ -24,20 +25,6 @@ load(":pythons_hub.bzl", "hub_repo")
 # targets using any of these toolchains due to the changed repository name.
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
-
-def _toolchain_prefix(index, name):
-    """Prefixes the given name with the index, padded with zeros to ensure lexicographic sorting.
-
-    Examples:
-      _toolchain_prefix(   2, "foo") == "_0002_foo_"
-      _toolchain_prefix(2000, "foo") == "_2000_foo_"
-    """
-    return "_{}_{}_".format(_left_pad_zero(index, _TOOLCHAIN_INDEX_PAD_LENGTH), name)
-
-def _left_pad_zero(index, length):
-    if index < 0:
-        fail("index must be non-negative")
-    return ("0" * length + str(index))[-length:]
 
 # Printing a warning msg not debugging, so we have to disable
 # the buildifier check.
@@ -202,7 +189,7 @@ def _python_impl(module_ctx):
         name = "pythons_hub",
         default_python_version = default_toolchain.python_version,
         toolchain_prefixes = [
-            _toolchain_prefix(index, toolchain.name)
+            render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(toolchains)
         ],
         toolchain_python_versions = [t.python_version for t in toolchains],

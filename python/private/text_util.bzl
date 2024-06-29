@@ -99,11 +99,27 @@ def _render_tuple(items, *, value_repr = repr):
         ")",
     ])
 
+def _toolchain_prefix(index, name, pad_length):
+    """Prefixes the given name with the index, padded with zeros to ensure lexicographic sorting.
+
+    Examples:
+      toolchain_prefix(   2, "foo", 4) == "_0002_foo_"
+      toolchain_prefix(2000, "foo", 4) == "_2000_foo_"
+    """
+    return "_{}_{}_".format(_left_pad_zero(index, pad_length), name)
+
+def _left_pad_zero(index, length):
+    if index < 0:
+        fail("index must be non-negative")
+    return ("0" * length + str(index))[-length:]
+
 render = struct(
     alias = _render_alias,
     dict = _render_dict,
     indent = _indent,
+    left_pad_zero = _left_pad_zero,
     list = _render_list,
     select = _render_select,
     tuple = _render_tuple,
+    toolchain_prefix = _toolchain_prefix,
 )
