@@ -15,6 +15,16 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python/uv/private:resolved_toolchain.bzl", "resolved_toolchain")
 
+package(default_visibility = ["//:__subpackages__"])
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["**"]) + [
+        "//python/uv/private:distribution",
+    ],
+    visibility = ["//python:__pkg__"],
+)
+
 # For stardoc to reference the files
 exports_files(["defs.bzl"])
 
