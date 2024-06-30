@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""todo"""
+"""Create repositories for uv toolchain dependencies"""
 
 load("//python/uv/private:toolchains_repo.bzl", "UV_PLATFORMS", "uv_toolchains_repo")
 load("//python/uv/private:versions.bzl", "UV_TOOL_VERSIONS")
@@ -32,7 +32,9 @@ def _uv_repo_impl(repository_ctx):
     platform = repository_ctx.attr.platform
     uv_version = repository_ctx.attr.uv_version
 
-    suffix = ".zip" if "windows" in platform else ".tar.gz"
+    is_windows = "windows" in platform
+
+    suffix = ".zip" if is_windows else ".tar.gz"
     filename = "uv-{platform}{suffix}".format(
         platform = platform,
         suffix = suffix,
@@ -52,7 +54,7 @@ def _uv_repo_impl(repository_ctx):
         stripPrefix = strip_prefix,
     )
 
-    binary = "uv.exe" if platform.startswith("windows_") else "uv"
+    binary = "uv.exe" if is_windows else "uv"
     repository_ctx.file(
         "BUILD.bazel",
         UV_BUILD_TMPL.format(
