@@ -28,7 +28,7 @@ def _uv_toolchain_impl(ctx):
     )
     uv_toolchain_info = UvToolchainInfo(
         binary = binary,
-        version = ctx.attr.version.removeprefix("v"),
+        version = ctx.attr.version,
     )
 
     # Export all the providers inside our ToolchainInfo
