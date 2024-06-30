@@ -105,9 +105,6 @@ def _render_list(items, *, hanging_indent = ""):
         text = _hanging_indent(text, hanging_indent)
     return text
 
-def _render_str(value):
-    return repr(value)
-
 def _render_tuple(items, *, value_repr = repr):
     if not items:
         return "tuple()"
@@ -132,5 +129,4 @@ render = struct(
     list = _render_list,
     select = _render_select,
     tuple = _render_tuple,
-    str = _render_str,
 )

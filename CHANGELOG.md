@@ -36,6 +36,20 @@ A brief description of the categories of changes:
   removed in a future release.
 
 ### Fixed
+* (bzlmod): When using `experimental_index_url` the `all_requirements`,
+  `all_whl_requirements` and `all_data_requirements` will now only include
+  common packages that are available on all target platforms. This is to ensure
+  that packages that are only present for some platforms are pulled only via
+  the `deps` of the materialized `py_library`. If you would like to include
+  platform specific packages, using a `select` statement with references to the
+  specific package will still work (e.g.
+  ```
+  my_attr = all_requirements + select(
+      {
+          "@platforms//os:linux": ["@pypi//foo_available_only_on_linux"],
+          "//conditions:default": [],
+      }
+  )`.
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
@@ -53,6 +67,11 @@ A brief description of the categories of changes:
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
+
+### Added
+* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
+  allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
+  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.

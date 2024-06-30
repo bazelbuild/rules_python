@@ -205,6 +205,8 @@ def _resolve_interpreter_path(rctx):
           returns a description of why it couldn't be resolved
         A path object or None. The path may not exist.
     """
+    rctx.report_progress("Resolving Python interpreter: {}".format(rctx.attr.interpreter_path))
+
     if "/" not in rctx.attr.interpreter_path and "\\" not in rctx.attr.interpreter_path:
         result = repo_utils.which_unchecked(rctx, rctx.attr.interpreter_path)
         resolved_path = result.binary

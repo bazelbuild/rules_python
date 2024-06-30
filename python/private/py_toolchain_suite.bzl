@@ -15,6 +15,7 @@
 """Create the toolchain defs in a BUILD.bazel file."""
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("//python/private:util.bzl", "left_pad_zero")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
@@ -145,7 +146,7 @@ def _internal_toolchain_suite(prefix, runtime_repo_name, target_compatible_with,
 def local_toolchains_suite(version_aware_repo_names, version_unaware_repo_names):
     i = 0
     for i, repo in enumerate(version_aware_repo_names, start = i):
-        prefix = _left_pad_zero(i, 4)
+        prefix = left_pad_zero(i, 4)
         _internal_toolchain_suite(
             prefix = prefix,
             runtime_repo_name = repo,
@@ -156,15 +157,10 @@ def local_toolchains_suite(version_aware_repo_names, version_unaware_repo_names)
     # The version unaware entries must go last because they will match any Python
     # version.
     for i, repo in enumerate(version_unaware_repo_names, start = i + 1):
-        prefix = _left_pad_zero(i, 4)
+        prefix = left_pad_zero(i, 4)
         _internal_toolchain_suite(
             prefix = prefix,
             runtime_repo_name = repo,
             target_settings = [],
             target_compatible_with = ["@{}//:os".format(repo)],
         )
-
-def _left_pad_zero(index, length):
-    if index < 0:
-        fail("index must be non-negative")
-    return ("0" * length + str(index))[-length:]
