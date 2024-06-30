@@ -14,9 +14,10 @@ of the runtime in its runfiles. Such runtimes may be remotely downloaded, part
 of your source control, or mapped in from local files by repositories.
 
 The main advantage of in-build runtimes is they ensure you know what Python
-runtime will be used, since it's part of the build itself. The main disadvantage
-is the additional work it adds to building. The whole Python runtime is included
-in a Python binary's runfiles, which can be a significant number of files.
+runtime will be used, since it's part of the build itself and included in
+the resulting binary. The main disadvantage is the additional work it adds to
+building. The whole Python runtime is included in a Python binary's runfiles,
+which can be a significant number of files.
 
 platform runtime
 : A platform runtime is a Python runtime that is assumed to be installed on the
@@ -25,11 +26,10 @@ as the interpreter is a platform runtime -- it assumes that, wherever the binary
 runs (your local machine, a remote worker, within a container, etc), that path
 is available. Such runtimes are _not_ part of a binary's runfiles.
 
-The main advantage of platform runtimes is they are lightweight insoar as
+The main advantage of platform runtimes is they are lightweight insofar as
 building the binary is concerned. All Bazel has to do is pass along a string
-path to the interpreter.
-The disadvantage is, if you don't control the systems being run on, you may get
-different Python installations than expected.
+path to the interpreter. The disadvantage is, if you don't control the systems
+being run on, you may get different Python installations than expected.
 
 rule callable
 : A function that behaves like a rule. This includes, but is not is not

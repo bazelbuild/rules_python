@@ -24,7 +24,14 @@ load(
 
 _IS_EXEC_TOOLCHAIN_ENABLED = Label("//python/config_settings:is_exec_tools_toolchain_enabled")
 
-def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_python_version_constraint, flag_values, **kwargs):
+def py_toolchain_suite(
+        *,
+        prefix,
+        user_repository_name,
+        python_version,
+        set_python_version_constraint,
+        flag_values,
+        target_compatible_with = []):
     """For internal use only.
 
     Args:
@@ -82,30 +89,38 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
             repr(set_python_version_constraint),
         ))
 
+    _internal_toolchain_suite(
+        prefix = prefix,
+        runtime_repo_name = user_repository_name,
+        target_settings = target_settings,
+        target_compatible_with = target_compatible_with,
+    )
+
+def _internal_toolchain_suite(prefix, runtime_repo_name, target_compatible_with, target_settings):
     native.toolchain(
         name = "{prefix}_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:python_runtimes".format(
-            user_repository_name = user_repository_name,
+        toolchain = "@{runtime_repo_name}//:python_runtimes".format(
+            runtime_repo_name = runtime_repo_name,
         ),
         toolchain_type = TARGET_TOOLCHAIN_TYPE,
         target_settings = target_settings,
-        **kwargs
+        target_compatible_with = target_compatible_with,
     )
 
     native.toolchain(
         name = "{prefix}_py_cc_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:py_cc_toolchain".format(
-            user_repository_name = user_repository_name,
+        toolchain = "@{runtime_repo_name}//:py_cc_toolchain".format(
+            runtime_repo_name = runtime_repo_name,
         ),
         toolchain_type = PY_CC_TOOLCHAIN_TYPE,
         target_settings = target_settings,
-        **kwargs
+        target_compatible_with = target_compatible_with,
     )
 
     native.toolchain(
         name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
-            user_repository_name = user_repository_name,
+        toolchain = "@{runtime_repo_name}//:py_exec_tools_toolchain".format(
+            runtime_repo_name = runtime_repo_name,
         ),
         toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
         target_settings = select({
@@ -118,7 +133,7 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
             # the RHS must be a `config_setting`.
             "//conditions:default": [_IS_EXEC_TOOLCHAIN_ENABLED],
         }),
-        exec_compatible_with = kwargs.get("target_compatible_with"),
+        exec_compatible_with = target_compatible_with,
     )
 
     # NOTE: When adding a new toolchain, for WORKSPACE builds to see the
@@ -127,54 +142,26 @@ def py_toolchain_suite(*, prefix, user_repository_name, python_version, set_pyth
     # register `:all`.
     #
 
-def py_toolchain_suite2(prefix, user_repository_name, target_settings, target_compatible_with, **kwargs):
-    native.toolchain(
-        name = "{prefix}_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:python_runtimes".format(
-            user_repository_name = user_repository_name,
-        ),
-        toolchain_type = TARGET_TOOLCHAIN_TYPE,
-        target_settings = target_settings,
-        **kwargs
-    )
-
-    native.toolchain(
-        name = "{prefix}_py_cc_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:py_cc_toolchain".format(
-            user_repository_name = user_repository_name,
-        ),
-        toolchain_type = PY_CC_TOOLCHAIN_TYPE,
-        target_settings = target_settings,
-        **kwargs
-    )
-
-    native.toolchain(
-        name = "{prefix}_py_exec_tools_toolchain".format(prefix = prefix),
-        toolchain = "@{user_repository_name}//:py_exec_tools_toolchain".format(
-            user_repository_name = user_repository_name,
-        ),
-        toolchain_type = EXEC_TOOLS_TOOLCHAIN_TYPE,
-        target_settings = select({
-            _IS_EXEC_TOOLCHAIN_ENABLED: target_settings,
-            # Whatever the default is, it has to map to a `config_setting`
-            # that will never match. Since the default branch is only taken if
-            # _IS_EXEC_TOOLCHAIN_ENABLED is false, then it will never match
-            # when later evaluated during toolchain resolution.
-            # Note that @platforms//:incompatible can't be used here because
-            # the RHS must be a `config_setting`.
-            "//conditions:default": [_IS_EXEC_TOOLCHAIN_ENABLED],
-        }),
-        exec_compatible_with = kwargs.get("target_compatible_with"),
-    )
-
-def multi_py_toolchain_suite2(repo_names):
-    for i, repo in enumerate(repo_names):
-        prefix = _left_pad_zero(i, 3)
-        py_toolchain_suite2(
+def local_toolchains_suite(version_aware_repo_names, version_unaware_repo_names):
+    i = 0
+    for i, repo in enumerate(version_aware_repo_names, start = i):
+        prefix = _left_pad_zero(i, 4)
+        _internal_toolchain_suite(
             prefix = prefix,
-            user_repository_name = repo,
+            runtime_repo_name = repo,
             target_compatible_with = ["@{}//:os".format(repo)],
             target_settings = ["@{}//:is_matching_python_version".format(repo)],
+        )
+
+    # The version unaware entries must go last because they will match any Python
+    # version.
+    for i, repo in enumerate(version_unaware_repo_names, start = i + 1):
+        prefix = _left_pad_zero(i, 4)
+        _internal_toolchain_suite(
+            prefix = prefix,
+            runtime_repo_name = repo,
+            target_settings = [],
+            target_compatible_with = ["@{}//:os".format(repo)],
         )
 
 def _left_pad_zero(index, length):
