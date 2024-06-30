@@ -17,7 +17,15 @@
 UvToolchainInfo = provider(
     doc = "Information about how to invoke the uv executable.",
     fields = {
-        "binary": "uv binary",
-        "version": "uv version",
+        "binary": """
+:type: File
+
+The uv binary
+""",
+        "version": """
+:type: str
+
+The uv version
+""",
     },
 )
