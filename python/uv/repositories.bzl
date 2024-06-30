@@ -48,7 +48,7 @@ def _uv_repo_impl(repository_ctx):
 
     repository_ctx.download_and_extract(
         url = url,
-        #integrity = UV_TOOL_VERSIONS[repository_ctx.attr.uv_version][repository_ctx.attr.platform],
+        sha256 = UV_TOOL_VERSIONS[repository_ctx.attr.uv_version][repository_ctx.attr.platform],
         stripPrefix = strip_prefix,
     )
 
