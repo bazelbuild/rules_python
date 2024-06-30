@@ -22,6 +22,7 @@ _TOOLCHAIN_TEMPLATE = """
 load("@rules_python//python/private:py_toolchain_suite.bzl", "define_local_toolchain_suites")
 
 define_local_toolchain_suites(
+    name = "toolchains",
     version_aware_repo_names = {version_aware_names},
     version_unaware_repo_names = {version_unaware_names},
 )
