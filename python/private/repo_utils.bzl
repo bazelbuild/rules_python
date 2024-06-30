@@ -372,7 +372,7 @@ repo_utils = struct(
     is_repo_debug_enabled = _is_repo_debug_enabled,
     logger = _logger,
     watch = _watch,
-    watch_tree = watch_tree,
+    watch_tree = _watch_tree,
     which_checked = _which_checked,
     which_unchecked = _which_unchecked,
 )
