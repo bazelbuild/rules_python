@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Experimental toolchain for uv"""
+"""This module contains the definitions of all providers."""
 
-load("//python/uv/private:providers.bzl", _UvToolchainInfo = "UvToolchainInfo")
-load("//python/uv/private:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")
-
-uv_pip_compile = _uv_pip_compile
-
-UvToolchainInfo = _UvToolchainInfo
+UvToolchainInfo = provider(
+    doc = "Information about how to invoke the uv executable.",
+    fields = {
+        "binary": "uv binary",
+        "version": "uv version",
+    },
+)

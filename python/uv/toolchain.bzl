@@ -14,13 +14,7 @@
 
 """This module implements the uv toolchain rule"""
 
-UvToolchainInfo = provider(
-    doc = "Information about how to invoke the uv executable.",
-    fields = {
-        "binary": "uv binary",
-        "version": "uv version",
-    },
-)
+load("//python/uv/private:providers.bzl", "UvToolchainInfo")
 
 def _uv_toolchain_impl(ctx):
     binary = ctx.executable.uv
