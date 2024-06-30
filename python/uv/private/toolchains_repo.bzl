@@ -73,7 +73,7 @@ load("@rules_python//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE"
 # on the execution platform.
 toolchain(
     name = "{prefix}{platform}",
-    exec_compatible_with = {compatible_with},
+    target_compatible_with = {compatible_with},
     toolchain = "@{user_repository_name}_{platform}//:uv_toolchain",
     toolchain_type = UV_TOOLCHAIN_TYPE,
 )
