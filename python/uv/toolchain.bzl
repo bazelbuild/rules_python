@@ -17,26 +17,27 @@
 load("//python/uv/private:providers.bzl", "UvToolchainInfo")
 
 def _uv_toolchain_impl(ctx):
-    binary = ctx.executable.uv
+    uv_target = ctx.attr.uv
+    uv_path = uv_target.files.to_list()[0].path
 
-    template_variable_info = platform_common.TemplateVariableInfo({
-        "UV_BIN": binary.path,
-    })
     default_info = DefaultInfo(
-        files = depset([binary]),
-        runfiles = ctx.runfiles(files = [binary]),
+        files = uv_target.files,
+        runfiles = ctx.runfiles(files = uv_target.files.to_list()),
     )
     uv_toolchain_info = UvToolchainInfo(
-        binary = binary,
+        uv_target = uv_target,
         version = ctx.attr.version,
     )
+    template_variable_info = platform_common.TemplateVariableInfo({
+        "UV_BIN": uv_path,
+    })
 
     # Export all the providers inside our ToolchainInfo
     # so the resolved_toolchain rule can grab and re-export them.
     toolchain_info = platform_common.ToolchainInfo(
-        uv_toolchain_info = uv_toolchain_info,
-        template_variable_info = template_variable_info,
         default_info = default_info,
+        template_variable_info = template_variable_info,
+        uv_toolchain_info = uv_toolchain_info,
     )
     return [
         default_info,
@@ -49,9 +50,8 @@ uv_toolchain = rule(
     attrs = {
         "uv": attr.label(
             doc = "A static uv binary.",
-            mandatory = False,
+            mandatory = True,
             allow_single_file = True,
-            executable = True,
             cfg = "target",
         ),
         "version": attr.string(mandatory = True, doc = "Version of the uv binary."),

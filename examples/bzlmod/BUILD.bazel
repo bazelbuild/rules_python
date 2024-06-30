@@ -27,6 +27,17 @@ uv_pip_compile(
     dependencies_file = "requirements.in",
 )
 
+genrule(
+    name = "spike_uv_show_template_variables",
+    srcs = [],
+    outs = ["spike_uv_show_template_variables.out"],
+    cmd = """cat <<EOF > $@
+echo UV_BIN: $(UV_BIN)
+EOF""",
+    executable = True,
+    toolchains = ["@rules_python//python/uv:resolved_toolchain"],
+)
+
 # This stanza calls a rule that generates targets for managing pip dependencies
 # with pip-compile.
 compile_pip_requirements_3_10(

@@ -17,10 +17,10 @@
 UvToolchainInfo = provider(
     doc = "Information about how to invoke the uv executable.",
     fields = {
-        "binary": """
-:type: File
+        "uv_target": """
+:type: Target
 
-The uv binary
+The uv binary `Target`
 """,
         "version": """
 :type: str
