@@ -25,6 +25,7 @@ load(
 
 _IS_EXEC_TOOLCHAIN_ENABLED = Label("//python/config_settings:is_exec_tools_toolchain_enabled")
 
+# buildifier: disable=unnamed-macro
 def py_toolchain_suite(
         *,
         prefix,
@@ -41,8 +42,7 @@ def py_toolchain_suite(
         python_version: The full (X.Y.Z) version of the interpreter.
         set_python_version_constraint: True or False as a string.
         flag_values: Extra flag values to match for this toolchain.
-        **kwargs: extra args passed to the `toolchain` calls.
-
+        target_compatible_with: list constraints the toolchains are compatible with.
     """
 
     # We have to use a String value here because bzlmod is passing in a
@@ -143,7 +143,21 @@ def _internal_toolchain_suite(prefix, runtime_repo_name, target_compatible_with,
     # register `:all`.
     #
 
-def local_toolchains_suite(version_aware_repo_names, version_unaware_repo_names):
+def define_local_toolchain_suites(name, version_aware_repo_names, version_unaware_repo_names):
+    """Define toolchains for `local_runtime_repo` backed toolchains.
+
+    This generates `toolchain` targets that can be registered using `:all`. The
+    specific names of the toolchain targets are not defined. The priority order
+    of the toolchains is the order that is passed in, with version-aware having
+    higher priority than version-unaware.
+
+    Args:
+        name: `str` Unused; only present to satisfy tooling.
+        version_aware_repo_names: `list[str]` of the repo names that will have
+            version-aware toolchains defined.
+        version_unaware_repo_names: `list[str]` of the repo names that will have
+            version-unaware toolchains defined.
+    """
     i = 0
     for i, repo in enumerate(version_aware_repo_names, start = i):
         prefix = left_pad_zero(i, 4)

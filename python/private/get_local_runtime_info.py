@@ -12,20 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import sys
 import sysconfig
-import json
 
 data = {
-  "major": sys.version_info.major,
-  "minor": sys.version_info.minor,
-  "micro": sys.version_info.micro,
-  "include": sysconfig.get_path("include"),
-  "implementation_name": sys.implementation.name,
+    "major": sys.version_info.major,
+    "minor": sys.version_info.minor,
+    "micro": sys.version_info.micro,
+    "include": sysconfig.get_path("include"),
+    "implementation_name": sys.implementation.name,
 }
 
 config_vars = [
-    "LDLIBRARY", "LIBDIR", "INSTSONAME", "LIBDEST", "PY3LIBRARY",
+    "LDLIBRARY",
+    "LIBDIR",
+    "INSTSONAME",
+    "LIBDEST",
+    "PY3LIBRARY",
     "SHLIB_SUFFIX",
 ]
 data.update(zip(config_vars, sysconfig.get_config_vars(*config_vars)))

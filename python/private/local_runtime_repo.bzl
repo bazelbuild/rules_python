@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Create a repository to hold a local Python toolchain."""
+"""Create a repository for a locally installed Python runtime."""
 
 load("//python/private:enum.bzl", "enum")
-load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 
+# buildifier: disable=name-conventions
 _OnFailure = enum(
     SKIP = "skip",
     WARN = "warn",
@@ -172,11 +172,11 @@ How to handle errors when trying to automatically determine settings.
   ensure the runtime is available.
 """,
         ),
-        "_rule_name": attr.string(default = "local_runtime_repo"),
         "_get_local_runtime_info": attr.label(
             allow_single_file = True,
             default = "//python/private:get_local_runtime_info.py",
         ),
+        "_rule_name": attr.string(default = "local_runtime_repo"),
     },
     environ = ["PATH", REPO_DEBUG_ENV_VAR],
 )
