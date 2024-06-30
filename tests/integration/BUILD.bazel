@@ -84,6 +84,10 @@ rules_python_integration_test(
 )
 
 rules_python_integration_test(
+    name = "local_toolchains",
+)
+
+rules_python_integration_test(
     name = "pip_parse_test",
 )
 
