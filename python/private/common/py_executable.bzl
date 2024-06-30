@@ -166,9 +166,10 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         main_py = precompile_result.py_to_pyc_map[main_py]
     direct_pyc_files = depset(precompile_result.pyc_files)
 
-    default_outputs = precompile_result.keep_srcs + precompile_result.pyc_files
     executable = _declare_executable_file(ctx)
-    default_outputs.append(executable)
+    default_outputs = [executable]
+    default_outputs.extend(precompile_result.keep_srcs)
+    default_outputs.extend(precompile_result.pyc_files)
 
     imports = collect_imports(ctx, semantics)
 

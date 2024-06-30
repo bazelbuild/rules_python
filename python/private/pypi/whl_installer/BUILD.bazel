@@ -1,0 +1,36 @@
+load("//python:defs.bzl", "py_binary", "py_library")
+load("//python/private/pypi:deps.bzl", "requirement")
+
+py_library(
+    name = "lib",
+    srcs = [
+        "arguments.py",
+        "namespace_pkgs.py",
+        "wheel.py",
+        "wheel_installer.py",
+    ],
+    visibility = [
+        "//tests:__subpackages__",
+        "//third_party/rules_pycross/pycross/private:__subpackages__",
+    ],
+    deps = [
+        requirement("installer"),
+        requirement("pip"),
+        requirement("packaging"),
+        requirement("setuptools"),
+    ],
+)
+
+py_binary(
+    name = "wheel_installer",
+    srcs = [
+        "wheel_installer.py",
+    ],
+    deps = [":lib"],
+)
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["*"]),
+    visibility = ["//python/private/pypi:__subpackages__"],
+)

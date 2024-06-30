@@ -16,8 +16,6 @@ bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf"
 internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
 use_repo(
     internal_deps,
-    "rules_python_internal",
-    # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
     "pypi__build",
     "pypi__click",
     "pypi__colorama",
@@ -33,7 +31,7 @@ use_repo(
     "pypi__tomli",
     "pypi__wheel",
     "pypi__zipp",
-    # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
+    "rules_python_internal",
 )
 
 # We need to do another use_extension call to expose the "pythons_hub"

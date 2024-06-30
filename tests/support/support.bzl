@@ -37,3 +37,4 @@ PRECOMPILE_ADD_TO_RUNFILES = str(Label("//python/config_settings:precompile_add_
 PRECOMPILE_SOURCE_RETENTION = str(Label("//python/config_settings:precompile_source_retention"))
 PYC_COLLECTION = str(Label("//python/config_settings:pyc_collection"))
 PYTHON_VERSION = str(Label("//python/config_settings:python_version"))
+VISIBLE_FOR_TESTING = str(Label("//python/private:visible_for_testing"))

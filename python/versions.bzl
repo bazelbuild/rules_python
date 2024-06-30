@@ -532,6 +532,17 @@ PLATFORMS = {
         os_name = LINUX_NAME,
         arch = "armv7",
     ),
+    "i386-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:i386",
+        ],
+        flag_values = {
+            Label("//python/config_settings:py_linux_libc"): "glibc",
+        },
+        os_name = LINUX_NAME,
+        arch = "i386",
+    ),
     "ppc64le-unknown-linux-gnu": struct(
         compatible_with = [
             "@platforms//os:linux",

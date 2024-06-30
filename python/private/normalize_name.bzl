@@ -38,7 +38,6 @@ Also see Python spec on normalizing package names:
 https://packaging.python.org/en/latest/specifications/name-normalization/
 """
 
-# Keep in sync with ../pip_install/tools/lib/bazel.py
 def normalize_name(name):
     """normalize a PyPI package name and return a valid bazel label.
 

@@ -204,7 +204,10 @@ Python-specific directives are as follows:
 | Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
 | [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `*_test.py,test_*.py` |
 | Filenames matching these comma-separated `glob`s will be mapped to `py_test` targets. |
-
+| `# gazelle:python_label_convention` | `$distribution_name$` |
+| Defines the format of the distribution name in labels to third-party deps. Useful for using Gazelle plugin with other rules with different repository conventions (e.g. `rules_pycross`). Full label is always prepended with (pip) repository name, e.g. `@pip//numpy`. |
+| `# gazelle:python_label_normalization` | `snake_case` |
+| Controls how distribution names in labels to third-party deps are normalized. Useful for using Gazelle plugin with other rules with different label conventions (e.g. `rules_pycross` uses PEP-503). Can be "snake_case", "none", or "pep503". |
 
 #### Directive: `python_root`:
 
