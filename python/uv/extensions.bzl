@@ -16,13 +16,17 @@
 
 load("//python/uv:repositories.bzl", "uv_register_toolchains")
 
+_DOC = """\
+A module extension for working with uv.
+"""
+
 _DEFAULT_NAME = "uv"
 
 uv_toolchain = tag_class(attrs = {
     "name": attr.string(doc = """\
 Base name for generated repositories, allowing more than one uv toolchain to be registered.
 Overriding the default is only permitted in the root module.
-""", default = "uv"),
+""", default = _DEFAULT_NAME),
     "uv_version": attr.string(doc = "Explicit version of uv.", mandatory = True),
 })
 
@@ -55,6 +59,7 @@ def _uv_toolchain_extension(module_ctx):
         )
 
 uv = module_extension(
+    doc = _DOC,
     implementation = _uv_toolchain_extension,
     tag_classes = {"toolchain": uv_toolchain},
 )
