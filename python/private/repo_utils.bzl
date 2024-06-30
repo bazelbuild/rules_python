@@ -259,7 +259,7 @@ def _which_unchecked(rctx, binary_name):
     path = _getenv(rctx, "PATH", "")
     binary = rctx.which(binary_name)
     if binary:
-        rctx.watch(binary)
+        _watch(rctx, binary)
         describe_failure = None
     else:
         describe_failure = lambda: _which_describe_failure(binary_name, path)
@@ -349,6 +349,18 @@ def _get_platforms_os_name(rctx):
     # todo: clean this up
     fail("Unhandled value: {}".format(os))
 
+# TODO: Remove after Bazel 6 support dropped
+def _watch(rctx, *args, **kwargs):
+    """Calls rctx.watch, if available."""
+    if hasattr(rctx, "watch"):
+        rctx.watch(*args, **kwargs)
+
+# TODO: Remove after Bazel 6 support dropped
+def _watch_tree(rctx, *args, **kwargs):
+    """Calls rctx.watch_tree, if available."""
+    if hasattr(rctx, "watch_tree"):
+        rctx.watch_tree(*args, **kwargs)
+
 repo_utils = struct(
     # keep sorted
     debug_print = _debug_print,
@@ -359,6 +371,8 @@ repo_utils = struct(
     getenv = _getenv,
     is_repo_debug_enabled = _is_repo_debug_enabled,
     logger = _logger,
+    watch = _watch,
+    watch_tree = watch_tree,
     which_checked = _which_checked,
     which_unchecked = _which_unchecked,
 )

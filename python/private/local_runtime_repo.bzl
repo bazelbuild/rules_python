@@ -81,7 +81,7 @@ def _local_runtime_repo_impl(rctx):
     info = json.decode(exec_result.stdout)
 
     # NOTE: Keep in sync with recursive glob in define_local_runtime_toolchain_impl
-    rctx.watch_tree(rctx.path(info["include"]))
+    repo_utils.watch_tree(rctx, rctx.path(info["include"]))
 
     # The cc_library.includes values have to be non-absolute paths, otherwise
     # the toolchain will give an error. Work around this error by making them
@@ -112,7 +112,7 @@ def _local_runtime_repo_impl(rctx):
         # The reported names don't always exist; it depends on the particulars
         # of the runtime installation.
         if origin.exists:
-            rctx.watch(origin)
+            repo_utils.watch(rctx, origin)
             rctx.symlink(origin, "lib/" + name)
 
     rctx.file("WORKSPACE", "")
@@ -212,7 +212,7 @@ def _resolve_interpreter_path(rctx):
         resolved_path = result.binary
         describe_failure = result.describe_failure
     else:
-        rctx.watch(rctx.attr.interpreter_path)
+        repo_utils.watch(rctx, rctx.attr.interpreter_path)
         resolved_path = rctx.path(rctx.attr.interpreter_path)
         if not resolved_path.exists:
             describe_failure = lambda: "Path not found: {}".format(repr(rctx.attr.interpreter_path))
