@@ -45,7 +45,7 @@ def _transition_py_impl(ctx):
     )
     symlinks = []
     if target_is_windows:
-        files = target[DefaultInfo].default_runfiles.files.to_list()
+        files = target[DefaultInfo].files.to_list()
 
         def try_get_file_from_path(short_path):
             for file in files:
