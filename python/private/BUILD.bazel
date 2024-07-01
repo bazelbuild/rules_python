@@ -133,9 +133,9 @@ bzl_library(
     srcs = ["python.bzl"],
     deps = [
         ":pythons_hub_bzl",
-        ":repositories_bzl",
-        "//python/private:toolchains_repo_bzl",
-        "//python/private:util_bzl",
+        ":toolchains_repo_bzl",
+        ":util_bzl",
+        "//python:repositories_bzl",
         "@bazel_features//:features",
     ],
 )
@@ -144,9 +144,9 @@ bzl_library(
     name = "pythons_hub_bzl",
     srcs = ["pythons_hub.bzl"],
     deps = [
-        ":versions_bzl",
-        "//python/private:full_version_bzl",
-        "//python/private:py_toolchain_suite_bzl",
+        ":full_version_bzl",
+        ":py_toolchain_suite_bzl",
+        "//python:versions_bzl",
     ],
 )
 
