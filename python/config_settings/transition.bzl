@@ -25,13 +25,18 @@ load("//python/config_settings/private:py_args.bzl", "py_args")
 load("//python/private:reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 
 def _transition_python_version_impl(_, attr):
-    return {"//python/config_settings:python_version": str(attr.python_version)}
+    if attr.python_version:
+        return {"//python/config_settings:python_version": str(attr.python_version)}
+    else:
+        return {}
 
 _transition_python_version = transition(
     implementation = _transition_python_version_impl,
     inputs = [],
     outputs = ["//python/config_settings:python_version"],
 )
+
+public_trans = _transition_python_version
 
 def _transition_py_impl(ctx):
     target = ctx.attr.target
