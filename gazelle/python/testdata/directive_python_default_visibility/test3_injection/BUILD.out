@@ -9,5 +9,6 @@ py_library(
         "__init__.py",
         "test3.py",
     ],
+    imports = ["."],
     visibility = ["//foo/test3_injection/bar:__pkg__"],
 )

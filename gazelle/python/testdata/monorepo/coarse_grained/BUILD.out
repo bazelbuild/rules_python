@@ -15,6 +15,7 @@ py_library(
         "bar/baz/hue.py",
         "foo/__init__.py",
     ],
+    imports = ["."],
     visibility = ["//:__subpackages__"],
     deps = ["@root_pip_deps//rootboto3"],
 )
@@ -25,4 +26,5 @@ py_test(
         "bar/bar_test.py",
         "foo/bar/bar_test.py",
     ],
+    imports = ["."],
 )

@@ -6,6 +6,7 @@ load("@rules_python//python:defs.bzl", "py_binary")
 py_binary(
     name = "one_bin",
     srcs = ["__main__.py"],
+    imports = ["."],
     main = "__main__.py",
     visibility = ["//one:__subpackages__"],
     deps = [
