@@ -13,7 +13,7 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf")
 
-internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
+internal_deps = use_extension("//python/private:internal_deps.bzl", "internal_deps")
 use_repo(
     internal_deps,
     "pypi__build",
