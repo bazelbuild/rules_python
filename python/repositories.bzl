@@ -27,6 +27,8 @@ load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(
     "//python/private:toolchains_repo.bzl",
+    "get_host_os_arch",
+    "get_host_platform",
     "host_toolchain",
     "multi_toolchain_aliases",
     "toolchain_aliases",
@@ -110,7 +112,10 @@ def _python_repository_impl(rctx):
     if bool(rctx.attr.url) == bool(rctx.attr.urls):
         fail("Exactly one of (url, urls) must be set.")
 
+    (os_name, arch) = get_host_os_arch(rctx)
+    host_platform = get_host_platform(os_name, arch)
     platform = rctx.attr.platform
+    python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
     python_version = rctx.attr.python_version
     python_version_info = python_version.split(".")
     python_short_version = "{0}.{1}".format(*python_version_info)
@@ -189,36 +194,33 @@ def _python_repository_impl(rctx):
     # pycs being generated at runtime:
     # * The pycs are not deterministic (they contain timestamps)
     # * Multiple processes trying to write the same pycs can result in errors.
-    if not rctx.attr.ignore_root_user_error:
-        if "windows" not in platform:
-            lib_dir = "lib" if "windows" not in platform else "Lib"
+    if not rctx.attr.ignore_root_user_error and host_platform == platform:
+        lib_dir = "lib" if "windows" not in platform else "Lib"
 
-            repo_utils.execute_checked(
+        repo_utils.execute_checked(
+            rctx,
+            op = "python_repository.MakeReadOnly",
+            arguments = [python_bin, "-B", rctx.attr._chmod, "-R", "ugo-w", lib_dir],
+        )
+        exec_result = repo_utils.execute_unchecked(
+            rctx,
+            op = "python_repository.TestReadOnly",
+            arguments = [python_bin, rctx.attr._touch, "{}/.test".format(lib_dir)],
+        )
+
+        # The issue with running as root is the installation is no longer
+        # read-only, so the problems due to pyc can resurface.
+        if exec_result.return_code == 0 and "windows" not in platform:
+            stdout = repo_utils.execute_checked_stdout(
                 rctx,
-                op = "python_repository.MakeReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", lib_dir],
+                op = "python_repository.GetUserId",
+                arguments = [python_bin, rctx.attr._id, "-u"],
             )
-            exec_result = repo_utils.execute_unchecked(
-                rctx,
-                op = "python_repository.TestReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
-            )
-
-            # The issue with running as root is the installation is no longer
-            # read-only, so the problems due to pyc can resurface.
-            if exec_result.return_code == 0:
-                stdout = repo_utils.execute_checked_stdout(
-                    rctx,
-                    op = "python_repository.GetUserId",
-                    arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
-                )
-                uid = int(stdout.strip())
-                if uid == 0:
-                    fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
-                else:
-                    fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
-
-    python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
+            uid = int(stdout.strip())
+            if uid == 0:
+                fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+            else:
+                fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
 
     glob_include = []
     glob_exclude = [
@@ -528,6 +530,15 @@ For more information see the official bazel docs
         ),
         "zstd_version": attr.string(
             default = "1.5.2",
+        ),
+        "_chmod": attr.label(
+            default = "//python/private:chmod.py",
+        ),
+        "_id": attr.label(
+            default = "//python/private:id.py",
+        ),
+        "_touch": attr.label(
+            default = "//python/private:touch.py",
         ),
     },
     environ = [REPO_DEBUG_ENV_VAR],
