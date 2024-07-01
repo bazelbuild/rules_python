@@ -9,8 +9,8 @@
 "Python toolchain module extension for internal rule use"
 
 load("@bazel_skylib//lib:modules.bzl", "modules")
-load("//python/private:internal_config_repo.bzl", "internal_config_repo")
 load("//python/private/pypi:deps.bzl", "pypi_deps")
+load(":internal_config_repo.bzl", "internal_config_repo")
 
 def _internal_deps():
     internal_config_repo(name = "rules_python_internal")

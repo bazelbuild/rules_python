@@ -14,6 +14,6 @@
 
 "pip module extension for use with bzlmod"
 
-load("//python/private/bzlmod:pip.bzl", _pip = "pip")
+load("//python/private/pypi:pip.bzl", _pip = "pip")
 
 pip = _pip

@@ -67,6 +67,8 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.DefaultVisibilty,
 		pythonconfig.Visibility,
 		pythonconfig.TestFilePattern,
+		pythonconfig.LabelConvention,
+		pythonconfig.LabelNormalization,
 	}
 }
 
@@ -196,6 +198,23 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				}
 			}
 			config.SetTestFilePattern(globStrings)
+		case pythonconfig.LabelConvention:
+			value := strings.TrimSpace(d.Value)
+			if value == "" {
+				log.Fatalf("directive '%s' requires a value", pythonconfig.LabelConvention)
+			}
+			config.SetLabelConvention(value)
+		case pythonconfig.LabelNormalization:
+			switch directiveArg := strings.ToLower(strings.TrimSpace(d.Value)); directiveArg {
+			case "pep503":
+				config.SetLabelNormalization(pythonconfig.Pep503LabelNormalizationType)
+			case "none":
+				config.SetLabelNormalization(pythonconfig.NoLabelNormalizationType)
+			case "snake_case":
+				config.SetLabelNormalization(pythonconfig.SnakeCaseLabelNormalizationType)
+			default:
+				config.SetLabelNormalization(pythonconfig.DefaultLabelNormalizationType)
+			}
 		}
 	}
 
