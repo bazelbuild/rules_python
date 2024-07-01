@@ -84,7 +84,7 @@ rules_python_integration_test(
 )
 
 rules_python_integration_test(
-    name = "local_toolchains",
+    name = "local_toolchains_test",
 )
 
 rules_python_integration_test(
