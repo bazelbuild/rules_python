@@ -8,5 +8,6 @@ py_library(
         "__init__.py",
         "test2.py",
     ],
+    imports = ["."],
     visibility = ["//test2_default_with_python_root:__subpackages__"],
 )

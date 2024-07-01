@@ -5,6 +5,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "three",
     srcs = ["__init__.py"],
+    imports = ["."],
     visibility = ["//three:__subpackages__"],
     deps = [
         "//one/bar",

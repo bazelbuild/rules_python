@@ -140,9 +140,6 @@ func (t *targetBuilder) generateImportsAttribute() *targetBuilder {
 	}
 	p, _ := filepath.Rel(t.bzlPackage, t.pythonProjectRoot)
 	p = filepath.Clean(p)
-	if p == "." {
-		return t
-	}
 	t.imports = []string{p}
 	return t
 }

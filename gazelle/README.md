@@ -240,6 +240,13 @@ py_libary(
     imports = ["../.."],  # Gazelle adds this
     ...
 )
+
+# in ./src/BUILD.bazel
+py_test(
+    srcs = ["baz_test.py"],
+    imports = ["."],  # This is not needed for "bazel test", but needed for "bazel coverage", when src/baz_test.py imports src/baz.py with "import baz".
+    ...
+)
 ```
 
 [python-packaging-user-guide]: https://github.com/pypa/packaging.python.org/blob/4c86169a/source/tutorials/packaging-projects.rst
