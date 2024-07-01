@@ -53,19 +53,25 @@ def _transition_py_impl(ctx):
                     return file
             return None
 
-        # Under Windows, the expected "<name>.zip" does not exist, so we have to
-        # create the symlink ourselves to achieve the same behaviour as in macOS
-        # and Linux.
-        expected_zip_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
-        zip_file = try_get_file_from_path(expected_zip_path)
-        if zip_file:
-            zip_file_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
-            ctx.actions.symlink(
-                is_executable = True,
-                output = zip_file_symlink,
-                target_file = zip_file,
-            )
-            symlinks.append(zip_file_symlink)
+        build_zip_enabled = ctx.fragments.py.build_python_zip
+
+        if build_zip_enabled:
+            # Under Windows, the expected "<name>.zip" does not exist, so we have to
+            # create the symlink ourselves to achieve the same behaviour as in macOS
+            # and Linux.
+            expected_zip_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
+            zip_file = try_get_file_from_path(expected_zip_path)
+            if zip_file:
+                zip_file_symlink = ctx.actions.declare_file(ctx.attr.name + ".zip")
+                ctx.actions.symlink(
+                    is_executable = True,
+                    output = zip_file_symlink,
+                    target_file = zip_file,
+                )
+                symlinks.append(zip_file_symlink)
+
+            else:
+                fail("Zip file should have been generated.")
 
         else:
             # In case --build_python_zip=false, bootstrap script needs to be symlinked as well.
@@ -190,6 +196,7 @@ _transition_py_binary = rule(
     attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     executable = True,
+    fragments = ["py"],
 )
 
 _transition_py_test = rule(
@@ -197,6 +204,7 @@ _transition_py_test = rule(
     attrs = _COMMON_ATTRS | _PY_TEST_ATTRS,
     cfg = _transition_python_version,
     test = True,
+    fragments = ["py"],
 )
 
 def _py_rule(rule_impl, transition_rule, name, python_version, **kwargs):
