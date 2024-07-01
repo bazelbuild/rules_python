@@ -13,7 +13,7 @@ bazel_dep(name = "platforms", version = "0.0.4")
 bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf")
 
-internal_deps = use_extension("//python/private/bzlmod:internal_deps.bzl", "internal_deps")
+internal_deps = use_extension("//python/private:internal_deps.bzl", "internal_deps")
 use_repo(
     internal_deps,
     "pypi__build",
@@ -54,7 +54,7 @@ register_toolchains("@pythons_hub//:all")
 #####################
 # Install twine for our own runfiles wheel publishing and allow bzlmod users to use it.
 
-pip = use_extension("//python/private/bzlmod:pip.bzl", "pip_internal")
+pip = use_extension("//python/private/pypi:pip.bzl", "pip_internal")
 pip.parse(
     hub_name = "rules_python_publish_deps",
     python_version = "3.11",
@@ -77,7 +77,7 @@ bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_nam
 bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
 
 dev_pip = use_extension(
-    "//python/private/bzlmod:pip.bzl",
+    "//python/private/pypi:pip.bzl",
     "pip_internal",
     dev_dependency = True,
 )

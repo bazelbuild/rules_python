@@ -16,9 +16,9 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
-load("//python/private:toolchains_repo.bzl", "multi_toolchain_aliases")
-load("//python/private:util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 load(":pythons_hub.bzl", "hub_repo")
+load(":toolchains_repo.bzl", "multi_toolchain_aliases")
+load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 
 # This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
 # targets using any of these toolchains due to the changed repository name.
