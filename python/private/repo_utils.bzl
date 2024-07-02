@@ -342,12 +342,24 @@ def _outputs_to_str(result):
     return "\n".join(lines)
 
 def _get_platforms_os_name(rctx):
-    os = rctx.os.name
-    if os == "linux":
-        return os
+    """Return the name in @platforms//os for the host os.
 
-    # todo: clean this up
-    fail("Unhandled value: {}".format(os))
+    Args:
+        rctx: repository_ctx
+
+    Returns:
+        `str | None`. The target name if it maps to known platforms
+        value, otherwise None.
+    """
+    os = rctx.os.name.lower()
+    if "linux" in os:
+        return os
+    if "windows" in os:
+        return "windows"
+    if "mac" in os:
+        return "osx"
+
+    return None
 
 # TODO: Remove after Bazel 6 support dropped
 def _watch(rctx, *args, **kwargs):

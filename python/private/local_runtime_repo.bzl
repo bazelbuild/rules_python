@@ -45,6 +45,22 @@ def _local_runtime_repo_impl(rctx):
     logger = repo_utils.logger(rctx)
     on_failure = rctx.attr.on_failure
 
+    platforms_os_name = repo_utils.get_platforms_os_name(rctx)
+    if not platforms_os_name:
+        if on_failure == "fail":
+            fail("Unrecognized host platform '{}': cannot determine OS constraint".format(
+                rctx.os.name,
+            ))
+
+        if on_failure == "warn":
+            logger.warn(lambda: "Unrecognized host platform '{}': cannot determine OS constraint".format(
+                rctx.os.name,
+            ))
+
+        # else, on_failure must be skip
+        rctx.file("BUILD.bazel", _expand_incompatible_template())
+        return
+
     result = _resolve_interpreter_path(rctx)
     if not result.resolved_path:
         if on_failure == "fail":
@@ -58,6 +74,8 @@ def _local_runtime_repo_impl(rctx):
         return
     else:
         interpreter_path = result.resolved_path
+
+    logger.info(lambda: "resolved interpreter {} to {}".format(rctx.attr.interpreter_path, interpreter_path))
 
     exec_result = repo_utils.execute_unchecked(
         rctx,
@@ -79,6 +97,7 @@ def _local_runtime_repo_impl(rctx):
         return
 
     info = json.decode(exec_result.stdout)
+    logger.info(lambda: _format_get_info_result(info))
 
     # NOTE: Keep in sync with recursive glob in define_local_runtime_toolchain_impl
     repo_utils.watch_tree(rctx, rctx.path(info["include"]))
@@ -88,11 +107,19 @@ def _local_runtime_repo_impl(rctx):
     # appear as part of this repo.
     rctx.symlink(info["include"], "include")
 
+    # NOTE: For some reason (unknown why), the values found may refer to
+    # .a files (static libraries) instead of .so (shared libraries) files.
     shared_lib_names = [
         info["PY3LIBRARY"],  # libpython3.so
         info["LDLIBRARY"],  # libpython3.11.so
         info["INSTSONAME"],  # libpython3.11.so.1.0
     ]
+
+    # In some cases, the value may be empty. Not clear why.
+    shared_lib_names = [v for v in shared_lib_names if v]
+
+    # In some cases, the same value is returned or multiple keys. Not clear why.
+    shared_lib_names = {v: None for v in shared_lib_names}.keys()
 
     # It's not entirely clear how to get the directory with libraries.
     # There's several types of libraries with different names and a plethora
@@ -208,6 +235,9 @@ def _resolve_interpreter_path(rctx):
     rctx.report_progress("Resolving Python interpreter: {}".format(rctx.attr.interpreter_path))
 
     if "/" not in rctx.attr.interpreter_path and "\\" not in rctx.attr.interpreter_path:
+        # Provide a bit nicer integration with pyenv: recalculate the runtime if the
+        # user changes the python version
+        repo_utils.getenv(rctx, "PYENV_VERSION")
         result = repo_utils.which_unchecked(rctx, rctx.attr.interpreter_path)
         resolved_path = result.binary
         describe_failure = result.describe_failure
@@ -223,3 +253,9 @@ def _resolve_interpreter_path(rctx):
         resolved_path = resolved_path,
         describe_failure = describe_failure,
     )
+
+def _format_get_info_result(info):
+    lines = ["GetPythonInfo result:"]
+    for key, value in sorted(info.items()):
+        lines.append("  {}: {}".format(key, value if value != "" else "<empty string>"))
+    return "\n".join(lines)

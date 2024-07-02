@@ -14,7 +14,8 @@ When adding a new diretory, a couple files need to be updated to tell the outer
 Bazel to ignore the nested workspace.
 
 * Add the directory to the `--deleted_packages` flag. Run `pre-commit` and it
-  will do this for you.
+  will do this for you. This also allows the integration test to see the
+  nested workspace files correctly.
 * Update `.bazelignore` and add `tests/integration/<directory>/bazel-<name>`.
   This prevents Bazel from following infinite symlinks and freezing.
 * Add a `rules_python_integration_test` target to the BUILD file.
