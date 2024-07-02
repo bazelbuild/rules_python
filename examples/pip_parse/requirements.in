@@ -3,3 +3,6 @@ s3cmd~=2.1.0
 yamllint~=1.28.0
 sphinx
 sphinxcontrib-serializinghtml
+# Check that we can handle directories with spaces in them, prior to
+# https://github.com/scikit-rf/scikit-rf/pull/1019 landing
+scikit-rf==0.31.0
