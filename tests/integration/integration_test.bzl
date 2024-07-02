@@ -26,6 +26,7 @@ def rules_python_integration_test(
         bzlmod = True,
         gazelle_plugin = False,
         tags = None,
+        bazel_versions = None,
         **kwargs):
     """Runs a bazel-in-bazel integration test.
 
@@ -74,7 +75,7 @@ def rules_python_integration_test(
         name = name,
         workspace_path = workspace_path,
         test_runner = test_runner,
-        bazel_versions = bazel_binaries.versions.all,
+        bazel_versions = bazel_versions or bazel_binaries.versions.all,
         workspace_files = [name + "_workspace_files"],
         # Override the tags so that the `manual` tag isn't applied.
         tags = (tags or []) + [
