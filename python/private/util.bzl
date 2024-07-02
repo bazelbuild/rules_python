@@ -84,6 +84,11 @@ def add_tag(attrs, tag):
     else:
         attrs["tags"] = [tag]
 
+def left_pad_zero(index, length):
+    if index < 0:
+        fail("index must be non-negative")
+    return ("0" * length + str(index))[-length:]
+
 IS_BAZEL_7_OR_HIGHER = hasattr(native, "starlark_doc_extract")
 
 # Bazel 5.4 has a bug where every access of testing.ExecutionInfo is a

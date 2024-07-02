@@ -18,7 +18,7 @@ load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
-load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
+load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER", "left_pad_zero")
 
 # This limit can be increased essentially arbitrarily, but doing so will cause a rebuild of all
 # targets using any of these toolchains due to the changed repository name.
@@ -32,12 +32,7 @@ def _toolchain_prefix(index, name):
       _toolchain_prefix(   2, "foo") == "_0002_foo_"
       _toolchain_prefix(2000, "foo") == "_2000_foo_"
     """
-    return "_{}_{}_".format(_left_pad_zero(index, _TOOLCHAIN_INDEX_PAD_LENGTH), name)
-
-def _left_pad_zero(index, length):
-    if index < 0:
-        fail("index must be non-negative")
-    return ("0" * length + str(index))[-length:]
+    return "_{}_{}_".format(left_pad_zero(index, _TOOLCHAIN_INDEX_PAD_LENGTH), name)
 
 # Printing a warning msg not debugging, so we have to disable
 # the buildifier check.
