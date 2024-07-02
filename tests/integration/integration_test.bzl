@@ -38,6 +38,8 @@ def rules_python_integration_test(
             disable bzlmod.
         gazelle_plugin: Whether the test uses the gazelle plugin.
         tags: Test tags.
+        bazel_versions: `list[str] | None`, the bazel versions to test. I
+            not specified, defaults to all configured bazel versions.
         **kwargs: Passed to the upstream `bazel_integration_tests` rule.
     """
     workspace_path = workspace_path or name.removesuffix("_test")

@@ -3,6 +3,7 @@ import subprocess
 import sys
 import unittest
 
+
 class LocalToolchainTest(unittest.TestCase):
     maxDiff = None
 
