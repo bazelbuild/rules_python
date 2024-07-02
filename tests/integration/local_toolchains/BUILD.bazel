@@ -12,29 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:py_test.bzl", "py_test")
 
 py_test(
     name = "test",
     srcs = ["test.py"],
-    data = [
-        "@rules_python//python/runfiles",
-        "@rules_python_bzlmod_debug//:debug_info.json",
-    ],
 )
-
-toolchain(
-    name = "usr_bin_python_toolchain",
-    toolchain = "@usr_bin_python3//:python_runtimes",
-    toolchain_type = "@rules_python//python:toolchain_type",
-)
-
-##cc_binary(
-##    name = "ccbin",
-##    srcs = ["ccbin.cc"],
-##    #linkopts = ["-lpython3.11"],
-##    deps = [
-##        "@rules_python//python/cc:current_py_cc_headers",
-##        "@rules_python//python/cc:current_py_cc_libs",
-##    ],
-##)
