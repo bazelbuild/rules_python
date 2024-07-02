@@ -14,6 +14,6 @@
 
 "Python toolchain module extensions for use with bzlmod"
 
-load("//python/private/bzlmod:python.bzl", _python = "python")
+load("//python/private:python.bzl", _python = "python")
 
 python = _python

@@ -29,7 +29,6 @@ licenses(["notice"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
         "//python/private/pypi:distribution",
@@ -126,6 +125,28 @@ bzl_library(
 bzl_library(
     name = "normalize_name_bzl",
     srcs = ["normalize_name.bzl"],
+)
+
+bzl_library(
+    name = "python_bzl",
+    srcs = ["python.bzl"],
+    deps = [
+        ":pythons_hub_bzl",
+        ":toolchains_repo_bzl",
+        ":util_bzl",
+        "//python:repositories_bzl",
+        "@bazel_features//:features",
+    ],
+)
+
+bzl_library(
+    name = "pythons_hub_bzl",
+    srcs = ["pythons_hub.bzl"],
+    deps = [
+        ":full_version_bzl",
+        ":py_toolchain_suite_bzl",
+        "//python:versions_bzl",
+    ],
 )
 
 bzl_library(
