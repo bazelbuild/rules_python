@@ -67,6 +67,9 @@ A brief description of the categories of changes:
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
+* (toolchains) `python_register_toolchains` and `python_repository` now accepts `bootstrap_template`
+  and `stage2_bootstrap_template` attributes. These attributes are then passed to the underlying
+  `py_runtime` rule to control the bootstrap template used.
 
 ### Added
 * (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
