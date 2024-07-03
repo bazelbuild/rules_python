@@ -69,6 +69,8 @@ def parse_simpleapi_html(*, url, content):
                 valid_quotation = not valid_quotation
                 if valid_quotation:
                     last_closing_quote_idx = idx
+        if not valid_quotation:
+            fail("Invalid metadata in line: {}".format(tail))
         maybe_metadata = tail[:last_closing_quote_idx + 1]
         tail = tail[last_closing_quote_idx + 1:]
         _, _, tail = tail.partition(">")
