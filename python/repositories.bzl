@@ -382,6 +382,8 @@ py_runtime(
     python_version = "PY3",
     implementation_name = 'cpython',
     pyc_tag = "cpython-{interpreter_version_info_major}{interpreter_version_info_minor}",
+    bootstrap_template = {bootstrap_template},
+    stage2_bootstrap_template = {stage2_bootstrap_template},
 )
 
 py_runtime_pair(
@@ -411,6 +413,8 @@ py_exec_tools_toolchain(
         interpreter_version_info_major = python_version_info[0],
         interpreter_version_info_minor = python_version_info[1],
         interpreter_version_info_micro = python_version_info[2],
+        bootstrap_template = repr(str(rctx.attr.bootstrap_template)),
+        stage2_bootstrap_template = repr(str(rctx.attr.stage2_bootstrap_template)),
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -431,6 +435,8 @@ py_exec_tools_toolchain(
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
         "strip_prefix": rctx.attr.strip_prefix,
+        "bootstrap_template": rctx.attr.bootstrap_template,
+        "stage2_bootstrap_template": rctx.attr.stage2_bootstrap_template,
     }
 
     if rctx.attr.url:
@@ -528,6 +534,16 @@ For more information see the official bazel docs
         ),
         "zstd_version": attr.string(
             default = "1.5.2",
+        ),
+        "bootstrap_template": attr.label(
+            default = "//python/private:bootstrap_template",
+            allow_single_file = True,
+            doc = "See the bootstrap_template attribute in the py_runtime rule.",
+        ),
+        "stage2_bootstrap_template": attr.label(
+            default = "//python/private:stage2_bootstrap_template",
+            allow_single_file = True,
+            doc = "See the stage2_bootstrap_template attribute in the py_runtime rule.",
         ),
     },
     environ = [REPO_DEBUG_ENV_VAR],
