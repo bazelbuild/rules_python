@@ -50,7 +50,7 @@ def parse_simpleapi_html(*, url, content):
         fail("Unsupported API version: {}".format(api_version))
 
     # Each line follows the following pattern
-    # <a href="https://...#sha256=..." attribute1="foo"... attributen="bar">filename</a>
+    # <a href="https://...#sha256=..." attribute1="foo" ... attributeN="bar">filename</a><br />
     for line in lines[1:]:
         dist_url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
@@ -71,9 +71,7 @@ def parse_simpleapi_html(*, url, content):
                     last_closing_quote_idx = idx
         maybe_metadata = tail[:last_closing_quote_idx + 1]
         tail = tail[last_closing_quote_idx + 1:]
-        if tail[0] != ">":
-            fail("Unexpected metadata format: {}\"{}".format(maybe_metadata, tail))
-        tail = tail[1:]
+        _, _, tail = tail.partition(">")
         filename, _, tail = tail.partition("<")
 
         metadata_sha256 = ""
