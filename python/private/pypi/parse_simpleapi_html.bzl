@@ -49,6 +49,8 @@ def parse_simpleapi_html(*, url, content):
         # https://packaging.python.org/en/latest/specifications/simple-repository-api/#versioning-pypi-s-simple-api
         fail("Unsupported API version: {}".format(api_version))
 
+    # Each line follows the following pattern
+    # <a href="https://...#sha256=..." attribute1="foo"... attributen="bar">filename</a>
     for line in lines[1:]:
         dist_url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
@@ -56,17 +58,19 @@ def parse_simpleapi_html(*, url, content):
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
         yanked = "data-yanked" in line
 
-        # Find pairs of open and closed quotes marking the beginning of metadata.
+        # Metadata is of the form attribute="foo". Find pairs of open and associated
+        # closed quotes marking each metadata attribute, and keep track of the latest
+        # closing quote. This will be followed by '>'.
         valid_quotation = True
-        last_closing_quote = -1
+        last_closing_quote_idx = -1
         for idx in range(len(tail)):
             char = tail[idx]
             if char == "\"":
                 valid_quotation = not valid_quotation
                 if valid_quotation:
-                    last_closing_quote = idx
-        maybe_metadata = tail[:last_closing_quote + 1]
-        tail = tail[last_closing_quote + 1:]
+                    last_closing_quote_idx = idx
+        maybe_metadata = tail[:last_closing_quote_idx + 1]
+        tail = tail[last_closing_quote_idx + 1:]
         if tail[0] != ">":
             fail("Unexpected metadata format: {}\"{}".format(maybe_metadata, tail))
         tail = tail[1:]
