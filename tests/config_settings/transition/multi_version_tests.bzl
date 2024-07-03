@@ -15,7 +15,7 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("@rules_testing//lib:util.bzl", "TestingAspectInfo", rt_util = "util")
 load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
 
 # NOTE @aignas 2024-06-04: we are using here something that is registered in the MODULE.Bazel
@@ -67,6 +67,39 @@ def _test_py_binary_with_transition_impl(env, target):
     _ = env, target  # @unused
 
 _tests.append(_test_py_binary_with_transition)
+
+def _test_py_binary_windows_build_python_zip_false(name):
+    rt_util.helper_target(
+        py_binary_transitioned,
+        name = name + "_subject",
+        srcs = [name + "_subject.py"],
+        python_version = _PYTHON_VERSION,
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_py_binary_windows_build_python_zip_false_impl,
+        config_settings = {
+            "//command_line_option:build_python_zip": "false",
+            "//command_line_option:platforms": str(Label("//tests/support:windows_x86_64")),
+            "//command_line_option:extra_toolchains": "//tests/cc:all",
+        },
+    )
+
+def _test_py_binary_windows_build_python_zip_false_impl(env, target):
+    # todo: assert that the default outputs of target (the outer wrapper)
+    # matches the inner py_binary target)
+    print(target.files)
+    print(target[DefaultInfo].files_to_run.executable)
+    print("subject:\n  ", target.files)
+    print("inner  :\n  ", target[TestingAspectInfo].attrs.target.files)
+    env.expect.that_target(target).default_outputs().contains_exactly([
+        "{package}/{test_name}_subject.exe",
+        "{package}/{test_name}_subject",
+    ])
+
+_tests.append(_test_py_binary_windows_build_python_zip_false)
 
 def multi_version_test_suite(name):
     test_suite(
