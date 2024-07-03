@@ -60,7 +60,7 @@ def parse_simpleapi_html(*, url, content):
 
         # Metadata is of the form attribute="foo". Find pairs of open and associated
         # closed quotes marking each metadata attribute, and keep track of the latest
-        # closing quote. This will be followed by '>'.
+        # closing quote. Only afterwards we can use the next '>' to partition.
         valid_quotation = True
         last_closing_quote_idx = -1
         for idx in range(len(tail)):
