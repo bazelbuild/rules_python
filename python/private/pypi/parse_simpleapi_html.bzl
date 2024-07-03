@@ -56,7 +56,20 @@ def parse_simpleapi_html(*, url, content):
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
         yanked = "data-yanked" in line
 
-        maybe_metadata, _, tail = tail.partition(">")
+        # Find pairs of open and closed quotes marking the beginning of metadata.
+        valid_quotation = True
+        last_closing_quote = -1
+        for idx in range(len(tail)):
+            char = tail[idx]
+            if char == "\"":
+                valid_quotation = not valid_quotation
+                if valid_quotation:
+                    last_closing_quote = idx
+        maybe_metadata = tail[:last_closing_quote + 1]
+        tail = tail[last_closing_quote + 1:]
+        if tail[0] != ">":
+            fail("Unexpected metadata format: {}\"{}".format(maybe_metadata, tail))
+        tail = tail[1:]
         filename, _, tail = tail.partition("<")
 
         metadata_sha256 = ""
