@@ -18,7 +18,7 @@ load(
     "@bazel_gazelle//:deps.bzl",
     _go_repository = "go_repository",
 )
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def go_repository(name, **kwargs):
     if name not in native.existing_rules():
@@ -26,35 +26,12 @@ def go_repository(name, **kwargs):
 
 def python_stdlib_list_deps():
     "Fetch python stdlib list dependencies"
-    http_file(
-        name = "python_stdlib_list_3_8",
-        sha256 = "ee6dc367011ff298b906dbaab408940aa57086d5f8f47278f4b7523b9aa13ae3",
-        url = "https://raw.githubusercontent.com/pypi/stdlib-list/8cbc2067a4a0f9eee57fb541e4cd7727724b7db4/stdlib_list/lists/3.8.txt",
-        downloaded_file_path = "3.8.txt",
-    )
-    http_file(
-        name = "python_stdlib_list_3_9",
-        sha256 = "a4340e5ffe2e75bb18f548028cef6e6ac15384c44ae0a776e04dd869da1d1fd7",
-        url = "https://raw.githubusercontent.com/pypi/stdlib-list/8cbc2067a4a0f9eee57fb541e4cd7727724b7db4/stdlib_list/lists/3.9.txt",
-        downloaded_file_path = "3.9.txt",
-    )
-    http_file(
-        name = "python_stdlib_list_3_10",
-        sha256 = "0b867738b78ac98944237de2600093a1c6ef259d1810017e46f01a29f3d199e7",
-        url = "https://raw.githubusercontent.com/pypi/stdlib-list/8cbc2067a4a0f9eee57fb541e4cd7727724b7db4/stdlib_list/lists/3.10.txt",
-        downloaded_file_path = "3.10.txt",
-    )
-    http_file(
-        name = "python_stdlib_list_3_11",
-        sha256 = "3c1dbf991b17178d6ed3772f4fa8f64302feaf9c3385fef328a0c7ab736a79b1",
-        url = "https://raw.githubusercontent.com/pypi/stdlib-list/8cbc2067a4a0f9eee57fb541e4cd7727724b7db4/stdlib_list/lists/3.11.txt",
-        downloaded_file_path = "3.11.txt",
-    )
-    http_file(
-        name = "python_stdlib_list_3_12",
-        sha256 = "6d3d53194218b43ee1d04bf9a4f0b6a9309bb59cdcaddede7d9cfe8b6835d34a",
-        url = "https://raw.githubusercontent.com/pypi/stdlib-list/8cbc2067a4a0f9eee57fb541e4cd7727724b7db4/stdlib_list/lists/3.12.txt",
-        downloaded_file_path = "3.12.txt",
+    http_archive(
+        name = "python_stdlib_list",
+        build_file_content = """exports_files(glob(["stdlib_list/lists/*.txt"]))""",
+        sha256 = "3f6fc8fba0a99ce8fa76c1b794a24f38962f6275ea9d5cfb43a874abe472571e",
+        strip_prefix = "stdlib-list-0.10.0",
+        url = "https://github.com/pypi/stdlib-list/releases/download/v0.10.0/v0.10.0.tar.gz",
     )
 
 def gazelle_deps():
