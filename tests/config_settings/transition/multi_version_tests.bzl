@@ -68,7 +68,7 @@ def _test_py_binary_with_transition_impl(env, target):
 
 _tests.append(_test_py_binary_with_transition)
 
-def _test_py_binary_windows_build_python_zip_false(name):
+def _setup_py_binary_windows(name, *, impl, build_python_zip):
     rt_util.helper_target(
         py_binary_transitioned,
         name = name + "_subject",
@@ -79,27 +79,53 @@ def _test_py_binary_windows_build_python_zip_false(name):
     analysis_test(
         name = name,
         target = name + "_subject",
-        impl = _test_py_binary_windows_build_python_zip_false_impl,
+        impl = impl,
         config_settings = {
-            "//command_line_option:build_python_zip": "false",
+            "//command_line_option:build_python_zip": build_python_zip,
             "//command_line_option:platforms": str(Label("//tests/support:windows_x86_64")),
             "//command_line_option:extra_toolchains": "//tests/cc:all",
         },
     )
 
+def _test_py_binary_windows_build_python_zip_false(name):
+    _setup_py_binary_windows(
+        name,
+        build_python_zip = "false",
+        impl = _test_py_binary_windows_build_python_zip_false_impl,
+    )
+
 def _test_py_binary_windows_build_python_zip_false_impl(env, target):
-    # todo: assert that the default outputs of target (the outer wrapper)
-    # matches the inner py_binary target)
-    print(target.files)
-    print(target[DefaultInfo].files_to_run.executable)
-    print("subject:\n  ", target.files)
-    print("inner  :\n  ", target[TestingAspectInfo].attrs.target.files)
+    # TODO: These outputs aren't correct. The outputs shouldn't
+    # have the "_" prefix on them (those are coming from the underlying
+    # wrapped binary).
     env.expect.that_target(target).default_outputs().contains_exactly([
-        "{package}/{test_name}_subject.exe",
+        "{package}/_{test_name}_subject",
+        "{package}/_{test_name}_subject.exe",
         "{package}/{test_name}_subject",
+        "{package}/{test_name}_subject.py",
     ])
 
 _tests.append(_test_py_binary_windows_build_python_zip_false)
+
+def _test_py_binary_windows_build_python_zip_true(name):
+    _setup_py_binary_windows(
+        name,
+        build_python_zip = "true",
+        impl = _test_py_binary_windows_build_python_zip_true_impl,
+    )
+
+def _test_py_binary_windows_build_python_zip_true_impl(env, target):
+    # TODO: These outputs aren't correct. The outputs shouldn't
+    # have the "_" prefix on them (those are coming from the underlying
+    # wrapped binary).
+    env.expect.that_target(target).default_outputs().contains_exactly([
+        "{package}/_{test_name}_subject.exe",
+        "{package}/_{test_name}_subject.zip",
+        "{package}/{test_name}_subject.py",
+        "{package}/{test_name}_subject.zip",
+    ])
+
+_tests.append(_test_py_binary_windows_build_python_zip_true)
 
 def multi_version_test_suite(name):
     test_suite(

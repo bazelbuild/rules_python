@@ -43,7 +43,7 @@ def _transition_py_impl(ctx):
         output = executable,
         target_file = target[DefaultInfo].files_to_run.executable,
     )
-    symlinks = []
+    default_outputs = []
     if target_is_windows:
         files = target[DefaultInfo].files.to_list()
 
@@ -55,10 +55,27 @@ def _transition_py_impl(ctx):
 
         build_zip_enabled = ctx.fragments.py.build_python_zip
 
-        if build_zip_enabled:
-            # Under Windows, the expected "<name>.zip" does not exist, so we have to
-            # create the symlink ourselves to achieve the same behaviour as in macOS
-            # and Linux.
+        # Under Windows, the expected "<name>.zip" does not exist, so we have to
+        # create the symlink ourselves to achieve the same behaviour as in macOS
+        # and Linux.
+        if ctx.fragments.py.build_python_zip:
+            suffix = ".zip"
+            symlink_executable = True
+        else:
+            suffix = ""
+            symlink_executable = False
+
+        # The -4 chars stripped are the ".exe" part
+        search_for = target[DefaultInfo].files_to_run.executable.short_path[:-4] + suffix
+        underlying_launched_file = try_get_file_from_path(search_for)
+        if underlying_launched_file:
+            launched_file_symlink = ctx.actions.declare_file(ctx.attr.name + suffix)
+            ctx.actions.symlink(
+                executable = executable,
+                output = launched_file_symlink,
+                target_file = underlying_launched_file,
+            )
+            default_outputs.append(launched_file_symlink)
             expected_zip_path = target[DefaultInfo].files_to_run.executable.short_path[:-4] + ".zip"
             zip_file = try_get_file_from_path(expected_zip_path)
             if zip_file:
@@ -68,7 +85,7 @@ def _transition_py_impl(ctx):
                     output = zip_file_symlink,
                     target_file = zip_file,
                 )
-                symlinks.append(zip_file_symlink)
+                default_outputs.append(zip_file_symlink)
 
             else:
                 fail("Zip file should have been generated.")
@@ -83,7 +100,7 @@ def _transition_py_impl(ctx):
                     output = bootstrap_file_symlink,
                     target_file = bootstrap_file,
                 )
-                symlinks.append(bootstrap_file_symlink)
+                default_outputs.append(bootstrap_file_symlink)
 
             else:
                 fail("Bootstrap file should have been generated.")
@@ -112,8 +129,8 @@ def _transition_py_impl(ctx):
     providers = [
         DefaultInfo(
             executable = executable,
-            files = depset(symlinks, transitive = [target[DefaultInfo].files]),
-            runfiles = ctx.runfiles(symlinks).merge(target[DefaultInfo].default_runfiles),
+            files = depset(default_outputs, transitive = [target[DefaultInfo].files]),
+            runfiles = ctx.runfiles(default_outputs).merge(target[DefaultInfo].default_runfiles),
         ),
         py_info,
         py_runtime_info,
