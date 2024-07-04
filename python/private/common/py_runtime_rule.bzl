@@ -96,6 +96,8 @@ def _py_runtime_impl(ctx):
             interpreter_version_info["minor"],
         )
 
+    stub_shebang = ctx.attr.stub_shebang or ("#!" + interpreter.short_path if hermetic else DEFAULT_STUB_SHEBANG)
+
     py_runtime_info_kwargs = dict(
         interpreter_path = interpreter_path or None,
         interpreter = interpreter,
@@ -103,7 +105,7 @@ def _py_runtime_impl(ctx):
         coverage_tool = coverage_tool,
         coverage_files = coverage_files,
         python_version = python_version,
-        stub_shebang = ctx.attr.stub_shebang,
+        stub_shebang = stub_shebang,
         bootstrap_template = ctx.file.bootstrap_template,
     )
     builtin_py_runtime_info_kwargs = dict(py_runtime_info_kwargs)
@@ -303,7 +305,7 @@ The template to use when two stage bootstrapping is enabled
 """,
         ),
         "stub_shebang": attr.string(
-            default = DEFAULT_STUB_SHEBANG,
+            default = "",
             doc = """
 "Shebang" expression prepended to the bootstrapping Python stub script
 used when executing `py_binary` targets.
