@@ -423,6 +423,7 @@ py_exec_tools_toolchain(
 
     attrs = {
         "auth_patterns": rctx.attr.auth_patterns,
+        "bootstrap_template": rctx.attr.bootstrap_template,
         "coverage_tool": rctx.attr.coverage_tool,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
@@ -434,9 +435,8 @@ py_exec_tools_toolchain(
         "python_version": python_version,
         "release_filename": release_filename,
         "sha256": rctx.attr.sha256,
-        "strip_prefix": rctx.attr.strip_prefix,
-        "bootstrap_template": rctx.attr.bootstrap_template,
         "stage2_bootstrap_template": rctx.attr.stage2_bootstrap_template,
+        "strip_prefix": rctx.attr.strip_prefix,
     }
 
     if rctx.attr.url:
@@ -452,6 +452,11 @@ python_repository = repository_rule(
     attrs = {
         "auth_patterns": attr.string_dict(
             doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
+        ),
+        "bootstrap_template": attr.label(
+            default = "//python/private:bootstrap_template",
+            allow_single_file = True,
+            doc = "See the bootstrap_template attribute in the py_runtime rule.",
         ),
         "coverage_tool": attr.string(
             # Mirrors the definition at
@@ -517,6 +522,11 @@ For more information see the official bazel docs
             doc = "The SHA256 integrity hash for the Python interpreter tarball.",
             mandatory = True,
         ),
+        "stage2_bootstrap_template": attr.label(
+            default = "//python/private:stage2_bootstrap_template",
+            allow_single_file = True,
+            doc = "See the stage2_bootstrap_template attribute in the py_runtime rule.",
+        ),
         "strip_prefix": attr.string(
             doc = "A directory prefix to strip from the extracted files.",
         ),
@@ -534,16 +544,6 @@ For more information see the official bazel docs
         ),
         "zstd_version": attr.string(
             default = "1.5.2",
-        ),
-        "bootstrap_template": attr.label(
-            default = "//python/private:bootstrap_template",
-            allow_single_file = True,
-            doc = "See the bootstrap_template attribute in the py_runtime rule.",
-        ),
-        "stage2_bootstrap_template": attr.label(
-            default = "//python/private:stage2_bootstrap_template",
-            allow_single_file = True,
-            doc = "See the stage2_bootstrap_template attribute in the py_runtime rule.",
         ),
     },
     environ = [REPO_DEBUG_ENV_VAR],
