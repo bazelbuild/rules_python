@@ -63,6 +63,8 @@ A brief description of the categories of changes:
   Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
 * (rules) The first element of the default outputs is now the executable again.
 * (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
+* (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
+  containing ">" sign
 
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
