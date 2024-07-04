@@ -17,6 +17,7 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:util.bzl", "TestingAspectInfo", rt_util = "util")
 load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
 
 # NOTE @aignas 2024-06-04: we are using here something that is registered in the MODULE.Bazel
 # and if you find tests failing, it could be because of the toolchain resolution issues here.
@@ -69,6 +70,13 @@ def _test_py_binary_with_transition_impl(env, target):
 _tests.append(_test_py_binary_with_transition)
 
 def _setup_py_binary_windows(name, *, impl, build_python_zip):
+    # Testing this with Bazel 6 is hard because Bazel checks the host OS (not
+    # desired target platform) to determine the --build_python_zip value and
+    # using the .exe extension. APIs for those are available in Bazel 7+.
+    if not IS_BAZEL_7_OR_HIGHER:
+        rt_util.skip_test(name = name)
+        return
+
     rt_util.helper_target(
         py_binary_transitioned,
         name = name + "_subject",
