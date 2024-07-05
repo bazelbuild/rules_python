@@ -25,6 +25,23 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* Nothing yet
+
+### Fixed
+* (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
+  containing ">" sign
+
+### Added
+* Nothing yet
+
+### Removed
+* Nothing yet
+
+## [0.34.0] - 2024-07-04
+
+[0.34.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.34.0
+
+### Changed
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 * (bzlmod): optimize the creation of config settings used in pip to
   reduce the total number of targets in the hub repo.
@@ -49,7 +66,8 @@ A brief description of the categories of changes:
           "@platforms//os:linux": ["@pypi//foo_available_only_on_linux"],
           "//conditions:default": [],
       }
-  )`.
+  )
+  ```
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
@@ -63,14 +81,10 @@ A brief description of the categories of changes:
   Fixes [#1996](https://github.com/bazelbuild/rules_python/issues/1996).
 * (rules) The first element of the default outputs is now the executable again.
 * (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
-* (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
-  containing ">" sign
 
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
-
-### Added
 * (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
   allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
   with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
