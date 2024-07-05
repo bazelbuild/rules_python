@@ -58,23 +58,8 @@ def parse_simpleapi_html(*, url, content):
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
         yanked = "data-yanked" in line
 
-        # Metadata is of the form attribute="foo". Find pairs of open and associated
-        # closed quotes marking each metadata attribute. Keep track of the latest
-        # closing quote. Only afterwards we can use the next '>' to partition.
-        valid_quotation = True
-        last_closing_quote_idx = -1
-        for idx in range(len(tail)):
-            char = tail[idx]
-            if char == "\"":
-                valid_quotation = not valid_quotation
-                if valid_quotation:
-                    last_closing_quote_idx = idx
-        if not valid_quotation:
-            fail("Invalid metadata in line: {}".format(tail))
-        maybe_metadata = tail[:last_closing_quote_idx + 1]
-        tail = tail[last_closing_quote_idx + 1:]
-        _, _, tail = tail.partition(">")
-        filename, _, tail = tail.partition("<")
+        head, _, _ = tail.rpartition("</a>")
+        maybe_metadata, _, filename = head.rpartition(">")
 
         metadata_sha256 = ""
         metadata_url = ""
