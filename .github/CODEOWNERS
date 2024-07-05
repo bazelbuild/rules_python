@@ -7,5 +7,5 @@
 /examples/build_file_generation/ @f0rmiga
 
 # PyPI integration related code
-/python/private/pypi/ @groodt
-/tests/pypi/ @groodt
+/python/private/pypi/ @aignas @groodt
+/tests/pypi/ @aignas @groodt

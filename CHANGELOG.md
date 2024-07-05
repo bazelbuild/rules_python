@@ -25,6 +25,24 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* Nothing yet
+
+### Fixed
+* (rules) Fixes python builds when the `--build_python_zip` is set to `false` on Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
+* (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
+  containing ">" sign
+
+### Added
+* Nothing yet
+
+### Removed
+* Nothing yet
+
+## [0.34.0] - 2024-07-04
+
+[0.34.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.34.0
+
+### Changed
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 * (bzlmod): optimize the creation of config settings used in pip to
   reduce the total number of targets in the hub repo.
@@ -49,7 +67,8 @@ A brief description of the categories of changes:
           "@platforms//os:linux": ["@pypi//foo_available_only_on_linux"],
           "//conditions:default": [],
       }
-  )`.
+  )
+  ```
 * (bzlmod): Targets in `all_requirements` now use the same form as targets returned by the `requirement` macro.
 * (rules) Auto exec groups are enabled. This allows actions run by the rules,
   such as precompiling, to pick an execution platform separately from what
@@ -67,14 +86,12 @@ A brief description of the categories of changes:
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
+* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
+  allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
+  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).  
 * (toolchains) `python_register_toolchains` and `python_repository` now accepts `bootstrap_template`
   and `stage2_bootstrap_template` attributes. These attributes are then passed to the underlying
   `py_runtime` rule to control the bootstrap template used.
-
-### Added
-* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
-  allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
-  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
