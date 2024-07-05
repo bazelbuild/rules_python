@@ -28,6 +28,7 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
+* (rules) Fixes python builds when the `--build_python_zip` is set to `false` on Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 
