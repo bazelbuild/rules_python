@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Allows detecting of rules_python features that aren't easily detected."""
 
-features = struct(
-    precompile = True,
-    version = "1",
+module(name = "module_under_test")
+
+bazel_dep(name = "rules_python", version = "0.0.0")
+local_path_override(
+    module_name = "rules_python",
+    path = "../../..",
 )

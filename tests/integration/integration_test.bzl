@@ -19,6 +19,7 @@ load(
     "bazel_integration_tests",
     "integration_test_utils",
 )
+load("//python:py_test.bzl", "py_test")
 
 def rules_python_integration_test(
         name,
@@ -26,6 +27,7 @@ def rules_python_integration_test(
         bzlmod = True,
         gazelle_plugin = False,
         tags = None,
+        py_main = None,
         **kwargs):
     """Runs a bazel-in-bazel integration test.
 
@@ -37,10 +39,21 @@ def rules_python_integration_test(
             disable bzlmod.
         gazelle_plugin: Whether the test uses the gazelle plugin.
         tags: Test tags.
+        py_main: Optional `.py` file to run tests using. When specified, a
+            python based test runner is used, and this source file is the main
+            entry point and responsible for executing tests.
         **kwargs: Passed to the upstream `bazel_integration_tests` rule.
     """
     workspace_path = workspace_path or name.removesuffix("_test")
-    if bzlmod:
+    if py_main:
+        test_runner = name + "_py_runner"
+        py_test(
+            name = test_runner,
+            srcs = [py_main],
+            main = py_main,
+            deps = [":runner_lib"],
+        )
+    elif bzlmod:
         if gazelle_plugin:
             test_runner = "//tests/integration:test_runner_gazelle_plugin"
         else:

@@ -11,9 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Allows detecting of rules_python features that aren't easily detected."""
 
-features = struct(
-    precompile = True,
-    version = "1",
-)
+import logging
+import unittest
+
+from tests.integration import runner
+
+
+class CustomCommandsTest(runner.TestCase):
+    # Regression test for https://github.com/bazelbuild/rules_python/issues/1840
+    def test_run_build_python_zip_false(self):
+        result = self.run_bazel("run", "--build_python_zip=false", "//:bin")
+        self.assert_result_matches(result, "bazel-out")
+
+
+if __name__ == "__main__":
+    # Enabling this makes the runner log subprocesses as the test goes along.
+    # logging.basicConfig(level = "INFO")
+    unittest.main()

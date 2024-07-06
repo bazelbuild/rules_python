@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "default_test_runner")
+load("//python:py_library.bzl", "py_library")
 load(":integration_test.bzl", "rules_python_integration_test")
 
 licenses(["notice"])
@@ -101,4 +102,15 @@ rules_python_integration_test(
     name = "py_cc_toolchain_registered_workspace_test",
     bzlmod = False,
     workspace_path = "py_cc_toolchain_registered",
+)
+
+rules_python_integration_test(
+    name = "custom_commands_test",
+    py_main = "custom_commands_test.py",
+)
+
+py_library(
+    name = "runner_lib",
+    srcs = ["runner.py"],
+    imports = ["../../"],
 )
