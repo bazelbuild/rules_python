@@ -12,6 +12,6 @@ py_library(
 )
 
 py_test(
-    name = "hello_test",
+    name = "test2_star_test_py_test",
     srcs = ["hello_test.py"],
 )

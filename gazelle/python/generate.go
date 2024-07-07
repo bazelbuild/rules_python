@@ -421,7 +421,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addResolvedDependencies(annotations.includeDeps).
 			generateImportsAttribute()
 	}
-	if (hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration()) && !cfg.PerFileGeneration() {
+	if !cfg.PerFileGeneration() {
 		// Create one py_test target per package
 		if hasPyTestEntryPointFile {
 			// Only add the pyTestEntrypointFilename to the pyTestFilenames if
@@ -441,7 +441,10 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					setMain(main)
 			} else if hasPyTestEntryPointFile {
 				pyTestTarget.setMain(pyTestEntrypointFilename)
-			}
+			} /* else:
+			main is not set, assuming there is a test file with the same name
+			as the target name, or there is a macro wrapping py_test and setting its main attribute.
+			*/
 			pyTestTargets = append(pyTestTargets, pyTestTarget)
 		}
 	} else {

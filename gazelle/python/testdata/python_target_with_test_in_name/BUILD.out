@@ -1,7 +1,9 @@
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
+# gazelle:python_generation_mode file
+
 py_library(
-    name = "python_target_with_test_in_name",
+    name = "__init__",
     srcs = ["__init__.py"],
     visibility = ["//:__subpackages__"],
 )
@@ -10,7 +12,7 @@ py_test(
     name = "real_test",
     srcs = ["real_test.py"],
     deps = [
-        ":python_target_with_test_in_name",
+        ":__init__",
         "@gazelle_python_test//boto3",
     ],
 )
@@ -18,5 +20,5 @@ py_test(
 py_test(
     name = "test_reality",
     srcs = ["test_reality.py"],
-    deps = [":python_target_with_test_in_name"],
+    deps = [":__init__"],
 )

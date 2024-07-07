@@ -55,6 +55,7 @@ const (
 	// the "per_file" GenerationMode by including the package's __init__.py file.
 	// This is a boolean directive.
 	GenerationModePerFileIncludeInit = "python_generation_mode_per_file_include_init"
+	TestGenerationMode               = "python_test_generation_mode"
 	// LibraryNamingConvention represents the directive that controls the
 	// py_library naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -101,6 +102,12 @@ const (
 	// be generated englobing sub-directories containing Python files.
 	GenerationModeProject GenerationModeType = "project"
 	GenerationModeFile    GenerationModeType = "file"
+)
+
+const (
+	TestGenerationModeAuto    = "auto"
+	TestGenerationModePackage = "package"
+	TestGenerationModeFile    = "file"
 )
 
 const (
@@ -161,6 +168,7 @@ type Config struct {
 	defaultVisibility            []string
 	visibility                   []string
 	testFilePattern              []string
+	testGenerationMode           string
 	labelConvention              string
 	labelNormalization           LabelNormalizationType
 }
@@ -195,6 +203,7 @@ func New(
 		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
 		visibility:                   []string{},
 		testFilePattern:              strings.Split(DefaultTestFilePatternString, ","),
+		testGenerationMode:           TestGenerationModeAuto,
 		labelConvention:              DefaultLabelConvention,
 		labelNormalization:           DefaultLabelNormalizationType,
 	}
@@ -226,6 +235,7 @@ func (c *Config) NewChild() *Config {
 		defaultVisibility:            c.defaultVisibility,
 		visibility:                   c.visibility,
 		testFilePattern:              c.testFilePattern,
+		testGenerationMode:           c.testGenerationMode,
 		labelConvention:              c.labelConvention,
 		labelNormalization:           c.labelNormalization,
 	}
@@ -461,6 +471,14 @@ func (c *Config) TestFilePattern() []string {
 	return c.testFilePattern
 }
 
+func (c *Config) SetTestGenerationMode(value string) {
+	c.testGenerationMode = value
+}
+
+func (c *Config) TestGenerationMode() string {
+	return c.testGenerationMode
+}
+
 // SetLabelConvention sets the label convention used for third-party dependencies.
 func (c *Config) SetLabelConvention(convention string) {
 	c.labelConvention = convention
@@ -494,9 +512,9 @@ func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionN
 		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "_")
 	case Pep503LabelNormalizationType:
 		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
-		normConventionalDistributionName = strings.ToLower(conventionalDistributionName) // ... "should be lowercased"
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)                                        // ... "should be lowercased"
 		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-") // ... "all runs of the characters ., -, or _ replaced with a single -"
-		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-") // ... "must start and end with a letter or number"
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-")                                  // ... "must start and end with a letter or number"
 	default:
 		fallthrough
 	case NoLabelNormalizationType:

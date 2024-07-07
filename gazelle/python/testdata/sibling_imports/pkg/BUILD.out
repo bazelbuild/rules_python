@@ -11,16 +11,11 @@ py_library(
 )
 
 py_test(
-    name = "test_util",
-    srcs = ["test_util.py"],
-)
-
-py_test(
-    name = "unit_test",
-    srcs = ["unit_test.py"],
-    deps = [
-        ":pkg",
-        ":test_util",
+    name = "pkg_test",
+    srcs = [
+        "test_util.py",
+        "unit_test.py",
     ],
+    deps = [":pkg"],
 )
 

@@ -14,21 +14,11 @@ py_library(
 )
 
 py_test(
-    name = "foo_hello",
-    srcs = ["foo_hello.py"],
-)
-
-py_test(
-    name = "foo_unittest",
-    srcs = ["foo_unittest.py"],
-)
-
-py_test(
-    name = "hello_foo",
-    srcs = ["hello_foo.py"],
-)
-
-py_test(
-    name = "unittest_foo",
-    srcs = ["unittest_foo.py"],
+    name = "test5_multiple_patterns_test",
+    srcs = [
+        "foo_hello.py",
+        "foo_unittest.py",
+        "hello_foo.py",
+        "unittest_foo.py",
+    ],
 )
