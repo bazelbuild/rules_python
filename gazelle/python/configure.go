@@ -61,7 +61,6 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.ValidateImportStatementsDirective,
 		pythonconfig.GenerationMode,
 		pythonconfig.GenerationModePerFileIncludeInit,
-		pythonconfig.TestGenerationMode,
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
@@ -164,14 +163,6 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal(err)
 			}
 			config.SetPerFileGenerationIncludeInit(v)
-		case pythonconfig.TestGenerationMode:
-			testGenerationMode := strings.TrimSpace(d.Value)
-			switch testGenerationMode {
-			case pythonconfig.TestGenerationModeAuto, pythonconfig.TestGenerationModeFile, pythonconfig.TestGenerationModePackage:
-				config.SetTestGenerationMode(testGenerationMode)
-			default:
-				log.Printf("invalid value for diretive %q at %q: %q", pythonconfig.TestGenerationMode, rel, testGenerationMode)
-			}
 		case pythonconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.BinaryNamingConvention:
