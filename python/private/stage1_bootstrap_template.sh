@@ -108,11 +108,21 @@ interpreter_env+=("PYTHONSAFEPATH=1")
 export RUNFILES_DIR
 # NOTE: We use <(...) to pass the Python program as a file so that stdin can
 # still be passed along as normal.
-env \
-  "${interpreter_env[@]}" \
-  "$python_exe" \
-  "${interpreter_args[@]}" \
-  "$stage2_bootstrap" \
+command=(
+  env
+  "${interpreter_env[@]}"
+  "$python_exe"
+  "${interpreter_args[@]}"
+  "$stage2_bootstrap"
   "$@"
+)
 
-exit $?
+# We want to use `exec` instead of a child process, which causes problems
+# with signal passing. However, when running a zip file, we need to clean 
+# up the workspace after the process finishes so control must return here.
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  "${command[@]}"
+  exit $?
+else
+  exec "${command[@]}"
+fi
