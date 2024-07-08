@@ -31,9 +31,5 @@ use_repo(
 python_stdlib_list = use_extension("//python:extensions.bzl", "python_stdlib_list")
 use_repo(
     python_stdlib_list,
-    "python_stdlib_list_3_10",
-    "python_stdlib_list_3_11",
-    "python_stdlib_list_3_12",
-    "python_stdlib_list_3_8",
-    "python_stdlib_list_3_9",
+    "python_stdlib_list",
 )
