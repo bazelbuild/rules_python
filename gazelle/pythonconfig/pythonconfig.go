@@ -275,17 +275,25 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 	for currentCfg := c; currentCfg != nil; currentCfg = currentCfg.parent {
 		if currentCfg.gazelleManifest != nil {
 			gazelleManifest := currentCfg.gazelleManifest
-			if distributionName, ok := gazelleManifest.ModulesMapping[modName]; ok {
-				var distributionRepositoryName string
-				if gazelleManifest.PipDepsRepositoryName != "" {
-					distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
-				} else if gazelleManifest.PipRepository != nil {
-					distributionRepositoryName = gazelleManifest.PipRepository.Name
-				}
+			for {
+				if distributionName, ok := gazelleManifest.ModulesMapping[modName]; ok {
+					var distributionRepositoryName string
+					if gazelleManifest.PipDepsRepositoryName != "" {
+						distributionRepositoryName = gazelleManifest.PipDepsRepositoryName
+					} else if gazelleManifest.PipRepository != nil {
+						distributionRepositoryName = gazelleManifest.PipRepository.Name
+					}
 
-				lbl := currentCfg.FormatThirdPartyDependency(distributionRepositoryName, distributionName)
-				return lbl.String(), true
+					lbl := currentCfg.FormatThirdPartyDependency(distributionRepositoryName, distributionName)
+					return lbl.String(), true
+				}
+				i := strings.LastIndex(modName, ".")
+				if i == -1 {
+					break
+				}
+				modName = modName[:i]
 			}
+
 		}
 	}
 	return "", false
@@ -494,9 +502,9 @@ func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionN
 		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "_")
 	case Pep503LabelNormalizationType:
 		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
-		normConventionalDistributionName = strings.ToLower(conventionalDistributionName) // ... "should be lowercased"
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)                                        // ... "should be lowercased"
 		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-") // ... "all runs of the characters ., -, or _ replaced with a single -"
-		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-") // ... "must start and end with a letter or number"
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-")                                  // ... "must start and end with a letter or number"
 	default:
 		fallthrough
 	case NoLabelNormalizationType:

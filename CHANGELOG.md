@@ -25,7 +25,8 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (gazelle): Simplify and make gazelle_python.yaml have only top level package name.
+  It would work well in cases to reduce merge conflicts.
 
 ### Fixed
 * (rules) Fixes python builds when the `--build_python_zip` is set to `false` on Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
