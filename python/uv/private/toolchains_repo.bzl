@@ -20,6 +20,18 @@ load("//python/private:text_util.bzl", "render")
 # targets using any of these toolchains due to the changed repository name.
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
+_TOOLCHAIN_TEMPLATE = """
+load("@rules_python//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
+
+# Declare a toolchain Bazel will select for running the tool in an action
+# on the execution platform.
+toolchain(
+    name = "{prefix}{platform}",
+    target_compatible_with = {compatible_with},
+    toolchain = "@{user_repository_name}_{platform}//:uv_toolchain",
+    toolchain_type = UV_TOOLCHAIN_TYPE,
+)
+"""
 
 UV_PLATFORMS = {
     "aarch64-apple-darwin": struct(
@@ -32,6 +44,18 @@ UV_PLATFORMS = {
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:aarch64",
+        ],
+    ),
+    "powerpc64le-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:ppc",
+        ],
+    ),
+    "s390x-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:s390x",
         ],
     ),
     "x86_64-apple-darwin": struct(
@@ -66,18 +90,7 @@ def _toolchains_repo_impl(repository_ctx):
 
     for index, [platform, meta] in enumerate(UV_PLATFORMS.items()):
         prefix = render.toolchain_prefix(index, "uv_toolchain", _TOOLCHAIN_INDEX_PAD_LENGTH)
-        build_content += """
-load("@rules_python//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
-
-# Declare a toolchain Bazel will select for running the tool in an action
-# on the execution platform.
-toolchain(
-    name = "{prefix}{platform}",
-    target_compatible_with = {compatible_with},
-    toolchain = "@{user_repository_name}_{platform}//:uv_toolchain",
-    toolchain_type = UV_TOOLCHAIN_TYPE,
-)
-""".format(
+        build_content += _TOOLCHAIN_TEMPLATE.format(
             platform = platform,
             prefix = prefix,
             user_repository_name = repository_ctx.attr.user_repository_name,
