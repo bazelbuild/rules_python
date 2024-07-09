@@ -52,6 +52,9 @@ def rules_python_integration_test(
             srcs = [py_main],
             main = py_main,
             deps = [":runner_lib"],
+            # Hide from ... patterns; should only be run as part
+            # of the bazel integration test
+            tags = ["manual"],
         )
     elif bzlmod:
         if gazelle_plugin:
