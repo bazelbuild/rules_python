@@ -22,7 +22,7 @@ filegroup(
     srcs = glob(["**"]) + [
         "//python/uv/private:distribution",
     ],
-    visibility = ["//python:__pkg__"],
+    visibility = ["//:__subpackages__"],
 )
 
 # For stardoc to reference the files
