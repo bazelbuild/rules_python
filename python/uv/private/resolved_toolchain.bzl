@@ -25,7 +25,7 @@ Workaround for https://github.com/bazelbuild/bazel/issues/14009
 
 # Forward all the providers
 def _resolved_toolchain_impl(ctx):
-    toolchain_info = ctx.toolchains[str(UV_TOOLCHAIN_TYPE)]
+    toolchain_info = ctx.toolchains[UV_TOOLCHAIN_TYPE]
     return [
         toolchain_info,
         toolchain_info.default_info,
