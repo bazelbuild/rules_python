@@ -23,6 +23,11 @@ import unittest
 
 _logger = logging.getLogger(__name__)
 
+class ExecuteError(Exception):
+    def __init__(self, result):
+        self.result = result
+    def __str__(self):
+        return self.result.describe()
 
 class ExecuteResult:
     def __init__(
@@ -76,6 +81,9 @@ class TestCase(unittest.TestCase):
             "PATH": os.environ["PATH"],
             "TEST_TMPDIR": str(self.test_tmp_dir),
             "TMP": str(self.tmp_dir),
+            # For some reason, this is necessary for Bazel 6.4 to work.
+            # If not present, it can't find some bash helpers in @bazel_tools
+            "RUNFILES_DIR": os.environ["TEST_SRCDIR"]
         }
 
     def run_bazel(self, *args: str, check: bool = True) -> ExecuteResult:
@@ -99,9 +107,13 @@ class TestCase(unittest.TestCase):
             capture_output=True,
             cwd=cwd,
             env=env,
-            check=check,
+            check=False,
         )
-        return ExecuteResult(args, env, cwd, proc_result)
+        exec_result = ExecuteResult(args, env, cwd, proc_result)
+        if check and exec_result.exit_code:
+            raise ExecuteError(exec_result)
+        else:
+            return exec_result
 
     def assert_result_matches(self, result: ExecuteResult, regex: str) -> None:
         """Assert stdout/stderr of an invocation matches a regex.
