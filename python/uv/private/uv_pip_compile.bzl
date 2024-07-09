@@ -30,7 +30,7 @@ script_template = """\
 
 def _uv_pip_compile(ctx):
     info = ctx.toolchains[UV_TOOLCHAIN_TYPE].uv_toolchain_info
-    uv = info.uv_target.files.to_list()[0]
+    uv = info.uv.files.to_list()[0]
 
     python = ctx.toolchains[TARGET_TOOLCHAIN_TYPE].py3_runtime.interpreter
     dependencies_file = ctx.file.dependencies_file

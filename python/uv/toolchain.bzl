@@ -21,15 +21,15 @@ This module implements the uv toolchain rule
 load("//python/uv/private:providers.bzl", "UvToolchainInfo")
 
 def _uv_toolchain_impl(ctx):
-    uv_target = ctx.attr.uv
-    uv_path = uv_target.files.to_list()[0].path
+    uv = ctx.attr.uv
+    uv_path = uv.files.to_list()[0].path
 
     default_info = DefaultInfo(
-        files = uv_target.files,
-        runfiles = ctx.runfiles(files = uv_target.files.to_list()),
+        files = uv.files,
+        runfiles = ctx.attr.uv[DefaultInfo].default_runfiles,
     )
     uv_toolchain_info = UvToolchainInfo(
-        uv_target = uv_target,
+        uv = uv,
         version = ctx.attr.version,
     )
     template_variable_info = platform_common.TemplateVariableInfo({

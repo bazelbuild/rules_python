@@ -17,7 +17,7 @@
 UvToolchainInfo = provider(
     doc = "Information about how to invoke the uv executable.",
     fields = {
-        "uv_target": """
+        "uv": """
 :type: Target
 
 The uv binary `Target`
