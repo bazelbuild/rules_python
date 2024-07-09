@@ -49,6 +49,8 @@ def parse_simpleapi_html(*, url, content):
         # https://packaging.python.org/en/latest/specifications/simple-repository-api/#versioning-pypi-s-simple-api
         fail("Unsupported API version: {}".format(api_version))
 
+    # Each line follows the following pattern
+    # <a href="https://...#sha256=..." attribute1="foo" ... attributeN="bar">filename</a><br />
     for line in lines[1:]:
         dist_url, _, tail = line.partition("#sha256=")
         sha256, _, tail = tail.partition("\"")
@@ -56,8 +58,8 @@ def parse_simpleapi_html(*, url, content):
         # See https://packaging.python.org/en/latest/specifications/simple-repository-api/#adding-yank-support-to-the-simple-api
         yanked = "data-yanked" in line
 
-        maybe_metadata, _, tail = tail.partition(">")
-        filename, _, tail = tail.partition("<")
+        head, _, _ = tail.rpartition("</a>")
+        maybe_metadata, _, filename = head.rpartition(">")
 
         metadata_sha256 = ""
         metadata_url = ""
