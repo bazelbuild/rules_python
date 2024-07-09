@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Version and integrity information for downloaded artifacts"""
 
 # From: https://github.com/astral-sh/uv/releases
 UV_TOOL_VERSIONS = {
-    "0.2.13": {
-        "aarch64-apple-darwin": "f588388d2b13f77e4526e619f618a306b6b026a96975fbfb2c6dd1ded134cb72",
-        "aarch64-unknown-linux-gnu": "f342442088a56a8a5e4af6781501870bed1b388b37ac2e9deb250cd1d0dc1845",
-        "powerpc64le-unknown-linux-gnu": "0f38a41264be0ef325f8d438f34ea95c002736b3c092e3276518a2253c4ff923",
-        "s390x-unknown-linux-gnu": "dc843c32e51ee3fb46381699bffbc4b6040c51083a1dc7d6c597582b84956aa7",
-        "x86_64-apple-darwin": "6262eba42ebb9035a574b74c5ea253a41353fb4b6b264600e3b05b1a7f4cabc0",
-        "x86_64-pc-windows-msvc": "898ce45b3767ea97429426a7bd0ec54d070eb9e29ff2b072bdcf288bf6ddc9a1",
-        "x86_64-unknown-linux-gnu": "3f96048fa1b82eca14d45bbcc86714cd0dee19a73ef9311da6707faa308ec25f",
+    "0.2.23": {
+        "aarch64-apple-darwin": "1d41beb151ace9621a0e729d661cfb04d6375bffdaaf0e366d1653576ce3a687",
+        "aarch64-unknown-linux-gnu": "c35042255239b75d29b9fd4b0845894b91284ed3ff90c2595d0518b4c8902329",
+        "powerpc64le-unknown-linux-gnu": "ca16c9456d297e623164e3089d76259c6d70ac40c037dd2068accc3bb1b09d5e",
+        "s390x-unknown-linux-gnu": "55f8c2aa089f382645fce9eed3ee002f2cd48de4696568e7fd63105a02da568c",
+        "x86_64-apple-darwin": "960d2ae6ec31bcf5da3f66083dedc527712115b97ee43eae903d74a43874fa72",
+        "x86_64-pc-windows-msvc": "66f80537301c686a801b91468a43dbeb0881bd6d51857078c24f29e5dca8ecf1",
+        "x86_64-unknown-linux-gnu": "4384db514959beb4de1dcdf7f1f2d5faf664f7180820b0e7a521ef2147e33d1d",
     },
 }

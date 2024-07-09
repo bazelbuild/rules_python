@@ -45,7 +45,7 @@ use_repo(python, "python_3_10", "python_3_9", "python_versions")
 
 # Experimental: uv toolchain
 uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")
-uv.toolchain(uv_version = "0.2.13")
+uv.toolchain(uv_version = "0.2.23")
 use_repo(uv, "uv_toolchains")
 
 register_toolchains("@uv_toolchains//:all")
