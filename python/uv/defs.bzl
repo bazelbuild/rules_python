@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Experimental toolchain for uv"""
+"""
+EXPERIMENTAL: This is experimental and subject may be removed without notice
+
+A toolchain for uv
+"""
 
 load("//python/uv/private:providers.bzl", _UvToolchainInfo = "UvToolchainInfo")
 load("//python/uv/private:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")

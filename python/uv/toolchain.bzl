@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module implements the uv toolchain rule"""
+"""
+EXPERIMENTAL: This is experimental and subject may be removed without notice
+
+This module implements the uv toolchain rule
+"""
 
 load("//python/uv/private:providers.bzl", "UvToolchainInfo")
 

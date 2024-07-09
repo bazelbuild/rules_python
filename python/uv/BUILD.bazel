@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# EXPERIMENTAL: This is experimental and subject may be removed without notice
+
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python/uv/private:resolved_toolchain.bzl", "resolved_toolchain")
 
@@ -38,26 +40,30 @@ resolved_toolchain(
     # Marked manual so that `bazel test //...` passes
     # even if no toolchain is registered.
     tags = ["manual"],
-    visibility = ["//visibility:public"],
+    # EXPERIMENTAL: Visibility is restricted to allow for changes.
+    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
-    visibility = ["//visibility:public"],
+    # EXPERIMENTAL: Visibility is restricted to allow for changes.
+    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(
     name = "extensions",
     srcs = ["extensions.bzl"],
-    visibility = ["//visibility:public"],
+    # EXPERIMENTAL: Visibility is restricted to allow for changes.
+    visibility = ["//:__subpackages__"],
     deps = [":repositories"],
 )
 
 bzl_library(
     name = "repositories",
     srcs = ["repositories.bzl"],
-    visibility = ["//visibility:public"],
+    # EXPERIMENTAL: Visibility is restricted to allow for changes.
+    visibility = ["//:__subpackages__"],
     deps = [
         "//python/uv/private:toolchains_repo",
         "//python/uv/private:versions",
@@ -67,5 +73,6 @@ bzl_library(
 bzl_library(
     name = "toolchain",
     srcs = ["toolchain.bzl"],
-    visibility = ["//visibility:public"],
+    # EXPERIMENTAL: Visibility is restricted to allow for changes.
+    visibility = ["//:__subpackages__"],
 )

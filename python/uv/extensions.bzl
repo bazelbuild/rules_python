@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"uv module extension"
+"""
+EXPERIMENTAL: This is experimental and subject may be removed without notice
+
+A module extension for working with uv.
+"""
 
 load("//python/uv:repositories.bzl", "uv_register_toolchains")
 

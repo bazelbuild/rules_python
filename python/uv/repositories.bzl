@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Create repositories for uv toolchain dependencies"""
+"""
+EXPERIMENTAL: This is experimental and subject may be removed without notice
+
+Create repositories for uv toolchain dependencies
+"""
 
 load("//python/uv/private:toolchains_repo.bzl", "UV_PLATFORMS", "uv_toolchains_repo")
 load("//python/uv/private:versions.bzl", "UV_TOOL_VERSIONS")
