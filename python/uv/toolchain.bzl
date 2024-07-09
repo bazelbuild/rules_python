@@ -22,18 +22,17 @@ load("//python/uv/private:providers.bzl", "UvToolchainInfo")
 
 def _uv_toolchain_impl(ctx):
     uv = ctx.attr.uv
-    uv_path = uv.files.to_list()[0].path
 
     default_info = DefaultInfo(
         files = uv.files,
-        runfiles = ctx.attr.uv[DefaultInfo].default_runfiles,
+        runfiles = uv[DefaultInfo].default_runfiles,
     )
     uv_toolchain_info = UvToolchainInfo(
         uv = uv,
         version = ctx.attr.version,
     )
     template_variable_info = platform_common.TemplateVariableInfo({
-        "UV_BIN": uv_path,
+        "UV_BIN": uv[DefaultInfo].files_to_run.executable.path,
     })
 
     # Export all the providers inside our ToolchainInfo
@@ -56,6 +55,7 @@ uv_toolchain = rule(
             doc = "A static uv binary.",
             mandatory = True,
             allow_single_file = True,
+            executable = True,
             cfg = "target",
         ),
         "version": attr.string(mandatory = True, doc = "Version of the uv binary."),
