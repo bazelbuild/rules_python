@@ -15,5 +15,4 @@
 
 features = struct(
     precompile = True,
-    version = "1",
 )
