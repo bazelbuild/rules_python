@@ -421,7 +421,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addResolvedDependencies(annotations.includeDeps).
 			generateImportsAttribute()
 	}
-	if !cfg.PerFileGeneration() {
+	if (!cfg.PerPackageGenerationRequireTestEntryPoint() || hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration()) && !cfg.PerFileGeneration() {
 		// Create one py_test target per package
 		if hasPyTestEntryPointFile {
 			// Only add the pyTestEntrypointFilename to the pyTestFilenames if

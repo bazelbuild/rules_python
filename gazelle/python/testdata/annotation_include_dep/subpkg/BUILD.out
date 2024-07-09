@@ -20,7 +20,7 @@ py_library(
 )
 
 py_test(
-    name = "subpkg_test",
+    name = "module1_test",
     srcs = ["module1_test.py"],
     deps = [
         ":subpkg",

@@ -7,6 +7,6 @@ py_library(
 )
 
 py_test(
-    name = "multiple_tests_test",
+    name = "bar_test",
     srcs = ["bar_test.py"],
 )
