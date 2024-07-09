@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# EXPERIMENTAL: This is experimental and subject may be removed without notice
+# EXPERIMENTAL: This is experimental and may be removed without notice
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//python/uv/private:resolved_toolchain.bzl", "resolved_toolchain")

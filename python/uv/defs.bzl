@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-EXPERIMENTAL: This is experimental and subject may be removed without notice
+EXPERIMENTAL: This is experimental and may be removed without notice
 
 A toolchain for uv
 """
