@@ -172,42 +172,44 @@ Examples of these directives in use can be found in the
 
 Python-specific directives are as follows:
 
-| **Directive**                        | **Default value** |
-|--------------------------------------|-------------------|
-| `# gazelle:python_extension`         |   `enabled`       |
-| Controls whether the Python extension is enabled or not. Sub-packages inherit this value. Can be either "enabled" or "disabled". | |
-| [`# gazelle:python_root`](#directive-python_root) |    n/a            |
-| Sets a Bazel package as a Python root. This is used on monorepos with multiple Python projects that don't share the top-level of the workspace as the root. See [Directive: `python_root`](#directive-python_root) below. | |
-| `# gazelle:python_manifest_file_name`| `gazelle_python.yaml` |
-| Overrides the default manifest file name. | |
-| `# gazelle:python_ignore_files`      |     n/a           |
-| Controls the files which are ignored from the generated targets. | |
-| `# gazelle:python_ignore_dependencies`|    n/a           |
-| Controls the ignored dependencies from the generated targets. | |
-| `# gazelle:python_validate_import_statements`| `true` |
-| Controls whether the Python import statements should be validated. Can be "true" or "false" | |
-| `# gazelle:python_generation_mode`| `package` |
-| Controls the target generation mode. Can be "file", "package", or "project" | |
-| `# gazelle:python_generation_mode_per_file_include_init`| `false` |
-| Controls whether `__init__.py` files are included as srcs in each generated target when target generation mode is "file". Can be "true", or "false" | |
-| `# gazelle:python_library_naming_convention`| `$package_name$` |
-| Controls the `py_library` naming convention. It interpolates `$package_name$` with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`. | |
-| `# gazelle:python_binary_naming_convention` | `$package_name$_bin` |
-| Controls the `py_binary` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
-| `# gazelle:python_test_naming_convention` | `$package_name$_test` |
-| Controls the `py_test` naming convention. Follows the same interpolation rules as `python_library_naming_convention`. | |
-| `# gazelle:resolve py ...` | n/a |
+| **Directive**                                                                                                                                                                                                                                                                                   | **Default value** |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| `# gazelle:python_extension`                                                                                                                                                                                                                                                                    |   `enabled`       |
+| Controls whether the Python extension is enabled or not. Sub-packages inherit this value. Can be either "enabled" or "disabled".                                                                                                                                                                | |
+| [`# gazelle:python_root`](#directive-python_root)                                                                                                                                                                                                                                               |    n/a            |
+| Sets a Bazel package as a Python root. This is used on monorepos with multiple Python projects that don't share the top-level of the workspace as the root. See [Directive: `python_root`](#directive-python_root) below.                                                                       | |
+| `# gazelle:python_manifest_file_name`                                                                                                                                                                                                                                                           | `gazelle_python.yaml` |
+| Overrides the default manifest file name.                                                                                                                                                                                                                                                       | |
+| `# gazelle:python_ignore_files`                                                                                                                                                                                                                                                                 |     n/a           |
+| Controls the files which are ignored from the generated targets.                                                                                                                                                                                                                                | |
+| `# gazelle:python_ignore_dependencies`                                                                                                                                                                                                                                                          |    n/a           |
+| Controls the ignored dependencies from the generated targets.                                                                                                                                                                                                                                   | |
+| `# gazelle:python_validate_import_statements`                                                                                                                                                                                                                                                   | `true` |
+| Controls whether the Python import statements should be validated. Can be "true" or "false"                                                                                                                                                                                                     | |
+| `# gazelle:python_generation_mode`                                                                                                                                                                                                                                                              | `package` |
+| Controls the target generation mode. Can be "file", "package", or "project"                                                                                                                                                                                                                     | |
+| `# gazelle:python_generation_mode_per_file_include_init`                                                                                                                                                                                                                                        | `false` |
+| Controls whether `__init__.py` files are included as srcs in each generated target when target generation mode is "file". Can be "true", or "false"                                                                                                                                             | |
+| [`# gazelle:python_generation_mode_per_package_require_test_entry_point`](#directive-python_generation_mode_per_package_require_test_entry_point)                                                                                                                                               | `true` |
+| Controls whether a file called `__test__.py` or a target called `__test__` is required to generate one test target per package in package mode.                                                                                                                                                 ||
+| `# gazelle:python_library_naming_convention`                                                                                                                                                                                                                                                    | `$package_name$` |
+| Controls the `py_library` naming convention. It interpolates `$package_name$` with the Bazel package name. E.g. if the Bazel package name is `foo`, setting this to `$package_name$_my_lib` would result in a generated target named `foo_my_lib`.                                              | |
+| `# gazelle:python_binary_naming_convention`                                                                                                                                                                                                                                                     | `$package_name$_bin` |
+| Controls the `py_binary` naming convention. Follows the same interpolation rules as `python_library_naming_convention`.                                                                                                                                                                         | |
+| `# gazelle:python_test_naming_convention`                                                                                                                                                                                                                                                       | `$package_name$_test` |
+| Controls the `py_test` naming convention. Follows the same interpolation rules as `python_library_naming_convention`.                                                                                                                                                                           | |
+| `# gazelle:resolve py ...`                                                                                                                                                                                                                                                                      | n/a |
 | Instructs the plugin what target to add as a dependency to satisfy a given import statement. The syntax is `# gazelle:resolve py import-string label` where `import-string` is the symbol in the python `import` statement, and `label` is the Bazel label that Gazelle should write in `deps`. | |
-| [`# gazelle:python_default_visibility labels`](#directive-python_default_visibility) | |
-| Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces). | `//$python_root$:__subpackages__` |
-| [`# gazelle:python_visibility label`](#directive-python_visibility) | |
-| Appends additional visibility labels to each generated target. This directive can be set multiple times. | |
-| [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern) | `*_test.py,test_*.py` |
-| Filenames matching these comma-separated `glob`s will be mapped to `py_test` targets. |
-| `# gazelle:python_label_convention` | `$distribution_name$` |
-| Defines the format of the distribution name in labels to third-party deps. Useful for using Gazelle plugin with other rules with different repository conventions (e.g. `rules_pycross`). Full label is always prepended with (pip) repository name, e.g. `@pip//numpy`. |
-| `# gazelle:python_label_normalization` | `snake_case` |
-| Controls how distribution names in labels to third-party deps are normalized. Useful for using Gazelle plugin with other rules with different label conventions (e.g. `rules_pycross` uses PEP-503). Can be "snake_case", "none", or "pep503". |
+| [`# gazelle:python_default_visibility labels`](#directive-python_default_visibility)                                                                                                                                                                                                            | |
+| Instructs gazelle to use these visibility labels on all python targets. `labels` is a comma-separated list of labels (without spaces).                                                                                                                                                          | `//$python_root$:__subpackages__` |
+| [`# gazelle:python_visibility label`](#directive-python_visibility)                                                                                                                                                                                                                             | |
+| Appends additional visibility labels to each generated target. This directive can be set multiple times.                                                                                                                                                                                        | |
+| [`# gazelle:python_test_file_pattern`](#directive-python_test_file_pattern)                                                                                                                                                                                                                     | `*_test.py,test_*.py` |
+| Filenames matching these comma-separated `glob`s will be mapped to `py_test` targets.                                                                                                                                                                                                           |
+| `# gazelle:python_label_convention`                                                                                                                                                                                                                                                             | `$distribution_name$` |
+| Defines the format of the distribution name in labels to third-party deps. Useful for using Gazelle plugin with other rules with different repository conventions (e.g. `rules_pycross`). Full label is always prepended with (pip) repository name, e.g. `@pip//numpy`.                        |
+| `# gazelle:python_label_normalization`                                                                                                                                                                                                                                                          | `snake_case` |
+| Controls how distribution names in labels to third-party deps are normalized. Useful for using Gazelle plugin with other rules with different label conventions (e.g. `rules_pycross` uses PEP-503). Can be "snake_case", "none", or "pep503".                                                  |
 
 #### Directive: `python_root`:
 
@@ -440,6 +442,33 @@ py_library(
 
 [issue-1826]: https://github.com/bazelbuild/rules_python/issues/1826
 
+#### Directive: `python_generation_mode_per_package_require_test_entry_point`:
+When `# gazelle:python_generation_mode package`, whether a file called `__test__.py` or a target called `__test__`, a.k.a., entry point, is required to generate one test target per package. If this is set to true but no entry point is found, Gazelle will fall back to file mode and generate one test target per file. Setting this directive to false forces Gazelle to generate one test target per package even without entry point. However, this means the `main` attribute of the `py_test` will not be set and the target will not be runnable unless either:
+1. there happen to be a file in the `srcs` with the same name as the `py_test` target, or
+2. a macro populating the `main` attribute of `py_test` is configured with `gazelle:map_kind` to replace `py_test` when Gazelle is generating Python test targets. For example, user can provide such a macro to Gazelle:
+
+```starlark
+load("@rules_python//python:defs.bzl", _py_test="py_test")
+load("@aspect_rules_py//py:defs.bzl", "py_pytest_main")
+
+def py_test(name, main=None, **kwargs):
+    deps = kwargs.pop("deps", [])
+    if not main:
+        py_pytest_main(
+            name = "__test__",
+            deps = ["@pip_pytest//:pkg"],  # change this to the pytest target in your repo.
+        )
+    
+        deps.append(":__test__")
+        main = ":__test__.py"
+
+    _py_test(
+        name = name,
+        main = main,
+        deps = deps,
+        **kwargs,
+)
+```
 
 ### Annotations
 
