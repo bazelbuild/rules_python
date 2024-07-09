@@ -43,7 +43,7 @@ python.toolchain(
 # rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_versions")
 
-# Experimental: uv toolchain
+# EXPERIMENTAL: This is experimental and may be removed without notice
 uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")
 uv.toolchain(uv_version = "0.2.23")
 use_repo(uv, "uv_toolchains")

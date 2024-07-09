@@ -26,9 +26,22 @@ Workaround for https://github.com/bazelbuild/bazel/issues/14009
 # Forward all the providers
 def _resolved_toolchain_impl(ctx):
     toolchain_info = ctx.toolchains[UV_TOOLCHAIN_TYPE]
+
+    # Bazel requires executable rules to create the executable themselves,
+    # so we create a symlink in this rule so that it appears this rule created its executable.
+    original_uv_executable = toolchain_info.uv_toolchain_info.uv[DefaultInfo].files_to_run.executable
+    symlink_uv_executable = ctx.actions.declare_file("uv_symlink_{}".format(original_uv_executable.basename))
+    ctx.actions.symlink(output = symlink_uv_executable, target_file = original_uv_executable)
+
+    new_default_info = DefaultInfo(
+        files = depset([symlink_uv_executable]),
+        runfiles = toolchain_info.default_info.default_runfiles,
+        executable = symlink_uv_executable,
+    )
+
     return [
         toolchain_info,
-        toolchain_info.default_info,
+        new_default_info,
         toolchain_info.template_variable_info,
         toolchain_info.uv_toolchain_info,
     ]
@@ -39,4 +52,5 @@ resolved_toolchain = rule(
     implementation = _resolved_toolchain_impl,
     toolchains = [UV_TOOLCHAIN_TYPE],
     doc = _DOC,
+    executable = True,
 )

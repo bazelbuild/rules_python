@@ -19,8 +19,5 @@ A toolchain for uv
 """
 
 load("//python/uv/private:providers.bzl", _UvToolchainInfo = "UvToolchainInfo")
-load("//python/uv/private:uv_pip_compile.bzl", _uv_pip_compile = "uv_pip_compile")
-
-uv_pip_compile = _uv_pip_compile
 
 UvToolchainInfo = _UvToolchainInfo

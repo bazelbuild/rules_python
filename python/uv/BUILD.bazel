@@ -41,7 +41,7 @@ resolved_toolchain(
     # even if no toolchain is registered.
     tags = ["manual"],
     # EXPERIMENTAL: Visibility is restricted to allow for changes.
-    visibility = ["//:__subpackages__"],
+    visibility = ["@rules_python//examples:__subpackages__"],
 )
 
 bzl_library(
