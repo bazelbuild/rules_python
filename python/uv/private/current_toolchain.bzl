@@ -24,7 +24,7 @@ Workaround for https://github.com/bazelbuild/bazel/issues/14009
 """
 
 # Forward all the providers
-def _resolved_toolchain_impl(ctx):
+def _current_toolchain_impl(ctx):
     toolchain_info = ctx.toolchains[UV_TOOLCHAIN_TYPE]
 
     # Bazel requires executable rules to create the executable themselves,
@@ -48,8 +48,8 @@ def _resolved_toolchain_impl(ctx):
 
 # Copied from java_toolchain_alias
 # https://cs.opensource.google/bazel/bazel/+/master:tools/jdk/java_toolchain_alias.bzl
-resolved_toolchain = rule(
-    implementation = _resolved_toolchain_impl,
+current_toolchain = rule(
+    implementation = _current_toolchain_impl,
     toolchains = [UV_TOOLCHAIN_TYPE],
     doc = _DOC,
     executable = True,

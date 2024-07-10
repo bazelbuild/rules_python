@@ -15,7 +15,7 @@
 # EXPERIMENTAL: This is experimental and may be removed without notice
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//python/uv/private:resolved_toolchain.bzl", "resolved_toolchain")
+load("//python/uv/private:current_toolchain.bzl", "current_toolchain")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -35,8 +35,8 @@ toolchain_type(
     visibility = ["//visibility:public"],
 )
 
-resolved_toolchain(
-    name = "resolved_toolchain",
+current_toolchain(
+    name = "current_toolchain",
     # Marked manual so that `bazel test //...` passes
     # even if no toolchain is registered.
     tags = ["manual"],

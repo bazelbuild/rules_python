@@ -21,8 +21,8 @@ filegroup(
 )
 
 bzl_library(
-    name = "resolved_toolchain",
-    srcs = ["resolved_toolchain.bzl"],
+    name = "current_toolchain",
+    srcs = ["current_toolchain.bzl"],
     visibility = ["//python/uv:__subpackages__"],
 )
 

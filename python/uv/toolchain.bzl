@@ -36,7 +36,7 @@ def _uv_toolchain_impl(ctx):
     })
 
     # Export all the providers inside our ToolchainInfo
-    # so the resolved_toolchain rule can grab and re-export them.
+    # so the current_toolchain rule can grab and re-export them.
     toolchain_info = platform_common.ToolchainInfo(
         default_info = default_info,
         template_variable_info = template_variable_info,
