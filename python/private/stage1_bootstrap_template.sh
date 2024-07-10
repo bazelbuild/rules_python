@@ -16,7 +16,9 @@ PYTHON_BINARY='%python_binary%'
 IS_ZIPFILE="%is_zipfile%"
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then
-  zip_dir=$(mktemp -d --suffix Bazel.runfiles_)
+  # NOTE: Macs have an old version of mktemp, so we must use only the
+  # minimal functionality of it.
+  zip_dir=$(mktemp -d)
 
   if [[ -n "$zip_dir" && -z "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
     trap 'rm -fr "$zip_dir"' EXIT
@@ -27,7 +29,7 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   # The alternative requires having to copy ourselves elsewhere with the prelude
   # stripped (because zip can't extract from a stream). We avoid that because
   # it's wasteful.
-  ( unzip -q -d "$zip_dir" "$0" 2>/dev/null || /bin/true )
+  ( unzip -q -d "$zip_dir" "$0" 2>/dev/null || true )
 
   RUNFILES_DIR="$zip_dir/runfiles"
   if [[ ! -d "$RUNFILES_DIR" ]]; then
@@ -104,6 +106,11 @@ declare -a interpreter_args
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
 # NOTE: Only works for 3.11+
 interpreter_env+=("PYTHONSAFEPATH=1")
+
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
+fi
+
 
 export RUNFILES_DIR
 
