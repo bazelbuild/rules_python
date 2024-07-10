@@ -16,42 +16,49 @@
 
 UV_PLATFORMS = {
     "aarch64-apple-darwin": struct(
+        default_repo_name = "rules_python_uv_darwin_aarch64",
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:aarch64",
         ],
     ),
     "aarch64-unknown-linux-gnu": struct(
+        default_repo_name = "rules_python_uv_linux_aarch64",
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:aarch64",
         ],
     ),
     "powerpc64le-unknown-linux-gnu": struct(
+        default_repo_name = "rules_python_uv_linux_ppc",
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:ppc",
         ],
     ),
     "s390x-unknown-linux-gnu": struct(
+        default_repo_name = "rules_python_uv_linux_s390x",
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:s390x",
         ],
     ),
     "x86_64-apple-darwin": struct(
+        default_repo_name = "rules_python_uv_darwin_x86_64",
         compatible_with = [
             "@platforms//os:macos",
             "@platforms//cpu:x86_64",
         ],
     ),
     "x86_64-pc-windows-msvc": struct(
+        default_repo_name = "rules_python_uv_windows_x86_64",
         compatible_with = [
             "@platforms//os:windows",
             "@platforms//cpu:x86_64",
         ],
     ),
     "x86_64-unknown-linux-gnu": struct(
+        default_repo_name = "rules_python_uv_linux_x86_64",
         compatible_with = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",

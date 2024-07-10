@@ -96,7 +96,7 @@ def uv_register_toolchains(uv_version = None, register_toolchains = True):
     toolchain_compatible_with_by_toolchain = {}
 
     for platform in UV_PLATFORMS.keys():
-        uv_repository_name = platform + "_uv_toolchain"
+        uv_repository_name = UV_PLATFORMS[platform].default_repo_name
 
         maybe(
             uv_repository,
@@ -105,9 +105,10 @@ def uv_register_toolchains(uv_version = None, register_toolchains = True):
             platform = platform,
         )
 
-        toolchain_names.append(platform)
-        toolchain_labels_by_toolchain[platform] = "@{}//:uv_toolchain".format(uv_repository_name)
-        toolchain_compatible_with_by_toolchain[platform] = UV_PLATFORMS[platform].compatible_with
+        toolchain_name = uv_repository_name + "_toolchain"
+        toolchain_names.append(toolchain_name)
+        toolchain_labels_by_toolchain[toolchain_name] = "@{}//:uv_toolchain".format(uv_repository_name)
+        toolchain_compatible_with_by_toolchain[toolchain_name] = UV_PLATFORMS[platform].compatible_with
 
     uv_toolchains_repo(
         name = "uv_toolchains",
