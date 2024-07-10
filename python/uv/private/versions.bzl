@@ -14,15 +14,74 @@
 
 """Version and integrity information for downloaded artifacts"""
 
+UV_PLATFORMS = {
+    "aarch64-apple-darwin": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:aarch64",
+        ],
+    ),
+    "aarch64-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:aarch64",
+        ],
+    ),
+    "powerpc64le-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:ppc",
+        ],
+    ),
+    "s390x-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:s390x",
+        ],
+    ),
+    "x86_64-apple-darwin": struct(
+        compatible_with = [
+            "@platforms//os:macos",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+    "x86_64-pc-windows-msvc": struct(
+        compatible_with = [
+            "@platforms//os:windows",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+    "x86_64-unknown-linux-gnu": struct(
+        compatible_with = [
+            "@platforms//os:linux",
+            "@platforms//cpu:x86_64",
+        ],
+    ),
+}
+
 # From: https://github.com/astral-sh/uv/releases
 UV_TOOL_VERSIONS = {
     "0.2.23": {
-        "aarch64-apple-darwin": "1d41beb151ace9621a0e729d661cfb04d6375bffdaaf0e366d1653576ce3a687",
-        "aarch64-unknown-linux-gnu": "c35042255239b75d29b9fd4b0845894b91284ed3ff90c2595d0518b4c8902329",
-        "powerpc64le-unknown-linux-gnu": "ca16c9456d297e623164e3089d76259c6d70ac40c037dd2068accc3bb1b09d5e",
-        "s390x-unknown-linux-gnu": "55f8c2aa089f382645fce9eed3ee002f2cd48de4696568e7fd63105a02da568c",
-        "x86_64-apple-darwin": "960d2ae6ec31bcf5da3f66083dedc527712115b97ee43eae903d74a43874fa72",
-        "x86_64-pc-windows-msvc": "66f80537301c686a801b91468a43dbeb0881bd6d51857078c24f29e5dca8ecf1",
-        "x86_64-unknown-linux-gnu": "4384db514959beb4de1dcdf7f1f2d5faf664f7180820b0e7a521ef2147e33d1d",
+        "aarch64-apple-darwin": struct(
+            sha256 = "1d41beb151ace9621a0e729d661cfb04d6375bffdaaf0e366d1653576ce3a687",
+        ),
+        "aarch64-unknown-linux-gnu": struct(
+            sha256 = "c35042255239b75d29b9fd4b0845894b91284ed3ff90c2595d0518b4c8902329",
+        ),
+        "powerpc64le-unknown-linux-gnu": struct(
+            sha256 = "ca16c9456d297e623164e3089d76259c6d70ac40c037dd2068accc3bb1b09d5e",
+        ),
+        "s390x-unknown-linux-gnu": struct(
+            sha256 = "55f8c2aa089f382645fce9eed3ee002f2cd48de4696568e7fd63105a02da568c",
+        ),
+        "x86_64-apple-darwin": struct(
+            sha256 = "960d2ae6ec31bcf5da3f66083dedc527712115b97ee43eae903d74a43874fa72",
+        ),
+        "x86_64-pc-windows-msvc": struct(
+            sha256 = "66f80537301c686a801b91468a43dbeb0881bd6d51857078c24f29e5dca8ecf1",
+        ),
+        "x86_64-unknown-linux-gnu": struct(
+            sha256 = "4384db514959beb4de1dcdf7f1f2d5faf664f7180820b0e7a521ef2147e33d1d",
+        ),
     },
 }
