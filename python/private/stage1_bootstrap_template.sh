@@ -106,13 +106,28 @@ declare -a interpreter_args
 interpreter_env+=("PYTHONSAFEPATH=1")
 
 export RUNFILES_DIR
-# NOTE: We use <(...) to pass the Python program as a file so that stdin can
-# still be passed along as normal.
-env \
-  "${interpreter_env[@]}" \
-  "$python_exe" \
-  "${interpreter_args[@]}" \
-  "$stage2_bootstrap" \
-  "$@"
 
-exit $?
+command=(
+  env
+  "${interpreter_env[@]}"
+  "$python_exe"
+  "${interpreter_args[@]}"
+  "$stage2_bootstrap"
+  "$@"
+)
+
+# We use `exec` instead of a child process so that signals sent directly (e.g.
+# using `kill`) to this process (the PID seen by the calling process) are
+# received by the Python process. Otherwise, this process receives the signal
+# and would have to manually propagate it.
+# See https://github.com/bazelbuild/rules_python/issues/2043#issuecomment-2215469971
+# for more information.
+#
+# However, when running a zip file, we need to clean up the workspace after the
+# process finishes so control must return here.
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  "${command[@]}"
+  exit $?
+else
+  exec "${command[@]}"
+fi
