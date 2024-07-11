@@ -132,7 +132,7 @@ def gazelle_python_manifest(
             rundir = ".",
             deps = [
                 Label("//manifest"),
-                Label("@com_github_bazelbuild_rules_go//go/runfiles"),
+                Label("@io_bazel_rules_go//go/runfiles"),
             ],
             # kwargs could contain test-specific attributes like size or timeout
             **dict(attrs, **kwargs)
