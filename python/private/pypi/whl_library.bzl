@@ -21,7 +21,7 @@ load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":attrs.bzl", "ATTRS", "use_isolated")
-load(":deps.bzl", "all_requirements")
+load(":deps.bzl", "all_repo_names")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
@@ -490,7 +490,7 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
         ] + [
             # Includes all the external dependencies from repositories.bzl
             Label("@" + repo + "//:BUILD.bazel")
-            for repo in all_requirements
+            for repo in all_repo_names
         ],
     ),
 }, **ATTRS)
