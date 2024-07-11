@@ -20,7 +20,6 @@ make it possible to have multiple tools inside the `pypi` directory
 """
 
 load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
-load(":deps.bzl", "requirement")
 
 def pip_compile(
         name,
@@ -115,19 +114,19 @@ def pip_compile(
     args.extend(extra_args)
 
     deps = [
-        requirement("build"),
-        requirement("click"),
-        requirement("colorama"),
-        requirement("importlib_metadata"),
-        requirement("more_itertools"),
-        requirement("packaging"),
-        requirement("pep517"),
-        requirement("pip"),
-        requirement("pip_tools"),
-        requirement("pyproject_hooks"),
-        requirement("setuptools"),
-        requirement("tomli"),
-        requirement("zipp"),
+        Label("@pypi__build//:lib"),
+        Label("@pypi__click//:lib"),
+        Label("@pypi__colorama//:lib"),
+        Label("@pypi__importlib_metadata//:lib"),
+        Label("@pypi__more_itertools//:lib"),
+        Label("@pypi__packaging//:lib"),
+        Label("@pypi__pep517//:lib"),
+        Label("@pypi__pip//:lib"),
+        Label("@pypi__pip_tools//:lib"),
+        Label("@pypi__pyproject_hooks//:lib"),
+        Label("@pypi__setuptools//:lib"),
+        Label("@pypi__tomli//:lib"),
+        Label("@pypi__zipp//:lib"),
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 

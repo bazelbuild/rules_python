@@ -123,10 +123,7 @@ py_library(
 """
 
 # Collate all the repository names so they can be easily consumed
-all_requirements = [name for (name, _, _) in _RULE_DEPS]
-
-def requirement(pkg):
-    return Label("@pypi__" + pkg + "//:lib")
+all_repo_names = [name for (name, _, _) in _RULE_DEPS]
 
 def pypi_deps():
     """
