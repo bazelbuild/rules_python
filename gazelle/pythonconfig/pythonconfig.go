@@ -293,7 +293,6 @@ func (c *Config) FindThirdPartyDependency(modName string) (string, bool) {
 				}
 				modName = modName[:i]
 			}
-
 		}
 	}
 	return "", false
@@ -502,9 +501,9 @@ func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionN
 		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "_")
 	case Pep503LabelNormalizationType:
 		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
-		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)                                        // ... "should be lowercased"
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName) // ... "should be lowercased"
 		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-") // ... "all runs of the characters ., -, or _ replaced with a single -"
-		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-")                                  // ... "must start and end with a letter or number"
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-") // ... "must start and end with a letter or number"
 	default:
 		fallthrough
 	case NoLabelNormalizationType:
