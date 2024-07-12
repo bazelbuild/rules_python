@@ -43,6 +43,13 @@ python.toolchain(
 # rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_versions")
 
+# EXPERIMENTAL: This is experimental and may be removed without notice
+uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")
+uv.toolchain(uv_version = "0.2.23")
+use_repo(uv, "uv_toolchains")
+
+register_toolchains("@uv_toolchains//:all")
+
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
 # to modify the BUILD file, and copy files.
