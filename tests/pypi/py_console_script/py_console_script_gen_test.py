@@ -18,7 +18,7 @@ import tempfile
 import textwrap
 import unittest
 
-from python.private.py_console_script_gen import run
+from python.private.pypi.py_console_script_gen import run
 
 
 class RunTest(unittest.TestCase):
