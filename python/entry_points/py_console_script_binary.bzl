@@ -16,7 +16,7 @@
 Please use `py_console_script_binary` from `//python:pip_bzl` instead.
 """
 
-load("//python:pip_bzl", _py_console_script_binary = "py_console_script_binary")
+load("//python:pip.bzl", _py_console_script_binary = "py_console_script_binary")
 
 def _compatibility_shim(**kwargs):
     # buildifier: disable=print
