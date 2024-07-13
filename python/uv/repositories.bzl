@@ -18,7 +18,6 @@ EXPERIMENTAL: This is experimental and may be removed without notice
 Create repositories for uv toolchain dependencies
 """
 
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python/uv/private:toolchain_types.bzl", "UV_TOOLCHAIN_TYPE")
 load("//python/uv/private:toolchains_repo.bzl", "uv_toolchains_repo")
 load("//python/uv/private:versions.bzl", "UV_PLATFORMS", "UV_TOOL_VERSIONS")
@@ -98,8 +97,7 @@ def uv_register_toolchains(uv_version = None, register_toolchains = True):
     for platform in UV_PLATFORMS.keys():
         uv_repository_name = UV_PLATFORMS[platform].default_repo_name
 
-        maybe(
-            uv_repository,
+        uv_repository(
             name = uv_repository_name,
             uv_version = uv_version,
             platform = platform,
