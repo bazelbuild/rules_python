@@ -17,4 +17,5 @@ alias(
     name = "py_console_script_binary_bzl",
     actual = "//python:pip_bzl",
     deprecation = "Use //python:pip_bzl instead; this alias will be removed in a future release.",
+    visibility = ["//visibility:public"],
 )
