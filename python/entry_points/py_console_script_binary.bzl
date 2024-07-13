@@ -19,7 +19,8 @@ Please use `py_console_script_binary` from `//python:pip_bzl` instead.
 load("//python:pip_bzl", _py_console_script_binary = "py_console_script_binary")
 
 def _compatibility_shim(**kwargs):
-    warn("Please use `py_console_script_binary` from `//python:pip_bzl` instead.")
+    # buildifier: disable=print
+    print("Please use `py_console_script_binary` from `//python:pip_bzl` instead.")
     _py_console_script_binary(**kwargs)
 
 py_console_script_binary = _compatibility_shim
