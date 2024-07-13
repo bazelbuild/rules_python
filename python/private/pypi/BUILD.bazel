@@ -13,6 +13,8 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_python//python:defs.bzl", "py_library")
+load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 
 package(default_visibility = ["//:__subpackages__"])
@@ -304,4 +306,23 @@ bzl_library(
     name = "whl_target_platforms_bzl",
     srcs = ["whl_target_platforms.bzl"],
     deps = [":parse_whl_name_bzl"],
+)
+
+# Used for py_console_script_gen rule
+py_binary(
+    name = "py_console_script_gen_py",
+    srcs = ["py_console_script_gen.py"],
+    main = "py_console_script_gen.py",
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+py_library(
+    name = "py_console_script_gen_lib",
+    srcs = ["py_console_script_gen.py"],
+    imports = ["../.."],
+    visibility = [
+        "//tests/entry_points:__pkg__",
+    ],
 )
