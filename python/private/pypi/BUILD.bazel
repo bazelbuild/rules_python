@@ -323,6 +323,6 @@ py_library(
     srcs = ["py_console_script_gen.py"],
     imports = ["../.."],
     visibility = [
-        "//tests/entry_points:__pkg__",
+        "//tests/pypi/py_console_script:__pkg__",
     ],
 )
