@@ -103,6 +103,7 @@ bzl_library(
         "//python/private/pypi:package_annotation_bzl",
         "//python/private/pypi:pip_compile_bzl",
         "//python/private/pypi:pip_repository_bzl",
+        "//python/private/pypi:py_console_script_binary_bzl",
         "//python/private/pypi:whl_library_alias_bzl",
         "//python/private/whl_filegroup:whl_filegroup_bzl",
     ],
