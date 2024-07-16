@@ -25,11 +25,24 @@ data = {
 }
 
 config_vars = [
+    # The libpythonX.Y.so file. Usually?
+    # It might be a static archive (.a) file instead.
     "LDLIBRARY",
+    # The directory with library files. Supposedly.
+    # It's not entirely clear how to get the directory with libraries.
+    # There's several types of libraries with different names and a plethora
+    # of settings.
+    # https://stackoverflow.com/questions/47423246/get-pythons-lib-path
+    # For now, it seems LIBDIR has what is needed, so just use that.
     "LIBDIR",
+    # The versioned libpythonX.Y.so.N file. Usually?
+    # It might be a static archive (.a) file instead.
     "INSTSONAME",
-    "LIBDEST",
+    # The libpythonX.so file. Usually?
+    # It might be a static archive (a.) file instead.
     "PY3LIBRARY",
+    # The platform-specific filename suffix for library files.
+    # Includes the dot, e.g. `.so`
     "SHLIB_SUFFIX",
 ]
 data.update(zip(config_vars, sysconfig.get_config_vars(*config_vars)))

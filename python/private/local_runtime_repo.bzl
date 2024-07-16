@@ -107,8 +107,6 @@ def _local_runtime_repo_impl(rctx):
     # appear as part of this repo.
     rctx.symlink(info["include"], "include")
 
-    # NOTE: For some reason (unknown why), the values found may refer to
-    # .a files (static libraries) instead of .so (shared libraries) files.
     shared_lib_names = [
         info["PY3LIBRARY"],  # libpython3.so
         info["LDLIBRARY"],  # libpython3.11.so
@@ -118,14 +116,9 @@ def _local_runtime_repo_impl(rctx):
     # In some cases, the value may be empty. Not clear why.
     shared_lib_names = [v for v in shared_lib_names if v]
 
-    # In some cases, the same value is returned or multiple keys. Not clear why.
+    # In some cases, the same value is returned for multiple keys. Not clear why.
     shared_lib_names = {v: None for v in shared_lib_names}.keys()
 
-    # It's not entirely clear how to get the directory with libraries.
-    # There's several types of libraries with different names and a plethora
-    # of settings.
-    # https://stackoverflow.com/questions/47423246/get-pythons-lib-path
-    # For now, it seems LIBDIR has what is needed, so just use that.
     shared_lib_dir = info["LIBDIR"]
 
     # The specific files are symlinked instead of the whole directory
