@@ -13,12 +13,14 @@
 # limitations under the License.
 
 """
-Creates an executable (a non-test binary) for console_script entry points.
-
-```{include} /_includes/py_console_script_binary.md
-```
+Please use `py_console_script_binary` from `//python:pip_bzl` instead.
 """
 
-load("//python/private:py_console_script_binary.bzl", _py_console_script_binary = "py_console_script_binary")
+load("//python:pip.bzl", _py_console_script_binary = "py_console_script_binary")
 
-py_console_script_binary = _py_console_script_binary
+def _compatibility_shim(**kwargs):
+    # buildifier: disable=print
+    print("Please use `py_console_script_binary` from `//python:pip_bzl` instead.")
+    _py_console_script_binary(**kwargs)
+
+py_console_script_binary = _compatibility_shim

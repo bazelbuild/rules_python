@@ -4,7 +4,7 @@ as per Python [specification].
 Generate a `py_binary` target for a particular console_script `entry_point`
 from a PyPI package, e.g. for creating an executable `pylint` target use:
 ```starlark
-load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+load("@rules_python//python/pip:py_console_script_binary.bzl", "py_console_script_binary")
 
 py_console_script_binary(
     name = "pylint",

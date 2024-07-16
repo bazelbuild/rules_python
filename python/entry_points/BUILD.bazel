@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
 exports_files(
     [
         "py_console_script_binary.bzl",
@@ -21,17 +19,10 @@ exports_files(
     visibility = ["//docs:__subpackages__"],
 )
 
-bzl_library(
+# Temporary compatibility alias
+alias(
     name = "py_console_script_binary_bzl",
-    srcs = [":py_console_script_binary.bzl"],
+    actual = "//python:pip_bzl",
+    deprecation = "Use //python:pip_bzl instead; this alias will be removed in a future release.",
     visibility = ["//visibility:public"],
-    deps = [
-        "//python/private:py_console_script_binary_bzl",
-    ],
-)
-
-filegroup(
-    name = "distribution",
-    srcs = glob(["**"]),
-    visibility = ["//python:__subpackages__"],
 )
