@@ -43,6 +43,7 @@ config_vars = [
     "PY3LIBRARY",
     # The platform-specific filename suffix for library files.
     # Includes the dot, e.g. `.so`
+    "SHLIB_SUFFIX",
 ]
 data.update(zip(config_vars, sysconfig.get_config_vars(*config_vars)))
 print(json.dumps(data))
