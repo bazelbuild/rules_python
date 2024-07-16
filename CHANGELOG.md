@@ -37,6 +37,9 @@ A brief description of the categories of changes:
   ([#2030](https://github.com/bazelbuild/rules_python/issues/2030)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
+* (pypi) Support env markers in requirements files. Note, that this means that
+  if your requirements files contain env markers, the Python interpreter will
+  have to be downloaded to re-evaluate the bzlmod extension.
 
 ### Added
 * Nothing yet

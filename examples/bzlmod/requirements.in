@@ -11,4 +11,3 @@ pylint-print
 python-dateutil>=2.8.2
 sphinx
 sphinxcontrib-serializinghtml
-colorama

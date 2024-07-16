@@ -21,6 +21,7 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
+load(":evaluate_markers.bzl", "evaluate_markers")
 load(":hub_repository.bzl", "hub_repository")
 load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":parse_whl_name.bzl", "parse_whl_name")
@@ -196,6 +197,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         ),
         get_index_urls = get_index_urls,
         python_version = major_minor,
+        evaluate_markers = lambda requirements: evaluate_markers(
+            module_ctx,
+            requirements = requirements,
+            python_interpreter = pip_attr.python_interpreter,
+            python_interpreter_target = python_interpreter_target,
+        ),
         logger = logger,
     )
 

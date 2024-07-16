@@ -88,6 +88,7 @@ def parse_requirements(
         get_index_urls = None,
         python_version = None,
         logger = None,
+        evaluate_markers = lambda _: {},
         fail_fn = fail):
     """Get the requirements with platforms that the requirements apply to.
 
@@ -103,6 +104,11 @@ def parse_requirements(
             distribution names to query.
         python_version: str or None. This is needed when the get_index_urls is
             specified. It should be of the form "3.x.x",
+        evaluate_markers: A function to use to evaluate the requirements.
+            Accepts a dict where keys are requirement lines to evaluate against
+            the platforms stored as values in the input dict. Returns the same
+            dict, but with values being platforms that are compatible with the
+            requirements line.
         logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
         fail_fn (Callable[[str], None]): A failure function used in testing failure cases.
 
@@ -162,6 +168,7 @@ def parse_requirements(
             options[plat] = pip_args
 
     requirements_by_platform = {}
+    reqs_with_env_markers = {}
     for target_platform, reqs_ in requirements.items():
         extra_pip_args = options[target_platform]
 
@@ -170,6 +177,9 @@ def parse_requirements(
                 normalize_name(distribution),
                 {},
             )
+
+            if ";" in requirement_line:
+                reqs_with_env_markers.setdefault(requirement_line, []).append(target_platform)
 
             for_req = for_whl.setdefault(
                 (requirement_line, ",".join(extra_pip_args)),
@@ -182,6 +192,20 @@ def parse_requirements(
                 ),
             )
             for_req.target_platforms.append(target_platform)
+
+    # This may call to Python, so execute it early (before calling to the
+    # internet below) and ensure that we call it only once.
+    #
+    # NOTE @aignas 2024-07-13: in the future, if this is something that we want
+    # to do, we could use Python to parse the requirement lines and infer the
+    # URL of the files to download things from. This should be important for
+    # VCS package references.
+    env_marker_target_platforms = evaluate_markers(reqs_with_env_markers)
+    if logger:
+        logger.debug(lambda: "Evaluated env markers from:\n{}\n\nTo:\n{}".format(
+            reqs_with_env_markers,
+            env_marker_target_platforms,
+        ))
 
     index_urls = {}
     if get_index_urls:
@@ -203,7 +227,8 @@ def parse_requirements(
     for whl_name, reqs in requirements_by_platform.items():
         requirement_target_platforms = {}
         for r in reqs.values():
-            for p in r.target_platforms:
+            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
+            for p in target_platforms:
                 requirement_target_platforms[p] = None
 
         is_exposed = len(requirement_target_platforms) == len(requirements)
@@ -211,7 +236,7 @@ def parse_requirements(
             logger.debug(lambda: "Package '{}' will not be exposed because it is only present on a subset of platforms: {} out of {}".format(
                 whl_name,
                 sorted(requirement_target_platforms),
-                sorted(requirements),
+                sorted(requirements_by_platform),
             ))
 
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
@@ -222,12 +247,13 @@ def parse_requirements(
                 logger = logger,
             )
 
+            target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
             ret.setdefault(whl_name, []).append(
                 struct(
                     distribution = r.distribution,
                     srcs = r.srcs,
                     requirement_line = r.requirement_line,
-                    target_platforms = sorted(r.target_platforms),
+                    target_platforms = sorted(target_platforms),
                     extra_pip_args = r.extra_pip_args,
                     whls = whls,
                     sdist = sdist,
