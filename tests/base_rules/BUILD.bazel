@@ -11,3 +11,43 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
+load("//tests/support:sh_py_run_test.bzl", "sh_py_run_test")
+
+_SUPPORTS_BOOTSTRAP_SCRIPT = select({
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
+
+sh_py_run_test(
+    name = "run_binary_zip_no_test",
+    build_python_zip = "no",
+    py_src = "bin.py",
+    sh_src = "run_binary_zip_no_test.sh",
+)
+
+sh_py_run_test(
+    name = "run_binary_zip_yes_test",
+    build_python_zip = "yes",
+    py_src = "bin.py",
+    sh_src = "run_binary_zip_yes_test.sh",
+)
+
+sh_py_run_test(
+    name = "run_binary_bootstrap_script_zip_yes_test",
+    bootstrap_impl = "script",
+    build_python_zip = "yes",
+    py_src = "bin.py",
+    sh_src = "run_binary_zip_yes_test.sh",
+    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+)
+
+sh_py_run_test(
+    name = "run_binary_bootstrap_script_zip_no_test",
+    bootstrap_impl = "script",
+    build_python_zip = "no",
+    py_src = "bin.py",
+    sh_src = "run_binary_zip_no_test.sh",
+    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+)
