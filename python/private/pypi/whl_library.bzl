@@ -15,87 +15,20 @@
 ""
 
 load("//python:repositories.bzl", "is_standalone_interpreter")
-load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
-load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
+load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
-
-def _construct_pypath(rctx):
-    """Helper function to construct a PYTHONPATH.
-
-    Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
-    This allows us to run python code inside repository rule implementations.
-
-    Args:
-        rctx: Handle to the repository_context.
-
-    Returns: String of the PYTHONPATH.
-    """
-
-    separator = ":" if not "windows" in rctx.os.name.lower() else ";"
-    pypath = separator.join([
-        str(rctx.path(entry).dirname)
-        for entry in rctx.attr._python_path_entries
-    ])
-    return pypath
-
-def _get_python_interpreter_attr(rctx):
-    """A helper function for getting the `python_interpreter` attribute or it's default
-
-    Args:
-        rctx (repository_ctx): Handle to the rule repository context.
-
-    Returns:
-        str: The attribute value or it's default
-    """
-    if rctx.attr.python_interpreter:
-        return rctx.attr.python_interpreter
-
-    if "win" in rctx.os.name:
-        return "python.exe"
-    else:
-        return "python3"
-
-def _resolve_python_interpreter(rctx):
-    """Helper function to find the python interpreter from the common attributes
-
-    Args:
-        rctx: Handle to the rule repository context.
-
-    Returns:
-        `path` object, for the resolved path to the Python interpreter.
-    """
-    python_interpreter = _get_python_interpreter_attr(rctx)
-
-    if rctx.attr.python_interpreter_target != None:
-        python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
-
-        (os, _) = get_host_os_arch(rctx)
-
-        # On Windows, the symlink doesn't work because Windows attempts to find
-        # Python DLLs where the symlink is, not where the symlink points.
-        if os == WINDOWS_NAME:
-            python_interpreter = python_interpreter.realpath
-    elif "/" not in python_interpreter:
-        # It's a plain command, e.g. "python3", to look up in the environment.
-        found_python_interpreter = rctx.which(python_interpreter)
-        if not found_python_interpreter:
-            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
-        python_interpreter = found_python_interpreter
-    else:
-        python_interpreter = rctx.path(python_interpreter)
-    return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
     """Query the xcode sdk location to update cflags
@@ -230,14 +163,21 @@ def _create_repository_execution_environment(rctx, python_interpreter):
     cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
 
     env = {
-        "PYTHONPATH": _construct_pypath(rctx),
+        "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
+            rctx,
+            entries = rctx.attr._python_path_entries,
+        ),
         _CPPFLAGS: " ".join(cppflags),
     }
 
     return env
 
 def _whl_library_impl(rctx):
-    python_interpreter = _resolve_python_interpreter(rctx)
+    python_interpreter = pypi_repo_utils.resolve_python_interpreter(
+        rctx,
+        python_interpreter = rctx.attr.python_interpreter,
+        python_interpreter_target = rctx.attr.python_interpreter_target,
+    )
     args = [
         python_interpreter,
         "-m",

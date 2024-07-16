@@ -26,6 +26,7 @@ load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_r
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "whl_alias")
+load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "whl_repo_name")
@@ -183,12 +184,16 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     requirements_by_platform = parse_requirements(
         module_ctx,
-        requirements_by_platform = pip_attr.requirements_by_platform,
-        requirements_linux = pip_attr.requirements_linux,
-        requirements_lock = pip_attr.requirements_lock,
-        requirements_osx = pip_attr.requirements_darwin,
-        requirements_windows = pip_attr.requirements_windows,
-        extra_pip_args = pip_attr.extra_pip_args,
+        requirements_by_platform = requirements_files_by_platform(
+            requirements_by_platform = pip_attr.requirements_by_platform,
+            requirements_linux = pip_attr.requirements_linux,
+            requirements_lock = pip_attr.requirements_lock,
+            requirements_osx = pip_attr.requirements_darwin,
+            requirements_windows = pip_attr.requirements_windows,
+            extra_pip_args = pip_attr.extra_pip_args,
+            python_version = major_minor,
+            logger = logger,
+        ),
         get_index_urls = get_index_urls,
         python_version = major_minor,
         logger = logger,
@@ -298,7 +303,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
         requirement = select_requirement(
             requirements,
-            platform = repository_platform,
+            platform = None if pip_attr.download_only else repository_platform,
         )
         if not requirement:
             # Sometimes the package is not present for host platform if there
