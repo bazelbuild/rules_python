@@ -14,6 +14,8 @@
 
 "Creates a repository to hold toolchains"
 
+load("//python/private:text_util.bzl", "render")
+
 _TOOLCHAIN_TEMPLATE = """
 toolchain(
     name = "{name}",
@@ -33,7 +35,7 @@ def _toolchains_repo_impl(repository_ctx):
             name = toolchain_name,
             toolchain_type = repository_ctx.attr.toolchain_type,
             toolchain_label = toolchain_label,
-            compatible_with = json.encode(toolchain_compatible_with),
+            compatible_with = render.list(toolchain_compatible_with),
         )
 
     repository_ctx.file("BUILD.bazel", build_content)
