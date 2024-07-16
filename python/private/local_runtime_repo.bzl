@@ -108,17 +108,16 @@ def _local_runtime_repo_impl(rctx):
     rctx.symlink(info["include"], "include")
 
     shared_lib_names = [
-        info["PY3LIBRARY"],  # libpython3.so
-        info["LDLIBRARY"],  # libpython3.11.so
-        info["INSTSONAME"],  # libpython3.11.so.1.0
+        info["PY3LIBRARY"],
+        info["LDLIBRARY"],
+        info["INSTSONAME"],
     ]
 
     # In some cases, the value may be empty. Not clear why.
     shared_lib_names = [v for v in shared_lib_names if v]
 
-    # In some cases, the same value is returned for multiple keys. Not clear why.
+    # In some cases, the same value is returned or multiple keys. Not clear why.
     shared_lib_names = {v: None for v in shared_lib_names}.keys()
-
     shared_lib_dir = info["LIBDIR"]
 
     # The specific files are symlinked instead of the whole directory
