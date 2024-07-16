@@ -498,9 +498,29 @@ def main():
         cov_tool = None
 
     sys.stdout.flush()
+
+    # Add the user imports after the stdlib, but before the runtime's
+    # site-packages directory. This gives the stdlib precedence, while allowing
+    # users to override non-stdlib packages that may have been bundled with
+    # the runtime (usually pip).
+    # NOTE: There isn't a good way to identify the stdlib paths, so we just
+    # expect site-packages comes after it, per
+    # https://docs.python.org/3/library/sys_path_init.html#sys-path-init
+    for i, path in enumerate(sys.path):
+        # dist-packages is a debian convention, see
+        # https://wiki.debian.org/Python#Deviations_from_upstream
+        if os.path.basename(path) in ("site-packages", "dist-packages"):
+            sys.path[i:i] = python_path_entries
+            break
+    else:
+        # Otherwise, no site-packages directory was found, which is odd but ok.
+        sys.path.extend(python_path_entries)
+
     # NOTE: The sys.path must be modified before coverage is imported/activated
+    # NOTE: Perform this after the user imports are appended. This avoids a
+    # user import accidentally triggering the site-packages logic above.
     sys.path[0:0] = prepend_path_entries
-    sys.path.extend(python_path_entries)
+
     with _maybe_collect_coverage(enable=cov_tool is not None):
         # The first arg is this bootstrap, so drop that for the re-invocation.
         _run_py(main_filename, args=sys.argv[1:])

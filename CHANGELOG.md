@@ -35,6 +35,9 @@ A brief description of the categories of changes:
   Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
 * (rules) Fixes Mac + `--build_python_zip` + {obj}`--bootstrap_impl=script`
   ([#2030](https://github.com/bazelbuild/rules_python/issues/2030)).
+* (rules) User dependencies come before runtime site-packages when using
+  {obj}`--bootstrap_impl=script`.
+  ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 
