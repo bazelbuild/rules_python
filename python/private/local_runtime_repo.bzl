@@ -116,7 +116,7 @@ def _local_runtime_repo_impl(rctx):
     # In some cases, the value may be empty. Not clear why.
     shared_lib_names = [v for v in shared_lib_names if v]
 
-    # In some cases, the same value is returned or multiple keys. Not clear why.
+    # In some cases, the same value is returned for multiple keys. Not clear why.
     shared_lib_names = {v: None for v in shared_lib_names}.keys()
     shared_lib_dir = info["LIBDIR"]
 
