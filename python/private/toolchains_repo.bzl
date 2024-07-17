@@ -30,7 +30,8 @@ load(
     "PLATFORMS",
     "WINDOWS_NAME",
 )
-load(":which.bzl", "which_with_fail")
+load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
+load("//python/private:text_util.bzl", "render")
 
 def get_repository_name(repository_workspace):
     dummy_label = "//:_"
@@ -40,8 +41,7 @@ def python_toolchain_build_file_content(
         prefix,
         python_version,
         set_python_version_constraint,
-        user_repository_name,
-        rules_python):
+        user_repository_name):
     """Creates the content for toolchain definitions for a build file.
 
     Args:
@@ -51,58 +51,34 @@ def python_toolchain_build_file_content(
             have the Python version constraint added as a requirement for
             matching the toolchain, "False" if not.
         user_repository_name: names for the user repos
-        rules_python: rules_python label
 
     Returns:
         build_content: Text containing toolchain definitions
     """
-    if set_python_version_constraint == "True":
-        constraint = "{rules_python}//python/config_settings:is_python_{python_version}".format(
-            rules_python = rules_python,
-            python_version = python_version,
-        )
-        target_settings = '["{}"]'.format(constraint)
-    elif set_python_version_constraint == "False":
-        target_settings = "[]"
-    else:
-        fail(("Invalid set_python_version_constraint value: got {} {}, wanted " +
-              "either the string 'True' or the string 'False'; " +
-              "(did you convert bool to string?)").format(
-            type(set_python_version_constraint),
-            repr(set_python_version_constraint),
-        ))
 
     # We create a list of toolchain content from iterating over
     # the enumeration of PLATFORMS.  We enumerate PLATFORMS in
     # order to get us an index to increment the increment.
-    return "".join([
-        """
-toolchain(
-    name = "{prefix}{platform}_toolchain",
+    return "\n\n".join([
+        """\
+py_toolchain_suite(
+    user_repository_name = "{user_repository_name}_{platform}",
+    prefix = "{prefix}{platform}",
     target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:python_runtimes",
-    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
-)
-
-toolchain(
-    name = "{prefix}{platform}_py_cc_toolchain",
-    target_compatible_with = {compatible_with},
-    target_settings = {target_settings},
-    toolchain = "@{user_repository_name}_{platform}//:py_cc_toolchain",
-    toolchain_type = "@rules_python//python/cc:toolchain_type",
-
-)
-""".format(
-            compatible_with = meta.compatible_with,
+    flag_values = {flag_values},
+    python_version = "{python_version}",
+    set_python_version_constraint = "{set_python_version_constraint}",
+)""".format(
+            compatible_with = render.indent(render.list(meta.compatible_with)).lstrip(),
+            flag_values = render.indent(render.dict(
+                meta.flag_values,
+                key_repr = lambda x: repr(str(x)),  # this is to correctly display labels
+            )).lstrip(),
             platform = platform,
-            # We have to use a String value here because bzlmod is passing in a
-            # string as we cannot have list of bools in build rule attribues.
-            # This if statement does not appear to work unless it is in the
-            # toolchain file.
-            target_settings = target_settings,
+            set_python_version_constraint = set_python_version_constraint,
             user_repository_name = user_repository_name,
             prefix = prefix,
+            python_version = python_version,
         )
         for platform, meta in PLATFORMS.items()
     ])
@@ -116,17 +92,17 @@ def _toolchains_repo_impl(rctx):
 # python_register_toolchains macro so you don't normally need to interact with
 # these targets.
 
-"""
+load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
 
-    # Get the repository name
-    rules_python = get_repository_name(rctx.attr._rules_python_workspace)
+""".format(
+        rules_python = rctx.attr._rules_python_workspace.workspace_name,
+    )
 
     toolchains = python_toolchain_build_file_content(
         prefix = "",
         python_version = rctx.attr.python_version,
         set_python_version_constraint = str(rctx.attr.set_python_version_constraint),
         user_repository_name = rctx.attr.user_repository_name,
-        rules_python = rules_python,
     )
 
     rctx.file("BUILD.bazel", build_content + toolchains)
@@ -240,8 +216,100 @@ def compile_pip_requirements(name, **kwargs):
 
 toolchain_aliases = repository_rule(
     _toolchain_aliases_impl,
-    doc = """Creates a repository with a shorter name meant for the host platform, which contains
-    a BUILD.bazel file declaring aliases to the host platform's targets.
+    doc = """\
+Creates a repository with a shorter name only referencing the python version,
+it contains a BUILD.bazel file declaring aliases to the host platform's targets
+and is a great fit for any usage related to setting up toolchains for build
+actions.""",
+    attrs = {
+        "platforms": attr.string_list(
+            doc = "List of platforms for which aliases shall be created",
+        ),
+        "python_version": attr.string(doc = "The Python version."),
+        "user_repository_name": attr.string(
+            mandatory = True,
+            doc = "The base name for all created repositories, like 'python38'.",
+        ),
+        "_rules_python_workspace": attr.label(default = Label("//:WORKSPACE")),
+    },
+    environ = [REPO_DEBUG_ENV_VAR],
+)
+
+def _host_toolchain_impl(rctx):
+    rctx.file("BUILD.bazel", """\
+# Generated by python/private/toolchains_repo.bzl
+
+exports_files(["python"], visibility = ["//visibility:public"])
+""")
+
+    (os_name, arch) = get_host_os_arch(rctx)
+    host_platform = get_host_platform(os_name, arch)
+    repo = "@@{py_repository}_{host_platform}".format(
+        py_repository = rctx.attr.name[:-len("_host")],
+        host_platform = host_platform,
+    )
+
+    rctx.report_progress("Symlinking interpreter files to the target platform")
+    host_python_repo = rctx.path(Label("{repo}//:BUILD.bazel".format(repo = repo)))
+
+    # The interpreter might not work on platfroms that don't have symlink support if
+    # we just symlink the interpreter itself. rctx.symlink does a copy in such cases
+    # so we can just attempt to symlink all of the directories in the host interpreter
+    # repo, which should be faster than re-downloading it.
+    for p in host_python_repo.dirname.readdir():
+        if p.basename in [
+            # ignore special files created by the repo rule automatically
+            "BUILD.bazel",
+            "MODULE.bazel",
+            "REPO.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+            "WORKSPACE.bzlmod",
+        ]:
+            continue
+
+        # symlink works on all platforms that bazel supports, so it should work on
+        # UNIX and Windows with and without symlink support. For better performance
+        # users should enable the symlink startup option, however that requires admin
+        # privileges.
+        rctx.symlink(p, p.basename)
+
+    is_windows = (os_name == WINDOWS_NAME)
+    python_binary = "python.exe" if is_windows else "python"
+
+    # Ensure that we can run the interpreter and check that we are not
+    # using the host interpreter.
+    python_tester_contents = """\
+from pathlib import Path
+import sys
+
+python = Path(sys.executable)
+want_python = str(Path("{python}").resolve())
+got_python = str(Path(sys.executable).resolve())
+
+assert want_python == got_python, \
+    "Expected to use a different interpreter:\\nwant: '{{}}'\\n got: '{{}}'".format(
+        want_python,
+        got_python,
+    )
+""".format(repo = repo.strip("@"), python = python_binary)
+    python_tester = rctx.path("python_tester.py")
+    rctx.file(python_tester, python_tester_contents)
+    repo_utils.execute_checked(
+        rctx,
+        op = "CheckHostInterpreter",
+        arguments = [rctx.path(python_binary), python_tester],
+    )
+    if not rctx.delete(python_tester):
+        fail("Failed to delete the python tester")
+
+host_toolchain = repository_rule(
+    _host_toolchain_impl,
+    doc = """\
+Creates a repository with a shorter name meant to be used in the repository_ctx,
+which needs to have `symlinks` for the interpreter. This is separate from the
+toolchain_aliases repo because referencing the `python` interpreter target from
+this repo causes an eager fetch of the toolchain for the host platform.
     """,
     attrs = {
         "platforms": attr.string_list(
@@ -351,7 +419,11 @@ def get_host_os_arch(rctx):
         os_name = WINDOWS_NAME
     else:
         # This is not ideal, but bazel doesn't directly expose arch.
-        arch = rctx.execute([which_with_fail("uname", rctx), "-m"]).stdout.strip()
+        arch = repo_utils.execute_unchecked(
+            rctx,
+            op = "GetUname",
+            arguments = [repo_utils.which_checked(rctx, "uname"), "-m"],
+        ).stdout.strip()
 
         # Normalize the os_name.
         if "mac" in os_name.lower():

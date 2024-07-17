@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import resolved_package
+
 from . import Class1
 from .subpackage1.module5 import function5
 
-import resolved_package
 
 def function3():
     c1 = Class1()

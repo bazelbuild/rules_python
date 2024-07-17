@@ -27,11 +27,12 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/label"
 	"github.com/bazelbuild/bazel-gazelle/language"
 	"github.com/bazelbuild/bazel-gazelle/rule"
-	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/emirpasic/gods/lists/singlylinkedlist"
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
+
+	"github.com/bazelbuild/rules_python/gazelle/pythonconfig"
 )
 
 const (
@@ -52,6 +53,17 @@ func GetActualKindName(kind string, args language.GenerateArgs) string {
 		return kindOverride.KindName
 	}
 	return kind
+}
+
+func matchesAnyGlob(s string, globs []string) bool {
+	// This function assumes that the globs have already been validated. If a glob is
+	// invalid, it's considered a non-match and we move on to the next pattern.
+	for _, g := range globs {
+		if ok, _ := doublestar.Match(g, s); ok {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateRules extracts build metadata from source files in a directory.
@@ -100,6 +112,8 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	hasPyTestEntryPointTarget := false
 	hasConftestFile := false
 
+	testFileGlobs := cfg.TestFilePattern()
+
 	for _, f := range args.RegularFiles {
 		if cfg.IgnoresFile(filepath.Base(f)) {
 			continue
@@ -113,7 +127,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 				hasPyTestEntryPointFile = true
 			} else if f == conftestFilename {
 				hasConftestFile = true
-			} else if strings.HasSuffix(f, "_test.py") || strings.HasPrefix(f, "test_") {
+			} else if matchesAnyGlob(f, testFileGlobs) {
 				pyTestFilenames.Add(f)
 			} else {
 				pyLibraryFilenames.Add(f)
@@ -195,7 +209,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 							}
 						}
 						baseName := filepath.Base(path)
-						if strings.HasSuffix(baseName, "_test.py") || strings.HasPrefix(baseName, "test_") {
+						if matchesAnyGlob(baseName, testFileGlobs) {
 							pyTestFilenames.Add(srcPath)
 						} else {
 							pyLibraryFilenames.Add(srcPath)
@@ -212,7 +226,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	}
 
 	parser := newPython3Parser(args.Config.RepoRoot, args.Rel, cfg.IgnoresDependency)
-	visibility := fmt.Sprintf("//%s:__subpackages__", pythonProjectRoot)
+	visibility := cfg.Visibility()
 
 	var result language.GenerateResult
 	result.Gen = make([]*rule.Rule, 0)
@@ -220,21 +234,9 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 	collisionErrors := singlylinkedlist.New()
 
 	appendPyLibrary := func(srcs *treeset.Set, pyLibraryTargetName string) {
-		allDeps, mainModules, err := parser.parse(srcs)
+		allDeps, mainModules, annotations, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
-		}
-
-		// Check if a target with the same name we are generating already
-		// exists, and if it is of a different kind from the one we are
-		// generating. If so, we have to throw an error since Gazelle won't
-		// generate it correctly.
-		if err := ensureNoCollision(args.File, pyLibraryTargetName, actualPyLibraryKind); err != nil {
-			fqTarget := label.New("", args.Rel, pyLibraryTargetName)
-			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
-				"Use the '# gazelle:%s' directive to change the naming convention.",
-				fqTarget.String(), actualPyLibraryKind, err, pythonconfig.LibraryNamingConvention)
-			collisionErrors.Add(err)
 		}
 
 		if !hasPyBinaryEntryPointFile {
@@ -242,6 +244,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			mainFileNames := make([]string, 0, len(mainModules))
 			for name := range mainModules {
 				mainFileNames = append(mainFileNames, name)
+
+				// Remove the file from srcs if we're doing per-file library generation so
+				// that we don't also generate a py_library target for it.
+				if cfg.PerFileGeneration() {
+					srcs.Remove(name)
+				}
 			}
 			sort.Strings(mainFileNames)
 			for _, filename := range mainFileNames {
@@ -256,21 +264,56 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 					addVisibility(visibility).
 					addSrc(filename).
 					addModuleDependencies(mainModules[filename]).
+					addResolvedDependencies(annotations.includeDeps).
 					generateImportsAttribute().build()
 				result.Gen = append(result.Gen, pyBinary)
 				result.Imports = append(result.Imports, pyBinary.PrivateAttr(config.GazelleImportsKey))
 			}
 		}
 
+		// If we're doing per-file generation, srcs could be empty at this point, meaning we shouldn't make a py_library.
+		// If there is already a package named py_library target before, we should generate an empty py_library.
+		if srcs.Empty() {
+			if args.File == nil {
+				return
+			}
+			generateEmptyLibrary := false
+			for _, r := range args.File.Rules {
+				if r.Kind() == actualPyLibraryKind && r.Name() == pyLibraryTargetName {
+					generateEmptyLibrary = true
+				}
+			}
+			if !generateEmptyLibrary {
+				return
+			}
+		}
+
+		// Check if a target with the same name we are generating already
+		// exists, and if it is of a different kind from the one we are
+		// generating. If so, we have to throw an error since Gazelle won't
+		// generate it correctly.
+		if err := ensureNoCollision(args.File, pyLibraryTargetName, actualPyLibraryKind); err != nil {
+			fqTarget := label.New("", args.Rel, pyLibraryTargetName)
+			err := fmt.Errorf("failed to generate target %q of kind %q: %w. "+
+				"Use the '# gazelle:%s' directive to change the naming convention.",
+				fqTarget.String(), actualPyLibraryKind, err, pythonconfig.LibraryNamingConvention)
+			collisionErrors.Add(err)
+		}
+
 		pyLibrary := newTargetBuilder(pyLibraryKind, pyLibraryTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addVisibility(visibility).
 			addSrcs(srcs).
 			addModuleDependencies(allDeps).
+			addResolvedDependencies(annotations.includeDeps).
 			generateImportsAttribute().
 			build()
 
-		result.Gen = append(result.Gen, pyLibrary)
-		result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+		if pyLibrary.IsEmpty(py.Kinds()[pyLibrary.Kind()]) {
+			result.Empty = append(result.Gen, pyLibrary)
+		} else {
+			result.Gen = append(result.Gen, pyLibrary)
+			result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
+		}
 	}
 	if cfg.PerFileGeneration() {
 		hasInit, nonEmptyInit := hasLibraryEntrypointFile(args.Dir)
@@ -285,12 +328,12 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			}
 			appendPyLibrary(srcs, pyLibraryTargetName)
 		})
-	} else if !pyLibraryFilenames.Empty() {
+	} else {
 		appendPyLibrary(pyLibraryFilenames, cfg.RenderLibraryName(packageName))
 	}
 
 	if hasPyBinaryEntryPointFile {
-		deps, _, err := parser.parseSingle(pyBinaryEntrypointFilename)
+		deps, _, annotations, err := parser.parseSingle(pyBinaryEntrypointFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -314,6 +357,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			addVisibility(visibility).
 			addSrc(pyBinaryEntrypointFilename).
 			addModuleDependencies(deps).
+			addResolvedDependencies(annotations.includeDeps).
 			generateImportsAttribute()
 
 		pyBinary := pyBinaryTarget.build()
@@ -324,7 +368,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var conftest *rule.Rule
 	if hasConftestFile {
-		deps, _, err := parser.parseSingle(conftestFilename)
+		deps, _, annotations, err := parser.parseSingle(conftestFilename)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -343,6 +387,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		conftestTarget := newTargetBuilder(pyLibraryKind, conftestTargetname, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrc(conftestFilename).
 			addModuleDependencies(deps).
+			addResolvedDependencies(annotations.includeDeps).
 			addVisibility(visibility).
 			setTestonly().
 			generateImportsAttribute()
@@ -355,7 +400,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 
 	var pyTestTargets []*targetBuilder
 	newPyTestTargetBuilder := func(srcs *treeset.Set, pyTestTargetName string) *targetBuilder {
-		deps, _, err := parser.parse(srcs)
+		deps, _, annotations, err := parser.parse(srcs)
 		if err != nil {
 			log.Fatalf("ERROR: %v\n", err)
 		}
@@ -373,6 +418,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 		return newTargetBuilder(pyTestKind, pyTestTargetName, pythonProjectRoot, args.Rel, pyFileNames).
 			addSrcs(srcs).
 			addModuleDependencies(deps).
+			addResolvedDependencies(annotations.includeDeps).
 			generateImportsAttribute()
 	}
 	if (hasPyTestEntryPointFile || hasPyTestEntryPointTarget || cfg.CoarseGrainedGeneration()) && !cfg.PerFileGeneration() {
@@ -382,20 +428,22 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			// the file exists on disk.
 			pyTestFilenames.Add(pyTestEntrypointFilename)
 		}
-		pyTestTargetName := cfg.RenderTestName(packageName)
-		pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
+		if hasPyTestEntryPointTarget || !pyTestFilenames.Empty() {
+			pyTestTargetName := cfg.RenderTestName(packageName)
+			pyTestTarget := newPyTestTargetBuilder(pyTestFilenames, pyTestTargetName)
 
-		if hasPyTestEntryPointTarget {
-			entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
-			main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
-			pyTestTarget.
-				addSrc(entrypointTarget).
-				addResolvedDependency(entrypointTarget).
-				setMain(main)
-		} else {
-			pyTestTarget.setMain(pyTestEntrypointFilename)
+			if hasPyTestEntryPointTarget {
+				entrypointTarget := fmt.Sprintf(":%s", pyTestEntrypointTargetname)
+				main := fmt.Sprintf(":%s", pyTestEntrypointFilename)
+				pyTestTarget.
+					addSrc(entrypointTarget).
+					addResolvedDependency(entrypointTarget).
+					setMain(main)
+			} else if hasPyTestEntryPointFile {
+				pyTestTarget.setMain(pyTestEntrypointFilename)
+			}
+			pyTestTargets = append(pyTestTargets, pyTestTarget)
 		}
-		pyTestTargets = append(pyTestTargets, pyTestTarget)
 	} else {
 		// Create one py_test target per file
 		pyTestFilenames.Each(func(index int, testFile interface{}) {

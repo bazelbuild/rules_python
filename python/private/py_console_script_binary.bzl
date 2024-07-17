@@ -27,16 +27,23 @@ def _dist_info(pkg):
     rules_python does not know anything about the hub repos that the user has
     available.
 
-    NOTE: Works with `incompatible_generate_aliases` and without by assuming the
-    following formats:
-        * @pypi_pylint//:pkg
+    NOTE: Works with assuming the following label formats:
         * @pypi//pylint
         * @pypi//pylint:pkg
         * Label("@pypi//pylint:pkg")
+        * Label("@pypi//pylint")
     """
 
-    # str() is called to convert Label objects
-    return str(pkg).replace(":pkg", "") + ":dist_info"
+    if type(pkg) == type(""):
+        label = native.package_relative_label(pkg)
+    else:
+        label = pkg
+
+    if hasattr(label, "same_package_label"):
+        return label.same_package_label("dist_info")
+    else:
+        # NOTE @aignas 2024-03-25: this is deprecated but kept for compatibility
+        return label.relative("dist_info")
 
 def py_console_script_binary(
         *,
@@ -70,7 +77,6 @@ def py_console_script_binary(
 
     py_console_script_gen(
         name = "_{}_gen".format(name),
-        # NOTE @aignas 2023-08-05: Works with `incompatible_generate_aliases` and without.
         entry_points_txt = entry_points_txt or _dist_info(pkg),
         out = main,
         console_script = script,

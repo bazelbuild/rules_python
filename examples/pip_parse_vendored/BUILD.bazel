@@ -1,6 +1,9 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("//:requirements.bzl", "all_data_requirements", "all_requirements", "all_whl_requirements", "requirement")
 
 # This rule adds a convenient way to update the requirements.txt
 # lockfile based on the requirements.in.
@@ -9,21 +12,26 @@ compile_pip_requirements(
     src = "requirements.in",
 )
 
-# The requirements.bzl file is generated with a reference to the interpreter for the host platform.
-# In order to check in a platform-agnostic file, we have to replace that reference with the symbol
-# loaded from our python toolchain.
+# The requirements.bzl file is using the hub repo to access packages via the
+# `requirement` macro and when the requirements.bzl is vendored, the hub
+# repo won't be present. As a result, we have to adjust the label scheme in
+# the requirements.bzl to make sure that they continue to work.
 genrule(
-    name = "make_platform_agnostic",
-    srcs = ["@pip//:requirements.bzl"],
+    name = "requirement_bzl",
+    srcs = ["@pip_deps_to_be_vendored//:requirements.bzl"],
     outs = ["requirements.clean.bzl"],
     cmd = " | ".join([
         "cat $<",
-        # Insert our load statement after the existing one so we don't produce a file with buildifier warnings
-        """sed -e '/^load.*.pip.bzl/i\\'$$'\\n''load("@python39//:defs.bzl", "interpreter")'""",
-        # Replace the bazel 6.0.0 specific comment with something that bazel 5.4.0 would produce.
-        # This enables this example to be run as a test under bazel 5.4.0.
-        """sed -e 's#@//#//#'""",
-        """sed 's#"@python39_.*//:bin/python3"#interpreter#' >$@""",
+        # Substitute the name of the hub to ensure that the dependencies do
+        # not require the hub repo initialized in the WORKSPACE.
+        "sed -e 's/pip_deps_to_be_vendored/my_project_pip_deps_vendored/g'",
+        # Change the labels from using the hub repo to using the spoke repos
+        # directly.
+        "sed -e 's|//\\([^:]*\\):pkg|_\\1//:pkg|g'",
+        "sed -e 's|//\\([^:]*\\):whl|_\\1//:whl|g'",
+        "sed -e 's|//\\([^:]*\\):data|_\\1//:data|g'",
+        # Change the convenience macros to use the same naming.
+        "sed -e 's|//{}:{}|_{}//:{}|g' >$@",
     ]),
 )
 
@@ -42,7 +50,7 @@ write_file(
 sh_binary(
     name = "vendor_requirements",
     srcs = ["update.sh"],
-    data = [":make_platform_agnostic"],
+    data = [":requirement_bzl"],
 )
 
 # Similarly ensures that the requirements.bzl file is updated
@@ -51,5 +59,18 @@ diff_test(
     name = "test_vendored",
     failure_message = "Please run:  bazel run //:vendor_requirements",
     file1 = "requirements.bzl",
-    file2 = ":make_platform_agnostic",
+    file2 = "requirement_bzl",
+)
+
+py_test(
+    name = "test_dependency_usage",
+    srcs = ["test_dependency_usage.py"],
+    deps = [
+        requirement("requests"),
+    ],
+)
+
+build_test(
+    name = "test_requirement_lists",
+    targets = all_requirements + all_whl_requirements + all_data_requirements,
 )

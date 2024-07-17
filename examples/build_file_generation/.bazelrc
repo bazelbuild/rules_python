@@ -2,7 +2,6 @@ test --test_output=errors --enable_runfiles
 
 # Windows requires these for multi-python support:
 build --enable_runfiles
-startup --windows_enable_symlinks
 
 # The bzlmod version of this example is in examples/bzlmod_build_file_generation
 # Once WORKSPACE support is dropped, this example can be entirely deleted.

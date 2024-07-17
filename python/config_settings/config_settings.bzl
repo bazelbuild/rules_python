@@ -15,26 +15,16 @@
 """This module is used to construct the config settings in the BUILD file in this same package.
 """
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load(
+    "//python/private:config_settings.bzl",
+    _construct_config_settings = "construct_config_settings",
+    _is_python_config_setting = "is_python_config_setting",
+)
 
-# buildifier: disable=unnamed-macro
-def construct_config_settings(python_versions):
-    """Constructs a set of configs for all Python versions.
+# This is exposed only for cases where the pip hub repo needs to use this rule
+# to define hub-repo scoped config_settings for platform specific wheel
+# support.
+is_python_config_setting = _is_python_config_setting
 
-    Args:
-        python_versions: The Python versions supported by rules_python.
-    """
-    string_flag(
-        name = "python_version",
-        build_setting_default = python_versions[0],
-        values = python_versions,
-        visibility = ["//visibility:public"],
-    )
-
-    for python_version in python_versions:
-        python_version_constraint_setting = "is_python_" + python_version
-        native.config_setting(
-            name = python_version_constraint_setting,
-            flag_values = {":python_version": python_version},
-            visibility = ["//visibility:public"],
-        )
+# This is exposed for usage in rules_python only.
+construct_config_settings = _construct_config_settings

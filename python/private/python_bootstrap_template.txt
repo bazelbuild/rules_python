@@ -20,6 +20,7 @@ del sys.path[0]
 
 import os
 import subprocess
+import uuid
 
 def IsRunningFromZip():
   return %is_zipfile%
@@ -88,10 +89,18 @@ def FindPythonBinary(module_space):
   """Finds the real Python binary if it's not a normal absolute path."""
   return FindBinary(module_space, PYTHON_BINARY)
 
+def PrintVerbose(*args):
+  if os.environ.get("RULES_PYTHON_BOOTSTRAP_VERBOSE"):
+    print("bootstrap:", *args, file=sys.stderr, flush=True)
+
 def PrintVerboseCoverage(*args):
   """Print output if VERBOSE_COVERAGE is non-empty in the environment."""
   if os.environ.get("VERBOSE_COVERAGE"):
     print(*args, file=sys.stderr)
+
+def IsVerboseCoverage():
+  """Returns True if VERBOSE_COVERAGE is non-empty in the environment."""
+  return os.environ.get("VERBOSE_COVERAGE")
 
 def FindCoverageEntryPoint(module_space):
   cov_tool = '%coverage_tool%'
@@ -371,7 +380,10 @@ def _RunExecv(python_program, main_filename, args, env):
   # type: (str, str, list[str], dict[str, str]) -> ...
   """Executes the given Python file using the various environment settings."""
   os.environ.update(env)
-  os.execv(python_program, [python_program, main_filename] + args)
+  PrintVerbose("RunExecv: environ:", os.environ)
+  argv = [python_program, main_filename] + args
+  PrintVerbose("RunExecv: argv:", python_program, argv)
+  os.execv(python_program, argv)
 
 def _RunForCoverage(python_program, main_filename, args, env,
                     coverage_entrypoint, workspace):
@@ -389,8 +401,8 @@ def _RunForCoverage(python_program, main_filename, args, env,
         runfiles directory if set.
   """
   # We need for coveragepy to use relative paths.  This can only be configured
-  # via an rc file, so we need to make one.
-  rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], '.coveragerc')
+  unique_id = uuid.uuid4()
+  rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], ".coveragerc_{}".format(unique_id))
   with open(rcfile_name, "w") as rcfile:
     rcfile.write('''[run]
 relative_files = True
@@ -415,18 +427,20 @@ relative_files = True
 
   PrintVerboseCoverage('Converting coveragepy database to lcov:', output_filename)
   # Run coveragepy again to convert its .coverage database file into lcov.
+  # Under normal conditions running lcov outputs to stdout/stderr, which causes problems for `coverage`.
+  params = [python_program, coverage_entrypoint, "lcov", "--rcfile=" + rcfile_name, "-o", output_filename, "--quiet"]
+  kparams = {"env": env, "cwd": workspace, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+  if IsVerboseCoverage():
+    # reconnect stdout/stderr to lcov generation.  Should be useful for debugging `coverage` issues.
+    params.remove("--quiet")
+    kparams['stdout'] = sys.stderr
+    kparams['stderr'] = sys.stderr
+
   ret_code = subprocess.call(
-    [
-      python_program,
-      coverage_entrypoint,
-      "lcov",
-      "--rcfile=" + rcfile_name,
-      "-o",
-      output_filename
-    ],
-    env=env,
-    cwd=workspace
+    params,
+    **kparams
   ) or ret_code
+
   try:
     os.unlink(rcfile_name)
   except OSError as err:
@@ -527,6 +541,13 @@ def Main():
       new_env['PYTHONPATH'] = os.pathsep.join(Deduplicate(python_path_entries))
   else:
     cov_tool = None
+
+  # Some older Python versions on macOS (namely Python 3.7) may unintentionally
+  # leave this environment variable set after starting the interpreter, which
+  # causes problems with Python subprocesses correctly locating sys.executable,
+  # which subsequently causes failure to launch on Python 3.11 and later.
+  if '__PYVENV_LAUNCHER__' in os.environ:
+    del os.environ['__PYVENV_LAUNCHER__']
 
   new_env.update((key, val) for key, val in os.environ.items() if key not in new_env)
 

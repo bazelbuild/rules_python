@@ -23,6 +23,8 @@ The general usage of the Sphinx rules requires two pieces:
 
 Defining your own `sphinx-build` binary is necessary because Sphinx uses
 a plugin model to support extensibility.
+
+The Sphinx integration is still experimental.
 """
 
 load(

@@ -99,9 +99,20 @@ func (t *targetBuilder) addResolvedDependency(dep string) *targetBuilder {
 	return t
 }
 
-// addVisibility adds a visibility to the target.
-func (t *targetBuilder) addVisibility(visibility string) *targetBuilder {
-	t.visibility.Add(visibility)
+// addResolvedDependencies adds multiple dependencies, that have already been
+// resolved or generated, to the target.
+func (t *targetBuilder) addResolvedDependencies(deps []string) *targetBuilder {
+	for _, dep := range deps {
+		t.addResolvedDependency(dep)
+	}
+	return t
+}
+
+// addVisibility adds visibility labels to the target.
+func (t *targetBuilder) addVisibility(visibility []string) *targetBuilder {
+	for _, item := range visibility {
+		t.visibility.Add(item)
+	}
 	return t
 }
 

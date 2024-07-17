@@ -14,7 +14,6 @@ python_register_toolchains(
     python_version = "3.9",
 )
 
-load("@python39//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "package_annotation", "pip_parse")
 
 # Here we can see an example of annotations being applied to an arbitrary
@@ -54,7 +53,7 @@ write_file(
 pip_parse(
     name = "pip",
     annotations = ANNOTATIONS,
-    python_interpreter_target = interpreter,
+    python_interpreter_target = "@python39_host//:python",
     requirements_lock = "//:requirements.txt",
 )
 

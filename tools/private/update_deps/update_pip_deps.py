@@ -111,13 +111,13 @@ def main():
     parser.add_argument(
         "--start",
         type=str,
-        default="# START: maintained by 'bazel run //tools/private:update_pip_deps'",
+        default="# START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
         "--end",
         type=str,
-        default="# END: maintained by 'bazel run //tools/private:update_pip_deps'",
+        default="# END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'",
         help="The text to match in a file when updating them.",
     )
     parser.add_argument(
@@ -129,19 +129,13 @@ def main():
         "--requirements-txt",
         type=path_from_runfiles,
         default=os.environ.get("REQUIREMENTS_TXT"),
-        help="The requirements.txt path for the pip_install tools, defaults to the value taken from REQUIREMENTS_TXT",
+        help="The requirements.txt path for the pypi tools, defaults to the value taken from REQUIREMENTS_TXT",
     )
     parser.add_argument(
-        "--module-bazel",
+        "--deps-bzl",
         type=path_from_runfiles,
-        default=os.environ.get("MODULE_BAZEL"),
-        help="The path for the file to be updated, defaults to the value taken from MODULE_BAZEL",
-    )
-    parser.add_argument(
-        "--repositories-bzl",
-        type=path_from_runfiles,
-        default=os.environ.get("REPOSITORIES_BZL"),
-        help="The path for the file to be updated, defaults to the value taken from REPOSITORIES_BZL",
+        default=os.environ.get("DEPS_BZL"),
+        help="The path for the file to be updated, defaults to the value taken from DEPS_BZL",
     )
     args = parser.parse_args()
 
@@ -149,16 +143,8 @@ def main():
     deps = _get_deps(report)
 
     update_file(
-        path=args.repositories_bzl,
+        path=args.deps_bzl,
         snippet=_dep_snippet(deps),
-        start_marker=args.start,
-        end_marker=args.end,
-        dry_run=args.dry_run,
-    )
-
-    update_file(
-        path=args.module_bazel,
-        snippet=_module_snippet(deps),
         start_marker=args.start,
         end_marker=args.end,
         dry_run=args.dry_run,

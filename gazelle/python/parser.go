@@ -15,64 +15,15 @@
 package python
 
 import (
-	"bufio"
 	"context"
 	_ "embed"
-	"encoding/json"
 	"fmt"
-	"io"
-	"log"
-	"os"
-	"os/exec"
 	"strings"
-	"sync"
 
 	"github.com/emirpasic/gods/sets/treeset"
 	godsutils "github.com/emirpasic/gods/utils"
+	"golang.org/x/sync/errgroup"
 )
-
-var (
-	parserCmd    *exec.Cmd
-	parserStdin  io.WriteCloser
-	parserStdout io.Reader
-	parserMutex  sync.Mutex
-)
-
-func startParserProcess(ctx context.Context) {
-	// due to #691, we need a system interpreter to boostrap, part of which is
-	// to locate the hermetic interpreter.
-	parserCmd = exec.CommandContext(ctx, "python3", helperPath, "parse")
-	parserCmd.Stderr = os.Stderr
-
-	stdin, err := parserCmd.StdinPipe()
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-	parserStdin = stdin
-
-	stdout, err := parserCmd.StdoutPipe()
-	if err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-	parserStdout = stdout
-
-	if err := parserCmd.Start(); err != nil {
-		log.Printf("failed to initialize parser: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func shutdownParserProcess() {
-	if err := parserStdin.Close(); err != nil {
-		fmt.Fprintf(os.Stderr, "error closing parser: %v", err)
-	}
-
-	if err := parserCmd.Wait(); err != nil {
-		log.Printf("failed to wait for parser: %v\n", err)
-	}
-}
 
 // python3Parser implements a parser for Python files that extracts the modules
 // as seen in the import statements.
@@ -101,7 +52,7 @@ func newPython3Parser(
 
 // parseSingle parses a single Python file and returns the extracted modules
 // from the import statements as well as the parsed comments.
-func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, error) {
+func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	pyFilenames := treeset.NewWith(godsutils.StringComparator)
 	pyFilenames.Add(pyFilename)
 	return p.parse(pyFilenames)
@@ -109,41 +60,43 @@ func (p *python3Parser) parseSingle(pyFilename string) (*treeset.Set, map[string
 
 // parse parses multiple Python files and returns the extracted modules from
 // the import statements as well as the parsed comments.
-func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, error) {
-	parserMutex.Lock()
-	defer parserMutex.Unlock()
-
+func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[string]*treeset.Set, *annotations, error) {
 	modules := treeset.NewWith(moduleComparator)
 
-	req := map[string]interface{}{
-		"repo_root":        p.repoRoot,
-		"rel_package_path": p.relPackagePath,
-		"filenames":        pyFilenames.Values(),
+	g, ctx := errgroup.WithContext(context.Background())
+	ch := make(chan struct{}, 6) // Limit the number of concurrent parses.
+	chRes := make(chan *ParserOutput, len(pyFilenames.Values()))
+	for _, v := range pyFilenames.Values() {
+		ch <- struct{}{}
+		g.Go(func(filename string) func() error {
+			return func() error {
+				defer func() {
+					<-ch
+				}()
+				res, err := NewFileParser().ParseFile(ctx, p.repoRoot, p.relPackagePath, filename)
+				if err != nil {
+					return err
+				}
+				chRes <- res
+				return nil
+			}
+		}(v.(string)))
 	}
-	encoder := json.NewEncoder(parserStdin)
-	if err := encoder.Encode(&req); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
+	if err := g.Wait(); err != nil {
+		return nil, nil, nil, err
 	}
-
-	reader := bufio.NewReader(parserStdout)
-	data, err := reader.ReadBytes(0)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
-	}
-	data = data[:len(data)-1]
-	var allRes []parserResponse
-	if err := json.Unmarshal(data, &allRes); err != nil {
-		return nil, nil, fmt.Errorf("failed to parse: %w", err)
-	}
-
-	mainModules := make(map[string]*treeset.Set, len(allRes))
-	for _, res := range allRes {
+	close(ch)
+	close(chRes)
+	mainModules := make(map[string]*treeset.Set, len(chRes))
+	allAnnotations := new(annotations)
+	allAnnotations.ignore = make(map[string]struct{})
+	for res := range chRes {
 		if res.HasMain {
 			mainModules[res.FileName] = treeset.NewWith(moduleComparator)
 		}
 		annotations, err := annotationsFromComments(res.Comments)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
+			return nil, nil, nil, fmt.Errorf("failed to parse annotations: %w", err)
 		}
 
 		for _, m := range res.Modules {
@@ -164,24 +117,32 @@ func (p *python3Parser) parse(pyFilenames *treeset.Set) (*treeset.Set, map[strin
 				mainModules[res.FileName].Add(m)
 			}
 		}
+
+		// Collect all annotations from each file into a single annotations struct.
+		for k, v := range annotations.ignore {
+			allAnnotations.ignore[k] = v
+		}
+		allAnnotations.includeDeps = append(allAnnotations.includeDeps, annotations.includeDeps...)
 	}
 
-	return modules, mainModules, nil
+	allAnnotations.includeDeps = removeDupesFromStringTreeSetSlice(allAnnotations.includeDeps)
+
+	return modules, mainModules, allAnnotations, nil
 }
 
-// parserResponse represents a response returned by the parser.py for a given
-// parsed Python module.
-type parserResponse struct {
-	// FileName of the parsed module
-	FileName string
-	// The modules depended by the parsed module.
-	Modules []module `json:"modules"`
-	// The comments contained in the parsed module. This contains the
-	// annotations as they are comments in the Python module.
-	Comments []comment `json:"comments"`
-	// HasMain indicates whether the Python module has `if __name == "__main__"`
-	// at the top level
-	HasMain bool `json:"has_main"`
+// removeDupesFromStringTreeSetSlice takes a []string, makes a set out of the
+// elements, and then returns a new []string with all duplicates removed. Order
+// is preserved.
+func removeDupesFromStringTreeSetSlice(array []string) []string {
+	s := treeset.NewWith(godsutils.StringComparator)
+	for _, v := range array {
+		s.Add(v)
+	}
+	dedupe := make([]string, s.Size())
+	for i, v := range s.Values() {
+		dedupe[i] = fmt.Sprint(v)
+	}
+	return dedupe
 }
 
 // module represents a fully-qualified, dot-separated, Python module as seen on
@@ -211,7 +172,8 @@ const (
 	// The Gazelle annotation prefix.
 	annotationPrefix string = "gazelle:"
 	// The ignore annotation kind. E.g. '# gazelle:ignore <module_name>'.
-	annotationKindIgnore annotationKind = "ignore"
+	annotationKindIgnore     annotationKind = "ignore"
+	annotationKindIncludeDep annotationKind = "include_dep"
 )
 
 // comment represents a Python comment.
@@ -247,12 +209,15 @@ type annotation struct {
 type annotations struct {
 	// The parsed modules to be ignored by Gazelle.
 	ignore map[string]struct{}
+	// Labels that Gazelle should include as deps of the generated target.
+	includeDeps []string
 }
 
 // annotationsFromComments returns all the annotations parsed out of the
 // comments of a Python module.
 func annotationsFromComments(comments []comment) (*annotations, error) {
 	ignore := make(map[string]struct{})
+	includeDeps := []string{}
 	for _, comment := range comments {
 		annotation, err := comment.asAnnotation()
 		if err != nil {
@@ -269,10 +234,21 @@ func annotationsFromComments(comments []comment) (*annotations, error) {
 					ignore[m] = struct{}{}
 				}
 			}
+			if annotation.kind == annotationKindIncludeDep {
+				targets := strings.Split(annotation.value, ",")
+				for _, t := range targets {
+					if t == "" {
+						continue
+					}
+					t = strings.TrimSpace(t)
+					includeDeps = append(includeDeps, t)
+				}
+			}
 		}
 	}
 	return &annotations{
-		ignore: ignore,
+		ignore:      ignore,
+		includeDeps: includeDeps,
 	}, nil
 }
 

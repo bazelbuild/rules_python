@@ -19,6 +19,7 @@ import base64
 import hashlib
 import os
 import re
+import stat
 import sys
 import zipfile
 from pathlib import Path
@@ -101,12 +102,13 @@ class _WhlFile(zipfile.ZipFile):
         filename,
         *,
         mode,
-        distinfo_dir: str | Path,
+        distribution_prefix: str,
         strip_path_prefixes=None,
         compression=zipfile.ZIP_DEFLATED,
         **kwargs,
     ):
-        self._distinfo_dir: str = Path(distinfo_dir).name
+        self._distribution_prefix = distribution_prefix
+
         self._strip_path_prefixes = strip_path_prefixes or []
         # Entries for the RECORD file as (filename, hash, size) tuples.
         self._record = []
@@ -114,7 +116,10 @@ class _WhlFile(zipfile.ZipFile):
         super().__init__(filename, mode=mode, compression=compression, **kwargs)
 
     def distinfo_path(self, basename):
-        return f"{self._distinfo_dir}/{basename}"
+        return f"{self._distribution_prefix}.dist-info/{basename}"
+
+    def data_path(self, basename):
+        return f"{self._distribution_prefix}.data/{basename}"
 
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
@@ -122,8 +127,8 @@ class _WhlFile(zipfile.ZipFile):
         def arcname_from(name):
             # Always use unix path separators.
             normalized_arcname = name.replace(os.path.sep, "/")
-            # Don't manipulate names filenames in the .distinfo directory.
-            if normalized_arcname.startswith(self._distinfo_dir):
+            # Don't manipulate names filenames in the .distinfo or .data directories.
+            if normalized_arcname.startswith(self._distribution_prefix):
                 return normalized_arcname
             for prefix in self._strip_path_prefixes:
                 if normalized_arcname.startswith(prefix):
@@ -189,7 +194,13 @@ class _WhlFile(zipfile.ZipFile):
 
         zinfo = zipfile.ZipInfo(filename=arcname, date_time=_ZIP_EPOCH)
         zinfo.create_system = 3  # ZipInfo entry created on a unix-y system
-        zinfo.external_attr = 0o777 << 16  # permissions: rwxrwxrwx
+        # Both pip and installer expect the regular file bit to be set in order for the
+        # executable bit to be preserved after extraction
+        # https://github.com/pypa/pip/blob/23.3.2/src/pip/_internal/utils/unpacking.py#L96-L100
+        # https://github.com/pypa/installer/blob/0.7.0/src/installer/sources.py#L310-L313
+        zinfo.external_attr = (
+            stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG
+        ) << 16  # permissions: -rwxrwxrwx
         zinfo.compress_type = self.compression
         return zinfo
 
@@ -218,41 +229,22 @@ class WheelMaker(object):
         platform,
         outfile=None,
         strip_path_prefixes=None,
-        incompatible_normalize_name=True,
-        incompatible_normalize_version=True,
     ):
         self._name = name
-        self._version = version
+        self._version = normalize_pep440(version)
         self._build_tag = build_tag
         self._python_tag = python_tag
         self._abi = abi
         self._platform = platform
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes
+        self._wheelname_fragment_distribution_name = escape_filename_distribution_name(
+            self._name
+        )
 
-        if incompatible_normalize_version:
-            self._version = normalize_pep440(self._version)
-            self._escaped_version = self._version
-        else:
-            self._escaped_version = escape_filename_segment(self._version)
-
-        if incompatible_normalize_name:
-            escaped_name = escape_filename_distribution_name(self._name)
-            self._distinfo_dir = (
-                escaped_name + "-" + self._escaped_version + ".dist-info/"
-            )
-            self._wheelname_fragment_distribution_name = escaped_name
-        else:
-            # The legacy behavior escapes the distinfo dir but not the
-            # wheel name. Enable incompatible_normalize_name to fix it.
-            # https://github.com/bazelbuild/rules_python/issues/1132
-            self._distinfo_dir = (
-                escape_filename_segment(self._name)
-                + "-"
-                + self._escaped_version
-                + ".dist-info/"
-            )
-            self._wheelname_fragment_distribution_name = self._name
+        self._distribution_prefix = (
+            self._wheelname_fragment_distribution_name + "-" + self._version
+        )
 
         self._whlfile = None
 
@@ -260,7 +252,7 @@ class WheelMaker(object):
         self._whlfile = _WhlFile(
             self.filename(),
             mode="w",
-            distinfo_dir=self._distinfo_dir,
+            distribution_prefix=self._distribution_prefix,
             strip_path_prefixes=self._strip_path_prefixes,
         )
         return self
@@ -290,6 +282,9 @@ class WheelMaker(object):
     def distinfo_path(self, basename):
         return self._whlfile.distinfo_path(basename)
 
+    def data_path(self, basename):
+        return self._whlfile.data_path(basename)
+
     def add_file(self, package_filename, real_filename):
         """Add given file to the distribution."""
         self._whlfile.add_file(package_filename, real_filename)
@@ -308,12 +303,12 @@ Root-Is-Purelib: {}
             wheel_contents += "Tag: %s\n" % tag
         self._whlfile.add_string(self.distinfo_path("WHEEL"), wheel_contents)
 
-    def add_metadata(self, metadata, name, description, version):
+    def add_metadata(self, metadata, name, description):
         """Write METADATA file to the distribution."""
         # https://www.python.org/dev/peps/pep-0566/
         # https://packaging.python.org/specifications/core-metadata/
         metadata = re.sub("^Name: .*$", "Name: %s" % name, metadata, flags=re.MULTILINE)
-        metadata += "Version: %s\n\n" % version
+        metadata += "Version: %s\n\n" % self._version
         # setuptools seems to insert UNKNOWN as description when none is
         # provided.
         metadata += description if description else "UNKNOWN"
@@ -446,6 +441,12 @@ def parse_args() -> argparse.Namespace:
         help="'filename;real_path' pairs listing extra files to include in"
         "dist-info directory. Can be supplied multiple times.",
     )
+    contents_group.add_argument(
+        "--data_files",
+        action="append",
+        help="'filename;real_path' pairs listing data files to include in"
+        "data directory. Can be supplied multiple times.",
+    )
 
     build_group = parser.add_argument_group("Building requirements")
     build_group.add_argument(
@@ -459,34 +460,28 @@ def parse_args() -> argparse.Namespace:
         help="Pass in the stamp info file for stamping",
     )
 
-    feature_group = parser.add_argument_group("Feature flags")
-    feature_group.add_argument("--noincompatible_normalize_name", action="store_true")
-    feature_group.add_argument(
-        "--noincompatible_normalize_version", action="store_true"
-    )
-
     return parser.parse_args(sys.argv[1:])
+
+
+def _parse_file_pairs(content: List[str]) -> List[List[str]]:
+    """
+    Parse ; delimited lists of files into a 2D list.
+    """
+    return [i.split(";", maxsplit=1) for i in content or []]
 
 
 def main() -> None:
     arguments = parse_args()
 
-    if arguments.input_file:
-        input_files = [i.split(";") for i in arguments.input_file]
-    else:
-        input_files = []
+    input_files = _parse_file_pairs(arguments.input_file)
+    extra_distinfo_file = _parse_file_pairs(arguments.extra_distinfo_file)
+    data_files = _parse_file_pairs(arguments.data_files)
 
-    if arguments.extra_distinfo_file:
-        extra_distinfo_file = [i.split(";") for i in arguments.extra_distinfo_file]
-    else:
-        extra_distinfo_file = []
-
-    if arguments.input_file_list:
-        for input_file in arguments.input_file_list:
-            with open(input_file) as _file:
-                input_file_list = _file.read().splitlines()
-            for _input_file in input_file_list:
-                input_files.append(_input_file.split(";"))
+    for input_file in arguments.input_file_list:
+        with open(input_file) as _file:
+            input_file_list = _file.read().splitlines()
+        for _input_file in input_file_list:
+            input_files.append(_input_file.split(";"))
 
     all_files = get_files_to_package(input_files)
     # Sort the files for reproducible order in the archive.
@@ -521,8 +516,6 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
-        incompatible_normalize_name=not arguments.noincompatible_normalize_name,
-        incompatible_normalize_version=not arguments.noincompatible_normalize_version,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
@@ -535,19 +528,51 @@ def main() -> None:
             ) as description_file:
                 description = description_file.read()
 
-        metadata = None
-        with open(arguments.metadata_file, "rt", encoding="utf-8") as metadata_file:
-            metadata = metadata_file.read()
+        metadata = arguments.metadata_file.read_text(encoding="utf-8")
 
-        if arguments.noincompatible_normalize_version:
-            version_in_metadata = version
-        else:
-            version_in_metadata = normalize_pep440(version)
+        # This is not imported at the top of the file due to the reliance
+        # on this file in the `whl_library` repository rule which does not
+        # provide `packaging` but does import symbols defined here.
+        from packaging.requirements import Requirement
+
+        # Search for any `Requires-Dist` entries that refer to other files and
+        # expand them.
+        for meta_line in metadata.splitlines():
+            if not meta_line.startswith("Requires-Dist: @"):
+                continue
+            file, _, extra = meta_line[len("Requires-Dist: @") :].partition(";")
+            extra = extra.strip()
+
+            reqs = []
+            for reqs_line in Path(file).read_text(encoding="utf-8").splitlines():
+                reqs_text = reqs_line.strip()
+                if not reqs_text or reqs_text.startswith(("#", "-")):
+                    continue
+
+                # Strip any comments
+                reqs_text, _, _ = reqs_text.partition("#")
+
+                req = Requirement(reqs_text.strip())
+                if req.marker:
+                    if extra:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
+                        )
+                    else:
+                        reqs.append(
+                            f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
+                        )
+                else:
+                    reqs.append(
+                        f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
+                    )
+
+            metadata = metadata.replace(meta_line, "\n".join(reqs))
+
         maker.add_metadata(
             metadata=metadata,
             name=name,
             description=description,
-            version=version_in_metadata,
         )
 
         if arguments.entry_points_file:
@@ -556,6 +581,8 @@ def main() -> None:
             )
 
         # Sort the files for reproducible order in the archive.
+        for filename, real_path in sorted(data_files):
+            maker.add_file(maker.data_path(filename), real_path)
         for filename, real_path in sorted(extra_distinfo_file):
             maker.add_file(maker.distinfo_path(filename), real_path)
 

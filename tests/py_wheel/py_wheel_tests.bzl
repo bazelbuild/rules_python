@@ -14,6 +14,7 @@
 """Test for py_wheel."""
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
+load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:packaging.bzl", "py_wheel")
 load("//python/private:py_wheel_normalize_pep440.bzl", "normalize_pep440")  # buildifier: disable=bzl-visibility
@@ -45,6 +46,79 @@ def _test_metadata_impl(env, target):
     ])
 
 _tests.append(_test_metadata)
+
+def _test_data(name):
+    rt_util.helper_target(
+        py_wheel,
+        name = name + "_data",
+        distribution = "mydist_" + name,
+        version = "0.0.0",
+        data_files = {
+            "source_name": "scripts/wheel_name",
+        },
+    )
+    analysis_test(
+        name = name,
+        impl = _test_data_impl,
+        target = name + "_data",
+    )
+
+def _test_data_impl(env, target):
+    action = env.expect.that_target(target).action_named(
+        "PyWheel",
+    )
+    action.contains_at_least_args(["--data_files", "scripts/wheel_name;tests/py_wheel/source_name"])
+    action.contains_at_least_inputs(["tests/py_wheel/source_name"])
+
+_tests.append(_test_data)
+
+def _test_data_bad_path(name):
+    rt_util.helper_target(
+        py_wheel,
+        name = name + "_data",
+        distribution = "mydist_" + name,
+        version = "0.0.0",
+        data_files = {
+            "source_name": "unsupported_path/wheel_name",
+        },
+    )
+    analysis_test(
+        name = name,
+        impl = _test_data_bad_path_impl,
+        target = name + "_data",
+        expect_failure = True,
+    )
+
+def _test_data_bad_path_impl(env, target):
+    env.expect.that_target(target).failures().contains_predicate(
+        matching.str_matches("target data file must start with"),
+    )
+
+_tests.append(_test_data_bad_path)
+
+def _test_data_bad_path_but_right_prefix(name):
+    rt_util.helper_target(
+        py_wheel,
+        name = name + "_data",
+        distribution = "mydist_" + name,
+        version = "0.0.0",
+        data_files = {
+            "source_name": "scripts2/wheel_name",
+        },
+    )
+    analysis_test(
+        name = name,
+        impl = _test_data_bad_path_but_right_prefix_impl,
+        target = name + "_data",
+        expect_failure = True,
+    )
+
+def _test_data_bad_path_but_right_prefix_impl(env, target):
+    env.expect.that_target(target).failures().contains_predicate(
+        matching.str_matches("target data file must start with"),
+    )
+
+_tests.append(_test_data_bad_path_but_right_prefix)
 
 def _test_content_type_from_attr(name):
     rt_util.helper_target(

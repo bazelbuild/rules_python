@@ -14,7 +14,7 @@
 
 """Runfiles lookup library for Bazel-built Python binaries and tests.
 
-See @rules_python//python/runfiles/README.rst for usage instructions.
+See @rules_python//python/runfiles/README.md for usage instructions.
 """
 import inspect
 import os
@@ -281,6 +281,56 @@ class Runfiles:
         # canonical name.
         return caller_runfiles_directory
 
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def CreateManifestBased(manifest_path: str) -> "Runfiles":
+        return Runfiles(_ManifestBased(manifest_path))
+
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def CreateDirectoryBased(runfiles_dir_path: str) -> "Runfiles":
+        return Runfiles(_DirectoryBased(runfiles_dir_path))
+
+    # TODO: Update return type to Self when 3.11 is the min version
+    # https://peps.python.org/pep-0673/
+    @staticmethod
+    def Create(env: Optional[Dict[str, str]] = None) -> Optional["Runfiles"]:
+        """Returns a new `Runfiles` instance.
+
+        The returned object is either:
+        - manifest-based, meaning it looks up runfile paths from a manifest file, or
+        - directory-based, meaning it looks up runfile paths under a given directory
+        path
+
+        If `env` contains "RUNFILES_MANIFEST_FILE" with non-empty value, this method
+        returns a manifest-based implementation. The object eagerly reads and caches
+        the whole manifest file upon instantiation; this may be relevant for
+        performance consideration.
+
+        Otherwise, if `env` contains "RUNFILES_DIR" with non-empty value (checked in
+        this priority order), this method returns a directory-based implementation.
+
+        If neither cases apply, this method returns null.
+
+        Args:
+        env: {string: string}; optional; the map of environment variables. If None,
+            this function uses the environment variable map of this process.
+        Raises:
+        IOError: if some IO error occurs.
+        """
+        env_map = os.environ if env is None else env
+        manifest = env_map.get("RUNFILES_MANIFEST_FILE")
+        if manifest:
+            return CreateManifestBased(manifest)
+
+        directory = env_map.get("RUNFILES_DIR")
+        if directory:
+            return CreateDirectoryBased(directory)
+
+        return None
+
 
 # Support legacy imports by defining a private symbol.
 _Runfiles = Runfiles
@@ -323,44 +373,12 @@ def _ParseRepoMapping(repo_mapping_path: Optional[str]) -> Dict[Tuple[str, str],
 
 
 def CreateManifestBased(manifest_path: str) -> Runfiles:
-    return Runfiles(_ManifestBased(manifest_path))
+    return Runfiles.CreateManifestBased(manifest_path)
 
 
 def CreateDirectoryBased(runfiles_dir_path: str) -> Runfiles:
-    return Runfiles(_DirectoryBased(runfiles_dir_path))
+    return Runfiles.CreateDirectoryBased(runfiles_dir_path)
 
 
 def Create(env: Optional[Dict[str, str]] = None) -> Optional[Runfiles]:
-    """Returns a new `Runfiles` instance.
-
-    The returned object is either:
-    - manifest-based, meaning it looks up runfile paths from a manifest file, or
-    - directory-based, meaning it looks up runfile paths under a given directory
-      path
-
-    If `env` contains "RUNFILES_MANIFEST_FILE" with non-empty value, this method
-    returns a manifest-based implementation. The object eagerly reads and caches
-    the whole manifest file upon instantiation; this may be relevant for
-    performance consideration.
-
-    Otherwise, if `env` contains "RUNFILES_DIR" with non-empty value (checked in
-    this priority order), this method returns a directory-based implementation.
-
-    If neither cases apply, this method returns null.
-
-    Args:
-      env: {string: string}; optional; the map of environment variables. If None,
-          this function uses the environment variable map of this process.
-    Raises:
-      IOError: if some IO error occurs.
-    """
-    env_map = os.environ if env is None else env
-    manifest = env_map.get("RUNFILES_MANIFEST_FILE")
-    if manifest:
-        return CreateManifestBased(manifest)
-
-    directory = env_map.get("RUNFILES_DIR")
-    if directory:
-        return CreateDirectoryBased(directory)
-
-    return None
+    return Runfiles.Create(env)

@@ -14,7 +14,9 @@
 
 """Public API for for building wheels."""
 
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("//python:py_binary.bzl", "py_binary")
+load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load("//python/private:py_package.bzl", "py_package_lib")
 load("//python/private:py_wheel.bzl", _PyWheelInfo = "PyWheelInfo", _py_wheel = "py_wheel")
 load("//python/private:util.bzl", "copy_propagating_kwargs")
@@ -70,7 +72,7 @@ This also has the advantage that stamping information is included in the wheel's
     },
 )
 
-def py_wheel(name, twine = None, publish_args = [], **kwargs):
+def py_wheel(name, twine = None, twine_binary = Label("//tools/publish:twine") if BZLMOD_ENABLED else None, publish_args = [], **kwargs):
     """Builds a Python Wheel.
 
     Wheels are Python distribution format defined in https://www.python.org/dev/peps/pep-0427/.
@@ -115,19 +117,21 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
     )
     ```
 
-    To publish the wheel to PyPI, the twine package is required.
-    rules_python doesn't provide twine itself, see [https://github.com/bazelbuild/rules_python/issues/1016].
-    However you can install it with [pip_parse](#pip_parse), just like we do in the WORKSPACE file in rules_python.
+    To publish the wheel to PyPI, the twine package is required and it is installed
+    by default on `bzlmod` setups. On legacy `WORKSPACE`, `rules_python`
+    doesn't provide `twine` itself
+    (see https://github.com/bazelbuild/rules_python/issues/1016), but
+    you can install it with `pip_parse`, just like we do any other dependencies.
 
-    Once you've installed twine, you can pass its label to the `twine` attribute of this macro,
-    to get a "[name].publish" target.
+    Once you've installed twine, you can pass its label to the `twine`
+    attribute of this macro, to get a "[name].publish" target.
 
     Example:
 
     ```python
     py_wheel(
         name = "my_wheel",
-        twine = "@publish_deps_twine//:pkg",
+        twine = "@publish_deps//twine",
         ...
     )
     ```
@@ -143,6 +147,7 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
     Args:
         name:  A unique name for this target.
         twine: A label of the external location of the py_library target for twine
+        twine_binary: A label of the external location of a binary target for twine.
         publish_args: arguments passed to twine, e.g. ["--repository-url", "https://pypi.my.org/simple/"].
             These are subject to make var expansion, as with the `args` attribute.
             Note that you can also pass additional args to the bazel run command as in the example above.
@@ -158,16 +163,32 @@ def py_wheel(name, twine = None, publish_args = [], **kwargs):
 
     _py_wheel(name = name, **kwargs)
 
-    if twine:
-        if not twine.endswith(":pkg"):
-            fail("twine label should look like @my_twine_repo//:pkg")
-        twine_main = twine.replace(":pkg", ":rules_python_wheel_entry_point_twine.py")
+    twine_args = []
+    if twine or twine_binary:
         twine_args = ["upload"]
         twine_args.extend(publish_args)
         twine_args.append("$(rootpath :{})/*".format(_dist_target))
 
-        # TODO: use py_binary from //python:defs.bzl after our stardoc setup is less brittle
-        # buildifier: disable=native-py
+    if twine_binary:
+        twine_kwargs = {"tags": ["manual"]}
+        native_binary(
+            name = "{}.publish".format(name),
+            src = twine_binary,
+            out = select({
+                "@platforms//os:windows": "{}.publish_script.exe".format(name),
+                "//conditions:default": "{}.publish_script".format(name),
+            }),
+            args = twine_args,
+            data = [_dist_target],
+            visibility = kwargs.get("visibility"),
+            **copy_propagating_kwargs(kwargs, twine_kwargs)
+        )
+    elif twine:
+        if not twine.endswith(":pkg"):
+            fail("twine label should look like @my_twine_repo//:pkg")
+
+        twine_main = twine.replace(":pkg", ":rules_python_wheel_entry_point_twine.py")
+
         py_binary(
             name = "{}.publish".format(name),
             srcs = [twine_main],

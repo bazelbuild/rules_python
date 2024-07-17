@@ -131,13 +131,13 @@ def _parse_args() -> argparse.Namespace:
         "--py",
         nargs="+",
         type=str,
-        default=["cp38", "cp39", "cp310", "cp311"],
+        default=["cp38", "cp39", "cp310", "cp311", "cp312"],
         help="Supported python versions",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Wether to write to files",
+        help="Whether to write to files",
     )
     parser.add_argument(
         "--update-file",
@@ -186,8 +186,8 @@ def main():
     update_file(
         path=args.update_file,
         snippet=f"_coverage_deps = {repr(Deps(urls))}\n",
-        start_marker="# START: maintained by 'bazel run //tools/private:update_coverage_deps'",
-        end_marker="# END: maintained by 'bazel run //tools/private:update_coverage_deps'",
+        start_marker="# START: maintained by 'bazel run //tools/private/update_deps:update_coverage_deps <version>'",
+        end_marker="# END: maintained by 'bazel run //tools/private/update_deps:update_coverage_deps <version>'",
         dry_run=args.dry_run,
     )
 

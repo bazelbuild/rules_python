@@ -20,7 +20,7 @@ repos:
     rev: 6.1.0
     hooks:
       - id: buildifier
-        args: &args 
+        args: &args
           # Keep this argument in sync with .bazelci/presubmit.yaml
           - --warnings=all
       - id: buildifier-lint
@@ -30,7 +30,7 @@ repos:
     hooks:
       - id: isort
         name: isort (python)
-        args: 
+        args:
           - --profile
           - black
   - repo: https://github.com/psf/black
@@ -41,7 +41,7 @@ repos:
     hooks:
       - id: update-deleted-packages
         name: Update deleted packages
-        language: script
-        entry: ./tools/bazel_integration_test/update_deleted_packages.sh
-        files: ^((examples|tests)/*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc|tools/bazel_integration_test/update_deleted_packages.sh)$
+        language: system
+        entry: bazel run @rules_bazel_integration_test//tools:update_deleted_packages
+        files: ^((examples|tests)/.*/(MODULE.bazel|WORKSPACE|WORKSPACE.bzlmod|BUILD.bazel)|.bazelrc)$
         pass_filenames: false

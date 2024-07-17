@@ -29,7 +29,9 @@ def cc_info_subject(info, *, meta):
     # buildifier: disable=uninitialized
     public = struct(
         # go/keep-sorted start
+        actual = info,
         compilation_context = lambda *a, **k: _cc_info_subject_compilation_context(self, *a, **k),
+        linking_context = lambda *a, **k: _cc_info_subject_linking_context(self, *a, **k),
         # go/keep-sorted end
     )
     self = struct(
@@ -50,6 +52,20 @@ def _cc_info_subject_compilation_context(self):
     return _compilation_context_subject_new(
         self.actual.compilation_context,
         meta = self.meta.derive("compilation_context()"),
+    )
+
+def _cc_info_subject_linking_context(self):
+    """Returns the CcInfo.linking_context as a subject.
+
+    Args:
+        self: implicitly added.
+
+    Returns:
+        [`LinkingContextSubject`] instance.
+    """
+    return _linking_context_subject_new(
+        self.actual.linking_context,
+        meta = self.meta.derive("linking_context()"),
     )
 
 def _compilation_context_subject_new(info, *, meta):
@@ -125,4 +141,43 @@ def _compilation_context_subject_system_includes(self):
         meta = self.meta.derive("includes()"),
         container_name = "includes",
         element_plural_name = "include paths",
+    )
+
+def _linking_context_subject_new(info, meta):
+    """Creates a LinkingContextSubject.
+
+    Args:
+        info: ([`LinkingContext`]) object instance.
+        meta: rules_testing `ExpectMeta` instance.
+
+    Returns:
+        [`LinkingContextSubject`] object.
+    """
+
+    # buildifier: disable=uninitialized
+    public = struct(
+        # go/keep-sorted start
+        linker_inputs = lambda *a, **k: _linking_context_subject_linker_inputs(self, *a, **k),
+        # go/keep-sorted end
+    )
+    self = struct(
+        actual = info,
+        meta = meta,
+    )
+    return public
+
+def _linking_context_subject_linker_inputs(self):
+    """Returns the linker inputs.
+
+    Args:
+        self: implicitly added
+
+    Returns:
+        [`CollectionSubject`] of the linker inputs.
+    """
+    return subjects.collection(
+        self.actual.linker_inputs.to_list(),
+        meta = self.meta.derive("linker_inputs()"),
+        container_name = "linker_inputs",
+        element_plural_name = "linker input values",
     )

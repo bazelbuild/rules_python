@@ -16,9 +16,16 @@ bcr_test_module:
   module_path: "examples/bzlmod"
   matrix:
     platform: ["debian11", "macos", "ubuntu2004", "windows"]
+    bazel: [6.x, 7.x]
   tasks:
     run_tests:
       name: "Run test module"
       platform: ${{ platform }}
+      bazel: ${{ bazel }}
+      test_flags:
+        - "--keep_going"
+          # Without these cxxopts, BCR's Mac builds fail
+        - '--cxxopt=-std=c++14'
+        - '--host_cxxopt=-std=c++14'
       test_targets:
         - "//..."

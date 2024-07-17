@@ -15,12 +15,13 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 package(
-    default_visibility = ["//python:__subpackages__"],
+    default_visibility = ["//:__subpackages__"],
 )
 
 bzl_library(
     name = "attributes_bazel_bzl",
     srcs = ["attributes_bazel.bzl"],
+    deps = ["//python/private:rules_cc_srcs_bzl"],
 )
 
 bzl_library(
@@ -31,7 +32,11 @@ bzl_library(
         ":providers_bzl",
         ":py_internal_bzl",
         ":semantics_bzl",
+        "//python/private:enum_bzl",
+        "//python/private:flags_bzl",
         "//python/private:reexports_bzl",
+        "//python/private:rules_cc_srcs_bzl",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 
@@ -45,9 +50,12 @@ bzl_library(
     name = "common_bazel_bzl",
     srcs = ["common_bazel.bzl"],
     deps = [
+        ":attributes_bzl",
         ":common_bzl",
         ":providers_bzl",
         ":py_internal_bzl",
+        "//python/private:py_interpreter_program_bzl",
+        "//python/private:toolchain_types_bzl",
         "@bazel_skylib//lib:paths",
     ],
 )
@@ -61,6 +69,7 @@ bzl_library(
         ":py_internal_bzl",
         ":semantics_bzl",
         "//python/private:reexports_bzl",
+        "//python/private:rules_cc_srcs_bzl",
     ],
 )
 
@@ -74,6 +83,7 @@ bzl_library(
     srcs = ["providers.bzl"],
     deps = [
         ":semantics_bzl",
+        "//python/private:rules_cc_srcs_bzl",
         "//python/private:util_bzl",
     ],
 )
@@ -121,7 +131,11 @@ bzl_library(
         ":common_bzl",
         ":providers_bzl",
         ":py_internal_bzl",
+        "//python/private:flags_bzl",
+        "//python/private:rules_cc_srcs_bzl",
+        "//python/private:toolchain_types_bzl",
         "@bazel_skylib//lib:dicts",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 
@@ -139,7 +153,10 @@ bzl_library(
         ":common_bzl",
         ":providers_bzl",
         ":py_internal_bzl",
+        "//python/private:flags_bzl",
+        "//python/private:toolchain_types_bzl",
         "@bazel_skylib//lib:dicts",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 

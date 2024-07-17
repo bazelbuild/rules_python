@@ -2,7 +2,6 @@ test --test_output=errors
 
 # Windows requires these for multi-python support:
 build --enable_runfiles
-startup --windows_enable_symlinks
 
 # Vendoring requirements.bzl files isn't necessary under bzlmod
 # When workspace support is dropped, this example can be removed.

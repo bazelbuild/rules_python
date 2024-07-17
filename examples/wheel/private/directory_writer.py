@@ -48,7 +48,7 @@ def main() -> None:
 
     args.output.mkdir(parents=True, exist_ok=True)
 
-    for (path, content) in args.files:
+    for path, content in args.files:
         new_file = args.output / path
         new_file.parent.mkdir(parents=True, exist_ok=True)
         new_file.write_text(content)

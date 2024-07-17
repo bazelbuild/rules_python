@@ -28,12 +28,19 @@ py_test(
 
 py_console_script_binary_in_a_macro(
     name = "twine",
-    pkg = "@publish_deps_twine//:pkg",
+    pkg = "@rules_python_publish_deps//twine",
+)
+
+py_console_script_binary_in_a_macro(
+    name = "twine_pkg",
+    pkg = "@rules_python_publish_deps//twine:pkg",
+    script = "twine",
 )
 
 build_test(
     name = "build_entry_point",
     targets = [
         ":twine",
+        ":twine_pkg",
     ],
 )

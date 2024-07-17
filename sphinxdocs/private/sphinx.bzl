@@ -15,6 +15,7 @@
 """Implementation of sphinx rules."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
 
@@ -55,6 +56,7 @@ def sphinx_docs(
         formats,
         strip_prefix = "",
         extra_opts = [],
+        tools = [],
         **kwargs):
     """Generate docs using Sphinx.
 
@@ -88,6 +90,11 @@ def sphinx_docs(
             source files. e.g., given `//docs:foo.md`, stripping `docs/`
             makes Sphinx see `foo.md` in its generated source directory.
         extra_opts: (list[str]) Additional options to pass onto Sphinx building.
+            On each provided option, a location expansion is performed.
+            See `ctx.expand_location()`.
+        tools: (list[label]) Additional tools that are used by Sphinx and its plugins.
+            This just makes the tools available during Sphinx execution. To locate
+            them, use `extra_opts` and `$(location)`.
         **kwargs: (dict) Common attributes to pass onto rules.
     """
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_docs")
@@ -102,6 +109,7 @@ def sphinx_docs(
         formats = formats,
         strip_prefix = strip_prefix,
         extra_opts = extra_opts,
+        tools = tools,
         **kwargs
     )
 
@@ -112,6 +120,7 @@ def sphinx_docs(
         output_group = "html",
         **common_kwargs
     )
+
     py_binary(
         name = name + ".serve",
         srcs = [_SPHINX_SERVE_MAIN_SRC],
@@ -174,8 +183,13 @@ _sphinx_docs = rule(
             doc = "Doc source files for Sphinx.",
         ),
         "strip_prefix": attr.string(doc = "Prefix to remove from input file paths."),
+        "tools": attr.label_list(
+            cfg = "exec",
+            doc = "Additional tools that are used by Sphinx and its plugins.",
+        ),
         "_extra_defines_flag": attr.label(default = "//sphinxdocs:extra_defines"),
         "_extra_env_flag": attr.label(default = "//sphinxdocs:extra_env"),
+        "_quiet_flag": attr.label(default = "//sphinxdocs:quiet"),
     },
 )
 
@@ -234,11 +248,14 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
     args = ctx.actions.args()
     args.add("-T")  # Full tracebacks on error
     args.add("-b", format)
-    args.add("-q")  # Suppress stdout informational text
+
+    if ctx.attr._quiet_flag[BuildSettingInfo].value:
+        args.add("-q")  # Suppress stdout informational text
     args.add("-j", "auto")  # Build in parallel, if possible
     args.add("-E")  # Don't try to use cache files. Bazel can't make use of them.
     args.add("-a")  # Write all files; don't try to detect "changed" files
-    args.add_all(ctx.attr.extra_opts)
+    for opt in ctx.attr.extra_opts:
+        args.add(ctx.expand_location(opt))
     args.add_all(ctx.attr._extra_defines_flag[_FlagInfo].value, before_each = "-D")
     args.add(source_path)
     args.add(output_dir.path)
@@ -248,11 +265,16 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
         for v in ctx.attr._extra_env_flag[_FlagInfo].value
     ])
 
+    tools = []
+    for tool in ctx.attr.tools:
+        tools.append(tool[DefaultInfo].files_to_run)
+
     ctx.actions.run(
         executable = ctx.executable.sphinx,
         arguments = [args],
         inputs = inputs,
         outputs = [output_dir],
+        tools = tools,
         mnemonic = "SphinxBuildDocs",
         progress_message = "Sphinx building {} for %{{label}}".format(format),
         env = env,

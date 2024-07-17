@@ -25,5 +25,4 @@ py_test(
         "bar/bar_test.py",
         "foo/bar/bar_test.py",
     ],
-    main = "__test__.py",
 )

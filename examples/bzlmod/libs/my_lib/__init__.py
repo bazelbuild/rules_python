@@ -17,6 +17,12 @@ import websockets
 
 def websockets_is_for_python_version(sanitized_version_check):
     # We are checking that the name of the repository folders
-    # match the expexted generated names. If we update the folder
-    # structure or naming we will need to modify this test
-    return f"pip_{sanitized_version_check}_websockets" in websockets.__file__
+    # match the expected generated names. If we update the folder
+    # structure or naming we will need to modify this test.
+    want = f"_{sanitized_version_check}_websockets"
+    got_full = websockets.__file__
+    if want not in got_full:
+        print(f"Failed, expected '{want}' to be a substring of '{got_full}'.")
+        return False
+
+    return True

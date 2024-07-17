@@ -1,4 +1,4 @@
-common --experimental_enable_bzlmod
+common --enable_bzlmod
 
 coverage --java_runtime_version=remotejdk_11
 
@@ -6,5 +6,3 @@ test --test_output=errors --enable_runfiles
 
 # Windows requires these for multi-python support:
 build --enable_runfiles
-
-startup --windows_enable_symlinks

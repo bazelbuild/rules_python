@@ -13,6 +13,10 @@
 # limitations under the License.
 """Attributes for Python rules."""
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc:defs.bzl", "CcInfo")
+load("//python/private:enum.bzl", "enum")
+load("//python/private:flags.bzl", "PrecompileFlag")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
@@ -23,14 +27,124 @@ load(
     "SRCS_ATTR_ALLOW_FILES",
 )
 
-# TODO: Load CcInfo from rules_cc
-_CcInfo = CcInfo
 _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
 _STAMP_VALUES = [-1, 0, 1]
 
+def _precompile_attr_get_effective_value(ctx):
+    precompile_flag = PrecompileFlag.get_effective_value(ctx)
+
+    if precompile_flag == PrecompileFlag.FORCE_ENABLED:
+        return PrecompileAttr.ENABLED
+    if precompile_flag == PrecompileFlag.FORCE_DISABLED:
+        return PrecompileAttr.DISABLED
+
+    precompile_attr = ctx.attr.precompile
+    if precompile_attr == PrecompileAttr.INHERIT:
+        precompile = precompile_flag
+    else:
+        precompile = precompile_attr
+
+    # Guard against bad final states because the two enums are similar with
+    # magic values.
+    if precompile not in (
+        PrecompileAttr.ENABLED,
+        PrecompileAttr.DISABLED,
+        PrecompileAttr.IF_GENERATED_SOURCE,
+    ):
+        fail("Unexpected final precompile value: {}".format(repr(precompile)))
+
+    return precompile
+
+# buildifier: disable=name-conventions
+PrecompileAttr = enum(
+    # Determine the effective value from --precompile
+    INHERIT = "inherit",
+    # Compile Python source files at build time. Note that
+    # --precompile_add_to_runfiles affects how the compiled files are included
+    # into a downstream binary.
+    ENABLED = "enabled",
+    # Don't compile Python source files at build time.
+    DISABLED = "disabled",
+    # Compile Python source files, but only if they're a generated file.
+    IF_GENERATED_SOURCE = "if_generated_source",
+    get_effective_value = _precompile_attr_get_effective_value,
+)
+
+# buildifier: disable=name-conventions
+PrecompileInvalidationModeAttr = enum(
+    # Automatically pick a value based on build settings.
+    AUTO = "auto",
+    # Use the pyc file if the hash of the originating source file matches the
+    # hash recorded in the pyc file.
+    CHECKED_HASH = "checked_hash",
+    # Always use the pyc file, even if the originating source has changed.
+    UNCHECKED_HASH = "unchecked_hash",
+)
+
+def _precompile_source_retention_get_effective_value(ctx):
+    attr_value = ctx.attr.precompile_source_retention
+    if attr_value == PrecompileSourceRetentionAttr.INHERIT:
+        attr_value = ctx.attr._precompile_source_retention_flag[BuildSettingInfo].value
+
+    if attr_value not in (
+        PrecompileSourceRetentionAttr.KEEP_SOURCE,
+        PrecompileSourceRetentionAttr.OMIT_SOURCE,
+        PrecompileSourceRetentionAttr.OMIT_IF_GENERATED_SOURCE,
+    ):
+        fail("Unexpected final precompile_source_retention value: {}".format(repr(attr_value)))
+    return attr_value
+
+# buildifier: disable=name-conventions
+PrecompileSourceRetentionAttr = enum(
+    INHERIT = "inherit",
+    KEEP_SOURCE = "keep_source",
+    OMIT_SOURCE = "omit_source",
+    OMIT_IF_GENERATED_SOURCE = "omit_if_generated_source",
+    get_effective_value = _precompile_source_retention_get_effective_value,
+)
+
+def _pyc_collection_attr_is_pyc_collection_enabled(ctx):
+    pyc_collection = ctx.attr.pyc_collection
+    if pyc_collection == PycCollectionAttr.INHERIT:
+        pyc_collection = ctx.attr._pyc_collection_flag[BuildSettingInfo].value
+
+    if pyc_collection not in (PycCollectionAttr.INCLUDE_PYC, PycCollectionAttr.DISABLED):
+        fail("Unexpected final pyc_collection value: {}".format(repr(pyc_collection)))
+
+    return pyc_collection == PycCollectionAttr.INCLUDE_PYC
+
+# buildifier: disable=name-conventions
+PycCollectionAttr = enum(
+    INHERIT = "inherit",
+    INCLUDE_PYC = "include_pyc",
+    DISABLED = "disabled",
+    is_pyc_collection_enabled = _pyc_collection_attr_is_pyc_collection_enabled,
+)
+
 def create_stamp_attr(**kwargs):
-    return {"stamp": attr.int(values = _STAMP_VALUES, **kwargs)}
+    return {
+        "stamp": attr.int(
+            values = _STAMP_VALUES,
+            doc = """
+Whether to encode build information into the binary. Possible values:
+
+* `stamp = 1`: Always stamp the build information into the binary, even in
+  `--nostamp` builds. **This setting should be avoided**, since it potentially kills
+  remote caching for the binary and any downstream actions that depend on it.
+* `stamp = 0`: Always replace build information by constant values. This gives
+  good build result caching.
+* `stamp = -1`: Embedding of build information is controlled by the
+  `--[no]stamp` flag.
+
+Stamped binaries are not rebuilt unless their dependencies change.
+
+WARNING: Stamping can harm build performance by reducing cache hits and should
+be avoided if possible.
+""",
+            **kwargs
+        ),
+    }
 
 def create_srcs_attr(*, mandatory):
     return {
@@ -40,6 +154,12 @@ def create_srcs_attr(*, mandatory):
             mandatory = mandatory,
             # Necessary for --compile_one_dependency to work.
             flags = ["DIRECT_COMPILE_TIME_INPUT"],
+            doc = """
+The list of Python source files that are processed to create the target. This
+includes all your checked-in code and may include generated source files.  The
+`.py` files belong in `srcs` and library targets belong in `deps`. Other binary
+files that may be needed at run time belong in `data`.
+""",
         ),
     }
 
@@ -51,6 +171,7 @@ def create_srcs_version_attr(values):
         "srcs_version": attr.string(
             default = "PY2AND3",
             values = values,
+            doc = "Defunct, unused, does nothing.",
         ),
     }
 
@@ -81,6 +202,13 @@ DATA_ATTRS = {
     "data": attr.label_list(
         allow_files = True,
         flags = ["SKIP_CONSTRAINTS_OVERRIDE"],
+        doc = """
+The list of files need by this library at runtime. See comments about
+the [`data` attribute typically defined by rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+
+There is no `py_embed_data` like there is `cc_embed_data` and `go_embed_data`.
+This is because Python has a concept of runtime resources.
+""",
     ),
 }
 
@@ -111,6 +239,7 @@ NATIVE_RULES_ALLOWLIST_ATTRS = _create_native_rules_allowlist_attrs()
 COMMON_ATTRS = union_attrs(
     DATA_ATTRS,
     NATIVE_RULES_ALLOWLIST_ATTRS,
+    # buildifier: disable=attr-licenses
     {
         # NOTE: This attribute is deprecated and slated for removal.
         "distribs": attr.string_list(),
@@ -130,12 +259,86 @@ PY_SRCS_ATTRS = union_attrs(
         "deps": attr.label_list(
             providers = [
                 [PyInfo],
-                [_CcInfo],
+                [CcInfo],
                 [BuiltinPyInfo],
             ],
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,
+            doc = """
+List of additional libraries to be linked in to the target.
+See comments about
+the [`deps` attribute typically defined by
+rules](https://bazel.build/reference/be/common-definitions#typical-attributes).
+These are typically `py_library` rules.
+
+Targets that only provide data files used at runtime belong in the `data`
+attribute.
+""",
+        ),
+        "precompile": attr.string(
+            doc = """
+Whether py source files should be precompiled.
+
+See also: `--precompile` flag, which can override this attribute in some cases.
+
+Values:
+
+* `inherit`: Determine the value from the --precompile flag.
+* `enabled`: Compile Python source files at build time. Note that
+  --precompile_add_to_runfiles affects how the compiled files are included into
+  a downstream binary.
+* `disabled`: Don't compile Python source files at build time.
+* `if_generated_source`: Compile Python source files, but only if they're a
+  generated file.
+""",
+            default = PrecompileAttr.INHERIT,
+            values = sorted(PrecompileAttr.__members__.values()),
+        ),
+        "precompile_invalidation_mode": attr.string(
+            doc = """
+How precompiled files should be verified to be up-to-date with their associated
+source files. Possible values are:
+* `auto`: The effective value will be automatically determined by other build
+  settings.
+* `checked_hash`: Use the pyc file if the hash of the source file matches the hash
+  recorded in the pyc file. This is most useful when working with code that
+  you may modify.
+* `unchecked_hash`: Always use the pyc file; don't check the pyc's hash against
+  the source file. This is most useful when the code won't be modified.
+
+For more information on pyc invalidation modes, see
+https://docs.python.org/3/library/py_compile.html#py_compile.PycInvalidationMode
+""",
+            default = PrecompileInvalidationModeAttr.AUTO,
+            values = sorted(PrecompileInvalidationModeAttr.__members__.values()),
+        ),
+        "precompile_optimize_level": attr.int(
+            doc = """
+The optimization level for precompiled files.
+
+For more information about optimization levels, see the `compile()` function's
+`optimize` arg docs at https://docs.python.org/3/library/functions.html#compile
+
+NOTE: The value `-1` means "current interpreter", which will be the interpreter
+used _at build time when pycs are generated_, not the interpreter used at
+runtime when the code actually runs.
+""",
+            default = 0,
+        ),
+        "precompile_source_retention": attr.string(
+            default = PrecompileSourceRetentionAttr.INHERIT,
+            values = sorted(PrecompileSourceRetentionAttr.__members__.values()),
+            doc = """
+Determines, when a source file is compiled, if the source file is kept
+in the resulting output or not. Valid values are:
+
+* `inherit`: Inherit the value from the `--precompile_source_retention` flag.
+* `keep_source`: Include the original Python source.
+* `omit_source`: Don't include the original py source.
+* `omit_if_generated_source`: Keep the original source if it's a regular source
+  file, but omit it if it's a generated file.
+""",
         ),
         # Required attribute, but details vary by rule.
         # Use create_srcs_attr to create one.
@@ -146,6 +349,21 @@ PY_SRCS_ATTRS = union_attrs(
         # Required attribute, but the details vary by rule.
         # Use create_srcs_version_attr to create one.
         "srcs_version": None,
+        "_precompile_add_to_runfiles_flag": attr.label(
+            default = "//python/config_settings:precompile_add_to_runfiles",
+            providers = [BuildSettingInfo],
+        ),
+        "_precompile_flag": attr.label(
+            default = "//python/config_settings:precompile",
+            providers = [BuildSettingInfo],
+        ),
+        "_precompile_source_retention_flag": attr.label(
+            default = "//python/config_settings:precompile_source_retention",
+            providers = [BuildSettingInfo],
+        ),
+        # Force enabling auto exec groups, see
+        # https://bazel.build/extending/auto-exec-groups#how-enable-particular-rule
+        "_use_auto_exec_groups": attr.bool(default = True),
     },
     allow_none = True,
 )
@@ -226,7 +444,7 @@ COMMON_ATTR_NAMES = [
     "testonly",
     "toolchains",
     "visibility",
-] + COMMON_ATTRS.keys()
+] + list(COMMON_ATTRS)  # Use list() instead .keys() so it's valid Python
 
 # Attribute names common to all test=True rules
 TEST_ATTR_NAMES = COMMON_ATTR_NAMES + [
@@ -236,10 +454,10 @@ TEST_ATTR_NAMES = COMMON_ATTR_NAMES + [
     "flaky",
     "shard_count",
     "local",
-] + AGNOSTIC_TEST_ATTRS.keys()
+] + list(AGNOSTIC_TEST_ATTRS)  # Use list() instead .keys() so it's valid Python
 
 # Attribute names common to all executable=True rules
 BINARY_ATTR_NAMES = COMMON_ATTR_NAMES + [
     "args",
     "output_licenses",  # NOTE: Common to all rules, but slated for removal
-] + AGNOSTIC_BINARY_ATTRS.keys()
+] + list(AGNOSTIC_BINARY_ATTRS)  # Use list() instead .keys() so it's valid Python

@@ -2,9 +2,10 @@
 # Trick bazel into treating BUILD files under examples/* as being regular files
 # This lets us glob() up all the files inside the examples to make them inputs to tests
 # (Note, we cannot use `common --deleted_packages` because the bazel version command doesn't support it)
-# To update these lines, run tools/bazel_integration_test/update_deleted_packages.sh
-build --deleted_packages=examples/build_file_generation,examples/build_file_generation/random_number_generator,examples/bzlmod,examples/bzlmod_build_file_generation,examples/bzlmod_build_file_generation/other_module/other_module/pkg,examples/bzlmod_build_file_generation/runfiles,examples/bzlmod/entry_points,examples/bzlmod/entry_points/tests,examples/bzlmod/libs/my_lib,examples/bzlmod/other_module,examples/bzlmod/other_module/other_module/pkg,examples/bzlmod/patches,examples/bzlmod/py_proto_library,examples/bzlmod/py_proto_library/example.com/another_proto,examples/bzlmod/py_proto_library/example.com/proto,examples/bzlmod/runfiles,examples/bzlmod/tests,examples/bzlmod/tests/dupe_requirements,examples/bzlmod/tests/other_module,examples/bzlmod/whl_mods,examples/multi_python_versions/libs/my_lib,examples/multi_python_versions/requirements,examples/multi_python_versions/tests,examples/pip_parse,examples/pip_parse_vendored,examples/pip_repository_annotations,examples/py_proto_library,examples/py_proto_library/example.com/another_proto,examples/py_proto_library/example.com/proto,tests/integration/compile_pip_requirements,tests/integration/compile_pip_requirements_test_from_external_repo,tests/integration/ignore_root_user_error,tests/integration/pip_repository_entry_points
-query --deleted_packages=examples/build_file_generation,examples/build_file_generation/random_number_generator,examples/bzlmod,examples/bzlmod_build_file_generation,examples/bzlmod_build_file_generation/other_module/other_module/pkg,examples/bzlmod_build_file_generation/runfiles,examples/bzlmod/entry_points,examples/bzlmod/entry_points/tests,examples/bzlmod/libs/my_lib,examples/bzlmod/other_module,examples/bzlmod/other_module/other_module/pkg,examples/bzlmod/patches,examples/bzlmod/py_proto_library,examples/bzlmod/py_proto_library/example.com/another_proto,examples/bzlmod/py_proto_library/example.com/proto,examples/bzlmod/runfiles,examples/bzlmod/tests,examples/bzlmod/tests/dupe_requirements,examples/bzlmod/tests/other_module,examples/bzlmod/whl_mods,examples/multi_python_versions/libs/my_lib,examples/multi_python_versions/requirements,examples/multi_python_versions/tests,examples/pip_parse,examples/pip_parse_vendored,examples/pip_repository_annotations,examples/py_proto_library,examples/py_proto_library/example.com/another_proto,examples/py_proto_library/example.com/proto,tests/integration/compile_pip_requirements,tests/integration/compile_pip_requirements_test_from_external_repo,tests/integration/ignore_root_user_error,tests/integration/pip_repository_entry_points
+# To update these lines, execute
+# `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
+build --deleted_packages=examples/build_file_generation,examples/build_file_generation/random_number_generator,examples/bzlmod,examples/bzlmod_build_file_generation,examples/bzlmod_build_file_generation/other_module/other_module/pkg,examples/bzlmod_build_file_generation/runfiles,examples/bzlmod/entry_points,examples/bzlmod/entry_points/tests,examples/bzlmod/libs/my_lib,examples/bzlmod/other_module,examples/bzlmod/other_module/other_module/pkg,examples/bzlmod/patches,examples/bzlmod/py_proto_library,examples/bzlmod/py_proto_library/example.com/another_proto,examples/bzlmod/py_proto_library/example.com/proto,examples/bzlmod/runfiles,examples/bzlmod/tests,examples/bzlmod/tests/other_module,examples/bzlmod/whl_mods,examples/multi_python_versions/libs/my_lib,examples/multi_python_versions/requirements,examples/multi_python_versions/tests,examples/pip_parse,examples/pip_parse_vendored,examples/pip_repository_annotations,examples/py_proto_library,examples/py_proto_library/example.com/another_proto,examples/py_proto_library/example.com/proto,tests/integration/compile_pip_requirements,tests/integration/compile_pip_requirements_test_from_external_repo,tests/integration/custom_commands,tests/integration/ignore_root_user_error,tests/integration/ignore_root_user_error/submodule,tests/integration/pip_parse,tests/integration/pip_parse/empty,tests/integration/py_cc_toolchain_registered
+query --deleted_packages=examples/build_file_generation,examples/build_file_generation/random_number_generator,examples/bzlmod,examples/bzlmod_build_file_generation,examples/bzlmod_build_file_generation/other_module/other_module/pkg,examples/bzlmod_build_file_generation/runfiles,examples/bzlmod/entry_points,examples/bzlmod/entry_points/tests,examples/bzlmod/libs/my_lib,examples/bzlmod/other_module,examples/bzlmod/other_module/other_module/pkg,examples/bzlmod/patches,examples/bzlmod/py_proto_library,examples/bzlmod/py_proto_library/example.com/another_proto,examples/bzlmod/py_proto_library/example.com/proto,examples/bzlmod/runfiles,examples/bzlmod/tests,examples/bzlmod/tests/other_module,examples/bzlmod/whl_mods,examples/multi_python_versions/libs/my_lib,examples/multi_python_versions/requirements,examples/multi_python_versions/tests,examples/pip_parse,examples/pip_parse_vendored,examples/pip_repository_annotations,examples/py_proto_library,examples/py_proto_library/example.com/another_proto,examples/py_proto_library/example.com/proto,tests/integration/compile_pip_requirements,tests/integration/compile_pip_requirements_test_from_external_repo,tests/integration/custom_commands,tests/integration/ignore_root_user_error,tests/integration/ignore_root_user_error/submodule,tests/integration/pip_parse,tests/integration/pip_parse/empty,tests/integration/py_cc_toolchain_registered
 
 test --test_output=errors
 
@@ -16,9 +17,11 @@ test --test_output=errors
 # Python targets as required.
 build --incompatible_default_to_explicit_init_py
 
+# Ensure ongoing compatibility with this flag.
+common --incompatible_disallow_struct_provider_syntax
+
 # Windows makes use of runfiles for some rules
 build --enable_runfiles
-startup --windows_enable_symlinks
 
 # Make Bazel 6 use bzlmod by default
 common --enable_bzlmod
@@ -29,3 +32,5 @@ common --enable_bzlmod
 build:rtd --stamp
 # Some bzl files contain repos only available under bzlmod
 build:rtd --enable_bzlmod
+
+build --lockfile_mode=update

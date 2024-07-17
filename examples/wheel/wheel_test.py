@@ -15,6 +15,7 @@
 import hashlib
 import os
 import platform
+import stat
 import subprocess
 import unittest
 import zipfile
@@ -58,7 +59,11 @@ class WheelTest(unittest.TestCase):
         for zinfo in zf.infolist():
             self.assertEqual(zinfo.date_time, (1980, 1, 1, 0, 0, 0), msg=zinfo.filename)
             self.assertEqual(zinfo.create_system, 3, msg=zinfo.filename)
-            self.assertEqual(zinfo.external_attr, 0o777 << 16, msg=zinfo.filename)
+            self.assertEqual(
+                zinfo.external_attr,
+                (stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO | stat.S_IFREG) << 16,
+                msg=zinfo.filename,
+            )
             self.assertEqual(
                 zinfo.compress_type, zipfile.ZIP_DEFLATED, msg=zinfo.filename
             )
@@ -78,7 +83,7 @@ class WheelTest(unittest.TestCase):
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "2818e70fdebd148934f41820f8c54d5d7676d783c0d66c7c8af2ee9141e7ddc7"
+            filename, "79a4e9c1838c0631d5d8fa49a26efd6e9a364f6b38d9597c0f6df112271a0e28"
         )
 
     def test_py_package_wheel(self):
@@ -100,7 +105,7 @@ class WheelTest(unittest.TestCase):
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "273e27adf9bf90287a42ac911dcece8aa95f2905c37d786725477b26de23627c"
+            filename, "b4815a1d3a17cc6a5ce717ed42b940fa7788cb5168f5c1de02f5f50abed7083e"
         )
 
     def test_customized_wheel(self):
@@ -189,45 +194,7 @@ first = first.main:f
 second = second.main:s""",
             )
         self.assertFileSha256Equal(
-            filename, "48eed93258bba0bb366c879b77917d947267d89e7e60005d1766d844fb909118"
-        )
-
-    def test_legacy_filename_escaping(self):
-        filename = self._get_path(
-            "file_name_escaping-0.0.1_r7-py3-none-any.whl",
-        )
-        with zipfile.ZipFile(filename) as zf:
-            self.assertAllEntriesHasReproducibleMetadata(zf)
-            self.assertEqual(
-                zf.namelist(),
-                [
-                    "examples/wheel/lib/data.txt",
-                    "examples/wheel/lib/module_with_data.py",
-                    "examples/wheel/lib/simple_module.py",
-                    "examples/wheel/main.py",
-                    # PEP calls for replacing only in the archive filename.
-                    # Alas setuptools also escapes in the dist-info directory
-                    # name, so let's be compatible.
-                    "file_name_escaping-0.0.1_r7.dist-info/WHEEL",
-                    "file_name_escaping-0.0.1_r7.dist-info/METADATA",
-                    "file_name_escaping-0.0.1_r7.dist-info/RECORD",
-                ],
-            )
-            metadata_contents = zf.read(
-                "file_name_escaping-0.0.1_r7.dist-info/METADATA"
-            )
-            self.assertEqual(
-                metadata_contents,
-                b"""\
-Metadata-Version: 2.1
-Name: file~~name-escaping
-Version: 0.0.1-r7
-
-UNKNOWN
-""",
-            )
-        self.assertFileSha256Equal(
-            filename, "ace5fab6458f8c3b4b50801b8e8214288bba786472e81547fced743a67531312"
+            filename, "27f3038be6e768d28735441a1bc567eca2213bd3568d18b22a414e6399a2d48e"
         )
 
     def test_filename_escaping(self):
@@ -293,7 +260,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "16e0345c102c6866fed34999d8de5aed7f351adbf372b27adef3bc15161db65e"
+            filename, "f034b3278781f4df32a33df70d794bb94170b450e477c8bd9cd42d2d922476ae"
         )
 
     def test_custom_package_root_multi_prefix_wheel(self):
@@ -324,7 +291,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "d2031eb21c69e290db5eac76b0dc026858e9dbdb3da2dc0314e4e9f69eab2e1a"
+            filename, "ff19f5e4540948247742716338bb4194d619cb56df409045d1a99f265ce8e36c"
         )
 
     def test_custom_package_root_multi_prefix_reverse_order_wheel(self):
@@ -355,7 +322,7 @@ UNKNOWN
             for line in record_contents.splitlines():
                 self.assertFalse(line.startswith("/"))
         self.assertFileSha256Equal(
-            filename, "a37b90685600ccfa56cc5405d1e9a3729ed21dfb31c76fd356e491e2af989566"
+            filename, "4331e378ea8b8148409ae7c02177e4eb24d151a85ef937bb44b79ff5258d634b"
         )
 
     def test_python_requires_wheel(self):
@@ -380,7 +347,7 @@ UNKNOWN
 """,
             )
         self.assertFileSha256Equal(
-            filename, "529afa454113572e6cd91f069cc9cfe5c28369f29cd495fff19d0ecce389d8e4"
+            filename, "b34676828f93da8cd898d50dcd4f36e02fe273150e213aacb999310a05f5f38c"
         )
 
     def test_python_abi3_binary_wheel(self):
@@ -445,20 +412,20 @@ Tag: cp38-abi3-{os_string}_{arch}
                 ],
             )
         self.assertFileSha256Equal(
-            filename, "cc9484d527075f07651ca0e7dff4a185c1314020726bcad55fe28d1bba0fec2e"
+            filename, "ac9216bd54dcae1a6270c35fccf8a73b0be87c1b026c28e963b7c76b2f9b722b"
         )
 
     def test_rule_expands_workspace_status_keys_in_wheel_metadata(self):
         filename = self._get_path(
-            "example_minimal_library_BUILD_USER_-0.1._BUILD_TIMESTAMP_-py3-none-any.whl"
+            "example_minimal_library{BUILD_USER}-0.1.{BUILD_TIMESTAMP}-py3-none-any.whl"
         )
 
         with zipfile.ZipFile(filename) as zf:
             self.assertAllEntriesHasReproducibleMetadata(zf)
             metadata_file = None
             for f in zf.namelist():
-                self.assertNotIn("_BUILD_TIMESTAMP_", f)
-                self.assertNotIn("_BUILD_USER_", f)
+                self.assertNotIn("{BUILD_TIMESTAMP}", f)
+                self.assertNotIn("{BUILD_USER}", f)
                 if os.path.basename(f) == "METADATA":
                     metadata_file = f
             self.assertIsNotNone(metadata_file)
@@ -475,6 +442,52 @@ Tag: cp38-abi3-{os_string}_{arch}
             self.assertIsNotNone(name)
             self.assertNotIn("{BUILD_TIMESTAMP}", version)
             self.assertNotIn("{BUILD_USER}", name)
+
+    def test_requires_file_and_extra_requires_files(self):
+        filename = self._get_path("requires_files-0.0.1-py3-none-any.whl")
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertAllEntriesHasReproducibleMetadata(zf)
+            metadata_file = None
+            for f in zf.namelist():
+                if os.path.basename(f) == "METADATA":
+                    metadata_file = f
+            self.assertIsNotNone(metadata_file)
+
+            requires = []
+            with zf.open(metadata_file) as fp:
+                for line in fp:
+                    if line.startswith(b"Requires-Dist:"):
+                        requires.append(line.decode("utf-8").strip())
+
+            print(requires)
+            self.assertEqual(
+                [
+                    "Requires-Dist: tomli>=2.0.0",
+                    "Requires-Dist: starlark",
+                    "Requires-Dist: pyyaml!=6.0.1,>=6.0.0; extra == 'example'",
+                    'Requires-Dist: toml; ((python_version == "3.11" or python_version == "3.12") and python_version != "3.8") and extra == \'example\'',
+                    'Requires-Dist: wheel; (python_version == "3.11" or python_version == "3.12") and extra == \'example\'',
+                ],
+                requires,
+            )
+
+    def test_minimal_data_files(self):
+        filename = self._get_path("minimal_data_files-0.0.1-py3-none-any.whl")
+
+        with zipfile.ZipFile(filename) as zf:
+            self.assertAllEntriesHasReproducibleMetadata(zf)
+            metadata_file = None
+            self.assertEqual(
+                zf.namelist(),
+                [
+                    "minimal_data_files-0.0.1.dist-info/WHEEL",
+                    "minimal_data_files-0.0.1.dist-info/METADATA",
+                    "minimal_data_files-0.0.1.data/data/target/path/README.md",
+                    "minimal_data_files-0.0.1.data/scripts/NOTICE",
+                    "minimal_data_files-0.0.1.dist-info/RECORD",
+                ],
+            )
 
 
 if __name__ == "__main__":

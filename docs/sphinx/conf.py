@@ -27,6 +27,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
+    "sphinx_bzl.bzl",
 ]
 
 # Adapted from the template code:
@@ -88,6 +89,10 @@ myst_enable_extensions = [
 ]
 
 myst_substitutions = {}
+
+# --- sphinx_stardoc configuration
+
+bzl_default_repository_name = "@rules_python"
 
 # -- Options for HTML output
 # See https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

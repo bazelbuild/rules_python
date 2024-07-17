@@ -17,6 +17,7 @@
 
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 
 _WINDOWS_RUNNER_TEMPLATE = """\
 @ECHO OFF
@@ -76,7 +77,7 @@ def _acceptance_test_impl(ctx):
     )
     files.append(run_acceptance_test_py)
 
-    toolchain = ctx.toolchains["@bazel_tools//tools/python:toolchain_type"]
+    toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
     py3_runtime = toolchain.py3_runtime
     interpreter_path = py3_runtime.interpreter_path
     if not interpreter_path:
@@ -164,7 +165,7 @@ _acceptance_test = rule(
         ),
     },
     test = True,
-    toolchains = ["@bazel_tools//tools/python:toolchain_type"],
+    toolchains = [TARGET_TOOLCHAIN_TYPE],
 )
 
 def acceptance_test(python_version, **kwargs):
@@ -193,5 +194,10 @@ def acceptance_tests():
                 ),
                 python_version = python_version,
                 target_compatible_with = meta.compatible_with,
-                tags = ["acceptance-test"],
+                tags = [
+                    "acceptance-test",
+                    # For some inexplicable reason, these fail locally with
+                    # sandboxing enabled, but not on CI.
+                    "no-sandbox",
+                ],
             )

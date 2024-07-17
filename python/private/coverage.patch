@@ -5,11 +5,11 @@
 # NOTE @aignas 2023-06-05: we have to do this before anything from coverage gets
 # imported.
 diff --git a/coverage/__main__.py b/coverage/__main__.py
-index 79aa4e2b..291fcff8 100644
+index ce2d8db..7d7d0a0 100644
 --- a/coverage/__main__.py
 +++ b/coverage/__main__.py
-@@ -4,5 +4,6 @@
- """Coverage.py's main entry point."""
+@@ -6,5 +6,6 @@
+ from __future__ import annotations
 
  import sys
 +sys.path.append(sys.path.pop(0))
