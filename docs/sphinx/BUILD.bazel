@@ -174,7 +174,7 @@ write_file(
 diff_test(
     name = "requirements.test",
     file1 = "requirements",
-    file2 = "requirments.txt",
+    file2 = "requirements.txt",
     tags = ["manual"],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
