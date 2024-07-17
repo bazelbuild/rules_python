@@ -152,6 +152,7 @@ genrule(
         # Always try upgrading
         "--upgrade",
     ]),
+    tags = ["local"],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     toolchains = [
         "//python/uv:current_toolchain",
