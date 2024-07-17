@@ -517,7 +517,7 @@ def _test_get_python_versions_from_filenames(env):
 
 _tests.append(_test_get_python_versions_from_filenames)
 
-def _test_target_platforms_from_alias_target_platforms(env):
+def _test_get_flag_versions_from_alias_target_platforms(env):
     got = get_whl_flag_versions(
         aliases = [
             whl_alias(
@@ -534,7 +534,7 @@ def _test_target_platforms_from_alias_target_platforms(env):
                 version = "3.3",
                 filename = "foo-0.0.0-py3-none-any.whl",
                 target_platforms = [
-                    "linux_x86_64",
+                    "cp33_linux_x86_64",
                 ],
             ),
         ],
@@ -548,7 +548,7 @@ def _test_target_platforms_from_alias_target_platforms(env):
     }
     env.expect.that_dict(got).contains_exactly(want)
 
-_tests.append(_test_target_platforms_from_alias_target_platforms)
+_tests.append(_test_get_flag_versions_from_alias_target_platforms)
 
 def _test_config_settings(
         env,
@@ -820,8 +820,8 @@ def _test_multiplatform_whl_aliases_filename(env):
             filename = "foo-0.0.2-py3-none-any.whl",
             version = "3.1",
             target_platforms = [
-                "linux_x86_64",
-                "linux_aarch64",
+                "cp31_linux_x86_64",
+                "cp31_linux_aarch64",
             ],
         ),
     ]

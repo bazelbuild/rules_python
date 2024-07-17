@@ -29,7 +29,7 @@ behavior.
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":index_sources.bzl", "index_sources")
 load(":parse_requirements_txt.bzl", "parse_requirements_txt")
-load(":whl_target_platforms.bzl", "select_whls", "whl_target_platforms")
+load(":whl_target_platforms.bzl", "select_whls")
 
 # This includes the vendored _translate_cpu and _translate_os from
 # @platforms//host:extension.bzl at version 0.0.9 so that we don't
@@ -80,72 +80,10 @@ DEFAULT_PLATFORMS = [
     "windows_x86_64",
 ]
 
-def _default_platforms(*, filter):
-    if not filter:
-        fail("Must specific a filter string, got: {}".format(filter))
-
-    if filter.startswith("cp3"):
-        # TODO @aignas 2024-05-23: properly handle python versions in the filter.
-        # For now we are just dropping it to ensure that we don't fail.
-        _, _, filter = filter.partition("_")
-
-    sanitized = filter.replace("*", "").replace("_", "")
-    if sanitized and not sanitized.isalnum():
-        fail("The platform filter can only contain '*', '_' and alphanumerics")
-
-    if "*" in filter:
-        prefix = filter.rstrip("*")
-        if "*" in prefix:
-            fail("The filter can only contain '*' at the end of it")
-
-        if not prefix:
-            return DEFAULT_PLATFORMS
-
-        return [p for p in DEFAULT_PLATFORMS if p.startswith(prefix)]
-    else:
-        return [p for p in DEFAULT_PLATFORMS if filter in p]
-
-def _platforms_from_args(extra_pip_args):
-    platform_values = []
-
-    for arg in extra_pip_args:
-        if platform_values and platform_values[-1] == "":
-            platform_values[-1] = arg
-            continue
-
-        if arg == "--platform":
-            platform_values.append("")
-            continue
-
-        if not arg.startswith("--platform"):
-            continue
-
-        _, _, plat = arg.partition("=")
-        if not plat:
-            _, _, plat = arg.partition(" ")
-        if plat:
-            platform_values.append(plat)
-        else:
-            platform_values.append("")
-
-    if not platform_values:
-        return []
-
-    platforms = {
-        p.target_platform: None
-        for arg in platform_values
-        for p in whl_target_platforms(arg)
-    }
-    return list(platforms.keys())
-
 def parse_requirements(
         ctx,
         *,
         requirements_by_platform = {},
-        requirements_osx = None,
-        requirements_linux = None,
-        requirements_lock = None,
-        requirements_windows = None,
         extra_pip_args = [],
         get_index_urls = None,
         python_version = None,
@@ -158,10 +96,6 @@ def parse_requirements(
         requirements_by_platform (label_keyed_string_dict): a way to have
             different package versions (or different packages) for different
             os, arch combinations.
-        requirements_osx (label): The requirements file for the osx OS.
-        requirements_linux (label): The requirements file for the linux OS.
-        requirements_lock (label): The requirements file for all OSes, or used as a fallback.
-        requirements_windows (label): The requirements file for windows OS.
         extra_pip_args (string list): Extra pip arguments to perform extra validations and to
             be joined with args fined in files.
         get_index_urls: Callable[[ctx, list[str]], dict], a callable to get all
@@ -186,91 +120,11 @@ def parse_requirements(
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
-    if not (
-        requirements_lock or
-        requirements_linux or
-        requirements_osx or
-        requirements_windows or
-        requirements_by_platform
-    ):
-        fail_fn(
-            "A 'requirements_lock' attribute must be specified, a platform-specific lockfiles " +
-            "via 'requirements_by_platform' or an os-specific lockfiles must be specified " +
-            "via 'requirements_*' attributes",
-        )
-        return None
-
-    platforms = _platforms_from_args(extra_pip_args)
-
-    if platforms:
-        lock_files = [
-            f
-            for f in [
-                requirements_lock,
-                requirements_linux,
-                requirements_osx,
-                requirements_windows,
-            ] + list(requirements_by_platform.keys())
-            if f
-        ]
-
-        if len(lock_files) > 1:
-            # If the --platform argument is used, check that we are using
-            # a single `requirements_lock` file instead of the OS specific ones as that is
-            # the only correct way to use the API.
-            fail_fn("only a single 'requirements_lock' file can be used when using '--platform' pip argument, consider specifying it via 'requirements_lock' attribute")
-            return None
-
-        files_by_platform = [
-            (lock_files[0], platforms),
-        ]
-    else:
-        files_by_platform = {
-            file: [
-                platform
-                for filter_or_platform in specifier.split(",")
-                for platform in (_default_platforms(filter = filter_or_platform) if filter_or_platform.endswith("*") else [filter_or_platform])
-            ]
-            for file, specifier in requirements_by_platform.items()
-        }.items()
-
-        for f in [
-            # If the users need a greater span of the platforms, they should consider
-            # using the 'requirements_by_platform' attribute.
-            (requirements_linux, _default_platforms(filter = "linux_*")),
-            (requirements_osx, _default_platforms(filter = "osx_*")),
-            (requirements_windows, _default_platforms(filter = "windows_*")),
-            (requirements_lock, None),
-        ]:
-            if f[0]:
-                files_by_platform.append(f)
-
-    configured_platforms = {}
-
     options = {}
     requirements = {}
-    for file, plats in files_by_platform:
-        if plats:
-            for p in plats:
-                if p in configured_platforms:
-                    fail_fn(
-                        "Expected the platform '{}' to be map only to a single requirements file, but got multiple: '{}', '{}'".format(
-                            p,
-                            configured_platforms[p],
-                            file,
-                        ),
-                    )
-                    return None
-                configured_platforms[p] = file
-        else:
-            plats = [
-                p
-                for p in DEFAULT_PLATFORMS
-                if p not in configured_platforms
-            ]
-            for p in plats:
-                configured_platforms[p] = file
-
+    for file, plats in requirements_by_platform.items():
+        if logger:
+            logger.debug(lambda: "Using {} for {}".format(file, plats))
         contents = ctx.read(file)
 
         # Parse the requirements file directly in starlark to get the information
@@ -303,9 +157,9 @@ def parse_requirements(
                 tokenized_options.append(p)
 
         pip_args = tokenized_options + extra_pip_args
-        for p in plats:
-            requirements[p] = requirements_dict
-            options[p] = pip_args
+        for plat in plats:
+            requirements[plat] = requirements_dict
+            options[plat] = pip_args
 
     requirements_by_platform = {}
     for target_platform, reqs_ in requirements.items():
@@ -325,7 +179,6 @@ def parse_requirements(
                     requirement_line = requirement_line,
                     target_platforms = [],
                     extra_pip_args = extra_pip_args,
-                    download = len(platforms) > 0,
                 ),
             )
             for_req.target_platforms.append(target_platform)
@@ -353,12 +206,12 @@ def parse_requirements(
             for p in r.target_platforms:
                 requirement_target_platforms[p] = None
 
-        is_exposed = len(requirement_target_platforms) == len(configured_platforms)
+        is_exposed = len(requirement_target_platforms) == len(requirements)
         if not is_exposed and logger:
-            logger.debug(lambda: "Package {} will not be exposed because it is only present on a subset of platforms: {} out of {}".format(
+            logger.debug(lambda: "Package '{}' will not be exposed because it is only present on a subset of platforms: {} out of {}".format(
                 whl_name,
                 sorted(requirement_target_platforms),
-                sorted(configured_platforms),
+                sorted(requirements),
             ))
 
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
@@ -376,12 +229,14 @@ def parse_requirements(
                     requirement_line = r.requirement_line,
                     target_platforms = sorted(r.target_platforms),
                     extra_pip_args = r.extra_pip_args,
-                    download = r.download,
                     whls = whls,
                     sdist = sdist,
                     is_exposed = is_exposed,
                 ),
             )
+
+    if logger:
+        logger.debug(lambda: "Will configure whl repos: {}".format(ret.keys()))
 
     return ret
 
@@ -391,8 +246,9 @@ def select_requirement(requirements, *, platform):
     Args:
         requirements (list[struct]): The list of requirements as returned by
             the `parse_requirements` function above.
-        platform (str): The host platform. Usually an output of the
-        `host_platform` function.
+        platform (str or None): The host platform. Usually an output of the
+            `host_platform` function. If None, then this function will return
+            the first requirement it finds.
 
     Returns:
         None if not found or a struct returned as one of the values in the
@@ -402,7 +258,7 @@ def select_requirement(requirements, *, platform):
     maybe_requirement = [
         req
         for req in requirements
-        if platform in req.target_platforms or req.download
+        if not platform or [p for p in req.target_platforms if p.endswith(platform)]
     ]
     if not maybe_requirement:
         # Sometimes the package is not present for host platform if there
