@@ -40,21 +40,7 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
     out_file = ctx.path("requirements_with_markers.out.json")
     ctx.file(in_file, json.encode(requirements))
 
-    if hasattr(ctx, "watch"):
-        srcdir = ctx.path(Label(":BUILD.bazel")).dirname
-        _watch_srcs(
-            ctx,
-            # NOTE @aignas 2024-07-13: we could in theory have a label list that
-            # lists the files that we should include as dependencies to the pip
-            # repo, however, this way works better because we can select files from
-            # within the `pypi__packaging` repository and re-execute whenever they
-            # change. This includes re-executing when the 'packaging' version is
-            # upgraded.
-            srcs = ctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname.get_child("packaging").readdir(watch = "no") + [
-                srcdir.get_child("whl_installer", "platform.py"),
-                srcdir.get_child("requirements_parser", "resolve_target_platforms.py"),
-            ],
-        )
+    _watch_srcs(ctx)
 
     repo_utils.execute_checked(
         ctx,
@@ -83,19 +69,20 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
     ret = json.decode(ctx.read(out_file))
     return ret
 
-def _watch_srcs(ctx, *, srcs):
-    """Cause bazel to re-eval extension or repo rule if srcs changed.
+def _watch_srcs(ctx):
+    """watch python srcs that do work here.
+
+    NOTE @aignas 2024-07-13: we could in theory have a label list that
+    lists the files that we should include as dependencies to the pip
+    repo, however, this way works better because we can select files from
+    within the `pypi__packaging` repository and re-execute whenever they
+    change. This includes re-executing when the 'packaging' version is
+    upgraded.
     """
-    for src in srcs:
-        if not src.exists:
-            fail("BUG: the list of potential SRCS for the repository rule should not contain items that do not exist")
-
-        if src.is_dir:
-            # Do not include dirs in the watch list
-            continue
-
-        if not src.basename.endswith(".py"):
-            # Do not include anything that is not a Python src file
-            continue
-
-        ctx.watch(src)
+    repo_utils.watch_tree(ctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname)
+    srcdir = ctx.path(Label(":BUILD.bazel")).dirname
+    for src in [
+        srcdir.get_child("whl_installer", "platform.py"),
+        srcdir.get_child("requirements_parser", "resolve_target_platforms.py"),
+    ]:
+        repo_utils.watch(src)
