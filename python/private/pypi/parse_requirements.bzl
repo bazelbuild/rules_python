@@ -236,7 +236,7 @@ def parse_requirements(
             logger.debug(lambda: "Package '{}' will not be exposed because it is only present on a subset of platforms: {} out of {}".format(
                 whl_name,
                 sorted(requirement_target_platforms),
-                sorted(requirements_by_platform),
+                sorted(requirements),
             ))
 
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
