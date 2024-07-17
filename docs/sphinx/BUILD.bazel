@@ -128,6 +128,12 @@ sphinx_build_binary(
     ],
 )
 
+_REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
+    "@platforms//os:linux": [],
+    "@platforms//os:macos": [],
+    "//conditions:default": ["@platforms//:incompatible"],
+}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+
 # Run bazel run //docs/sphinx:requirements.update
 genrule(
     name = "requirements",
@@ -146,6 +152,7 @@ genrule(
         # Always try upgrading
         "--upgrade",
     ]),
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     toolchains = [
         "//python/uv:current_toolchain",
         "//python:current_py_toolchain",
@@ -160,6 +167,7 @@ write_file(
         "#!/usr/bin/env bash",
         "cp -fv $REQUIREMENTS_FILE $BUILD_WORKSPACE_DIRECTORY/docs/sphinx/requirements.txt",
     ],
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
 
 diff_test(
@@ -167,7 +175,7 @@ diff_test(
     file1 = "requirements",
     file2 = "requirments.txt",
     tags = ["manual"],
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
 
 sh_binary(
@@ -177,5 +185,5 @@ sh_binary(
     env = {
         "REQUIREMENTS_FILE": "$(location :requirements)",
     },
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
