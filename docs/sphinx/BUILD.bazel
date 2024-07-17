@@ -152,7 +152,11 @@ genrule(
         # Always try upgrading
         "--upgrade",
     ]),
-    tags = ["local"],
+    tags = [
+        "local",
+        "manual",
+        "no-cache",
+    ],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     toolchains = [
         "//python/uv:current_toolchain",
@@ -160,6 +164,19 @@ genrule(
     ],
 )
 
+diff_test(
+    name = "requirements.test",
+    file1 = "requirements",
+    file2 = "requirements.txt",
+    tags = [
+        "manual",
+        "no-cache",
+    ],
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
+)
+
+# Write a script that can be used for updating the in-tree version of the
+# requirements file
 write_file(
     name = "gen_update_requirements",
     out = "update_requirements.sh",
@@ -171,14 +188,6 @@ write_file(
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
 
-diff_test(
-    name = "requirements.test",
-    file1 = "requirements",
-    file2 = "requirements.txt",
-    tags = ["manual"],
-    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
-)
-
 sh_binary(
     name = "requirements.update",
     srcs = ["update_requirements.sh"],
@@ -186,5 +195,6 @@ sh_binary(
     env = {
         "REQUIREMENTS_FILE": "$(location :requirements)",
     },
+    tags = ["manual"],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
