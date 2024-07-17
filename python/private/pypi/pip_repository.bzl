@@ -84,7 +84,7 @@ def _pip_repository_impl(rctx):
     )
     selected_requirements = {}
     options = None
-    repository_platform = host_platform(rctx.os)
+    repository_platform = host_platform(rctx)
     for name, requirements in requirements_by_platform.items():
         r = select_requirement(
             requirements,

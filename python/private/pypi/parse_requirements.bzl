@@ -27,58 +27,10 @@ behavior.
 """
 
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:repo_utils.bzl", "repo_utils")
 load(":index_sources.bzl", "index_sources")
 load(":parse_requirements_txt.bzl", "parse_requirements_txt")
 load(":whl_target_platforms.bzl", "select_whls")
-
-# This includes the vendored _translate_cpu and _translate_os from
-# @platforms//host:extension.bzl at version 0.0.9 so that we don't
-# force the users to depend on it.
-
-def _translate_cpu(arch):
-    if arch in ["i386", "i486", "i586", "i686", "i786", "x86"]:
-        return "x86_32"
-    if arch in ["amd64", "x86_64", "x64"]:
-        return "x86_64"
-    if arch in ["ppc", "ppc64", "ppc64le"]:
-        return "ppc"
-    if arch in ["arm", "armv7l"]:
-        return "arm"
-    if arch in ["aarch64"]:
-        return "aarch64"
-    if arch in ["s390x", "s390"]:
-        return "s390x"
-    if arch in ["mips64el", "mips64"]:
-        return "mips64"
-    if arch in ["riscv64"]:
-        return "riscv64"
-    return arch
-
-def _translate_os(os):
-    if os.startswith("mac os"):
-        return "osx"
-    if os.startswith("freebsd"):
-        return "freebsd"
-    if os.startswith("openbsd"):
-        return "openbsd"
-    if os.startswith("linux"):
-        return "linux"
-    if os.startswith("windows"):
-        return "windows"
-    return os
-
-# TODO @aignas 2024-05-13: consider using the same platform tags as are used in
-# the //python:versions.bzl
-DEFAULT_PLATFORMS = [
-    "linux_aarch64",
-    "linux_arm",
-    "linux_ppc",
-    "linux_s390x",
-    "linux_x86_64",
-    "osx_aarch64",
-    "osx_x86_64",
-    "windows_x86_64",
-]
 
 def parse_requirements(
         ctx,
@@ -297,20 +249,19 @@ def select_requirement(requirements, *, platform):
 
     return maybe_requirement[0]
 
-def host_platform(repository_os):
+def host_platform(rctx):
     """Return a string representation of the repository OS.
 
     Args:
-        repository_os (struct): The `module_ctx.os` or `repository_ctx.os` attribute.
-            See https://bazel.build/rules/lib/builtins/repository_os.html
+        rctx (struct): The `module_ctx` or `repository_ctx` attribute.
 
     Returns:
         The string representation of the platform that we can later used in the `pip`
         machinery.
     """
     return "{}_{}".format(
-        _translate_os(repository_os.name.lower()),
-        _translate_cpu(repository_os.arch.lower()),
+        repo_utils.get_platforms_os_name(rctx),
+        repo_utils.get_platforms_arch_name(rctx),
     )
 
 def _add_dists(requirement, index_urls, python_version, logger = None):

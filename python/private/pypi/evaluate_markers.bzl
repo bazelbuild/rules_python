@@ -36,11 +36,11 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
     if not requirements:
         return {}
 
+    _watch_srcs(ctx)
+
     in_file = ctx.path("requirements_with_markers.in.json")
     out_file = ctx.path("requirements_with_markers.out.json")
     ctx.file(in_file, json.encode(requirements))
-
-    _watch_srcs(ctx)
 
     repo_utils.execute_checked(
         ctx,
@@ -79,10 +79,17 @@ def _watch_srcs(ctx):
     change. This includes re-executing when the 'packaging' version is
     upgraded.
     """
-    repo_utils.watch_tree(ctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname)
+    packaging = ctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname
+    if not hasattr(ctx, "watch"):
+        return
+
     srcdir = ctx.path(Label(":BUILD.bazel")).dirname
     for src in [
         srcdir.get_child("whl_installer", "platform.py"),
         srcdir.get_child("requirements_parser", "resolve_target_platforms.py"),
+    ] + [
+        src
+        for src in packaging.readdir(watch = "no")
+        if not src.is_dir and src.basename.endswith(".py")
     ]:
-        repo_utils.watch(src)
+        ctx.watch(src)

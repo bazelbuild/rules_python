@@ -206,7 +206,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         logger = logger,
     )
 
-    repository_platform = host_platform(module_ctx.os)
+    repository_platform = host_platform(module_ctx)
     for whl_name, requirements in requirements_by_platform.items():
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
