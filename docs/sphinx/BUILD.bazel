@@ -15,6 +15,7 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@dev_pip//:requirements.bzl", "requirement")
+load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
@@ -131,6 +132,7 @@ sphinx_build_binary(
 _REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
     "@platforms//os:linux": [],
     "@platforms//os:macos": [],
+    "@platforms//os:windows": [],
     "//conditions:default": ["@platforms//:incompatible"],
 }) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
@@ -179,18 +181,24 @@ diff_test(
 # requirements file
 write_file(
     name = "gen_update_requirements",
-    out = "update_requirements.sh",
+    out = "requirements.update.py",
     content = [
-        # This depends on bash, would need tweaks for Windows
-        "#!/usr/bin/env bash",
-        "cp -fv $REQUIREMENTS_FILE $BUILD_WORKSPACE_DIRECTORY/docs/sphinx/requirements.txt",
+        "#!/usr/bin/env python3",
+        "",
+        "from pathlib import Path",
+        "import os",
+        "",
+        'src = Path(os.environ.get("REQUIREMENTS_FILE"))',
+        'dst = Path(os.environ.get("BUILD_WORKSPACE_DIRECTORY")) / "docs" / "sphinx" / "requirements.txt"',
+        'print(f"Writing requirements contents from {src} to {dst}")',
+        "dst.write_text(src.read_text())",
     ],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
 
-sh_binary(
+py_binary(
     name = "requirements.update",
-    srcs = ["update_requirements.sh"],
+    srcs = ["requirements.update.py"],
     data = [":requirements"],
     env = {
         "REQUIREMENTS_FILE": "$(location :requirements)",
