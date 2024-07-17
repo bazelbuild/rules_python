@@ -84,9 +84,7 @@ dev_pip = use_extension(
 dev_pip.parse(
     hub_name = "dev_pip",
     python_version = "3.11",
-    requirements_by_platform = {
-        "//docs/sphinx:requirements.txt": "*",
-    },
+    requirements_lock = "//docs/sphinx:requirements.txt",
 )
 dev_pip.parse(
     hub_name = "pypiserver",
