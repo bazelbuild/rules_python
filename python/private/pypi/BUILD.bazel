@@ -175,6 +175,7 @@ bzl_library(
         ":requirements_files_by_platform_bzl",
         ":whl_target_platforms_bzl",
         "//python/private:normalize_name_bzl",
+        "//python/private:repo_utils_bzl",
     ],
 )
 
