@@ -82,20 +82,10 @@ dev_pip = use_extension(
     dev_dependency = True,
 )
 dev_pip.parse(
-    experimental_requirement_cycles = {
-        "sphinx": [
-            "sphinx",
-            "sphinxcontrib-serializinghtml",
-            "sphinxcontrib-qthelp",
-            "sphinxcontrib-htmlhelp",
-            "sphinxcontrib-devhelp",
-            "sphinxcontrib-applehelp",
-        ],
-    },
     hub_name = "dev_pip",
     python_version = "3.11",
     requirements_by_platform = {
-        "//docs/sphinx:requirements.txt": "linux_*,osx_*",
+        "//docs/sphinx:requirements.txt": "*",
     },
 )
 dev_pip.parse(
@@ -130,3 +120,13 @@ use_repo(
     "build_bazel_bazel_rolling",
     "build_bazel_bazel_self",
 )
+
+uv = use_extension(
+    "@rules_python//python/uv:extensions.bzl",
+    "uv",
+    dev_dependency = True,
+)
+uv.toolchain(uv_version = "0.2.23")
+use_repo(uv, "uv_toolchains")
+
+register_toolchains("@uv_toolchains//:all")

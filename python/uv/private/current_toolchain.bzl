@@ -42,8 +42,8 @@ def _current_toolchain_impl(ctx):
     return [
         toolchain_info,
         new_default_info,
-        toolchain_info.template_variable_info,
         toolchain_info.uv_toolchain_info,
+        platform_common.TemplateVariableInfo({"UV": symlink_uv_executable.path}),
     ]
 
 # Copied from java_toolchain_alias
