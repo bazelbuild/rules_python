@@ -18,6 +18,7 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR")
 load("//python/private:text_util.bzl", "render")
+load(":evaluate_markers.bzl", "evaluate_markers")
 load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
@@ -81,6 +82,12 @@ def _pip_repository_impl(rctx):
             extra_pip_args = rctx.attr.extra_pip_args,
         ),
         extra_pip_args = rctx.attr.extra_pip_args,
+        evaluate_markers = lambda requirements: evaluate_markers(
+            rctx,
+            requirements = requirements,
+            python_interpreter = rctx.attr.python_interpreter,
+            python_interpreter_target = rctx.attr.python_interpreter_target,
+        ),
     )
     selected_requirements = {}
     options = None

@@ -120,16 +120,6 @@ install_pypiserver()
 
 pip_parse(
     name = "dev_pip",
-    experimental_requirement_cycles = {
-        "sphinx": [
-            "sphinx",
-            "sphinxcontrib-serializinghtml",
-            "sphinxcontrib-qthelp",
-            "sphinxcontrib-htmlhelp",
-            "sphinxcontrib-devhelp",
-            "sphinxcontrib-applehelp",
-        ],
-    },
     python_interpreter_target = interpreter,
     requirements_lock = "//docs/sphinx:requirements.txt",
 )

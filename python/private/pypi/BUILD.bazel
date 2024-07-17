@@ -224,6 +224,7 @@ bzl_library(
     srcs = ["pip_repository.bzl"],
     deps = [
         ":attrs_bzl",
+        ":evaluate_markers_bzl",
         ":parse_requirements_bzl",
         ":pip_repository_attrs_bzl",
         ":render_pkg_aliases_bzl",
@@ -243,8 +244,7 @@ bzl_library(
     name = "pypi_repo_utils_bzl",
     srcs = ["pypi_repo_utils.bzl"],
     deps = [
-        "//python:versions_bzl",
-        "//python/private:toolchains_repo_bzl",
+        "//python/private:repo_utils_bzl",
     ],
 )
 
