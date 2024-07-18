@@ -17,17 +17,6 @@ import re
 import sys
 import unittest
 
-# Look for the entries Python adds for finding its standard library:
-# pythonX.Y, pythonXY.zip, and pythonX.Y/lib-dynload
-# See https://docs.python.org/3/library/sys_path_init.html#sys-path-init
-# for details.
-_STDLIB_REGEX = r".*python\d[.]\d+$|.*python\d+[.]zip$|.*lib-dynload$|"
-
-
-# Windows: `{sys.prefix}/Lib/site-packages"
-# Others: `
-_STDLIB_SITE_PACKAGES_REGEX = r".*(python\d[.]\d+|Lib)/(site|dist)-packages$"
-
 
 class SysPathOrderTest(unittest.TestCase):
     def test_sys_path_order(self):
@@ -37,17 +26,20 @@ class SysPathOrderTest(unittest.TestCase):
 
         # Classify paths into the three different types we care about: stdlib,
         # user dependency, or the runtime's site-package's directory.
-        # Because they often share common prefixes and vary subtly between
-        # platforms, we do this is two passes: first category, then compute
-        # the indexes. This is just so debugging is easier, especially
-        # for platforms a dev doesn't have.
+        #
+        # Because they often share common prefixes with one another, and vary
+        # subtly between platforms, we do this in two passes: first categorize,
+        # then pick out the indexes. This is just so debugging is easier and
+        # error messages are more informative.
         categorized_paths = []
         for i, value in enumerate(sys.path):
             # The runtime's root repo may be added to sys.path, but it
-            # counts as a user directory, not stdlib directory
+            # counts as a user directory, not stdlib directory.
             if value == sys.prefix:
                 category = "user"
             elif value.startswith(sys.prefix):
+                # The runtime's site-package directory might be called
+                # dist-packages when using Debian's system python.
                 if os.path.basename(value).endswith("-packages"):
                     category = "runtime-site"
                 else:
@@ -81,12 +73,14 @@ class SysPathOrderTest(unittest.TestCase):
         if os.environ["BOOTSTRAP"] == "script":
             self.assertTrue(
                 last_stdlib < first_user < first_runtime_site,
-                f"Expected {last_stdlib=} < {first_user=} < {first_runtime_site=}\nfor sys.path:\n{sys_path_str}",
+                f"Expected {last_stdlib=} < {first_user=} < {first_runtime_site=}\n"
+                + f"for sys.path:\n{sys_path_str}",
             )
         else:
             self.assertTrue(
                 first_user < last_stdlib < first_runtime_site,
-                f"Expected {first_user=} < {last_stdlib=} < {first_runtime_site=}\nfor sys.path:\n{sys_path_str}",
+                f"Expected {first_user=} < {last_stdlib=} < {first_runtime_site=}\n"
+                + f"for sys.path:\n{sys_path_str}",
             )
 
 
