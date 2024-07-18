@@ -31,6 +31,7 @@ class SysPathOrderTest(unittest.TestCase):
         first_user = None
         first_runtime_site = None
         for i, value in enumerate(sys.path):
+            value = value.replace(os.path.sep, "/")
             if re.match(_STDLIB_REGEX, value):
                 last_stdlib = i
             elif re.match(_STDLIB_SITE_PACKAGES_REGEX, value):
@@ -42,9 +43,9 @@ class SysPathOrderTest(unittest.TestCase):
             else:
                 raise AssertionError(f"Unexpected sys.path format: {value}")
 
-        assert last_stdlib is not None
-        assert first_user is not None
-        assert first_runtime_site is not None
+        assert last_stdlib is not None, sys.path
+        assert first_user is not None, sys.path
+        assert first_runtime_site is not None, sys.path
 
         sys_path_str = "\n".join(f"{i}: {v}" for i, v in enumerate(sys.path))
 

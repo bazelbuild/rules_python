@@ -67,7 +67,11 @@ def _py_reconfig_impl(ctx):
         DefaultInfo(
             executable = executable,
             files = depset(default_outputs),
-            runfiles = ctx.runfiles(default_outputs).merge(default_info.default_runfiles),
+            # On windows, the other default outputs must also be included
+            # in runfiles so the exe launcher can find the backing file.
+            runfiles = ctx.runfiles(default_outputs).merge(
+                default_info.default_runfiles,
+            ),
         ),
         testing.TestEnvironment(
             environment = ctx.attr.env,
