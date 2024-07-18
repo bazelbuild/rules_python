@@ -46,7 +46,7 @@ def _local_runtime_repo_impl(rctx):
     on_failure = rctx.attr.on_failure
 
     platforms_os_name = repo_utils.get_platforms_os_name(rctx)
-    if not platforms_os_name:
+    if platforms_os_name not in ["linux", "osx", "windows"]:
         if on_failure == "fail":
             fail("Unrecognized host platform '{}': cannot determine OS constraint".format(
                 rctx.os.name,
