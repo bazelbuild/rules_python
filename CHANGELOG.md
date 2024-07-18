@@ -39,7 +39,9 @@ A brief description of the categories of changes:
   containing ">" sign
 
 ### Added
-* Nothing yet
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 
 ### Removed
 * Nothing yet

@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
+import os
 import sys
 
 print("Hello")
 print(
     "RULES_PYTHON_ZIP_DIR:{}".format(sys._xoptions.get("RULES_PYTHON_ZIP_DIR", "UNSET"))
 )
+print("PYTHONSAFEPATH:", os.environ.get("PYTHONSAFEPATH", "UNSET") or "EMPTY")
+print("sys.flags.safe_path:", sys.flags.safe_path)
 print("file:", __file__)
