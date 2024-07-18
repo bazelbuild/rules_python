@@ -67,7 +67,7 @@ def _py_reconfig_impl(ctx):
         DefaultInfo(
             executable = executable,
             files = depset(default_outputs),
-            runfiles = default_info.default_runfiles,
+            runfiles = ctx.runfiles(default_outputs).merge(default_info.default_runfiles),
         ),
         testing.TestEnvironment(
             environment = ctx.attr.env,
