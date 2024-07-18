@@ -1,0 +1,16 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
+genrule(
+    name = "uv_help",
+    outs = ["uv_help.txt"],
+    cmd = "$(UV_BIN) --python-fetch manual --help >$@",
+    toolchains = [
+        "//python/uv:current_toolchain",
+        "//python:current_py_toolchain",
+    ],
+)
+
+build_test(
+    name = "test_uv_toolchain_make_vars",
+    targets = [":uv_help"],
+)
