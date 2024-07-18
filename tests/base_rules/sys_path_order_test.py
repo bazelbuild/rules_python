@@ -43,8 +43,8 @@ class SysPathOrderTest(unittest.TestCase):
         # for platforms a dev doesn't have.
         categorized_paths = []
         for i, value in enumerate(sys.path):
-            # Normalize windows paths to unix paths
-            ##value = value.replace(os.path.sep, "/")
+            # The runtime's root repo may be added to sys.path, but it
+            # counts as a user directory, not stdlib directory
             if value == sys.prefix:
                 category = "user"
             elif value.startswith(sys.prefix):
@@ -57,7 +57,7 @@ class SysPathOrderTest(unittest.TestCase):
 
             categorized_paths.append((category, value))
 
-        for i, (category, _) in categorized_paths:
+        for i, (category, _) in enumerate(categorized_paths):
             if category == "stdlib":
                 last_stdlib = i
             elif category == "runtime-site":
