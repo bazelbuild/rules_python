@@ -38,9 +38,7 @@ def parse_requirements(
         requirements_by_platform = {},
         extra_pip_args = [],
         get_index_urls = None,
-        python_version = None,
-        logger = None,
-        fail_fn = fail):
+        logger = None):
     """Get the requirements with platforms that the requirements apply to.
 
     Args:
@@ -53,10 +51,7 @@ def parse_requirements(
         get_index_urls: Callable[[ctx, list[str]], dict], a callable to get all
             of the distribution URLs from a PyPI index. Accepts ctx and
             distribution names to query.
-        python_version: str or None. This is needed when the get_index_urls is
-            specified. It should be of the form "3.x.x",
         logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
-        fail_fn (Callable[[str], None]): A failure function used in testing failure cases.
 
     Returns:
         A tuple where the first element a dict of dicts where the first key is
@@ -137,10 +132,6 @@ def parse_requirements(
 
     index_urls = {}
     if get_index_urls:
-        if not python_version:
-            fail_fn("'python_version' must be provided")
-            return None
-
         index_urls = get_index_urls(
             ctx,
             # Use list({}) as a way to have a set

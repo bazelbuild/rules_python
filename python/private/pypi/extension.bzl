@@ -195,7 +195,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             logger = logger,
         ),
         get_index_urls = get_index_urls,
-        python_version = major_minor,
         logger = logger,
     )
 

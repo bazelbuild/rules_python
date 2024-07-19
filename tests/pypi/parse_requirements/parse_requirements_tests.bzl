@@ -197,20 +197,6 @@ def _test_select_requirement_none_platform(env):
 
 _tests.append(_test_select_requirement_none_platform)
 
-def _test_fail_no_python_version(env):
-    errors = []
-    parse_requirements(
-        ctx = _mock_ctx(),
-        requirements_by_platform = {
-            "requirements_lock": [""],
-        },
-        get_index_urls = lambda _, __: {},
-        fail_fn = errors.append,
-    )
-    env.expect.that_str(errors[0]).equals("'python_version' must be provided")
-
-_tests.append(_test_fail_no_python_version)
-
 def parse_requirements_test_suite(name):
     """Create the test suite.
 
