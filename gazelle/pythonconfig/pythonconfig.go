@@ -55,6 +55,10 @@ const (
 	// the "per_file" GenerationMode by including the package's __init__.py file.
 	// This is a boolean directive.
 	GenerationModePerFileIncludeInit = "python_generation_mode_per_file_include_init"
+	// GenerationModePerPackageRequireTestEntryPoint represents the directive that
+	// requires a test entry point to generate test targets in "package" GenerationMode.
+	// This is a boolean directive.
+	GenerationModePerPackageRequireTestEntryPoint = "python_generation_mode_per_package_require_test_entry_point"
 	// LibraryNamingConvention represents the directive that controls the
 	// py_library naming convention. It interpolates $package_name$ with the
 	// Bazel package name. E.g. if the Bazel package name is `foo`, setting this
@@ -148,21 +152,22 @@ type Config struct {
 	pythonProjectRoot string
 	gazelleManifest   *manifest.Manifest
 
-	excludedPatterns             *singlylinkedlist.List
-	ignoreFiles                  map[string]struct{}
-	ignoreDependencies           map[string]struct{}
-	validateImportStatements     bool
-	coarseGrainedGeneration      bool
-	perFileGeneration            bool
-	perFileGenerationIncludeInit bool
-	libraryNamingConvention      string
-	binaryNamingConvention       string
-	testNamingConvention         string
-	defaultVisibility            []string
-	visibility                   []string
-	testFilePattern              []string
-	labelConvention              string
-	labelNormalization           LabelNormalizationType
+	excludedPatterns                          *singlylinkedlist.List
+	ignoreFiles                               map[string]struct{}
+	ignoreDependencies                        map[string]struct{}
+	validateImportStatements                  bool
+	coarseGrainedGeneration                   bool
+	perFileGeneration                         bool
+	perFileGenerationIncludeInit              bool
+	perPackageGenerationRequireTestEntryPoint bool
+	libraryNamingConvention                   string
+	binaryNamingConvention                    string
+	testNamingConvention                      string
+	defaultVisibility                         []string
+	visibility                                []string
+	testFilePattern                           []string
+	labelConvention                           string
+	labelNormalization                        LabelNormalizationType
 }
 
 type LabelNormalizationType int
@@ -179,24 +184,25 @@ func New(
 	pythonProjectRoot string,
 ) *Config {
 	return &Config{
-		extensionEnabled:             true,
-		repoRoot:                     repoRoot,
-		pythonProjectRoot:            pythonProjectRoot,
-		excludedPatterns:             singlylinkedlist.New(),
-		ignoreFiles:                  make(map[string]struct{}),
-		ignoreDependencies:           make(map[string]struct{}),
-		validateImportStatements:     true,
-		coarseGrainedGeneration:      false,
-		perFileGeneration:            false,
-		perFileGenerationIncludeInit: false,
-		libraryNamingConvention:      packageNameNamingConventionSubstitution,
-		binaryNamingConvention:       fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
-		testNamingConvention:         fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
-		defaultVisibility:            []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
-		visibility:                   []string{},
-		testFilePattern:              strings.Split(DefaultTestFilePatternString, ","),
-		labelConvention:              DefaultLabelConvention,
-		labelNormalization:           DefaultLabelNormalizationType,
+		extensionEnabled:                          true,
+		repoRoot:                                  repoRoot,
+		pythonProjectRoot:                         pythonProjectRoot,
+		excludedPatterns:                          singlylinkedlist.New(),
+		ignoreFiles:                               make(map[string]struct{}),
+		ignoreDependencies:                        make(map[string]struct{}),
+		validateImportStatements:                  true,
+		coarseGrainedGeneration:                   false,
+		perFileGeneration:                         false,
+		perFileGenerationIncludeInit:              false,
+		perPackageGenerationRequireTestEntryPoint: true,
+		libraryNamingConvention:                   packageNameNamingConventionSubstitution,
+		binaryNamingConvention:                    fmt.Sprintf("%s_bin", packageNameNamingConventionSubstitution),
+		testNamingConvention:                      fmt.Sprintf("%s_test", packageNameNamingConventionSubstitution),
+		defaultVisibility:                         []string{fmt.Sprintf(DefaultVisibilityFmtString, "")},
+		visibility:                                []string{},
+		testFilePattern:                           strings.Split(DefaultTestFilePatternString, ","),
+		labelConvention:                           DefaultLabelConvention,
+		labelNormalization:                        DefaultLabelNormalizationType,
 	}
 }
 
@@ -220,14 +226,15 @@ func (c *Config) NewChild() *Config {
 		coarseGrainedGeneration:      c.coarseGrainedGeneration,
 		perFileGeneration:            c.perFileGeneration,
 		perFileGenerationIncludeInit: c.perFileGenerationIncludeInit,
-		libraryNamingConvention:      c.libraryNamingConvention,
-		binaryNamingConvention:       c.binaryNamingConvention,
-		testNamingConvention:         c.testNamingConvention,
-		defaultVisibility:            c.defaultVisibility,
-		visibility:                   c.visibility,
-		testFilePattern:              c.testFilePattern,
-		labelConvention:              c.labelConvention,
-		labelNormalization:           c.labelNormalization,
+		perPackageGenerationRequireTestEntryPoint: c.perPackageGenerationRequireTestEntryPoint,
+		libraryNamingConvention:                   c.libraryNamingConvention,
+		binaryNamingConvention:                    c.binaryNamingConvention,
+		testNamingConvention:                      c.testNamingConvention,
+		defaultVisibility:                         c.defaultVisibility,
+		visibility:                                c.visibility,
+		testFilePattern:                           c.testFilePattern,
+		labelConvention:                           c.labelConvention,
+		labelNormalization:                        c.labelNormalization,
 	}
 }
 
@@ -398,6 +405,14 @@ func (c *Config) PerFileGenerationIncludeInit() bool {
 	return c.perFileGenerationIncludeInit
 }
 
+func (c *Config) SetPerPackageGenerationRequireTestEntryPoint(perPackageGenerationRequireTestEntryPoint bool) {
+	c.perPackageGenerationRequireTestEntryPoint = perPackageGenerationRequireTestEntryPoint
+}
+
+func (c *Config) PerPackageGenerationRequireTestEntryPoint() bool {
+	return c.perPackageGenerationRequireTestEntryPoint
+}
+
 // SetLibraryNamingConvention sets the py_library target naming convention.
 func (c *Config) SetLibraryNamingConvention(libraryNamingConvention string) {
 	c.libraryNamingConvention = libraryNamingConvention
@@ -494,9 +509,9 @@ func (c *Config) FormatThirdPartyDependency(repositoryName string, distributionN
 		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "_")
 	case Pep503LabelNormalizationType:
 		// See https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
-		normConventionalDistributionName = strings.ToLower(conventionalDistributionName) // ... "should be lowercased"
+		normConventionalDistributionName = strings.ToLower(conventionalDistributionName)                                        // ... "should be lowercased"
 		normConventionalDistributionName = regexp.MustCompile(`[-_.]+`).ReplaceAllString(normConventionalDistributionName, "-") // ... "all runs of the characters ., -, or _ replaced with a single -"
-		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-") // ... "must start and end with a letter or number"
+		normConventionalDistributionName = strings.Trim(normConventionalDistributionName, "-")                                  // ... "must start and end with a letter or number"
 	default:
 		fallthrough
 	case NoLabelNormalizationType:
