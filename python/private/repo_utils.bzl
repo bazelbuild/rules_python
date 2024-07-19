@@ -368,7 +368,7 @@ def _get_platforms_os_name(rctx):
         return "windows"
     return os
 
-def _get_platforms_arch_name(rctx):
+def _get_platforms_cpu_name(rctx):
     """Return the name in @platforms//cpu for the host arch.
 
     Args:
@@ -414,8 +414,8 @@ repo_utils = struct(
     execute_checked = _execute_checked,
     execute_checked_stdout = _execute_checked_stdout,
     execute_unchecked = _execute_unchecked,
+    get_platforms_cpu_name = _get_platforms_cpu_name,
     get_platforms_os_name = _get_platforms_os_name,
-    get_platforms_arch_name = _get_platforms_arch_name,
     getenv = _getenv,
     is_repo_debug_enabled = _is_repo_debug_enabled,
     logger = _logger,

@@ -141,7 +141,7 @@ genrule(
     name = "requirements",
     srcs = ["pyproject.toml"],
     outs = ["_requirements.txt"],
-    cmd = "$(UV) pip compile " + " ".join([
+    cmd = "$(UV_BIN) pip compile " + " ".join([
         "--custom-compile-command='bazel run //docs/sphinx:requirements.update'",
         "--generate-hashes",
         "--universal",

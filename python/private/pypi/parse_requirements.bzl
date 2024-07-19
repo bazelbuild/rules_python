@@ -249,19 +249,19 @@ def select_requirement(requirements, *, platform):
 
     return maybe_requirement[0]
 
-def host_platform(rctx):
+def host_platform(ctx):
     """Return a string representation of the repository OS.
 
     Args:
-        rctx (struct): The `module_ctx` or `repository_ctx` attribute.
+        ctx (struct): The `module_ctx` or `repository_ctx` attribute.
 
     Returns:
         The string representation of the platform that we can later used in the `pip`
         machinery.
     """
     return "{}_{}".format(
-        repo_utils.get_platforms_os_name(rctx),
-        repo_utils.get_platforms_arch_name(rctx),
+        repo_utils.get_platforms_os_name(ctx),
+        repo_utils.get_platforms_cpu_name(ctx),
     )
 
 def _add_dists(requirement, index_urls, python_version, logger = None):

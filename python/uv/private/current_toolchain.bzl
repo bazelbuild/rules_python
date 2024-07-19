@@ -30,7 +30,9 @@ def _current_toolchain_impl(ctx):
     # Bazel requires executable rules to create the executable themselves,
     # so we create a symlink in this rule so that it appears this rule created its executable.
     original_uv_executable = toolchain_info.uv_toolchain_info.uv[DefaultInfo].files_to_run.executable
-    symlink_uv_executable = ctx.actions.declare_file("uv_symlink_{}".format(original_uv_executable.basename))
+
+    # Use `uv` as the name of the binary to make the help message well formatted
+    symlink_uv_executable = ctx.actions.declare_file("current_toolchain/uv".format(original_uv_executable.basename))
     ctx.actions.symlink(output = symlink_uv_executable, target_file = original_uv_executable)
 
     new_default_info = DefaultInfo(
@@ -39,11 +41,15 @@ def _current_toolchain_impl(ctx):
         executable = symlink_uv_executable,
     )
 
+    template_variable_info = platform_common.TemplateVariableInfo({
+        "UV_BIN": symlink_uv_executable.path,
+    })
+
     return [
         toolchain_info,
         new_default_info,
+        template_variable_info,
         toolchain_info.uv_toolchain_info,
-        platform_common.TemplateVariableInfo({"UV": symlink_uv_executable.path}),
     ]
 
 # Copied from java_toolchain_alias
