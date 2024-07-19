@@ -46,13 +46,12 @@ _OS_PREFIXES = {
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
 
-def select_whls(*, whls, want_python_version = "3.0", want_platforms = [], logger = None):
+def select_whls(*, whls, want_platforms = [], logger = None):
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
         whls(list[struct]): A list of candidates which have a `filename`
             attribute containing the `whl` filename.
-        want_python_version(str): An optional parameter to filter whls by python version. Defaults to '3.0'.
         want_platforms(str): The platforms in "{abi}_{os}_{cpu}" or "{os}_{cpu}" format.
         logger: A logger for printing diagnostic messages.
 
@@ -69,6 +68,8 @@ def select_whls(*, whls, want_python_version = "3.0", want_platforms = [], logge
     }
 
     _want_platforms = {}
+    version_limit = None
+
     for p in want_platforms:
         if not p.startswith("cp3"):
             fail("expected all platforms to start with ABI, but got: {}".format(p))
@@ -77,16 +78,18 @@ def select_whls(*, whls, want_python_version = "3.0", want_platforms = [], logge
         _want_platforms[os_cpu] = None
         _want_platforms[p] = None
 
+        version_limit_candidate = int(abi[3:])
+        if not version_limit:
+            version_limit = version_limit_candidate
+        if version_limit and version_limit != version_limit_candidate:
+            fail("Only a single python version is supported for now")
+
         # For some legacy implementations the wheels may target the `cp3xm` ABI
         _want_platforms["{}m_{}".format(abi, os_cpu)] = None
         want_abis[abi] = None
         want_abis[abi + "m"] = None
 
     want_platforms = sorted(_want_platforms)
-
-    version_limit = -1
-    if want_python_version:
-        version_limit = int(want_python_version.split(".")[1])
 
     candidates = {}
     for whl in whls:
@@ -121,7 +124,7 @@ def select_whls(*, whls, want_python_version = "3.0", want_platforms = [], logge
                 logger.trace(lambda: "Discarding the whl because the whl abi did not match")
             continue
 
-        if version_limit != -1 and whl_version_min > version_limit:
+        if whl_version_min > version_limit:
             if logger:
                 logger.trace(lambda: "Discarding the whl because the whl supported python version is too high")
             continue
