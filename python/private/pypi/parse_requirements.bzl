@@ -168,9 +168,8 @@ def parse_requirements(
 
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
-                r,
-                index_urls.get(whl_name),
-                python_version = python_version,
+                requirement = r,
+                index_urls = index_urls.get(whl_name),
                 logger = logger,
             )
 
@@ -238,7 +237,7 @@ def host_platform(ctx):
         repo_utils.get_platforms_cpu_name(ctx),
     )
 
-def _add_dists(requirement, index_urls, python_version, logger = None):
+def _add_dists(*, requirement, index_urls, logger = None):
     """Populate dists based on the information from the PyPI index.
 
     This function will modify the given requirements_by_platform data structure.
@@ -246,7 +245,6 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
     Args:
         requirement: The result of parse_requirements function.
         index_urls: The result of simpleapi_download.
-        python_version: The version of the python interpreter.
         logger: A logger for printing diagnostic info.
     """
     if not index_urls:
@@ -289,18 +287,6 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
         ]))
 
     # Filter out the wheels that are incompatible with the target_platforms.
-    whls = select_whls(
-        whls = whls,
-        want_abis = [
-            "none",
-            "abi3",
-            "cp" + python_version.replace(".", ""),
-            # Older python versions have wheels for the `*m` ABI.
-            "cp" + python_version.replace(".", "") + "m",
-        ],
-        want_platforms = requirement.target_platforms,
-        want_python_version = python_version,
-        logger = logger,
-    )
+    whls = select_whls(whls = whls, want_platforms = requirement.target_platforms, logger = logger)
 
     return whls, sdist
