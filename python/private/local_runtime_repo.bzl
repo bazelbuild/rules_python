@@ -45,22 +45,6 @@ def _local_runtime_repo_impl(rctx):
     logger = repo_utils.logger(rctx)
     on_failure = rctx.attr.on_failure
 
-    platforms_os_name = repo_utils.get_platforms_os_name(rctx)
-    if not platforms_os_name:
-        if on_failure == "fail":
-            fail("Unrecognized host platform '{}': cannot determine OS constraint".format(
-                rctx.os.name,
-            ))
-
-        if on_failure == "warn":
-            logger.warn(lambda: "Unrecognized host platform '{}': cannot determine OS constraint".format(
-                rctx.os.name,
-            ))
-
-        # else, on_failure must be skip
-        rctx.file("BUILD.bazel", _expand_incompatible_template())
-        return
-
     result = _resolve_interpreter_path(rctx)
     if not result.resolved_path:
         if on_failure == "fail":

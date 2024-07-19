@@ -14,8 +14,7 @@
 
 ""
 
-load("//python:versions.bzl", "WINDOWS_NAME")
-load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
+load("//python/private:repo_utils.bzl", "repo_utils")
 
 def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
     """A helper function for getting the `python_interpreter` attribute or it's default
@@ -30,7 +29,8 @@ def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
     if python_interpreter:
         return python_interpreter
 
-    if "win" in ctx.os.name:
+    os = repo_utils.get_platforms_os_name(ctx)
+    if "windows" in os:
         return "python.exe"
     else:
         return "python3"
@@ -39,7 +39,7 @@ def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interp
     """Helper function to find the python interpreter from the common attributes
 
     Args:
-        ctx: Handle to the rule repository context.
+        ctx: Handle to the rule module_ctx or repository_ctx.
         python_interpreter: The python interpreter to use.
         python_interpreter_target: The python interpreter to use after downloading the label.
 
@@ -51,11 +51,11 @@ def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interp
     if python_interpreter_target != None:
         python_interpreter = ctx.path(python_interpreter_target)
 
-        (os, _) = get_host_os_arch(ctx)
+        os = repo_utils.get_platforms_os_name(ctx)
 
         # On Windows, the symlink doesn't work because Windows attempts to find
         # Python DLLs where the symlink is, not where the symlink points.
-        if os == WINDOWS_NAME:
+        if "windows" in os:
             python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         # It's a plain command, e.g. "python3", to look up in the environment.
@@ -67,22 +67,23 @@ def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interp
         python_interpreter = ctx.path(python_interpreter)
     return python_interpreter
 
-def _construct_pypath(rctx, *, entries):
+def _construct_pypath(ctx, *, entries):
     """Helper function to construct a PYTHONPATH.
 
     Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
     This allows us to run python code inside repository rule implementations.
 
     Args:
-        rctx: Handle to the repository_context.
+        ctx: Handle to the module_ctx or repository_ctx.
         entries: The list of entries to add to PYTHONPATH.
 
     Returns: String of the PYTHONPATH.
     """
 
-    separator = ":" if not "windows" in rctx.os.name.lower() else ";"
+    os = repo_utils.get_platforms_os_name(ctx)
+    separator = ";" if "windows" in os else ":"
     pypath = separator.join([
-        str(rctx.path(entry).dirname)
+        str(ctx.path(entry).dirname)
         # Use a dict as a way to remove duplicates and then sort it.
         for entry in sorted({x: None for x in entries})
     ])
