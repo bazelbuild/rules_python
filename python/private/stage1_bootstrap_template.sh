@@ -106,11 +106,13 @@ declare -a interpreter_args
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
 # NOTE: Only works for 3.11+
 # We inherit the value from the outer environment in case the user wants to
-# opt-out of using PYTHONSAFEPATH.
-# Because empty means false and non-empty means true, we have to distinguish
-# between "defined and empty" and "not defined at all".
+# opt-out of using PYTHONSAFEPATH. To opt-out, they have to set
+# `PYTHONSAFEPATH=` (empty string). This is because Python treats the empty
+# value as false, and any non-empty value as true.
+# ${FOO+WORD} expands to empty if $FOO is undefined, and WORD otherwise.
 if [[ -z "${PYTHONSAFEPATH+x}" ]]; then
-  interpreter_env+=("PYTHONSAFEPATH=${PYTHONSAFEPATH+1}")
+  # ${FOO-WORD} expands to WORD if $FOO is undefined, and $FOO otherwise
+  interpreter_env+=("PYTHONSAFEPATH=${PYTHONSAFEPATH-1}")
 fi
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then

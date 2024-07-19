@@ -35,17 +35,35 @@ function expect_match() {
   local expected_pattern=$1
   local actual=$2
   if ! (echo "$actual" | grep "$expected_pattern" ) >/dev/null; then
-    echo "expected output to match: $expected_pattern"
-    echo "but got:\n$actual"
+    echo "expected to match: $expected_pattern"
+    echo "===== actual START ====="
+    echo "$actual"
+    echo "===== actual END ====="
+    echo
+    touch EXPECTATION_FAILED
     return 1
   fi
 }
 
 
+echo "Check inherited and disabled"
+# Verify setting it to empty string disables safe path
 actual=$(PYTHONSAFEPATH= $bin 2>&1)
 expect_match "sys.flags.safe_path: False" "$actual"
 expect_match "PYTHONSAFEPATH: EMPTY" "$actual"
 
+echo "Check inherited and propagated"
+# Verify setting it to any string enables safe path and that
+# value is propagated
 actual=$(PYTHONSAFEPATH=OUTER $bin 2>&1)
 expect_match "sys.flags.safe_path: True" "$actual"
 expect_match "PYTHONSAFEPATH: OUTER" "$actual"
+
+echo "Check enabled by default"
+# Verifying doing nothing leaves safepath enabled by default
+actual=$($bin 2>&1)
+expect_match "sys.flags.safe_path: True" "$actual"
+expect_match "PYTHONSAFEPATH: 1" "$actual"
+
+# Exit if any of the expects failed
+[[ ! -e EXPECTATION_FAILED ]]
