@@ -51,3 +51,11 @@ sh_py_run_test(
     sh_src = "run_binary_zip_no_test.sh",
     target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
 )
+
+sh_py_run_test(
+    name = "inherit_pythonsafepath_env_test",
+    bootstrap_impl = "script",
+    py_src = "bin.py",
+    sh_src = "inherit_pythonsafepath_env_test.sh",
+    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+)

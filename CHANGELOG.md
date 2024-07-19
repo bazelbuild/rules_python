@@ -39,6 +39,9 @@ A brief description of the categories of changes:
   containing ">" sign
 
 ### Added
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 * (gazelle) Added `python_generation_mode_per_package_require_test_entry_point`
   in order to better accommodate users who use a custom macro,
   [`pytest-bazel`][pytest_bazel], [rules_python_pytest] or `rules_py`
