@@ -17,7 +17,7 @@ import json
 import pathlib
 from typing import Any, Dict, Set
 
-from python.private.pypi.whl_installer import wheel
+from python.private.pypi.whl_installer.platform import Platform
 
 
 def parser(**kwargs: Any) -> argparse.ArgumentParser:
@@ -44,7 +44,7 @@ def parser(**kwargs: Any) -> argparse.ArgumentParser:
     parser.add_argument(
         "--platform",
         action="extend",
-        type=wheel.Platform.from_string,
+        type=Platform.from_string,
         help="Platforms to target dependencies. Can be used multiple times.",
     )
     parser.add_argument(

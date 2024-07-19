@@ -21,6 +21,7 @@ load("//python/private:text_util.bzl", "render")
 load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "render_pkg_aliases", "whl_alias")
+load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 
 def _get_python_interpreter_attr(rctx):
     """A helper function for getting the `python_interpreter` attribute or it's default
@@ -71,20 +72,23 @@ exports_files(["requirements.bzl"])
 def _pip_repository_impl(rctx):
     requirements_by_platform = parse_requirements(
         rctx,
-        requirements_by_platform = rctx.attr.requirements_by_platform,
-        requirements_linux = rctx.attr.requirements_linux,
-        requirements_lock = rctx.attr.requirements_lock,
-        requirements_osx = rctx.attr.requirements_darwin,
-        requirements_windows = rctx.attr.requirements_windows,
+        requirements_by_platform = requirements_files_by_platform(
+            requirements_by_platform = rctx.attr.requirements_by_platform,
+            requirements_linux = rctx.attr.requirements_linux,
+            requirements_lock = rctx.attr.requirements_lock,
+            requirements_osx = rctx.attr.requirements_darwin,
+            requirements_windows = rctx.attr.requirements_windows,
+            extra_pip_args = rctx.attr.extra_pip_args,
+        ),
         extra_pip_args = rctx.attr.extra_pip_args,
     )
     selected_requirements = {}
     options = None
-    repository_platform = host_platform(rctx.os)
+    repository_platform = host_platform(rctx)
     for name, requirements in requirements_by_platform.items():
         r = select_requirement(
             requirements,
-            platform = repository_platform,
+            platform = None if rctx.attr.download_only else repository_platform,
         )
         if not r:
             continue

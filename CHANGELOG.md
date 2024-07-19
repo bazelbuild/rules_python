@@ -28,7 +28,13 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* (rules) Fixes python builds when the `--build_python_zip` is set to `false` on Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
+* (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
+  (for non-zip builds).
+  ([#2043](https://github.com/bazelbuild/rules_python/issues/2043))
+* (rules) Fixes Python builds when the `--build_python_zip` is set to `false` on
+  Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
+* (rules) Fixes Mac + `--build_python_zip` + {obj}`--bootstrap_impl=script`
+  ([#2030](https://github.com/bazelbuild/rules_python/issues/2030)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 

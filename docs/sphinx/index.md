@@ -66,6 +66,7 @@ Contributing <contributing>
 support
 Changelog <changelog>
 api/index
+environment-variables
 glossary
 genindex
 ```

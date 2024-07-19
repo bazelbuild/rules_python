@@ -265,6 +265,11 @@ def whl_alias(*, repo, version = None, config_setting = None, filename = None, t
         config_setting = config_setting or ("//_config:is_python_" + version)
         config_setting = str(config_setting)
 
+    if target_platforms:
+        for p in target_platforms:
+            if not p.startswith("cp"):
+                fail("target_platform should start with 'cp' denoting the python version, got: " + p)
+
     return struct(
         repo = repo,
         version = version,
@@ -448,7 +453,7 @@ def get_whl_flag_versions(aliases):
             parsed = parse_whl_name(a.filename)
         else:
             for plat in a.target_platforms or []:
-                target_platforms[plat] = None
+                target_platforms[_non_versioned_platform(plat)] = None
             continue
 
         for platform_tag in parsed.platform_tag.split("."):
@@ -486,6 +491,19 @@ def get_whl_flag_versions(aliases):
         if v
     }
 
+def _non_versioned_platform(p, *, strict = False):
+    """A small utility function that converts 'cp311_linux_x86_64' to 'linux_x86_64'.
+
+    This is so that we can tighten the code structure later by using strict = True.
+    """
+    has_abi = p.startswith("cp")
+    if has_abi:
+        return p.partition("_")[-1]
+    elif not strict:
+        return p
+    else:
+        fail("Expected to always have a platform in the form '{{abi}}_{{os}}_{{arch}}', got: {}".format(p))
+
 def get_filename_config_settings(
         *,
         filename,
@@ -499,7 +517,7 @@ def get_filename_config_settings(
 
     Args:
         filename: the distribution filename (can be a whl or an sdist).
-        target_platforms: list[str], target platforms in "{os}_{cpu}" format.
+        target_platforms: list[str], target platforms in "{abi}_{os}_{cpu}" format.
         glibc_versions: list[tuple[int, int]], list of versions.
         muslc_versions: list[tuple[int, int]], list of versions.
         osx_versions: list[tuple[int, int]], list of versions.
@@ -541,7 +559,7 @@ def get_filename_config_settings(
 
         if parsed.platform_tag == "any":
             prefixes = ["{}_{}_any".format(py, abi)]
-            suffixes = target_platforms
+            suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
         else:
             prefixes = ["{}_{}".format(py, abi)]
             suffixes = _whl_config_setting_suffixes(
@@ -553,7 +571,7 @@ def get_filename_config_settings(
             )
     else:
         prefixes = ["sdist"]
-        suffixes = target_platforms
+        suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
 
     if python_default and python_version:
         prefixes += ["cp{}_{}".format(python_version, p) for p in prefixes]

@@ -19,6 +19,7 @@ load(
     "bazel_integration_tests",
     "integration_test_utils",
 )
+load("//python:py_test.bzl", "py_test")
 
 def rules_python_integration_test(
         name,
@@ -26,6 +27,8 @@ def rules_python_integration_test(
         bzlmod = True,
         gazelle_plugin = False,
         tags = None,
+        py_main = None,
+        bazel_versions = None,
         **kwargs):
     """Runs a bazel-in-bazel integration test.
 
@@ -37,10 +40,26 @@ def rules_python_integration_test(
             disable bzlmod.
         gazelle_plugin: Whether the test uses the gazelle plugin.
         tags: Test tags.
+        py_main: Optional `.py` file to run tests using. When specified, a
+            python based test runner is used, and this source file is the main
+            entry point and responsible for executing tests.
+        bazel_versions: `list[str] | None`, the bazel versions to test. I
+            not specified, defaults to all configured bazel versions.
         **kwargs: Passed to the upstream `bazel_integration_tests` rule.
     """
     workspace_path = workspace_path or name.removesuffix("_test")
-    if bzlmod:
+    if py_main:
+        test_runner = name + "_py_runner"
+        py_test(
+            name = test_runner,
+            srcs = [py_main],
+            main = py_main,
+            deps = [":runner_lib"],
+            # Hide from ... patterns; should only be run as part
+            # of the bazel integration test
+            tags = ["manual"],
+        )
+    elif bzlmod:
         if gazelle_plugin:
             test_runner = "//tests/integration:test_runner_gazelle_plugin"
         else:
@@ -74,7 +93,7 @@ def rules_python_integration_test(
         name = name,
         workspace_path = workspace_path,
         test_runner = test_runner,
-        bazel_versions = bazel_binaries.versions.all,
+        bazel_versions = bazel_versions or bazel_binaries.versions.all,
         workspace_files = [name + "_workspace_files"],
         # Override the tags so that the `manual` tag isn't applied.
         tags = (tags or []) + [
