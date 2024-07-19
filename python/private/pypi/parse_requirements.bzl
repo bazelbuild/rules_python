@@ -235,7 +235,7 @@ def host_platform(ctx):
     """
     return "{}_{}".format(
         repo_utils.get_platforms_os_name(ctx),
-        repo_utils.get_platforms_arch_name(ctx),
+        repo_utils.get_platforms_cpu_name(ctx),
     )
 
 def _add_dists(requirement, index_urls, python_version, logger = None):
