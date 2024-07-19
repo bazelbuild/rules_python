@@ -61,6 +61,7 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.ValidateImportStatementsDirective,
 		pythonconfig.GenerationMode,
 		pythonconfig.GenerationModePerFileIncludeInit,
+		pythonconfig.GenerationModePerPackageRequireTestEntryPoint,
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
@@ -163,6 +164,14 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal(err)
 			}
 			config.SetPerFileGenerationIncludeInit(v)
+		case pythonconfig.GenerationModePerPackageRequireTestEntryPoint:
+			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))
+			if err != nil {
+				log.Printf("invalid value for gazelle:%s in %q: %q",
+					pythonconfig.GenerationModePerPackageRequireTestEntryPoint, rel, d.Value)
+			} else {
+				config.SetPerPackageGenerationRequireTestEntryPoint(v)
+			}
 		case pythonconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.BinaryNamingConvention:

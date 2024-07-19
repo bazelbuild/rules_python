@@ -70,3 +70,11 @@ py_reconfig_test(
     imports = ["./site-packages"],
     main = "sys_path_order_test.py",
 )
+
+sh_py_run_test(
+    name = "inherit_pythonsafepath_env_test",
+    bootstrap_impl = "script",
+    py_src = "bin.py",
+    sh_src = "inherit_pythonsafepath_env_test.sh",
+    target_compatible_with = _SUPPORTS_BOOTSTRAP_SCRIPT,
+)

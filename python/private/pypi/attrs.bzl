@@ -154,7 +154,7 @@ or empty in the environment), if `"VARNAME"` is listed in the
     "isolated": attr.bool(
         doc = """\
 Whether or not to pass the [--isolated](https://pip.pypa.io/en/stable/cli/pip/#cmdoption-isolated) flag to
-the underlying pip command. Alternatively, the `RULES_PYTHON_PIP_ISOLATED` environment variable can be used
+the underlying pip command. Alternatively, the {envvar}`RULES_PYTHON_PIP_ISOLATED` environment variable can be used
 to control this flag.
 """,
         default = True,
@@ -185,13 +185,10 @@ python_interpreter. An example value: "@python3_x86_64-unknown-linux-gnu//:pytho
         doc = """\
 If True, suppress printing stdout and stderr output to the terminal.
 
-If you would like to get more diagnostic output, please use:
-
-    RULES_PYTHON_REPO_DEBUG=1
-
+If you would like to get more diagnostic output, set
+{envvar}`RULES_PYTHON_REPO_DEBUG=1 <RULES_PYTHON_REPO_DEBUG>`
 or
-
-    RULES_PYTHON_REPO_DEBUG_VERBOSITY=<INFO|DEBUG|TRACE>
+{envvar}`RULES_PYTHON_REPO_DEBUG_VERBOSITY=<INFO|DEBUG|TRACE> <RULES_PYTHON_REPO_DEBUG_VERBOSITY>`
 """,
     ),
     # 600 is documented as default here: https://docs.bazel.build/versions/master/skylark/lib/repository_ctx.html#execute

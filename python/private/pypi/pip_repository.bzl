@@ -84,7 +84,7 @@ def _pip_repository_impl(rctx):
     )
     selected_requirements = {}
     options = None
-    repository_platform = host_platform(rctx.os)
+    repository_platform = host_platform(rctx)
     for name, requirements in requirements_by_platform.items():
         r = select_requirement(
             requirements,
@@ -214,7 +214,12 @@ def _pip_repository_impl(rctx):
 pip_repository = repository_rule(
     attrs = dict(
         annotations = attr.string_dict(
-            doc = "Optional annotations to apply to packages",
+            doc = """\
+Optional annotations to apply to packages. Keys should be package names, with
+capitalization matching the input requirements file, and values should be
+generated using the `package_name` macro. For example usage, see [this WORKSPACE
+file](https://github.com/bazelbuild/rules_python/blob/main/examples/pip_repository_annotations/WORKSPACE).
+""",
         ),
         _template = attr.label(
             default = ":requirements.bzl.tmpl.workspace",

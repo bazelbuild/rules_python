@@ -341,6 +341,10 @@ def _outputs_to_str(result):
             lines.append("<{} empty>".format(name))
     return "\n".join(lines)
 
+# This includes the vendored _translate_cpu and _translate_os from
+# @platforms//host:extension.bzl at version 0.0.9 so that we don't
+# force the users to depend on it.
+
 def _get_platforms_os_name(rctx):
     """Return the name in @platforms//os for the host os.
 
@@ -348,18 +352,49 @@ def _get_platforms_os_name(rctx):
         rctx: repository_ctx
 
     Returns:
-        `str | None`. The target name if it maps to known platforms
-        value, otherwise None.
+        `str`. The target name.
     """
     os = rctx.os.name.lower()
-    if "linux" in os:
-        return os
-    if "windows" in os:
-        return "windows"
-    if "mac" in os:
-        return "osx"
 
-    return None
+    if os.startswith("mac os"):
+        return "osx"
+    if os.startswith("freebsd"):
+        return "freebsd"
+    if os.startswith("openbsd"):
+        return "openbsd"
+    if os.startswith("linux"):
+        return "linux"
+    if os.startswith("windows"):
+        return "windows"
+    return os
+
+def _get_platforms_cpu_name(rctx):
+    """Return the name in @platforms//cpu for the host arch.
+
+    Args:
+        rctx: repository_ctx
+
+    Returns:
+        `str`. The target name.
+    """
+    arch = rctx.os.arch.lower()
+    if arch in ["i386", "i486", "i586", "i686", "i786", "x86"]:
+        return "x86_32"
+    if arch in ["amd64", "x86_64", "x64"]:
+        return "x86_64"
+    if arch in ["ppc", "ppc64", "ppc64le"]:
+        return "ppc"
+    if arch in ["arm", "armv7l"]:
+        return "arm"
+    if arch in ["aarch64"]:
+        return "aarch64"
+    if arch in ["s390x", "s390"]:
+        return "s390x"
+    if arch in ["mips64el", "mips64"]:
+        return "mips64"
+    if arch in ["riscv64"]:
+        return "riscv64"
+    return arch
 
 # TODO: Remove after Bazel 6 support dropped
 def _watch(rctx, *args, **kwargs):
@@ -379,6 +414,7 @@ repo_utils = struct(
     execute_checked = _execute_checked,
     execute_checked_stdout = _execute_checked_stdout,
     execute_unchecked = _execute_unchecked,
+    get_platforms_cpu_name = _get_platforms_cpu_name,
     get_platforms_os_name = _get_platforms_os_name,
     getenv = _getenv,
     is_repo_debug_enabled = _is_repo_debug_enabled,

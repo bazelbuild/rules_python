@@ -165,6 +165,7 @@ bzl_library(
         ":requirements_files_by_platform_bzl",
         ":whl_target_platforms_bzl",
         "//python/private:normalize_name_bzl",
+        "//python/private:repo_utils_bzl",
     ],
 )
 
@@ -233,8 +234,7 @@ bzl_library(
     name = "pypi_repo_utils_bzl",
     srcs = ["pypi_repo_utils.bzl"],
     deps = [
-        "//python:versions_bzl",
-        "//python/private:toolchains_repo_bzl",
+        "//python/private:repo_utils_bzl",
     ],
 )
 
