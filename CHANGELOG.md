@@ -35,11 +35,26 @@ A brief description of the categories of changes:
   Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
 * (rules) Fixes Mac + `--build_python_zip` + {obj}`--bootstrap_impl=script`
   ([#2030](https://github.com/bazelbuild/rules_python/issues/2030)).
+* (rules) User dependencies come before runtime site-packages when using
+  {obj}`--bootstrap_impl=script`.
+  ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 
 ### Added
-* Nothing yet
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
+* (gazelle) Added `python_generation_mode_per_package_require_test_entry_point`
+  in order to better accommodate users who use a custom macro,
+  [`pytest-bazel`][pytest_bazel], [rules_python_pytest] or `rules_py`
+  [py_test_main] in order to integrate with `pytest`. Currently the default
+  flag value is set to `true` for backwards compatible behaviour, but in the
+  future the flag will be flipped be `false` by default.
+
+[rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
+[py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
+[pytest_bazel]: https://pypi.org/project/pytest-bazel
 
 ### Removed
 * Nothing yet
