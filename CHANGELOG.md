@@ -25,7 +25,8 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (whl_library) A better log message when the wheel is built from an sdist or
+  when the wheel is downloaded using `download_only` feature to aid debugging.
 
 ### Fixed
 * (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
