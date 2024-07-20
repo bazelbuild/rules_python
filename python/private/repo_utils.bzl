@@ -73,8 +73,6 @@ def _logger(ctx, name = None):
     elif not name:
         fail("The name has to be specified when using the logger with `module_ctx`")
 
-    name = getattr(ctx, "name", "extension")
-
     def _log(enabled_on_verbosity, level, message_cb_or_str):
         if verbosity < enabled_on_verbosity:
             return
