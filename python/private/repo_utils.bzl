@@ -58,7 +58,7 @@ def _logger(ctx, name = None):
     else:
         verbosity_level = "WARN"
 
-    env_var_verbosity = ctx.os.environ.get(REPO_VERBOSITY_ENV_VAR)
+    env_var_verbosity = _getenv(ctx, REPO_VERBOSITY_ENV_VAR)
     verbosity_level = env_var_verbosity or verbosity_level
 
     verbosity = {
@@ -284,12 +284,9 @@ def _which_describe_failure(binary_name, path):
         path = path,
     )
 
-def _getenv(rctx, name, default = None):
-    # Bazel 7+ API
-    if hasattr(rctx, "getenv"):
-        return rctx.getenv(name, default)
-    else:
-        return rctx.os.environ.get("PATH", default)
+def _getenv(ctx, name, default = None):
+    # Bazel 7+ API has ctx.getenv
+    return getattr(ctx, "getenv", ctx.os.environ.get)(name, default)
 
 def _args_to_str(arguments):
     return " ".join([_arg_repr(a) for a in arguments])
