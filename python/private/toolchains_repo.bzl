@@ -404,7 +404,7 @@ def _get_host_platform(os_name, arch):
         fail("No platform declared for host OS {} on arch {}".format(os_name, arch))
     return host_platform
 
-def _get_host_os_arch(rctx):
+def _get_host_os_arch(rctx, logger):
     """Infer the host OS name and arch from a repository context.
 
     Args:
