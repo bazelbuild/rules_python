@@ -69,6 +69,7 @@ def _local_runtime_repo_impl(rctx):
             rctx.path(rctx.attr._get_local_runtime_info),
         ],
         quiet = True,
+        logger = logger,
     )
     if exec_result.return_code != 0:
         if on_failure == "fail":

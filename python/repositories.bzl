@@ -76,12 +76,13 @@ def py_repositories():
 
 STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
 
-def is_standalone_interpreter(rctx, python_interpreter_path):
+def is_standalone_interpreter(rctx, python_interpreter_path, *, logger = None):
     """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
 
     Args:
         rctx (repository_ctx): The repository rule's context object.
         python_interpreter_path (path): A path representing the interpreter.
+        logger: Optional logger to use for operations.
 
     Returns:
         bool: Whether or not the target is from a rules_python generated toolchain.
@@ -102,6 +103,7 @@ def is_standalone_interpreter(rctx, python_interpreter_path):
                 STANDALONE_INTERPRETER_FILENAME,
             ),
         ],
+        logger = logger,
     ).return_code == 0
 
 def _python_repository_impl(rctx):
@@ -109,6 +111,8 @@ def _python_repository_impl(rctx):
         fail("Only one of (distutils, distutils_content) should be set.")
     if bool(rctx.attr.url) == bool(rctx.attr.urls):
         fail("Exactly one of (url, urls) must be set.")
+
+    logger = repo_utils.logger(rctx)
 
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
@@ -145,6 +149,7 @@ def _python_repository_impl(rctx):
                 timeout = 600,
                 quiet = True,
                 working_directory = working_directory,
+                logger = logger,
             )
             zstd = "{working_directory}/zstd".format(working_directory = working_directory)
             unzstd = "./unzstd"
@@ -160,6 +165,7 @@ def _python_repository_impl(rctx):
                 "--use-compress-program={unzstd}".format(unzstd = unzstd),
                 "--file={}".format(release_filename),
             ],
+            logger = logger,
         )
     else:
         rctx.download_and_extract(
@@ -197,11 +203,13 @@ def _python_repository_impl(rctx):
                 rctx,
                 op = "python_repository.MakeReadOnly",
                 arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", lib_dir],
+                logger = logger,
             )
             exec_result = repo_utils.execute_unchecked(
                 rctx,
                 op = "python_repository.TestReadOnly",
                 arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
+                logger = logger,
             )
 
             # The issue with running as root is the installation is no longer
@@ -211,6 +219,7 @@ def _python_repository_impl(rctx):
                     rctx,
                     op = "python_repository.GetUserId",
                     arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
+                    logger = logger,
                 )
                 uid = int(stdout.strip())
                 if uid == 0:
@@ -529,6 +538,7 @@ For more information see the official bazel docs
         "zstd_version": attr.string(
             default = "1.5.2",
         ),
+        "_rule_name": attr.string(default = "python_repository"),
     },
     environ = [REPO_DEBUG_ENV_VAR],
 )
