@@ -233,9 +233,16 @@ def _whl_library_impl(rctx):
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
 
     if not whl_path:
+        if rctx.attr.urls:
+            op_tmpl = "whl_library.BuildWheelFromSource({name}, {requirement})"
+        elif rctx.attr.download_only:
+            op_tmpl = "whl_library.DownloadWheel({name}, {requirement})"
+        else:
+            op_tmpl = "whl_library.ResolveRequirement({name}, {requirement})"
+
         repo_utils.execute_checked(
             rctx,
-            op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement),
             arguments = args,
             environment = environment,
             quiet = rctx.attr.quiet,

@@ -31,22 +31,23 @@ def _is_repo_debug_enabled(rctx):
     """
     return _getenv(rctx, REPO_DEBUG_ENV_VAR) == "1"
 
-def _logger(rctx):
+def _logger(ctx, name = None):
     """Creates a logger instance for printing messages.
 
     Args:
-        rctx: repository_ctx object. If the attribute `_rule_name` is
-            present, it will be included in log messages.
+        ctx: repository_ctx or module_ctx object. If the attribute
+            `_rule_name` is present, it will be included in log messages.
+        name: name for the logger. Optional for repository_ctx usage.
 
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
     """
-    if _is_repo_debug_enabled(rctx):
+    if _is_repo_debug_enabled(ctx):
         verbosity_level = "DEBUG"
     else:
         verbosity_level = "WARN"
 
-    env_var_verbosity = rctx.os.environ.get(REPO_VERBOSITY_ENV_VAR)
+    env_var_verbosity = _getenv(ctx, REPO_VERBOSITY_ENV_VAR)
     verbosity_level = env_var_verbosity or verbosity_level
 
     verbosity = {
@@ -55,19 +56,24 @@ def _logger(rctx):
         "TRACE": 3,
     }.get(verbosity_level, 0)
 
+    if hasattr(ctx, "attr"):
+        # This is `repository_ctx`.
+        name = name or "{}(@@{})".format(getattr(ctx.attr, "_rule_name", "?"), ctx.name)
+    elif not name:
+        fail("The name has to be specified when using the logger with `module_ctx`")
+
     def _log(enabled_on_verbosity, level, message_cb_or_str, printer = print):
         if verbosity < enabled_on_verbosity:
             return
-        rule_name = getattr(rctx.attr, "_rule_name", "?")
+
         if type(message_cb_or_str) == "string":
             message = message_cb_or_str
         else:
             message = message_cb_or_str()
 
         # NOTE: printer may be the `fail` function.
-        printer("\nrules_python:{}(@@{}) {}:".format(
-            rule_name,
-            rctx.name,
+        printer("\nrules_python:{} {}:".format(
+            name,
             level.upper(),
         ), message)  # buildifier: disable=print
 
@@ -272,12 +278,9 @@ def _which_describe_failure(binary_name, path):
         path = path,
     )
 
-def _getenv(rctx, name, default = None):
-    # Bazel 7+ API
-    if hasattr(rctx, "getenv"):
-        return rctx.getenv(name, default)
-    else:
-        return rctx.os.environ.get("PATH", default)
+def _getenv(ctx, name, default = None):
+    # Bazel 7+ API has ctx.getenv
+    return getattr(ctx, "getenv", ctx.os.environ.get)(name, default)
 
 def _args_to_str(arguments):
     return " ".join([_arg_repr(a) for a in arguments])
