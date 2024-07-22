@@ -14,9 +14,9 @@
 
 ""
 
-load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
+load("//python/private:python_repositories.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names")
