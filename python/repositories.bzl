@@ -16,7 +16,7 @@
 """
 
 load(
-    "//python/private:python_repositories",
+    "//python/private:python_repositories.bzl",
     _STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER_FILENAME",
     _http_archive = "http_archive",
     _is_standalone_interpreter = "is_standalone_interpreter",

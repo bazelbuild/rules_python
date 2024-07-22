@@ -19,26 +19,26 @@ For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
-load("//python/private:auth.bzl", "get_auth")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
-load("//python/private:coverage_deps.bzl", "coverage_dep")
-load("//python/private:full_version.bzl", "full_version")
-load("//python/private:internal_config_repo.bzl", "internal_config_repo")
-load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(
-    "//python/private:toolchains_repo.bzl",
-    "host_toolchain",
-    "multi_toolchain_aliases",
-    "toolchain_aliases",
-    "toolchains_repo",
-)
-load("//python/private/pypi:deps.bzl", "pypi_deps")
-load(
-    ":versions.bzl",
+    "//python:versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
     "PLATFORMS",
     "TOOL_VERSIONS",
     "get_release_info",
+)
+load("//python/private/pypi:deps.bzl", "pypi_deps")
+load(":auth.bzl", "get_auth")
+load(":bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+load(":coverage_deps.bzl", "coverage_dep")
+load(":full_version.bzl", "full_version")
+load(":internal_config_repo.bzl", "internal_config_repo")
+load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
+load(
+    ":toolchains_repo.bzl",
+    "host_toolchain",
+    "multi_toolchain_aliases",
+    "toolchain_aliases",
+    "toolchains_repo",
 )
 
 def http_archive(**kwargs):
