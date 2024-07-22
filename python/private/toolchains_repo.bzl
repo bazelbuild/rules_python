@@ -409,6 +409,8 @@ def _get_host_os_arch(rctx, logger):
 
     Args:
         rctx: Bazel's repository_ctx.
+        logger: Logger to use for operations.
+
     Returns:
         A tuple with the host OS name and arch.
     """
