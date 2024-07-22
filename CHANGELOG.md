@@ -110,7 +110,10 @@ A brief description of the categories of changes:
   replacement for the "autodetecting" toolchain.
 * (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
   allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
-  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
+  with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).  
+* (toolchains) `python_register_toolchains` and `python_repository` now accepts `bootstrap_template`
+  and `stage2_bootstrap_template` attributes. These attributes are then passed to the underlying
+  `py_runtime` rule to control the bootstrap template used.
 
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
