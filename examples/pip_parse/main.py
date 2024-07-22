@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import requests
+import skrf
 
 
 def version():
