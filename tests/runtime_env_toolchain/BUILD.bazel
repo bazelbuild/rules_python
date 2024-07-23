@@ -12,6 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 load(":runtime_env_toolchain_tests.bzl", "runtime_env_toolchain_test_suite")
 
 runtime_env_toolchain_test_suite(name = "runtime_env_toolchain_tests")
+
+py_reconfig_test(
+    name = "toolchain_runs_test",
+    srcs = ["toolchain_runs_test.py"],
+    data = [
+        "//tests/support:current_build_settings",
+    ],
+    extra_toolchains = ["//python/runtime_env_toolchains:all"],
+    main = "py_test.py",
+    deps = ["//python/runfiles"],
+)

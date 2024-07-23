@@ -19,12 +19,15 @@ without the overhead of a bazel-in-bazel integration test.
 
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_test.bzl", "py_test")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 
 def _perform_transition_impl(input_settings, attr):
     settings = dict(input_settings)
     settings["//command_line_option:build_python_zip"] = attr.build_python_zip
     if attr.bootstrap_impl:
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
+    if attr.extra_toolchains:
+        settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
     return settings
 
 _perform_transition = transition(
@@ -34,6 +37,7 @@ _perform_transition = transition(
     ],
     outputs = [
         "//command_line_option:build_python_zip",
+        "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
     ],
 )
@@ -85,6 +89,7 @@ def _make_reconfig_rule(**kwargs):
             "bootstrap_impl": attr.string(),
             "build_python_zip": attr.string(default = "auto"),
             "env": attr.string_dict(),
+            "extra_toolchains": attr.string_list(),
             "target": attr.label(executable = True, cfg = "target"),
             "_allowlist_function_transition": attr.label(
                 default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
@@ -106,7 +111,8 @@ def py_reconfig_test(*, name, **kwargs):
         **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
     """
     reconfig_kwargs = {}
-    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl")
+    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
+    reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
     reconfig_kwargs["env"] = kwargs.get("env")
     inner_name = "_{}_inner" + name
     _py_reconfig_test(
@@ -147,3 +153,29 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
         main = py_src,
         tags = ["manual"],
     )
+
+def _current_build_settings_impl(ctx):
+    info = ctx.actions.declare_file(ctx.label.name + ".json")
+    toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
+    files = [info]
+    ctx.actions.write(
+        output = info,
+        content = json.encode({
+            "interpreter": toolchain.py3_runtime.interpreter.short_path,
+        }),
+    )
+    return [DefaultInfo(
+        files = depset(files),
+    )]
+
+current_build_settings = rule(
+    doc = """
+Writes information about the current build config to JSON for testing.
+
+This is so tests can verify information about the build config used for them.
+""",
+    implementation = _current_build_settings_impl,
+    toolchains = [
+        TARGET_TOOLCHAIN_TYPE,
+    ],
+)
