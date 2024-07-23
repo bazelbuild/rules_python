@@ -24,6 +24,6 @@ py_reconfig_test(
         "//tests/support:current_build_settings",
     ],
     extra_toolchains = ["//python/runtime_env_toolchains:all"],
-    main = "py_test.py",
+    main = "toolchain_runs_test.py",
     deps = ["//python/runfiles"],
 )
