@@ -19,21 +19,28 @@ without the overhead of a bazel-in-bazel integration test.
 
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_test.bzl", "py_test")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
 
 def _perform_transition_impl(input_settings, attr):
     settings = dict(input_settings)
     settings["//command_line_option:build_python_zip"] = attr.build_python_zip
     if attr.bootstrap_impl:
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
+    if attr.extra_toolchains:
+        settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
+    else:
+        settings["//command_line_option:extra_toolchains"] = input_settings["//command_line_option:extra_toolchains"]
     return settings
 
 _perform_transition = transition(
     implementation = _perform_transition_impl,
     inputs = [
         "//python/config_settings:bootstrap_impl",
+        "//command_line_option:extra_toolchains",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
+        "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
     ],
 )
@@ -79,17 +86,27 @@ def _py_reconfig_impl(ctx):
     ]
 
 def _make_reconfig_rule(**kwargs):
+    attrs = {
+        "bootstrap_impl": attr.string(),
+        "build_python_zip": attr.string(default = "auto"),
+        "env": attr.string_dict(),
+        "extra_toolchains": attr.string_list(
+            doc = """
+Value for the --extra_toolchains flag.
+
+NOTE: You'll likely have to also specify //tests/cc:all (or some CC toolchain)
+to make the RBE presubmits happy, which disable auto-detection of a CC
+toolchain.
+""",
+        ),
+        "target": attr.label(executable = True, cfg = "target"),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    }
     return rule(
         implementation = _py_reconfig_impl,
-        attrs = {
-            "bootstrap_impl": attr.string(),
-            "build_python_zip": attr.string(default = "auto"),
-            "env": attr.string_dict(),
-            "target": attr.label(executable = True, cfg = "target"),
-            "_allowlist_function_transition": attr.label(
-                default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-            ),
-        },
+        attrs = attrs,
         cfg = _perform_transition,
         **kwargs
     )
@@ -106,7 +123,8 @@ def py_reconfig_test(*, name, **kwargs):
         **kwargs: kwargs to pass along to _py_reconfig_test and py_test.
     """
     reconfig_kwargs = {}
-    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl")
+    reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
+    reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
     reconfig_kwargs["env"] = kwargs.get("env")
     inner_name = "_{}_inner" + name
     _py_reconfig_test(
@@ -147,3 +165,33 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
         main = py_src,
         tags = ["manual"],
     )
+
+def _current_build_settings_impl(ctx):
+    info = ctx.actions.declare_file(ctx.label.name + ".json")
+    toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
+    runtime = toolchain.py3_runtime
+    files = [info]
+    ctx.actions.write(
+        output = info,
+        content = json.encode({
+            "interpreter": {
+                "short_path": runtime.interpreter.short_path if runtime.interpreter else None,
+            },
+            "interpreter_path": runtime.interpreter_path,
+        }),
+    )
+    return [DefaultInfo(
+        files = depset(files),
+    )]
+
+current_build_settings = rule(
+    doc = """
+Writes information about the current build config to JSON for testing.
+
+This is so tests can verify information about the build config used for them.
+""",
+    implementation = _current_build_settings_impl,
+    toolchains = [
+        TARGET_TOOLCHAIN_TYPE,
+    ],
+)

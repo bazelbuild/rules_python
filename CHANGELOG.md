@@ -41,6 +41,9 @@ A brief description of the categories of changes:
   ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
+* (toolchains) Added missing executable permission to
+  `//python/runtime_env_toolchains` interpreter script so that it is runnable.
+  ([#2085](https://github.com/bazelbuild/rules_python/issues/2085)).
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
