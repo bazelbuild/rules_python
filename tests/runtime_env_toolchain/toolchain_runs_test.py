@@ -1,6 +1,7 @@
 import json
 import pathlib
 import unittest
+import platform
 
 from python.runfiles import runfiles
 
@@ -12,7 +13,10 @@ class RunTest(unittest.TestCase):
         settings = json.loads(pathlib.Path(settings_path).read_text())
         import sys
         print("===Settings:", settings, file=sys.stderr)
-        self.assertIn("runtime_env_toolchain_interpreter.sh", settings["interpreter"]["short_path"])
+        if platform.system == "Windows":
+            self.assertEqual("/_magic_pyruntime_sentinel_do_not_use", settings["interpreter_path"])
+        else:
+            self.assertIn("runtime_env_toolchain_interpreter.sh", settings["interpreter"]["short_path"])
 
 
 if __name__ == "__main__":
