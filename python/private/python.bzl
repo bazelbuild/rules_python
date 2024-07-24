@@ -16,6 +16,7 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
+load("//python:versions.bzl", "TOOL_VERSIONS")
 load(":pythons_hub.bzl", "hub_repo")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
@@ -78,7 +79,10 @@ def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        for toolchain_attr in mod.tags.toolchain:
+        toolchain_tags = [_toolchain_struct_from(tag = tag) for tag in mod.tags.toolchain]
+        extra_toolchains = _compute_register_all_versions(module_ctx, toolchain_tags)
+        for toolchain_attr in mod.tags.toolchain + extra_toolchains:
+            toolchain_attr = _toolchain_struct_from(tag = toolchain_attr)
             toolchain_version = toolchain_attr.python_version
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
@@ -251,6 +255,36 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
+def _compute_register_all_versions(mctx, existing_toolchains):
+    seen_versions = {v.python_version: None for v in existing_toolchains}
+    register_all = False
+    for mod in mctx.modules:
+        if not mod.is_root:
+            continue
+        for tag in mod.tags.rules_python_private_testing:
+            if tag.register_all_versions:
+                register_all = True
+                break
+    if not register_all:
+        return []
+
+    extra_toolchains = [
+        _toolchain_struct_from(python_version = v)
+        for v in TOOL_VERSIONS.keys()
+        if v not in seen_versions
+    ]
+    return extra_toolchains
+
+def _toolchain_struct_from(*, tag = None, python_version = None):
+    if tag and python_version:
+        fail("Only one of tag and python version must be specified")
+    return struct(
+        is_default = getattr(tag, "is_default", False),
+        python_version = python_version if python_version else tag.python_version,
+        configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
+        ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
+    )
+
 def _get_bazel_version_specific_kwargs():
     kwargs = {}
 
@@ -264,6 +298,11 @@ python = module_extension(
 """,
     implementation = _python_impl,
     tag_classes = {
+        "rules_python_private_testing": tag_class(
+            attrs = {
+                "register_all_versions": attr.bool(default = False),
+            },
+        ),
         "toolchain": tag_class(
             doc = """Tag class used to register Python toolchains.
 Use this tag class to register one or more Python toolchains. This class

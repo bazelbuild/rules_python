@@ -20,16 +20,18 @@ without the overhead of a bazel-in-bazel integration test.
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_test.bzl", "py_test")
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
+load("//tests/support:support.bzl", "VISIBLE_FOR_TESTING")
 
 def _perform_transition_impl(input_settings, attr):
     settings = dict(input_settings)
+    settings[VISIBLE_FOR_TESTING] = True
     settings["//command_line_option:build_python_zip"] = attr.build_python_zip
     if attr.bootstrap_impl:
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
     if attr.extra_toolchains:
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
-    else:
-        settings["//command_line_option:extra_toolchains"] = input_settings["//command_line_option:extra_toolchains"]
+    if attr.python_version:
+        settings["//python/config_settings:python_version"] = attr.python_version
     return settings
 
 _perform_transition = transition(
@@ -37,11 +39,14 @@ _perform_transition = transition(
     inputs = [
         "//python/config_settings:bootstrap_impl",
         "//command_line_option:extra_toolchains",
+        "//python/config_settings:python_version",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
         "//command_line_option:extra_toolchains",
         "//python/config_settings:bootstrap_impl",
+        "//python/config_settings:python_version",
+        VISIBLE_FOR_TESTING,
     ],
 )
 
@@ -99,6 +104,7 @@ to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,
         ),
+        "python_version": attr.string(),
         "target": attr.label(executable = True, cfg = "target"),
         "_allowlist_function_transition": attr.label(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
@@ -125,6 +131,7 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs = {}
     reconfig_kwargs["bootstrap_impl"] = kwargs.pop("bootstrap_impl", None)
     reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
+    reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
     reconfig_kwargs["env"] = kwargs.get("env")
     inner_name = "_{}_inner" + name
     _py_reconfig_test(
@@ -178,6 +185,7 @@ def _current_build_settings_impl(ctx):
                 "short_path": runtime.interpreter.short_path if runtime.interpreter else None,
             },
             "interpreter_path": runtime.interpreter_path,
+            "toolchain_label": str(getattr(toolchain, "toolchain_label", None)),
         }),
     )
     return [DefaultInfo(
