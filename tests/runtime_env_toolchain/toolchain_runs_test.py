@@ -10,7 +10,7 @@ class RunTest(unittest.TestCase):
         rf = runfiles.Create()
         settings_path = rf.Rlocation("_main/tests/support/current_build_settings.json")
         settings = json.loads(pathlib.Path(settings_path).read_text())
-        self.assertIn("runtime_env_toolchain_interpreter.sh", settings["interpreter.short_path"])
+        self.assertIn("runtime_env_toolchain_interpreter.sh", settings["interpreter"]["short_path"])
 
 
 if __name__ == "__main__":
