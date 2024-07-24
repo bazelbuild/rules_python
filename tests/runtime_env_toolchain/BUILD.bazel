@@ -23,7 +23,11 @@ py_reconfig_test(
     data = [
         "//tests/support:current_build_settings",
     ],
-    extra_toolchains = ["//python/runtime_env_toolchains:all"],
+    extra_toolchains = [
+        "//python/runtime_env_toolchains:all",
+        # Necessary for RBE CI
+        "//tests/cc:all",
+    ],
     main = "toolchain_runs_test.py",
     deps = ["//python/runfiles"],
 )
