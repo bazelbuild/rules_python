@@ -86,18 +86,27 @@ def _py_reconfig_impl(ctx):
     ]
 
 def _make_reconfig_rule(**kwargs):
+    attrs = {
+        "bootstrap_impl": attr.string(),
+        "build_python_zip": attr.string(default = "auto"),
+        "env": attr.string_dict(),
+        "extra_toolchains": attr.string_list(
+            doc = """
+Value for the --extra_toolchains flag.
+
+NOTE: You'll likely have to also specify //tests/cc:all (or some CC toolchain)
+to make the RBE presubmits happy, which disable auto-detection of a CC
+toolchain.
+""",
+        ),
+        "target": attr.label(executable = True, cfg = "target"),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    }
     return rule(
         implementation = _py_reconfig_impl,
-        attrs = {
-            "bootstrap_impl": attr.string(),
-            "build_python_zip": attr.string(default = "auto"),
-            "env": attr.string_dict(),
-            "extra_toolchains": attr.string_list(),
-            "target": attr.label(executable = True, cfg = "target"),
-            "_allowlist_function_transition": attr.label(
-                default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-            ),
-        },
+        attrs = attrs,
         cfg = _perform_transition,
         **kwargs
     )
@@ -160,11 +169,15 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
 def _current_build_settings_impl(ctx):
     info = ctx.actions.declare_file(ctx.label.name + ".json")
     toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
+    runtime = toolchain.py3_runtime
     files = [info]
     ctx.actions.write(
         output = info,
         content = json.encode({
-            "interpreter": toolchain.py3_runtime.interpreter.short_path,
+            "interpreter": {
+                "short_path": runtime.interpreter.short_path if runtime.interpreter else None,
+            },
+            "interpreter_path": runtime.interpreter_path,
         }),
     )
     return [DefaultInfo(
