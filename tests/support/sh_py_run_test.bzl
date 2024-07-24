@@ -28,12 +28,15 @@ def _perform_transition_impl(input_settings, attr):
         settings["//python/config_settings:bootstrap_impl"] = attr.bootstrap_impl
     if attr.extra_toolchains:
         settings["//command_line_option:extra_toolchains"] = attr.extra_toolchains
+    else:
+        settings["//command_line_option:extra_toolchains"] = input_settings["//command_line_option:extra_toolchains"]
     return settings
 
 _perform_transition = transition(
     implementation = _perform_transition_impl,
     inputs = [
         "//python/config_settings:bootstrap_impl",
+        "//command_line_option:extra_toolchains",
     ],
     outputs = [
         "//command_line_option:build_python_zip",
