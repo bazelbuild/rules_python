@@ -20,6 +20,11 @@
 
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
+load(":sh_py_run_test.bzl", "current_build_settings")
+
+package(
+    default_visibility = ["//:__subpackages__"],
+)
 
 platform(
     name = "mac",
@@ -103,4 +108,8 @@ toolchain(
     name = "platform_toolchain",
     toolchain = ":platform_runtime_pair",
     toolchain_type = "//python:toolchain_type",
+)
+
+current_build_settings(
+    name = "current_build_settings",
 )

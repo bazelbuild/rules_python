@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """This package contains two sets of rules:
 
     1) the "core" Python rules, which were historically bundled with Bazel and
@@ -41,6 +42,7 @@ filegroup(
         "//python/pip_install:distribution",
         "//python/private:distribution",
         "//python/runfiles:distribution",
+        "//python/uv:distribution",
     ],
     visibility = ["//:__pkg__"],
 )
@@ -209,16 +211,7 @@ bzl_library(
     name = "repositories_bzl",
     srcs = ["repositories.bzl"],
     deps = [
-        ":versions_bzl",
-        "//python/private:auth_bzl",
-        "//python/private:bazel_tools_bzl",
-        "//python/private:bzlmod_enabled_bzl",
-        "//python/private:coverage_deps_bzl",
-        "//python/private:full_version_bzl",
-        "//python/private:internal_config_repo_bzl",
-        "//python/private:repo_utils_bzl",
-        "//python/private:toolchains_repo_bzl",
-        "//python/private/pypi:deps_bzl",
+        "//python/private:python_repositories_bzl",
     ],
 )
 

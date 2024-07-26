@@ -40,4 +40,4 @@ def full_version(version):
             ),
         )
     else:
-        fail("Unknown version format: {}".format(version))
+        fail("Unknown version format: '{}'".format(version))

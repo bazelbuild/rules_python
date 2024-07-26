@@ -25,16 +25,42 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* (whl_library) A better log message when the wheel is built from an sdist or
+  when the wheel is downloaded using `download_only` feature to aid debugging.
 * (gazelle): Simplify and make gazelle_python.yaml have only top level package name.
   It would work well in cases to reduce merge conflicts.
 
 ### Fixed
-* (rules) Fixes python builds when the `--build_python_zip` is set to `false` on Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
+* (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
+  (for non-zip builds).
+  ([#2043](https://github.com/bazelbuild/rules_python/issues/2043))
+* (rules) Fixes Python builds when the `--build_python_zip` is set to `false` on
+  Windows. See [#1840](https://github.com/bazelbuild/rules_python/issues/1840).
+* (rules) Fixes Mac + `--build_python_zip` + {obj}`--bootstrap_impl=script`
+  ([#2030](https://github.com/bazelbuild/rules_python/issues/2030)).
+* (rules) User dependencies come before runtime site-packages when using
+  {obj}`--bootstrap_impl=script`.
+  ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
+* (toolchains) Added missing executable permission to
+  `//python/runtime_env_toolchains` interpreter script so that it is runnable.
+  ([#2085](https://github.com/bazelbuild/rules_python/issues/2085)).
 
 ### Added
-* Nothing yet
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
+* (gazelle) Added `python_generation_mode_per_package_require_test_entry_point`
+  in order to better accommodate users who use a custom macro,
+  [`pytest-bazel`][pytest_bazel], [rules_python_pytest] or `rules_py`
+  [py_test_main] in order to integrate with `pytest`. Currently the default
+  flag value is set to `true` for backwards compatible behaviour, but in the
+  future the flag will be flipped be `false` by default.
+
+[rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
+[py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
+[pytest_bazel]: https://pypi.org/project/pytest-bazel
 
 ### Removed
 * Nothing yet

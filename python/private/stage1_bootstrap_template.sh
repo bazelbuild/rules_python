@@ -16,7 +16,9 @@ PYTHON_BINARY='%python_binary%'
 IS_ZIPFILE="%is_zipfile%"
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then
-  zip_dir=$(mktemp -d --suffix Bazel.runfiles_)
+  # NOTE: Macs have an old version of mktemp, so we must use only the
+  # minimal functionality of it.
+  zip_dir=$(mktemp -d)
 
   if [[ -n "$zip_dir" && -z "${RULES_PYTHON_BOOTSTRAP_VERBOSE:-}" ]]; then
     trap 'rm -fr "$zip_dir"' EXIT
@@ -27,7 +29,7 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   # The alternative requires having to copy ourselves elsewhere with the prelude
   # stripped (because zip can't extract from a stream). We avoid that because
   # it's wasteful.
-  ( unzip -q -d "$zip_dir" "$0" 2>/dev/null || /bin/true )
+  ( unzip -q -d "$zip_dir" "$0" 2>/dev/null || true )
 
   RUNFILES_DIR="$zip_dir/runfiles"
   if [[ ! -d "$RUNFILES_DIR" ]]; then
@@ -103,16 +105,44 @@ declare -a interpreter_args
 # Don't prepend a potentially unsafe path to sys.path
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
 # NOTE: Only works for 3.11+
-interpreter_env+=("PYTHONSAFEPATH=1")
+# We inherit the value from the outer environment in case the user wants to
+# opt-out of using PYTHONSAFEPATH. To opt-out, they have to set
+# `PYTHONSAFEPATH=` (empty string). This is because Python treats the empty
+# value as false, and any non-empty value as true.
+# ${FOO+WORD} expands to empty if $FOO is undefined, and WORD otherwise.
+if [[ -z "${PYTHONSAFEPATH+x}" ]]; then
+  # ${FOO-WORD} expands to WORD if $FOO is undefined, and $FOO otherwise
+  interpreter_env+=("PYTHONSAFEPATH=${PYTHONSAFEPATH-1}")
+fi
+
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")
+fi
+
 
 export RUNFILES_DIR
-# NOTE: We use <(...) to pass the Python program as a file so that stdin can
-# still be passed along as normal.
-env \
-  "${interpreter_env[@]}" \
-  "$python_exe" \
-  "${interpreter_args[@]}" \
-  "$stage2_bootstrap" \
-  "$@"
 
-exit $?
+command=(
+  env
+  "${interpreter_env[@]}"
+  "$python_exe"
+  "${interpreter_args[@]}"
+  "$stage2_bootstrap"
+  "$@"
+)
+
+# We use `exec` instead of a child process so that signals sent directly (e.g.
+# using `kill`) to this process (the PID seen by the calling process) are
+# received by the Python process. Otherwise, this process receives the signal
+# and would have to manually propagate it.
+# See https://github.com/bazelbuild/rules_python/issues/2043#issuecomment-2215469971
+# for more information.
+#
+# However, when running a zip file, we need to clean up the workspace after the
+# process finishes so control must return here.
+if [[ "$IS_ZIPFILE" == "1" ]]; then
+  "${command[@]}"
+  exit $?
+else
+  exec "${command[@]}"
+fi

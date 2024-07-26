@@ -1,23 +1,22 @@
 load("//python:defs.bzl", "py_binary", "py_library")
-load("//python/private/pypi:deps.bzl", "requirement")
 
 py_library(
     name = "lib",
     srcs = [
         "arguments.py",
         "namespace_pkgs.py",
+        "platform.py",
         "wheel.py",
         "wheel_installer.py",
     ],
     visibility = [
-        "//tests:__subpackages__",
-        "//third_party/rules_pycross/pycross/private:__subpackages__",
+        "//:__subpackages__",
     ],
     deps = [
-        requirement("installer"),
-        requirement("pip"),
-        requirement("packaging"),
-        requirement("setuptools"),
+        "@pypi__installer//:lib",
+        "@pypi__packaging//:lib",
+        "@pypi__pip//:lib",
+        "@pypi__setuptools//:lib",
     ],
 )
 
@@ -32,5 +31,5 @@ py_binary(
 filegroup(
     name = "distribution",
     srcs = glob(["*"]),
-    visibility = ["//python/private/pypi:__subpackages__"],
+    visibility = ["//:__subpackages__"],
 )
