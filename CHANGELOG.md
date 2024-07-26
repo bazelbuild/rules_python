@@ -44,6 +44,9 @@ A brief description of the categories of changes:
 * (toolchains) Added missing executable permission to
   `//python/runtime_env_toolchains` interpreter script so that it is runnable.
   ([#2085](https://github.com/bazelbuild/rules_python/issues/2085)).
+* (pip) Correctly use the `sdist` downloaded by the bazel downloader when using
+  `experimental_index_url` feature. Fixes
+  [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow

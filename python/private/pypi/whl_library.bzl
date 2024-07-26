@@ -123,7 +123,7 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
             "--extra_pip_args",
             json.encode(struct(arg = [
                 envsubst(pip_arg, rctx.attr.envsubst, getenv)
-                for pip_arg in rctx.attr.extra_pip_args
+                for pip_arg in extra_pip_args
             ])),
         ]
 
