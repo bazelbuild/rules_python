@@ -27,6 +27,8 @@ A brief description of the categories of changes:
 ### Changed
 * (whl_library) A better log message when the wheel is built from an sdist or
   when the wheel is downloaded using `download_only` feature to aid debugging.
+* (gazelle): Simplify and make gazelle_python.yaml have only top level package name.
+  It would work well in cases to reduce merge conflicts.
 
 ### Fixed
 * (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`

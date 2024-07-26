@@ -26,15 +26,7 @@ import (
 )
 
 var modulesMapping = manifest.ModulesMapping{
-	"arrow":           "arrow",
-	"arrow.__init__":  "arrow",
-	"arrow.api":       "arrow",
-	"arrow.arrow":     "arrow",
-	"arrow.factory":   "arrow",
-	"arrow.formatter": "arrow",
-	"arrow.locales":   "arrow",
-	"arrow.parser":    "arrow",
-	"arrow.util":      "arrow",
+	"arrow": "arrow",
 }
 
 const pipDepsRepositoryName = "test_repository_name"
