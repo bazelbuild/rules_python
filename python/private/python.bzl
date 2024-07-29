@@ -79,7 +79,7 @@ def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        toolchain_attr_structs = _create_toolchain_attr_structs(module_ctx, mod)
+        toolchain_attr_structs = _create_toolchain_attr_structs(mod)
 
         for toolchain_attr in toolchain_attr_structs:
             toolchain_version = toolchain_attr.python_version
@@ -252,7 +252,7 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _create_toolchain_attr_structs(mctx, mod):
+def _create_toolchain_attr_structs(mod):
     arg_structs = []
     seen_versions = {}
     for tag in mod.tags.toolchain:
