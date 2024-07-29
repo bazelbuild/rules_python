@@ -79,10 +79,9 @@ def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        toolchain_tags = [_toolchain_struct_from(tag = tag) for tag in mod.tags.toolchain]
-        extra_toolchains = _compute_register_all_versions(module_ctx, toolchain_tags)
-        for toolchain_attr in mod.tags.toolchain + extra_toolchains:
-            toolchain_attr = _toolchain_struct_from(tag = toolchain_attr)
+        toolchain_attr_structs = _create_toolchain_attr_structs(module_ctx, mod)
+
+        for toolchain_attr in toolchain_attr_structs:
             toolchain_version = toolchain_attr.python_version
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
@@ -99,9 +98,7 @@ def _python_impl(module_ctx):
                 # * rules_python needs to set a soft default in case the root module doesn't,
                 #   e.g. if the root module doesn't use Python itself.
                 # * The root module is allowed to override the rules_python default.
-
-                # A single toolchain is treated as the default because it's unambiguous.
-                is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
+                is_default = toolchain_attr.is_default
 
                 # Also only the root module should be able to decide ignore_root_user_error.
                 # Modules being depended upon don't know the final environment, so they aren't
@@ -255,31 +252,38 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _compute_register_all_versions(mctx, existing_toolchains):
-    seen_versions = {v.python_version: None for v in existing_toolchains}
-    register_all = False
-    for mod in mctx.modules:
-        if not mod.is_root:
-            continue
+def _create_toolchain_attr_structs(mctx, mod):
+    arg_structs = []
+    seen_versions = {}
+    for tag in mod.tags.toolchain:
+        arg_structs.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
+        seen_versions[tag.python_version] = True
+
+    if mod.is_root:
+        register_all = False
         for tag in mod.tags.rules_python_private_testing:
             if tag.register_all_versions:
                 register_all = True
                 break
-    if not register_all:
-        return []
+        if register_all:
+            arg_structs.extend([
+                _create_toolchain_attrs_struct(python_version = v)
+                for v in TOOL_VERSIONS.keys()
+                if v not in seen_versions
+            ])
+    return arg_structs
 
-    extra_toolchains = [
-        _toolchain_struct_from(python_version = v)
-        for v in TOOL_VERSIONS.keys()
-        if v not in seen_versions
-    ]
-    return extra_toolchains
-
-def _toolchain_struct_from(*, tag = None, python_version = None):
+def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
     if tag and python_version:
-        fail("Only one of tag and python version must be specified")
+        fail("Only one of tag and python version can be specified")
+    if tag:
+        # A single toolchain is treated as the default because it's unambiguous.
+        is_default = tag.is_default or toolchain_tag_count == 1
+    else:
+        is_default = False
+
     return struct(
-        is_default = getattr(tag, "is_default", False),
+        is_default = is_default,
         python_version = python_version if python_version else tag.python_version,
         configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
         ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
