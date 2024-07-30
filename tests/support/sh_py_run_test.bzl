@@ -133,6 +133,8 @@ def py_reconfig_test(*, name, **kwargs):
     reconfig_kwargs["extra_toolchains"] = kwargs.pop("extra_toolchains", None)
     reconfig_kwargs["python_version"] = kwargs.pop("python_version", None)
     reconfig_kwargs["env"] = kwargs.get("env")
+    reconfig_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
+
     inner_name = "_{}_inner" + name
     _py_reconfig_test(
         name = name,

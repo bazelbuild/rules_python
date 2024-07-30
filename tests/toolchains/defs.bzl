@@ -14,11 +14,25 @@
 
 ""
 
-load("//python:versions.bzl", "TOOL_VERSIONS")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
 def define_toolchain_tests(name):
-    for python_version in TOOL_VERSIONS.keys():
+    for platform_key, platform_info in PLATFORMS.items():
+        native.config_setting(
+            name = "_is_{}".format(platform_key),
+            constraint_values = platform_info.compatible_with,
+        )
+
+    for python_version, meta in TOOL_VERSIONS.items():
+        target_compatible_with = {
+            "//conditions:default": ["@platforms//:incompatible"],
+        }
+        for platform_key in meta["sha256"].keys():
+            is_platform = "_is_{}".format(platform_key)
+            target_compatible_with[is_platform] = []
+
         py_reconfig_test(
             name = "python_{}_test".format(python_version),
             srcs = ["python_toolchain_test.py"],
@@ -29,4 +43,5 @@ def define_toolchain_tests(name):
             },
             deps = ["//python/runfiles"],
             data = ["//tests/support:current_build_settings"],
+            target_compatible_with = select(target_compatible_with),
         )
