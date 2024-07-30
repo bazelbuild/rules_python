@@ -49,7 +49,7 @@ A brief description of the categories of changes:
 * (pip) Correctly use the `sdist` downloaded by the bazel downloader when using
   `experimental_index_url` feature. Fixes
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
-* (gazelle) Make `gazelle_python_manifest.update` manually to avoid unnecessary
+* (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
   network behavior. 
 
 ### Added
