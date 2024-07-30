@@ -14,11 +14,15 @@
 
 ""
 
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
 def define_toolchain_tests(name):
+    """Define the toolchain tests.
+
+    Args:
+        name: Only present to satisfy tooling.
+    """
     for platform_key, platform_info in PLATFORMS.items():
         native.config_setting(
             name = "_is_{}".format(platform_key),
