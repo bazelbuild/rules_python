@@ -49,6 +49,10 @@ A brief description of the categories of changes:
 * (pip) Correctly use the `sdist` downloaded by the bazel downloader when using
   `experimental_index_url` feature. Fixes
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
+* (toolchains): Change some old toochain versions to use [20240726] release to
+  include dependency updates `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`
+* (toolchains): Bump default toolchain versions to:
+    * `3.12 -> 3.12.4`
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
@@ -60,10 +64,12 @@ A brief description of the categories of changes:
   [py_test_main] in order to integrate with `pytest`. Currently the default
   flag value is set to `true` for backwards compatible behaviour, but in the
   future the flag will be flipped be `false` by default.
+* (toolchains) New Python versions available: `3.12.4` using the [20240726] release.
 
 [rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
 [py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
 [pytest_bazel]: https://pypi.org/project/pytest-bazel
+[20240726]: https://github.com/indygreg/python-build-standalone/releases/tag/20240726
 
 ### Removed
 * Nothing yet
@@ -116,7 +122,7 @@ A brief description of the categories of changes:
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
-* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive 
+* (gazelle) Added new `python_label_convention` and `python_label_normalization` directives. These directive
   allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
   with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
 
