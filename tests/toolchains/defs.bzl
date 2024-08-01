@@ -12,192 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the definition for the toolchains testing rules.
-"""
+""
 
 load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
-load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
+load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
 
-_WINDOWS_RUNNER_TEMPLATE = """\
-@ECHO OFF
-set PATHEXT=.COM;.EXE;.BAT
-powershell.exe -c "& ./{interpreter_path} {run_acceptance_test_py}"
-"""
+def define_toolchain_tests(name):
+    """Define the toolchain tests.
 
-def _acceptance_test_impl(ctx):
-    files = []
-
-    if BZLMOD_ENABLED:
-        module_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "MODULE.bazel"]))
-        ctx.actions.expand_template(
-            template = ctx.file._module_bazel_tmpl,
-            output = module_bazel,
-            substitutions = {"%python_version%": ctx.attr.python_version},
-        )
-        files.append(module_bazel)
-
-        workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
-        ctx.actions.write(workspace, "")
-        files.append(workspace)
-    else:
-        workspace = ctx.actions.declare_file("/".join([ctx.attr.python_version, "WORKSPACE"]))
-        ctx.actions.expand_template(
-            template = ctx.file._workspace_tmpl,
-            output = workspace,
-            substitutions = {"%python_version%": ctx.attr.python_version},
-        )
-        files.append(workspace)
-
-    build_bazel = ctx.actions.declare_file("/".join([ctx.attr.python_version, "BUILD.bazel"]))
-    ctx.actions.expand_template(
-        template = ctx.file._build_bazel_tmpl,
-        output = build_bazel,
-        substitutions = {"%python_version%": ctx.attr.python_version},
-    )
-    files.append(build_bazel)
-
-    python_version_test = ctx.actions.declare_file("/".join([ctx.attr.python_version, "python_version_test.py"]))
-    ctx.actions.symlink(
-        target_file = ctx.file._python_version_test,
-        output = python_version_test,
-    )
-    files.append(python_version_test)
-
-    run_acceptance_test_py = ctx.actions.declare_file("/".join([ctx.attr.python_version, "run_acceptance_test.py"]))
-    ctx.actions.expand_template(
-        template = ctx.file._run_acceptance_test_tmpl,
-        output = run_acceptance_test_py,
-        substitutions = {
-            "%is_bzlmod%": str(BZLMOD_ENABLED),
-            "%is_windows%": str(ctx.attr.is_windows),
-            "%python_version%": ctx.attr.python_version,
-            "%test_location%": "/".join([ctx.attr.test_location, ctx.attr.python_version]),
-        },
-    )
-    files.append(run_acceptance_test_py)
-
-    toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE]
-    py3_runtime = toolchain.py3_runtime
-    interpreter_path = py3_runtime.interpreter_path
-    if not interpreter_path:
-        interpreter_path = py3_runtime.interpreter.short_path
-
-    if ctx.attr.is_windows:
-        executable = ctx.actions.declare_file("run_test_{}.bat".format(ctx.attr.python_version))
-        ctx.actions.write(
-            output = executable,
-            content = _WINDOWS_RUNNER_TEMPLATE.format(
-                interpreter_path = interpreter_path.replace("../", "external/"),
-                run_acceptance_test_py = run_acceptance_test_py.short_path,
-            ),
-            is_executable = True,
-        )
-    else:
-        executable = ctx.actions.declare_file("run_test_{}.sh".format(ctx.attr.python_version))
-        ctx.actions.write(
-            output = executable,
-            content = "exec '{interpreter_path}' '{run_acceptance_test_py}'".format(
-                interpreter_path = interpreter_path,
-                run_acceptance_test_py = run_acceptance_test_py.short_path,
-            ),
-            is_executable = True,
-        )
-    files.append(executable)
-    files.extend(ctx.files._distribution)
-
-    return [DefaultInfo(
-        executable = executable,
-        files = depset(
-            direct = files,
-            transitive = [py3_runtime.files],
-        ),
-        runfiles = ctx.runfiles(
-            files = files,
-            transitive_files = py3_runtime.files,
-        ),
-    )]
-
-_acceptance_test = rule(
-    implementation = _acceptance_test_impl,
-    doc = "A rule for the toolchain acceptance tests.",
-    attrs = {
-        "is_windows": attr.bool(
-            doc = "(Provided by the macro) Whether this is running under Windows or not.",
-            mandatory = True,
-        ),
-        "python_version": attr.string(
-            doc = "The Python version to be used when requesting the toolchain.",
-            mandatory = True,
-        ),
-        "test_location": attr.string(
-            doc = "(Provided by the macro) The value of native.package_name().",
-            mandatory = True,
-        ),
-        "_build_bazel_tmpl": attr.label(
-            doc = "The BUILD.bazel template.",
-            allow_single_file = True,
-            default = Label("//tests/toolchains/workspace_template:BUILD.bazel.tmpl"),
-        ),
-        "_distribution": attr.label(
-            doc = "The rules_python source distribution.",
-            default = Label("//:distribution"),
-        ),
-        "_module_bazel_tmpl": attr.label(
-            doc = "The MODULE.bazel template.",
-            allow_single_file = True,
-            default = Label("//tests/toolchains/workspace_template:MODULE.bazel.tmpl"),
-        ),
-        "_python_version_test": attr.label(
-            doc = "The python_version_test.py used to test the Python version.",
-            allow_single_file = True,
-            default = Label("//tests/toolchains/workspace_template:python_version_test.py"),
-        ),
-        "_run_acceptance_test_tmpl": attr.label(
-            doc = "The run_acceptance_test.py template.",
-            allow_single_file = True,
-            default = Label("//tests/toolchains:run_acceptance_test.py.tmpl"),
-        ),
-        "_workspace_tmpl": attr.label(
-            doc = "The WORKSPACE template.",
-            allow_single_file = True,
-            default = Label("//tests/toolchains/workspace_template:WORKSPACE.tmpl"),
-        ),
-    },
-    test = True,
-    toolchains = [TARGET_TOOLCHAIN_TYPE],
-)
-
-def acceptance_test(python_version, **kwargs):
-    _acceptance_test(
-        is_windows = select({
-            "@bazel_tools//src/conditions:host_windows": True,
-            "//conditions:default": False,
-        }),
-        python_version = python_version,
-        test_location = native.package_name(),
-        **kwargs
-    )
-
-# buildifier: disable=unnamed-macro
-def acceptance_tests():
-    """Creates a matrix of acceptance_test targets for all the toolchains.
+    Args:
+        name: Only present to satisfy tooling.
     """
-    for python_version in TOOL_VERSIONS.keys():
-        for platform, meta in PLATFORMS.items():
-            if platform not in TOOL_VERSIONS[python_version]["sha256"]:
-                continue
-            acceptance_test(
-                name = "python_{python_version}_{platform}_test".format(
-                    python_version = python_version.replace(".", "_"),
-                    platform = platform,
-                ),
-                python_version = python_version,
-                target_compatible_with = meta.compatible_with,
-                tags = [
-                    "acceptance-test",
-                    # For some inexplicable reason, these fail locally with
-                    # sandboxing enabled, but not on CI.
-                    "no-sandbox",
-                ],
-            )
+    for platform_key, platform_info in PLATFORMS.items():
+        native.config_setting(
+            name = "_is_{}".format(platform_key),
+            constraint_values = platform_info.compatible_with,
+        )
+
+    for python_version, meta in TOOL_VERSIONS.items():
+        target_compatible_with = {
+            "//conditions:default": ["@platforms//:incompatible"],
+        }
+        for platform_key in meta["sha256"].keys():
+            is_platform = "_is_{}".format(platform_key)
+            target_compatible_with[is_platform] = []
+
+        py_reconfig_test(
+            name = "python_{}_test".format(python_version),
+            srcs = ["python_toolchain_test.py"],
+            main = "python_toolchain_test.py",
+            python_version = python_version,
+            env = {
+                "EXPECT_PYTHON_VERSION": python_version,
+            },
+            deps = ["//python/runfiles"],
+            data = ["//tests/support:current_build_settings"],
+            target_compatible_with = select(target_compatible_with),
+        )
