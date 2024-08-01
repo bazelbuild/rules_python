@@ -29,6 +29,10 @@ A brief description of the categories of changes:
   when the wheel is downloaded using `download_only` feature to aid debugging.
 * (gazelle): Simplify and make gazelle_python.yaml have only top level package name.
   It would work well in cases to reduce merge conflicts.
+* (toolchains): Change some old toochain versions to use [20240726] release to
+  include dependency updates `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`
+* (toolchains): Bump default toolchain versions to:
+    * `3.12 -> 3.12.4`
 
 ### Fixed
 * (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
@@ -49,10 +53,8 @@ A brief description of the categories of changes:
 * (pip) Correctly use the `sdist` downloaded by the bazel downloader when using
   `experimental_index_url` feature. Fixes
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
-* (toolchains): Change some old toochain versions to use [20240726] release to
-  include dependency updates `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`
-* (toolchains): Bump default toolchain versions to:
-    * `3.12 -> 3.12.4`
+* (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
+  network behavior. 
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
