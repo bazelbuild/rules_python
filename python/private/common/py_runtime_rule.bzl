@@ -160,7 +160,7 @@ in-build runtime may or may not be hermetic, depending on whether it points to
 a checked-in interpreter or a wrapper script that accesses the system
 interpreter.
 
-# Example
+Example
 
 ```
 load("@rules_python//python:py_runtime.bzl", "py_runtime")
