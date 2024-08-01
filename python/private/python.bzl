@@ -16,6 +16,7 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
+load("//python:versions.bzl", "TOOL_VERSIONS")
 load(":pythons_hub.bzl", "hub_repo")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
@@ -78,7 +79,9 @@ def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        for toolchain_attr in mod.tags.toolchain:
+        toolchain_attr_structs = _create_toolchain_attr_structs(mod)
+
+        for toolchain_attr in toolchain_attr_structs:
             toolchain_version = toolchain_attr.python_version
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
@@ -95,9 +98,7 @@ def _python_impl(module_ctx):
                 # * rules_python needs to set a soft default in case the root module doesn't,
                 #   e.g. if the root module doesn't use Python itself.
                 # * The root module is allowed to override the rules_python default.
-
-                # A single toolchain is treated as the default because it's unambiguous.
-                is_default = toolchain_attr.is_default or len(mod.tags.toolchain) == 1
+                is_default = toolchain_attr.is_default
 
                 # Also only the root module should be able to decide ignore_root_user_error.
                 # Modules being depended upon don't know the final environment, so they aren't
@@ -251,6 +252,43 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
+def _create_toolchain_attr_structs(mod):
+    arg_structs = []
+    seen_versions = {}
+    for tag in mod.tags.toolchain:
+        arg_structs.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
+        seen_versions[tag.python_version] = True
+
+    if mod.is_root:
+        register_all = False
+        for tag in mod.tags.rules_python_private_testing:
+            if tag.register_all_versions:
+                register_all = True
+                break
+        if register_all:
+            arg_structs.extend([
+                _create_toolchain_attrs_struct(python_version = v)
+                for v in TOOL_VERSIONS.keys()
+                if v not in seen_versions
+            ])
+    return arg_structs
+
+def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
+    if tag and python_version:
+        fail("Only one of tag and python version can be specified")
+    if tag:
+        # A single toolchain is treated as the default because it's unambiguous.
+        is_default = tag.is_default or toolchain_tag_count == 1
+    else:
+        is_default = False
+
+    return struct(
+        is_default = is_default,
+        python_version = python_version if python_version else tag.python_version,
+        configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
+        ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
+    )
+
 def _get_bazel_version_specific_kwargs():
     kwargs = {}
 
@@ -264,6 +302,11 @@ python = module_extension(
 """,
     implementation = _python_impl,
     tag_classes = {
+        "rules_python_private_testing": tag_class(
+            attrs = {
+                "register_all_versions": attr.bool(default = False),
+            },
+        ),
         "toolchain": tag_class(
             doc = """Tag class used to register Python toolchains.
 Use this tag class to register one or more Python toolchains. This class
