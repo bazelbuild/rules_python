@@ -183,8 +183,6 @@ write_file(
     name = "gen_update_requirements",
     out = "requirements.update.py",
     content = [
-        "#!/usr/bin/env python3",
-        "",
         "from os import environ",
         "from pathlib import Path",
         "from sys import stderr",
