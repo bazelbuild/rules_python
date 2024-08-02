@@ -216,7 +216,6 @@ def _test_env_marker_resolution(env):
         requirements_by_platform = {
             "requirements_marker": ["cp311_linux_super_exotic", "cp311_windows_x86_64"],
         },
-        python_version = "3.11",
         evaluate_markers = _mock_eval_markers,
     )
     env.expect.that_dict(got).contains_exactly({
