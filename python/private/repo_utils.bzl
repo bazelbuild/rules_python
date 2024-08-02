@@ -267,11 +267,7 @@ def _which_unchecked(mrctx, binary_name):
     path = _getenv(mrctx, "PATH", "")
     binary = mrctx.which(binary_name)
     if binary:
-        if hasattr(mrctx, "attr"):
-            # module_ctx fails to watch files outside the repository, so only
-            # use it with repository_ctx, which will always have an `attr`
-            # attribute.
-            _watch(mrctx, binary)
+        _watch(mrctx, binary)
         describe_failure = None
     else:
         describe_failure = lambda: _which_describe_failure(binary_name, path)

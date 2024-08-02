@@ -16,11 +16,11 @@
 
 load("//python/private:repo_utils.bzl", "repo_utils")
 
-def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
+def _get_python_interpreter_attr(mrctx, *, python_interpreter = None):
     """A helper function for getting the `python_interpreter` attribute or it's default
 
     Args:
-        ctx (repository_ctx): Handle to the rule repository context.
+        mrctx (module_ctx or repository_ctx): Handle to the rule repository context.
         python_interpreter (str): The python interpreter override.
 
     Returns:
@@ -29,29 +29,29 @@ def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
     if python_interpreter:
         return python_interpreter
 
-    os = repo_utils.get_platforms_os_name(ctx)
+    os = repo_utils.get_platforms_os_name(mrctx)
     if "windows" in os:
         return "python.exe"
     else:
         return "python3"
 
-def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interpreter_target = None):
+def _resolve_python_interpreter(mrctx, *, python_interpreter = None, python_interpreter_target = None):
     """Helper function to find the python interpreter from the common attributes
 
     Args:
-        ctx: Handle to the rule module_ctx or repository_ctx.
+        mrctx: Handle to the module_ctx or repository_ctx.
         python_interpreter: The python interpreter to use.
         python_interpreter_target: The python interpreter to use after downloading the label.
 
     Returns:
         `path` object, for the resolved path to the Python interpreter.
     """
-    python_interpreter = _get_python_interpreter_attr(ctx, python_interpreter = python_interpreter)
+    python_interpreter = _get_python_interpreter_attr(mrctx, python_interpreter = python_interpreter)
 
     if python_interpreter_target != None:
-        python_interpreter = ctx.path(python_interpreter_target)
+        python_interpreter = mrctx.path(python_interpreter_target)
 
-        os = repo_utils.get_platforms_os_name(ctx)
+        os = repo_utils.get_platforms_os_name(mrctx)
 
         # On Windows, the symlink doesn't work because Windows attempts to find
         # Python DLLs where the symlink is, not where the symlink points.
@@ -59,31 +59,28 @@ def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interp
             python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         # It's a plain command, e.g. "python3", to look up in the environment.
-        found_python_interpreter = ctx.which(python_interpreter)
-        if not found_python_interpreter:
-            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
-        python_interpreter = found_python_interpreter
+        python_interpreter = repo_utils.which_checked(mrctx, python_interpreter)
     else:
-        python_interpreter = ctx.path(python_interpreter)
+        python_interpreter = mrctx.path(python_interpreter)
     return python_interpreter
 
-def _construct_pypath(ctx, *, entries):
+def _construct_pypath(mrctx, *, entries):
     """Helper function to construct a PYTHONPATH.
 
     Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
     This allows us to run python code inside repository rule implementations.
 
     Args:
-        ctx: Handle to the module_ctx or repository_ctx.
+        mrctx: Handle to the module_ctx or repository_ctx.
         entries: The list of entries to add to PYTHONPATH.
 
     Returns: String of the PYTHONPATH.
     """
 
-    os = repo_utils.get_platforms_os_name(ctx)
+    os = repo_utils.get_platforms_os_name(mrctx)
     separator = ";" if "windows" in os else ":"
     pypath = separator.join([
-        str(ctx.path(entry).dirname)
+        str(mrctx.path(entry).dirname)
         # Use a dict as a way to remove duplicates and then sort it.
         for entry in sorted({x: None for x in entries})
     ])
