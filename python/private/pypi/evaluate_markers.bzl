@@ -104,6 +104,6 @@ def _watch_srcs(mrctx):
     if not hasattr(mrctx, "watch"):
         return
 
-    for _, srcs in _SRCS.items():
+    for srcs in _SRCS.values():
         for src in srcs:
             mrctx.watch(mrctx.path(src))
