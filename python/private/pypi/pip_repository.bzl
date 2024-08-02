@@ -87,7 +87,6 @@ def _pip_repository_impl(rctx):
             requirements = requirements,
             python_interpreter = rctx.attr.python_interpreter,
             python_interpreter_target = rctx.attr.python_interpreter_target,
-            pythonpath = rctx.attr._pythonpath,
         ),
     )
     selected_requirements = {}

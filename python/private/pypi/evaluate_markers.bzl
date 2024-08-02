@@ -17,7 +17,30 @@
 load("//python/private:repo_utils.bzl", "repo_utils")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
-def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, pythonpath, logger = None):
+_SRCS = {
+    Label("@pypi__packaging//:BUILD.bazel"): [
+        Label("@pypi__packaging//:packaging/__init__.py"),
+        Label("@pypi__packaging//:packaging/_elffile.py"),
+        Label("@pypi__packaging//:packaging/_manylinux.py"),
+        Label("@pypi__packaging//:packaging/_musllinux.py"),
+        Label("@pypi__packaging//:packaging/_parser.py"),
+        Label("@pypi__packaging//:packaging/_structures.py"),
+        Label("@pypi__packaging//:packaging/_tokenizer.py"),
+        Label("@pypi__packaging//:packaging/markers.py"),
+        Label("@pypi__packaging//:packaging/metadata.py"),
+        Label("@pypi__packaging//:packaging/requirements.py"),
+        Label("@pypi__packaging//:packaging/specifiers.py"),
+        Label("@pypi__packaging//:packaging/tags.py"),
+        Label("@pypi__packaging//:packaging/utils.py"),
+        Label("@pypi__packaging//:packaging/version.py"),
+    ],
+    Label("//:BUILD.bazel"): [
+        Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
+        Label("//python/private/pypi/whl_installer:platform.py"),
+    ],
+}
+
+def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, logger = None):
     """Return the list of supported platforms per requirements line.
 
     Args:
@@ -29,7 +52,6 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
             should be something that is in your PATH or an absolute path.
         python_interpreter_target: Label, same as python_interpreter, but in a
             label format.
-        pythonpath: list[Label] of the directories to include in the Python PATH.
         logger: repo_utils.logger or None, a simple struct to log diagnostic
             messages. Defaults to None.
 
@@ -60,7 +82,7 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
             out_file,
         ],
         environment = {
-            "PYTHONPATH": pypi_repo_utils.construct_pythonpath(mrctx, entries = pythonpath),
+            "PYTHONPATH": pypi_repo_utils.construct_pythonpath(mrctx, entries = _SRCS),
         },
         logger = logger,
     )
@@ -79,17 +101,9 @@ def _watch_srcs(mrctx):
     Args:
         mrctx: repository_ctx or module_ctx.
     """
-    packaging = mrctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname
     if not hasattr(mrctx, "watch"):
         return
 
-    srcdir = mrctx.path(Label(":BUILD.bazel")).dirname
-    for src in [
-        srcdir.get_child("whl_installer", "platform.py"),
-        srcdir.get_child("requirements_parser", "resolve_target_platforms.py"),
-    ] + [
-        src
-        for src in packaging.readdir(watch = "no")
-        if not src.is_dir and src.basename.endswith(".py")
-    ]:
-        mrctx.watch(src)
+    for _, srcs in _SRCS.items():
+        for src in srcs:
+            mrctx.watch(mrctx.path(src))
