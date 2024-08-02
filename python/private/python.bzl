@@ -267,7 +267,7 @@ def _create_toolchain_attr_structs(mod):
                 break
         if register_all:
             arg_structs.extend([
-                _create_toolchain_attrs_struct(tag = struct(python_version = v, configure_coverage_tool = True, is_default = False))
+                _create_toolchain_attrs_struct(python_version = v)
                 for v in TOOL_VERSIONS.keys()
                 if v not in seen_versions
             ])
