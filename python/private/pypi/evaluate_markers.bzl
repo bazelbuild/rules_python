@@ -17,7 +17,7 @@
 load("//python/private:repo_utils.bzl", "repo_utils")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
-def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, logger):
+def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, logger = None):
     """Return the list of supported platforms per requirements line.
 
     Args:
@@ -29,7 +29,8 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
             should be something that is in your PATH or an absolute path.
         python_interpreter_target: Label, same as python_interpreter, but in a
             label format.
-        logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
+        logger: repo_utils.logger or None, a simple struct to log diagnostic
+            messages. Defaults to None.
 
     Returns:
         dict of string lists with target platforms
