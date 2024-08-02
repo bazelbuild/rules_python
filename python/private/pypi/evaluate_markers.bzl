@@ -17,11 +17,11 @@
 load("//python/private:repo_utils.bzl", "repo_utils")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
-def evaluate_markers(ctx, *, requirements, python_interpreter, python_interpreter_target, logger):
+def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, logger):
     """Return the list of supported platforms per requirements line.
 
     Args:
-        ctx: repository_ctx or module_ctx.
+        mrctx: repository_ctx or module_ctx.
         requirements: The requirement file lines to evaluate.
         python_interpreter: str, path to the python_interpreter to use to
             evaluate the env markers in the given requirements files. It will
@@ -37,18 +37,18 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
     if not requirements:
         return {}
 
-    _watch_srcs(ctx)
+    _watch_srcs(mrctx)
 
-    in_file = ctx.path("requirements_with_markers.in.json")
-    out_file = ctx.path("requirements_with_markers.out.json")
-    ctx.file(in_file, json.encode(requirements))
+    in_file = mrctx.path("requirements_with_markers.in.json")
+    out_file = mrctx.path("requirements_with_markers.out.json")
+    mrctx.file(in_file, json.encode(requirements))
 
     repo_utils.execute_checked(
-        ctx,
+        mrctx,
         op = "ResolveRequirementEnvMarkers({})".format(in_file),
         arguments = [
             pypi_repo_utils.resolve_python_interpreter(
-                ctx,
+                mrctx,
                 python_interpreter = python_interpreter,
                 python_interpreter_target = python_interpreter_target,
             ),
@@ -59,7 +59,7 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
         ],
         environment = {
             "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
-                ctx,
+                mrctx,
                 entries = [
                     Label("@pypi__packaging//:BUILD.bazel"),
                     Label("//:MODULE.bazel"),
@@ -68,9 +68,9 @@ def evaluate_markers(ctx, *, requirements, python_interpreter, python_interprete
         },
         logger = logger,
     )
-    return json.decode(ctx.read(out_file))
+    return json.decode(mrctx.read(out_file))
 
-def _watch_srcs(ctx):
+def _watch_srcs(mrctx):
     """watch python srcs that do work here.
 
     NOTE @aignas 2024-07-13: we could in theory have a label list that
@@ -79,12 +79,15 @@ def _watch_srcs(ctx):
     within the `pypi__packaging` repository and re-execute whenever they
     change. This includes re-executing when the 'packaging' version is
     upgraded.
+
+    Args:
+        mrctx: repository_ctx or module_ctx.
     """
-    packaging = ctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname
-    if not hasattr(ctx, "watch"):
+    packaging = mrctx.path(Label("@pypi__packaging//:BUILD.bazel")).dirname
+    if not hasattr(mrctx, "watch"):
         return
 
-    srcdir = ctx.path(Label(":BUILD.bazel")).dirname
+    srcdir = mrctx.path(Label(":BUILD.bazel")).dirname
     for src in [
         srcdir.get_child("whl_installer", "platform.py"),
         srcdir.get_child("requirements_parser", "resolve_target_platforms.py"),
@@ -93,4 +96,4 @@ def _watch_srcs(ctx):
         for src in packaging.readdir(watch = "no")
         if not src.is_dir and src.basename.endswith(".py")
     ]:
-        ctx.watch(src)
+        mrctx.watch(src)
