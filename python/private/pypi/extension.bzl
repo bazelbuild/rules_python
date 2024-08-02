@@ -196,11 +196,12 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             logger = logger,
         ),
         get_index_urls = get_index_urls,
-        evaluate_markers = lambda requirements: evaluate_markers(
+        evaluate_markers = lambda module_ctx, requirements: evaluate_markers(
             module_ctx,
             requirements = requirements,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
+            logger = logger,
         ),
         logger = logger,
     )
