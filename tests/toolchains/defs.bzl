@@ -26,6 +26,7 @@ def define_toolchain_tests(name):
     for platform_key, platform_info in PLATFORMS.items():
         native.config_setting(
             name = "_is_{}".format(platform_key),
+            flag_values = platform_info.flag_values,
             constraint_values = platform_info.compatible_with,
         )
 
