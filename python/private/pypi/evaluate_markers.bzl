@@ -22,7 +22,7 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
 
     Args:
         mrctx: repository_ctx or module_ctx.
-        requirements: The requirement file lines to evaluate.
+        requirements: list[str] of the requirement file lines to evaluate.
         python_interpreter: str, path to the python_interpreter to use to
             evaluate the env markers in the given requirements files. It will
             be only called if the requirements files have env markers. This
