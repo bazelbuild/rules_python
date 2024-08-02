@@ -69,7 +69,8 @@ A brief description of the categories of changes:
 * (toolchains) New Python versions available: `3.12.4` using the [20240726] release.
 * (pypi) Support env markers in requirements files. Note, that this means that
   if your requirements files contain env markers, the Python interpreter will
-  have to be downloaded to re-evaluate the bzlmod extension.
+  have to be downloaded (if you are not using system Python) to evaluate the
+  bzlmod extension.
 
 [rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
 [py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
