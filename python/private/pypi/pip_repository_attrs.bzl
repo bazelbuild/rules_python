@@ -68,6 +68,15 @@ group_library will be included in the hub repo.
 True will become default in a subsequent release.
 """,
     ),
+    "_pythonpath": attr.label_list(
+        default = [
+            Label("@pypi__packaging//:BUILD.bazel"),
+            Label("//:BUILD.bazel"),
+        ],
+        doc = """\
+A list of PYTHONPATH entries to add when executing python scripts.
+""",
+    ),
 }
 
 ATTRS.update(**COMMON_ATTRS)
