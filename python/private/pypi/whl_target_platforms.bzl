@@ -46,15 +46,13 @@ _OS_PREFIXES = {
     "win": "windows",
 }  # buildifier: disable=unsorted-dict-items
 
-def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platforms = [], logger = None):
+def select_whls(*, whls, want_platforms = [], logger = None):
     """Select a subset of wheels suitable for target platforms from a list.
 
     Args:
         whls(list[struct]): A list of candidates which have a `filename`
             attribute containing the `whl` filename.
-        want_python_version(str): An optional parameter to filter whls by python version. Defaults to '3.0'.
-        want_abis(list[str]): A list of ABIs that are supported.
-        want_platforms(str): The platforms
+        want_platforms(str): The platforms in "{abi}_{os}_{cpu}" or "{os}_{cpu}" format.
         logger: A logger for printing diagnostic messages.
 
     Returns:
@@ -64,9 +62,34 @@ def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platf
     if not whls:
         return []
 
-    version_limit = -1
-    if want_python_version:
-        version_limit = int(want_python_version.split(".")[1])
+    want_abis = {
+        "abi3": None,
+        "none": None,
+    }
+
+    _want_platforms = {}
+    version_limit = None
+
+    for p in want_platforms:
+        if not p.startswith("cp3"):
+            fail("expected all platforms to start with ABI, but got: {}".format(p))
+
+        abi, _, os_cpu = p.partition("_")
+        _want_platforms[os_cpu] = None
+        _want_platforms[p] = None
+
+        version_limit_candidate = int(abi[3:])
+        if not version_limit:
+            version_limit = version_limit_candidate
+        if version_limit and version_limit != version_limit_candidate:
+            fail("Only a single python version is supported for now")
+
+        # For some legacy implementations the wheels may target the `cp3xm` ABI
+        _want_platforms["{}m_{}".format(abi, os_cpu)] = None
+        want_abis[abi] = None
+        want_abis[abi + "m"] = None
+
+    want_platforms = sorted(_want_platforms)
 
     candidates = {}
     for whl in whls:
@@ -101,7 +124,7 @@ def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platf
                 logger.trace(lambda: "Discarding the whl because the whl abi did not match")
             continue
 
-        if version_limit != -1 and whl_version_min > version_limit:
+        if whl_version_min > version_limit:
             if logger:
                 logger.trace(lambda: "Discarding the whl because the whl supported python version is too high")
             continue
@@ -110,7 +133,7 @@ def select_whls(*, whls, want_python_version = "3.0", want_abis = [], want_platf
         if parsed.platform_tag == "any":
             compatible = True
         else:
-            for p in whl_target_platforms(parsed.platform_tag):
+            for p in whl_target_platforms(parsed.platform_tag, abi_tag = parsed.abi_tag.strip("m") if parsed.abi_tag.startswith("cp") else None):
                 if p.target_platform in want_platforms:
                     compatible = True
                     break

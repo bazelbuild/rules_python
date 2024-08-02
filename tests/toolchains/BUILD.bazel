@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load(":defs.bzl", "acceptance_tests")
-load(":versions_test.bzl", "versions_test_suite")
+load(":defs.bzl", "define_toolchain_tests")
 
-versions_test_suite(name = "versions_test")
-
-acceptance_tests()
+define_toolchain_tests(
+    name = "toolchain_tests",
+)

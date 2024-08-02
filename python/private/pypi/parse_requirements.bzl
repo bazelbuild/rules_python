@@ -38,10 +38,8 @@ def parse_requirements(
         requirements_by_platform = {},
         extra_pip_args = [],
         get_index_urls = None,
-        python_version = None,
-        logger = None,
         evaluate_markers = lambda _: {},
-        fail_fn = fail):
+        logger = None):
     """Get the requirements with platforms that the requirements apply to.
 
     Args:
@@ -54,15 +52,12 @@ def parse_requirements(
         get_index_urls: Callable[[ctx, list[str]], dict], a callable to get all
             of the distribution URLs from a PyPI index. Accepts ctx and
             distribution names to query.
-        python_version: str or None. This is needed when the get_index_urls is
-            specified. It should be of the form "3.x.x",
         evaluate_markers: A function to use to evaluate the requirements.
             Accepts a dict where keys are requirement lines to evaluate against
             the platforms stored as values in the input dict. Returns the same
             dict, but with values being platforms that are compatible with the
             requirements line.
         logger: repo_utils.logger or None, a simple struct to log diagnostic messages.
-        fail_fn (Callable[[str], None]): A failure function used in testing failure cases.
 
     Returns:
         A tuple where the first element a dict of dicts where the first key is
@@ -161,10 +156,6 @@ def parse_requirements(
 
     index_urls = {}
     if get_index_urls:
-        if not python_version:
-            fail_fn("'python_version' must be provided")
-            return None
-
         index_urls = get_index_urls(
             ctx,
             # Use list({}) as a way to have a set
@@ -193,9 +184,8 @@ def parse_requirements(
 
         for r in sorted(reqs.values(), key = lambda r: r.requirement_line):
             whls, sdist = _add_dists(
-                r,
-                index_urls.get(whl_name),
-                python_version = python_version,
+                requirement = r,
+                index_urls = index_urls.get(whl_name),
                 logger = logger,
             )
 
@@ -264,7 +254,7 @@ def host_platform(ctx):
         repo_utils.get_platforms_cpu_name(ctx),
     )
 
-def _add_dists(requirement, index_urls, python_version, logger = None):
+def _add_dists(*, requirement, index_urls, logger = None):
     """Populate dists based on the information from the PyPI index.
 
     This function will modify the given requirements_by_platform data structure.
@@ -272,7 +262,6 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
     Args:
         requirement: The result of parse_requirements function.
         index_urls: The result of simpleapi_download.
-        python_version: The version of the python interpreter.
         logger: A logger for printing diagnostic info.
     """
     if not index_urls:
@@ -315,18 +304,6 @@ def _add_dists(requirement, index_urls, python_version, logger = None):
         ]))
 
     # Filter out the wheels that are incompatible with the target_platforms.
-    whls = select_whls(
-        whls = whls,
-        want_abis = [
-            "none",
-            "abi3",
-            "cp" + python_version.replace(".", ""),
-            # Older python versions have wheels for the `*m` ABI.
-            "cp" + python_version.replace(".", "") + "m",
-        ],
-        want_platforms = requirement.target_platforms,
-        want_python_version = python_version,
-        logger = logger,
-    )
+    whls = select_whls(whls = whls, want_platforms = requirement.target_platforms, logger = logger)
 
     return whls, sdist

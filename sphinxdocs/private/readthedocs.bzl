@@ -43,6 +43,6 @@ def readthedocs_install(name, docs, **kwargs):
             "$(rlocationpaths {})".format(d)
             for d in docs
         ],
-        deps = ["//python/runfiles"],
+        deps = [Label("//python/runfiles")],
         **kwargs
     )

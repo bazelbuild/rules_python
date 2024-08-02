@@ -95,6 +95,7 @@ def gazelle_python_manifest(
             modules_mapping,
             manifest_generator_hash,
         ] + ([requirements] if requirements else []),
+        tags = ["manual"],
     )
 
     py_binary(
@@ -109,7 +110,8 @@ def gazelle_python_manifest(
             generated_manifest,
             manifest,
         ],
-        **kwargs
+        tags = kwargs.get("tags", []) + ["manual"],
+        **{k: v for k, v in kwargs.items() if k != "tags"}
     )
 
     if requirements:

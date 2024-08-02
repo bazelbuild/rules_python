@@ -76,6 +76,15 @@ bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
 
+dev_python = use_extension(
+    "//python/extensions:python.bzl",
+    "python",
+    dev_dependency = True,
+)
+dev_python.rules_python_private_testing(
+    register_all_versions = True,
+)
+
 dev_pip = use_extension(
     "//python/private/pypi:pip.bzl",
     "pip_internal",

@@ -14,9 +14,9 @@
 
 ""
 
-load("//python:repositories.bzl", "is_standalone_interpreter")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
+load("//python/private:python_repositories.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names")
@@ -60,7 +60,7 @@ def _get_xcode_location_cflags(rctx):
         "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
     ]
 
-def _get_toolchain_unix_cflags(rctx, python_interpreter):
+def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     """Gather cflags from a standalone toolchain for unix systems.
 
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -72,7 +72,7 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter):
         return []
 
     # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, python_interpreter):
+    if not is_standalone_interpreter(rctx, python_interpreter, logger = logger):
         return []
 
     stdout = repo_utils.execute_checked_stdout(
@@ -123,7 +123,7 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
             "--extra_pip_args",
             json.encode(struct(arg = [
                 envsubst(pip_arg, rctx.attr.envsubst, getenv)
-                for pip_arg in rctx.attr.extra_pip_args
+                for pip_arg in extra_pip_args
             ])),
         ]
 
@@ -147,12 +147,13 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
 
     return args
 
-def _create_repository_execution_environment(rctx, python_interpreter):
+def _create_repository_execution_environment(rctx, python_interpreter, logger = None):
     """Create a environment dictionary for processes we spawn with rctx.execute.
 
     Args:
         rctx (repository_ctx): The repository context.
         python_interpreter (path): The resolved python interpreter.
+        logger: Optional logger to use for operations.
     Returns:
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
@@ -160,7 +161,7 @@ def _create_repository_execution_environment(rctx, python_interpreter):
     # Gather any available CPPFLAGS values
     cppflags = []
     cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
 
     env = {
         "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
@@ -173,6 +174,7 @@ def _create_repository_execution_environment(rctx, python_interpreter):
     return env
 
 def _whl_library_impl(rctx):
+    logger = repo_utils.logger(rctx)
     python_interpreter = pypi_repo_utils.resolve_python_interpreter(
         rctx,
         python_interpreter = rctx.attr.python_interpreter,
@@ -189,7 +191,7 @@ def _whl_library_impl(rctx):
     extra_pip_args.extend(rctx.attr.extra_pip_args)
 
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
-    environment = _create_repository_execution_environment(rctx, python_interpreter)
+    environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
 
     whl_path = None
     if rctx.attr.whl_file:
@@ -231,13 +233,21 @@ def _whl_library_impl(rctx):
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
 
     if not whl_path:
+        if rctx.attr.urls:
+            op_tmpl = "whl_library.BuildWheelFromSource({name}, {requirement})"
+        elif rctx.attr.download_only:
+            op_tmpl = "whl_library.DownloadWheel({name}, {requirement})"
+        else:
+            op_tmpl = "whl_library.ResolveRequirement({name}, {requirement})"
+
         repo_utils.execute_checked(
             rctx,
-            op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement),
             arguments = args,
             environment = environment,
             quiet = rctx.attr.quiet,
             timeout = rctx.attr.timeout,
+            logger = logger,
         )
 
         whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
@@ -285,6 +295,7 @@ def _whl_library_impl(rctx):
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
+        logger = logger,
     )
 
     metadata = json.decode(rctx.read("metadata.json"))
@@ -433,6 +444,7 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
             for repo in all_repo_names
         ],
     ),
+    "_rule_name": attr.string(default = "whl_library"),
 }, **ATTRS)
 whl_library_attrs.update(AUTH_ATTRS)
 

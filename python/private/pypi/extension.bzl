@@ -100,7 +100,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         )
 
 def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
-    logger = repo_utils.logger(module_ctx)
+    logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
 
@@ -196,7 +196,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             logger = logger,
         ),
         get_index_urls = get_index_urls,
-        python_version = major_minor,
         evaluate_markers = lambda requirements: evaluate_markers(
             module_ctx,
             requirements = requirements,

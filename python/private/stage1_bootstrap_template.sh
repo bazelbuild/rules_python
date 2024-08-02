@@ -105,7 +105,15 @@ declare -a interpreter_args
 # Don't prepend a potentially unsafe path to sys.path
 # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
 # NOTE: Only works for 3.11+
-interpreter_env+=("PYTHONSAFEPATH=1")
+# We inherit the value from the outer environment in case the user wants to
+# opt-out of using PYTHONSAFEPATH. To opt-out, they have to set
+# `PYTHONSAFEPATH=` (empty string). This is because Python treats the empty
+# value as false, and any non-empty value as true.
+# ${FOO+WORD} expands to empty if $FOO is undefined, and WORD otherwise.
+if [[ -z "${PYTHONSAFEPATH+x}" ]]; then
+  # ${FOO-WORD} expands to WORD if $FOO is undefined, and $FOO otherwise
+  interpreter_env+=("PYTHONSAFEPATH=${PYTHONSAFEPATH-1}")
+fi
 
 if [[ "$IS_ZIPFILE" == "1" ]]; then
   interpreter_args+=("-XRULES_PYTHON_ZIP_DIR=$zip_dir")

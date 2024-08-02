@@ -45,6 +45,23 @@ class Generator:
                 else:
                     self.module_for_path(path, whl)
 
+    def simplify(self):
+        simplified = {}
+        for module, wheel_name in sorted(self.mapping.items(), key=lambda x: x[0]):
+            mod = module
+            while True:
+                if mod in simplified:
+                    if simplified[mod] != wheel_name:
+                        break
+                    wheel_name = ""
+                    break
+                if mod.count(".") == 0:
+                    break
+                mod = mod.rsplit(".", 1)[0]
+            if wheel_name:
+                simplified[module] = wheel_name
+        self.mapping = simplified
+
     def module_for_path(self, path, whl):
         ext = pathlib.Path(path).suffix
         if ext == ".py" or ext == ".so":
@@ -70,7 +87,8 @@ class Generator:
                 ext = "".join(pathlib.Path(root).suffixes)
             module = root[: -len(ext)].replace("/", ".")
             if not self.is_excluded(module):
-                self.mapping[module] = wheel_name
+                if not self.is_excluded(module):
+                    self.mapping[module] = wheel_name
 
     def is_excluded(self, module):
         for pattern in self.excluded_patterns:
@@ -86,6 +104,7 @@ class Generator:
             except AssertionError as error:
                 print(error, file=self.stderr)
                 return 1
+        self.simplify()
         mapping_json = json.dumps(self.mapping)
         with open(self.output_file, "w") as f:
             f.write(mapping_json)

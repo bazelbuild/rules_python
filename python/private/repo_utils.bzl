@@ -31,33 +31,23 @@ def _is_repo_debug_enabled(rctx):
     """
     return _getenv(rctx, REPO_DEBUG_ENV_VAR) == "1"
 
-def _debug_print(rctx, message_cb):
-    """Prints a message if repo debugging is enabled.
-
-    Args:
-        rctx: repository_ctx
-        message_cb: Callable that returns the string to print. Takes
-            no arguments.
-    """
-    if _is_repo_debug_enabled(rctx):
-        print(message_cb())  # buildifier: disable=print
-
-def _logger(rctx):
+def _logger(ctx, name = None):
     """Creates a logger instance for printing messages.
 
     Args:
-        rctx: repository_ctx object. If the attribute `_rule_name` is
-            present, it will be included in log messages.
+        ctx: repository_ctx or module_ctx object. If the attribute
+            `_rule_name` is present, it will be included in log messages.
+        name: name for the logger. Optional for repository_ctx usage.
 
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
     """
-    if _is_repo_debug_enabled(rctx):
+    if _is_repo_debug_enabled(ctx):
         verbosity_level = "DEBUG"
     else:
         verbosity_level = "WARN"
 
-    env_var_verbosity = rctx.os.environ.get(REPO_VERBOSITY_ENV_VAR)
+    env_var_verbosity = _getenv(ctx, REPO_VERBOSITY_ENV_VAR)
     verbosity_level = env_var_verbosity or verbosity_level
 
     verbosity = {
@@ -66,18 +56,24 @@ def _logger(rctx):
         "TRACE": 3,
     }.get(verbosity_level, 0)
 
-    def _log(enabled_on_verbosity, level, message_cb_or_str):
+    if hasattr(ctx, "attr"):
+        # This is `repository_ctx`.
+        name = name or "{}(@@{})".format(getattr(ctx.attr, "_rule_name", "?"), ctx.name)
+    elif not name:
+        fail("The name has to be specified when using the logger with `module_ctx`")
+
+    def _log(enabled_on_verbosity, level, message_cb_or_str, printer = print):
         if verbosity < enabled_on_verbosity:
             return
-        rule_name = getattr(rctx.attr, "_rule_name", "?")
+
         if type(message_cb_or_str) == "string":
             message = message_cb_or_str
         else:
             message = message_cb_or_str()
 
-        print("\nrules_python:{}(@@{}) {}:".format(
-            rule_name,
-            rctx.name,
+        # NOTE: printer may be the `fail` function.
+        printer("\nrules_python:{} {}:".format(
+            name,
             level.upper(),
         ), message)  # buildifier: disable=print
 
@@ -86,6 +82,7 @@ def _logger(rctx):
         debug = lambda message_cb: _log(2, "DEBUG", message_cb),
         info = lambda message_cb: _log(1, "INFO", message_cb),
         warn = lambda message_cb: _log(0, "WARNING", message_cb),
+        fail = lambda message_cb: _log(-1, "FAIL", message_cb, fail),
     )
 
 def _execute_internal(
@@ -95,6 +92,7 @@ def _execute_internal(
         fail_on_error = False,
         arguments,
         environment = {},
+        logger = None,
         **kwargs):
     """Execute a subprocess with debugging instrumentation.
 
@@ -108,12 +106,15 @@ def _execute_internal(
         arguments: list of arguments; see rctx.execute#arguments.
         environment: optional dict of the environment to run the command
             in; see rctx.execute#environment.
+        logger: optional `Logger` to use for logging execution details. If
+            not specified, a default will be created.
         **kwargs: additional kwargs to pass onto rctx.execute
 
     Returns:
         exec_result object, see repository_ctx.execute return type.
     """
-    _debug_print(rctx, lambda: (
+    logger = logger or _logger(rctx)
+    logger.debug(lambda: (
         "repo.execute: {op}: start\n" +
         "  command: {cmd}\n" +
         "  working dir: {cwd}\n" +
@@ -131,7 +132,7 @@ def _execute_internal(
     result = rctx.execute(arguments, environment = environment, **kwargs)
 
     if fail_on_error and result.return_code != 0:
-        fail((
+        logger.fail((
             "repo.execute: {op}: end: failure:\n" +
             "  command: {cmd}\n" +
             "  return code: {return_code}\n" +
@@ -149,8 +150,7 @@ def _execute_internal(
             output = _outputs_to_str(result),
         ))
     elif _is_repo_debug_enabled(rctx):
-        # buildifier: disable=print
-        print((
+        logger.debug((
             "repo.execute: {op}: end: {status}\n" +
             "  return code: {return_code}\n" +
             "{output}"
@@ -278,12 +278,9 @@ def _which_describe_failure(binary_name, path):
         path = path,
     )
 
-def _getenv(rctx, name, default = None):
-    # Bazel 7+ API
-    if hasattr(rctx, "getenv"):
-        return rctx.getenv(name, default)
-    else:
-        return rctx.os.environ.get("PATH", default)
+def _getenv(ctx, name, default = None):
+    # Bazel 7+ API has ctx.getenv
+    return getattr(ctx, "getenv", ctx.os.environ.get)(name, default)
 
 def _args_to_str(arguments):
     return " ".join([_arg_repr(a) for a in arguments])
@@ -410,7 +407,6 @@ def _watch_tree(rctx, *args, **kwargs):
 
 repo_utils = struct(
     # keep sorted
-    debug_print = _debug_print,
     execute_checked = _execute_checked,
     execute_checked_stdout = _execute_checked_stdout,
     execute_unchecked = _execute_unchecked,
