@@ -14,6 +14,7 @@
 
 ""
 
+load("@bazel_skylib//lib:types.bzl", "types")
 load("//python/private:repo_utils.bzl", "repo_utils")
 
 def _get_python_interpreter_attr(mrctx, *, python_interpreter = None):
@@ -40,8 +41,9 @@ def _resolve_python_interpreter(mrctx, *, python_interpreter = None, python_inte
 
     Args:
         mrctx: Handle to the module_ctx or repository_ctx.
-        python_interpreter: The python interpreter to use.
-        python_interpreter_target: The python interpreter to use after downloading the label.
+        python_interpreter: str, the python interpreter to use.
+        python_interpreter_target: Label, the python interpreter to use after
+            downloading the label.
 
     Returns:
         `path` object, for the resolved path to the Python interpreter.
@@ -89,20 +91,17 @@ def _construct_pypath(mrctx, *, entries):
     ])
     return pypath
 
-def _execute_checked(mrctx, *, python, arguments, srcs, **kwargs):
+def _execute_checked(mrctx, *, srcs, **kwargs):
     """Helper function to run a python script and modify the PYTHONPATH to include external deps.
 
     Args:
         mrctx: Handle to the module_ctx or repository_ctx.
-        python: Label or str pointing to the interpreter. If it is a `str` then
-            it is assumed to be in on the PATH or the string is a path.
-        arguments: Extra arguments, which would be present in the `python -m <args>` place.
         srcs: The src files that the script depends on. This is important to
             ensure that the bazel repository cache or the bzlmod lock file gets
             invalidated when any one file changes. It is advisable to use
             `RECORD` files for external deps and the list of srcs from the
             rules_python repo for any scripts.
-        **kwargs: Extra arguments forwarded to `repo_utils.execute_checked`. If
+        **kwargs: Arguments forwarded to `repo_utils.execute_checked`. If
             the `environment` has a value `PYTHONPATH` and it is a list, then
             it will be passed to `construct_pythonpath` function.
     """
@@ -113,25 +112,13 @@ def _execute_checked(mrctx, *, python, arguments, srcs, **kwargs):
         # bazel versions without `mrctx.watch` as well.
         repo_utils.watch(mrctx.path(src))
 
-    python_interpreter = "" if str(python).startswith("@") else python
-    python_interpreter_target = python if not python_interpreter else None
-
     env = kwargs.pop("environment", {})
     pythonpath = env.get("PYTHONPATH", "")
-    if pythonpath and isinstance(pythonpath, list):
+    if pythonpath and not types.is_string(pythonpath):
         env["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
 
     return repo_utils.execute_checked(
         mrctx,
-        op = op,
-        arguments = [
-            _resolve_python_interpreter(
-                mrctx,
-                python_interpreter = python_interpreter,
-                python_interpreter_target = python_interpreter_target,
-            ),
-            "-m",
-        ] + arguments,
         environment = env,
         **kwargs
     )

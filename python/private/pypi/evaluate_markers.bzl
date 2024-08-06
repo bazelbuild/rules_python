@@ -54,8 +54,13 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
     pypi_repo_utils.execute_checked(
         mrctx,
         op = "ResolveRequirementEnvMarkers({})".format(in_file),
-        python = python_interpreter or python_interpreter_target,
         arguments = [
+            pypi_repo_utils.resolve_python_interpreter(
+                mrctx,
+                python_interpreter = python_interpreter,
+                python_interpreter_target = python_interpreter_target,
+            ),
+            "-m",
             "python.private.pypi.requirements_parser.resolve_target_platforms",
             in_file,
             out_file,

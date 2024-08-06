@@ -245,6 +245,7 @@ bzl_library(
     srcs = ["pypi_repo_utils.bzl"],
     deps = [
         "//python/private:repo_utils_bzl",
+        "@bazel_skylib//lib:types",
     ],
 )
 
