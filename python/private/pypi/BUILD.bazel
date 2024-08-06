@@ -61,6 +61,7 @@ bzl_library(
         ":attrs_bzl",
         ":hub_repository_bzl",
         ":parse_requirements_bzl",
+        ":evaluate_markers_bzl",
         ":parse_whl_name_bzl",
         ":pip_repository_attrs_bzl",
         ":simpleapi_download_bzl",
@@ -86,6 +87,14 @@ bzl_library(
     srcs = ["deps.bzl"],
     deps = [
         "//python/private:bazel_tools_bzl",
+    ],
+)
+
+bzl_library(
+    name = "evaluate_markers_bzl",
+    srcs = ["evaluate_markers.bzl"],
+    deps = [
+        ":pypi_repo_utils_bzl",
     ],
 )
 
@@ -215,6 +224,7 @@ bzl_library(
     srcs = ["pip_repository.bzl"],
     deps = [
         ":attrs_bzl",
+        ":evaluate_markers_bzl",
         ":parse_requirements_bzl",
         ":pip_repository_attrs_bzl",
         ":render_pkg_aliases_bzl",
@@ -235,6 +245,7 @@ bzl_library(
     srcs = ["pypi_repo_utils.bzl"],
     deps = [
         "//python/private:repo_utils_bzl",
+        "@bazel_skylib//lib:types",
     ],
 )
 
