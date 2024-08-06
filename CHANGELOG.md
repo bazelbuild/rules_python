@@ -55,6 +55,10 @@ A brief description of the categories of changes:
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
 * (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
   network behavior. 
+* (bzlmod): The conflicting toolchains during `python` extension will no longer
+  cause warnings by default. In order to see the warnings for diagnostic purposes
+  set the env var `RULES_PYTHON_REPO_DEBUG_VERBOSITY` to one of `INFO`, `DEBUG` or `TRACE`.
+  Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow

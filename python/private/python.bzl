@@ -17,6 +17,7 @@
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python:versions.bzl", "TOOL_VERSIONS")
+load("//python/private:repo_utils.bzl", "repo_utils")
 load(":pythons_hub.bzl", "hub_repo")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
@@ -26,12 +27,6 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 # targets using any of these toolchains due to the changed repository name.
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
-
-# Printing a warning msg not debugging, so we have to disable
-# the buildifier check.
-# buildifier: disable=print
-def _print_warn(msg):
-    print("WARNING:", msg)
 
 def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
@@ -70,6 +65,8 @@ def _python_impl(module_ctx):
     global_toolchain_versions = {}
 
     ignore_root_user_error = None
+
+    logger = repo_utils.logger(module_ctx, "python")
 
     # if the root module does not register any toolchain then the
     # ignore_root_user_error takes its default value: False
@@ -131,11 +128,14 @@ def _python_impl(module_ctx):
                 # version that rules_python provides as default.
                 first = global_toolchain_versions[toolchain_version]
                 if mod.name != "rules_python" or not first.module.is_root:
+                    # The warning can be enabled by setting the verbosity:
+                    # env RULES_PYTHON_REPO_DEBUG_VERBOSITY=INFO bazel build //...
                     _warn_duplicate_global_toolchain_version(
                         toolchain_version,
                         first = first,
                         second_toolchain_name = toolchain_name,
                         second_module_name = mod.name,
+                        logger = logger,
                     )
                 toolchain_info = None
             else:
@@ -231,11 +231,11 @@ def _fail_duplicate_module_toolchain_version(version, module):
         module = module,
     ))
 
-def _warn_duplicate_global_toolchain_version(version, first, second_toolchain_name, second_module_name):
-    _print_warn((
+def _warn_duplicate_global_toolchain_version(version, first, second_toolchain_name, second_module_name, logger):
+    logger.info(lambda: (
         "Ignoring toolchain '{second_toolchain}' from module '{second_module}': " +
         "Toolchain '{first_toolchain}' from module '{first_module}' " +
-        "already registered Python version {version} and has precedence"
+        "already registered Python version {version} and has precedence."
     ).format(
         first_toolchain = first.name,
         first_module = first.module.name,
