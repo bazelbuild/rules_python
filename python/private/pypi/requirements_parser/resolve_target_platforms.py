@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """A CLI to evaluate env markers for requirements files.
 
 A simple script to evaluate the `requirements.txt` files. Currently it is only

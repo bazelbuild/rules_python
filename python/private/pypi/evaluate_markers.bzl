@@ -16,7 +16,7 @@
 
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
-# Used as a default value in a rule to ensure we fetch the dependencies. In the future we could create a `venv` with the said packages in the `repository_ctx` and only include the sources from the `rules_python` project that we use, but for now this will suffice.
+# Used as a default value in a rule to ensure we fetch the dependencies.
 SRCS = [
     # When the version, or any of the files in `packaging` package changes,
     # this file will change as well.

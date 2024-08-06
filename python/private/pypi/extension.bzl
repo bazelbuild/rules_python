@@ -651,9 +651,9 @@ The labels are JSON config files describing the modifications.
         "_evaluate_markers_srcs": attr.label_list(
             default = EVALUATE_MARKERS_SRCS,
             doc = """\
-    The list of labels to use as SRCS for the marker evaluation code. This ensures that the
-    code will be re-evaluated when any of files in the default changes.
-    """,
+The list of labels to use as SRCS for the marker evaluation code. This ensures that the
+code will be re-evaluated when any of files in the default changes.
+""",
         ),
     }, **ATTRS)
     attrs.update(AUTH_ATTRS)
