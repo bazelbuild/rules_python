@@ -14,33 +14,18 @@
 
 """A simple function that evaluates markers using a python interpreter."""
 
-load("//python/private:repo_utils.bzl", "repo_utils")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 
-_SRCS = {
-    Label("@pypi__packaging//:BUILD.bazel"): [
-        Label("@pypi__packaging//:packaging/__init__.py"),
-        Label("@pypi__packaging//:packaging/_elffile.py"),
-        Label("@pypi__packaging//:packaging/_manylinux.py"),
-        Label("@pypi__packaging//:packaging/_musllinux.py"),
-        Label("@pypi__packaging//:packaging/_parser.py"),
-        Label("@pypi__packaging//:packaging/_structures.py"),
-        Label("@pypi__packaging//:packaging/_tokenizer.py"),
-        Label("@pypi__packaging//:packaging/markers.py"),
-        Label("@pypi__packaging//:packaging/metadata.py"),
-        Label("@pypi__packaging//:packaging/requirements.py"),
-        Label("@pypi__packaging//:packaging/specifiers.py"),
-        Label("@pypi__packaging//:packaging/tags.py"),
-        Label("@pypi__packaging//:packaging/utils.py"),
-        Label("@pypi__packaging//:packaging/version.py"),
-    ],
-    Label("//:BUILD.bazel"): [
-        Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
-        Label("//python/private/pypi/whl_installer:platform.py"),
-    ],
-}
+# Used as a default value in a rule to ensure we fetch the dependencies. In the future we could create a `venv` with the said packages in the `repository_ctx` and only include the sources from the `rules_python` project that we use, but for now this will suffice.
+SRCS = [
+    # When the version, or any of the files in `packaging` package changes,
+    # this file will change as well.
+    Label("@pypi__packaging//:packaging-24.0.dist-info/RECORD"),
+    Label("//python/private/pypi/requirements_parser:resolve_target_platforms.py"),
+    Label("//python/private/pypi/whl_installer:platform.py"),
+]
 
-def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, logger = None):
+def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpreter_target, srcs, logger = None):
     """Return the list of supported platforms per requirements line.
 
     Args:
@@ -52,6 +37,7 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
             should be something that is in your PATH or an absolute path.
         python_interpreter_target: Label, same as python_interpreter, but in a
             label format.
+        srcs: list[Label], the value of SRCS passed from the `rctx` or `mctx` to this function.
         logger: repo_utils.logger or None, a simple struct to log diagnostic
             messages. Defaults to None.
 
@@ -61,49 +47,26 @@ def evaluate_markers(mrctx, *, requirements, python_interpreter, python_interpre
     if not requirements:
         return {}
 
-    _watch_srcs(mrctx)
-
     in_file = mrctx.path("requirements_with_markers.in.json")
     out_file = mrctx.path("requirements_with_markers.out.json")
     mrctx.file(in_file, json.encode(requirements))
 
-    repo_utils.execute_checked(
+    pypi_repo_utils.execute_checked(
         mrctx,
         op = "ResolveRequirementEnvMarkers({})".format(in_file),
+        python = python_interpreter or python_interpreter_target,
         arguments = [
-            pypi_repo_utils.resolve_python_interpreter(
-                mrctx,
-                python_interpreter = python_interpreter,
-                python_interpreter_target = python_interpreter_target,
-            ),
-            "-m",
             "python.private.pypi.requirements_parser.resolve_target_platforms",
             in_file,
             out_file,
         ],
+        srcs = srcs,
         environment = {
-            "PYTHONPATH": pypi_repo_utils.construct_pythonpath(mrctx, entries = _SRCS),
+            "PYTHONPATH": [
+                Label("@pypi__packaging//:BUILD.bazel"),
+                Label("//:BUILD.bazel"),
+            ],
         },
         logger = logger,
     )
     return json.decode(mrctx.read(out_file))
-
-def _watch_srcs(mrctx):
-    """watch python srcs that do work here.
-
-    NOTE @aignas 2024-07-13: we could in theory have a label list that
-    lists the files that we should include as dependencies to the pip
-    repo, however, this way works better because we can select files from
-    within the `pypi__packaging` repository and re-execute whenever they
-    change. This includes re-executing when the 'packaging' version is
-    upgraded.
-
-    Args:
-        mrctx: repository_ctx or module_ctx.
-    """
-    if not hasattr(mrctx, "watch"):
-        return
-
-    for srcs in _SRCS.values():
-        for src in srcs:
-            mrctx.watch(mrctx.path(src))

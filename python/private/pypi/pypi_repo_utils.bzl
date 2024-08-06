@@ -77,6 +77,9 @@ def _construct_pypath(mrctx, *, entries):
     Returns: String of the PYTHONPATH.
     """
 
+    if not entries:
+        return None
+
     os = repo_utils.get_platforms_os_name(mrctx)
     separator = ";" if "windows" in os else ":"
     pypath = separator.join([
@@ -86,7 +89,55 @@ def _construct_pypath(mrctx, *, entries):
     ])
     return pypath
 
+def _execute_checked(mrctx, *, python, arguments, srcs, **kwargs):
+    """Helper function to run a python script and modify the PYTHONPATH to include external deps.
+
+    Args:
+        mrctx: Handle to the module_ctx or repository_ctx.
+        python: Label or str pointing to the interpreter. If it is a `str` then
+            it is assumed to be in on the PATH or the string is a path.
+        arguments: Extra arguments, which would be present in the `python -m <args>` place.
+        srcs: The src files that the script depends on. This is important to
+            ensure that the bazel repository cache or the bzlmod lock file gets
+            invalidated when any one file changes. It is advisable to use
+            `RECORD` files for external deps and the list of srcs from the
+            rules_python repo for any scripts.
+        **kwargs: Extra arguments forwarded to `repo_utils.execute_checked`. If
+            the `environment` has a value `PYTHONPATH` and it is a list, then
+            it will be passed to `construct_pythonpath` function.
+    """
+
+    for src in srcs:
+        # This will ensure that we will re-evaluate the bzlmod extension or
+        # refetch the repository_rule when the srcs change. This should work on
+        # bazel versions without `mrctx.watch` as well.
+        repo_utils.watch(mrctx.path(src))
+
+    python_interpreter = "" if str(python).startswith("@") else python
+    python_interpreter_target = python if not python_interpreter else None
+
+    env = kwargs.pop("environment", {})
+    pythonpath = env.get("PYTHONPATH", "")
+    if pythonpath and isinstance(pythonpath, list):
+        env["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
+
+    return repo_utils.execute_checked(
+        mrctx,
+        op = op,
+        arguments = [
+            _resolve_python_interpreter(
+                mrctx,
+                python_interpreter = python_interpreter,
+                python_interpreter_target = python_interpreter_target,
+            ),
+            "-m",
+        ] + arguments,
+        environment = env,
+        **kwargs
+    )
+
 pypi_repo_utils = struct(
-    resolve_python_interpreter = _resolve_python_interpreter,
     construct_pythonpath = _construct_pypath,
+    execute_checked = _execute_checked,
+    resolve_python_interpreter = _resolve_python_interpreter,
 )

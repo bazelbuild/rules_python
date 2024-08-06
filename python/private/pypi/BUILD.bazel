@@ -95,7 +95,6 @@ bzl_library(
     srcs = ["evaluate_markers.bzl"],
     deps = [
         ":pypi_repo_utils_bzl",
-        "//python/private:repo_utils_bzl",
     ],
 )
 
