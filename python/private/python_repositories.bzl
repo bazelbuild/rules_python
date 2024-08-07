@@ -191,6 +191,22 @@ def _python_repository_impl(rctx):
     elif rctx.attr.distutils_content:
         rctx.file(distutils_path, rctx.attr.distutils_content)
 
+    if "darwin" in platform and "osx" == repo_utils.get_platforms_os_name(rctx):
+        # Fix up the Python distribution's LC_ID_DYLIB field.
+        # It points to a build directory local to the GitHub Actions
+        # host machine used in the Python standalone build, which causes
+        # dyld lookup errors. To fix, set the full path to the dylib as
+        # it appears in the Bazel workspace as its LC_ID_DYLIB using
+        # the `install_name_tool` bundled with macOS.
+        dylib = "lib/libpython{}.dylib".format(python_short_version)
+        full_dylib_path = rctx.path(dylib)
+        repo_utils.execute_checked(
+            rctx,
+            op = "python_repository.FixUpDyldIdPath",
+            arguments = [repo_utils.which_checked(rctx, "install_name_tool"), "-id", full_dylib_path, dylib],
+            logger = logger,
+        )
+
     # Make the Python installation read-only. This is to prevent issues due to
     # pycs being generated at runtime:
     # * The pycs are not deterministic (they contain timestamps)
