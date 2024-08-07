@@ -1,3 +1,6 @@
+:::{default-domain} bzl
+:::
+
 # Configuring Python toolchains and runtimes
 
 This documents how to configure the Python toolchain and runtimes for different
@@ -38,7 +41,7 @@ you should read the dev-only library module section.
 
 ```
 bazel_dep(name="rules_python", version=...)
-python = use_extension("@rules_python//extensions:python.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 python.toolchain(python_version = "3.12", is_default = True)
 ```
@@ -63,7 +66,7 @@ specify `dev_dependency = True` to the bzlmod APIs:
 bazel_dep(name = "rules_python", version=..., dev_dependency = True)
 
 python = use_extension(
-    "@rules_python//extensions:python.bzl",
+    "@rules_python//python/extensions:python.bzl",
     "python",
     dev_dependency = True
 )
@@ -109,7 +112,7 @@ the version-aware rules for `py_binary`.
 # MODULE.bazel
 bazel_dep(name = "rules_python", version=...)
 
-python = use_extension("@rules_python//extensions:python.bzl", "python")
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(python_version = "3.12")
 
 # BUILD.bazel
@@ -193,7 +196,7 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 ```
 
-#### Workspace toolchain registration
+### Workspace toolchain registration
 
 To register a hermetic Python toolchain rather than rely on a system-installed interpreter for runtime execution, you can add to the `WORKSPACE` file:
 
@@ -221,3 +224,21 @@ pip_parse(
 After registration, your Python targets will use the toolchain's interpreter during execution, but a system-installed interpreter
 is still used to 'bootstrap' Python targets (see https://github.com/bazelbuild/rules_python/issues/691).
 You may also find some quirks while using this toolchain. Please refer to [python-build-standalone documentation's _Quirks_ section](https://gregoryszorc.com/docs/python-build-standalone/main/quirks.html).
+
+## Autodetecting toolchain
+
+The autodetecting toolchain is a deprecated toolchain that is built into Bazel.
+It's name is a bit misleading: it doesn't autodetect anything. All it does is
+use `python3` from the environment a binary runs within. This provides extremely
+limited functionality to the rules (at build time, nothing is knowable about
+the Python runtime).
+
+Bazel itself automatically registers `@bazel_tools//tools/python:autodetecting_toolchain`
+as the lowest priority toolchain. For WORKSPACE builds, if no other toolchain
+is registered, that toolchain will be used. For bzlmod builds, rules_python
+automatically registers a higher-priority toolchain; it won't be used unless
+there is a toolchain misconfiguration somewhere.
+
+To aid migration off the Bazel-builtin toolchain, rules_python provides
+{obj}`@rules_python//python/runtime_env_toolchains:all`. This is an equivalent
+toolchain, but is implemented using rules_python's objects.

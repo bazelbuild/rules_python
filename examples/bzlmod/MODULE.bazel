@@ -15,7 +15,7 @@ local_path_override(
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 
 # (py_proto_library specific) Add the protobuf library for well-known types (e.g. `Any`, `Timestamp`, etc)
-bazel_dep(name = "protobuf", version = "21.7", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf")
 
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
@@ -42,6 +42,13 @@ python.toolchain(
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
 # rules based on the `python_version` arg values.
 use_repo(python, "python_3_10", "python_3_9", "python_versions")
+
+# EXPERIMENTAL: This is experimental and may be removed without notice
+uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")
+uv.toolchain(uv_version = "0.2.23")
+use_repo(uv, "uv_toolchains")
+
+register_toolchains("@uv_toolchains//:all")
 
 # This extension allows a user to create modifications to how rules_python
 # creates different wheel repositories.  Different attributes allow the user
@@ -128,8 +135,17 @@ pip.parse(
     ],
     hub_name = "pip",
     python_version = "3.9",
-    requirements_lock = "//:requirements_lock_3_9.txt",
-    requirements_windows = "//:requirements_windows_3_9.txt",
+    # The requirements files for each platform that we want to support.
+    requirements_by_platform = {
+        # Default requirements file for needs to explicitly provide the platforms
+        "//:requirements_lock_3_9.txt": "linux_*,osx_*",
+        # This API allows one to specify additional platforms that the users
+        # configure the toolchains for themselves. In this example we add
+        # `windows_aarch64` to illustrate that `rules_python` won't fail to
+        # process the value, but it does not mean that this example will work
+        # on Windows ARM.
+        "//:requirements_windows_3_9.txt": "windows_x86_64,windows_aarch64",
+    },
     # These modifications were created above and we
     # are providing pip.parse with the label of the mod
     # and the name of the wheel.
@@ -193,14 +209,3 @@ local_path_override(
     module_name = "other_module",
     path = "other_module",
 )
-
-# =====
-# Config for testing duplicate packages in requirements
-# =====
-#
-pip.parse(
-    hub_name = "dupe_requirements",
-    python_version = "3.9",  # Must match whatever is marked is_default=True
-    requirements_lock = "//tests/dupe_requirements:requirements.txt",
-)
-use_repo(pip, "dupe_requirements")

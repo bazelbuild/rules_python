@@ -202,11 +202,7 @@ func (py *Resolver) Resolve(
 						matches := ix.FindRulesByImportWithConfig(c, imp, languageName)
 						if len(matches) == 0 {
 							// Check if the imported module is part of the standard library.
-							if isStd, err := isStdModule(module{Name: moduleName}); err != nil {
-								log.Println("Error checking if standard module: ", err)
-								hasFatalError = true
-								continue POSSIBLE_MODULE_LOOP
-							} else if isStd {
+							if isStdModule(module{Name: moduleName}) {
 								continue MODULES_LOOP
 							} else if cfg.ValidateImportStatements() {
 								err := fmt.Errorf(

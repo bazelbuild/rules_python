@@ -14,15 +14,13 @@
 """Common functions that are specific to Bazel rule implementation"""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
+load("//python/private:py_interpreter_program.bzl", "PyInterpreterProgramInfo")
+load("//python/private:toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
+load(":attributes.bzl", "PrecompileAttr", "PrecompileInvalidationModeAttr", "PrecompileSourceRetentionAttr")
 load(":common.bzl", "is_bool")
 load(":providers.bzl", "PyCcLinkParamsProvider")
 load(":py_internal.bzl", "py_internal")
-
-# TODO: Load cc_common from rules_cc
-_cc_common = cc_common
-
-# TODO: Load CcInfo from rules_cc
-_CcInfo = CcInfo
 
 _py_builtins = py_internal
 
@@ -42,13 +40,13 @@ def collect_cc_info(ctx, extra_deps = []):
         deps.extend(extra_deps)
     cc_infos = []
     for dep in deps:
-        if _CcInfo in dep:
-            cc_infos.append(dep[_CcInfo])
+        if CcInfo in dep:
+            cc_infos.append(dep[CcInfo])
 
         if PyCcLinkParamsProvider in dep:
             cc_infos.append(dep[PyCcLinkParamsProvider].cc_info)
 
-    return _cc_common.merge_cc_infos(cc_infos = cc_infos)
+    return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
 def maybe_precompile(ctx, srcs):
     """Computes all the outputs (maybe precompiled) from the input srcs.
@@ -60,12 +58,160 @@ def maybe_precompile(ctx, srcs):
         srcs: List of Files; the inputs to maybe precompile.
 
     Returns:
-        List of Files; the desired output files derived from the input sources.
+        Struct of precompiling results with fields:
+        * `keep_srcs`: list of File; the input sources that should be included
+          as default outputs and runfiles.
+        * `pyc_files`: list of File; the precompiled files.
+        * `py_to_pyc_map`: dict of src File input to pyc File output. If a source
+          file wasn't precompiled, it won't be in the dict.
     """
-    _ = ctx  # @unused
 
-    # Precompilation isn't implemented yet, so just return srcs as-is
-    return srcs
+    # The exec tools toolchain and precompiler are optional. Rather than
+    # fail, just skip precompiling, as its mostly just an optimization.
+    exec_tools_toolchain = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE]
+    if exec_tools_toolchain == None or exec_tools_toolchain.exec_tools.precompiler == None:
+        precompile = PrecompileAttr.DISABLED
+    else:
+        precompile = PrecompileAttr.get_effective_value(ctx)
+
+    source_retention = PrecompileSourceRetentionAttr.get_effective_value(ctx)
+
+    result = struct(
+        keep_srcs = [],
+        pyc_files = [],
+        py_to_pyc_map = {},
+    )
+    for src in srcs:
+        # The logic below is a bit convoluted. The gist is:
+        # * If precompiling isn't done, add the py source to default outputs.
+        #   Otherwise, the source retention flag decides.
+        # * In order to determine `use_pycache`, we have to know if the source
+        #   is being added to the default outputs.
+        is_generated_source = not src.is_source
+        should_precompile = (
+            precompile == PrecompileAttr.ENABLED or
+            (precompile == PrecompileAttr.IF_GENERATED_SOURCE and is_generated_source)
+        )
+        keep_source = (
+            not should_precompile or
+            source_retention == PrecompileSourceRetentionAttr.KEEP_SOURCE or
+            (source_retention == PrecompileSourceRetentionAttr.OMIT_IF_GENERATED_SOURCE and not is_generated_source)
+        )
+        if should_precompile:
+            pyc = _precompile(ctx, src, use_pycache = keep_source)
+            result.pyc_files.append(pyc)
+            result.py_to_pyc_map[src] = pyc
+        if keep_source:
+            result.keep_srcs.append(src)
+
+    return result
+
+def _precompile(ctx, src, *, use_pycache):
+    """Compile a py file to pyc.
+
+    Args:
+        ctx: rule context.
+        src: File object to compile
+        use_pycache: bool. True if the output should be within the `__pycache__`
+            sub-directory. False if it should be alongside the original source
+            file.
+
+    Returns:
+        File of the generated pyc file.
+    """
+    exec_tools_info = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools
+    target_toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE].py3_runtime
+
+    # These args control starting the precompiler, e.g., when run as a worker,
+    # these args are only passed once.
+    precompiler_startup_args = ctx.actions.args()
+
+    env = {}
+    tools = []
+
+    precompiler = exec_tools_info.precompiler
+    if PyInterpreterProgramInfo in precompiler:
+        precompiler_executable = exec_tools_info.exec_interpreter[DefaultInfo].files_to_run
+        program_info = precompiler[PyInterpreterProgramInfo]
+        env.update(program_info.env)
+        precompiler_startup_args.add_all(program_info.interpreter_args)
+        default_info = precompiler[DefaultInfo]
+        precompiler_startup_args.add(default_info.files_to_run.executable)
+        tools.append(default_info.files_to_run)
+    elif precompiler[DefaultInfo].files_to_run:
+        precompiler_executable = precompiler[DefaultInfo].files_to_run
+    else:
+        fail(("Unrecognized precompiler: target '{}' does not provide " +
+              "PyInterpreterProgramInfo nor appears to be executable").format(
+            precompiler,
+        ))
+
+    stem = src.basename[:-(len(src.extension) + 1)]
+    if use_pycache:
+        if not target_toolchain.pyc_tag:
+            fail("Unable to create __pycache__ pyc: pyc_tag is empty")
+        pyc_path = "__pycache__/{stem}.{tag}.pyc".format(
+            stem = stem,
+            tag = target_toolchain.pyc_tag,
+        )
+    else:
+        pyc_path = "{}.pyc".format(stem)
+
+    pyc = ctx.actions.declare_file(pyc_path, sibling = src)
+
+    invalidation_mode = ctx.attr.precompile_invalidation_mode
+    if invalidation_mode == PrecompileInvalidationModeAttr.AUTO:
+        if ctx.var["COMPILATION_MODE"] == "opt":
+            invalidation_mode = PrecompileInvalidationModeAttr.UNCHECKED_HASH
+        else:
+            invalidation_mode = PrecompileInvalidationModeAttr.CHECKED_HASH
+
+    # Though --modify_execution_info exists, it can only set keys with
+    # empty values, which doesn't work for persistent worker settings.
+    execution_requirements = {}
+    if testing.ExecutionInfo in precompiler:
+        execution_requirements.update(precompiler[testing.ExecutionInfo].requirements)
+
+    # These args are passed for every precompilation request, e.g. as part of
+    # a request to a worker process.
+    precompile_request_args = ctx.actions.args()
+
+    # Always use param files so that it can be run as a persistent worker
+    precompile_request_args.use_param_file("@%s", use_always = True)
+    precompile_request_args.set_param_file_format("multiline")
+
+    precompile_request_args.add("--invalidation_mode", invalidation_mode)
+    precompile_request_args.add("--src", src)
+
+    # NOTE: src.short_path is used because src.path contains the platform and
+    # build-specific hash portions of the path, which we don't want in the
+    # pyc data. Note, however, for remote-remote files, short_path will
+    # have the repo name, which is likely to contain extraneous info.
+    precompile_request_args.add("--src_name", src.short_path)
+    precompile_request_args.add("--pyc", pyc)
+    precompile_request_args.add("--optimize", ctx.attr.precompile_optimize_level)
+
+    version_info = target_toolchain.interpreter_version_info
+    python_version = "{}.{}".format(version_info.major, version_info.minor)
+    precompile_request_args.add("--python_version", python_version)
+
+    ctx.actions.run(
+        executable = precompiler_executable,
+        arguments = [precompiler_startup_args, precompile_request_args],
+        inputs = [src],
+        outputs = [pyc],
+        mnemonic = "PyCompile",
+        progress_message = "Python precompiling %{input} into %{output}",
+        tools = tools,
+        env = env | {
+            "PYTHONHASHSEED": "0",  # Helps avoid non-deterministic behavior
+            "PYTHONNOUSERSITE": "1",  # Helps avoid non-deterministic behavior
+            "PYTHONSAFEPATH": "1",  # Helps avoid incorrect import issues
+        },
+        execution_requirements = execution_requirements,
+        toolchain = EXEC_TOOLS_TOOLCHAIN_TYPE,
+    )
+    return pyc
 
 def get_imports(ctx):
     """Gets the imports from a rule's `imports` attribute.

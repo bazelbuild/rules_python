@@ -103,12 +103,16 @@ def is_python_config_setting(name, *, python_version, reuse_conditions = None, *
         fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
 
     python_versions = VERSION_FLAG_VALUES[python_version]
+    extra_flag_values = kwargs.pop("flag_values", {})
+    if _PYTHON_VERSION_FLAG in extra_flag_values:
+        fail("Cannot set '{}' in the flag values".format(_PYTHON_VERSION_FLAG))
+
     if len(python_versions) == 1:
         native.config_setting(
             name = name,
             flag_values = {
                 _PYTHON_VERSION_FLAG: python_version,
-            },
+            } | extra_flag_values,
             **kwargs
         )
         return
@@ -138,7 +142,7 @@ def is_python_config_setting(name, *, python_version, reuse_conditions = None, *
     for name_, flag_values_ in create_config_settings.items():
         native.config_setting(
             name = name_,
-            flag_values = flag_values_,
+            flag_values = flag_values_ | extra_flag_values,
             **kwargs
         )
 
@@ -174,6 +178,14 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         # a select condition when they shouldn't.
         build_setting_default = "",
         values = [""] + VERSION_FLAG_VALUES.keys(),
+        visibility = ["//visibility:public"],
+    )
+
+    native.config_setting(
+        name = "is_python_version_unset",
+        flag_values = {
+            Label("//python/config_settings:python_version"): "",
+        },
         visibility = ["//visibility:public"],
     )
 

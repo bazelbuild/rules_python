@@ -13,9 +13,11 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_setting")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
 load("//python:versions.bzl", "print_toolchains_checksums")
+load(":py_exec_tools_toolchain.bzl", "current_interpreter_executable")
 load(":stamp.bzl", "stamp_build_setting")
 
 package(
@@ -27,9 +29,10 @@ licenses(["notice"])
 filegroup(
     name = "distribution",
     srcs = glob(["**"]) + [
-        "//python/private/bzlmod:distribution",
         "//python/private/common:distribution",
         "//python/private/proto:distribution",
+        "//python/private/pypi:distribution",
+        "//python/private/whl_filegroup:distribution",
         "//tools/build_defs/python/private:distribution",
     ],
     visibility = ["//python:__pkg__"],
@@ -55,9 +58,11 @@ bzl_library(
 )
 
 bzl_library(
-    name = "autodetecting_toolchain_bzl",
-    srcs = ["autodetecting_toolchain.bzl"],
+    name = "runtime_env_toolchain_bzl",
+    srcs = ["runtime_env_toolchain.bzl"],
     deps = [
+        ":py_exec_tools_toolchain_bzl",
+        ":toolchain_types_bzl",
         "//python:py_runtime_bzl",
         "//python:py_runtime_pair_bzl",
     ],
@@ -87,8 +92,22 @@ bzl_library(
 )
 
 bzl_library(
+    name = "enum_bzl",
+    srcs = ["enum.bzl"],
+)
+
+bzl_library(
     name = "envsubst_bzl",
     srcs = ["envsubst.bzl"],
+)
+
+bzl_library(
+    name = "flags_bzl",
+    srcs = ["flags.bzl"],
+    deps = [
+        ":enum_bzl",
+        "@bazel_skylib//rules:common_settings",
+    ],
 )
 
 bzl_library(
@@ -109,25 +128,42 @@ bzl_library(
 )
 
 bzl_library(
-    name = "patch_whl_bzl",
-    srcs = ["patch_whl.bzl"],
-    deps = [":parse_whl_name_bzl"],
-)
-
-bzl_library(
-    name = "parse_whl_name_bzl",
-    srcs = ["parse_whl_name.bzl"],
-)
-
-bzl_library(
-    name = "pypi_index_bzl",
-    srcs = ["pypi_index.bzl"],
+    name = "python_bzl",
+    srcs = ["python.bzl"],
     deps = [
-        ":auth_bzl",
-        ":normalize_name_bzl",
-        ":text_util_bzl",
-        "//python/pip_install:requirements_parser_bzl",
-        "//python/private/bzlmod:bazel_features_bzl",
+        ":pythons_hub_bzl",
+        ":repo_utils_bzl",
+        ":toolchains_repo_bzl",
+        ":util_bzl",
+        "//python:repositories_bzl",
+        "@bazel_features//:features",
+    ],
+)
+
+bzl_library(
+    name = "python_repositories_bzl",
+    srcs = ["python_repositories.bzl"],
+    deps = [
+        "//python:versions_bzl",
+        "//python/private:auth_bzl",
+        "//python/private:bazel_tools_bzl",
+        "//python/private:bzlmod_enabled_bzl",
+        "//python/private:coverage_deps_bzl",
+        "//python/private:full_version_bzl",
+        "//python/private:internal_config_repo_bzl",
+        "//python/private:repo_utils_bzl",
+        "//python/private:toolchains_repo_bzl",
+        "//python/private/pypi:deps_bzl",
+    ],
+)
+
+bzl_library(
+    name = "pythons_hub_bzl",
+    srcs = ["pythons_hub.bzl"],
+    deps = [
+        ":full_version_bzl",
+        ":py_toolchain_suite_bzl",
+        "//python:versions_bzl",
     ],
 )
 
@@ -143,7 +179,9 @@ bzl_library(
     ],
     deps = [
         ":py_cc_toolchain_info_bzl",
+        ":rules_cc_srcs_bzl",
         ":util_bzl",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 
@@ -166,6 +204,22 @@ bzl_library(
 )
 
 bzl_library(
+    name = "py_exec_tools_toolchain_bzl",
+    srcs = ["py_exec_tools_toolchain.bzl"],
+    deps = [
+        ":toolchain_types_bzl",
+        "//python/private/common:providers_bzl",
+        "@bazel_skylib//rules:common_settings",
+    ],
+)
+
+bzl_library(
+    name = "py_interpreter_program_bzl",
+    srcs = ["py_interpreter_program.bzl"],
+    deps = ["@bazel_skylib//rules:common_settings"],
+)
+
+bzl_library(
     name = "py_package_bzl",
     srcs = ["py_package.bzl"],
     visibility = ["//:__subpackages__"],
@@ -184,6 +238,7 @@ bzl_library(
     deps = [
         "//python:py_runtime_bzl",
         "//python:py_runtime_info_bzl",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 
@@ -191,6 +246,9 @@ bzl_library(
     name = "py_toolchain_suite_bzl",
     srcs = ["py_toolchain_suite.bzl"],
     deps = [
+        ":config_settings_bzl",
+        ":text_util_bzl",
+        ":toolchain_types_bzl",
         "@bazel_skylib//lib:selects",
     ],
 )
@@ -220,16 +278,6 @@ bzl_library(
 )
 
 bzl_library(
-    name = "render_pkg_aliases_bzl",
-    srcs = ["render_pkg_aliases.bzl"],
-    deps = [
-        ":normalize_name_bzl",
-        ":text_util_bzl",
-        ":version_label_bzl",
-    ],
-)
-
-bzl_library(
     name = "repo_utils_bzl",
     srcs = ["repo_utils.bzl"],
 )
@@ -255,6 +303,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "toolchain_types_bzl",
+    srcs = ["toolchain_types.bzl"],
+)
+
+bzl_library(
     name = "util_bzl",
     srcs = ["util.bzl"],
     visibility = [
@@ -268,20 +321,6 @@ bzl_library(
     srcs = ["version_label.bzl"],
 )
 
-bzl_library(
-    name = "whl_target_platforms_bzl",
-    srcs = ["whl_target_platforms.bzl"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "parse_whl_name_bzl",
-    ],
-)
-
-bzl_library(
-    name = "labels_bzl",
-    srcs = ["labels.bzl"],
-)
-
 # @bazel_tools can't define bzl_library itself, so we just put a wrapper around it.
 bzl_library(
     name = "bazel_tools_bzl",
@@ -291,6 +330,13 @@ bzl_library(
         # sources.
         "@bazel_tools//tools:bzl_srcs",
     ],
+)
+
+# @rules_cc does not offer a bzl_library target for @rules_cc//cc:defs.bzl
+bzl_library(
+    name = "rules_cc_srcs_bzl",
+    srcs = ["@rules_cc//cc:bzl_srcs"],
+    deps = [":bazel_tools_bzl"],
 )
 
 # Needed to define bzl_library targets for docgen. (We don't define the
@@ -318,8 +364,62 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "stage1_bootstrap_template",
+    srcs = ["stage1_bootstrap_template.sh"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "stage2_bootstrap_template",
+    srcs = ["stage2_bootstrap_template.py"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "zip_main_template",
+    srcs = ["zip_main_template.py"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
+# NOTE: Windows builds don't use this bootstrap. Instead, a native Windows
+# program locates some Python exe and runs `python.exe foo.zip` which
+# runs the __main__.py in the zip file.
+alias(
+    name = "bootstrap_template",
+    actual = select({
+        ":is_script_bootstrap_enabled": "stage1_bootstrap_template.sh",
+        "//conditions:default": "python_bootstrap_template.txt",
+    }),
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
 # Used to determine the use of `--stamp` in Starlark rules
 stamp_build_setting(name = "stamp")
+
+config_setting(
+    name = "is_script_bootstrap_enabled",
+    flag_values = {
+        "//python/config_settings:bootstrap_impl": "script",
+    },
+)
+
+# This should only be set by analysis tests to expose additional metadata to
+# aid testing, so a setting instead of a flag.
+bool_setting(
+    name = "visible_for_testing",
+    build_setting_default = False,
+    # This is only because it is an implicit dependency by the toolchains.
+    visibility = ["//visibility:public"],
+)
 
 print_toolchains_checksums(name = "print_toolchains_checksums")
 
@@ -340,4 +440,13 @@ py_library(
     visibility = [
         "//tests/entry_points:__pkg__",
     ],
+)
+
+# The current toolchain's interpreter as an excutable, usable with
+# executable=True attributes.
+current_interpreter_executable(
+    name = "current_interpreter_executable",
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_exec_tools_toolchain.
+    visibility = ["//visibility:public"],
 )

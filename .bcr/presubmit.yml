@@ -22,5 +22,10 @@ bcr_test_module:
       name: "Run test module"
       platform: ${{ platform }}
       bazel: ${{ bazel }}
+      test_flags:
+        - "--keep_going"
+          # Without these cxxopts, BCR's Mac builds fail
+        - '--cxxopt=-std=c++14'
+        - '--host_cxxopt=-std=c++14'
       test_targets:
         - "//..."

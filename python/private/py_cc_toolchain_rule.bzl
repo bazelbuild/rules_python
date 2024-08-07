@@ -18,6 +18,8 @@ NOTE: This is a beta-quality feature. APIs subject to change until
 https://github.com/bazelbuild/rules_python/issues/824 is considered done.
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc:defs.bzl", "CcInfo")
 load(":py_cc_toolchain_info.bzl", "PyCcToolchainInfo")
 
 def _py_cc_toolchain_impl(ctx):
@@ -36,8 +38,12 @@ def _py_cc_toolchain_impl(ctx):
         ),
         python_version = ctx.attr.python_version,
     )
+    extra_kwargs = {}
+    if ctx.attr._visible_for_testing[BuildSettingInfo].value:
+        extra_kwargs["toolchain_label"] = ctx.label
     return [platform_common.ToolchainInfo(
         py_cc_toolchain = py_cc_toolchain,
+        **extra_kwargs
     )]
 
 py_cc_toolchain = rule(
@@ -58,6 +64,9 @@ py_cc_toolchain = rule(
         "python_version": attr.string(
             doc = "The Major.minor Python version, e.g. 3.11",
             mandatory = True,
+        ),
+        "_visible_for_testing": attr.label(
+            default = "//python/private:visible_for_testing",
         ),
     },
     doc = """\

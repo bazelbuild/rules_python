@@ -18,9 +18,10 @@ load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
-load("//tests/support:test_platforms.bzl", "WINDOWS")
+load("//tests/support:support.bzl", "LINUX_X86_64", "WINDOWS_X86_64")
 
 _BuiltinPyRuntimeInfo = PyRuntimeInfo
 
@@ -50,7 +51,7 @@ def _test_basic_windows(name, config):
             "//command_line_option:cpu": "windows_x86_64",
             "//command_line_option:crosstool_top": Label("//tests/cc:cc_toolchain_suite"),
             "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
-            "//command_line_option:platforms": [WINDOWS],
+            "//command_line_option:platforms": [WINDOWS_X86_64],
         },
         attr_values = {"target_compatible_with": target_compatible_with},
     )
@@ -66,6 +67,50 @@ def _test_basic_windows_impl(env, target):
     ))
 
 _tests.append(_test_basic_windows)
+
+def _test_basic_zip(name, config):
+    if rp_config.enable_pystar:
+        target_compatible_with = select({
+            # Disable the new test on windows because we have _test_basic_windows.
+            "@platforms//os:windows": ["@platforms//:incompatible"],
+            "//conditions:default": [],
+        })
+    else:
+        target_compatible_with = ["@platforms//:incompatible"]
+    rt_util.helper_target(
+        config.rule,
+        name = name + "_subject",
+        srcs = ["main.py"],
+        main = "main.py",
+    )
+    analysis_test(
+        name = name,
+        impl = _test_basic_zip_impl,
+        target = name + "_subject",
+        config_settings = {
+            # NOTE: The default for this flag is based on the Bazel host OS, not
+            # the target platform. For windows, it defaults to true, so force
+            # it to that to match behavior when this test runs on other
+            # platforms.
+            "//command_line_option:build_python_zip": "true",
+            "//command_line_option:cpu": "linux_x86_64",
+            "//command_line_option:crosstool_top": Label("//tests/cc:cc_toolchain_suite"),
+            "//command_line_option:extra_toolchains": [str(Label("//tests/cc:all"))],
+            "//command_line_option:platforms": [LINUX_X86_64],
+        },
+        attr_values = {"target_compatible_with": target_compatible_with},
+    )
+
+def _test_basic_zip_impl(env, target):
+    target = env.expect.that_target(target)
+    target.runfiles().contains_predicate(matching.str_endswith(
+        target.meta.format_str("/{name}.zip"),
+    ))
+    target.runfiles().contains_predicate(matching.str_endswith(
+        target.meta.format_str("/{name}"),
+    ))
+
+_tests.append(_test_basic_zip)
 
 def _test_executable_in_runfiles(name, config):
     rt_util.helper_target(
@@ -252,6 +297,16 @@ def _test_files_to_build_impl(env, target):
             "{package}/{test_name}_subject",
             "{package}/{test_name}_subject.py",
         ])
+
+        if IS_BAZEL_7_OR_HIGHER:
+            # As of Bazel 7, the first default output is the executable, so
+            # verify that is the case. rules_testing
+            # DepsetFileSubject.contains_exactly doesn't provide an in_order()
+            # call, nor access to the underlying depset, so we have to do things
+            # manually.
+            first_default_output = target[DefaultInfo].files.to_list()[0]
+            executable = target[DefaultInfo].files_to_run.executable
+            env.expect.that_file(first_default_output).equals(executable)
 
 def _test_name_cannot_end_in_py(name, config):
     # Bazel 5 will crash with a Java stacktrace when the native Python

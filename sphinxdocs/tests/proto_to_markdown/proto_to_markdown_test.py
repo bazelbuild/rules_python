@@ -114,21 +114,22 @@ class ProtoToMarkdownTest(absltest.TestCase):
     def test_basic_rendering_everything(self):
         actual = self._render(_EVERYTHING_MODULE)
 
+        self.assertIn("{bzl:currentfile} //pkg:foo.bzl", actual)
         self.assertRegex(actual, "# //pkg:foo.bzl")
         self.assertRegex(actual, "MODULE_DOC_STRING")
 
-        self.assertRegex(actual, "## rule_1.*")
+        self.assertRegex(actual, "{bzl:rule} rule_1.*")
         self.assertRegex(actual, "RULE_1_DOC_STRING")
         self.assertRegex(actual, "rule_1_attr_1")
         self.assertRegex(actual, "RULE_1_ATTR_1_DOC_STRING")
         self.assertRegex(actual, "RULE_1_ATTR_1_DEFAULT_VALUE")
 
-        self.assertRegex(actual, "## ProviderAlpha")
+        self.assertRegex(actual, "{bzl:provider} ProviderAlpha")
         self.assertRegex(actual, "PROVIDER_ALPHA_DOC_STRING")
         self.assertRegex(actual, "ProviderAlpha_field_a")
         self.assertRegex(actual, "PROVIDER_ALPHA_FIELD_A_DOC_STRING")
 
-        self.assertRegex(actual, "## function_1")
+        self.assertRegex(actual, "{bzl:function} function_1")
         self.assertRegex(actual, "FUNCTION_1_DOC_STRING")
         self.assertRegex(actual, "function_1_param_a")
         self.assertRegex(actual, "FUNCTION_1_PARAM_A_DOC_STRING")
@@ -136,22 +137,22 @@ class ProtoToMarkdownTest(absltest.TestCase):
         self.assertRegex(actual, "FUNCTION_1_RETURN_DOC_STRING")
         self.assertRegex(actual, "FUNCTION_1_DEPRECATED_DOC_STRING")
 
-        self.assertRegex(actual, "## aspect_1")
+        self.assertRegex(actual, "{bzl:aspect} aspect_1")
         self.assertRegex(actual, "ASPECT_1_DOC_STRING")
         self.assertRegex(actual, "aspect_1_aspect_attribute_a")
         self.assertRegex(actual, "aspect_1_attribute_a")
         self.assertRegex(actual, "ASPECT_1_ATTRIBUTE_A_DOC_STRING")
         self.assertRegex(actual, "694638")
 
-        self.assertRegex(actual, "## bzlmod_ext")
+        self.assertRegex(actual, "{bzl:module-extension} bzlmod_ext")
         self.assertRegex(actual, "BZLMOD_EXT_DOC_STRING")
-        self.assertRegex(actual, "### bzlmod_ext.bzlmod_ext_tag_a")
+        self.assertRegex(actual, "{bzl:tag-class} bzlmod_ext_tag_a")
         self.assertRegex(actual, "BZLMOD_EXT_TAG_A_DOC_STRING")
         self.assertRegex(actual, "bzlmod_ext_tag_a_attribute_1")
         self.assertRegex(actual, "BZLMOD_EXT_TAG_A_ATTRIBUTE_1_DOC_STRING")
         self.assertRegex(actual, "BZLMOD_EXT_TAG_A_ATTRIBUTE_1_DEFAULT_VALUE")
 
-        self.assertRegex(actual, "## repository_rule")
+        self.assertRegex(actual, "{bzl:repo-rule} repository_rule")
         self.assertRegex(actual, "REPOSITORY_RULE_DOC_STRING")
         self.assertRegex(actual, "repository_rule_attribute_a")
         self.assertRegex(actual, "REPOSITORY_RULE_ATTRIBUTE_A_DOC_STRING")
@@ -172,31 +173,25 @@ func_info: {
     name: "param_without_default"
   }
   parameter: {
+    name: "param_with_function_default",
+    default_value: "<function foo from //bar:baz.bzl>"
+  }
+  parameter: {
+    name: "param_with_label_default",
+    default_value: 'Label(*, "@repo//pkg:file.bzl")'
+  }
+  parameter: {
     name: "last_param"
   }
 }
         """
         )
-        self.assertIn("[param_with_default](#func_param_with_default)=DEFAULT,", actual)
-        self.assertIn("[param_without_default](#func_param_without_default),", actual)
-
-    def test_render_field_list(self):
-        actual = self._render(
-            """\
-file: "@repo//pkg:foo.bzl"
-func_info: {
-  function_name: "func"
-  parameter: {
-    name: "param"
-    default_value: "DEFAULT"
-  }
-}
-"""
-        )
-        self.assertRegex(
-            actual, re.compile("^:.*param.*¶.*headerlink.*:\n", re.MULTILINE)
-        )
-        self.assertRegex(actual, re.compile("^  .*#func_param", re.MULTILINE))
+        self.assertIn("param_with_default=DEFAULT,", actual)
+        self.assertIn("{default-value}`DEFAULT`", actual)
+        self.assertIn(":arg param_with_default:", actual)
+        self.assertIn("param_without_default,", actual)
+        self.assertIn('{default-value}`"@repo//pkg:file.bzl"`', actual)
+        self.assertIn("{default-value}`'<function foo from //bar:baz.bzl>'", actual)
 
 
 if __name__ == "__main__":

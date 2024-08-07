@@ -61,12 +61,15 @@ func (py *Configurer) KnownDirectives() []string {
 		pythonconfig.ValidateImportStatementsDirective,
 		pythonconfig.GenerationMode,
 		pythonconfig.GenerationModePerFileIncludeInit,
+		pythonconfig.GenerationModePerPackageRequireTestEntryPoint,
 		pythonconfig.LibraryNamingConvention,
 		pythonconfig.BinaryNamingConvention,
 		pythonconfig.TestNamingConvention,
 		pythonconfig.DefaultVisibilty,
 		pythonconfig.Visibility,
 		pythonconfig.TestFilePattern,
+		pythonconfig.LabelConvention,
+		pythonconfig.LabelNormalization,
 	}
 }
 
@@ -161,6 +164,14 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				log.Fatal(err)
 			}
 			config.SetPerFileGenerationIncludeInit(v)
+		case pythonconfig.GenerationModePerPackageRequireTestEntryPoint:
+			v, err := strconv.ParseBool(strings.TrimSpace(d.Value))
+			if err != nil {
+				log.Printf("invalid value for gazelle:%s in %q: %q",
+					pythonconfig.GenerationModePerPackageRequireTestEntryPoint, rel, d.Value)
+			} else {
+				config.SetPerPackageGenerationRequireTestEntryPoint(v)
+			}
 		case pythonconfig.LibraryNamingConvention:
 			config.SetLibraryNamingConvention(strings.TrimSpace(d.Value))
 		case pythonconfig.BinaryNamingConvention:
@@ -182,7 +193,8 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				config.SetDefaultVisibility(strings.Split(labels, ","))
 			}
 		case pythonconfig.Visibility:
-			config.AppendVisibility(strings.TrimSpace(d.Value))
+			labels := strings.ReplaceAll(strings.TrimSpace(d.Value), "$python_root$", config.PythonProjectRoot())
+			config.AppendVisibility(labels)
 		case pythonconfig.TestFilePattern:
 			value := strings.TrimSpace(d.Value)
 			if value == "" {
@@ -195,6 +207,23 @@ func (py *Configurer) Configure(c *config.Config, rel string, f *rule.File) {
 				}
 			}
 			config.SetTestFilePattern(globStrings)
+		case pythonconfig.LabelConvention:
+			value := strings.TrimSpace(d.Value)
+			if value == "" {
+				log.Fatalf("directive '%s' requires a value", pythonconfig.LabelConvention)
+			}
+			config.SetLabelConvention(value)
+		case pythonconfig.LabelNormalization:
+			switch directiveArg := strings.ToLower(strings.TrimSpace(d.Value)); directiveArg {
+			case "pep503":
+				config.SetLabelNormalization(pythonconfig.Pep503LabelNormalizationType)
+			case "none":
+				config.SetLabelNormalization(pythonconfig.NoLabelNormalizationType)
+			case "snake_case":
+				config.SetLabelNormalization(pythonconfig.SnakeCaseLabelNormalizationType)
+			default:
+				config.SetLabelNormalization(pythonconfig.DefaultLabelNormalizationType)
+			}
 		}
 	}
 

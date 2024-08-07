@@ -57,14 +57,16 @@ by buildifier.
 self
 getting-started
 pypi-dependencies
-configuring
+toolchains
 pip
 coverage
+precompiling
 gazelle
 Contributing <contributing>
 support
 Changelog <changelog>
 api/index
+environment-variables
 glossary
 genindex
 ```

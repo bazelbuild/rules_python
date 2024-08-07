@@ -15,6 +15,7 @@
 """Implementation of sphinx rules."""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:py_binary.bzl", "py_binary")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
 
@@ -119,6 +120,7 @@ def sphinx_docs(
         output_group = "html",
         **common_kwargs
     )
+
     py_binary(
         name = name + ".serve",
         srcs = [_SPHINX_SERVE_MAIN_SRC],
@@ -187,6 +189,7 @@ _sphinx_docs = rule(
         ),
         "_extra_defines_flag": attr.label(default = "//sphinxdocs:extra_defines"),
         "_extra_env_flag": attr.label(default = "//sphinxdocs:extra_env"),
+        "_quiet_flag": attr.label(default = "//sphinxdocs:quiet"),
     },
 )
 
@@ -245,7 +248,9 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
     args = ctx.actions.args()
     args.add("-T")  # Full tracebacks on error
     args.add("-b", format)
-    args.add("-q")  # Suppress stdout informational text
+
+    if ctx.attr._quiet_flag[BuildSettingInfo].value:
+        args.add("-q")  # Suppress stdout informational text
     args.add("-j", "auto")  # Build in parallel, if possible
     args.add("-E")  # Don't try to use cache files. Bazel can't make use of them.
     args.add("-a")  # Write all files; don't try to detect "changed" files

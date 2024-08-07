@@ -42,12 +42,13 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 rules_python_internal_setup()
 
 load("//python:repositories.bzl", "python_register_multi_toolchains")
-load("//python:versions.bzl", "MINOR_MAPPING")
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 python_register_multi_toolchains(
     name = "python",
     default_version = MINOR_MAPPING.values()[-2],
-    python_versions = MINOR_MAPPING.values(),
+    # Integration tests verify each version, so register all of them.
+    python_versions = TOOL_VERSIONS.keys(),
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
@@ -85,7 +86,7 @@ load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps
 _py_gazelle_deps()
 
 # This interpreter is used for various rules_python dev-time tools
-load("@python//3.11.8:defs.bzl", "interpreter")
+load("@python//3.11.9:defs.bzl", "interpreter")
 
 #####################
 # Install twine for our own runfiles wheel publishing.

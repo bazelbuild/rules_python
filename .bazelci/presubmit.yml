@@ -182,6 +182,7 @@ tasks:
     platform: rbe_ubuntu1604
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
+      - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
 
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version
@@ -515,18 +516,6 @@ tasks:
     - "bazel run //:os_specific_requirements.update"
     - "git diff --exit-code"
 
-  integration_test_pip_repository_entry_points_macos_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: macOS, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: macos
-  integration_test_pip_repository_entry_points_windows_workspace:
-    <<: *reusable_build_test_all
-    <<: *common_workspace_flags
-    name: "pip_repository_entry_points: Windows, workspace"
-    working_directory: tests/integration/pip_repository_entry_points
-    platform: windows
 
   integration_test_ignore_root_user_error_macos_workspace:
     <<: *reusable_build_test_all

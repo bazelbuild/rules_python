@@ -15,6 +15,8 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("//python/private:flags.bzl", "BootstrapImplFlag")
+load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
 load(
     ":common.bzl",
@@ -59,8 +61,10 @@ the `srcs` of Python targets as required.
         ),
         "_launcher": attr.label(
             cfg = "target",
-            default = "@bazel_tools//tools/launcher:launcher",
-            executable = True,
+            # NOTE: This is an executable, but is only used for Windows. It
+            # can't have executable=True because the backing target is an
+            # empty target for other platforms.
+            default = "//tools/launcher:launcher",
         ),
         "_py_interpreter": attr.label(
             # The configuration_field args are validated when called;
@@ -75,7 +79,7 @@ the `srcs` of Python targets as required.
         # GraphlessQueryTest.testLabelsOperator relies on it to test for
         # query behavior of implicit dependencies.
         "_py_toolchain_type": attr.label(
-            default = "@bazel_tools//tools/python:toolchain_type",
+            default = TARGET_TOOLCHAIN_TYPE,
         ),
         "_windows_launcher_maker": attr.label(
             default = "@bazel_tools//tools/launcher:launcher_maker",
@@ -164,12 +168,6 @@ def _create_executable(
         runfiles_details):
     _ = is_test, cc_details, native_deps_details  # @unused
 
-    common_bootstrap_template_kwargs = dict(
-        main_py = main_py,
-        imports = imports,
-        runtime_details = runtime_details,
-    )
-
     is_windows = target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints)
 
     if is_windows:
@@ -179,21 +177,47 @@ def _create_executable(
     else:
         base_executable_name = executable.basename
 
-    zip_bootstrap = ctx.actions.declare_file(base_executable_name + ".temp", sibling = executable)
-    zip_file = ctx.actions.declare_file(base_executable_name + ".zip", sibling = executable)
+    # The check for stage2_bootstrap_template is to support legacy
+    # BuiltinPyRuntimeInfo providers, which is likely to come from
+    # @bazel_tools//tools/python:autodetecting_toolchain, the toolchain used
+    # for workspace builds when no rules_python toolchain is configured.
+    if (BootstrapImplFlag.get_value(ctx) == BootstrapImplFlag.SCRIPT and
+        runtime_details.effective_runtime and
+        hasattr(runtime_details.effective_runtime, "stage2_bootstrap_template")):
+        stage2_bootstrap = _create_stage2_bootstrap(
+            ctx,
+            output_prefix = base_executable_name,
+            output_sibling = executable,
+            main_py = main_py,
+            imports = imports,
+            runtime_details = runtime_details,
+        )
+        extra_runfiles = ctx.runfiles([stage2_bootstrap])
+        zip_main = _create_zip_main(
+            ctx,
+            stage2_bootstrap = stage2_bootstrap,
+            runtime_details = runtime_details,
+        )
+    else:
+        stage2_bootstrap = None
+        extra_runfiles = ctx.runfiles()
+        zip_main = ctx.actions.declare_file(base_executable_name + ".temp", sibling = executable)
+        _create_stage1_bootstrap(
+            ctx,
+            output = zip_main,
+            main_py = main_py,
+            imports = imports,
+            is_for_zip = True,
+            runtime_details = runtime_details,
+        )
 
-    _expand_bootstrap_template(
-        ctx,
-        output = zip_bootstrap,
-        is_for_zip = True,
-        **common_bootstrap_template_kwargs
-    )
+    zip_file = ctx.actions.declare_file(base_executable_name + ".zip", sibling = executable)
     _create_zip_file(
         ctx,
         output = zip_file,
         original_nonzip_executable = executable,
-        executable_for_zip_file = zip_bootstrap,
-        runfiles = runfiles_details.default_runfiles,
+        zip_main = zip_main,
+        runfiles = runfiles_details.default_runfiles.merge(extra_runfiles),
     )
 
     extra_files_to_build = []
@@ -242,13 +266,22 @@ def _create_executable(
         if bootstrap_output != None:
             fail("Should not occur: bootstrap_output should not be used " +
                  "when creating an executable zip")
-        _create_executable_zip_file(ctx, output = executable, zip_file = zip_file)
+        _create_executable_zip_file(
+            ctx,
+            output = executable,
+            zip_file = zip_file,
+            stage2_bootstrap = stage2_bootstrap,
+            runtime_details = runtime_details,
+        )
     elif bootstrap_output:
-        _expand_bootstrap_template(
+        _create_stage1_bootstrap(
             ctx,
             output = bootstrap_output,
-            is_for_zip = build_zip_enabled,
-            **common_bootstrap_template_kwargs
+            stage2_bootstrap = stage2_bootstrap,
+            runtime_details = runtime_details,
+            is_for_zip = False,
+            imports = imports,
+            main_py = main_py,
         )
     else:
         # Otherwise, this should be the Windows case of launcher + zip.
@@ -266,16 +299,40 @@ def _create_executable(
     return create_executable_result_struct(
         extra_files_to_build = depset(extra_files_to_build),
         output_groups = {"python_zip_file": depset([zip_file])},
+        extra_runfiles = extra_runfiles,
     )
 
-def _expand_bootstrap_template(
+def _create_zip_main(ctx, *, stage2_bootstrap, runtime_details):
+    # The location of this file doesn't really matter. It's added to
+    # the zip file as the top-level __main__.py file and not included
+    # elsewhere.
+    output = ctx.actions.declare_file(ctx.label.name + "_zip__main__.py")
+    ctx.actions.expand_template(
+        template = runtime_details.effective_runtime.zip_main_template,
+        output = output,
+        substitutions = {
+            "%python_binary%": runtime_details.executable_interpreter_path,
+            "%stage2_bootstrap%": "{}/{}".format(
+                ctx.workspace_name,
+                stage2_bootstrap.short_path,
+            ),
+            "%workspace_name%": ctx.workspace_name,
+        },
+    )
+    return output
+
+def _create_stage2_bootstrap(
         ctx,
         *,
-        output,
+        output_prefix,
+        output_sibling,
         main_py,
         imports,
-        is_for_zip,
         runtime_details):
+    output = ctx.actions.declare_file(
+        "{}_stage2_bootstrap.py".format(output_prefix),
+        sibling = output_sibling,
+    )
     runtime = runtime_details.effective_runtime
     if (ctx.configuration.coverage_enabled and
         runtime and
@@ -287,12 +344,7 @@ def _expand_bootstrap_template(
     else:
         coverage_tool_runfiles_path = ""
 
-    if runtime:
-        shebang = runtime.stub_shebang
-        template = runtime.bootstrap_template
-    else:
-        shebang = DEFAULT_STUB_SHEBANG
-        template = ctx.file._bootstrap_template
+    template = runtime.stage2_bootstrap_template
 
     ctx.actions.expand_template(
         template = template,
@@ -301,17 +353,65 @@ def _expand_bootstrap_template(
             "%coverage_tool%": coverage_tool_runfiles_path,
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
-            "%is_zipfile%": "True" if is_for_zip else "False",
-            "%main%": "{}/{}".format(
-                ctx.workspace_name,
-                main_py.short_path,
-            ),
-            "%python_binary%": runtime_details.executable_interpreter_path,
-            "%shebang%": shebang,
+            "%main%": "{}/{}".format(ctx.workspace_name, main_py.short_path),
             "%target%": str(ctx.label),
             "%workspace_name%": ctx.workspace_name,
         },
         is_executable = True,
+    )
+    return output
+
+def _create_stage1_bootstrap(
+        ctx,
+        *,
+        output,
+        main_py = None,
+        stage2_bootstrap = None,
+        imports = None,
+        is_for_zip,
+        runtime_details):
+    runtime = runtime_details.effective_runtime
+
+    subs = {
+        "%is_zipfile%": "1" if is_for_zip else "0",
+        "%python_binary%": runtime_details.executable_interpreter_path,
+        "%target%": str(ctx.label),
+        "%workspace_name%": ctx.workspace_name,
+    }
+
+    if stage2_bootstrap:
+        subs["%stage2_bootstrap%"] = "{}/{}".format(
+            ctx.workspace_name,
+            stage2_bootstrap.short_path,
+        )
+        template = runtime.bootstrap_template
+        subs["%shebang%"] = runtime.stub_shebang
+    else:
+        if (ctx.configuration.coverage_enabled and
+            runtime and
+            runtime.coverage_tool):
+            coverage_tool_runfiles_path = "{}/{}".format(
+                ctx.workspace_name,
+                runtime.coverage_tool.short_path,
+            )
+        else:
+            coverage_tool_runfiles_path = ""
+        if runtime:
+            subs["%shebang%"] = runtime.stub_shebang
+            template = runtime.bootstrap_template
+        else:
+            subs["%shebang%"] = DEFAULT_STUB_SHEBANG
+            template = ctx.file._bootstrap_template
+
+        subs["%coverage_tool%"] = coverage_tool_runfiles_path
+        subs["%import_all%"] = ("True" if ctx.fragments.bazel_py.python_import_all_repositories else "False")
+        subs["%imports%"] = ":".join(imports.to_list())
+        subs["%main%"] = "{}/{}".format(ctx.workspace_name, main_py.short_path)
+
+    ctx.actions.expand_template(
+        template = template,
+        output = output,
+        substitutions = subs,
     )
 
 def _create_windows_exe_launcher(
@@ -332,10 +432,11 @@ def _create_windows_exe_launcher(
     launch_info.add(python_binary_path, format = "python_bin_path=%s")
     launch_info.add("1" if use_zip_file else "0", format = "use_zip_file=%s")
 
+    launcher = ctx.attr._launcher[DefaultInfo].files_to_run.executable
     ctx.actions.run(
         executable = ctx.executable._windows_launcher_maker,
-        arguments = [ctx.executable._launcher.path, launch_info, output.path],
-        inputs = [ctx.executable._launcher],
+        arguments = [launcher.path, launch_info, output.path],
+        inputs = [launcher],
         outputs = [output],
         mnemonic = "PyBuildLauncher",
         progress_message = "Creating launcher for %{label}",
@@ -343,7 +444,7 @@ def _create_windows_exe_launcher(
         use_default_shell_env = True,
     )
 
-def _create_zip_file(ctx, *, output, original_nonzip_executable, executable_for_zip_file, runfiles):
+def _create_zip_file(ctx, *, output, original_nonzip_executable, zip_main, runfiles):
     workspace_name = ctx.workspace_name
     legacy_external_runfiles = _py_builtins.get_legacy_external_runfiles(ctx)
 
@@ -351,7 +452,7 @@ def _create_zip_file(ctx, *, output, original_nonzip_executable, executable_for_
     manifest.use_param_file("@%s", use_always = True)
     manifest.set_param_file_format("multiline")
 
-    manifest.add("__main__.py={}".format(executable_for_zip_file.path))
+    manifest.add("__main__.py={}".format(zip_main.path))
     manifest.add("__init__.py=")
     manifest.add(
         "{}=".format(
@@ -372,7 +473,7 @@ def _create_zip_file(ctx, *, output, original_nonzip_executable, executable_for_
 
     manifest.add_all(runfiles.files, map_each = map_zip_runfiles, allow_closure = True)
 
-    inputs = [executable_for_zip_file]
+    inputs = [zip_main]
     if _py_builtins.is_bzlmod_enabled(ctx):
         zip_repo_mapping_manifest = ctx.actions.declare_file(
             output.basename + ".repo_mapping",
@@ -421,17 +522,32 @@ def _get_zip_runfiles_path(path, workspace_name, legacy_external_runfiles):
         zip_runfiles_path = paths.normalize("{}/{}".format(workspace_name, path))
     return "{}/{}".format(_ZIP_RUNFILES_DIRECTORY_NAME, zip_runfiles_path)
 
-def _create_executable_zip_file(ctx, *, output, zip_file):
+def _create_executable_zip_file(ctx, *, output, zip_file, stage2_bootstrap, runtime_details):
+    prelude = ctx.actions.declare_file(
+        "{}_zip_prelude.sh".format(output.basename),
+        sibling = output,
+    )
+    if stage2_bootstrap:
+        _create_stage1_bootstrap(
+            ctx,
+            output = prelude,
+            stage2_bootstrap = stage2_bootstrap,
+            runtime_details = runtime_details,
+            is_for_zip = True,
+        )
+    else:
+        ctx.actions.write(prelude, "#!/usr/bin/env python3\n")
+
     ctx.actions.run_shell(
-        command = "echo '{shebang}' | cat - {zip} > {output}".format(
-            shebang = "#!/usr/bin/env python3",
+        command = "cat {prelude} {zip} > {output}".format(
+            prelude = prelude.path,
             zip = zip_file.path,
             output = output.path,
         ),
-        inputs = [zip_file],
+        inputs = [prelude, zip_file],
         outputs = [output],
         use_default_shell_env = True,
-        mnemonic = "BuildBinary",
+        mnemonic = "PyBuildExecutableZip",
         progress_message = "Build Python zip executable: %{label}",
     )
 
@@ -444,6 +560,7 @@ def _get_cc_details_for_binary(ctx, extra_deps):
         extra_runfiles = ctx.runfiles(),
         # Though the rules require the CcToolchain, it isn't actually used.
         cc_toolchain = None,
+        feature_config = None,
     )
 
 def _get_interpreter_path(ctx, *, runtime, flag_interpreter_path):
