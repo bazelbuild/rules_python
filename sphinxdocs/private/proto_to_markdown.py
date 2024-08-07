@@ -96,6 +96,7 @@ class _MySTRenderer:
         self._module = module
         self._out_stream = out_stream
         self._public_load_path = public_load_path
+        self._rule_macros = {}
 
     def render(self):
         self._render_module(self._module)
@@ -243,6 +244,9 @@ class _MySTRenderer:
             return _AttributeType.Name(attr.type)
 
     def _render_func(self, func: stardoc_output_pb2.StarlarkFunctionInfo):
+        if "MACRO_RULE_PAIR" in func.function_name:
+            self._write("## macro pair\n")
+
         self._write("::::::{bzl:function} ")
 
         parameters = self._render_func_signature(func)
