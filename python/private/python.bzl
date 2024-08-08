@@ -15,10 +15,10 @@
 "Python toolchain module extensions for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:repositories.bzl", "python_register_toolchains")
 load("//python:versions.bzl", "TOOL_VERSIONS")
-load("//python/private:repo_utils.bzl", "repo_utils")
+load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
+load(":repo_utils.bzl", "repo_utils")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
 load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
@@ -28,14 +28,14 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
 
-def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
+def _python_register_toolchains(name, toolchain_attr, module, **kwargs):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
         name = name,
         python_version = toolchain_attr.python_version,
         register_coverage_tool = toolchain_attr.configure_coverage_tool,
-        ignore_root_user_error = ignore_root_user_error,
+        **kwargs
     )
     return struct(
         python_version = toolchain_attr.python_version,
@@ -76,9 +76,9 @@ def _python_impl(module_ctx):
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        toolchain_attr_structs = _create_toolchain_attr_structs(mod)
+        python_tools = _process_tag_classes(mod)
 
-        for toolchain_attr in toolchain_attr_structs:
+        for toolchain_attr in python_tools.registrations:
             toolchain_version = toolchain_attr.python_version
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
@@ -144,6 +144,10 @@ def _python_impl(module_ctx):
                     toolchain_attr,
                     module = mod,
                     ignore_root_user_error = ignore_root_user_error,
+                    # TODO @aignas 2024-08-08: allow to modify these values via the bzlmod extension
+                    # distutils_content = None,
+                    # register_toolchains = True,
+                    tool_versions = python_tools.available_versions,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
@@ -252,9 +256,11 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _create_toolchain_attr_structs(mod):
+def _process_tag_classes(mod):
     arg_structs = []
     seen_versions = {}
+    available_versions = TOOL_VERSIONS
+
     for tag in mod.tags.toolchain:
         arg_structs.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
         seen_versions[tag.python_version] = True
@@ -268,10 +274,14 @@ def _create_toolchain_attr_structs(mod):
         if register_all:
             arg_structs.extend([
                 _create_toolchain_attrs_struct(python_version = v)
-                for v in TOOL_VERSIONS.keys()
+                for v in available_versions.keys()
                 if v not in seen_versions
             ])
-    return arg_structs
+
+    return struct(
+        registrations = arg_structs,
+        available_versions = available_versions,
+    )
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
     if tag and python_version:
