@@ -61,6 +61,7 @@ A brief description of the categories of changes:
   Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
 
 ### Added
+* (rules) `compile_pip_requirements` supports multiple requirements input files as `srcs`.
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
   disabling it (Requires {obj}`--bootstrap_impl=script`)
   ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
@@ -624,7 +625,7 @@ A brief description of the categories of changes:
   default, which will cause `gazelle` to change third-party dependency labels
   from `@pip_foo//:pkg` to `@pip//foo` by default.
 
-* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `srcs`
+* The `compile_pip_requirements` now defaults to `pyproject.toml` if the `src`
   or `requirements_in` attributes are unspecified, matching the upstream
   `pip-compile` behaviour more closely.
 
