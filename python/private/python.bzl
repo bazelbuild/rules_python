@@ -297,18 +297,14 @@ def _get_bazel_version_specific_kwargs():
 
     return kwargs
 
-python = module_extension(
-    doc = """Bzlmod extension that is used to register Python toolchains.
-""",
-    implementation = _python_impl,
-    tag_classes = {
-        "rules_python_private_testing": tag_class(
-            attrs = {
-                "register_all_versions": attr.bool(default = False),
-            },
-        ),
-        "toolchain": tag_class(
-            doc = """Tag class used to register Python toolchains.
+_rules_python_private_testing = tag_class(
+    attrs = {
+        "register_all_versions": attr.bool(default = False),
+    },
+)
+
+_toolchain = tag_class(
+    doc = """Tag class used to register Python toolchains.
 Use this tag class to register one or more Python toolchains. This class
 is also potentially called by sub modules. The following covers different
 business rules and use cases.
@@ -338,14 +334,14 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 `python_3_10`. The `major` and `minor` components are
 `major` and `minor` are the Python version from the `python_version` attribute.
 """,
-            attrs = {
-                "configure_coverage_tool": attr.bool(
-                    mandatory = False,
-                    doc = "Whether or not to configure the default coverage tool for the toolchains.",
-                ),
-                "ignore_root_user_error": attr.bool(
-                    default = False,
-                    doc = """\
+    attrs = {
+        "configure_coverage_tool": attr.bool(
+            mandatory = False,
+            doc = "Whether or not to configure the default coverage tool for the toolchains.",
+        ),
+        "ignore_root_user_error": attr.bool(
+            default = False,
+            doc = """\
 If False, the Python runtime installation will be made read only. This improves
 the ability for Bazel to cache it, but prevents the interpreter from creating
 pyc files for the standard library dynamically at runtime as they are loaded.
@@ -355,20 +351,28 @@ interpreter to create pyc files for the standard library, but, because they are
 created as needed, it adversely affects Bazel's ability to cache the runtime and
 can result in spurious build failures.
 """,
-                    mandatory = False,
-                ),
-                "is_default": attr.bool(
-                    mandatory = False,
-                    doc = "Whether the toolchain is the default version",
-                ),
-                "python_version": attr.string(
-                    mandatory = True,
-                    doc = "The Python version, in `major.minor` format, e.g " +
-                          "'3.12', to create a toolchain for. Patch level " +
-                          "granularity (e.g. '3.12.1') is not supported.",
-                ),
-            },
+            mandatory = False,
         ),
+        "is_default": attr.bool(
+            mandatory = False,
+            doc = "Whether the toolchain is the default version",
+        ),
+        "python_version": attr.string(
+            mandatory = True,
+            doc = "The Python version, in `major.minor` format, e.g " +
+                  "'3.12', to create a toolchain for. Patch level " +
+                  "granularity (e.g. '3.12.1') is not supported.",
+        ),
+    },
+)
+
+python = module_extension(
+    doc = """Bzlmod extension that is used to register Python toolchains.
+""",
+    implementation = _python_impl,
+    tag_classes = {
+        "rules_python_private_testing": _rules_python_private_testing,
+        "toolchain": _toolchain,
     },
     **_get_bazel_version_specific_kwargs()
 )
