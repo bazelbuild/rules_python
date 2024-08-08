@@ -15,7 +15,7 @@
 "Python toolchain module extensions for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
+load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "PLATFORMS", "TOOL_VERSIONS")
 load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
@@ -143,11 +143,12 @@ def _python_impl(module_ctx):
                     toolchain_name,
                     toolchain_attr,
                     module = mod,
+                    # Extra kwargs to the underlying python_register_toolchains methods
+                    base_url = python_tools.base_url,
                     ignore_root_user_error = ignore_root_user_error,
+                    tool_versions = python_tools.available_versions,
                     # TODO @aignas 2024-08-08: allow to modify these values via the bzlmod extension
                     # distutils_content = None,
-                    # register_toolchains = True,
-                    tool_versions = python_tools.available_versions,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
@@ -260,6 +261,7 @@ def _process_tag_classes(mod):
     arg_structs = []
     seen_versions = {}
     available_versions = TOOL_VERSIONS
+    base_url = DEFAULT_RELEASE_BASE_URL
 
     for tag in mod.tags.toolchain:
         arg_structs.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
@@ -284,10 +286,12 @@ def _process_tag_classes(mod):
             }
 
         for tag in mod.tags.override:
+            base_url = tag.base_url
             available_versions = {
                 v: available_versions[v]
                 for v in tag.available_python_versions
             }
+            break
 
         register_all = False
         for tag in mod.tags.rules_python_private_testing:
@@ -303,8 +307,9 @@ def _process_tag_classes(mod):
             ])
 
     return struct(
-        registrations = arg_structs,
         available_versions = available_versions,
+        base_url = base_url,
+        registrations = arg_structs,
     )
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
@@ -406,6 +411,11 @@ _override = tag_class(
         "available_python_versions": attr.string_list(
             mandatory = True,
             doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
+        ),
+        "base_url": attr.string_list(
+            mandatory = False,
+            doc = "The base URL to be used when downloading toolchains.",
+            default = DEFAULT_RELEASE_BASE_URL,
         ),
     },
 )
