@@ -9,7 +9,7 @@ load("//:requirements.bzl", "all_data_requirements", "all_requirements", "all_wh
 # lockfile based on the requirements.in.
 compile_pip_requirements(
     name = "requirements",
-    srcs = ["requirements.in"],
+    src = "requirements.in",
 )
 
 # The requirements.bzl file is using the hub repo to access packages via the

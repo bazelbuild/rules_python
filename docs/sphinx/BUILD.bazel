@@ -130,7 +130,7 @@ sphinx_build_binary(
 # Run bazel run //docs/sphinx:requirements.update
 compile_pip_requirements(
     name = "requirements",
-    srcs = ["pyproject.toml"],
+    src = "pyproject.toml",
     requirements_txt = "requirements.txt",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )

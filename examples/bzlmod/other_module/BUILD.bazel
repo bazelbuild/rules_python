@@ -4,6 +4,6 @@ load("@python_versions//3.11:defs.bzl", compile_pip_requirements_311 = "compile_
 # override in the MODULE.bazel.
 compile_pip_requirements_311(
     name = "requirements",
-    srcs = ["requirements.in"],
+    src = "requirements.in",
     requirements_txt = "requirements_lock_3_11.txt",
 )

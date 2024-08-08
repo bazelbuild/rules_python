@@ -360,7 +360,7 @@ py_test(
 
 compile_pip_requirements(
     name = "requirements_server",
-    srcs = ["requirements_server.in"],
+    src = "requirements_server.in",
 )
 
 py_test(

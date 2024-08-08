@@ -4,7 +4,7 @@ load("//python/entry_points:py_console_script_binary.bzl", "py_console_script_bi
 
 compile_pip_requirements(
     name = "requirements",
-    srcs = ["requirements.in"],
+    src = "requirements.in",
     requirements_darwin = "requirements_darwin.txt",
     requirements_windows = "requirements_windows.txt",
 )

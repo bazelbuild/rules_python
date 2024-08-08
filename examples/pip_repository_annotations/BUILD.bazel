@@ -9,7 +9,7 @@ exports_files(
 # This rule adds a convenient way to update the requirements file.
 compile_pip_requirements(
     name = "requirements",
-    srcs = ["requirements.in"],
+    src = "requirements.in",
 )
 
 py_test(
