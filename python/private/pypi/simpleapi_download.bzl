@@ -185,10 +185,10 @@ def _read_simpleapi(ctx, url, attr, cache, **download_kwargs):
     if download_kwargs.get("block") == False:
         # Simulate the same API as ctx.download has
         return struct(
-            wait = lambda: _read_index_result(ctx, download.wait(), output, url, cache, cache_key),
+            wait = lambda: _read_index_result(ctx, download.wait(), output, real_url, cache, cache_key),
         )
 
-    return _read_index_result(ctx, download, output, url, cache, cache_key)
+    return _read_index_result(ctx, download, output, real_url, cache, cache_key)
 
 def _read_index_result(ctx, result, output, url, cache, cache_key):
     if not result.success:
