@@ -15,7 +15,7 @@
 "Python toolchain module extensions for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:versions.bzl", "TOOL_VERSIONS")
+load("//python:versions.bzl", "PLATFORMS", "TOOL_VERSIONS")
 load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
@@ -266,11 +266,35 @@ def _process_tag_classes(mod):
         seen_versions[tag.python_version] = True
 
     if mod.is_root:
+        for tag in mod.tags.version_override:
+            sha256 = {}
+            for p, sha in tag.sha256.items():
+                if p not in PLATFORMS:
+                    fail("The platform must be one of {allowed} but got '{got}'".format(
+                        allowed = sorted(PLATFORMS),
+                        got = p,
+                    ))
+
+                sha256[p] = sha
+
+            available_versions[tag.version] = {
+                "sha256": sha256,
+                "strip_prefix": tag.strip_prefix,
+                "url": tag.url,
+            }
+
+        for tag in mod.tags.override:
+            available_versions = {
+                v: available_versions[v]
+                for v in tag.available_python_versions
+            }
+
         register_all = False
         for tag in mod.tags.rules_python_private_testing:
             if tag.register_all_versions:
                 register_all = True
                 break
+
         if register_all:
             arg_structs.extend([
                 _create_toolchain_attrs_struct(python_version = v)
@@ -376,13 +400,48 @@ can result in spurious build failures.
     },
 )
 
+_override = tag_class(
+    doc = """Tag class used to override defaults and behaviour of the module extension.""",
+    attrs = {
+        "available_python_versions": attr.string_list(
+            mandatory = True,
+            doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
+        ),
+    },
+)
+
+_version_override = tag_class(
+    doc = """Tag class used to override single python version settings.""",
+    attrs = {
+        "sha256s": attr.string_dict(
+            mandatory = True,
+            doc = "The python platform to sha256 dict. The platform key must be present in the PLATFORMS dict.",
+        ),
+        "strip_prefix": attr.string(
+            mandatory = False,
+            doc = "The 'strip_prefix' for the archive, defaults to 'python'.",
+            default = "python",
+        ),
+        "url": attr.string(
+            mandatory = True,
+            doc = "The URL template to fetch releases for this Python version. If the URL template results in a relative fragment, default base URL is going to be used. Occurrences of {python_version}, {platform} and {build} will be interpolated based on the contents in the override and the PLATFORMS dict.",
+        ),
+        "version": attr.string(
+            mandatory = True,
+            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
+        ),
+    },
+)
+
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
 """,
     implementation = _python_impl,
     tag_classes = {
+        "override": _override,
         "rules_python_private_testing": _rules_python_private_testing,
         "toolchain": _toolchain,
+        "version_override": _version_override,
     },
     **_get_bazel_version_specific_kwargs()
 )
