@@ -157,11 +157,17 @@ def pip_compile(
     # cheap way to detect the bazel version
     _bazel_version_4_or_greater = "propeller_optimize" in dir(native)
 
-    # setuptools (the default python build tool) attempts to find user configuration in the user's home direcotory. This seems to work fine on linux and macOS, but fails on Windows. We provide a fake USERPROFILE env variable to allow setuptools to proceed without finding user-provided configuration.
-    kwargs["env"] = kwargs.pop("env", {}) | select({
-        "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
-        "//conditions:default": {},
-    })
+    # setuptools (the default python build tool) attempts to find user
+    # configuration in the user's home direcotory. This seems to work fine on
+    # linux and macOS, but fails on Windows, so we conditionally provide a fake
+    # USERPROFILE env variable to allow setuptools to proceed without finding
+    # user-provided configuration.
+    env = kwargs.get("env", {})
+    if "USERPROFILE" not in env:
+        kwargs["env"] = env | select({
+            "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
+            "//conditions:default": {},
+        })
 
     # Bazel 4.0 added the "env" attribute to py_test/py_binary
     if _bazel_version_4_or_greater:
