@@ -285,19 +285,20 @@ def _process_tag_classes(mod):
                 "url": tag.url,
             }
 
+        register_all = False
         for tag in mod.tags.override:
             base_url = tag.base_url
-            available_versions = {
-                v: available_versions[v]
-                for v in tag.available_python_versions
-            }
-            break
+            if tag.available_python_versions:
+                available_versions = {
+                    v: available_versions[v]
+                    for v in tag.available_python_versions
+                }
 
-        register_all = False
-        for tag in mod.tags.rules_python_private_testing:
-            if tag.register_all_versions:
+            if tag.register_all_versions and mod.name != "rules_python":
+                fail("This override can only be used by 'rules_python'")
+            elif tag.register_all_versions:
                 register_all = True
-                break
+            break
 
         if register_all:
             arg_structs.extend([
@@ -409,14 +410,17 @@ _override = tag_class(
     doc = """Tag class used to override defaults and behaviour of the module extension.""",
     attrs = {
         "available_python_versions": attr.string_list(
-            mandatory = True,
+            mandatory = False,
             doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
         ),
-        "base_url": attr.string_list(
+        "base_url": attr.string(
             mandatory = False,
             doc = "The base URL to be used when downloading toolchains.",
             default = DEFAULT_RELEASE_BASE_URL,
         ),
+
+        # Internal attributes that are only usable from `rules_python`
+        "register_all_versions": attr.bool(default = False),
     },
 )
 
