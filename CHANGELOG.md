@@ -35,6 +35,9 @@ A brief description of the categories of changes:
     * `3.12 -> 3.12.4`
 
 ### Fixed
+* (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
+  windows to work around an issue where `setuptools` fails to locate the user's
+  home directory.
 * (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
   (for non-zip builds).
   ([#2043](https://github.com/bazelbuild/rules_python/issues/2043))
@@ -61,6 +64,7 @@ A brief description of the categories of changes:
   Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
 
 ### Added
+* (rules) `compile_pip_requirements` supports multiple requirements input files as `srcs`.
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
   disabling it (Requires {obj}`--bootstrap_impl=script`)
   ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
