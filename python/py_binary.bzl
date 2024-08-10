@@ -27,7 +27,7 @@ def py_binary(**attrs):
 
     This is the public macro wrapping the underlying rule. Args are forwarded
     on as-is unless otherwise specified. See
-    the underlying {bzl:obj}`py_binary <//python/private/common:py_binary_rule_bazel.bzl%py_binary>` rule
+    the underlying {bzl:obj}`py_binary rule<//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
     for detailed attribute documentation.
 
     This macro affects the following args:
@@ -36,8 +36,8 @@ def py_binary(**attrs):
     * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes forwarded onto
-          {bzl:obj}`py_binary <//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
+      **attrs: Rule attributes forwarded onto the underlying
+          {bzl:obj}`py_binary rule<//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
     """
     if attrs.get("python_version") == "PY2":
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
