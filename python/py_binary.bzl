@@ -23,10 +23,21 @@ load("//python/private/common:py_binary_macro_bazel.bzl", _starlark_py_binary = 
 _py_binary_impl = _starlark_py_binary if config.enable_pystar else native.py_binary
 
 def py_binary(**attrs):
-    """See the Bazel core [py_binary](https://docs.bazel.build/versions/master/be/python.html#py_binary) documentation.
+    """Creates an executable Python program.
+
+    This is the public macro wrapping the underlying rule. Args are forwarded
+    on as-is unless otherwise specified. See
+    the underlying {bzl:obj}`py_binary rule<//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
+    for detailed attribute documentation.
+
+    This macro affects the following args:
+    * `python_version`: cannot be `PY2`
+    * `srcs_version`: cannot be `PY2` or `PY2ONLY`
+    * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes
+      **attrs: Rule attributes forwarded onto the underlying
+          {bzl:obj}`py_binary rule<//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
     """
     if attrs.get("python_version") == "PY2":
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")
