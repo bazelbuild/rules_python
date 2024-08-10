@@ -50,7 +50,6 @@ sphinx_docs(
         exclude = [
             "README.md",
             "_*",
-            ##"**/_*",
             "*.inv*",
         ],
     ),

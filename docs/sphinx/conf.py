@@ -57,7 +57,7 @@ if os.environ.get("READTHEDOCS") == "True":
             f"https://readthedocs.org/projects/rules-python/builds/{_build_id}"
         )
 
-exclude_patterns = ["_includes/*", "api/*/_*.md"]
+exclude_patterns = ["_includes/*"]
 templates_path = ["_templates"]
 primary_domain = None  # The default is 'py', which we don't make much use of
 nitpicky = True
