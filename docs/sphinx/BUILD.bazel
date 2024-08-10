@@ -38,7 +38,6 @@ _TARGET_COMPATIBLE_WITH = select({
 sphinx_docs(
     name = "docs",
     srcs = [
-        ":bazel_inventory",
         ":bzl_api_docs",
     ] + glob(
         include = [
@@ -60,17 +59,12 @@ sphinx_docs(
     renamed_srcs = {
         "//:CHANGELOG.md": "changelog.md",
         "//:CONTRIBUTING.md": "contributing.md",
+        "//sphinxdocs/inventories:bazel_inventory": "bazel_inventory.inv",
     },
     sphinx = ":sphinx-build",
     strip_prefix = package_name() + "/",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
-)
-
-sphinx_inventory(
-    name = "bazel_inventory",
-    src = "bazel_inventory.txt",
-    visibility = ["//:__subpackages__"],
 )
 
 sphinx_stardocs(
