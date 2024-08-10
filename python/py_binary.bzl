@@ -27,7 +27,7 @@ def py_binary(**attrs):
 
     This is the public macro wrapping the underlying rule. Args are forwarded
     on as-is unless otherwise specified. See
-    {bzl:obj}`py_binary <//python/private/common:py_binary_rule_bazel.bzl%py_binary>`
+    the underlying {bzl:obj}`py_binary <//python/private/common:py_binary_rule_bazel.bzl%py_binary>` rule
     for detailed attribute documentation.
 
     This macro affects the following args:
