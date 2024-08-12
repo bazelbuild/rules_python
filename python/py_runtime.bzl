@@ -21,10 +21,21 @@ load("//python/private/common:py_runtime_macro.bzl", _starlark_py_runtime = "py_
 _py_runtime_impl = _starlark_py_runtime if IS_BAZEL_6_OR_HIGHER else native.py_runtime
 
 def py_runtime(**attrs):
-    """See the Bazel core [py_runtime](https://docs.bazel.build/versions/master/be/python.html#py_runtime) documentation.
+    """Creates an executable Python program.
+
+    This is the public macro wrapping the underlying rule. Args are forwarded
+    on as-is unless otherwise specified. See
+    {bzl:obj}`py_runtime <//python/private/common:py_runtime_rule.bzl%py_runtime>`
+    for detailed attribute documentation.
+
+    This macro affects the following args:
+    * `python_version`: cannot be `PY2`
+    * `srcs_version`: cannot be `PY2` or `PY2ONLY`
+    * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes
+      **attrs: Rule attributes forwarded onto
+          {bzl:obj}`py_runtime <//python/private/common:py_runtime_rule.bzl%py_runtime>`
     """
     if attrs.get("python_version") == "PY2":
         fail("Python 2 is no longer supported: see https://github.com/bazelbuild/rules_python/issues/886")

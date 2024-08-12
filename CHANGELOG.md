@@ -48,6 +48,9 @@ A brief description of the categories of changes:
 * (rules) User dependencies come before runtime site-packages when using
   {obj}`--bootstrap_impl=script`.
   ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
+* (rules) Version-aware rules now return both `@_builtins` and `@rules_python`
+  providers instead of only one.
+  ([#2114](https://github.com/bazelbuild/rules_python/issues/2114)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 * (toolchains) Added missing executable permission to
