@@ -71,10 +71,10 @@ class ExampleTest(unittest.TestCase):
         first_coverage_index = None
         last_user_dep_index = None
         for i, path in enumerate(sys.path):
-            if re.search("rules_python.*~pip~", path):
+            if re.search("rules_python.*[~+]pip[~+]", path):
                 last_user_dep_index = i
             if first_coverage_index is None and re.search(
-                ".*rules_python.*~python~.*coverage.*", path
+                ".*rules_python.*[~+]python[~+].*coverage.*", path
             ):
                 first_coverage_index = i
 
@@ -85,8 +85,8 @@ class ExampleTest(unittest.TestCase):
                 + f"it was not found.\nsys.path:\n{all_paths}",
             )
             self.assertIsNotNone(
-                first_coverage_index,
-                "Expected to find at least one uiser dep, "
+                last_user_dep_index,
+                "Expected to find at least one user dep, "
                 + "but none were found.\nsys.path:\n{all_paths}",
             )
             # we are running under the 'bazel coverage :test'
