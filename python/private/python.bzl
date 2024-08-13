@@ -289,8 +289,12 @@ def _process_tag_classes(mod):
         for tag in mod.tags.override:
             base_url = tag.base_url
             if tag.available_python_versions:
+                all_known_versions = sorted(available_versions)
                 available_versions = {
-                    v: available_versions[v]
+                    v: available_versions.get(v, fail("unknown version {}, known versions: {}".format(
+                        v,
+                        all_known_versions,
+                    )))
                     for v in tag.available_python_versions
                 }
 
@@ -298,6 +302,7 @@ def _process_tag_classes(mod):
                 fail("This override can only be used by 'rules_python'")
             elif tag.register_all_versions:
                 register_all = True
+
             break
 
         if register_all:
