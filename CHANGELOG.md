@@ -25,7 +25,7 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 
 ### Added
 * Nothing yet
