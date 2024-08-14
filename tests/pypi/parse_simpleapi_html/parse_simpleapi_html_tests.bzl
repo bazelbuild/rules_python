@@ -221,6 +221,40 @@ def _test_whls(env):
                 yanked = False,
             ),
         ),
+        (
+            struct(
+                attrs = [
+                    'href="/whl/torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl#sha256=deadbeef"',
+                ],
+                filename = "torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                url = "https://download.pytorch.org/whl/cpu/torch",
+            ),
+            struct(
+                filename = "torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "deadbeef",
+                url = "https://download.pytorch.org/whl/torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = [
+                    'href="/whl/torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl#sha256=notdeadbeef"',
+                ],
+                filename = "torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                url = "http://download.pytorch.org/whl/cpu/torch",
+            ),
+            struct(
+                filename = "torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "notdeadbeef",
+                url = "http://download.pytorch.org/whl/torch-2.0.0-cp38-cp38-manylinux2014_aarch64.whl",
+                yanked = False,
+            ),
+        ),
     ]
 
     for (input, want) in tests:

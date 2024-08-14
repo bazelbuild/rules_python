@@ -96,7 +96,25 @@ def parse_simpleapi_html(*, url, content):
         whls = whls,
     )
 
+def _get_root_directory(url):
+    scheme_end = url.find("://")
+    if scheme_end == -1:
+        fail("Invalid URL format")
+
+    scheme = url[:scheme_end]
+    host_end = url.find("/", scheme_end + 3)
+    if host_end == -1:
+        host_end = len(url)
+    host = url[scheme_end + 3:host_end]
+
+    return "{}://{}".format(scheme, host)
+
 def _absolute_url(index_url, candidate):
+    if candidate.startswith("/"):
+        # absolute url
+        root_directory = _get_root_directory(index_url)
+        return "{}{}".format(root_directory, candidate)
+
     if not candidate.startswith(".."):
         return candidate
 
