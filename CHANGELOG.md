@@ -67,6 +67,10 @@ A brief description of the categories of changes:
   cause warnings by default. In order to see the warnings for diagnostic purposes
   set the env var `RULES_PYTHON_REPO_DEBUG_VERBOSITY` to one of `INFO`, `DEBUG` or `TRACE`.
   Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
+* (runfiles) Make runfiles lookups work for the situation of Bazel 7,
+  Python 3.9 (or earlier, where safepath isn't present), and the Rlocation call
+  in the same directory as the main file.
+  Fixes [#1631](https://github.com/bazelbuild/rules_python/issues/1631).
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
