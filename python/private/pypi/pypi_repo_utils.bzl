@@ -97,7 +97,7 @@ def _execute_checked(mrctx, *, srcs, **kwargs):
     Args:
         mrctx: Handle to the module_ctx or repository_ctx.
         srcs: The src files that the script depends on. This is important to
-            ensure that the bazel repository cache or the bzlmod lock file gets
+            ensure that the Bazel repository cache or the bzlmod lock file gets
             invalidated when any one file changes. It is advisable to use
             `RECORD` files for external deps and the list of srcs from the
             rules_python repo for any scripts.
@@ -109,7 +109,7 @@ def _execute_checked(mrctx, *, srcs, **kwargs):
     for src in srcs:
         # This will ensure that we will re-evaluate the bzlmod extension or
         # refetch the repository_rule when the srcs change. This should work on
-        # bazel versions without `mrctx.watch` as well.
+        # Bazel versions without `mrctx.watch` as well.
         repo_utils.watch(mrctx.path(src))
 
     env = kwargs.pop("environment", {})
