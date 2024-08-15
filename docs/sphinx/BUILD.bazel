@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@dev_pip//:requirements.bzl", "requirement")
-load("//python:pip.bzl", "compile_pip_requirements")
+load("//python:py_binary.bzl", "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
@@ -125,10 +126,69 @@ sphinx_build_binary(
     ],
 )
 
+_REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
+    "@platforms//os:linux": [],
+    "@platforms//os:macos": [],
+    "@platforms//os:windows": [],
+    "//conditions:default": ["@platforms//:incompatible"],
+}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+
 # Run bazel run //docs/sphinx:requirements.update
-compile_pip_requirements(
+genrule(
     name = "requirements",
-    src = "pyproject.toml",
-    requirements_txt = "requirements.txt",
-    target_compatible_with = _TARGET_COMPATIBLE_WITH,
+    srcs = ["pyproject.toml"],
+    outs = ["_requirements.txt"],
+    cmd = "$(UV_BIN) pip compile " + " ".join([
+        "--custom-compile-command='bazel run //docs/sphinx:requirements.update'",
+        "--generate-hashes",
+        "--universal",
+        "--emit-index-url",
+        "--no-strip-extras",
+        "--no-build",
+        "--python=$(PYTHON3)",
+        "$<",
+        "--output-file=$@",
+        # Always try upgrading
+        "--upgrade",
+    ]),
+    tags = [
+        "local",
+        "manual",
+        "no-cache",
+    ],
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
+    toolchains = [
+        "//python/uv:current_toolchain",
+        "//python:current_py_toolchain",
+    ],
+)
+
+# Write a script that can be used for updating the in-tree version of the
+# requirements file
+write_file(
+    name = "gen_update_requirements",
+    out = "requirements.update.py",
+    content = [
+        "from os import environ",
+        "from pathlib import Path",
+        "from sys import stderr",
+        "",
+        'src = Path(environ["REQUIREMENTS_FILE"])',
+        'dst = Path(environ["BUILD_WORKSPACE_DIRECTORY"]) / "docs" / "sphinx" / "requirements.txt"',
+        'print(f"Writing requirements contents from {src} to {dst}", file=stderr)',
+        "dst.write_text(src.read_text())",
+        'print("Success!", file=stderr)',
+    ],
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
+)
+
+py_binary(
+    name = "requirements.update",
+    srcs = ["requirements.update.py"],
+    data = [":requirements"],
+    env = {
+        "REQUIREMENTS_FILE": "$(location :requirements)",
+    },
+    tags = ["manual"],
+    target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )

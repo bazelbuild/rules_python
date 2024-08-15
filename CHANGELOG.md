@@ -51,6 +51,9 @@ A brief description of the categories of changes:
   ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 
 ### Fixed
+* (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
+  Windows to work around an issue where `setuptools` fails to locate the user's
+  home directory.
 * (rules) correctly handle absolute URLs in parse_simpleapi_html.bzl.
 * (rules) Fixes build targets linking against `@rules_python//python/cc:current_py_cc_libs`
   in host platform builds on macOS, by editing the `LC_ID_DYLIB` field of the hermetic interpreter's
@@ -78,13 +81,21 @@ A brief description of the categories of changes:
   `experimental_index_url` feature. Fixes
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
 * (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
-  network behavior. 
+  network behavior.
 * (bzlmod): The conflicting toolchains during `python` extension will no longer
   cause warnings by default. In order to see the warnings for diagnostic purposes
   set the env var `RULES_PYTHON_REPO_DEBUG_VERBOSITY` to one of `INFO`, `DEBUG` or `TRACE`.
   Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
+* (runfiles) Make runfiles lookups work for the situation of Bazel 7,
+  Python 3.9 (or earlier, where safepath isn't present), and the Rlocation call
+  in the same directory as the main file.
+  Fixes [#1631](https://github.com/bazelbuild/rules_python/issues/1631).
 
 ### Added
+* (rules) `compile_pip_requirements` supports multiple requirements input files as `srcs`.
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 * (gazelle) Added `python_generation_mode_per_package_require_test_entry_point`
   in order to better accommodate users who use a custom macro,
   [`pytest-bazel`][pytest_bazel], [rules_python_pytest] or `rules_py`
@@ -92,6 +103,11 @@ A brief description of the categories of changes:
   flag value is set to `true` for backwards compatible behaviour, but in the
   future the flag will be flipped be `false` by default.
 * (toolchains) New Python versions available: `3.12.4` using the [20240726] release.
+* (pypi) Support env markers in requirements files. Note, that this means that
+  if your requirements files contain env markers, the Python interpreter will
+  need to be run during bzlmod phase to evaluate them. This may incur
+  downloading an interpreter (for hermetic-based builds) or cause non-hermetic
+  behavior (if using a system Python).
 
 [rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
 [py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main

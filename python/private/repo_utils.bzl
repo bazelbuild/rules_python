@@ -20,34 +20,34 @@ This code should only be loaded and used during the repository phase.
 REPO_DEBUG_ENV_VAR = "RULES_PYTHON_REPO_DEBUG"
 REPO_VERBOSITY_ENV_VAR = "RULES_PYTHON_REPO_DEBUG_VERBOSITY"
 
-def _is_repo_debug_enabled(rctx):
+def _is_repo_debug_enabled(mrctx):
     """Tells if debbugging output is requested during repo operatiosn.
 
     Args:
-        rctx: repository_ctx object
+        mrctx: repository_ctx or module_ctx object
 
     Returns:
         True if enabled, False if not.
     """
-    return _getenv(rctx, REPO_DEBUG_ENV_VAR) == "1"
+    return _getenv(mrctx, REPO_DEBUG_ENV_VAR) == "1"
 
-def _logger(ctx, name = None):
+def _logger(mrctx, name = None):
     """Creates a logger instance for printing messages.
 
     Args:
-        ctx: repository_ctx or module_ctx object. If the attribute
+        mrctx: repository_ctx or module_ctx object. If the attribute
             `_rule_name` is present, it will be included in log messages.
         name: name for the logger. Optional for repository_ctx usage.
 
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
     """
-    if _is_repo_debug_enabled(ctx):
+    if _is_repo_debug_enabled(mrctx):
         verbosity_level = "DEBUG"
     else:
         verbosity_level = "WARN"
 
-    env_var_verbosity = _getenv(ctx, REPO_VERBOSITY_ENV_VAR)
+    env_var_verbosity = _getenv(mrctx, REPO_VERBOSITY_ENV_VAR)
     verbosity_level = env_var_verbosity or verbosity_level
 
     verbosity = {
@@ -56,9 +56,9 @@ def _logger(ctx, name = None):
         "TRACE": 3,
     }.get(verbosity_level, 0)
 
-    if hasattr(ctx, "attr"):
-        # This is `repository_ctx`.
-        name = name or "{}(@@{})".format(getattr(ctx.attr, "_rule_name", "?"), ctx.name)
+    if hasattr(mrctx, "attr"):
+        rctx = mrctx  # This is `repository_ctx`.
+        name = name or "{}(@@{})".format(getattr(rctx.attr, "_rule_name", "?"), rctx.name)
     elif not name:
         fail("The name has to be specified when using the logger with `module_ctx`")
 
@@ -86,7 +86,7 @@ def _logger(ctx, name = None):
     )
 
 def _execute_internal(
-        rctx,
+        mrctx,
         *,
         op,
         fail_on_error = False,
@@ -97,23 +97,31 @@ def _execute_internal(
     """Execute a subprocess with debugging instrumentation.
 
     Args:
-        rctx: repository_ctx object
+        mrctx: module_ctx or repository_ctx object
         op: string, brief description of the operation this command
             represents. Used to succintly describe it in logging and
             error messages.
         fail_on_error: bool, True if fail() should be called if the command
             fails (non-zero exit code), False if not.
-        arguments: list of arguments; see rctx.execute#arguments.
+        arguments: list of arguments; see module_ctx.execute#arguments or
+            repository_ctx#arguments.
         environment: optional dict of the environment to run the command
-            in; see rctx.execute#environment.
-        logger: optional `Logger` to use for logging execution details. If
-            not specified, a default will be created.
+            in; see module_ctx.execute#environment or
+            repository_ctx.execute#environment.
+        logger: optional `Logger` to use for logging execution details. Must be
+            specified when using module_ctx. If not specified, a default will
+            be created.
         **kwargs: additional kwargs to pass onto rctx.execute
 
     Returns:
         exec_result object, see repository_ctx.execute return type.
     """
-    logger = logger or _logger(rctx)
+    if not logger and hasattr(mrctx, "attr"):
+        rctx = mrctx
+        logger = _logger(rctx)
+    elif not logger:
+        fail("logger must be specified when using 'module_ctx'")
+
     logger.debug(lambda: (
         "repo.execute: {op}: start\n" +
         "  command: {cmd}\n" +
@@ -123,13 +131,13 @@ def _execute_internal(
     ).format(
         op = op,
         cmd = _args_to_str(arguments),
-        cwd = _cwd_to_str(rctx, kwargs),
+        cwd = _cwd_to_str(mrctx, kwargs),
         timeout = _timeout_to_str(kwargs),
         env_str = _env_to_str(environment),
     ))
 
-    rctx.report_progress("Running {}".format(op))
-    result = rctx.execute(arguments, environment = environment, **kwargs)
+    mrctx.report_progress("Running {}".format(op))
+    result = mrctx.execute(arguments, environment = environment, **kwargs)
 
     if fail_on_error and result.return_code != 0:
         logger.fail((
@@ -144,12 +152,12 @@ def _execute_internal(
             op = op,
             cmd = _args_to_str(arguments),
             return_code = result.return_code,
-            cwd = _cwd_to_str(rctx, kwargs),
+            cwd = _cwd_to_str(mrctx, kwargs),
             timeout = _timeout_to_str(kwargs),
             env_str = _env_to_str(environment),
             output = _outputs_to_str(result),
         ))
-    elif _is_repo_debug_enabled(rctx):
+    elif _is_repo_debug_enabled(mrctx):
         logger.debug((
             "repo.execute: {op}: end: {status}\n" +
             "  return code: {return_code}\n" +
@@ -167,7 +175,7 @@ def _execute_internal(
             op = op,
             arguments = arguments,
             result = result,
-            rctx = rctx,
+            mrctx = mrctx,
             kwargs = kwargs,
             environment = environment,
         ),
@@ -207,7 +215,7 @@ def _execute_checked_stdout(*args, **kwargs):
     """Calls execute_checked, but only returns the stdout value."""
     return _execute_checked(*args, **kwargs).stdout
 
-def _execute_describe_failure(*, op, arguments, result, rctx, kwargs, environment):
+def _execute_describe_failure(*, op, arguments, result, mrctx, kwargs, environment):
     return (
         "repo.execute: {op}: failure:\n" +
         "  command: {cmd}\n" +
@@ -220,35 +228,35 @@ def _execute_describe_failure(*, op, arguments, result, rctx, kwargs, environmen
         op = op,
         cmd = _args_to_str(arguments),
         return_code = result.return_code,
-        cwd = _cwd_to_str(rctx, kwargs),
+        cwd = _cwd_to_str(mrctx, kwargs),
         timeout = _timeout_to_str(kwargs),
         env_str = _env_to_str(environment),
         output = _outputs_to_str(result),
     )
 
-def _which_checked(rctx, binary_name):
+def _which_checked(mrctx, binary_name):
     """Tests to see if a binary exists, and otherwise fails with a message.
 
     Args:
         binary_name: name of the binary to find.
-        rctx: repository context.
+        mrctx: module_ctx or repository_ctx.
 
     Returns:
-        rctx.Path for the binary.
+        mrctx.Path for the binary.
     """
-    result = _which_unchecked(rctx, binary_name)
+    result = _which_unchecked(mrctx, binary_name)
     if result.binary == None:
         fail(result.describe_failure())
     return result.binary
 
-def _which_unchecked(rctx, binary_name):
+def _which_unchecked(mrctx, binary_name):
     """Tests to see if a binary exists.
 
     This is also watch the `PATH` environment variable.
 
     Args:
         binary_name: name of the binary to find.
-        rctx: repository context.
+        mrctx: repository context.
 
     Returns:
         `struct` with attributes:
@@ -256,10 +264,10 @@ def _which_unchecked(rctx, binary_name):
         * `describe_failure`: `Callable | None`; takes no args. If the
           binary couldn't be found, provides a detailed error description.
     """
-    path = _getenv(rctx, "PATH", "")
-    binary = rctx.which(binary_name)
+    path = _getenv(mrctx, "PATH", "")
+    binary = mrctx.which(binary_name)
     if binary:
-        _watch(rctx, binary)
+        _watch(mrctx, binary)
         describe_failure = None
     else:
         describe_failure = lambda: _which_describe_failure(binary_name, path)
@@ -278,9 +286,9 @@ def _which_describe_failure(binary_name, path):
         path = path,
     )
 
-def _getenv(ctx, name, default = None):
-    # Bazel 7+ API has ctx.getenv
-    return getattr(ctx, "getenv", ctx.os.environ.get)(name, default)
+def _getenv(mrctx, name, default = None):
+    # Bazel 7+ API has (repository|module)_ctx.getenv
+    return getattr(mrctx, "getenv", mrctx.os.environ.get)(name, default)
 
 def _args_to_str(arguments):
     return " ".join([_arg_repr(a) for a in arguments])
@@ -294,17 +302,17 @@ def _arg_repr(value):
 _SPECIAL_SHELL_CHARS = [" ", "'", '"', "{", "$", "("]
 
 def _arg_should_be_quoted(value):
-    # `value` may be non-str, such as ctx.path objects
+    # `value` may be non-str, such as mrctx.path objects
     value_str = str(value)
     for char in _SPECIAL_SHELL_CHARS:
         if char in value_str:
             return True
     return False
 
-def _cwd_to_str(rctx, kwargs):
+def _cwd_to_str(mrctx, kwargs):
     cwd = kwargs.get("working_directory")
     if not cwd:
-        cwd = "<default: {}>".format(rctx.path(""))
+        cwd = "<default: {}>".format(mrctx.path(""))
     return cwd
 
 def _env_to_str(environment):
@@ -342,16 +350,16 @@ def _outputs_to_str(result):
 # @platforms//host:extension.bzl at version 0.0.9 so that we don't
 # force the users to depend on it.
 
-def _get_platforms_os_name(rctx):
+def _get_platforms_os_name(mrctx):
     """Return the name in @platforms//os for the host os.
 
     Args:
-        rctx: repository_ctx
+        mrctx: module_ctx or repository_ctx.
 
     Returns:
         `str`. The target name.
     """
-    os = rctx.os.name.lower()
+    os = mrctx.os.name.lower()
 
     if os.startswith("mac os"):
         return "osx"
@@ -365,16 +373,16 @@ def _get_platforms_os_name(rctx):
         return "windows"
     return os
 
-def _get_platforms_cpu_name(rctx):
+def _get_platforms_cpu_name(mrctx):
     """Return the name in @platforms//cpu for the host arch.
 
     Args:
-        rctx: repository_ctx
+        mrctx: module_ctx or repository_ctx.
 
     Returns:
         `str`. The target name.
     """
-    arch = rctx.os.arch.lower()
+    arch = mrctx.os.arch.lower()
     if arch in ["i386", "i486", "i586", "i686", "i786", "x86"]:
         return "x86_32"
     if arch in ["amd64", "x86_64", "x64"]:
@@ -394,16 +402,16 @@ def _get_platforms_cpu_name(rctx):
     return arch
 
 # TODO: Remove after Bazel 6 support dropped
-def _watch(rctx, *args, **kwargs):
-    """Calls rctx.watch, if available."""
-    if hasattr(rctx, "watch"):
-        rctx.watch(*args, **kwargs)
+def _watch(mrctx, *args, **kwargs):
+    """Calls mrctx.watch, if available."""
+    if hasattr(mrctx, "watch"):
+        mrctx.watch(*args, **kwargs)
 
 # TODO: Remove after Bazel 6 support dropped
-def _watch_tree(rctx, *args, **kwargs):
-    """Calls rctx.watch_tree, if available."""
-    if hasattr(rctx, "watch_tree"):
-        rctx.watch_tree(*args, **kwargs)
+def _watch_tree(mrctx, *args, **kwargs):
+    """Calls mrctx.watch_tree, if available."""
+    if hasattr(mrctx, "watch_tree"):
+        mrctx.watch_tree(*args, **kwargs)
 
 repo_utils = struct(
     # keep sorted
