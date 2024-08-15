@@ -17,7 +17,7 @@ load("//python:pip.bzl", "compile_pip_requirements")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
-load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs", "sphinx_inventory")
+load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
 # We only build for Linux and Mac because:
@@ -38,7 +38,6 @@ _TARGET_COMPATIBLE_WITH = select({
 sphinx_docs(
     name = "docs",
     srcs = [
-        ":bazel_inventory",
         ":bzl_api_docs",
     ] + glob(
         include = [
@@ -60,17 +59,12 @@ sphinx_docs(
     renamed_srcs = {
         "//:CHANGELOG.md": "changelog.md",
         "//:CONTRIBUTING.md": "contributing.md",
+        "//sphinxdocs/inventories:bazel_inventory": "bazel_inventory.inv",
     },
     sphinx = ":sphinx-build",
     strip_prefix = package_name() + "/",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
-)
-
-sphinx_inventory(
-    name = "bazel_inventory",
-    src = "bazel_inventory.txt",
-    visibility = ["//:__subpackages__"],
 )
 
 sphinx_stardocs(
@@ -86,6 +80,10 @@ sphinx_stardocs(
         "api/python/entry_points/py_console_script_binary.md": "//python/entry_points:py_console_script_binary_bzl",
         "api/python/packaging.md": "//python:packaging_bzl",
         "api/python/pip.md": "//python:pip_bzl",
+        "api/python/private/common/py_binary_rule_bazel.md": "//python/private/common:py_binary_rule_bazel_bzl",
+        "api/python/private/common/py_library_rule_bazel.md": "//python/private/common:py_library_rule_bazel_bzl",
+        "api/python/private/common/py_runtime_rule.md": "//python/private/common:py_runtime_rule_bzl",
+        "api/python/private/common/py_test_rule_bazel.md": "//python/private/common:py_test_rule_bazel_bzl",
         "api/python/py_binary.md": "//python:py_binary_bzl",
         "api/python/py_cc_link_params_info.md": "//python:py_cc_link_params_info_bzl",
         "api/python/py_library.md": "//python:py_library_bzl",

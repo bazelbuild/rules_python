@@ -31,21 +31,16 @@ def _uv_toolchain_impl(ctx):
         uv = uv,
         version = ctx.attr.version,
     )
-    template_variable_info = platform_common.TemplateVariableInfo({
-        "UV_BIN": uv[DefaultInfo].files_to_run.executable.path,
-    })
 
     # Export all the providers inside our ToolchainInfo
     # so the current_toolchain rule can grab and re-export them.
     toolchain_info = platform_common.ToolchainInfo(
         default_info = default_info,
-        template_variable_info = template_variable_info,
         uv_toolchain_info = uv_toolchain_info,
     )
     return [
         default_info,
         toolchain_info,
-        template_variable_info,
     ]
 
 uv_toolchain = rule(

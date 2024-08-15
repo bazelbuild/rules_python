@@ -81,31 +81,12 @@ def _transition_py_impl(ctx):
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
 
-    if PyInfo in target:
-        py_info = target[PyInfo]
-    elif BuiltinPyInfo in target:
-        py_info = target[BuiltinPyInfo]
-    else:
-        fail("target {} does not have rules_python PyInfo or builtin PyInfo".format(target))
-
-    if PyRuntimeInfo in target:
-        py_runtime_info = target[PyRuntimeInfo]
-    elif BuiltinPyRuntimeInfo in target:
-        py_runtime_info = target[BuiltinPyRuntimeInfo]
-    else:
-        fail(
-            "target {} does not have rules_python PyRuntimeInfo or builtin PyRuntimeInfo. ".format(target) +
-            "There is likely no toolchain being matched to your configuration, use --toolchain_resolution_debug parameter to get more information",
-        )
-
     providers = [
         DefaultInfo(
             executable = executable,
             files = depset(default_outputs, transitive = [target[DefaultInfo].files]),
             runfiles = ctx.runfiles(default_outputs).merge(target[DefaultInfo].default_runfiles),
         ),
-        py_info,
-        py_runtime_info,
         # Ensure that the binary we're wrapping is included in code coverage.
         coverage_common.instrumented_files_info(
             ctx,
@@ -118,6 +99,15 @@ def _transition_py_impl(ctx):
         # https://github.com/bazelbuild/bazel/commit/dbdfa07e92f99497be9c14265611ad2920161483
         testing.TestEnvironment(env),
     ]
+    if PyInfo in target:
+        providers.append(target[PyInfo])
+    if BuiltinPyInfo in target and PyInfo != BuiltinPyInfo:
+        providers.append(target[BuiltinPyInfo])
+
+    if PyRuntimeInfo in target:
+        providers.append(target[PyRuntimeInfo])
+    if BuiltinPyRuntimeInfo in target and PyRuntimeInfo != BuiltinPyRuntimeInfo:
+        providers.append(target[BuiltinPyRuntimeInfo])
     return providers
 
 _COMMON_ATTRS = {

@@ -14,88 +14,21 @@
 
 ""
 
-load("//python:repositories.bzl", "is_standalone_interpreter")
-load("//python:versions.bzl", "WINDOWS_NAME")
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
 load("//python/private:envsubst.bzl", "envsubst")
+load("//python/private:python_repositories.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
-load("//python/private:toolchains_repo.bzl", "get_host_os_arch")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
+load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
-
-def _construct_pypath(rctx):
-    """Helper function to construct a PYTHONPATH.
-
-    Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
-    This allows us to run python code inside repository rule implementations.
-
-    Args:
-        rctx: Handle to the repository_context.
-
-    Returns: String of the PYTHONPATH.
-    """
-
-    separator = ":" if not "windows" in rctx.os.name.lower() else ";"
-    pypath = separator.join([
-        str(rctx.path(entry).dirname)
-        for entry in rctx.attr._python_path_entries
-    ])
-    return pypath
-
-def _get_python_interpreter_attr(rctx):
-    """A helper function for getting the `python_interpreter` attribute or it's default
-
-    Args:
-        rctx (repository_ctx): Handle to the rule repository context.
-
-    Returns:
-        str: The attribute value or it's default
-    """
-    if rctx.attr.python_interpreter:
-        return rctx.attr.python_interpreter
-
-    if "win" in rctx.os.name:
-        return "python.exe"
-    else:
-        return "python3"
-
-def _resolve_python_interpreter(rctx):
-    """Helper function to find the python interpreter from the common attributes
-
-    Args:
-        rctx: Handle to the rule repository context.
-
-    Returns:
-        `path` object, for the resolved path to the Python interpreter.
-    """
-    python_interpreter = _get_python_interpreter_attr(rctx)
-
-    if rctx.attr.python_interpreter_target != None:
-        python_interpreter = rctx.path(rctx.attr.python_interpreter_target)
-
-        (os, _) = get_host_os_arch(rctx)
-
-        # On Windows, the symlink doesn't work because Windows attempts to find
-        # Python DLLs where the symlink is, not where the symlink points.
-        if os == WINDOWS_NAME:
-            python_interpreter = python_interpreter.realpath
-    elif "/" not in python_interpreter:
-        # It's a plain command, e.g. "python3", to look up in the environment.
-        found_python_interpreter = rctx.which(python_interpreter)
-        if not found_python_interpreter:
-            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
-        python_interpreter = found_python_interpreter
-    else:
-        python_interpreter = rctx.path(python_interpreter)
-    return python_interpreter
 
 def _get_xcode_location_cflags(rctx):
     """Query the xcode sdk location to update cflags
@@ -127,7 +60,7 @@ def _get_xcode_location_cflags(rctx):
         "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
     ]
 
-def _get_toolchain_unix_cflags(rctx, python_interpreter):
+def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
     """Gather cflags from a standalone toolchain for unix systems.
 
     Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
@@ -139,7 +72,7 @@ def _get_toolchain_unix_cflags(rctx, python_interpreter):
         return []
 
     # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, python_interpreter):
+    if not is_standalone_interpreter(rctx, python_interpreter, logger = logger):
         return []
 
     stdout = repo_utils.execute_checked_stdout(
@@ -190,7 +123,7 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
             "--extra_pip_args",
             json.encode(struct(arg = [
                 envsubst(pip_arg, rctx.attr.envsubst, getenv)
-                for pip_arg in rctx.attr.extra_pip_args
+                for pip_arg in extra_pip_args
             ])),
         ]
 
@@ -214,12 +147,13 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
 
     return args
 
-def _create_repository_execution_environment(rctx, python_interpreter):
+def _create_repository_execution_environment(rctx, python_interpreter, logger = None):
     """Create a environment dictionary for processes we spawn with rctx.execute.
 
     Args:
         rctx (repository_ctx): The repository context.
         python_interpreter (path): The resolved python interpreter.
+        logger: Optional logger to use for operations.
     Returns:
         Dictionary of environment variable suitable to pass to rctx.execute.
     """
@@ -227,17 +161,25 @@ def _create_repository_execution_environment(rctx, python_interpreter):
     # Gather any available CPPFLAGS values
     cppflags = []
     cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter))
+    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
 
     env = {
-        "PYTHONPATH": _construct_pypath(rctx),
+        "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
+            rctx,
+            entries = rctx.attr._python_path_entries,
+        ),
         _CPPFLAGS: " ".join(cppflags),
     }
 
     return env
 
 def _whl_library_impl(rctx):
-    python_interpreter = _resolve_python_interpreter(rctx)
+    logger = repo_utils.logger(rctx)
+    python_interpreter = pypi_repo_utils.resolve_python_interpreter(
+        rctx,
+        python_interpreter = rctx.attr.python_interpreter,
+        python_interpreter_target = rctx.attr.python_interpreter_target,
+    )
     args = [
         python_interpreter,
         "-m",
@@ -249,7 +191,7 @@ def _whl_library_impl(rctx):
     extra_pip_args.extend(rctx.attr.extra_pip_args)
 
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
-    environment = _create_repository_execution_environment(rctx, python_interpreter)
+    environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
 
     whl_path = None
     if rctx.attr.whl_file:
@@ -291,13 +233,21 @@ def _whl_library_impl(rctx):
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
 
     if not whl_path:
+        if rctx.attr.urls:
+            op_tmpl = "whl_library.BuildWheelFromSource({name}, {requirement})"
+        elif rctx.attr.download_only:
+            op_tmpl = "whl_library.DownloadWheel({name}, {requirement})"
+        else:
+            op_tmpl = "whl_library.ResolveRequirement({name}, {requirement})"
+
         repo_utils.execute_checked(
             rctx,
-            op = "whl_library.ResolveRequirement({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement),
             arguments = args,
             environment = environment,
             quiet = rctx.attr.quiet,
             timeout = rctx.attr.timeout,
+            logger = logger,
         )
 
         whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
@@ -345,6 +295,7 @@ def _whl_library_impl(rctx):
         environment = environment,
         quiet = rctx.attr.quiet,
         timeout = rctx.attr.timeout,
+        logger = logger,
     )
 
     metadata = json.decode(rctx.read("metadata.json"))
@@ -493,6 +444,7 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
             for repo in all_repo_names
         ],
     ),
+    "_rule_name": attr.string(default = "whl_library"),
 }, **ATTRS)
 whl_library_attrs.update(AUTH_ATTRS)
 
