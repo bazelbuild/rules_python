@@ -15,7 +15,7 @@ sphinx_docs(
         "html",
     ],
     renamed_srcs = {
-        "//docs/sphinx:bazel_inventory": "bazel_inventory.inv",
+        "//sphinxdocs/inventories:bazel_inventory": "bazel_inventory.inv",
     },
     sphinx = ":sphinx-build",
     strip_prefix = package_name() + "/",

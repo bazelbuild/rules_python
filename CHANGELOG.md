@@ -35,6 +35,11 @@ A brief description of the categories of changes:
     * `3.12 -> 3.12.4`
 
 ### Fixed
+* (rules) correctly handle absolute URLs in parse_simpleapi_html.bzl.
+* (rules) Fixes build targets linking against `@rules_python//python/cc:current_py_cc_libs`
+  in host platform builds on macOS, by editing the `LC_ID_DYLIB` field of the hermetic interpreter's
+  `libpython3.x.dylib` using `install_name_tool`, setting it to its absolute path under Bazel's
+  execroot.
 * (rules) Signals are properly received when using {obj}`--bootstrap_impl=script`
   (for non-zip builds).
   ([#2043](https://github.com/bazelbuild/rules_python/issues/2043))
@@ -45,6 +50,9 @@ A brief description of the categories of changes:
 * (rules) User dependencies come before runtime site-packages when using
   {obj}`--bootstrap_impl=script`.
   ([#2064](https://github.com/bazelbuild/rules_python/issues/2064)).
+* (rules) Version-aware rules now return both `@_builtins` and `@rules_python`
+  providers instead of only one.
+  ([#2114](https://github.com/bazelbuild/rules_python/issues/2114)).
 * (pip) Fixed pypi parse_simpleapi_html function for feeds with package metadata
   containing ">" sign
 * (toolchains) Added missing executable permission to
@@ -55,6 +63,10 @@ A brief description of the categories of changes:
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
 * (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
   network behavior.
+* (bzlmod): The conflicting toolchains during `python` extension will no longer
+  cause warnings by default. In order to see the warnings for diagnostic purposes
+  set the env var `RULES_PYTHON_REPO_DEBUG_VERBOSITY` to one of `INFO`, `DEBUG` or `TRACE`.
+  Fixes [#1818](https://github.com/bazelbuild/rules_python/issues/1818).
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
