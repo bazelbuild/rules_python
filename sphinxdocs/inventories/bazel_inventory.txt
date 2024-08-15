@@ -10,7 +10,7 @@ bool bzl:type 1 rules/lib/bool -
 int bzl:type 1 rules/lib/int -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
-label bzl:type 1 concepts/labels -
+label bzl:doc 1 concepts/labels -
 attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
 attr.int bzl:type 1 rules/lib/toplevel/attr#int -
 attr.label bzl:type 1 rules/lib/toplevel/attr#label -
