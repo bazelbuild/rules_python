@@ -162,12 +162,10 @@ def pip_compile(
     # linux and macOS, but fails on Windows, so we conditionally provide a fake
     # USERPROFILE env variable to allow setuptools to proceed without finding
     # user-provided configuration.
-    env = kwargs.get("env", {})
-    if "USERPROFILE" not in env:
-        kwargs["env"] = env | select({
-            "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
-            "//conditions:default": {},
-        })
+        kwargs["env"] = select({
+        "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
+        "//conditions:default": {},
+    }) | kwargs.get("env", {})
 
     # Bazel 4.0 added the "env" attribute to py_test/py_binary
     if _bazel_version_4_or_greater:
