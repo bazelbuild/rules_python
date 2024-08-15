@@ -36,7 +36,7 @@ A brief description of the categories of changes:
 
 ### Fixed
 * (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
-  windows to work around an issue where `setuptools` fails to locate the user's
+  Windows to work around an issue where `setuptools` fails to locate the user's
   home directory.
 * (rules) correctly handle absolute URLs in parse_simpleapi_html.bzl.
 * (rules) Fixes build targets linking against `@rules_python//python/cc:current_py_cc_libs`
