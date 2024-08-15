@@ -54,7 +54,7 @@ A brief description of the categories of changes:
   `experimental_index_url` feature. Fixes
   [#2091](https://github.com/bazelbuild/rules_python/issues/2090).
 * (gazelle) Make `gazelle_python_manifest.update` manual to avoid unnecessary
-  network behavior. 
+  network behavior.
 
 ### Added
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
@@ -69,8 +69,9 @@ A brief description of the categories of changes:
 * (toolchains) New Python versions available: `3.12.4` using the [20240726] release.
 * (pypi) Support env markers in requirements files. Note, that this means that
   if your requirements files contain env markers, the Python interpreter will
-  have to be downloaded (if you are not using system Python) to evaluate the
-  bzlmod extension.
+  need to be run during bzlmod phase to evaluate them. This may incur
+  downloading an interpreter (for hermetic-based builds) or cause non-hermetic
+  behavior (if using a system Python).
 
 [rules_python_pytest]: https://github.com/caseyduquettesc/rules_python_pytest
 [py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
