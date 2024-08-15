@@ -33,6 +33,10 @@ foo[extra,extra_2]==0.0.1 --hash=sha256:deadbeef
 foo==0.0.1 --hash=sha256:deadbeef
 foo[extra]==0.0.1 --hash=sha256:deadbeef
 """,
+        "requirements_marker": """\
+foo[extra]==0.0.1 ;marker --hash=sha256:deadbeef
+bar==0.0.1 --hash=sha256:deadbeef
+""",
         "requirements_osx": """\
 foo==0.0.3 --hash=sha256:deadbaaf
 """,
@@ -196,6 +200,67 @@ def _test_select_requirement_none_platform(env):
     env.expect.that_str(got.some_attr).equals("foo")
 
 _tests.append(_test_select_requirement_none_platform)
+
+def _test_env_marker_resolution(env):
+    def _mock_eval_markers(_, input):
+        ret = {
+            "foo[extra]==0.0.1 ;marker --hash=sha256:deadbeef": ["cp311_windows_x86_64"],
+        }
+
+        env.expect.that_collection(input.keys()).contains_exactly(ret.keys())
+        env.expect.that_collection(input.values()[0]).contains_exactly(["cp311_linux_super_exotic", "cp311_windows_x86_64"])
+        return ret
+
+    got = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_marker": ["cp311_linux_super_exotic", "cp311_windows_x86_64"],
+        },
+        evaluate_markers = _mock_eval_markers,
+    )
+    env.expect.that_dict(got).contains_exactly({
+        "bar": [
+            struct(
+                distribution = "bar",
+                extra_pip_args = [],
+                is_exposed = True,
+                requirement_line = "bar==0.0.1 --hash=sha256:deadbeef",
+                sdist = None,
+                srcs = struct(
+                    requirement = "bar==0.0.1",
+                    shas = ["deadbeef"],
+                    version = "0.0.1",
+                ),
+                target_platforms = ["cp311_linux_super_exotic", "cp311_windows_x86_64"],
+                whls = [],
+            ),
+        ],
+        "foo": [
+            struct(
+                distribution = "foo",
+                extra_pip_args = [],
+                # This is not exposed because we also have `linux_super_exotic` in the platform list
+                is_exposed = False,
+                requirement_line = "foo[extra]==0.0.1 ;marker --hash=sha256:deadbeef",
+                sdist = None,
+                srcs = struct(
+                    requirement = "foo[extra]==0.0.1 ;marker",
+                    shas = ["deadbeef"],
+                    version = "0.0.1",
+                ),
+                target_platforms = ["cp311_windows_x86_64"],
+                whls = [],
+            ),
+        ],
+    })
+    env.expect.that_str(
+        select_requirement(
+            got["foo"],
+            platform = "windows_x86_64",
+        ).srcs.version,
+    ).equals("0.0.1")
+
+_tests.append(_test_env_marker_resolution)
 
 def parse_requirements_test_suite(name):
     """Create the test suite.

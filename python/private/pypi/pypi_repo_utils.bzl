@@ -14,13 +14,14 @@
 
 ""
 
+load("@bazel_skylib//lib:types.bzl", "types")
 load("//python/private:repo_utils.bzl", "repo_utils")
 
-def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
+def _get_python_interpreter_attr(mrctx, *, python_interpreter = None):
     """A helper function for getting the `python_interpreter` attribute or it's default
 
     Args:
-        ctx (repository_ctx): Handle to the rule repository context.
+        mrctx (module_ctx or repository_ctx): Handle to the rule repository context.
         python_interpreter (str): The python interpreter override.
 
     Returns:
@@ -29,29 +30,30 @@ def _get_python_interpreter_attr(ctx, *, python_interpreter = None):
     if python_interpreter:
         return python_interpreter
 
-    os = repo_utils.get_platforms_os_name(ctx)
+    os = repo_utils.get_platforms_os_name(mrctx)
     if "windows" in os:
         return "python.exe"
     else:
         return "python3"
 
-def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interpreter_target = None):
+def _resolve_python_interpreter(mrctx, *, python_interpreter = None, python_interpreter_target = None):
     """Helper function to find the python interpreter from the common attributes
 
     Args:
-        ctx: Handle to the rule module_ctx or repository_ctx.
-        python_interpreter: The python interpreter to use.
-        python_interpreter_target: The python interpreter to use after downloading the label.
+        mrctx: Handle to the module_ctx or repository_ctx.
+        python_interpreter: str, the python interpreter to use.
+        python_interpreter_target: Label, the python interpreter to use after
+            downloading the label.
 
     Returns:
         `path` object, for the resolved path to the Python interpreter.
     """
-    python_interpreter = _get_python_interpreter_attr(ctx, python_interpreter = python_interpreter)
+    python_interpreter = _get_python_interpreter_attr(mrctx, python_interpreter = python_interpreter)
 
     if python_interpreter_target != None:
-        python_interpreter = ctx.path(python_interpreter_target)
+        python_interpreter = mrctx.path(python_interpreter_target)
 
-        os = repo_utils.get_platforms_os_name(ctx)
+        os = repo_utils.get_platforms_os_name(mrctx)
 
         # On Windows, the symlink doesn't work because Windows attempts to find
         # Python DLLs where the symlink is, not where the symlink points.
@@ -59,37 +61,70 @@ def _resolve_python_interpreter(ctx, *, python_interpreter = None, python_interp
             python_interpreter = python_interpreter.realpath
     elif "/" not in python_interpreter:
         # It's a plain command, e.g. "python3", to look up in the environment.
-        found_python_interpreter = ctx.which(python_interpreter)
-        if not found_python_interpreter:
-            fail("python interpreter `{}` not found in PATH".format(python_interpreter))
-        python_interpreter = found_python_interpreter
+        python_interpreter = repo_utils.which_checked(mrctx, python_interpreter)
     else:
-        python_interpreter = ctx.path(python_interpreter)
+        python_interpreter = mrctx.path(python_interpreter)
     return python_interpreter
 
-def _construct_pypath(ctx, *, entries):
+def _construct_pypath(mrctx, *, entries):
     """Helper function to construct a PYTHONPATH.
 
     Contains entries for code in this repo as well as packages downloaded from //python/pip_install:repositories.bzl.
     This allows us to run python code inside repository rule implementations.
 
     Args:
-        ctx: Handle to the module_ctx or repository_ctx.
+        mrctx: Handle to the module_ctx or repository_ctx.
         entries: The list of entries to add to PYTHONPATH.
 
     Returns: String of the PYTHONPATH.
     """
 
-    os = repo_utils.get_platforms_os_name(ctx)
+    if not entries:
+        return None
+
+    os = repo_utils.get_platforms_os_name(mrctx)
     separator = ";" if "windows" in os else ":"
     pypath = separator.join([
-        str(ctx.path(entry).dirname)
+        str(mrctx.path(entry).dirname)
         # Use a dict as a way to remove duplicates and then sort it.
         for entry in sorted({x: None for x in entries})
     ])
     return pypath
 
+def _execute_checked(mrctx, *, srcs, **kwargs):
+    """Helper function to run a python script and modify the PYTHONPATH to include external deps.
+
+    Args:
+        mrctx: Handle to the module_ctx or repository_ctx.
+        srcs: The src files that the script depends on. This is important to
+            ensure that the Bazel repository cache or the bzlmod lock file gets
+            invalidated when any one file changes. It is advisable to use
+            `RECORD` files for external deps and the list of srcs from the
+            rules_python repo for any scripts.
+        **kwargs: Arguments forwarded to `repo_utils.execute_checked`. If
+            the `environment` has a value `PYTHONPATH` and it is a list, then
+            it will be passed to `construct_pythonpath` function.
+    """
+
+    for src in srcs:
+        # This will ensure that we will re-evaluate the bzlmod extension or
+        # refetch the repository_rule when the srcs change. This should work on
+        # Bazel versions without `mrctx.watch` as well.
+        repo_utils.watch(mrctx.path(src))
+
+    env = kwargs.pop("environment", {})
+    pythonpath = env.get("PYTHONPATH", "")
+    if pythonpath and not types.is_string(pythonpath):
+        env["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
+
+    return repo_utils.execute_checked(
+        mrctx,
+        environment = env,
+        **kwargs
+    )
+
 pypi_repo_utils = struct(
-    resolve_python_interpreter = _resolve_python_interpreter,
     construct_pythonpath = _construct_pypath,
+    execute_checked = _execute_checked,
+    resolve_python_interpreter = _resolve_python_interpreter,
 )
