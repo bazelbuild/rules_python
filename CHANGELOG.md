@@ -25,6 +25,19 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* Nothing yet
+
+### Added
+* Nothing yet
+
+### Removed
+* Nothing yet
+
+## [0.35.0] - 2024-08-15
+
+[0.35.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.35.0
+
+### Changed
 * (whl_library) A better log message when the wheel is built from an sdist or
   when the wheel is downloaded using `download_only` feature to aid debugging.
 * (gazelle): Simplify and make gazelle_python.yaml have only top level package name.
@@ -33,6 +46,9 @@ A brief description of the categories of changes:
   include dependency updates `3.8.19`, `3.9.19`, `3.10.14`, `3.11.9`
 * (toolchains): Bump default toolchain versions to:
     * `3.12 -> 3.12.4`
+* (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
+  disabling it (Requires {obj}`--bootstrap_impl=script`)
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 
 ### Fixed
 * (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
@@ -98,8 +114,6 @@ A brief description of the categories of changes:
 [pytest_bazel]: https://pypi.org/project/pytest-bazel
 [20240726]: https://github.com/indygreg/python-build-standalone/releases/tag/20240726
 
-### Removed
-* Nothing yet
 
 ## [0.34.0] - 2024-07-04
 
