@@ -35,6 +35,9 @@ A brief description of the categories of changes:
     * `3.12 -> 3.12.4`
 
 ### Fixed
+* (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
+  Windows to work around an issue where `setuptools` fails to locate the user's
+  home directory.
 * (rules) correctly handle absolute URLs in parse_simpleapi_html.bzl.
 * (rules) Fixes build targets linking against `@rules_python//python/cc:current_py_cc_libs`
   in host platform builds on macOS, by editing the `LC_ID_DYLIB` field of the hermetic interpreter's
@@ -73,6 +76,7 @@ A brief description of the categories of changes:
   Fixes [#1631](https://github.com/bazelbuild/rules_python/issues/1631).
 
 ### Added
+* (rules) `compile_pip_requirements` supports multiple requirements input files as `srcs`.
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
   disabling it (Requires {obj}`--bootstrap_impl=script`)
   ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).

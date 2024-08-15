@@ -23,6 +23,7 @@ load("//python:defs.bzl", _py_binary = "py_binary", _py_test = "py_test")
 
 def pip_compile(
         name,
+        srcs = None,
         src = None,
         extra_args = [],
         extra_deps = [],
@@ -53,6 +54,11 @@ def pip_compile(
 
     Args:
         name: base name for generated targets, typically "requirements".
+        srcs: a list of files containing inputs to dependency resolution. If not specified,
+            defaults to `["pyproject.toml"]`. Supported formats are:
+            * a requirements text file, usually named `requirements.in`
+            * A `.toml` file, where the `project.dependencies` list is used as per
+              [PEP621](https://peps.python.org/pep-0621/).
         src: file containing inputs to dependency resolution. If not specified,
             defaults to `pyproject.toml`. Supported formats are:
             * a requirements text file, usually named `requirements.in`
@@ -63,7 +69,7 @@ def pip_compile(
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
-        requirements_in: file expressing desired dependencies. Deprecated, use src instead.
+        requirements_in: file expressing desired dependencies. Deprecated, use src or srcs instead.
         requirements_txt: result of "compiling" the requirements.in file.
         requirements_linux: File of linux specific resolve output to check validate if requirement.in has changes.
         requirements_darwin: File of darwin specific resolve output to check validate if requirement.in has changes.
@@ -72,10 +78,15 @@ def pip_compile(
         visibility: passed to both the _test and .update rules.
         **kwargs: other bazel attributes passed to the "_test" rule.
     """
-    if requirements_in and src:
-        fail("Only one of 'src' and 'requirements_in' attributes can be used")
+    if len([x for x in [srcs, src, requirements_in] if x != None]) > 1:
+        fail("At most one of 'srcs', 'src', and 'requirements_in' attributes may be provided")
+
+    if requirements_in:
+        srcs = [requirements_in]
+    elif src:
+        srcs = [src]
     else:
-        src = requirements_in or src or "pyproject.toml"
+        srcs = srcs or ["pyproject.toml"]
 
     requirements_txt = name + ".txt" if requirements_txt == None else requirements_txt
 
@@ -88,7 +99,7 @@ def pip_compile(
         visibility = visibility,
     )
 
-    data = [name, requirements_txt, src] + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
+    data = [name, requirements_txt] + srcs + [f for f in (requirements_linux, requirements_darwin, requirements_windows) if f != None]
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
@@ -96,8 +107,7 @@ def pip_compile(
 
     loc = "$(rlocationpath {})"
 
-    args = [
-        loc.format(src),
+    args = ["--src=%s" % loc.format(src) for src in srcs] + [
         loc.format(requirements_txt),
         "//%s:%s.update" % (native.package_name(), name),
         "--resolver=backtracking",
@@ -144,12 +154,15 @@ def pip_compile(
         "visibility": visibility,
     }
 
-    # cheap way to detect the bazel version
-    _bazel_version_4_or_greater = "propeller_optimize" in dir(native)
-
-    # Bazel 4.0 added the "env" attribute to py_test/py_binary
-    if _bazel_version_4_or_greater:
-        attrs["env"] = kwargs.pop("env", {})
+    # setuptools (the default python build tool) attempts to find user
+    # configuration in the user's home direcotory. This seems to work fine on
+    # linux and macOS, but fails on Windows, so we conditionally provide a fake
+    # USERPROFILE env variable to allow setuptools to proceed without finding
+    # user-provided configuration.
+    kwargs["env"] = select({
+        "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
+        "//conditions:default": {},
+    }) | kwargs.get("env", {})
 
     py_binary(
         name = name + ".update",

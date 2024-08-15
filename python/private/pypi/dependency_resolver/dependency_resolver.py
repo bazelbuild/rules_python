@@ -80,7 +80,7 @@ def _locate(bazel_runfiles, file):
 
 
 @click.command(context_settings={"ignore_unknown_options": True})
-@click.argument("requirements_in")
+@click.option("--src", "srcs", multiple=True, required=True)
 @click.argument("requirements_txt")
 @click.argument("update_target_label")
 @click.option("--requirements-linux")
@@ -88,7 +88,7 @@ def _locate(bazel_runfiles, file):
 @click.option("--requirements-windows")
 @click.argument("extra_args", nargs=-1, type=click.UNPROCESSED)
 def main(
-    requirements_in: str,
+    srcs: Tuple[str, ...],
     requirements_txt: str,
     update_target_label: str,
     requirements_linux: Optional[str],
@@ -105,7 +105,7 @@ def main(
         requirements_windows=requirements_windows,
     )
 
-    resolved_requirements_in = _locate(bazel_runfiles, requirements_in)
+    resolved_srcs = [_locate(bazel_runfiles, src) for src in srcs]
     resolved_requirements_file = _locate(bazel_runfiles, requirements_file)
 
     # Files in the runfiles directory has the following naming schema:
@@ -118,11 +118,11 @@ def main(
         : -(len(requirements_file) - len(repository_prefix))
     ]
 
-    # As requirements_in might contain references to generated files we want to
+    # As srcs might contain references to generated files we want to
     # use the runfiles file first. Thus, we need to compute the relative path
     # from the execution root.
     # Note: Windows cannot reference generated files without runfiles support enabled.
-    requirements_in_relative = requirements_in[len(repository_prefix) :]
+    srcs_relative = [src[len(repository_prefix) :] for src in srcs]
     requirements_file_relative = requirements_file[len(repository_prefix) :]
 
     # Before loading click, set the locale for its parser.
@@ -162,10 +162,9 @@ def main(
     argv.append(
         f"--output-file={requirements_file_relative if UPDATE else requirements_out}"
     )
-    argv.append(
-        requirements_in_relative
-        if Path(requirements_in_relative).exists()
-        else resolved_requirements_in
+    argv.extend(
+        (src_relative if Path(src_relative).exists() else resolved_src)
+        for src_relative, resolved_src in zip(srcs_relative, resolved_srcs)
     )
     argv.extend(extra_args)
 
@@ -200,7 +199,7 @@ def main(
                 print(
                     "pip-compile exited with code 2. This means that pip-compile found "
                     "incompatible requirements or could not find a version that matches "
-                    f"the install requirement in {requirements_in_relative}.",
+                    f"the install requirement in one of {srcs_relative}.",
                     file=sys.stderr,
                 )
                 sys.exit(1)
