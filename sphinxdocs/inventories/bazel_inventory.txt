@@ -1,16 +1,50 @@
 # Sphinx inventory version 2
 # Project: Bazel
-# Version: 7.0.0
+# Version: 7.3.0
 # The remainder of this file is compressed using zlib
 Action bzl:type 1 rules/lib/Action -
 File bzl:type 1 rules/lib/File -
 Label bzl:type 1 rules/lib/Label -
 Target bzl:type 1 rules/lib/builtins/Target -
 bool bzl:type 1 rules/lib/bool -
+ctx.actions bzl:obj 1 rules/lib/builtins/ctx#actions -
+ctx.aspect_ids bzl:obj 1 rules/lib/builtins/ctx#aspect_ids -
+ctx.attr bzl:obj 1 rules/lib/builtins/ctx#attr -
+ctx.bin_dir bzl:obj 1 rules/lib/builtins/ctx#bin_dir -
+ctx.build_file_path bzl:obj 1 rules/lib/builtins/ctx#build_file_path -
+ctx.build_setting_value bzl:obj 1 rules/lib/builtins/ctx#build_setting_value -
+ctx.configuration bzl:obj 1 rules/lib/builtins/ctx#configuration -
+ctx.coverage_instrumented bzl:function 1 rules/lib/builtins/ctx#coverage_instrumented -
+ctx.created_actions bzl:function 1 rules/lib/builtins/ctx#created_actions -
+ctx.disabled_features bzl:obj 1 rules/lib/builtins/ctx#disabled_features -
+ctx.exec_groups bzl:obj 1 rules/lib/builtins/ctx#exec_groups -
+ctx.executable bzl:obj 1 rules/lib/builtins/ctx#executable -
+ctx.expand_location bzl:function 1 rules/lib/builtins/ctx#expand_location -
+ctx.expand_location bzl:function 1 rules/lib/builtins/ctx#expand_location - -
+ctx.expand_make_variables bzl:function 1 rules/lib/builtins/ctx#expand_make_variables -
+ctx.features bzl:obj 1 rules/lib/builtins/ctx#features -
+ctx.file bzl:obj 1 rules/lib/builtins/ctx#file -
+ctx.files bzl:obj 1 rules/lib/builtins/ctx#files -
+ctx.fragments bzl:obj 1 rules/lib/builtins/ctx#fragments -
+ctx.genfiles_dir bzl:obj 1 rules/lib/builtins/ctx#genfiles_dir -
+ctx.info_file bzl:obj 1 rules/lib/builtins/ctx#info_file -
+ctx.label bzl:obj 1 rules/lib/builtins/ctx#label -
+ctx.outputs bzl:obj 1 rules/lib/builtins/ctx#outputs -
+ctx.resolve_command bzl:function 1 rules/lib/builtins/ctx#resolve_command -
+ctx.resolve_tools bzl:function 1 rules/lib/builtins/ctx#resolve_tools -
+ctx.rule bzl:obj 1 rules/lib/builtins/ctx#rule -
+ctx.runfiles bzl:function 1 rules/lib/builtins/ctx#runfiles -
+ctx.split_attr bzl:obj 1 rules/lib/builtins/ctx#split_attr -
+ctx.super bzl:obj 1 rules/lib/builtins/ctx#super -
+ctx.target_platform_has_constraint bzl:function 1 rules/lib/builtins/ctx#target_platform_has_constraint -
+ctx.toolchains bzl:obj 1 rules/lib/builtins/ctx#toolchains -
+ctx.var bzl:obj 1 rules/lib/builtins/ctx#var -
+ctx.version_file bzl:obj 1 rules/lib/builtins/ctx#version_file -
+ctx.workspace_name bzl:obj 1 rules/lib/builtins/ctx#workspace_name -
 int bzl:type 1 rules/lib/int -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
-label bzl:doc 1 concepts/labels -
+label bzl:type 1 concepts/labels -
 attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
 attr.int bzl:type 1 rules/lib/toplevel/attr#int -
 attr.label bzl:type 1 rules/lib/toplevel/attr#label -
@@ -18,7 +52,17 @@ attr.label_list bzl:type 1 rules/lib/toplevel/attr#label_list -
 attr.string bzl:type 1 rules/lib/toplevel/attr#string -
 attr.string_list bzl:type 1 rules/lib/toplevel/attr#string_list -
 list bzl:type 1 rules/lib/list -
-python bzl:doc 1 reference/be/python -
+native.existing_rule bzl:function 1 rules/lib/toplevel/native#existing_rule -
+native.existing_rules bzl:function 1 rules/lib/toplevel/native#existing_rules -
+native.exports_files bzl:function 1 rules/lib/toplevel/native#exports_files -
+native.glob bzl:function 1 rules/lib/toplevel/native#glob -
+native.module_name bzl:function 1 rules/lib/toplevel/native#module_name -
+native.module_version bzl:function 1 rules/lib/toplevel/native#module_version -
+native.package_group bzl:function 1 rules/lib/toplevel/native#package_group -
+native.package_name bzl:function 1 rules/lib/toplevel/native#package_name -
+native.package_relative_label bzl:function 1 rules/lib/toplevel/native#package_relative_label -
+native.repo_name bzl:function 1 rules/lib/toplevel/native#repo_name -
+native.repository_name bzl:function 1 rules/lib/toplevel/native#repository_name -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
 Name bzl:type 1 concepts/labels#target-names -

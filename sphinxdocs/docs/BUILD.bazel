@@ -1,0 +1,41 @@
+load("//sphinxdocs:sphinx_docs_library.bzl", "sphinx_docs_library")
+load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
+
+package(default_visibility = ["//:__subpackages__"])
+
+sphinx_docs_library(
+    name = "docs_lib",
+    deps = [
+        ":artisian_api_docs",
+        ":artisian_docs",
+        ":bzl_docs",
+    ],
+)
+
+sphinx_docs_library(
+    name = "artisian_docs",
+    srcs = glob(
+        ["**/*.md"],
+        exclude = ["api/**"],
+    ),
+    prefix = "sphinxdocs/",
+)
+
+sphinx_docs_library(
+    name = "artisian_api_docs",
+    srcs = glob(
+        ["api/**/*.md"],
+    ),
+)
+
+sphinx_stardocs(
+    name = "bzl_docs",
+    srcs = [
+        "//sphinxdocs:readthedocs_bzl",
+        "//sphinxdocs:sphinx_bzl",
+        "//sphinxdocs:sphinx_docs_library_bzl",
+        "//sphinxdocs:sphinx_stardoc_bzl",
+        "//sphinxdocs/private:sphinx_docs_library_bzl",
+    ],
+    prefix = "api/",
+)

@@ -14,12 +14,34 @@
 
 """Rules to generate Sphinx-compatible documentation for bzl files."""
 
+load("@bazel_skylib//:bzl_library.bzl", "StarlarkLibraryInfo")
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:types.bzl", "types")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 load("//python/private:util.bzl", "add_tag", "copy_propagating_kwargs")  # buildifier: disable=bzl-visibility
+load("//sphinxdocs/private:sphinx_docs_library_macro.bzl", "sphinx_docs_library")
 
-def sphinx_stardocs(name, docs, **kwargs):
+_StardocInputHelperInfo = provider(
+    doc = "Extracts the single source file from a bzl library.",
+    fields = {
+        "file": """
+:type: File
+
+The sole output file from the wrapped target.
+""",
+    },
+)
+
+def sphinx_stardocs(
+        *,
+        name,
+        srcs = [],
+        deps = [],
+        docs = {},
+        prefix = None,
+        strip_prefix = None,
+        **kwargs):
     """Generate Sphinx-friendly Markdown docs using Stardoc for bzl libraries.
 
     A `build_test` for the docs is also generated to ensure Stardoc is able
@@ -28,8 +50,12 @@ def sphinx_stardocs(name, docs, **kwargs):
     NOTE: This generates MyST-flavored Markdown.
 
     Args:
-        name: `str`, the name of the resulting file group with the generated docs.
-        docs: `dict[str output, source]` of the bzl files to generate documentation
+        name: {type}`Name`, the name of the resulting file group with the generated docs.
+        srcs: {type}`list[label]` Each source is either the bzl file to process
+            or a `bzl_library` target with one source file of the bzl file to
+            process.
+        deps: {type}`list[label]` Targets that provide files loaded by `src`
+        docs: {type}`dict[str, str|dict]` of the bzl files to generate documentation
             for. The `output` key is the path of the output filename, e.g.,
             `foo/bar.md`. The `source` values can be either of:
             * A `str` label that points to a `bzl_library` target. The target
@@ -39,8 +65,14 @@ def sphinx_stardocs(name, docs, **kwargs):
             * A `dict` with keys `input` and `dep`. The `input` key is a string
               label to the bzl file to generate docs for. The `dep` key is a
               string label to a `bzl_library` providing the necessary dependencies.
+        prefix: {type}`str` Prefix to add to the output file path. It is prepended
+            after `strip_prefix` is removed.
+        strip_prefix: {type}`str | None` Prefix to remove from the input file path;
+            it is removed before `prefix` is prepended. If not specified, then
+            {any}`native.package_name` is used.
         **kwargs: Additional kwargs to pass onto each `sphinx_stardoc` target
     """
+    internal_name = "_{}".format(name)
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_stardocs")
     common_kwargs = copy_propagating_kwargs(kwargs)
 
@@ -51,50 +83,164 @@ def sphinx_stardocs(name, docs, **kwargs):
 
         if types.is_string(entry):
             stardoc_kwargs["deps"] = [entry]
-            stardoc_kwargs["input"] = entry.replace("_bzl", ".bzl")
+            stardoc_kwargs["src"] = entry.replace("_bzl", ".bzl")
         else:
             stardoc_kwargs.update(entry)
+
+            # input is accepted for backwards compatiblity. Remove when ready.
+            if "src" not in stardoc_kwargs and "input" in stardoc_kwargs:
+                stardoc_kwargs["src"] = stardoc_kwargs.pop("input")
             stardoc_kwargs["deps"] = [stardoc_kwargs.pop("dep")]
 
-        doc_name = "_{}_{}".format(name.lstrip("_"), out_name.replace("/", "_"))
-        _sphinx_stardoc(
+        doc_name = "{}_{}".format(internal_name, _name_from_label(out_name))
+        sphinx_stardoc(
             name = doc_name,
-            out = out_name,
+            output = out_name,
+            create_test = False,
             **stardoc_kwargs
         )
         stardocs.append(doc_name)
 
-    native.filegroup(
+    for label in srcs:
+        doc_name = "{}_{}".format(internal_name, _name_from_label(label))
+        sphinx_stardoc(
+            name = doc_name,
+            src = label,
+            # NOTE: We set prefix/strip_prefix here instead of
+            # on the sphinx_docs_library so that building the
+            # target produces markdown files in the expected location, which
+            # is convenient.
+            prefix = prefix,
+            strip_prefix = strip_prefix,
+            deps = deps,
+            create_test = False,
+            **common_kwargs
+        )
+        stardocs.append(doc_name)
+
+    sphinx_docs_library(
         name = name,
-        srcs = stardocs,
+        deps = stardocs,
         **common_kwargs
     )
-    build_test(
-        name = name + "_build_test",
-        targets = stardocs,
+    if stardocs:
+        build_test(
+            name = name + "_build_test",
+            targets = stardocs,
+            **kwargs  # For target_compatible_with
+        )
+
+def sphinx_stardoc(
+        name,
+        src,
+        deps = [],
+        public_load_path = None,
+        prefix = None,
+        strip_prefix = None,
+        create_test = True,
+        output = None,
+        **kwargs):
+    """Generate Sphinx-friendly Markdown for a single bzl file.
+
+    Args:
+        name: {type}`Name` name for the target.
+        src: {type}`label` The bzl file to process, or a `bzl_library`
+            target with one source file of the bzl file to process.
+        deps: {type}`list[label]` Targets that provide files loaded by `src`
+        public_load_path: {type}`str | None` override the file name that
+            is reported as the file being.
+        prefix: {type}`str | None` prefix to add to the output file path
+        strip_prefix: {type}`str | None` Prefix to remove from the input file path.
+            If not specified, then {any}`native.package_name` is used.
+        create_test: {type}`bool` True if a test should be defined to verify the
+            docs are buildable, False if not.
+        output: {type}`str | None` Optional explicit output file to use. If
+            not set, the output name will be derived from `src`.
+        **kwargs: {type}`dict` common args passed onto rules.
+    """
+    internal_name = "_{}".format(name.lstrip("_"))
+    add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_stardoc")
+    common_kwargs = copy_propagating_kwargs(kwargs)
+
+    input_helper_name = internal_name + ".primary_bzl_src"
+    _stardoc_input_helper(
+        name = input_helper_name,
+        target = src,
         **common_kwargs
     )
 
-def _sphinx_stardoc(*, name, out, public_load_path = None, **kwargs):
-    stardoc_name = "_{}_stardoc".format(name.lstrip("_"))
+    stardoc_name = internal_name + "_stardoc"
+
+    # NOTE: The .binaryproto suffix is an optimization. It makes the stardoc()
+    # call avoid performing a copy of the output to the desired name.
     stardoc_pb = stardoc_name + ".binaryproto"
-
-    if not public_load_path:
-        public_load_path = str(kwargs["input"])
 
     stardoc(
         name = stardoc_name,
+        input = input_helper_name,
         out = stardoc_pb,
         format = "proto",
-        **kwargs
+        deps = [src] + deps,
+        **common_kwargs
     )
 
+    pb2md_name = internal_name + "_pb2md"
     _stardoc_proto_to_markdown(
-        name = name,
+        name = pb2md_name,
         src = stardoc_pb,
-        output = out,
+        output = output,
+        output_name_from = input_helper_name if not output else None,
         public_load_path = public_load_path,
+        strip_prefix = strip_prefix,
+        prefix = prefix,
+        **common_kwargs
     )
+    sphinx_docs_library(
+        name = name,
+        srcs = [pb2md_name],
+        **kwargs
+    )
+    if create_test:
+        build_test(
+            name = name + "_build_test",
+            targets = [name],
+            **kwargs  # To capture target_compatible_with
+        )
+
+def _stardoc_input_helper_impl(ctx):
+    target = ctx.attr.target
+    if StarlarkLibraryInfo in target:
+        files = ctx.attr.target[StarlarkLibraryInfo].srcs
+    else:
+        files = target[DefaultInfo].files.to_list()
+
+    if len(files) == 0:
+        fail("Target {} produces no files, but must produce exactly 1 file".format(
+            ctx.attr.target.label,
+        ))
+    elif len(files) == 1:
+        primary = files[0]
+    else:
+        fail("Target {} produces {} files, but must produce exactly 1 file.".format(
+            ctx.attr.target.label,
+            len(files),
+        ))
+
+    return [
+        DefaultInfo(
+            files = depset([primary]),
+        ),
+        _StardocInputHelperInfo(
+            file = primary,
+        ),
+    ]
+
+_stardoc_input_helper = rule(
+    implementation = _stardoc_input_helper_impl,
+    attrs = {
+        "target": attr.label(allow_files = True),
+    },
+)
 
 def _stardoc_proto_to_markdown_impl(ctx):
     args = ctx.actions.args()
@@ -103,7 +249,16 @@ def _stardoc_proto_to_markdown_impl(ctx):
 
     inputs = [ctx.file.src]
     args.add("--proto", ctx.file.src)
-    args.add("--output", ctx.outputs.output)
+
+    if not ctx.outputs.output:
+        output_name = ctx.attr.output_name_from[_StardocInputHelperInfo].file.short_path
+        output_name = paths.replace_extension(output_name, ".md")
+        output_name = ctx.attr.prefix + output_name.removeprefix(ctx.attr.strip_prefix)
+        output = ctx.actions.declare_file(output_name)
+    else:
+        output = ctx.outputs.output
+
+    args.add("--output", output)
 
     if ctx.attr.public_load_path:
         args.add("--public-load-path={}".format(ctx.attr.public_load_path))
@@ -112,17 +267,23 @@ def _stardoc_proto_to_markdown_impl(ctx):
         executable = ctx.executable._proto_to_markdown,
         arguments = [args],
         inputs = inputs,
-        outputs = [ctx.outputs.output],
+        outputs = [output],
         mnemonic = "SphinxStardocProtoToMd",
         progress_message = "SphinxStardoc: converting proto to markdown: %{input} -> %{output}",
     )
+    return [DefaultInfo(
+        files = depset([output]),
+    )]
 
 _stardoc_proto_to_markdown = rule(
     implementation = _stardoc_proto_to_markdown_impl,
     attrs = {
-        "output": attr.output(mandatory = True),
+        "output": attr.output(mandatory = False),
+        "output_name_from": attr.label(),
+        "prefix": attr.string(),
         "public_load_path": attr.string(),
         "src": attr.label(allow_single_file = True, mandatory = True),
+        "strip_prefix": attr.string(),
         "_proto_to_markdown": attr.label(
             default = "//sphinxdocs/private:proto_to_markdown",
             executable = True,
@@ -130,3 +291,7 @@ _stardoc_proto_to_markdown = rule(
         ),
     },
 )
+
+def _name_from_label(label):
+    label = label.lstrip("/").lstrip(":").replace(":", "/")
+    return label
