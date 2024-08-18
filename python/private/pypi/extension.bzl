@@ -222,6 +222,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
     )
 
     repository_platform = host_platform(module_ctx)
+    duplicate_repo = {}
     for whl_name, requirements in requirements_by_platform.items():
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
@@ -295,6 +296,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     whl_library_args.pop("download_only", None)
 
                     repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
+                    if repo_name in duplicate_repo:
+                        continue
+                    duplicate_repo[repo_name] = True
                     whl_library_args["requirement"] = requirement.srcs.requirement
                     whl_library_args["urls"] = [distribution.url]
                     whl_library_args["sha256"] = distribution.sha256
