@@ -188,7 +188,7 @@ write_file(
         "from sys import stderr",
         "",
         'src = Path(environ["REQUIREMENTS_FILE"])',
-        'dst = Path(environ["BUILD_WORKSPACE_DIRECTORY"]) / "docs" / "sphinx" / "requirements.txt"',
+        'dst = Path(environ["BUILD_WORKSPACE_DIRECTORY"]) / "docs" / "requirements.txt"',
         'print(f"Writing requirements contents from {src} to {dst}", file=stderr)',
         "dst.write_text(src.read_text())",
         'print("Success!", file=stderr)',
