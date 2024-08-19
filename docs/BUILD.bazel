@@ -22,6 +22,8 @@ load("//sphinxdocs:readthedocs.bzl", "readthedocs_install")
 load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardoc", "sphinx_stardocs")
 
+package(default_visibility = ["//:__subpackages__"])
+
 # We only build for Linux and Mac because:
 # 1. The actual doc process only runs on Linux
 # 2. Mac is a common development platform, and is close enough to Linux
@@ -204,23 +206,6 @@ py_binary(
     tags = ["manual"],
     target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
 )
-# Copyright 2017 The Bazel Authors. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# NOTE: Only public visibility for historical reasons.
-# This package is only for rules_python to generate its own docs.
-package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -230,18 +215,21 @@ alias(
     name = "defs",
     actual = "//python:defs_bzl",
     deprecation = "Use //python:defs_bzl instead; targets under //docs are internal.",
+    visibility = ["//visibility:public"],
 )
 
 alias(
     name = "bazel_repo_tools",
     actual = "//python/private:bazel_tools_bzl",
     deprecation = "Use @bazel_tools//tools:bzl_srcs instead; targets under //docs are internal.",
+    visibility = ["//visibility:public"],
 )
 
 bzl_library(
     name = "pip_install_bzl",
     deprecation = "Use //python:pip_bzl or //python/pip_install:pip_repository_bzl instead; " +
                   "targets under //docs are internal.",
+    visibility = ["//visibility:public"],
     deps = [
         "//python:pip_bzl",
         "//python/pip_install:pip_repository_bzl",
@@ -253,4 +241,5 @@ alias(
     actual = "//python/pip_install:pip_repository_bzl",
     deprecation = "Use //python/pip_install:pip_repository_bzl instead; Both the requirements " +
                   "parser and targets under //docs are internal",
+    visibility = ["//visibility:public"],
 )
