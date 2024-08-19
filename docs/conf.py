@@ -16,7 +16,7 @@ release = version
 # for more settings
 
 # Any extensions here not built into Sphinx must also be added to
-# the dependencies of //docs/sphinx:sphinx-builder
+# the dependencies of //docs:sphinx-builder
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
@@ -114,7 +114,7 @@ html_context = {
     "READTHEDOCS": False,
     "PRODUCTION_DOMAIN": "readthedocs.org",
     # This is the path to a page's source (after the github user/repo/commit)
-    "conf_py_path": "/docs/sphinx/",
+    "conf_py_path": "/docs/",
     "github_user": "bazelbuild",
     "github_repo": "rules_python",
     # The git version that was checked out, e.g. the tag or branch name
