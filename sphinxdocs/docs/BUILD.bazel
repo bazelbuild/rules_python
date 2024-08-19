@@ -1,7 +1,20 @@
+load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:sphinx_docs_library.bzl", "sphinx_docs_library")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardocs")
 
 package(default_visibility = ["//:__subpackages__"])
+
+# We only build for Linux and Mac because:
+# 1. The actual doc process only runs on Linux
+# 2. Mac is a common development platform, and is close enough to Linux
+#    it's feasible to make work.
+# Making CI happy under Windows is too much of a headache, though, so we don't
+# bother with that.
+_TARGET_COMPATIBLE_WITH = select({
+    "@platforms//os:linux": [],
+    "@platforms//os:macos": [],
+    "//conditions:default": ["@platforms//:incompatible"],
+}) if IS_BAZEL_7_OR_HIGHER else ["@platforms//:incompatible"]
 
 sphinx_docs_library(
     name = "docs_lib",
@@ -38,4 +51,5 @@ sphinx_stardocs(
         "//sphinxdocs/private:sphinx_docs_library_bzl",
     ],
     prefix = "api/",
+    target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
