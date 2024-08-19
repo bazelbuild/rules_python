@@ -75,6 +75,7 @@ def sphinx_stardocs(
     internal_name = "_{}".format(name)
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_stardocs")
     common_kwargs = copy_propagating_kwargs(kwargs)
+    common_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
     stardocs = []
     for out_name, entry in docs.items():
@@ -127,7 +128,7 @@ def sphinx_stardocs(
         build_test(
             name = name + "_build_test",
             targets = stardocs,
-            **kwargs  # For target_compatible_with
+            **common_kwargs
         )
 
 def sphinx_stardoc(
@@ -161,6 +162,7 @@ def sphinx_stardoc(
     internal_name = "_{}".format(name.lstrip("_"))
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_stardoc")
     common_kwargs = copy_propagating_kwargs(kwargs)
+    common_kwargs["target_compatible_with"] = kwargs.get("target_compatible_with")
 
     input_helper_name = internal_name + ".primary_bzl_src"
     _stardoc_input_helper(
@@ -198,13 +200,13 @@ def sphinx_stardoc(
     sphinx_docs_library(
         name = name,
         srcs = [pb2md_name],
-        **kwargs
+        **common_kwargs
     )
     if create_test:
         build_test(
             name = name + "_build_test",
             targets = [name],
-            **kwargs  # To capture target_compatible_with
+            **common_kwargs
         )
 
 def _stardoc_input_helper_impl(ctx):
