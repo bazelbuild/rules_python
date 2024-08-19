@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,10 +27,43 @@ _SPHINX_SERVE_MAIN_SRC = Label("//sphinxdocs/private:sphinx_server.py")
 _SphinxSourceTreeInfo = provider(
     doc = "Information about source tree for Sphinx to build.",
     fields = {
+        "source_dir_runfiles_path": """
+:type: str
+
+Runfiles-root relative path of the root directory for the source files.
+""",
         "source_root": """
 :type: str
 
-Path of the root directory for the source files (which are in DefaultInfo.files)
+Exec-root relative path of the root directory for the source files (which are in DefaultInfo.files)
+""",
+    },
+)
+
+_SphinxRunInfo = provider(
+    doc = "Information for running the underlying Sphinx command directly",
+    fields = {
+        "per_format_args": """
+:type: dict[str, struct]
+
+A dict keyed by output format name. The values are a struct with attributes:
+* args: a `list[str]` of args to run this format's build
+* env: a `dict[str, str]` of environment variables to set for this format's build
+""",
+        "source_tree": """
+:type: Target
+
+Target with the source tree files
+""",
+        "sphinx": """
+:type: Target
+
+The sphinx-build binary to run.
+""",
+        "tools": """
+:type: list[Target]
+
+Additional tools Sphinx needs
 """,
     },
 )
@@ -74,16 +107,15 @@ def sphinx_docs(
         **kwargs):
     """Generate docs using Sphinx.
 
-    This generates three public targets:
+    Generates targets:
     * `<name>`: The output of this target is a directory for each
       format Sphinx creates. This target also has a separate output
       group for each format. e.g. `--output_group=html` will only build
       the "html" format files.
-    * `<name>_define`: A multi-string flag to add additional `-D`
-      arguments to the Sphinx invocation. This is useful for overriding
-      the version information in the config file for builds.
     * `<name>.serve`: A binary that locally serves the HTML output. This
       allows previewing docs during development.
+    * `<name>.run`: A binary that directly runs the underlying Sphinx command
+      to build the docs. This is a debugging aid.
 
     Args:
         name: {type}`Name` name of the docs rule.
@@ -116,8 +148,10 @@ def sphinx_docs(
     add_tag(kwargs, "@rules_python//sphinxdocs:sphinx_docs")
     common_kwargs = copy_propagating_kwargs(kwargs)
 
+    internal_name = "_{}".format(name.lstrip("_"))
+
     _sphinx_source_tree(
-        name = name + "/_sources",
+        name = internal_name + "/_sources",
         srcs = srcs,
         deps = deps,
         renamed_srcs = renamed_srcs,
@@ -129,13 +163,13 @@ def sphinx_docs(
         name = name,
         sphinx = sphinx,
         formats = formats,
-        source_tree = name + "/_sources",
+        source_tree = internal_name + "/_sources",
         extra_opts = extra_opts,
         tools = tools,
         **kwargs
     )
 
-    html_name = "_{}_html".format(name.lstrip("_"))
+    html_name = internal_name + "_html"
     native.filegroup(
         name = html_name,
         srcs = [name],
@@ -153,6 +187,10 @@ def sphinx_docs(
         ],
         **common_kwargs
     )
+    sphinx_run(
+        name = name + ".run",
+        docs = name,
+    )
 
     build_test(
         name = name + "_build_test",
@@ -161,12 +199,14 @@ def sphinx_docs(
     )
 
 def _sphinx_docs_impl(ctx):
-    source_dir_path = ctx.attr.source_tree[_SphinxSourceTreeInfo].source_root
+    source_tree_info = ctx.attr.source_tree[_SphinxSourceTreeInfo]
+    source_dir_path = source_tree_info.source_root
     inputs = ctx.attr.source_tree[DefaultInfo].files
 
+    per_format_args = {}
     outputs = {}
     for format in ctx.attr.formats:
-        output_dir = _run_sphinx(
+        output_dir, args_env = _run_sphinx(
             ctx = ctx,
             format = format,
             source_path = source_dir_path,
@@ -174,12 +214,19 @@ def _sphinx_docs_impl(ctx):
             inputs = inputs,
         )
         outputs[format] = output_dir
+        per_format_args[format] = args_env
     return [
         DefaultInfo(files = depset(outputs.values())),
         OutputGroupInfo(**{
             format: depset([output])
             for format, output in outputs.items()
         }),
+        _SphinxRunInfo(
+            sphinx = ctx.attr.sphinx,
+            source_tree = ctx.attr.source_tree,
+            tools = ctx.attr.tools,
+            per_format_args = per_format_args,
+        ),
     ]
 
 _sphinx_docs = rule(
@@ -213,18 +260,35 @@ _sphinx_docs = rule(
 def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
     output_dir = ctx.actions.declare_directory(paths.join(output_prefix, format))
 
-    args = ctx.actions.args()
-    args.add("-T")  # Full tracebacks on error
-    args.add("-b", format)
+    run_args = []  # Copy of the args to forward along to debug runner
+    args = ctx.actions.args()  # Args passed to the action
+
+    args.add("--show-traceback")  # Full tracebacks on error
+    run_args.append("--show-traceback")
+    args.add("--builder", format)
+    run_args.extend(("--builder", format))
 
     if ctx.attr._quiet_flag[BuildSettingInfo].value:
-        args.add("-q")  # Suppress stdout informational text
-    args.add("-j", "auto")  # Build in parallel, if possible
-    args.add("-E")  # Don't try to use cache files. Bazel can't make use of them.
-    args.add("-a")  # Write all files; don't try to detect "changed" files
+        # Not added to run_args because run_args is for debugging
+        args.add("--quiet")  # Suppress stdout informational text
+
+    args.add("--jobs", "auto")  # Build in parallel, if possible
+    run_args.extend(("--jobs", "auto"))
+    args.add("--fresh-env")  # Don't try to use cache files. Bazel can't make use of them.
+    run_args.append("--fresh-env")
+    args.add("--write-all")  # Write all files; don't try to detect "changed" files
+    run_args.append("--write-all")
+
     for opt in ctx.attr.extra_opts:
-        args.add(ctx.expand_location(opt))
-    args.add_all(ctx.attr._extra_defines_flag[_FlagInfo].value, before_each = "-D")
+        expanded = ctx.expand_location(opt)
+        args.add(expanded)
+        run_args.append(expanded)
+
+    extra_defines = ctx.attr._extra_defines_flag[_FlagInfo].value
+    args.add_all(extra_defines, before_each = "--define")
+    for define in extra_defines:
+        run_args.extend(("--define", define))
+
     args.add(source_path)
     args.add(output_dir.path)
 
@@ -247,7 +311,7 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
         progress_message = "Sphinx building {} for %{{label}}".format(format),
         env = env,
     )
-    return output_dir
+    return output_dir, struct(args = run_args, env = env)
 
 def _sphinx_source_tree_impl(ctx):
     # Sphinx only accepts a single directory to read its doc sources from.
@@ -309,6 +373,7 @@ def _sphinx_source_tree_impl(ctx):
         ),
         _SphinxSourceTreeInfo(
             source_root = sphinx_source_dir_path,
+            source_dir_runfiles_path = paths.dirname(source_conf_file.short_path),
         ),
     ]
 
@@ -413,4 +478,86 @@ _sphinx_inventory = rule(
             cfg = "exec",
         ),
     },
+)
+
+def _sphinx_run_impl(ctx):
+    run_info = ctx.attr.docs[_SphinxRunInfo]
+
+    builder = ctx.attr.builder
+
+    if builder not in run_info.per_format_args:
+        builder = run_info.per_format_args.keys()[0]
+
+    args_info = run_info.per_format_args.get(builder)
+    if not args_info:
+        fail("Format {} not built by {}".format(
+            builder,
+            ctx.attr.docs.label,
+        ))
+
+    args_str = []
+    args_str.extend(args_info.args)
+    args_str = "\n".join(["args+=('{}')".format(value) for value in args_info.args])
+    if not args_str:
+        args_str = "# empty custom args"
+
+    env_str = "\n".join([
+        "sphinx_env+=({}='{}')".format(*item)
+        for item in args_info.env.items()
+    ])
+    if not env_str:
+        env_str = "# empty custom env"
+
+    executable = ctx.actions.declare_file(ctx.label.name)
+    sphinx = run_info.sphinx
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = executable,
+        substitutions = {
+            "%SETUP_ARGS%": args_str,
+            "%SETUP_ENV%": env_str,
+            "%SOURCE_DIR_EXEC_PATH%": run_info.source_tree[_SphinxSourceTreeInfo].source_root,
+            "%SOURCE_DIR_RUNFILES_PATH%": run_info.source_tree[_SphinxSourceTreeInfo].source_dir_runfiles_path,
+            "%SPHINX_EXEC_PATH%": sphinx[DefaultInfo].files_to_run.executable.path,
+            "%SPHINX_RUNFILES_PATH%": sphinx[DefaultInfo].files_to_run.executable.short_path,
+        },
+        is_executable = True,
+    )
+    runfiles = ctx.runfiles(
+        transitive_files = run_info.source_tree[DefaultInfo].files,
+    ).merge(sphinx[DefaultInfo].default_runfiles).merge_all([
+        tool[DefaultInfo].default_runfiles
+        for tool in run_info.tools
+    ])
+    return [
+        DefaultInfo(
+            executable = executable,
+            runfiles = runfiles,
+        ),
+    ]
+
+sphinx_run = rule(
+    implementation = _sphinx_run_impl,
+    doc = """
+Directly run the underlying Sphinx command `sphinx_docs` uses.
+
+This is primarily a debugging tool. It's useful for directly running the
+Sphinx command so that debuggers can be attached or output more directly
+inspected without Bazel interference.
+""",
+    attrs = {
+        "builder": attr.string(
+            doc = "The output format to make runnable.",
+            default = "html",
+        ),
+        "docs": attr.label(
+            doc = "The {obj}`sphinx_docs` target to make directly runnable.",
+            providers = [_SphinxRunInfo],
+        ),
+        "_template": attr.label(
+            allow_single_file = True,
+            default = "//sphinxdocs/private:sphinx_run_template.sh",
+        ),
+    },
+    executable = True,
 )

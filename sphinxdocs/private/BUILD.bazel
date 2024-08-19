@@ -29,6 +29,7 @@ exports_files(
         "readthedocs_install.py",
         "sphinx_build.py",
         "sphinx_server.py",
+        "sphinx_run_template.sh",
     ],
     visibility = ["//visibility:public"],
 )

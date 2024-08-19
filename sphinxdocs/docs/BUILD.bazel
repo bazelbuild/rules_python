@@ -22,6 +22,7 @@ sphinx_docs_library(
         ":artisian_api_docs",
         ":artisian_docs",
         ":bzl_docs",
+        ":py_api_docs",
     ],
 )
 
@@ -52,4 +53,10 @@ sphinx_stardocs(
     ],
     prefix = "api/",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
+
+sphinx_docs_library(
+    name = "py_api_docs",
+    srcs = ["//sphinxdocs/src/sphinx_bzl"],
+    strip_prefix = "sphinxdocs/src/",
 )

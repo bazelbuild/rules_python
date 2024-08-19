@@ -32,8 +32,10 @@ load(
     _sphinx_build_binary = "sphinx_build_binary",
     _sphinx_docs = "sphinx_docs",
     _sphinx_inventory = "sphinx_inventory",
+    _sphinx_run = "sphinx_run",
 )
 
 sphinx_build_binary = _sphinx_build_binary
 sphinx_docs = _sphinx_docs
 sphinx_inventory = _sphinx_inventory
+sphinx_run = _sphinx_run

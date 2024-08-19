@@ -18,9 +18,8 @@ release = version
 # Any extensions here not built into Sphinx must also be added to
 # the dependencies of //docs:sphinx-builder
 extensions = [
-    "sphinx.ext.autodoc",
+    "autodoc2",
     "sphinx.ext.autosectionlabel",
-    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.duration",
     "sphinx.ext.extlinks",
@@ -28,6 +27,36 @@ extensions = [
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
     "sphinx_bzl.bzl",
+]
+
+autodoc2_packages = [
+    "sphinx_bzl",
+    "runfiles",
+]
+
+autodoc2_output_dir = "api-py"
+autodoc2_sort_names = True
+autodoc2_class_docstring = "both"
+autodoc2_index_template = """
+Python API Reference
+====================
+
+This page contains auto-generated API reference documentation [#f1]_.
+
+.. toctree::
+   :titlesonly:
+
+{% for package in top_level %}
+   {{ package }}
+{%- endfor %}
+
+.. [#f1] Created with `sphinx-autodoc2 <https://github.com/chrisjsewell/sphinx-autodoc2>`_
+
+"""
+
+
+autodoc2_docstring_parser_regexes = [
+    (".*", "myst"),
 ]
 
 # Adapted from the template code:

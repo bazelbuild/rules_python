@@ -1,4 +1,4 @@
-# API Reference
+# Bazel API Reference
 
 ```{toctree}
 :glob:
