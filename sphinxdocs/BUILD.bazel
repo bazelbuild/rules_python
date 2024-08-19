@@ -48,6 +48,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "sphinx_docs_library_bzl",
+    srcs = ["sphinx_docs_library.bzl"],
+    deps = ["//sphinxdocs/private:sphinx_docs_library_macro_bzl"],
+)
+
+bzl_library(
     name = "sphinx_stardoc_bzl",
     srcs = ["sphinx_stardoc.bzl"],
     deps = ["//sphinxdocs/private:sphinx_stardoc_bzl"],

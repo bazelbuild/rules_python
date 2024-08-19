@@ -144,7 +144,12 @@ html_css_files = [
 # -- Options for EPUB output
 epub_show_urls = "footnote"
 
-suppress_warnings = []
+suppress_warnings = [
+    # The autosectionlabel extension turns header titles into referencable
+    # names. Unfortunately, CHANGELOG.md has many duplicate header titles,
+    # which creates lots of warning spam. Just ignore them.
+    "autosectionlabel.*"
+]
 
 
 def setup(app):
