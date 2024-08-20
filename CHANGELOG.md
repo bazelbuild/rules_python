@@ -27,6 +27,10 @@ A brief description of the categories of changes:
 ### Changed
 * Nothing yet
 
+### Fixed
+* (rule) Omit third-party python packages from coverage reports
+  ([#2136](https://github.com/bazelbuild/rules_python/issues/2136))
+
 ### Added
 * Nothing yet
 
