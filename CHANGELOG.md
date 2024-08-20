@@ -27,6 +27,9 @@ A brief description of the categories of changes:
 ### Changed
 * Nothing yet
 
+### Fixed
+* (gazelle): Fix ncorrect use of `t.Fatal`/`t.Fatalf` in tests.
+
 ### Added
 * Nothing yet
 

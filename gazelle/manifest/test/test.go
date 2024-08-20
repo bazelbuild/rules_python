@@ -33,12 +33,12 @@ import (
 func TestGazelleManifestIsUpdated(t *testing.T) {
 	requirementsPath := os.Getenv("_TEST_REQUIREMENTS")
 	if requirementsPath == "" {
-		t.Fatalf("_TEST_REQUIREMENTS must be set")
+		t.Fatal("_TEST_REQUIREMENTS must be set")
 	}
 
 	manifestPath := os.Getenv("_TEST_MANIFEST")
 	if manifestPath == "" {
-		t.Fatalf("_TEST_MANIFEST must be set")
+		t.Fatal("_TEST_MANIFEST must be set")
 	}
 
 	manifestFile := new(manifest.File)
@@ -53,7 +53,7 @@ func TestGazelleManifestIsUpdated(t *testing.T) {
 	manifestGeneratorHashPath, err := runfiles.Rlocation(
 		os.Getenv("_TEST_MANIFEST_GENERATOR_HASH"))
 	if err != nil {
-		t.Fatal("failed to resolve runfiles path of manifest: %v", err)
+		t.Fatalf("failed to resolve runfiles path of manifest: %v", err)
 	}
 
 	manifestGeneratorHash, err := os.Open(manifestGeneratorHashPath)
