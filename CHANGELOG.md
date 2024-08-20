@@ -36,6 +36,11 @@ A brief description of the categories of changes:
 ### Removed
 * Nothing yet
 
+### Fixed
+* (bzlmod) get the path to the host python interpreter without calling
+  `mctx.path` on Labels that have differing contents on different OSes.
+* (bzlmod) correctly watch sources when using `pypi_repo_utils`.
+
 ## [0.35.0] - 2024-08-15
 
 [0.35.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.35.0
