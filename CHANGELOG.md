@@ -28,7 +28,7 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* (gazelle): Fix ncorrect use of `t.Fatal`/`t.Fatalf` in tests.
+* (gazelle): Fix incorrect use of `t.Fatal`/`t.Fatalf` in tests.
 
 ### Added
 * Nothing yet
