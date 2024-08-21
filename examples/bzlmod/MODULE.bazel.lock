@@ -1232,14 +1232,19 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "9GnLEprSx4ta69xVzCkTB+6C2HjuV7YVLcAiwY9TomQ=",
-        "usagesDigest": "IUBmbdL2mNoXRPg8gZQeHcB8COinOmo3wRtxFGJKFmA=",
+        "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
-          "@@//requirements_windows_3_9.txt": "fd2fb0609c792fcd111b3c0a2d23c1cd0072c8961e0cd7259943dcdd49220d19",
+          "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
           "@@//requirements_lock_3_10.txt": "5e7083982a7e60f34998579a0ae83b520d46ab8f2552cc51337217f024e6def5",
+          "@@rules_python~~internal_deps~pypi__packaging//BUILD.bazel": "8d36246aeefaab4b26fb9c1175cfaf13df5b6f1587e6753f1e78b132bad74795",
           "@@//whl_mods/appended_build_content.BUILD": "87745b00382c66e5efbd7cb44a08fc3edbf7fd5099cf593f87599188f1557a9e",
-          "@@//requirements_lock_3_9.txt": "c0c5a36a610f3e3761a7dd2abcd51eab452278d416f45365b331d0f278f07789",
-          "@@//requirements_windows_3_10.txt": "c79f04bfaca147b8330275911a3328b81fc80828b9050a6bebdb15477627dabc"
+          "@@rules_python~~python~python_3_9_host//python": "3f2abf225fa30c9e1c16e1d07d8db0b8ef0d368c260d365c1366027b76d7e1b0",
+          "@@//requirements_lock_3_9.txt": "484a269ec78160c0d63631b5d416868e9deff928865b23443f0a24f90f6f1be9",
+          "@@rules_python~~internal_deps~pypi__packaging//packaging-24.0.dist-info/RECORD": "be1aea790359b4c2c9ea83d153c1a57c407742a35b95ee36d00723509f5ed5dd",
+          "@@//requirements_windows_3_10.txt": "c79f04bfaca147b8330275911a3328b81fc80828b9050a6bebdb15477627dabc",
+          "@@rules_python~//BUILD.bazel": "c421a2c2f3f428d2685a16eb9cc3fb8662605aba4ef151a87a356678bb7e866d",
+          "@@rules_python~//python/private/pypi/requirements_parser/resolve_target_platforms.py": "42bf51980528302373529bcdfddb8014e485182d6bc9d2f7d3bbe1f11d8d923d"
         },
         "recordedDirentsInputs": {},
         "envVariables": {
@@ -1248,6 +1253,34 @@
           "RULES_PYTHON_REPO_DEBUG_VERBOSITY": null
         },
         "generatedRepoSpecs": {
+          "pip_39_zipp_sdist_0145e43d": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "zipp-3.20.0.tar.gz",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "zipp==3.20.0 ;python_version < '3.10'",
+              "sha256": "0145e43d89664cfe1a2e533adc75adafed82fe2da404b4bbb6b026c0157bdb31",
+              "urls": [
+                "https://files.pythonhosted.org/packages/0e/af/9f2de5bd32549a1b705af7a7c054af3878816a1267cb389c03cc4f342a51/zipp-3.20.0.tar.gz"
+              ]
+            }
+          },
           "pip_39_wrapt_cp39_cp39_musllinux_1_1_aarch64_b9b7a708": {
             "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
             "ruleClassName": "whl_library",
@@ -1264,7 +1297,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-musllinux_1_1_aarch64.whl",
@@ -1293,7 +1325,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "snowballstemmer-2.2.0-py2.py3-none-any.whl",
@@ -1322,7 +1353,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "astroid-2.12.13-py3-none-any.whl",
@@ -1402,7 +1432,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tomlkit-0.11.6-py3-none-any.whl",
@@ -1412,35 +1441,6 @@
               "sha256": "07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b",
               "urls": [
                 "https://files.pythonhosted.org/packages/2b/df/971fa5db3250bb022105d17f340339370f73d502e65e687a94ca1a4c4b1f/tomlkit-0.11.6-py3-none-any.whl"
-              ]
-            }
-          },
-          "pip_39_typing_extensions_py3_none_any_16fa4864": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "typing_extensions-4.4.0-py3-none-any.whl",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "typing-extensions==4.4.0",
-              "sha256": "16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e",
-              "urls": [
-                "https://files.pythonhosted.org/packages/0b/8e/f1a0a5a76cfef77e1eb6004cb49e5f8d72634da638420b9ea492ce8305e8/typing_extensions-4.4.0-py3-none-any.whl"
               ]
             }
           },
@@ -1460,7 +1460,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinx-7.2.6.tar.gz",
@@ -1498,7 +1497,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "s3cmd-2.1.0.tar.gz",
@@ -1557,7 +1555,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -1586,7 +1583,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "Pygments-2.16.1-py3-none-any.whl",
@@ -1636,7 +1632,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy-object-proxy-1.10.0.tar.gz",
@@ -1686,7 +1681,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3.tar.gz",
@@ -1715,7 +1709,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-macosx_10_9_x86_64.whl",
@@ -1744,7 +1737,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -1773,7 +1765,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-py3-none-any.whl",
@@ -1802,7 +1793,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_universal2.whl",
@@ -1831,7 +1821,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "urllib3-1.26.18.tar.gz",
@@ -1860,7 +1849,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "platformdirs-2.6.0-py3-none-any.whl",
@@ -1889,7 +1877,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_applehelp-1.0.7.tar.gz",
@@ -1927,7 +1914,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-win_amd64.whl",
@@ -1983,7 +1969,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
@@ -1993,6 +1978,34 @@
               "sha256": "5773183b6446b2c99bb77e77595dd486303b4faab2b086e7b17bc6bef28865f6",
               "urls": [
                 "https://files.pythonhosted.org/packages/ac/6c/967d91a8edf98d2b2b01d149bd9e51b8f9fb527c98d80ebb60c6b21d60c4/PyYAML-6.0.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+              ]
+            }
+          },
+          "pip_39_typing_extensions_py3_none_any_04e5ca03": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "typing_extensions-4.12.2-py3-none-any.whl",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "typing-extensions==4.12.2 ;python_version < '3.10'",
+              "sha256": "04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d",
+              "urls": [
+                "https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl"
               ]
             }
           },
@@ -2063,7 +2076,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "yamllint-1.28.0-py2.py3-none-any.whl",
@@ -2092,7 +2104,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "jinja2-3.1.4.tar.gz",
@@ -2121,7 +2132,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-musllinux_1_1_aarch64.whl",
@@ -2150,7 +2160,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_qthelp-1.0.6.tar.gz",
@@ -2188,7 +2197,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "setuptools-65.6.3.tar.gz",
@@ -2259,7 +2267,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "mccabe-0.7.0.tar.gz",
@@ -2288,7 +2295,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "chardet-4.0.0.tar.gz",
@@ -2317,7 +2323,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_serializinghtml-1.1.9.tar.gz",
@@ -2355,7 +2360,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "docutils-0.20.1.tar.gz",
@@ -2405,7 +2409,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "packaging-23.2-py3-none-any.whl",
@@ -2455,13 +2458,12 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tomli-2.0.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
-              "requirement": "tomli==2.0.1",
+              "requirement": "tomli==2.0.1 ;python_version < '3.11'",
               "sha256": "de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f",
               "urls": [
                 "https://files.pythonhosted.org/packages/c0/3f/d7af728f075fb08564c5949a9c95e44352e23dee646869fa104a3b2060a3/tomli-2.0.1.tar.gz"
@@ -2536,7 +2538,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wheel-0.40.0.tar.gz",
@@ -2565,7 +2566,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "Pygments-2.16.1.tar.gz",
@@ -2594,7 +2594,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "idna-2.10-py2.py3-none-any.whl",
@@ -2623,7 +2622,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pylint-2.15.9-py3-none-any.whl",
@@ -2673,7 +2671,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "jinja2-3.1.4-py3-none-any.whl",
@@ -2702,7 +2699,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "colorama-0.4.6.tar.gz",
@@ -2741,7 +2737,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pathspec-0.10.3-py3-none-any.whl",
@@ -2791,7 +2786,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3.tar.gz",
@@ -2820,7 +2814,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "python_magic-0.4.27-py2.py3-none-any.whl",
@@ -2849,7 +2842,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_htmlhelp-2.0.4.tar.gz",
@@ -2887,7 +2879,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-musllinux_1_1_x86_64.whl",
@@ -2897,6 +2888,34 @@
               "sha256": "9a3a87cf1e133e5b1994144c12ca4aa3d9698517fe1e2ca82977781b16955658",
               "urls": [
                 "https://files.pythonhosted.org/packages/8e/ae/3e15cffacbdb64ac49930cdbc23cb0c67e1bb9e8a8ca7765fd8a8d2510c3/lazy_object_proxy-1.10.0-cp39-cp39-musllinux_1_1_x86_64.whl"
+              ]
+            }
+          },
+          "pip_39_typing_extensions_sdist_1a7ead55": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "typing_extensions-4.12.2.tar.gz",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "typing-extensions==4.12.2 ;python_version < '3.10'",
+              "sha256": "1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8",
+              "urls": [
+                "https://files.pythonhosted.org/packages/df/db/f35a00659bc03fec321ba8bce9420de607a1d37f8342eee1863174c69557/typing_extensions-4.12.2.tar.gz"
               ]
             }
           },
@@ -2916,7 +2935,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tabulate-0.9.0-py3-none-any.whl",
@@ -2958,7 +2976,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
@@ -2987,7 +3004,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-win_amd64.whl",
@@ -3016,7 +3032,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-musllinux_1_1_aarch64.whl",
@@ -3066,7 +3081,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tomlkit-0.11.6.tar.gz",
@@ -3095,7 +3109,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinx-7.2.6-py3-none-any.whl",
@@ -3133,7 +3146,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pylint-2.15.9.tar.gz",
@@ -3162,7 +3174,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pathspec-0.10.3.tar.gz",
@@ -3191,7 +3202,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "alabaster-0.7.13-py3-none-any.whl",
@@ -3220,7 +3230,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-musllinux_1_1_x86_64.whl",
@@ -3249,7 +3258,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-musllinux_1_1_aarch64.whl",
@@ -3278,7 +3286,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
@@ -3307,7 +3314,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "s3cmd-2.1.0-py2.py3-none-any.whl",
@@ -3336,7 +3342,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "packaging-23.2.tar.gz",
@@ -3365,7 +3370,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "idna-2.10.tar.gz",
@@ -3375,35 +3379,6 @@
               "sha256": "b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6",
               "urls": [
                 "https://files.pythonhosted.org/packages/ea/b7/e0e3c1c467636186c39925827be42f16fee389dc404ac29e930e9136be70/idna-2.10.tar.gz"
-              ]
-            }
-          },
-          "pip_39_zipp_sdist_84e64a1c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "zipp-3.17.0.tar.gz",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "zipp==3.17.0",
-              "sha256": "84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0",
-              "urls": [
-                "https://files.pythonhosted.org/packages/58/03/dd5ccf4e06dec9537ecba8fcc67bbd4ea48a2791773e469e73f94c3ba9a6/zipp-3.17.0.tar.gz"
               ]
             }
           },
@@ -3423,7 +3398,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "snowballstemmer-2.2.0.tar.gz",
@@ -3473,7 +3447,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "imagesize-1.4.1-py2.py3-none-any.whl",
@@ -3502,7 +3475,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "setuptools-65.6.3-py3-none-any.whl",
@@ -3531,7 +3503,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-win_amd64.whl",
@@ -3560,7 +3531,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_devhelp-1.0.5-py3-none-any.whl",
@@ -3598,7 +3568,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "dill-0.3.6.tar.gz",
@@ -3627,7 +3596,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "colorama-0.4.6-py2.py3-none-any.whl",
@@ -3656,7 +3624,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "chardet-4.0.0-py2.py3-none-any.whl",
@@ -3727,7 +3694,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -3777,7 +3743,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-macosx_10_9_x86_64.whl",
@@ -3806,7 +3771,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "platformdirs-2.6.0.tar.gz",
@@ -3835,7 +3799,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-macosx_10_9_x86_64.whl",
@@ -3864,7 +3827,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-win_amd64.whl",
@@ -3894,7 +3856,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wheel-0.40.0-py3-none-any.whl",
@@ -3923,7 +3884,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "certifi-2023.7.22-py3-none-any.whl",
@@ -3952,7 +3912,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-macosx_11_0_arm64.whl",
@@ -4002,7 +3961,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-musllinux_1_1_x86_64.whl",
@@ -4052,7 +4010,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-macosx_10_9_x86_64.whl",
@@ -4081,7 +4038,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-musllinux_1_1_x86_64.whl",
@@ -4110,7 +4066,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl",
@@ -4190,7 +4145,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "yamllint-1.28.0.tar.gz",
@@ -4200,6 +4154,34 @@
               "sha256": "9e3d8ddd16d0583214c5fdffe806c9344086721f107435f68bad990e5a88826b",
               "urls": [
                 "https://files.pythonhosted.org/packages/c8/82/4cd3ec8f98d821e7cc7ef504add450623d5c86b656faf65e9b0cc46f4be6/yamllint-1.28.0.tar.gz"
+              ]
+            }
+          },
+          "pip_39_importlib_metadata_py3_none_any_66f342cc": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "importlib_metadata-8.4.0-py3-none-any.whl",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "importlib-metadata==8.4.0 ;python_version < '3.10'",
+              "sha256": "66f342cc6ac9818fc6ff340576acd24d65ba0b3efabb2b4ac08b598965a4a2f1",
+              "urls": [
+                "https://files.pythonhosted.org/packages/c0/14/362d31bf1076b21e1bcdcb0dc61944822ff263937b804a79231df2774d28/importlib_metadata-8.4.0-py3-none-any.whl"
               ]
             }
           },
@@ -4219,7 +4201,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "python-dateutil-2.8.2.tar.gz",
@@ -4241,7 +4222,7 @@
                 "six": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"six-1.16.0-py2.py3-none-any.whl\",\"repo\":\"pip_39_six_py2_none_any_8abb2f1d\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"six-1.16.0.tar.gz\",\"repo\":\"pip_39_six_sdist_1e61c374\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_six\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "dill": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"dill-0.3.6-py3-none-any.whl\",\"repo\":\"pip_39_dill_py3_none_any_a07ffd23\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"dill-0.3.6.tar.gz\",\"repo\":\"pip_39_dill_sdist_e5db55f3\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_dill\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "idna": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"idna-2.10-py2.py3-none-any.whl\",\"repo\":\"pip_39_idna_py2_none_any_b97d804b\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"idna-2.10.tar.gz\",\"repo\":\"pip_39_idna_sdist_b307872f\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_idna\",\"target_platforms\":null,\"version\":\"3.10\"}]",
-                "zipp": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"zipp-3.17.0-py3-none-any.whl\",\"repo\":\"pip_39_zipp_py3_none_any_0e923e72\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"zipp-3.17.0.tar.gz\",\"repo\":\"pip_39_zipp_sdist_84e64a1c\",\"target_platforms\":null,\"version\":\"3.9\"}]",
+                "zipp": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"zipp-3.20.0-py3-none-any.whl\",\"repo\":\"pip_39_zipp_py3_none_any_58da6168\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"zipp-3.20.0.tar.gz\",\"repo\":\"pip_39_zipp_sdist_0145e43d\",\"target_platforms\":null,\"version\":\"3.9\"}]",
                 "babel": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"Babel-2.13.1-py3-none-any.whl\",\"repo\":\"pip_39_babel_py3_none_any_7077a498\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"Babel-2.13.1.tar.gz\",\"repo\":\"pip_39_babel_sdist_33e0952d\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_babel\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "isort": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"isort-5.11.4-py3-none-any.whl\",\"repo\":\"pip_39_isort_py3_none_any_c033fd0e\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"isort-5.11.4.tar.gz\",\"repo\":\"pip_39_isort_sdist_6db30c5d\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_isort\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "s3cmd": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"s3cmd-2.1.0-py2.py3-none-any.whl\",\"repo\":\"pip_39_s3cmd_py2_none_any_49cd23d5\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"s3cmd-2.1.0.tar.gz\",\"repo\":\"pip_39_s3cmd_sdist_966b0a49\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_s3cmd\",\"target_platforms\":null,\"version\":\"3.10\"}]",
@@ -4277,8 +4258,8 @@
                 "python_dateutil": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"python_dateutil-2.8.2-py2.py3-none-any.whl\",\"repo\":\"pip_39_python_dateutil_py2_none_any_961d03dc\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"python-dateutil-2.8.2.tar.gz\",\"repo\":\"pip_39_python_dateutil_sdist_0123cacc\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_python_dateutil\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "snowballstemmer": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"snowballstemmer-2.2.0-py2.py3-none-any.whl\",\"repo\":\"pip_39_snowballstemmer_py2_none_any_c8e1716e\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"snowballstemmer-2.2.0.tar.gz\",\"repo\":\"pip_39_snowballstemmer_sdist_09b16deb\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_snowballstemmer\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "lazy_object_proxy": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_manylinux_2_5_x86_64_18dd842b\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-musllinux_1_1_aarch64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_musllinux_1_1_aarch64_21713819\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_manylinux_2_17_aarch64_2297f08f\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-macosx_10_9_x86_64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_macosx_10_9_x86_64_366c32fe\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-musllinux_1_1_x86_64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_musllinux_1_1_x86_64_9a3a87cf\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy_object_proxy-1.10.0-cp39-cp39-win_amd64.whl\",\"repo\":\"pip_39_lazy_object_proxy_cp39_cp39_win_amd64_a899b10e\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"lazy-object-proxy-1.10.0.tar.gz\",\"repo\":\"pip_39_lazy_object_proxy_sdist_78247b6d\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_lazy_object_proxy\",\"target_platforms\":null,\"version\":\"3.10\"}]",
-                "typing_extensions": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"typing_extensions-4.4.0-py3-none-any.whl\",\"repo\":\"pip_39_typing_extensions_py3_none_any_16fa4864\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"typing_extensions-4.4.0.tar.gz\",\"repo\":\"pip_39_typing_extensions_sdist_1511434b\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_typing_extensions\",\"target_platforms\":null,\"version\":\"3.10\"}]",
-                "importlib_metadata": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"importlib_metadata-6.8.0-py3-none-any.whl\",\"repo\":\"pip_39_importlib_metadata_py3_none_any_3ebb78df\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"importlib_metadata-6.8.0.tar.gz\",\"repo\":\"pip_39_importlib_metadata_sdist_dbace789\",\"target_platforms\":null,\"version\":\"3.9\"}]",
+                "typing_extensions": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"typing_extensions-4.12.2-py3-none-any.whl\",\"repo\":\"pip_39_typing_extensions_py3_none_any_04e5ca03\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"typing_extensions-4.12.2.tar.gz\",\"repo\":\"pip_39_typing_extensions_sdist_1a7ead55\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_typing_extensions\",\"target_platforms\":null,\"version\":\"3.10\"}]",
+                "importlib_metadata": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"importlib_metadata-8.4.0-py3-none-any.whl\",\"repo\":\"pip_39_importlib_metadata_py3_none_any_66f342cc\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"importlib_metadata-8.4.0.tar.gz\",\"repo\":\"pip_39_importlib_metadata_sdist_9a547d3b\",\"target_platforms\":null,\"version\":\"3.9\"}]",
                 "sphinxcontrib_jsmath": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl\",\"repo\":\"pip_39_sphinxcontrib_jsmath_py2_none_any_2ec2eaeb\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib-jsmath-1.0.1.tar.gz\",\"repo\":\"pip_39_sphinxcontrib_jsmath_sdist_a9925e4a\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_sphinxcontrib_jsmath\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "sphinxcontrib_qthelp": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_qthelp-1.0.6-py3-none-any.whl\",\"repo\":\"pip_39_sphinxcontrib_qthelp_py3_none_any_bf76886e\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_qthelp-1.0.6.tar.gz\",\"repo\":\"pip_39_sphinxcontrib_qthelp_sdist_62b9d1a1\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_sphinxcontrib_qthelp\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "sphinxcontrib_devhelp": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_devhelp-1.0.5-py3-none-any.whl\",\"repo\":\"pip_39_sphinxcontrib_devhelp_py3_none_any_fe8009ae\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_devhelp-1.0.5.tar.gz\",\"repo\":\"pip_39_sphinxcontrib_devhelp_sdist_63b41e0d\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_sphinxcontrib_devhelp\",\"target_platforms\":null,\"version\":\"3.10\"}]",
@@ -4364,7 +4345,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -4374,6 +4354,34 @@
               "sha256": "bc1bf2925a1ecd43da378f4db9e4f799775d6367bdb94671027b73b393a7c42c",
               "urls": [
                 "https://files.pythonhosted.org/packages/7d/39/472f2554a0f1e825bd7c5afc11c817cd7a2f3657460f7159f691fbb37c51/PyYAML-6.0.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+              ]
+            }
+          },
+          "pip_39_importlib_metadata_sdist_9a547d3b": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "importlib_metadata-8.4.0.tar.gz",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "importlib-metadata==8.4.0 ;python_version < '3.10'",
+              "sha256": "9a547d3bc3608b025f93d403fdd1aae741c24fbb8314df4b155675742ce303c5",
+              "urls": [
+                "https://files.pythonhosted.org/packages/c0/bd/fa8ce65b0a7d4b6d143ec23b0f5fd3f7ab80121078c465bc02baeaab22dc/importlib_metadata-8.4.0.tar.gz"
               ]
             }
           },
@@ -4393,13 +4401,12 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tomli-2.0.1-py3-none-any.whl",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
-              "requirement": "tomli==2.0.1",
+              "requirement": "tomli==2.0.1 ;python_version < '3.11'",
               "sha256": "939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
               "urls": [
                 "https://files.pythonhosted.org/packages/97/75/10a9ebee3fd790d20926a90a2547f0bf78f371b2f13aa822c759680ca7b9/tomli-2.0.1-py3-none-any.whl"
@@ -4422,7 +4429,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-win_amd64.whl",
@@ -4451,7 +4457,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_qthelp-1.0.6-py3-none-any.whl",
@@ -4552,7 +4557,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib-jsmath-1.0.1.tar.gz",
@@ -4581,7 +4585,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "alabaster-0.7.13.tar.gz",
@@ -4610,7 +4613,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pylint_print-1.0.1-py3-none-any.whl",
@@ -4639,7 +4641,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "six-1.16.0.tar.gz",
@@ -4669,7 +4670,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "requests-2.25.1.tar.gz",
@@ -4724,7 +4724,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "six-1.16.0-py2.py3-none-any.whl",
@@ -4753,7 +4752,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "urllib3-1.26.18-py2.py3-none-any.whl",
@@ -4782,7 +4780,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-macosx_11_0_arm64.whl",
@@ -4832,7 +4829,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "Babel-2.13.1.tar.gz",
@@ -4882,7 +4878,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "mccabe-0.7.0-py2.py3-none-any.whl",
@@ -4953,7 +4948,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "isort-5.11.4.tar.gz",
@@ -4982,7 +4976,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "python-magic-0.4.27.tar.gz",
@@ -5011,7 +5004,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
@@ -5040,7 +5032,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "lazy_object_proxy-1.10.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
@@ -5090,7 +5081,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "certifi-2023.7.22.tar.gz",
@@ -5100,35 +5090,6 @@
               "sha256": "539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082",
               "urls": [
                 "https://files.pythonhosted.org/packages/98/98/c2ff18671db109c9f10ed27f5ef610ae05b73bd876664139cf95bd1429aa/certifi-2023.7.22.tar.gz"
-              ]
-            }
-          },
-          "pip_39_importlib_metadata_sdist_dbace789": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "importlib_metadata-6.8.0.tar.gz",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "importlib-metadata==6.8.0",
-              "sha256": "dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743",
-              "urls": [
-                "https://files.pythonhosted.org/packages/33/44/ae06b446b8d8263d712a211e959212083a5eda2bf36d57ca7415e03f6f36/importlib_metadata-6.8.0.tar.gz"
               ]
             }
           },
@@ -5148,7 +5109,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "python_dateutil-2.8.2-py2.py3-none-any.whl",
@@ -5207,7 +5167,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1.tar.gz",
@@ -5236,7 +5195,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_devhelp-1.0.5.tar.gz",
@@ -5295,7 +5253,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "tabulate-0.9.0.tar.gz",
@@ -5324,7 +5281,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl",
@@ -5372,7 +5328,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "MarkupSafe-2.1.3-cp39-cp39-musllinux_1_1_x86_64.whl",
@@ -5401,7 +5356,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "imagesize-1.4.1.tar.gz",
@@ -5430,7 +5384,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
@@ -5440,35 +5393,6 @@
               "sha256": "279e5de4671e79a9ac877427f4ac4ce93751b8823f276b681d04b2156713b9dd",
               "urls": [
                 "https://files.pythonhosted.org/packages/a6/9c/2356ecb952fd3992b73f7a897d65e57d784a69b94bb8d8fd5f97531e5c02/websockets-11.0.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
-              ]
-            }
-          },
-          "pip_39_zipp_py3_none_any_0e923e72": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "zipp-3.17.0-py3-none-any.whl",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "zipp==3.17.0",
-              "sha256": "0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31",
-              "urls": [
-                "https://files.pythonhosted.org/packages/d9/66/48866fc6b158c81cc2bfecc04c480f105c6040e8b077bc54c634b4a67926/zipp-3.17.0-py3-none-any.whl"
               ]
             }
           },
@@ -5488,7 +5412,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_applehelp-1.0.7-py3-none-any.whl",
@@ -5507,6 +5430,34 @@
               "sha256": "094c4d56209d1734e7d252f6e0b3ccc090bd52ee56807a5d9315b19c122ab15d",
               "urls": [
                 "https://files.pythonhosted.org/packages/c0/0c/261c0949083c0ac635853528bb0070c89e927841d4e533ba0b5563365c06/sphinxcontrib_applehelp-1.0.7-py3-none-any.whl"
+              ]
+            }
+          },
+          "pip_39_zipp_py3_none_any_58da6168": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@pip//{name}:{target}",
+              "envsubst": [
+                "PIP_INDEX_URL"
+              ],
+              "experimental_target_platforms": [
+                "cp39_linux_aarch64",
+                "cp39_linux_arm",
+                "cp39_linux_ppc",
+                "cp39_linux_s390x",
+                "cp39_linux_x86_64",
+                "cp39_osx_aarch64",
+                "cp39_osx_x86_64",
+                "cp39_windows_x86_64"
+              ],
+              "filename": "zipp-3.20.0-py3-none-any.whl",
+              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
+              "repo": "pip_39",
+              "requirement": "zipp==3.20.0 ;python_version < '3.10'",
+              "sha256": "58da6168be89f0be59beb194da1250516fdaa062ccebd30127ac65d30045e10d",
+              "urls": [
+                "https://files.pythonhosted.org/packages/da/cc/b9958af9f9c86b51f846d8487440af495ecf19b16e426fce1ed0b0796175/zipp-3.20.0-py3-none-any.whl"
               ]
             }
           },
@@ -5569,7 +5520,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "requests-2.25.1-py2.py3-none-any.whl",
@@ -5603,7 +5553,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "docutils-0.20.1-py3-none-any.whl",
@@ -5632,7 +5581,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "isort-5.11.4-py3-none-any.whl",
@@ -5661,7 +5609,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "astroid-2.12.13.tar.gz",
@@ -5690,7 +5637,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "sphinxcontrib_htmlhelp-2.0.4-py3-none-any.whl",
@@ -5728,7 +5674,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-macosx_10_9_universal2.whl",
@@ -5778,7 +5723,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl",
@@ -5788,35 +5732,6 @@
               "sha256": "b786eecbdf8499b9ca1d697215862083bd6d2a99965554781d0d8d1ad31e13a0",
               "urls": [
                 "https://files.pythonhosted.org/packages/4a/4b/c71ef18ef83c82f99e6da8332910692af78ea32bd1d1d76c9787dfa36aea/PyYAML-6.0.1-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl"
-              ]
-            }
-          },
-          "pip_39_importlib_metadata_py3_none_any_3ebb78df": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "importlib_metadata-6.8.0-py3-none-any.whl",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "importlib-metadata==6.8.0",
-              "sha256": "3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb",
-              "urls": [
-                "https://files.pythonhosted.org/packages/cc/37/db7ba97e676af155f5fcb1a35466f446eadc9104e25b83366e8088c9c926/importlib_metadata-6.8.0-py3-none-any.whl"
               ]
             }
           },
@@ -5836,7 +5751,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "pylint-print-1.0.1.tar.gz",
@@ -5865,7 +5779,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "websockets-11.0.3-cp39-cp39-macosx_10_9_x86_64.whl",
@@ -5936,7 +5849,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "wrapt-1.14.1.tar.gz",
@@ -5965,7 +5877,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "PyYAML-6.0.1-cp39-cp39-macosx_11_0_arm64.whl",
@@ -6016,7 +5927,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "dill-0.3.6-py3-none-any.whl",
@@ -6026,35 +5936,6 @@
               "sha256": "a07ffd2351b8c678dfc4a856a3005f8067aea51d6ba6c700796a4d9e280f39f0",
               "urls": [
                 "https://files.pythonhosted.org/packages/be/e3/a84bf2e561beed15813080d693b4b27573262433fced9c1d1fea59e60553/dill-0.3.6-py3-none-any.whl"
-              ]
-            }
-          },
-          "pip_39_typing_extensions_sdist_1511434b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
-              "experimental_target_platforms": [
-                "cp39_linux_aarch64",
-                "cp39_linux_arm",
-                "cp39_linux_ppc",
-                "cp39_linux_s390x",
-                "cp39_linux_x86_64",
-                "cp39_osx_aarch64",
-                "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
-                "cp39_windows_x86_64"
-              ],
-              "filename": "typing_extensions-4.4.0.tar.gz",
-              "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
-              "repo": "pip_39",
-              "requirement": "typing-extensions==4.4.0",
-              "sha256": "1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa",
-              "urls": [
-                "https://files.pythonhosted.org/packages/e3/a7/8f4e456ef0adac43f452efc2d0e4b242ab831297f1bac60ac815d37eb9cf/typing_extensions-4.4.0.tar.gz"
               ]
             }
           },
@@ -6074,7 +5955,6 @@
                 "cp39_linux_x86_64",
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
-                "cp39_windows_aarch64",
                 "cp39_windows_x86_64"
               ],
               "filename": "Babel-2.13.1-py3-none-any.whl",
