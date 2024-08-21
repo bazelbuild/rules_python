@@ -10,7 +10,7 @@ updates:
   - package-ecosystem: "pip"
     directories:
       # Maintain dependencies for our tools
-      - "/docs/sphinx"
+      - "/docs"
       - "/tools/publish"
     schedule:
       interval: "weekly"

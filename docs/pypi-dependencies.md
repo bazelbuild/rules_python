@@ -324,7 +324,7 @@ the {gh-path}`examples/bzlmod/MODULE.bazel` example.
 When using this feature during the `pip` extension evaluation you will see the accessed indexes similar to below:
 ```console
 Loading: 0 packages loaded
-    currently loading: docs/sphinx
+    currently loading: docs/
     Fetching module extension pip in @@//python/extensions:pip.bzl; starting
     Fetching https://pypi.org/simple/twine/
 ```

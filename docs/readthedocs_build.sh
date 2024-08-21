@@ -17,4 +17,4 @@ bazel run \
   --config=rtd \
   "--//sphinxdocs:extra_defines=version=$READTHEDOCS_VERSION" \
   "${extra_env[@]}" \
-  //docs/sphinx:readthedocs_install
+  //docs:readthedocs_install

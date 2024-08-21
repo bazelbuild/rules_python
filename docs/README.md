@@ -18,8 +18,8 @@ server to serve the generated HTML, and re-generating the HTML when sources
 change. The quick start is:
 
 ```
-bazel run //docs/sphinx:docs.serve  # Run in separate terminal
-ibazel build //docs/sphinx:docs  # Automatically rebuilds docs
+bazel run //docs:docs.serve  # Run in separate terminal
+ibazel build //docs:docs  # Automatically rebuilds docs
 ```
 
 This will build the docs and start a local webserver at http://localhost:8000
@@ -47,14 +47,14 @@ integrates with Sphinx functionality such as automatic cross references,
 creating indexes, and using concise markup to generate rich documentation.
 
 MyST features and behaviors are controlled by the Sphinx configuration file,
-`docs/sphinx/conf.py`. For more info, see https://myst-parser.readthedocs.io.
+`docs/conf.py`. For more info, see https://myst-parser.readthedocs.io.
 
 ## Sphinx configuration
 
 The Sphinx-specific configuration files and input doc files live in
-docs/sphinx.
+docs/.
 
-The Sphinx configuration is `docs/sphinx/conf.py`. See
+The Sphinx configuration is `docs/conf.py`. See
 https://www.sphinx-doc.org/ for details about the configuration file.
 
 ## Readthedocs configuration
