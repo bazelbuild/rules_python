@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import foo.bar
+
 try:
     import grpc
 
@@ -19,4 +21,4 @@ try:
 except ImportError:
     grpc_available = False
 
-_ = grpc
+_ = bar(grpc)
