@@ -1410,6 +1410,7 @@ class _BzlDomain(domains.Domain):
         "arg": roles.XRefRole(),
         "attr": roles.XRefRole(),
         "default-value": _DefaultValueRole(),
+        "flag": roles.XRefRole(),
         "obj": roles.XRefRole(),
         "required-providers": _RequiredProvidersRole(),
         "return-type": _ReturnTypeRole(),

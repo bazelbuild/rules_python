@@ -284,7 +284,7 @@ See also: {flag}`--precompile` flag, which can override this attribute in some c
 
 Values:
 
-* `inherit`: Determine the value from the --precompile flag.
+* `inherit`: Determine the value from the {flag}`--precompile` flag.
 * `enabled`: Compile Python source files at build time. Note that
   --precompile_add_to_runfiles affects how the compiled files are included into
   a downstream binary.
