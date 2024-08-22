@@ -223,6 +223,12 @@ tasks:
     name: "examples/bzlmod: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod
     platform: ubuntu2004
+    build_flags:
+      - "--lockfile_mode=update"
+    test_flags:
+      - "--lockfile_mode=update"
+    coverage_flags:
+      - "--lockfile_mode=update"
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod

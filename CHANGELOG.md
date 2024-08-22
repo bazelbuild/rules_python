@@ -28,6 +28,12 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 
 ### Fixed
+* (bzlmod) get the path to the host python interpreter in a way that results in
+  platform non-dependent hashes in the lock file when the requirement markers need
+  to be evaluated.
+* (bzlmod) correctly watch sources used for evaluating requirement markers for
+  any changes so that the repository rule or module extensions can be
+  re-evaluated when the said files change.
 * (gazelle): Fix incorrect use of `t.Fatal`/`t.Fatalf` in tests.
 * (toolchain) Omit third-party python packages from coverage reports from
   stage2 bootstrap template.

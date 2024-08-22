@@ -51,7 +51,20 @@ def _resolve_python_interpreter(mrctx, *, python_interpreter = None, python_inte
     python_interpreter = _get_python_interpreter_attr(mrctx, python_interpreter = python_interpreter)
 
     if python_interpreter_target != None:
-        python_interpreter = mrctx.path(python_interpreter_target)
+        # The following line would make the MODULE.bazel.lock platform
+        # independent, because the lock file will then contain a hash of the
+        # file so that the lock file can be recalculated, hence the best way is
+        # to add this directory to PATH.
+        #
+        # hence we add the root BUILD.bazel file and get the directory of that
+        # and construct the path differently. At the end of the day we don't
+        # want the hash of the interpreter to end up in the lock file.
+        if hasattr(python_interpreter_target, "same_package_label"):
+            root_build_bazel = python_interpreter_target.same_package_label("BUILD.bazel")
+        else:
+            root_build_bazel = python_interpreter_target.relative(":BUILD.bazel")
+
+        python_interpreter = mrctx.path(root_build_bazel).dirname.get_child(python_interpreter_target.name)
 
         os = repo_utils.get_platforms_os_name(mrctx)
 
@@ -110,7 +123,7 @@ def _execute_checked(mrctx, *, srcs, **kwargs):
         # This will ensure that we will re-evaluate the bzlmod extension or
         # refetch the repository_rule when the srcs change. This should work on
         # Bazel versions without `mrctx.watch` as well.
-        repo_utils.watch(mrctx.path(src))
+        repo_utils.watch(mrctx, mrctx.path(src))
 
     env = kwargs.pop("environment", {})
     pythonpath = env.get("PYTHONPATH", "")
