@@ -29,6 +29,8 @@ A brief description of the categories of changes:
 
 ### Fixed
 * (gazelle): Fix incorrect use of `t.Fatal`/`t.Fatalf` in tests.
+* (toolchain) Omit third-party python packages from coverage reports from
+  stage2 bootstrap template.
 
 ### Added
 * Nothing yet

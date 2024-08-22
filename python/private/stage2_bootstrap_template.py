@@ -364,6 +364,14 @@ relative_files = True
                 # Pipes can't be read back later, which can cause coverage to
                 # throw an error when trying to get its source code.
                 "/dev/fd/*",
+                # The mechanism for finding third-party packages in coverage-py
+                # only works for installed packages, not for runfiles. e.g:
+                #'$HOME/.local/lib/python3.10/site-packages',
+                # '/usr/lib/python',
+                # '/usr/lib/python3.10/site-packages',
+                # '/usr/local/lib/python3.10/dist-packages'
+                # see https://github.com/nedbat/coveragepy/blob/bfb0c708fdd8182b2a9f0fc403596693ef65e475/coverage/inorout.py#L153-L164
+                "*/external/*",
             ],
         )
         cov.start()
