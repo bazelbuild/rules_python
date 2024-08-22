@@ -29,10 +29,8 @@ A brief description of the categories of changes:
 
 ### Fixed
 * (gazelle): Fix incorrect use of `t.Fatal`/`t.Fatalf` in tests.
-
-### Fixed
-* (rule) Omit third-party python packages from coverage reports
-  ([#2136](https://github.com/bazelbuild/rules_python/issues/2136))
+* (toolchain) Omit third-party python packages from coverage reports from
+  stage2 bootstrap template.
 
 ### Added
 * Nothing yet
