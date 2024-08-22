@@ -31,7 +31,13 @@ A brief description of the categories of changes:
 * (gazelle): Fix incorrect use of `t.Fatal`/`t.Fatalf` in tests.
 
 ### Added
-* Nothing yet
+* (pypi): Add macro wrappers for all of the publicly exposed targets in the
+  `whl_library` repository_rule. This allows users to override rules used to
+  extract whl targets from the `.whl` distributions. This allows `WORKSPACE`
+  and `bzlmod` users to override the load statements. The `WORKSPACE` can pass
+  an extra argument named `override_loads` to the `pip_install` macro from the
+  hub repository, whereas `bzlmod` users have a new attribute `load_symbols` in
+  the `pip.override` tag class. TODO: link to the ticket and add documentation.
 
 ### Removed
 * Nothing yet

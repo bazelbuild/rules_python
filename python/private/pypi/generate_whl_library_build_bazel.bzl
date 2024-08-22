@@ -27,6 +27,9 @@ load(
     "WHEEL_FILE_PUBLIC_LABEL",
 )
 
+_DEFAULT_MACRO_LOAD = "@rules_python//python/private/pypi:whl_library_macros.bzl"
+_COPY_FILE_LOAD = "@bazel_skylib//rules:copy_file.bzl"
+
 _COPY_FILE_TEMPLATE = """\
 copy_file(
     name = "{dest}.copy",
@@ -52,24 +55,15 @@ _BUILD_TEMPLATE = """\
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "{dist_info_label}",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "{data_label}",
-    srcs = glob(["data/**"], allow_empty = True),
-)
-
-filegroup(
+data_filegroup(name="{data_label}")
+dist_info_filegroup(name="{dist_info_label}")
+whl_file(
     name = "{whl_file_label}",
     srcs = ["{whl_name}"],
-    data = {whl_file_deps},
+    deps = {whl_file_deps},
     visibility = {impl_vis},
 )
-
-py_library(
+whl_library(
     name = "{py_library_label}",
     srcs = glob(
         ["site-packages/**/*.py"],
@@ -78,14 +72,11 @@ py_library(
         # pure-Python code, e.g. pymssql, which is written in Cython.
         allow_empty = True,
     ),
+    deps = {dependencies},
     data = {data} + glob(
         ["site-packages/**/*"],
         exclude={data_exclude},
     ),
-    # This makes this directory a top-level in the python import
-    # search path for anything that depends on this.
-    imports = ["site-packages"],
-    deps = {dependencies},
     tags = {tags},
     visibility = {impl_vis},
 )
@@ -126,7 +117,7 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
         return "{} + {}".format(deps, deps_by_platform)
 
 def _render_config_settings(dependencies_by_platform):
-    loads = []
+    loads = {}
     additional_content = []
     for p in dependencies_by_platform:
         # p can be one of the following formats:
@@ -158,7 +149,7 @@ def _render_config_settings(dependencies_by_platform):
 
         if abi:
             if not loads:
-                loads.append("""load("@rules_python//python/config_settings:config_settings.bzl", "is_python_config_setting")""")
+                loads["is_python_config_setting"] = "@rules_python//python/config_settings:config_settings.bzl"
 
             additional_content.append(
                 """\
@@ -197,6 +188,7 @@ def generate_whl_library_build_bazel(
         data_exclude,
         tags,
         entry_points,
+        override_loads = {},
         annotation = None,
         group_name = None,
         group_deps = []):
@@ -217,6 +209,9 @@ def generate_whl_library_build_bazel(
         group_deps: List[str]; names of fellow members of the group (if any). These will be excluded
           from generated deps lists so as to avoid direct cycles. These dependencies will be provided
           at runtime by the group rules which wrap this library and its fellows together.
+        override_loads: dict[str, str], the dictionary for the symbols to be
+            used for defining standard targets. If the key within dict does not
+            correspond to a symbol, it will fail.
 
     Returns:
         A complete BUILD file as a string
@@ -290,16 +285,25 @@ def generate_whl_library_build_bazel(
         if deps
     }
 
-    loads = [
-        """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
-        """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
-    ]
+    loads = {
+        "copy_file": _COPY_FILE_LOAD,
+        "data_filegroup": _DEFAULT_MACRO_LOAD,
+        "dist_info_filegroup": _DEFAULT_MACRO_LOAD,
+        "py_binary": "@rules_python//python:py_binary.bzl",
+        "whl_file": _DEFAULT_MACRO_LOAD,
+        "whl_library": _DEFAULT_MACRO_LOAD,
+    }
+    for symbol, location in override_loads.items():
+        if symbol in loads:
+            loads[symbol] = location
+        else:
+            msg = "Unsupported symbol name '{}', use one of: {}".format(symbol, sorted(loads))
+            fail(msg)
 
     loads_, config_settings_content = _render_config_settings(dependencies_by_platform)
     if config_settings_content:
-        for line in loads_:
-            if line not in loads:
-                loads.append(line)
+        for symbol, loc in loads_.items():
+            loads[symbol] = loc
         additional_content.append(config_settings_content)
 
     lib_dependencies = _render_list_and_select(
@@ -356,7 +360,7 @@ def generate_whl_library_build_bazel(
     contents = "\n".join(
         [
             _BUILD_TEMPLATE.format(
-                loads = "\n".join(sorted(loads)),
+                loads = _render_loads(loads),
                 py_library_label = py_library_label,
                 dependencies = render.indent(lib_dependencies, " " * 4).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
@@ -366,7 +370,6 @@ def generate_whl_library_build_bazel(
                 tags = repr(tags),
                 data_label = DATA_LABEL,
                 dist_info_label = DIST_INFO_LABEL,
-                entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
                 impl_vis = repr(impl_vis),
@@ -418,3 +421,21 @@ def _generate_entry_point_rule(*, name, script, pkg):
         src = script.replace("\\", "/"),
         pkg = pkg,
     )
+
+def _render_loads(loads):
+    by_import = {}
+    for symbol, loc in loads.items():
+        by_import.setdefault(loc, []).append(symbol)
+
+    lines = []
+    for loc, symbols in sorted(by_import.items()):
+        if len(symbols) == 1:
+            line = "load({}, {})".format(repr(loc), repr(symbols[0]))
+        else:
+            line = "load(\n{}\n)".format(render.indent("\n".join(
+                [repr(item) + "," for item in [loc] + sorted(symbols)],
+            )))
+
+        lines.append(line)
+
+    return "\n".join(lines)

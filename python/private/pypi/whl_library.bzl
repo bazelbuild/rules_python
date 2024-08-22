@@ -333,6 +333,7 @@ def _whl_library_impl(rctx):
         group_name = rctx.attr.group_name,
         group_deps = rctx.attr.group_deps,
         data_exclude = rctx.attr.pip_data_exclude,
+        override_loads = rctx.attr.override_loads,
         tags = [
             "pypi_name=" + metadata["name"],
             "pypi_version=" + metadata["version"],
@@ -397,6 +398,15 @@ and the target that we need respectively.
     ),
     "group_name": attr.string(
         doc = "Name of the group, if any.",
+    ),
+    "override_loads": attr.string_dict(
+        doc = """
+The string dictionary for symbols to be used when defining targets within the `whl_library`.
+
+This allows users to override the rules used for particular wheels for better
+support of generating `py_library` from an `sdist` or potentially improve how
+the `whl_filegroup` defines providers.
+""",
     ),
     "repo": attr.string(
         mandatory = True,

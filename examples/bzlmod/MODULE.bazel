@@ -195,6 +195,12 @@ pip.parse(
 # The patches have to be in the unified-diff format.
 pip.override(
     file = "requests-2.25.1-py2.py3-none-any.whl",
+    # One can also override the loads for better support of using alternative implementations
+    # For allowed values, inspect the error message when typing any unsupported
+    # value as the key of the dictionary.
+    library_symbols = {
+        "py_binary": "@rules_python//python:defs.bzl",
+    },
     patch_strip = 1,
     patches = [
         "@//patches:empty.patch",
