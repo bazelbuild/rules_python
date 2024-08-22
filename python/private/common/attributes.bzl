@@ -280,11 +280,11 @@ attribute.
             doc = """
 Whether py source files should be precompiled.
 
-See also: `--precompile` flag, which can override this attribute in some cases.
+See also: {flag}`--precompile` flag, which can override this attribute in some cases.
 
 Values:
 
-* `inherit`: Determine the value from the --precompile flag.
+* `inherit`: Determine the value from the {flag}`--precompile` flag.
 * `enabled`: Compile Python source files at build time. Note that
   --precompile_add_to_runfiles affects how the compiled files are included into
   a downstream binary.
@@ -333,7 +333,7 @@ runtime when the code actually runs.
 Determines, when a source file is compiled, if the source file is kept
 in the resulting output or not. Valid values are:
 
-* `inherit`: Inherit the value from the `--precompile_source_retention` flag.
+* `inherit`: Inherit the value from the {flag}`--precompile_source_retention` flag.
 * `keep_source`: Include the original Python source.
 * `omit_source`: Don't include the original py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
