@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A simple macro to pin the requirements.
+"""A simple macro to lock the requirements.
 """
 
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//python:py_binary.bzl", "py_binary")
+load("//python/config_settings:transition.bzl", transition_py_binary = "py_binary")
 load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 
-_REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
-    "@platforms//os:linux": [],
-    "@platforms//os:macos": [],
-    "//conditions:default": ["@platforms//:incompatible"],
-}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+visibility(["//..."])
 
-def pin(*, name, srcs, out, upgrade = False, universal = True, python_version = None):
+_REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+
+def lock(*, name, srcs, out, upgrade = False, universal = True, python_version = None):
     """Pin the requirements based on the src files.
 
     Args:
@@ -44,10 +43,10 @@ def pin(*, name, srcs, out, upgrade = False, universal = True, python_version = 
     - Supports transitions out of the box.
     """
     pkg = native.package_name()
-    _out = "_" + out
+    update_target = name + ".update"
 
     args = [
-        "--custom-compile-command='bazel run //{}:{}'".format(pkg, name),
+        "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
         "--generate-hashes",
         "--emit-index-url",
         "--no-strip-extras",
@@ -55,13 +54,12 @@ def pin(*, name, srcs, out, upgrade = False, universal = True, python_version = 
     ] + [
         "$(location {})".format(src)
         for src in srcs
-    ] + [
-        "--output-file=$(location {})".format(_out),
     ]
     if upgrade:
         args.append("--upgrade")
     if universal:
         args.append("--universal")
+    args.append("--output-file=$@")
     cmd = "$(UV_BIN) pip compile " + " ".join(args)
 
     # Check if the output file already exists, if yes, first copy it to the
@@ -72,9 +70,9 @@ def pin(*, name, srcs, out, upgrade = False, universal = True, python_version = 
         srcs.append(out)
 
     native.genrule(
-        name = name + ".uv.out",
+        name = name,
         srcs = srcs,
-        outs = [_out],
+        outs = [out + ".new"],
         cmd_bash = cmd,
         tags = [
             "local",
@@ -88,97 +86,36 @@ def pin(*, name, srcs, out, upgrade = False, universal = True, python_version = 
         ],
     )
     if python_version:
-        transitioned_name = "{}.uv.out.{}".format(name, python_version)
-        _versioned(
-            name = transitioned_name,
-            src = _out,
-            python_version = python_version,
-            tags = ["manual"],
-        )
-        _out = transitioned_name
+        py_binary_rule = lambda *args, **kwargs: transition_py_binary(python_version = python_version, *args, **kwargs)
+    else:
+        py_binary_rule = py_binary
 
     # Write a script that can be used for updating the in-tree version of the
     # requirements file
     write_file(
-        name = name + ".gen",
-        out = name + ".gen.py",
+        name = name + ".update_gen",
+        out = update_target + ".py",
         content = [
             "from os import environ",
             "from pathlib import Path",
             "from sys import stderr",
             "",
             'src = Path(environ["REQUIREMENTS_FILE"])',
+            'assert src.exists(), f"the {src} file does not exist"',
             'dst = Path(environ["BUILD_WORKSPACE_DIRECTORY"]) / "{}" / "{}"'.format(pkg, out),
             'print(f"Writing requirements contents\\n  from {src.absolute()}\\n  to {dst.absolute()}", file=stderr)',
             "dst.write_text(src.read_text())",
             'print("Success!", file=stderr)',
         ],
-        target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     )
 
-    py_binary(
-        name = name,
-        srcs = [name + ".gen.py"],
-        main = name + ".gen.py",
-        data = [_out],
+    py_binary_rule(
+        name = update_target,
+        srcs = [update_target + ".py"],
+        main = update_target + ".py",
+        data = [name],
         env = {
-            "REQUIREMENTS_FILE": "$(location {})".format(_out),
+            "REQUIREMENTS_FILE": "$(rootpath {})".format(name),
         },
         tags = ["manual"],
-        target_compatible_with = _REQUIREMENTS_TARGET_COMPATIBLE_WITH,
     )
-
-def _transition_python_version_impl(_, attr):
-    return {"//python/config_settings:python_version": str(attr.python_version)}
-
-_transition_python_version = transition(
-    implementation = _transition_python_version_impl,
-    inputs = [],
-    outputs = ["//python/config_settings:python_version"],
-)
-
-def _impl(ctx):
-    target = ctx.attr.src
-
-    default_info = target[0][DefaultInfo]
-    files = default_info.files
-    original_executable = default_info.files_to_run.executable
-    runfiles = default_info.default_runfiles
-
-    new_executable = ctx.actions.declare_file(ctx.attr.name)
-
-    ctx.actions.symlink(
-        output = new_executable,
-        target_file = original_executable,
-        is_executable = True,
-    )
-
-    files = depset(direct = [new_executable], transitive = [files])
-    runfiles = runfiles.merge(ctx.runfiles([new_executable]))
-
-    return [
-        DefaultInfo(
-            files = files,
-            runfiles = runfiles,
-            executable = new_executable,
-        ),
-    ]
-
-_versioned = rule(
-    implementation = _impl,
-    attrs = {
-        "python_version": attr.string(
-            mandatory = True,
-        ),
-        "src": attr.label(
-            allow_single_file = True,
-            executable = False,
-            mandatory = True,
-            cfg = _transition_python_version,
-        ),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
-    },
-    executable = True,
-)

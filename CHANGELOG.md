@@ -37,9 +37,12 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* (bzlmod) get the path to the host python interpreter without calling
-  `mctx.path` on Labels that have differing contents on different OSes.
-* (bzlmod) correctly watch sources when using `pypi_repo_utils`.
+* (bzlmod) get the path to the host python interpreter in a way that results in
+  platform non-dependent hashes in the lock file when the requirement markers need
+  to be evaluated.
+* (bzlmod) correctly watch sources used for evaluating requirement markers for
+  any changes so that the repository rule or module extensions can be
+  re-evaluated when the said files change.
 
 ## [0.35.0] - 2024-08-15
 

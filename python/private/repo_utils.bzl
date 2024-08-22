@@ -404,12 +404,18 @@ def _get_platforms_cpu_name(mrctx):
 # TODO: Remove after Bazel 6 support dropped
 def _watch(mrctx, *args, **kwargs):
     """Calls mrctx.watch, if available."""
+    if not args and not kwargs:
+        fail("'watch' needs at least a single argument.")
+
     if hasattr(mrctx, "watch"):
         mrctx.watch(*args, **kwargs)
 
 # TODO: Remove after Bazel 6 support dropped
 def _watch_tree(mrctx, *args, **kwargs):
     """Calls mrctx.watch_tree, if available."""
+    if not args and not kwargs:
+        fail("'watch_tree' needs at least a single argument.")
+
     if hasattr(mrctx, "watch_tree"):
         mrctx.watch_tree(*args, **kwargs)
 
