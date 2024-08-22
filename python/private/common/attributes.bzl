@@ -280,7 +280,7 @@ attribute.
             doc = """
 Whether py source files should be precompiled.
 
-See also: `--precompile` flag, which can override this attribute in some cases.
+See also: {obj}`--precompile` flag, which can override this attribute in some cases.
 
 Values:
 
@@ -333,7 +333,7 @@ runtime when the code actually runs.
 Determines, when a source file is compiled, if the source file is kept
 in the resulting output or not. Valid values are:
 
-* `inherit`: Inherit the value from the `--precompile_source_retention` flag.
+* `inherit`: Inherit the value from the {obj}`--precompile_source_retention` flag.
 * `keep_source`: Include the original Python source.
 * `omit_source`: Don't include the original py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
