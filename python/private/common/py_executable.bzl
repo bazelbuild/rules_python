@@ -96,7 +96,7 @@ filename in `srcs`, `main` must be specified.
             doc = """
 Determines whether pyc files from dependencies should be manually included.
 
-NOTE: This setting is only useful with {obj}`--precompile_add_to_runfiles=decided_elsewhere`.
+NOTE: This setting is only useful with {flag}`--precompile_add_to_runfiles=decided_elsewhere`.
 
 Valid values are:
 * `include_pyc`: Add pyc files from dependencies in the binary (from
