@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""# Rules to generate Sphinx documentation.
+"""Rules to generate Sphinx documentation.
 
 The general usage of the Sphinx rules requires two pieces:
 

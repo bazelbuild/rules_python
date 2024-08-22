@@ -67,6 +67,7 @@ support
 Changelog <changelog>
 api/index
 environment-variables
+Sphinxdocs <sphinxdocs/index>
 glossary
 genindex
 ```

@@ -26,11 +26,7 @@ package(
 # referenced by the //sphinxdocs macros.
 exports_files(
     [
-        "func_template.vm",
-        "header_template.vm",
-        "provider_template.vm",
         "readthedocs_install.py",
-        "rule_template.vm",
         "sphinx_build.py",
         "sphinx_server.py",
     ],
@@ -38,13 +34,36 @@ exports_files(
 )
 
 bzl_library(
+    name = "sphinx_docs_library_macro_bzl",
+    srcs = ["sphinx_docs_library_macro.bzl"],
+    deps = [
+        ":sphinx_docs_library_bzl",
+        "//python/private:util_bzl",
+    ],
+)
+
+bzl_library(
+    name = "sphinx_docs_library_bzl",
+    srcs = ["sphinx_docs_library.bzl"],
+    deps = [":sphinx_docs_library_info_bzl"],
+)
+
+bzl_library(
+    name = "sphinx_docs_library_info_bzl",
+    srcs = ["sphinx_docs_library_info.bzl"],
+)
+
+bzl_library(
     name = "sphinx_bzl",
     srcs = ["sphinx.bzl"],
     deps = [
+        ":sphinx_docs_library_info_bzl",
         "//python:py_binary_bzl",
+        "@bazel_skylib//:bzl_library",
         "@bazel_skylib//lib:paths",
         "@bazel_skylib//lib:types",
         "@bazel_skylib//rules:build_test",
+        "@bazel_skylib//rules:common_settings",
         "@io_bazel_stardoc//stardoc:stardoc_lib",
     ],
 )
@@ -53,7 +72,11 @@ bzl_library(
     name = "sphinx_stardoc_bzl",
     srcs = ["sphinx_stardoc.bzl"],
     deps = [
+        ":sphinx_docs_library_macro_bzl",
         "//python/private:util_bzl",
+        "//sphinxdocs:sphinx_bzl",
+        "@bazel_skylib//:bzl_library",
+        "@bazel_skylib//lib:paths",
         "@bazel_skylib//lib:types",
         "@bazel_skylib//rules:build_test",
         "@io_bazel_stardoc//stardoc:stardoc_lib",

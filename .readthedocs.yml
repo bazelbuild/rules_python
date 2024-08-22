@@ -11,4 +11,4 @@ build:
     - bazel version
     # Put the actual build behind a shell script because its easier to modify than
     # the yaml config.
-    - docs/sphinx/readthedocs_build.sh
+    - docs/readthedocs_build.sh
