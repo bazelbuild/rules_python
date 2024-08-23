@@ -34,7 +34,7 @@ autodoc2_packages = [
     "runfiles",
 ]
 
-autodoc2_output_dir = "api-py"
+autodoc2_output_dir = "api/py"
 autodoc2_sort_names = True
 autodoc2_class_docstring = "both"
 autodoc2_index_template = """

@@ -66,7 +66,6 @@ Contributing <contributing>
 support
 Changelog <changelog>
 api/index
-api-py/index
 environment-variables
 Sphinxdocs <sphinxdocs/index>
 glossary
