@@ -257,15 +257,15 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _process_tag_classes(mod):
-    arg_structs = []
+def _process_tag_classes(mod, fail = fail):
+    registrations = []
     seen_versions = {}
     available_versions = {}
     available_versions.update(TOOL_VERSIONS)
     base_url = DEFAULT_RELEASE_BASE_URL
 
     for tag in mod.tags.toolchain:
-        arg_structs.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
+        registrations.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
         seen_versions[tag.python_version] = True
 
     if mod.is_root:
@@ -307,7 +307,7 @@ def _process_tag_classes(mod):
             break
 
         if register_all:
-            arg_structs.extend([
+            registrations.extend([
                 _create_toolchain_attrs_struct(python_version = v)
                 for v in available_versions.keys()
                 if v not in seen_versions
@@ -316,7 +316,7 @@ def _process_tag_classes(mod):
     return struct(
         available_versions = available_versions,
         base_url = base_url,
-        registrations = arg_structs,
+        registrations = registrations,
     )
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
