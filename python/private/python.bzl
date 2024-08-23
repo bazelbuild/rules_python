@@ -260,7 +260,8 @@ def _fail_multiple_default_toolchains(first, second):
 def _process_tag_classes(mod):
     arg_structs = []
     seen_versions = {}
-    available_versions = TOOL_VERSIONS
+    available_versions = {}
+    available_versions.update(TOOL_VERSIONS)
     base_url = DEFAULT_RELEASE_BASE_URL
 
     for tag in mod.tags.toolchain:
@@ -270,7 +271,7 @@ def _process_tag_classes(mod):
     if mod.is_root:
         for tag in mod.tags.version_override:
             sha256 = {}
-            for p, sha in tag.sha256.items():
+            for p, sha in tag.sha256s.items():
                 if p not in PLATFORMS:
                     fail("The platform must be one of {allowed} but got '{got}'".format(
                         allowed = sorted(PLATFORMS),
@@ -291,10 +292,10 @@ def _process_tag_classes(mod):
             if tag.available_python_versions:
                 all_known_versions = sorted(available_versions)
                 available_versions = {
-                    v: available_versions.get(v, fail("unknown version {}, known versions: {}".format(
+                    v: available_versions[v] if v in available_versions else fail("unknown version '{}', known versions are: {}".format(
                         v,
                         all_known_versions,
-                    )))
+                    ))
                     for v in tag.available_python_versions
                 }
 
@@ -433,7 +434,7 @@ _version_override = tag_class(
     doc = """Tag class used to override single python version settings.""",
     attrs = {
         "sha256s": attr.string_dict(
-            mandatory = True,
+            mandatory = False,
             doc = "The python platform to sha256 dict. The platform key must be present in the PLATFORMS dict.",
         ),
         "strip_prefix": attr.string(
