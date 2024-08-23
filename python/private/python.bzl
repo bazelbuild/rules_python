@@ -426,7 +426,7 @@ _override = tag_class(
         ),
 
         # Internal attributes that are only usable from `rules_python`
-        "register_all_versions": attr.bool(default = False),
+        "register_all_versions": attr.bool(default = False, doc = "rules_python internal use only"),
     },
 )
 
