@@ -78,7 +78,7 @@ def parse_simpleapi_html(*, url, content):
                 url = _absolute_url(url, dist_url),
                 sha256 = sha256,
                 metadata_sha256 = metadata_sha256,
-                metadata_url = _absolute_url(url, metadata_url),
+                metadata_url = _absolute_url(url, metadata_url) if metadata_url else "",
                 yanked = yanked,
             )
         else:
@@ -109,18 +109,33 @@ def _get_root_directory(url):
 
     return "{}://{}".format(scheme, host)
 
+def _is_downloadable(url):
+    """Checks if the URL would be accepted by the Bazel downloader.
+
+    This is based on Bazel's HttpUtils::isUrlSupportedByDownloader
+    """
+    return url.startswith("http://") or url.startswith("https://") or url.startswith("file://")
+
 def _absolute_url(index_url, candidate):
+    if candidate == "":
+        return candidate
+
+    if _is_downloadable(candidate):
+        return candidate
+
     if candidate.startswith("/"):
-        # absolute url
+        # absolute path
         root_directory = _get_root_directory(index_url)
         return "{}{}".format(root_directory, candidate)
 
-    if not candidate.startswith(".."):
-        return candidate
+    if candidate.startswith(".."):
+        # relative path with up references
+        candidate_parts = candidate.split("..")
+        last = candidate_parts[-1]
+        for _ in range(len(candidate_parts) - 1):
+            index_url, _, _ = index_url.rstrip("/").rpartition("/")
 
-    candidate_parts = candidate.split("..")
-    last = candidate_parts[-1]
-    for _ in range(len(candidate_parts) - 1):
-        index_url, _, _ = index_url.rstrip("/").rpartition("/")
+        return "{}/{}".format(index_url, last.strip("/"))
 
-    return "{}/{}".format(index_url, last.strip("/"))
+    # relative path without up-references
+    return "{}/{}".format(index_url, candidate)

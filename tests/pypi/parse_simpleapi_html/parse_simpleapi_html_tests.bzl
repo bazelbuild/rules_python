@@ -255,6 +255,40 @@ def _test_whls(env):
                 yanked = False,
             ),
         ),
+        (
+            struct(
+                attrs = [
+                    'href="1.0.0/mypy_extensions-1.0.0-py3-none-any.whl#sha256=deadbeef"',
+                ],
+                filename = "mypy_extensions-1.0.0-py3-none-any.whl",
+                url = "https://example.org/simple/mypy_extensions",
+            ),
+            struct(
+                filename = "mypy_extensions-1.0.0-py3-none-any.whl",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "deadbeef",
+                url = "https://example.org/simple/mypy_extensions/1.0.0/mypy_extensions-1.0.0-py3-none-any.whl",
+                yanked = False,
+            ),
+        ),
+        (
+            struct(
+                attrs = [
+                    'href="unknown://example.com/mypy_extensions-1.0.0-py3-none-any.whl#sha256=deadbeef"',
+                ],
+                filename = "mypy_extensions-1.0.0-py3-none-any.whl",
+                url = "https://example.org/simple/mypy_extensions",
+            ),
+            struct(
+                filename = "mypy_extensions-1.0.0-py3-none-any.whl",
+                metadata_sha256 = "",
+                metadata_url = "",
+                sha256 = "deadbeef",
+                url = "https://example.org/simple/mypy_extensions/unknown://example.com/mypy_extensions-1.0.0-py3-none-any.whl",
+                yanked = False,
+            ),
+        ),
     ]
 
     for (input, want) in tests:
