@@ -227,7 +227,9 @@ def _whl_library_impl(rctx):
             whl_path = rctx.path(rctx.attr.filename)
         else:
             # It is an sdist and we need to tell PyPI to use a file in this directory
-            # and not use any indexes.
+            # and, allow getting build dependencies from PYTHONPATH, which we
+            # setup in this repository rule, but still download any necessary
+            # build deps from PyPI (e.g. `flit_core`) if they are missing.
             extra_pip_args.extend(["--no-build-isolation", "--find-links", "."])
 
     args = _parse_optional_attrs(rctx, args, extra_pip_args)

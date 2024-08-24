@@ -28,8 +28,9 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 
 ### Fixed
-* (whl_library): Remove --no-index and add --no-build-isolation to the
-  pip install command when installing a wheel from a local file.
+* (whl_library): Remove `--no-index` and add `--no-build-isolation` to the
+  `pip install` command when installing a wheel from a local file, which happens
+  when `experimental_index_url` flag is used.
 * (bzlmod) get the path to the host python interpreter in a way that results in
   platform non-dependent hashes in the lock file when the requirement markers need
   to be evaluated.
