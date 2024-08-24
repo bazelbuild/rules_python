@@ -1,12 +1,12 @@
 """ Define a custom transition that sets the pip_whl flag to no """
 
 def _flag_transition_impl(_settings, _ctx):
-    return {"@rules_python//python/config_settings:pip_whl": "no"}
+    return {"//python/config_settings:pip_whl": "no"}
 
 flag_transition = transition(
     implementation = _flag_transition_impl,
     inputs = [],
-    outputs = ["@rules_python//python/config_settings:pip_whl"],
+    outputs = ["//python/config_settings:pip_whl"],
 )
 
 # Define a rule that applies the transition to dependencies

@@ -1,7 +1,0 @@
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@dev_pip//:requirements.bzl", "all_whl_requirements")
-
-build_test(
-    name = "all_dev_wheels",
-    targets = all_whl_requirements,
-)
