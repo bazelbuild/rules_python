@@ -106,6 +106,7 @@ searched and matched. Supported cross reference roles are:
 
 * `{bzl:arg}`: Refer to a function argument.
 * `{bzl:attr}`: Refer to a rule attribute.
+* `{bzl:flag}`: Refer to a flag.
 * `{bzl:obj}`: Refer to any type of Bazel object
 * `{bzl:rule}`: Refer to a rule.
 * `{bzl:target}`: Refer to a target.
