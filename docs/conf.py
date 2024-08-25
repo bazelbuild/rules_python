@@ -30,6 +30,8 @@ extensions = [
 ]
 
 autodoc2_packages = [
+    ##{"path": "py-src/sphinx_bzl", "module": "sphinx_bzl"},
+    ##{"path": "py-src/runfiles", "module": "runfiles"}
     "sphinx_bzl",
     "runfiles",
 ]
@@ -38,7 +40,7 @@ autodoc2_output_dir = "api/py"
 autodoc2_sort_names = True
 autodoc2_class_docstring = "both"
 autodoc2_index_template = """
-Python API Reference
+Python APIs
 ====================
 
 This page contains auto-generated API reference documentation [#f1]_.

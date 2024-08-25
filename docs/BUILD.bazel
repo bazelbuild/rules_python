@@ -71,7 +71,7 @@ sphinx_docs(
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
     deps = [
         ":bzl_api_docs",
-        ":py_api_docs",
+        ":py_api_srcs",
         "//sphinxdocs/docs:docs_lib",
     ],
 )
@@ -101,7 +101,7 @@ sphinx_stardocs(
         # This depends on @pythons_hub, which is only created under bzlmod,
         "//python/extensions:pip_bzl",
     ] if IS_BAZEL_7_OR_HIGHER and BZLMOD_ENABLED else []),
-    prefix = "api/",
+    prefix = "api/rules_python/",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
@@ -109,7 +109,7 @@ sphinx_stardocs(
 sphinx_stardoc(
     name = "py_cc_toolchain",
     src = "//python/private:py_cc_toolchain_rule.bzl",
-    prefix = "api/",
+    prefix = "api/rules_python/",
     public_load_path = "//python/cc:py_cc_toolchain.bzl",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
@@ -119,13 +119,14 @@ sphinx_stardoc(
 sphinx_stardoc(
     name = "py_runtime_pair",
     src = "//python/private:py_runtime_pair_rule_bzl",
+    prefix = "api/rules_python",
     public_load_path = "//python:py_runtime_pair.bzl",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )
 
 sphinx_docs_library(
-    name = "py_api_docs",
+    name = "py_api_srcs",
     srcs = [
         "//python/runfiles",
     ],

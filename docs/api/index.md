@@ -1,6 +1,7 @@
-# Bazel API Reference
+# API Reference
 
 ```{toctree}
 :glob:
-**
+*
+*/index
 ```
