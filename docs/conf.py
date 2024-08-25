@@ -30,8 +30,6 @@ extensions = [
 ]
 
 autodoc2_packages = [
-    ##{"path": "py-src/sphinx_bzl", "module": "sphinx_bzl"},
-    ##{"path": "py-src/runfiles", "module": "runfiles"}
     "sphinx_bzl",
     "runfiles",
 ]
