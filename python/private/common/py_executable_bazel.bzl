@@ -168,17 +168,17 @@ def _create_executable(
         runfiles_details):
     _ = is_test, cc_details, native_deps_details  # @unused
 
+    interpreter_opts = ""
     # If the runtime interpreter has been detected and its version is 3.11 or higher, enable safe-path mode
     # by passing the -P argument to the interpreter
-    interpreter_version_info = runtime_details.effective_runtime.interpreter_version_info
-    if interpreter_version_info and \
-       interpreter_version_info.major and \
-       interpreter_version_info.major >= 3 and \
-       interpreter_version_info.minor and \
-       interpreter_version_info.minor >= 11:
-        interpreter_opts = "-P"
-    else:
-        interpreter_opts = ""
+    if hasattr(runtime_details.effective_runtime, "interpreter_version_info"):
+        interpreter_version_info = runtime_details.effective_runtime.interpreter_version_info
+        if interpreter_version_info and \
+           interpreter_version_info.major and \
+           interpreter_version_info.major >= 3 and \
+           interpreter_version_info.minor and \
+           interpreter_version_info.minor >= 11:
+            interpreter_opts += " -P"
 
     is_windows = target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints)
 
