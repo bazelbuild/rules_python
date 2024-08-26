@@ -326,7 +326,9 @@ alias(
 )
 ```
 
-### Vendoring the requirements.bzl file
+:::{rubric} Vendoring the requirements.bzl file
+:heading-level: 3
+:::
 
 In some cases you may not want to generate the requirements.bzl file as a repository rule
 while Bazel is fetching dependencies. For example, if you produce a reusable Bazel module

@@ -140,6 +140,16 @@ Refer to a target.
 
 :::{rst:role} bzl:type
 Refer to a type or type expression; can also be used in argument documentation.
+
+```
+def func(arg):
+    """Do stuff
+
+    Args:
+      arg: {type}`int | str` the arg
+    """
+    print(arg + 1)
+```
 :::
 
 ## Special roles
@@ -184,22 +194,6 @@ def func():
       {return-type}`int`
     """
     return 1
-```
-:::
-
-:::{rst:role} bzl:type
-
-Indicates the type of an argument for a function. Use it in the Args doc of
-a function.
-
-```
-def func(arg):
-    """Do stuff
-
-    Args:
-      arg: {type}`int`
-    """
-    print(arg + 1)
 ```
 :::
 

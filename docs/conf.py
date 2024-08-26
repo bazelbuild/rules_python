@@ -59,7 +59,7 @@ This page contains auto-generated API reference documentation [#f1]_.
 autodoc2_docstring_parser_regexes = [
     (".*", "myst"),
 ]
-
+ 
 # NOTE: The redirects generation will clobber existing files.
 redirects = {
     "api/tools/precompiler/index": "/api/rules_python/tools/precompiler/index.html",
