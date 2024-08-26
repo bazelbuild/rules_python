@@ -125,9 +125,9 @@ docutils==0.20.1 \
     #   myst-parser
     #   sphinx
     #   sphinx-rtd-theme
-idna==3.7 \
-    --hash=sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc \
-    --hash=sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0
+idna==3.8 \
+    --hash=sha256:050b4e5baadcd44d760cedbd2b8e639f2ff89bbc7a5730fcc662954303377aac \
+    --hash=sha256:d838c2c0ed6fced7693d5e8ab8e734d5f8fda53a039c0164afb0b82e771e3603
     # via requests
 imagesize==1.4.1 \
     --hash=sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b \
@@ -305,11 +305,16 @@ sphinx==7.4.7 \
     # via
     #   rules-python-docs (docs/pyproject.toml)
     #   myst-parser
+    #   sphinx-reredirects
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
 sphinx-autodoc2==0.5.0 \
     --hash=sha256:7d76044aa81d6af74447080182b6868c7eb066874edc835e8ddf810735b6565a \
     --hash=sha256:e867013b1512f9d6d7e6f6799f8b537d6884462acd118ef361f3f619a60b5c9e
+    # via rules-python-docs (docs/pyproject.toml)
+sphinx-reredirects==0.1.5 \
+    --hash=sha256:444ae1438fba4418242ca76d6a6de3eaee82aaf0d8f2b0cac71a15d32ce6eba2 \
+    --hash=sha256:cfa753b441020a22708ce8eb17d4fd553a28fc87a609330092917ada2a6da0d8
     # via rules-python-docs (docs/pyproject.toml)
 sphinx-rtd-theme==2.0.0 \
     --hash=sha256:bd5d7b80622406762073a04ef8fadc5f9151261563d47027de09910ce03afe6b \

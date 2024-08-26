@@ -149,6 +149,7 @@ sphinx_build_binary(
         requirement("readthedocs_sphinx_ext"),
         requirement("typing_extensions"),
         requirement("sphinx_autodoc2"),
+        requirement("sphinx_reredirects"),
         "//sphinxdocs/src/sphinx_bzl",
     ],
 )

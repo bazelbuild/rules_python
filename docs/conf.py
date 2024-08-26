@@ -27,6 +27,7 @@ extensions = [
     "myst_parser",
     "sphinx_rtd_theme",  # Necessary to get jquery to make flyout work
     "sphinx_bzl.bzl",
+    "sphinx_reredirects",
 ]
 
 autodoc2_packages = [
@@ -58,6 +59,39 @@ This page contains auto-generated API reference documentation [#f1]_.
 autodoc2_docstring_parser_regexes = [
     (".*", "myst"),
 ]
+
+# NOTE: The redirects generation will clobber existing files.
+redirects = {
+    "api/tools/precompiler/index": "/api/rules_python/tools/precompiler/index.html",
+    "api/python/py_library": "/api/rules_python/python/py_library.html",
+    "api/python/py_binary": "/api/rules_python/python/py_binary.html",
+    "api/python/py_test": "/api/rules_python/python/py_test.html",
+    "api/python/defs": "/api/rules_python/python/defs.html",
+    "api/python/index": "/api/rules_python/python/index.html",
+    "api/python/py_runtime_info": "/api/rules_python/python/py_runtime_info.html",
+    "api/python/private/common/py_library_rule_bazel": "/api/rules_python/python/private/common/py_library_rule_bazel.html",
+    "api/python/private/common/py_test_rule_bazel": "/api/rules_python/python/private/common/py_test_rule_bazel.html",
+    "api/python/private/common/py_binary_rule_bazel": "/api/rules_python/python/private/common/py_binary_rule_bazel.html",
+    "api/python/private/common/py_runtime_rule": "/api/rules_python/python/private/common/py_runtime_rule.html",
+    "api/python/extensions/pip": "/api/rules_python/python/extensions/pip.html",
+    "api/python/extensions/python": "/api/rules_python/python/extensions/python.html",
+    "api/python/entry_points/py_console_script_binary": "/api/rules_python/python/entry_points/py_console_script_binary.html",
+    "api/python/cc/py_cc_toolchain_info": "/api/rules_python/python/cc/py_cc_toolchain_info.html",
+    "api/python/cc/index": "/api/rules_python/python/cc/index.html",
+    "api/python/py_cc_link_params_info": "/api/rules_python/python/py_cc_link_params_info.html",
+    "api/python/runtime_env_toolchains/index": "/api/rules_python/python/runtime_env_toolchains/index.html",
+    "api/python/pip": "/api/rules_python/python/pip.html",
+    "api/python/config_settings/index": "/api/rules_python/python/config_settings/index.html",
+    "api/python/packaging": "/api/rules_python/python/packaging.html",
+    "api/python/py_runtime": "/api/rules_python/python/py_runtime.html",
+    "api/sphinxdocs/sphinx": "/api/sphinxdocs/sphinxdocs/sphinx.html",
+    "api/sphinxdocs/sphinx_stardoc": "/api/sphinxdocs/sphinxdocs/sphinx_stardoc.html",
+    "api/sphinxdocs/readthedocs": "/api/sphinxdocs/sphinxdocs/readthedocs.html",
+    "api/sphinxdocs/index": "/api/sphinxdocs/sphinxdocs/index.html",
+    "api/sphinxdocs/private/sphinx_docs_library": "/api/sphinxdocs/sphinxdocs/private/sphinx_docs_library.html",
+    "api/sphinxdocs/sphinx_docs_library": "/api/sphinxdocs/sphinxdocs/sphinx_docs_library.html",
+    "api/sphinxdocs/inventories/index": "/api/sphinxdocs/sphinxdocs/inventories/index.html",
+}
 
 # Adapted from the template code:
 # https://github.com/readthedocs/readthedocs.org/blob/main/readthedocs/doc_builder/templates/doc_builder/conf.py.tmpl
