@@ -47,7 +47,7 @@ python.override(
         "3.10.14",
     ],
 )
-python.version_override(
+python.single_version_override(
     sha256s = {
         "aarch64-apple-darwin": "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
         "aarch64-unknown-linux-gnu": "8f351a8cc348bb45c0f95b8634c8345ec6e749e483384188ad865b7428342703",

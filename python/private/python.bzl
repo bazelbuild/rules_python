@@ -269,7 +269,7 @@ def _process_tag_classes(mod, fail = fail):
         seen_versions[tag.python_version] = True
 
     if mod.is_root:
-        for tag in mod.tags.version_override:
+        for tag in mod.tags.single_version_override:
             sha256 = {}
             for p, sha in tag.sha256s.items():
                 if p not in PLATFORMS:
@@ -430,8 +430,8 @@ _override = tag_class(
     },
 )
 
-_version_override = tag_class(
-    doc = """Tag class used to override single python version settings.""",
+_single_version_override = tag_class(
+    doc = """Override single python version settings.""",
     attrs = {
         "sha256s": attr.string_dict(
             mandatory = False,
@@ -460,8 +460,8 @@ python = module_extension(
     tag_classes = {
         "override": _override,
         "rules_python_private_testing": _rules_python_private_testing,
+        "single_version_override": _single_version_override,
         "toolchain": _toolchain,
-        "version_override": _version_override,
     },
     **_get_bazel_version_specific_kwargs()
 )
