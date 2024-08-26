@@ -169,6 +169,7 @@ def _create_executable(
     _ = is_test, cc_details, native_deps_details  # @unused
 
     interpreter_opts = ""
+
     # If the runtime interpreter has been detected and its version is 3.11 or higher, enable safe-path mode
     # by passing the -P argument to the interpreter
     if hasattr(runtime_details.effective_runtime, "interpreter_version_info"):
