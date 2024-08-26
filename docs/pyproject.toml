@@ -11,5 +11,6 @@ dependencies = [
     "sphinx_rtd_theme >=2.0", # uv insists on downgrading for some reason
     "readthedocs-sphinx-ext",
     "absl-py",
-    "typing-extensions"
+    "typing-extensions",
+    "sphinx-reredirects"
 ]
