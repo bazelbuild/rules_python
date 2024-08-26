@@ -673,7 +673,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
             patches = patches[platform]
         else:
             patches = []
-    patch_strip = tool_versions[python_version].get("patch_strip", None)
+    patch_strip = tool_versions[python_version].get("patch_strip")
 
     return (release_filename, rendered_urls, strip_prefix, patches, patch_strip)
 

@@ -443,8 +443,7 @@ _single_version_override = tag_class(
         "patch_strip": attr.int(
             mandatory = False,
             doc = "Same as the --strip argument of Unix patch.",
-            # TODO @aignas 2024-08-26: switch to 0 when 0.36.0 is released
-            default = 1,
+            default = 0,
         ),
         "patches": attr.string_list_dict(
             mandatory = False,

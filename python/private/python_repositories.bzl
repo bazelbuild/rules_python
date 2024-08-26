@@ -502,7 +502,16 @@ For more information see {attr}`py_runtime.coverage_tool`.
             doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
         ),
         "patch_strip": attr.int(
-            doc = "Same as the --strip argument of Unix patch.",
+            doc = """Same as the --strip argument of Unix patch.
+
+:::{note}
+The default value of `1` is kept for backwards compatibility, it will be set to
+`0` in a later release.
+:::
+
+:::{versionadded} 0.36.0
+:::
+""",
             # TODO @aignas 2024-08-26: switch to 0 when 0.36.0 is released
             default = 1,
             mandatory = False,
