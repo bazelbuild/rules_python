@@ -53,6 +53,11 @@ While MyST isn't required for the core `sphinx_bzl` plugin to work, this
 document uses MyST syntax because `sphinx_stardoc` bzl doc gen rule requires
 MyST.
 
+The main difference in syntax is:
+* MyST directives use `:::{name}` with closing `:::` instead of `.. name::` with
+  indented content.
+* MyST roles use `{role:name}` instead of `:role:name:`
+
 ## Type expressions
 
 Several roles or fields accept type expressions. Type expressions use
@@ -78,7 +83,7 @@ will try to find something that matches. Additionally, in `.bzl` code, the
 {obj}`py_binary`
 ```
 
-The text that is displayed by be customized by putting the reference string in
+The text that is displayed can be customized by putting the reference string in
 chevrons (`<>`):
 
 ```
@@ -102,23 +107,52 @@ syntaxes](https://myst-parser.readthedocs.io/en/latest/syntax/cross-referencing.
 ### Cross reference roles
 
 A cross reference role is the `obj` portion of `{bzl:obj}`. It affects what is
-searched and matched. Supported cross reference roles are:
+searched and matched.
 
-* `{bzl:arg}`: Refer to a function argument.
-* `{bzl:attr}`: Refer to a rule attribute.
-* `{bzl:flag}`: Refer to a flag.
-* `{bzl:obj}`: Refer to any type of Bazel object
-* `{bzl:rule}`: Refer to a rule.
-* `{bzl:target}`: Refer to a target.
-* `{bzl:type}`: Refer to a type or type expression; can also be used in argument
-  documentation.
+:::{note}
+The documentation renders using RST notation (`:foo:role:`), not
+MyST notation (`{foo:role}`.
+:::
+
+:::{rst:role} bzl:arg
+Refer to a function argument.
+:::
+
+:::{rst:role} bzl:attr
+Refer to a rule attribute.
+:::
+
+:::{rst:role} bzl:flag
+Refer to a flag.
+:::
+
+:::{rst:role} bzl:obj
+Refer to any type of Bazel object
+:::
+
+:::{rst:role} bzl:rule
+Refer to a rule.
+:::
+
+:::{rst:role} bzl:target
+Refer to a target.
+:::
+
+:::{rst:role} bzl:type
+Refer to a type or type expression; can also be used in argument documentation.
+:::
 
 ## Special roles
 
 There are several special roles that can be used to annotate parts of objects,
 such as the type of arguments or their default values.
 
-### Role bzl:default-value
+:::{note}
+The documentation renders using RST notation (`:foo:role:`), not
+MyST notation (`{foo:role}`.
+:::
+
+:::{rst:role} bzl:default-value
 
 Indicate the default value for a function argument or rule attribute. Use it in
 the Args doc of a function or the doc text of an attribute.
@@ -135,8 +169,9 @@ my_rule = rule(attrs = {
 })
 
 ```
+:::
 
-### Role bzl:return-type
+:::{rst:role} bzl:return-type
 
 Indicates the return type for a function. Use it in the Returns doc of a
 function.
@@ -150,8 +185,9 @@ def func():
     """
     return 1
 ```
+:::
 
-### Role bzl:type
+:::{rst:role} bzl:type
 
 Indicates the type of an argument for a function. Use it in the Args doc of
 a function.
@@ -165,6 +201,7 @@ def func(arg):
     """
     print(arg + 1)
 ```
+:::
 
 ## Directives
 
@@ -182,15 +219,26 @@ Doc about target
 :::
 ```
 
-### Directive bzl:currentfile
+:::{note}
+The documentation renders using RST notation (`.. directive::`), not
+MyST notation.
+:::
+
+:::{rst:directive} .. bzl:currentfile:: file
 
 This directive indicates the Bazel file that objects defined in the current
 documentation file are in. This is required for any page that defines Bazel
-objects.
+objects. The format of `file` is Bazel label syntax, e.g. `//foo:bar.bzl` for bzl
+files, and `//foo:BUILD.bazel` for things in BUILD files.
 
-### Directive bzl:target
+:::
 
-Documents a target. It takes no directive options
+
+:::{rst:directive} .. bzl:target:: target
+
+Documents a target. It takes no directive options. The format of `target`
+can either be a fully qualified label (`//foo:bar`), or the base target name
+relative to `{bzl:currentfile}`.
 
 ```
 :::{bzl:target} //foo:target
@@ -199,6 +247,8 @@ My docs
 :::
 ```
 
-### Directive bzl:flag
+:::{rst:directive} .. bzl:flag:: target
 
-Documents a flag. It has the same format as `bzl:target`
+Documents a flag. It has the same format as `{bzl:target}`
+:::
+

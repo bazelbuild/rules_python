@@ -20,13 +20,14 @@ sphinx_docs_library(
     name = "docs_lib",
     deps = [
         ":artisian_api_docs",
-        ":artisian_docs",
         ":bzl_docs",
+        ":py_api_srcs",
+        ":regular_docs",
     ],
 )
 
 sphinx_docs_library(
-    name = "artisian_docs",
+    name = "regular_docs",
     srcs = glob(
         ["**/*.md"],
         exclude = ["api/**"],
@@ -39,6 +40,8 @@ sphinx_docs_library(
     srcs = glob(
         ["api/**/*.md"],
     ),
+    prefix = "api/sphinxdocs/",
+    strip_prefix = "sphinxdocs/docs/api/",
 )
 
 sphinx_stardocs(
@@ -50,6 +53,12 @@ sphinx_stardocs(
         "//sphinxdocs:sphinx_stardoc_bzl",
         "//sphinxdocs/private:sphinx_docs_library_bzl",
     ],
-    prefix = "api/",
+    prefix = "api/sphinxdocs/",
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
+)
+
+sphinx_docs_library(
+    name = "py_api_srcs",
+    srcs = ["//sphinxdocs/src/sphinx_bzl"],
+    strip_prefix = "sphinxdocs/src/",
 )
