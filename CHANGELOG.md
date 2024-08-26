@@ -25,7 +25,12 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
+* (gazelle): Update error messages when unable to resolve a dependency to be
+  more human-friendly.
+* (toolchain): The toolchain patches now expose the `patch_strip` attribute
+  that one should use when patching toolchains. Please set it if you are
+  patching python interpreter. In the next release the default will be set to
+  `0` which better reflects the defaults used in public `bazel` APIs.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the

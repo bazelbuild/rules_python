@@ -298,6 +298,7 @@ bzl_library(
     srcs = ["toolchains_repo.bzl"],
     deps = [
         ":repo_utils_bzl",
+        ":text_util_bzl",
         "//python:versions_bzl",
     ],
 )

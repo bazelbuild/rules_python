@@ -147,7 +147,7 @@ def _python_impl(module_ctx):
                     base_url = python_tools.base_url,
                     ignore_root_user_error = ignore_root_user_error,
                     tool_versions = python_tools.available_versions,
-                    # TODO @aignas 2024-08-08: allow to modify these values via the bzlmod extension
+                    # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
                     # distutils_content = None,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
@@ -280,11 +280,16 @@ def _process_tag_classes(mod, fail = fail):
 
                 sha256[p] = sha
 
-            available_versions[tag.version] = {
+            version = {
+                "patch_strip": tag.patch_strip,
+                # Use a list if there is only a single item the key is `*`,
+                # otherwise pass the dict down to the toolchain rule.
+                "patches": tag.patches.get("*", tag.patches) if len(tag.patches) == 1 else tag.patches,
                 "sha256": sha256,
                 "strip_prefix": tag.strip_prefix,
                 "url": tag.url,
             }
+            available_versions[tag.version] = version
 
         register_all = False
         for tag in mod.tags.override:
@@ -342,12 +347,6 @@ def _get_bazel_version_specific_kwargs():
         kwargs["environ"] = ["RULES_PYTHON_BZLMOD_DEBUG"]
 
     return kwargs
-
-_rules_python_private_testing = tag_class(
-    attrs = {
-        "register_all_versions": attr.bool(default = False),
-    },
-)
 
 _toolchain = tag_class(
     doc = """Tag class used to register Python toolchains.
@@ -413,7 +412,11 @@ can result in spurious build failures.
 )
 
 _override = tag_class(
-    doc = """Tag class used to override defaults and behaviour of the module extension.""",
+    doc = """Tag class used to override defaults and behaviour of the module extension.
+
+:::{versionadded} 0.36.0
+:::
+""",
     attrs = {
         "available_python_versions": attr.string_list(
             mandatory = False,
@@ -426,13 +429,27 @@ _override = tag_class(
         ),
 
         # Internal attributes that are only usable from `rules_python`
-        "register_all_versions": attr.bool(default = False, doc = "rules_python internal use only"),
+        "register_all_versions": attr.bool(default = False, doc = "`rules_python` **internal** use only!"),
     },
 )
 
 _single_version_override = tag_class(
-    doc = """Override single python version settings.""",
+    doc = """Override single python version settings.
+
+:::{versionadded} 0.36.0
+:::
+""",
     attrs = {
+        "patch_strip": attr.int(
+            mandatory = False,
+            doc = "Same as the --strip argument of Unix patch.",
+            # TODO @aignas 2024-08-26: switch to 0 when 0.36.0 is released
+            default = 1,
+        ),
+        "patches": attr.string_list_dict(
+            mandatory = False,
+            doc = "A list of labels pointing to patch files to apply for this module as values with keys as values from the PLATFORMS dict. The patch files must exist in the source tree of the top level project. They are applied in the list order. If patches have a single key '*', then the patches will be applied to all available interpreters for that version.",
+        ),
         "sha256s": attr.string_dict(
             mandatory = False,
             doc = "The python platform to sha256 dict. The platform key must be present in the PLATFORMS dict.",
@@ -459,7 +476,6 @@ python = module_extension(
     implementation = _python_impl,
     tag_classes = {
         "override": _override,
-        "rules_python_private_testing": _rules_python_private_testing,
         "single_version_override": _single_version_override,
         "toolchain": _toolchain,
     },

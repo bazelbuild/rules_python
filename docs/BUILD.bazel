@@ -94,6 +94,8 @@ sphinx_stardocs(
         "//python/private/common:py_library_rule_bazel_bzl",
         "//python/private/common:py_runtime_rule_bzl",
         "//python/private/common:py_test_rule_bazel_bzl",
+        # FIXME @aignas 2024-08-26: should we have this here?
+        "//python:repositories_bzl",
     ] + ([
         # Bazel 6 + Stardoc isn't able to parse something about the python bzlmod extension
         "//python/extensions:python_bzl",

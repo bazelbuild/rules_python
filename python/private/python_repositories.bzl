@@ -47,8 +47,10 @@ def http_archive(**kwargs):
 def py_repositories():
     """Runtime dependencies that users must install.
 
-    This function should be loaded and called in the user's WORKSPACE.
-    With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
+    This function should be loaded and called in the user's `WORKSPACE`.
+
+    With `bzlmod` enabled, this function is not needed since `MODULE.bazel`
+    handles transitive deps.
     """
     maybe(
         internal_config_repo,
@@ -178,8 +180,7 @@ def _python_repository_impl(rctx):
     patches = rctx.attr.patches
     if patches:
         for patch in patches:
-            # Should take the strip as an attr, but this is fine for the moment
-            rctx.patch(patch, strip = 1)
+            rctx.patch(patch, strip = rctx.attr.patch_strip)
 
     # Write distutils.cfg to the Python installation.
     if "windows" in platform:
@@ -450,6 +451,7 @@ py_exec_tools_toolchain(
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
         "netrc": rctx.attr.netrc,
+        "patch_strip": rctx.attr.patch_strip,
         "patches": rctx.attr.patches,
         "platform": platform,
         "python_version": python_version,
@@ -473,27 +475,11 @@ python_repository = repository_rule(
             doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
         ),
         "coverage_tool": attr.string(
-            # Mirrors the definition at
-            # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
             doc = """
-This is a target to use for collecting code coverage information from `py_binary`
-and `py_test` targets.
+This is a target to use for collecting code coverage information from {rule}`py_binary`
+and {rule}`py_test` targets.
 
-If set, the target must either produce a single file or be an executable target.
-The path to the single file, or the executable if the target is executable,
-determines the entry point for the python coverage tool.  The target and its
-runfiles will be added to the runfiles when coverage is enabled.
-
-The entry point for the tool must be loadable by a Python interpreter (e.g. a
-`.py` or `.pyc` file).  It must accept the command line arguments
-of coverage.py (https://coverage.readthedocs.io), at least including
-the `run` and `lcov` subcommands.
-
-The target is accepted as a string by the python_repository and evaluated within
-the context of the toolchain repository.
-
-For more information see the official bazel docs
-(https://bazel.build/reference/be/python#py_runtime.coverage_tool).
+For more information see {attr}`py_runtime.coverage_tool`.
 """,
         ),
         "distutils": attr.label(
@@ -514,6 +500,12 @@ For more information see the official bazel docs
         ),
         "netrc": attr.string(
             doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
+        ),
+        "patch_strip": attr.int(
+            doc = "Same as the --strip argument of Unix patch.",
+            # TODO @aignas 2024-08-26: switch to 0 when 0.36.0 is released
+            default = 1,
+            mandatory = False,
         ),
         "patches": attr.label_list(
             doc = "A list of patch files to apply to the unpacked interpreter",
@@ -568,22 +560,28 @@ def python_register_toolchains(
         register_toolchains = True,
         register_coverage_tool = False,
         set_python_version_constraint = False,
-        tool_versions = TOOL_VERSIONS,
+        tool_versions = None,
         **kwargs):
-    """Convenience macro for users which does typical setup.
+    """Convenience macro for users which does typical setup in `WORKSPACE`.
 
     - Create a repository for each built-in platform like "python_linux_amd64" -
       this repository is lazily fetched when Python is needed for that platform.
     - Create a repository exposing toolchains for each platform like
       "python_platforms".
     - Register a toolchain pointing at each platform.
+
     Users can avoid this macro and do these steps themselves, if they want more
     control.
+
+    With `bzlmod` enabled, this function is not needed since `rules_python` is
+    handling everything. In order to override the default behaviour from the
+    root module one can see the docs for the {rule}`python` extension.
+
     Args:
         name: base name for all created repos, like "python38".
         python_version: the Python version.
-        distutils: see the distutils attribute in the python_repository repository rule.
-        distutils_content: see the distutils_content attribute in the python_repository repository rule.
+        distutils: see the {attr}`python_repository.distutils`.
+        distutils_content: see the {attr}`python_repository.distutils_content`.
         register_toolchains: Whether or not to register the downloaded toolchains.
         register_coverage_tool: Whether or not to register the downloaded coverage tool to the toolchains.
             NOTE: Coverage support using the toolchain is only supported in Bazel 6 and higher.
@@ -591,8 +589,10 @@ def python_register_toolchains(
         set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
         tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
             in python/versions.bzl will be used.
-        **kwargs: passed to each python_repositories call.
+        **kwargs: passed to each {rule}`python_repositories` call.
     """
+
+    tool_versions = tool_versions or TOOL_VERSIONS
 
     if BZLMOD_ENABLED:
         # you cannot used native.register_toolchains when using bzlmod.
@@ -626,7 +626,7 @@ def python_register_toolchains(
             continue
 
         loaded_platforms.append(platform)
-        (release_filename, urls, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
+        (release_filename, urls, strip_prefix, patches, patch_strip) = get_release_info(platform, python_version, base_url, tool_versions)
 
         # allow passing in a tool version
         coverage_tool = None
@@ -651,6 +651,7 @@ def python_register_toolchains(
                 platform = platform,
             ),
             sha256 = sha256,
+            patches = patch_strip,
             patches = patches,
             platform = platform,
             python_version = python_version,
@@ -660,6 +661,10 @@ def python_register_toolchains(
             distutils_content = distutils_content,
             strip_prefix = strip_prefix,
             coverage_tool = coverage_tool,
+            # Will be one of
+            # * auth_patterns
+            # * ignore_root_user_error
+            # * netrc
             **kwargs
         )
         if register_toolchains:
@@ -713,7 +718,7 @@ def python_register_multi_toolchains(
         python_versions: the Python version.
         default_version: the default Python version. If not set, the first version in
             python_versions is used.
-        **kwargs: passed to each python_register_toolchains call.
+        **kwargs: passed to each {rule}`python_register_toolchains` call.
     """
     if len(python_versions) == 0:
         fail("python_versions must not be empty")
