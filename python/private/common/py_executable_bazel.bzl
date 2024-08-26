@@ -168,6 +168,14 @@ def _create_executable(
         runfiles_details):
     _ = is_test, cc_details, native_deps_details  # @unused
 
+    # If the runtime interpreter has been detected and its version is 3.11 or higher, enable safe-path mode
+    # by passing the -P argument to the interpreter
+    interpreter_version_info = runtime_details.effective_runtime.interpreter_version_info
+    if interpreter_version_info and interpreter_version_info.major >= 3 and interpreter_version_info.minor >= 11:
+        interpreter_opts = "-P"
+    else:
+        interpreter_opts = ""
+
     is_windows = target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints)
 
     if is_windows:
@@ -207,6 +215,7 @@ def _create_executable(
             output = zip_main,
             main_py = main_py,
             imports = imports,
+            interpreter_opts = interpreter_opts,
             is_for_zip = True,
             runtime_details = runtime_details,
         )
@@ -270,6 +279,7 @@ def _create_executable(
             ctx,
             output = executable,
             zip_file = zip_file,
+            interpreter_opts = interpreter_opts,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
         )
@@ -281,6 +291,7 @@ def _create_executable(
             runtime_details = runtime_details,
             is_for_zip = False,
             imports = imports,
+            interpreter_opts = interpreter_opts,
             main_py = main_py,
         )
     else:
@@ -368,11 +379,13 @@ def _create_stage1_bootstrap(
         main_py = None,
         stage2_bootstrap = None,
         imports = None,
+        interpreter_opts,
         is_for_zip,
         runtime_details):
     runtime = runtime_details.effective_runtime
 
     subs = {
+        "%interpreter_opts%": interpreter_opts,
         "%is_zipfile%": "1" if is_for_zip else "0",
         "%python_binary%": runtime_details.executable_interpreter_path,
         "%target%": str(ctx.label),
@@ -522,7 +535,7 @@ def _get_zip_runfiles_path(path, workspace_name, legacy_external_runfiles):
         zip_runfiles_path = paths.normalize("{}/{}".format(workspace_name, path))
     return "{}/{}".format(_ZIP_RUNFILES_DIRECTORY_NAME, zip_runfiles_path)
 
-def _create_executable_zip_file(ctx, *, output, zip_file, stage2_bootstrap, runtime_details):
+def _create_executable_zip_file(ctx, *, output, zip_file, interpreter_opts, stage2_bootstrap, runtime_details):
     prelude = ctx.actions.declare_file(
         "{}_zip_prelude.sh".format(output.basename),
         sibling = output,
@@ -533,6 +546,7 @@ def _create_executable_zip_file(ctx, *, output, zip_file, stage2_bootstrap, runt
             output = prelude,
             stage2_bootstrap = stage2_bootstrap,
             runtime_details = runtime_details,
+            interpreter_opts = interpreter_opts,
             is_for_zip = True,
         )
     else:
