@@ -1,4 +1,4 @@
-# Copyright 2023 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import os
 
-import bar
-import baz
-import foo
-
-# Ensure that even though @gazelle_python_test//other_pip_dep provides "third_party",
-# we can still override "third_party.foo.bar"
-import third_party.foo.bar
-
-from third_party import baz
-
-import third_party
-
-_ = sys
-_ = bar
-_ = baz
-_ = foo
+_ = os

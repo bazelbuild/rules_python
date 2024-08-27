@@ -15,4 +15,5 @@
 manifest:
   modules_mapping:
     foo: some_foo
+    third_party: other_pip_dep
   pip_deps_repository_name: gazelle_python_test
