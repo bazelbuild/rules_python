@@ -77,6 +77,10 @@ def _py_runtime_impl(ctx):
     else:
         coverage_tool = None
         coverage_files = None
+    if ctx.attr.coverage_rc:
+        coverage_rc = ctx.attr.coverage_rc.files.to_list()[0]
+    else:
+        coverage_rc = None
 
     python_version = ctx.attr.python_version
 
@@ -117,6 +121,7 @@ def _py_runtime_impl(ctx):
     py_runtime_info_kwargs.update(dict(
         implementation_name = ctx.attr.implementation_name,
         interpreter_version_info = interpreter_version_info,
+        coverage_rc = coverage_rc,
         pyc_tag = pyc_tag,
         stage2_bootstrap_template = ctx.file.stage2_bootstrap_template,
         zip_main_template = ctx.file.zip_main_template,
@@ -215,6 +220,12 @@ The entry point for the tool must be loadable by a Python interpreter (e.g. a
 of coverage.py (https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
 """,
+        ),
+        "coverage_rc": attr.label(
+            allow_single_file = True,
+            doc = ".converage or pyproject.toml or " +
+                  "for configure coverage tool",
+            mandatory = False,
         ),
         "files": attr.label_list(
             allow_files = True,

@@ -313,6 +313,7 @@ define_hermetic_runtime_toolchain_impl(
   python_version = {python_version},
   python_bin = {python_bin},
   coverage_tool = {coverage_tool},
+  coverage_rc = {coverage_rc},
 )
 """.format(
         extra_files_glob_exclude = render.list(glob_exclude),
@@ -320,6 +321,7 @@ define_hermetic_runtime_toolchain_impl(
         python_bin = render.str(python_bin),
         python_version = render.str(rctx.attr.python_version),
         coverage_tool = render.str(coverage_tool),
+        coverage_rc = rctx.attr.coverage_rc,
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -329,6 +331,7 @@ define_hermetic_runtime_toolchain_impl(
     attrs = {
         "auth_patterns": rctx.attr.auth_patterns,
         "coverage_tool": rctx.attr.coverage_tool,
+        "coverage_rc": rctx.attr.coverage_rc,
         "distutils": rctx.attr.distutils,
         "distutils_content": rctx.attr.distutils_content,
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
@@ -380,6 +383,12 @@ the context of the toolchain repository.
 For more information see the official bazel docs
 (https://bazel.build/reference/be/python#py_runtime.coverage_tool).
 """,
+        ),
+        "coverage_rc": attr.label(
+            allow_single_file = True,
+            doc = ".converage or pyproject.toml or " +
+                  "for configure coverage tool",
+            mandatory = False,
         ),
         "distutils": attr.label(
             allow_single_file = True,
@@ -465,6 +474,7 @@ def python_register_toolchains(
         python_version,
         register_toolchains = True,
         register_coverage_tool = False,
+        coverage_rc = None,
         set_python_version_constraint = False,
         tool_versions = None,
         minor_mapping = None,
@@ -564,6 +574,7 @@ def python_register_toolchains(
             urls = urls,
             strip_prefix = strip_prefix,
             coverage_tool = coverage_tool,
+            coverage_rc = coverage_rc,
             **kwargs
         )
         if register_toolchains:

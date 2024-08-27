@@ -32,6 +32,7 @@ WORKSPACE_NAME = "%workspace_name%"
 IMPORT_ALL = True if "%import_all%" == "True" else False
 # Runfiles-relative path to the coverage tool entry point, if any.
 COVERAGE_TOOL = "%coverage_tool%"
+COVERAGE_RCFILE = "%coverage_rc%"
 
 # ===== Template substitutions end =====
 
@@ -344,14 +345,16 @@ def _maybe_collect_coverage(enable):
     coverage_dir = os.environ["COVERAGE_DIR"]
     unique_id = uuid.uuid4()
 
-    # We need for coveragepy to use relative paths.  This can only be configured
-    rcfile_name = os.path.join(coverage_dir, ".coveragerc_{}".format(unique_id))
-    with open(rcfile_name, "w") as rcfile:
-        rcfile.write(
-            """[run]
-relative_files = True
-"""
-        )
+    rcfile_name = COVERAGE_RCFILE
+    if not rcfile_name:
+        # We need for coveragepy to use relative paths.  This can only be configured
+        rcfile_name = os.path.join(coverage_dir, ".coveragerc_{}".format(unique_id))
+        with open(rcfile_name, "w") as rcfile:
+            rcfile.write(
+                """[run]
+    relative_files = True
+    """
+            )
     try:
         cov = coverage.Coverage(
             config_file=rcfile_name,

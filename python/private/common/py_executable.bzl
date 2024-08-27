@@ -320,6 +320,8 @@ def _get_runtime_details(ctx, semantics):
                 direct.append(effective_runtime.coverage_tool)
             if effective_runtime.coverage_files:
                 transitive.append(effective_runtime.coverage_files)
+            if effective_runtime.coverage_rc:
+                direct.append(effective_runtime.coverage_rc)
         runtime_files = depset(direct = direct, transitive = transitive)
     else:
         runtime_files = depset()
