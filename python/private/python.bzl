@@ -260,8 +260,22 @@ def _fail_multiple_default_toolchains(first, second):
 def _process_tag_classes(mod, fail = fail):
     registrations = []
     seen_versions = {}
-    available_versions = {}
-    available_versions.update(TOOL_VERSIONS)
+    available_versions = {
+        version: {
+            # Use a dicts straight away so that we could do URL overrides for a
+            # single version.
+            "sha256": dict(item["sha256"]),
+            "strip_prefix": {
+                platform: item["strip_prefix"]
+                for platform in item["sha256"]
+            },
+            "url": {
+                platform: [item["url"]]
+                for platform in item["sha256"]
+            },
+        }
+        for version, item in TOOL_VERSIONS.items()
+    }
     base_url = DEFAULT_RELEASE_BASE_URL
 
     for tag in mod.tags.toolchain:
@@ -270,26 +284,54 @@ def _process_tag_classes(mod, fail = fail):
 
     if mod.is_root:
         for tag in mod.tags.single_version_override:
-            sha256 = {}
-            for p, sha in tag.sha256s.items():
-                if p not in PLATFORMS:
+            for platform in tag.sha256 or []:
+                if platform not in PLATFORMS:
                     fail("The platform must be one of {allowed} but got '{got}'".format(
                         allowed = sorted(PLATFORMS),
-                        got = p,
+                        got = platform,
                     ))
 
-                sha256[p] = sha
-
-            version = {
-                "patch_strip": tag.patch_strip,
-                # Use a list if there is only a single item the key is `*`,
-                # otherwise pass the dict down to the toolchain rule.
-                "patches": tag.patches.get("*", tag.patches) if len(tag.patches) == 1 else tag.patches,
-                "sha256": sha256,
-                "strip_prefix": tag.strip_prefix,
-                "url": tag.url,
+            override = {
+                "patch_strip": {
+                    platform: tag.patch_strip
+                    for platform in tag.sha256
+                },
+                "patches": {
+                    platform: list(tag.patches)
+                    for platform in tag.sha256
+                },
+                "sha256": dict(tag.sha256),
+                "strip_prefix": {
+                    platform: tag.strip_prefix
+                    for platform in tag.sha256
+                },
+                "url": {
+                    platform: list(tag.urls)
+                    for platform in tag.sha256
+                },
             }
-            available_versions[tag.version] = version
+            available_versions[tag.version] = override
+
+        for tag in mod.tags.single_version_platform_override:
+            if tag.version not in available_versions:
+                if not tag.urls or not tag.sha256 or not tag.strip_prefix:
+                    fail("When introducing a new version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.version))
+                available_versions[tag.version] = {
+                    "sha256": {tag.platform: tag.sha256},
+                    "strip_prefix": {tag.platform: tag.strip_prefix},
+                    "url": {tag.platform: tag.urls},
+                }
+
+            if tag.sha256:
+                available_versions[tag.version]["sha256"][tag.platform] = tag.sha256
+            if tag.urls:
+                available_versions[tag.version]["url"][tag.platform] = tag.urls
+            if tag.strip_prefix:
+                available_versions[tag.version]["strip_prefix"][tag.platform] = tag.strip_prefix
+            if tag.patch_strip:
+                available_versions[tag.version]["patch_strip"][tag.platform] = tag.patch_strip
+            if tag.patches:
+                available_versions[tag.version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
 
         register_all = False
         for tag in mod.tags.override:
@@ -434,7 +476,15 @@ _override = tag_class(
 )
 
 _single_version_override = tag_class(
-    doc = """Override single python version settings.
+    doc = """Override single python version URLs and patches for all platforms.
+
+:::{note}
+This will replace any existing configuration for the given python version.
+
+If you would like to modify the configuration for a specific `(version,
+platform), please use the {rule}`python.single_version_platform_override` tag
+class.
+:::
 
 :::{versionadded} 0.36.0
 :::
@@ -445,22 +495,71 @@ _single_version_override = tag_class(
             doc = "Same as the --strip argument of Unix patch.",
             default = 0,
         ),
-        "patches": attr.string_list_dict(
+        "patches": attr.label_list(
             mandatory = False,
-            doc = "A list of labels pointing to patch files to apply for this module as values with keys as values from the PLATFORMS dict. The patch files must exist in the source tree of the top level project. They are applied in the list order. If patches have a single key '*', then the patches will be applied to all available interpreters for that version.",
+            doc = "A list of labels pointing to patch files to apply for the interpreter repository. They are applied in the list order and are applied before any platform-specific patches are applied.",
         ),
-        "sha256s": attr.string_dict(
-            mandatory = False,
-            doc = "The python platform to sha256 dict. The platform key must be present in the PLATFORMS dict.",
+        "sha256": attr.string_dict(
+            mandatory = True,
+            doc = "The python platform to sha256 dict. See {attr}`python.single_version_platform_override.platform` for allowed key values.",
         ),
         "strip_prefix": attr.string(
             mandatory = False,
             doc = "The 'strip_prefix' for the archive, defaults to 'python'.",
             default = "python",
         ),
-        "url": attr.string(
+        "urls": attr.string_list(
             mandatory = True,
-            doc = "The URL template to fetch releases for this Python version. If the URL template results in a relative fragment, default base URL is going to be used. Occurrences of {python_version}, {platform} and {build} will be interpolated based on the contents in the override and the PLATFORMS dict.",
+            doc = "The URL template to fetch releases for this Python version. See {attr}`python.single_version_platform_override.urls` for documentation.",
+        ),
+        "version": attr.string(
+            mandatory = True,
+            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
+        ),
+    },
+)
+
+_single_version_platform_override = tag_class(
+    doc = """Override single python version for a single existing platform.
+
+If the `(version, platform)` is new, we will add it to the existing versions and will
+use the same `url` template.
+
+:::{note}
+If you would like to add or remove platforms to a single python version toolchain
+configuration, please use {rule}`python.single_version_override`.
+:::
+
+:::{versionadded} 0.36.0
+:::
+""",
+    attrs = {
+        "patch_strip": attr.int(
+            mandatory = False,
+            doc = "Same as the --strip argument of Unix patch.",
+            default = 0,
+        ),
+        "patches": attr.label_list(
+            mandatory = False,
+            doc = "A list of labels pointing to patch files to apply for the interpreter repository. They are applied in the list order and are applied after the common patches are applied.",
+        ),
+        "platform": attr.string(
+            mandatory = True,
+            values = PLATFORMS.keys(),
+            doc = "The platform to override the values for, must be one of:\n{}.".format("\n".join(sorted(["* `{}`".format(p) for p in PLATFORMS]))),
+        ),
+        "sha256": attr.string(
+            mandatory = False,
+            doc = "The sha256 for the archive",
+        ),
+        "strip_prefix": attr.string(
+            mandatory = False,
+            doc = "The 'strip_prefix' for the archive, defaults to 'python'.",
+            default = "python",
+        ),
+        "urls": attr.string_list(
+            mandatory = False,
+            doc = "The URL template to fetch releases for this Python version. If the URL template results in a relative fragment, default base URL is going to be used. Occurrences of `{python_version}`, `{platform}` and `{build}` will be interpolated based on the contents in the override and the known {attr}`platform` values.",
         ),
         "version": attr.string(
             mandatory = True,
@@ -476,6 +575,7 @@ python = module_extension(
     tag_classes = {
         "override": _override,
         "single_version_override": _single_version_override,
+        "single_version_platform_override": _single_version_platform_override,
         "toolchain": _toolchain,
     },
     **_get_bazel_version_specific_kwargs()

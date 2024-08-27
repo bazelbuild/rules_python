@@ -669,11 +669,11 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
 
     patches = tool_versions[python_version].get("patches", [])
     if type(patches) == type({}):
-        if platform in patches:
-            patches = patches[platform]
-        else:
-            patches = []
-    patch_strip = tool_versions[python_version].get("patch_strip")
+        patches = patches.get(platform, [])
+
+    patch_strip = tool_versions[python_version].get("patch_strip", None)
+    if type(patch_strip) == type({}):
+        patch_strip = patch_strip.get(platform, None)
 
     return (release_filename, rendered_urls, strip_prefix, patches, patch_strip)
 

@@ -660,7 +660,7 @@ def python_register_toolchains(
                 platform = platform,
             ),
             sha256 = sha256,
-            patches = patch_strip,
+            patch_strip = patch_strip,
             patches = patches,
             platform = platform,
             python_version = python_version,
