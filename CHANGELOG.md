@@ -48,7 +48,11 @@ A brief description of the categories of changes:
 * (bzlmod) Properly handle relative path URLs in parse_simpleapi_html.bzl
 
 ### Added
-* Nothing yet
+* (bzlmod): Toolchain overrides can now be done to fully override anything from
+  within the TOOL_VERSIONS dict using the new 
+  {rule}`python.override`,
+  {rule}`python.single_version_override` and
+  {rule}`python.single_version_platform_override`.
 
 ### Removed
 * Nothing yet
