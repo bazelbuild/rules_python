@@ -28,17 +28,16 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
 
-def _python_register_toolchains(name, toolchain_attr, module, **kwargs):
+def _python_register_toolchains(*, name, python_version, module, **kwargs):
     """Calls python_register_toolchains and returns a struct used to collect the toolchains.
     """
     python_register_toolchains(
         name = name,
-        python_version = toolchain_attr.python_version,
-        register_coverage_tool = toolchain_attr.configure_coverage_tool,
+        python_version = python_version,
         **kwargs
     )
     return struct(
-        python_version = toolchain_attr.python_version,
+        python_version = python_version,
         name = name,
         module = struct(name = module.name, is_root = module.is_root),
     )
@@ -140,12 +139,17 @@ def _python_impl(module_ctx):
                 toolchain_info = None
             else:
                 toolchain_info = _python_register_toolchains(
-                    toolchain_name,
-                    toolchain_attr,
+                    name = toolchain_name,
                     module = mod,
+                    python_version = toolchain_attr.python_version,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     # Extra kwargs to the underlying python_register_toolchains methods
-                    base_url = python_tools.base_url,
                     ignore_root_user_error = ignore_root_user_error,
+                    # TODO @aignas 2024-08-28: the `python_tools` values need
+                    # to be taken from the root module. As it is implemented
+                    # right now, it can race and we may get different results
+                    # based on the module iteration order.
+                    base_url = python_tools.base_url,
                     tool_versions = python_tools.available_versions,
                     # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
                     # distutils_content = None,
