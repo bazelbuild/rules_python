@@ -28,20 +28,6 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
 
-def _python_register_toolchains(*, name, python_version, module, **kwargs):
-    """Calls python_register_toolchains and returns a struct used to collect the toolchains.
-    """
-    python_register_toolchains(
-        name = name,
-        python_version = python_version,
-        **kwargs
-    )
-    return struct(
-        python_version = python_version,
-        name = name,
-        module = struct(name = module.name, is_root = module.is_root),
-    )
-
 def _python_impl(module_ctx):
     if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
         debug_info = {
@@ -138,12 +124,16 @@ def _python_impl(module_ctx):
                     )
                 toolchain_info = None
             else:
-                toolchain_info = _python_register_toolchains(
+                toolchain_info = struct(
+                    python_version = toolchain_attr.python_version,
+                    name = toolchain_name,
+                    module = struct(name = mod.name, is_root = mod.is_root),
+                )
+                python_register_toolchains(
                     name = toolchain_name,
                     module = mod,
                     python_version = toolchain_attr.python_version,
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                    # Extra kwargs to the underlying python_register_toolchains methods
                     ignore_root_user_error = ignore_root_user_error,
                     # TODO @aignas 2024-08-28: the `python_tools` values need
                     # to be taken from the root module. As it is implemented
