@@ -99,8 +99,9 @@ Determines whether pyc files from dependencies should be manually included.
 NOTE: This setting is only useful with {flag}`--precompile_add_to_runfiles=decided_elsewhere`.
 
 Valid values are:
+* `inherit`: Inherit the value from {flag}`--pyc_collection`.
 * `include_pyc`: Add pyc files from dependencies in the binary (from
-  `PyInfo.transitive_pyc_files`.
+  {obj}`PyInfo.transitive_pyc_files`.
 * `disabled`: Don't explicitly add pyc files from dependencies. Note that
   pyc files may still come from dependencies if a target includes them as
   part of their runfiles (such as when {obj}`--precompile_add_to_runfiles=always`

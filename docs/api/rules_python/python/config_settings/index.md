@@ -30,7 +30,7 @@ Values:
 Determines if Python source files should be compiled at build time.
 
 :::{note}
-The flag value is overridden by the target level `precompile` attribute,
+The flag value is overridden by the target level {attr}`precompile` attribute,
 except for the case of `force_enabled` and `forced_disabled`.
 :::
 
