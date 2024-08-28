@@ -46,7 +46,9 @@ A brief description of the categories of changes:
 * (gazelle) Correctly resolve deps that have top-level module overlap with a gazelle_python.yaml dep module
 
 ### Added
-* Nothing yet
+* (rules) Executables provide {obj}`PyExecutableInfo`, which contains
+  executable-specific information useful for packaging an executable or
+  or deriving a new one from the original.
 
 ### Removed
 * Nothing yet

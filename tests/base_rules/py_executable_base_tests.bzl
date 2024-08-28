@@ -18,9 +18,11 @@ load("@rules_python_internal//:rules_python_config.bzl", rp_config = "config")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
+load("//python:py_executable_info.bzl", "PyExecutableInfo")
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
+load("//tests/support:py_executable_info_subject.bzl", "PyExecutableInfoSubject")
 load("//tests/support:support.bzl", "LINUX_X86_64", "WINDOWS_X86_64")
 
 _BuiltinPyRuntimeInfo = PyRuntimeInfo
@@ -132,10 +134,18 @@ def _test_executable_in_runfiles_impl(env, target):
         exe = ".exe"
     else:
         exe = ""
-
     env.expect.that_target(target).runfiles().contains_at_least([
         "{workspace}/{package}/{test_name}_subject" + exe,
     ])
+
+    if rp_config.enable_pystar:
+        py_exec_info = env.expect.that_target(target).provider(PyExecutableInfo, factory = PyExecutableInfoSubject.new)
+        py_exec_info.main().path().contains("_subject.py")
+        py_exec_info.interpreter_path().contains("python")
+        py_exec_info.runfiles_without_exe().contains_none_of([
+            "{workspace}/{package}/{test_name}_subject" + exe,
+            "{workspace}/{package}/{test_name}_subject",
+        ])
 
 def _test_default_main_can_be_generated(name, config):
     rt_util.helper_target(
