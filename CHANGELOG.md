@@ -26,6 +26,12 @@ A brief description of the categories of changes:
 
 ### Changed
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
+* (rules) The `PYTHONSAFEPATH` environment variable is no longer used to enable safe-path mode
+  since it is unintentionally inherited by subprocesses. Instead, `-P` is passed to the runtime
+  interpreter given its version can be detected and is greater than or equal to 3.11. If the 
+  runtime interpreter can not be detected or the version is less than 3.11, safe-path mode is not
+  enabled.
+  ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the

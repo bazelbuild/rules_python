@@ -32,6 +32,9 @@ if IsRunningFromZip():
 else:
   import re
 
+def GetInterpreterOpts():
+  return "%interpreter_opts%".split()
+
 # Return True if running on Windows
 def IsWindows():
   return os.name == 'nt'
@@ -363,8 +366,9 @@ def ExecuteFile(python_program, main_filename, args, env, module_space,
     ret_code = _RunForCoverage(python_program, main_filename, args, env,
                                coverage_entrypoint, workspace)
   else:
+    subprocess_argv = [python_program] + GetInterpreterOpts() + [main_filename] + args
     ret_code = subprocess.call(
-      [python_program, main_filename] + args,
+      subprocess_argv,
       env=env,
       cwd=workspace
     )
@@ -381,7 +385,7 @@ def _RunExecv(python_program, main_filename, args, env):
   """Executes the given Python file using the various environment settings."""
   os.environ.update(env)
   PrintVerbose("RunExecv: environ:", os.environ)
-  argv = [python_program, main_filename] + args
+  argv = [python_program] + GetInterpreterOpts() + [main_filename] + args
   PrintVerbose("RunExecv: argv:", python_program, argv)
   os.execv(python_program, argv)
 
@@ -410,16 +414,16 @@ relative_files = True
   PrintVerboseCoverage('Coverage entrypoint:', coverage_entrypoint)
   # First run the target Python file via coveragepy to create a .coverage
   # database file, from which we can later export lcov.
+  subprocess_argv = [python_program] + GetInterpreterOpts() + [
+    coverage_entrypoint,
+    "run",
+    "--rcfile=" + rcfile_name,
+    "--append",
+    "--branch",
+    main_filename
+  ] + args
   ret_code = subprocess.call(
-    [
-      python_program,
-      coverage_entrypoint,
-      "run",
-      "--rcfile=" + rcfile_name,
-      "--append",
-      "--branch",
-      main_filename
-    ] + args,
+    subprocess_argv,
     env=env,
     cwd=workspace
   )
@@ -494,10 +498,6 @@ def Main():
   runfiles_envkey, runfiles_envvalue = RunfilesEnvvar(module_space)
   if runfiles_envkey:
     new_env[runfiles_envkey] = runfiles_envvalue
-
-  # Don't prepend a potentially unsafe path to sys.path
-  # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
-  new_env['PYTHONSAFEPATH'] = '1'
 
   main_filename = os.path.join(module_space, main_rel_path)
   main_filename = GetWindowsPathWithUNCPrefix(main_filename)

@@ -27,11 +27,12 @@ _STAGE2_BOOTSTRAP = "%stage2_bootstrap%"
 _PYTHON_BINARY = "%python_binary%"
 _WORKSPACE_NAME = "%workspace_name%"
 
+def get_interpreter_opts():
+  return "%interpreter_opts%".split()
 
 # Return True if running on Windows
 def is_windows():
     return os.name == "nt"
-
 
 def get_windows_path_with_unc_prefix(path):
     """Adds UNC prefix after getting a normalized absolute Windows path.
@@ -208,7 +209,7 @@ def execute_file(
     # - When running in a workspace or zip file, we need to clean up the
     #   workspace after the process finishes so control must return here.
     try:
-        subprocess_argv = [python_program, main_filename] + args
+        subprocess_argv = [python_program] + get_interpreter_opts() + [main_filename] + args
         print_verbose("subprocess argv:", values=subprocess_argv)
         print_verbose("subprocess env:", mapping=env)
         print_verbose("subprocess cwd:", workspace)
@@ -243,10 +244,6 @@ def main():
     print_verbose("extracted runfiles to:", module_space)
 
     new_env["RUNFILES_DIR"] = module_space
-
-    # Don't prepend a potentially unsafe path to sys.path
-    # See: https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONSAFEPATH
-    new_env["PYTHONSAFEPATH"] = "1"
 
     main_filename = os.path.join(module_space, main_rel_path)
     main_filename = get_windows_path_with_unc_prefix(main_filename)
