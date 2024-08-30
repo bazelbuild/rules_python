@@ -35,6 +35,10 @@ Overrides can be done at 3 different levels:
 * Overrides affecting all python toolchain versions on all platforms - {obj}`python.override`.
 * Overrides affecting a single toolchain versions on all platforms - {obj}`python.single_version_override`.
 * Overrides affecting a single toolchain versions on a single platforms - {obj}`python.single_version_platform_override`.
+
+:::{seealso}
+The main documentation page on registering [toolchains](/toolchains).
+:::
 """
 
 load("//python/private:python.bzl", _python = "python")
