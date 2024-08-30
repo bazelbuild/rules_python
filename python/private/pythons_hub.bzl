@@ -14,7 +14,6 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
-load("//python/private:full_version.bzl", "full_version")
 load(
     "//python/private:toolchains_repo.bzl",
     "python_toolchain_build_file_content",
@@ -59,7 +58,7 @@ def _hub_build_file_content(
         [
             python_toolchain_build_file_content(
                 prefix = prefixes[i],
-                python_version = full_version(python_versions[i]),
+                python_version = python_versions[i],
                 set_python_version_constraint = set_python_version_constraints[i],
                 user_repository_name = user_repository_names[i],
             )
