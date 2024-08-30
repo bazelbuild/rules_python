@@ -74,17 +74,17 @@ def _python_impl(module_ctx):
         ignore_root_user_error = False
 
     registrations = []
-    base_url = None
-    available_versions = None
-    minor_mapping = None
+    available_versions = TOOL_VERSIONS
+    base_url = DEFAULT_RELEASE_BASE_URL
+    minor_mapping = MINOR_MAPPING
 
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
         python_tools = _process_tag_classes(mod)
-        base_url = base_url or python_tools.base_url
-        available_versions = available_versions or python_tools.available_versions
-        minor_mapping = minor_mapping or python_tools.minor_mapping
+        base_url = python_tools.base_url or base_url
+        available_versions = python_tools.available_versions or available_versions
+        minor_mapping = python_tools.minor_mapping or minor_mapping
 
         for toolchain_attr in python_tools.registrations:
             toolchain_version = toolchain_attr.python_version
@@ -399,8 +399,8 @@ def _process_tag_classes(mod, fail = fail):
     return struct(
         available_versions = available_versions if mod.is_root else None,
         base_url = base_url if mod.is_root else None,
+        minor_mapping = minor_mapping if mod.is_root else None,
         registrations = registrations,
-        minor_mapping = minor_mapping,
     )
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
