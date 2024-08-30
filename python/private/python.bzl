@@ -427,6 +427,7 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
         break
 
     if register_all:
+        # FIXME @aignas 2024-08-30: this is technically not correct
         registrations.extend([
             _create_toolchain_attrs_struct(python_version = v)
             for v in available_versions.keys()
@@ -542,7 +543,7 @@ _override = tag_class(
             "minor_mapping": attr.string_dict(
                 mandatory = False,
                 doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
-                default = MINOR_MAPPING,
+                default = {},
             ),
             "register_all_versions": attr.bool(default = False, doc = "Add all versions"),
         },
@@ -584,6 +585,12 @@ Override coverage registration for a particular version. 'auto' means it will
 be left untouched and will work as the module owner who used `python.toolchain`
 call intended. `no` and `yes` will force-toggle the coverage tooling for the
 given {attr}`version`.
+
+TODO: should be able to:
+- disable coverage for a version.
+- enable coverage for a version with rules_python coverage.py.
+- enable coverage for a specific (version, platform) in addition to that.
+- disable coverage for a specific (version, platform).
 """,
         ),
         "patch_strip": attr.int(
