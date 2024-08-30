@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"Python toolchain module extensions for use with bzlmod"
+"Python toolchain module extensions for use with bzlmod."
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "MINOR_MAPPING", "PLATFORMS", "TOOL_VERSIONS")
@@ -466,12 +466,12 @@ Use this tag class to register one or more Python toolchains. This class
 is also potentially called by sub modules. The following covers different
 business rules and use cases.
 
-:::{topic}Toolchains in the Root Module
+:::{topic} Toolchains in the Root Module
 
 This class registers all toolchains in the root module.
 :::
 
-:::{topic}Toolchains in Sub Modules
+:::{topic} Toolchains in Sub Modules
 
 It will create a toolchain that is in a sub module, if the toolchain
 of the same name does not exist in the root module.  The extension stops name
@@ -479,7 +479,7 @@ clashing between toolchains in the root module and toolchains in sub modules.
 You cannot configure more than one toolchain as the default toolchain.
 :::
 
-:::{topic}Toolchain set as the default version
+:::{topic} Toolchain set as the default version
 
 This extension will not create a toolchain that exists in a sub module,
 if the sub module toolchain is marked as the default version. If you have
@@ -488,7 +488,7 @@ toolchains as the default version.  If there is only one toolchain it
 is set as the default toolchain.
 :::
 
-:::{tip} Toolchain repository name
+:::{topic} Toolchain repository name
 
 A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 `python_3_10`. The `major` and `minor` components are
@@ -496,6 +496,22 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 
 If a toolchain is registered in `X.Y.Z`, then similarly the toolchain name will
 be `python_{major}_{minor}_{patch}`, e.g. `python_3_10_19`.
+:::
+
+:::{tip}
+In order to use a different name than the above, you can use the following `MODULE.bazel`
+syntax:
+```starlark
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.11",
+)
+
+use_repo(python, my_python_name = "python_3_11")
+```
+
+Then the python interpreter will be available as `my_python_name`.
 :::
 """,
     attrs = {
@@ -566,7 +582,7 @@ _single_version_override = tag_class(
 This will replace any existing configuration for the given python version.
 
 If you would like to modify the configuration for a specific `(version,
-platform), please use the {obj}`python.single_version_platform_override` tag
+platform)`, please use the {rule}`python.single_version_platform_override` tag
 class.
 :::
 
@@ -636,9 +652,9 @@ _single_version_platform_override = tag_class(
 If the `(version, platform)` is new, we will add it to the existing versions and will
 use the same `url` template.
 
-:::{note}
+:::{tip}
 If you would like to add or remove platforms to a single python version toolchain
-configuration, please use {obj}`python.single_version_override`.
+configuration, please use {rule}`python.single_version_override`.
 :::
 
 :::{versionadded} 0.36.0
