@@ -582,7 +582,7 @@ _single_version_override = tag_class(
 This will replace any existing configuration for the given python version.
 
 If you would like to modify the configuration for a specific `(version,
-platform)`, please use the {rule}`python.single_version_platform_override` tag
+platform)`, please use the {obj}`python.single_version_platform_override` tag
 class.
 :::
 
@@ -654,7 +654,7 @@ use the same `url` template.
 
 :::{tip}
 If you would like to add or remove platforms to a single python version toolchain
-configuration, please use {rule}`python.single_version_override`.
+configuration, please use {obj}`python.single_version_override`.
 :::
 
 :::{versionadded} 0.36.0
