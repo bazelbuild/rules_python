@@ -16,6 +16,7 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "MINOR_MAPPING", "PLATFORMS", "TOOL_VERSIONS")
+load(":auth.bzl", "AUTH_ATTRS")
 load(":full_version.bzl", "full_version")
 load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
@@ -74,19 +75,43 @@ def _python_impl(module_ctx):
         ignore_root_user_error = False
 
     registrations = []
-    available_versions = TOOL_VERSIONS
-    base_url = DEFAULT_RELEASE_BASE_URL
-    minor_mapping = MINOR_MAPPING
+    seen_versions = {}
+
+    # overrides that can be changed by the root module
+    overrides = struct(
+        kwargs = {},
+        minor_mapping = dict(MINOR_MAPPING),
+        default = {
+            "base_url": DEFAULT_RELEASE_BASE_URL,
+            "tool_versions": {
+                version: {
+                    # Use a dicts straight away so that we could do URL overrides for a
+                    # single version.
+                    "sha256": dict(item["sha256"]),
+                    "strip_prefix": {
+                        platform: item["strip_prefix"]
+                        for platform in item["sha256"]
+                    },
+                    "url": {
+                        platform: [item["url"]]
+                        for platform in item["sha256"]
+                    },
+                }
+                for version, item in TOOL_VERSIONS.items()
+            },
+        },
+    )
 
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
-        python_tools = _process_tag_classes(mod)
-        base_url = python_tools.base_url or base_url
-        available_versions = python_tools.available_versions or available_versions
-        minor_mapping = python_tools.minor_mapping or minor_mapping
+        requested_toolchains = _process_tag_classes(
+            mod,
+            seen_versions = seen_versions,
+            overrides = overrides,
+        )
 
-        for toolchain_attr in python_tools.registrations:
+        for toolchain_attr in requested_toolchains:
             toolchain_version = toolchain_attr.python_version
             toolchain_name = "python_" + toolchain_version.replace(".", "_")
 
@@ -155,11 +180,9 @@ def _python_impl(module_ctx):
 
                 # Register the toolchains outside the main loop so that we can ensure that the
                 # overrides are correctly applied globally
-                registrations.append(dict(
+                registrations.append(struct(
                     name = toolchain_name,
                     python_version = toolchain_attr.python_version,
-                    # TODO @aignas 2024-08-30: what about allowing overriding
-                    # the coverage tool registration?
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     ignore_root_user_error = ignore_root_user_error,
                 ))
@@ -184,16 +207,20 @@ def _python_impl(module_ctx):
             elif toolchain_info:
                 toolchains.append(toolchain_info)
 
-    for kwargs in registrations:
-        python_register_toolchains(
-            base_url = base_url,
-            tool_versions = available_versions,
-            # Ensure that we pass the full version here.
-            python_version = full_version(kwargs.pop("python_version"), minor_mapping),
-            # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
-            # distutils_content = None,
-            **kwargs
+    for r in registrations:
+        # Ensure that we pass the full version here.
+        full_python_version = full_version(r.python_version, overrides.minor_mapping)
+        kwargs = dict(
+            python_version = full_python_version,
+            ignore_root_user_error = r.ignore_root_user_error,
+            register_coverage_tool = r.register_coverage_tool,
         )
+
+        # Allow overrides per python version
+        kwargs.update(overrides.kwargs.get(r.python_version, {}))
+        kwargs.update(overrides.kwargs.get(full_python_version, {}))
+        kwargs.update(overrides.default)
+        python_register_toolchains(name = r.name, **kwargs)
 
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
@@ -222,7 +249,7 @@ def _python_impl(module_ctx):
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(toolchains)
         ],
-        toolchain_python_versions = [full_version(t.python_version, minor_mapping) for t in toolchains],
+        toolchain_python_versions = [full_version(t.python_version, overrides.minor_mapping) for t in toolchains],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [
@@ -281,34 +308,26 @@ def _fail_multiple_default_toolchains(first, second):
         second = second,
     ))
 
-def _process_tag_classes(mod, fail = fail):
+def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
     registrations = []
-    seen_versions = {}
-    available_versions = {
-        version: {
-            # Use a dicts straight away so that we could do URL overrides for a
-            # single version.
-            "sha256": dict(item["sha256"]),
-            "strip_prefix": {
-                platform: item["strip_prefix"]
-                for platform in item["sha256"]
-            },
-            "url": {
-                platform: [item["url"]]
-                for platform in item["sha256"]
-            },
-        }
-        for version, item in TOOL_VERSIONS.items()
-    }
-    base_url = DEFAULT_RELEASE_BASE_URL
-    minor_mapping = MINOR_MAPPING
 
     for tag in mod.tags.toolchain:
-        registrations.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
+        registrations.append(_create_toolchain_attrs_struct(
+            tag = tag,
+            toolchain_tag_count = len(mod.tags.toolchain),
+        ))
         seen_versions[tag.python_version] = True
 
-    if mod.is_root:
-        for tag in mod.tags.single_version_override:
+    if not mod.is_root:
+        return registrations
+
+    available_versions = overrides.default["tool_versions"]
+
+    for tag in mod.tags.single_version_override:
+        if tag.sha256 or tag.urls:
+            if not (tag.sha256 and tag.urls):
+                fail("Both `sha256` and `urls` overrides need to be provided together")
+
             for platform in tag.sha256 or []:
                 if platform not in PLATFORMS:
                     fail("The platform must be one of {allowed} but got '{got}'".format(
@@ -316,92 +335,105 @@ def _process_tag_classes(mod, fail = fail):
                         got = platform,
                     ))
 
-            override = {
-                "patch_strip": {
-                    platform: tag.patch_strip
-                    for platform in tag.sha256
-                },
-                "patches": {
-                    platform: list(tag.patches)
-                    for platform in tag.sha256
-                },
-                "sha256": dict(tag.sha256),
-                "strip_prefix": {
-                    platform: tag.strip_prefix
-                    for platform in tag.sha256
-                },
-                "url": {
-                    platform: list(tag.urls)
-                    for platform in tag.sha256
-                },
+        sha256 = dict(tag.sha256) or available_versions[tag.version]["sha256"]
+        override = {
+            "patch_strip": {
+                platform: tag.patch_strip
+                for platform in sha256
+            },
+            "patches": {
+                platform: list(tag.patches)
+                for platform in sha256
+            },
+            "sha256": sha256,
+            "strip_prefix": {
+                platform: tag.strip_prefix
+                for platform in sha256
+            },
+            "url": {
+                platform: list(tag.urls)
+                for platform in tag.sha256
+            } or available_versions[tag.version]["url"],
+        }
+        available_versions[tag.version] = {k: v for k, v in override.items() if v}
+
+        if tag.enable_coverage == "no":
+            overrides.kwargs.setdefault(tag.version, {})["register_coverage_tool"] = False
+        elif tag.enable_coverage == "yes":
+            overrides.kwargs.setdefault(tag.version, {})["register_coverage_tool"] = True
+
+        if tag.distutils_content:
+            overrides.kwargs.setdefault(tag.version, {})["distutils_content"] = tag.distutils_content
+        if tag.distutils:
+            overrides.kwargs.setdefault(tag.version, {})["distutils"] = tag.distutils
+
+    for tag in mod.tags.single_version_platform_override:
+        if tag.version not in available_versions:
+            if not tag.urls or not tag.sha256 or not tag.strip_prefix:
+                fail("When introducing a new version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.version))
+            available_versions[tag.version] = {
+                "sha256": {tag.platform: tag.sha256},
+                "strip_prefix": {tag.platform: tag.strip_prefix},
+                "url": {tag.platform: tag.urls},
             }
-            available_versions[tag.version] = override
 
-        for tag in mod.tags.single_version_platform_override:
-            if tag.version not in available_versions:
-                if not tag.urls or not tag.sha256 or not tag.strip_prefix:
-                    fail("When introducing a new version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.version))
-                available_versions[tag.version] = {
-                    "sha256": {tag.platform: tag.sha256},
-                    "strip_prefix": {tag.platform: tag.strip_prefix},
-                    "url": {tag.platform: tag.urls},
-                }
+        if tag.sha256:
+            available_versions[tag.version]["sha256"][tag.platform] = tag.sha256
+        if tag.urls:
+            available_versions[tag.version]["url"][tag.platform] = tag.urls
+        if tag.strip_prefix:
+            available_versions[tag.version]["strip_prefix"][tag.platform] = tag.strip_prefix
+        if tag.patch_strip:
+            available_versions[tag.version]["patch_strip"][tag.platform] = tag.patch_strip
+        if tag.patches:
+            available_versions[tag.version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
+        if tag.coverage_tool:
+            available_versions[tag.version].setdefault("coverage_tool", {})[tag.platform] = tag.coverage_tool
 
-            if tag.sha256:
-                available_versions[tag.version]["sha256"][tag.platform] = tag.sha256
-            if tag.urls:
-                available_versions[tag.version]["url"][tag.platform] = tag.urls
-            if tag.strip_prefix:
-                available_versions[tag.version]["strip_prefix"][tag.platform] = tag.strip_prefix
-            if tag.patch_strip:
-                available_versions[tag.version]["patch_strip"][tag.platform] = tag.patch_strip
-            if tag.patches:
-                available_versions[tag.version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
+    register_all = False
+    for tag in mod.tags.override:
+        overrides.kwargs["base_url"] = tag.base_url
+        if tag.available_python_versions:
+            all_known_versions = sorted(available_versions)
+            available_versions = {
+                v: available_versions[v] if v in available_versions else fail("unknown version '{}', known versions are: {}".format(
+                    v,
+                    all_known_versions,
+                ))
+                for v in tag.available_python_versions
+            }
 
-        register_all = False
-        for tag in mod.tags.override:
-            base_url = tag.base_url
-            if tag.available_python_versions:
-                all_known_versions = sorted(available_versions)
-                available_versions = {
-                    v: available_versions[v] if v in available_versions else fail("unknown version '{}', known versions are: {}".format(
-                        v,
-                        all_known_versions,
-                    ))
-                    for v in tag.available_python_versions
-                }
+        if tag.register_all_versions and mod.name != "rules_python":
+            fail("This override can only be used by 'rules_python'")
+        elif tag.register_all_versions:
+            register_all = True
 
-            if tag.register_all_versions and mod.name != "rules_python":
-                fail("This override can only be used by 'rules_python'")
-            elif tag.register_all_versions:
-                register_all = True
+        if tag.minor_mapping:
+            for minor_version, full_version in tag.minor_mapping.items():
+                parsed = _parse_version(minor_version)
+                if parsed.patch or parsed.build:
+                    fail("Expected the key to be of `X.Y` format but got `{}`".format(minor_version))
+                parsed = _parse_version(full_version)
+                if not parsed.patch:
+                    fail("Expected the value to at least be of `X.Y.Z` format but got `{}`".format(minor_version))
 
-            if tag.minor_mapping:
-                for minor_version, full_version in tag.minor_mapping.items():
-                    parsed = _parse_version(minor_version)
-                    if parsed.patch or parsed.build:
-                        fail("Expected the key to be of `X.Y` format but got `{}`".format(minor_version))
-                    parsed = _parse_version(full_version)
-                    if not parsed.patch:
-                        fail("Expected the value to at least be of `X.Y.Z` format but got `{}`".format(minor_version))
+            overrides.minor_mapping.clear()
+            overrides.minor_mapping.update(tag.minor_mapping)
 
-                minor_mapping = dict(tag.minor_mapping)
+        for key in AUTH_ATTRS:
+            if getattr(tag, key):
+                overrides.defaults[key] = getattr(tag, key)
 
-            break
+        break
 
-        if register_all:
-            registrations.extend([
-                _create_toolchain_attrs_struct(python_version = v)
-                for v in available_versions.keys()
-                if v not in seen_versions
-            ])
+    if register_all:
+        registrations.extend([
+            _create_toolchain_attrs_struct(python_version = v)
+            for v in available_versions.keys()
+            if v not in seen_versions
+        ])
 
-    return struct(
-        available_versions = available_versions if mod.is_root else None,
-        base_url = base_url if mod.is_root else None,
-        minor_mapping = minor_mapping if mod.is_root else None,
-        registrations = registrations,
-    )
+    return registrations
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
     if tag and python_version:
@@ -496,25 +528,26 @@ _override = tag_class(
 :::{versionadded} 0.36.0
 :::
 """,
-    attrs = {
-        "available_python_versions": attr.string_list(
-            mandatory = False,
-            doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
-        ),
-        "base_url": attr.string(
-            mandatory = False,
-            doc = "The base URL to be used when downloading toolchains.",
-            default = DEFAULT_RELEASE_BASE_URL,
-        ),
-        "minor_mapping": attr.string_dict(
-            mandatory = False,
-            doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
-            default = MINOR_MAPPING,
-        ),
-
-        # Internal attributes that are only usable from `rules_python`
-        "register_all_versions": attr.bool(default = False, doc = "`rules_python` **internal** use only!"),
-    },
+    attrs = dict(
+        {
+            "available_python_versions": attr.string_list(
+                mandatory = False,
+                doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
+            ),
+            "base_url": attr.string(
+                mandatory = False,
+                doc = "The base URL to be used when downloading toolchains.",
+                default = DEFAULT_RELEASE_BASE_URL,
+            ),
+            "minor_mapping": attr.string_dict(
+                mandatory = False,
+                doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
+                default = MINOR_MAPPING,
+            ),
+            "register_all_versions": attr.bool(default = False, doc = "Add all versions"),
+        },
+        **AUTH_ATTRS
+    ),
 )
 
 _single_version_override = tag_class(
@@ -524,7 +557,7 @@ _single_version_override = tag_class(
 This will replace any existing configuration for the given python version.
 
 If you would like to modify the configuration for a specific `(version,
-platform), please use the {rule}`python.single_version_platform_override` tag
+platform), please use the {obj}`python.single_version_platform_override` tag
 class.
 :::
 
@@ -532,6 +565,27 @@ class.
 :::
 """,
     attrs = {
+        "distutils": attr.label(
+            allow_single_file = True,
+            doc = "A distutils.cfg file to be included in the Python installation. " +
+                  "Either {attr}`distutils` or {attr}`distutils_content` can be specified, but not both.",
+            mandatory = False,
+        ),
+        "distutils_content": attr.string(
+            doc = "A distutils.cfg file content to be included in the Python installation. " +
+                  "Either {attr}`distutils` or {attr}`distutils_content` can be specified, but not both.",
+            mandatory = False,
+        ),
+        "enable_coverage": attr.string(
+            default = "auto",
+            values = ["auto", "yes", "no"],
+            doc = """\
+Override coverage registration for a particular version. 'auto' means it will
+be left untouched and will work as the module owner who used `python.toolchain`
+call intended. `no` and `yes` will force-toggle the coverage tooling for the
+given {attr}`version`.
+""",
+        ),
         "patch_strip": attr.int(
             mandatory = False,
             doc = "Same as the --strip argument of Unix patch.",
@@ -542,7 +596,7 @@ class.
             doc = "A list of labels pointing to patch files to apply for the interpreter repository. They are applied in the list order and are applied before any platform-specific patches are applied.",
         ),
         "sha256": attr.string_dict(
-            mandatory = True,
+            mandatory = False,
             doc = "The python platform to sha256 dict. See {attr}`python.single_version_platform_override.platform` for allowed key values.",
         ),
         "strip_prefix": attr.string(
@@ -551,7 +605,7 @@ class.
             default = "python",
         ),
         "urls": attr.string_list(
-            mandatory = True,
+            mandatory = False,
             doc = "The URL template to fetch releases for this Python version. See {attr}`python.single_version_platform_override.urls` for documentation.",
         ),
         "version": attr.string(
@@ -569,13 +623,19 @@ use the same `url` template.
 
 :::{note}
 If you would like to add or remove platforms to a single python version toolchain
-configuration, please use {rule}`python.single_version_override`.
+configuration, please use {obj}`python.single_version_override`.
 :::
 
 :::{versionadded} 0.36.0
 :::
 """,
     attrs = {
+        "coverage_tool": attr.label(
+            doc = """\
+The coverage tool to be used for a particular Python interpreter. This can override
+`rules_python` defaults.
+""",
+        ),
         "patch_strip": attr.int(
             mandatory = False,
             doc = "Same as the --strip argument of Unix patch.",
