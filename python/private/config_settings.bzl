@@ -16,7 +16,7 @@
 """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 
 _PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
@@ -170,7 +170,7 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
     Args:
         name(str): A dummy name value that is no-op for now.
     """
-    string_flag(
+    _python_version_flag(
         name = "python_version",
         # TODO: The default here should somehow match the MODULE config. Until
         # then, use the empty string to indicate an unknown version. This
@@ -200,3 +200,35 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
             },
             visibility = ["//visibility:public"],
         )
+
+def _python_version_flag_impl(ctx):
+    value = ctx.build_setting_value
+    if value not in ctx.attr.values:
+        fail((
+            "Invalid --python_version value: {actual}\nAllowed values {allowed}"
+        ).format(
+            actual = value,
+            allowed = ", ".join(sorted(ctx.attr.values)),
+        ))
+
+    return [
+        # BuildSettingInfo is the original provider returned, so continue to
+        # return it for compatibility
+        BuildSettingInfo(value = value),
+        # FeatureFlagInfo is returned so that config_setting respects the value
+        # as returned by this rule instead of as originally seen on the command
+        # line.
+        # It is also for Google compatibility, which expects the FeatureFlagInfo
+        # provider.
+        config_common.FeatureFlagInfo(value = value),
+    ]
+
+_python_version_flag = rule(
+    implementation = _python_version_flag_impl,
+    build_setting = config.string(flag = True),
+    attrs = {
+        "values": attr.string_list(
+            doc = "Allowed values.",
+        ),
+    },
+)
