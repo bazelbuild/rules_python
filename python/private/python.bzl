@@ -466,18 +466,18 @@ Use this tag class to register one or more Python toolchains. This class
 is also potentially called by sub modules. The following covers different
 business rules and use cases.
 
-Toolchains in the Root Module
+**Toolchains in the Root Module**
 
 This class registers all toolchains in the root module.
 
-Toolchains in Sub Modules
+**Toolchains in Sub Modules**
 
 It will create a toolchain that is in a sub module, if the toolchain
 of the same name does not exist in the root module.  The extension stops name
 clashing between toolchains in the root module and toolchains in sub modules.
 You cannot configure more than one toolchain as the default toolchain.
 
-Toolchain set as the default version
+**Toolchain set as the default version**
 
 This extension will not create a toolchain that exists in a sub module,
 if the sub module toolchain is marked as the default version. If you have
@@ -485,11 +485,14 @@ more than one toolchain in your root module, you need to set one of the
 toolchains as the default version.  If there is only one toolchain it
 is set as the default toolchain.
 
-Toolchain repository name
+**Toolchain repository name**
 
 A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 `python_3_10`. The `major` and `minor` components are
 `major` and `minor` are the Python version from the `python_version` attribute.
+
+If a toolchain is registered in `X.Y.Z`, then similarly the toolchain name will
+be `python_{major}_{minor}_{patch}`.
 """,
     attrs = {
         "configure_coverage_tool": attr.bool(
@@ -499,12 +502,12 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
         "ignore_root_user_error": attr.bool(
             default = False,
             doc = """\
-If False, the Python runtime installation will be made read only. This improves
+If `False`, the Python runtime installation will be made read only. This improves
 the ability for Bazel to cache it, but prevents the interpreter from creating
-pyc files for the standard library dynamically at runtime as they are loaded.
+`.pyc` files for the standard library dynamically at runtime as they are loaded.
 
-If True, the Python runtime installation is read-write. This allows the
-interpreter to create pyc files for the standard library, but, because they are
+If `True`, the Python runtime installation is read-write. This allows the
+interpreter to create `.pyc` files for the standard library, but, because they are
 created as needed, it adversely affects Bazel's ability to cache the runtime and
 can result in spurious build failures.
 """,
@@ -516,9 +519,10 @@ can result in spurious build failures.
         ),
         "python_version": attr.string(
             mandatory = True,
-            doc = "The Python version, in `major.minor` format, e.g " +
-                  "'3.12', to create a toolchain for. Patch level " +
-                  "granularity (e.g. '3.12.1') is not supported.",
+            doc = """\
+The Python version, in `major.minor` or `major.minor.patch` format, e.g
+`3.12` (or `3.12.3`), to create a toolchain for.
+""",
         ),
     },
 )
