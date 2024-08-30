@@ -58,10 +58,16 @@ def _python_impl(module_ctx):
     if not module_ctx.modules[0].tags.toolchain:
         ignore_root_user_error = False
 
+    registrations = []
+    base_url = None
+    available_versions = None
+
     for mod in module_ctx.modules:
         module_toolchain_versions = []
 
         python_tools = _process_tag_classes(mod)
+        base_url = base_url or python_tools.base_url
+        available_versions = available_versions or python_tools.available_versions
 
         for toolchain_attr in python_tools.registrations:
             toolchain_version = toolchain_attr.python_version
@@ -129,21 +135,17 @@ def _python_impl(module_ctx):
                     name = toolchain_name,
                     module = struct(name = mod.name, is_root = mod.is_root),
                 )
-                python_register_toolchains(
+
+                # Register the toolchains outside the main loop so that we can ensure that the
+                # overrides are correctly applied globally
+                registrations.append(dict(
                     name = toolchain_name,
-                    module = mod,
                     python_version = toolchain_attr.python_version,
+                    # TODO @aignas 2024-08-30: what about allowing overriding
+                    # the coverage tool registration?
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     ignore_root_user_error = ignore_root_user_error,
-                    # TODO @aignas 2024-08-28: the `python_tools` values need
-                    # to be taken from the root module. As it is implemented
-                    # right now, it can race and we may get different results
-                    # based on the module iteration order.
-                    base_url = python_tools.base_url,
-                    tool_versions = python_tools.available_versions,
-                    # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
-                    # distutils_content = None,
-                )
+                ))
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
                     debug_info["toolchains_registered"].append({
@@ -164,6 +166,15 @@ def _python_impl(module_ctx):
                     default_toolchain = toolchain_info
             elif toolchain_info:
                 toolchains.append(toolchain_info)
+
+    for kwargs in registrations:
+        python_register_toolchains(
+            base_url = base_url,
+            tool_versions = available_versions,
+            # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
+            # distutils_content = None,
+            **kwargs
+        )
 
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
@@ -355,8 +366,8 @@ def _process_tag_classes(mod, fail = fail):
             ])
 
     return struct(
-        available_versions = available_versions,
-        base_url = base_url,
+        available_versions = available_versions if mod.is_root else None,
+        base_url = base_url if mod.is_root else None,
         registrations = registrations,
     )
 

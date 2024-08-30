@@ -45,6 +45,9 @@ python.override(
         # Keep the following versions which are present in MINOR_MAPPING, but
         # are not present above
         "3.10.14",
+        # The following is used by the `other_module` and we need to include it here
+        # as well.
+        "3.11.9",
     ],
 )
 
