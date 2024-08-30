@@ -492,7 +492,7 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 `major` and `minor` are the Python version from the `python_version` attribute.
 
 If a toolchain is registered in `X.Y.Z`, then similarly the toolchain name will
-be `python_{major}_{minor}_{patch}`.
+be `python_{major}_{minor}_{patch}`, e.g. `python_3_10_19`.
 """,
     attrs = {
         "configure_coverage_tool": attr.bool(
