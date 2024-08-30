@@ -188,7 +188,8 @@ def _python_impl(module_ctx):
         python_register_toolchains(
             base_url = base_url,
             tool_versions = available_versions,
-            minor_mapping = minor_mapping,
+            # Ensure that we pass the full version here.
+            python_version = full_version(kwargs.pop("python_version"), minor_mapping),
             # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
             # distutils_content = None,
             **kwargs
