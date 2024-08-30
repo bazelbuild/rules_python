@@ -466,26 +466,29 @@ Use this tag class to register one or more Python toolchains. This class
 is also potentially called by sub modules. The following covers different
 business rules and use cases.
 
-**Toolchains in the Root Module**
+:::{topic}Toolchains in the Root Module
 
 This class registers all toolchains in the root module.
+:::
 
-**Toolchains in Sub Modules**
+:::{topic}Toolchains in Sub Modules
 
 It will create a toolchain that is in a sub module, if the toolchain
 of the same name does not exist in the root module.  The extension stops name
 clashing between toolchains in the root module and toolchains in sub modules.
 You cannot configure more than one toolchain as the default toolchain.
+:::
 
-**Toolchain set as the default version**
+:::{topic}Toolchain set as the default version
 
 This extension will not create a toolchain that exists in a sub module,
 if the sub module toolchain is marked as the default version. If you have
 more than one toolchain in your root module, you need to set one of the
 toolchains as the default version.  If there is only one toolchain it
 is set as the default toolchain.
+:::
 
-**Toolchain repository name**
+:::{tip} Toolchain repository name
 
 A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 `python_3_10`. The `major` and `minor` components are
@@ -493,6 +496,7 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
 
 If a toolchain is registered in `X.Y.Z`, then similarly the toolchain name will
 be `python_{major}_{minor}_{patch}`, e.g. `python_3_10_19`.
+:::
 """,
     attrs = {
         "configure_coverage_tool": attr.bool(
