@@ -16,18 +16,19 @@
 
 load("//python:versions.bzl", "MINOR_MAPPING")
 
-def full_version(version):
+def full_version(version, minor_mapping = MINOR_MAPPING):
     """Return a full version.
 
     Args:
         version: the version in `X.Y` or `X.Y.Z` format.
+        minor_mapping: the mapping from `X.Y` to `X.Y.Z`.
 
     Returns:
         a full version given the version string. If the string is already a
         major version then we return it as is.
     """
-    if version in MINOR_MAPPING:
-        return MINOR_MAPPING[version]
+    if version in minor_mapping:
+        return minor_mapping[version]
 
     parts = version.split(".")
     if len(parts) == 3:
@@ -36,7 +37,7 @@ def full_version(version):
         fail(
             "Unknown Python version '{}', available values are: {}".format(
                 version,
-                ",".join(MINOR_MAPPING.keys()),
+                ",".join(minor_mapping.keys()),
             ),
         )
     else:

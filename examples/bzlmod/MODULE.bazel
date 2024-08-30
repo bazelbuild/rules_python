@@ -37,18 +37,23 @@ python.toolchain(
     python_version = "3.10",
 )
 
-# One can override the actual toolchain versions that are available
+# One can override the actual toolchain versions that are available, which can be useful
+# to when optimizing what gets downloaded and when.
 python.override(
     available_python_versions = [
         "3.10.9",
         "3.9.19",
-        # Keep the following versions which are present in MINOR_MAPPING, but
-        # are not present above
-        "3.10.14",
         # The following is used by the `other_module` and we need to include it here
         # as well.
-        "3.11.9",
+        "3.11.8",
     ],
+    # Also override the `minor_mapping` so that when the modules specify a particular
+    # `3.X` version, we decide what gets used.
+    minor_mapping = {
+        "3.10": "3.10.9",
+        "3.11": "3.11.8",
+        "3.9": "3.9.19",
+    },
 )
 
 # Or the sources that the toolchains come from for all platforms

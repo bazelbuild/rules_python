@@ -15,7 +15,7 @@
 "Python toolchain module extensions for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "PLATFORMS", "TOOL_VERSIONS")
+load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "MINOR_MAPPING", "PLATFORMS", "TOOL_VERSIONS")
 load(":full_version.bzl", "full_version")
 load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
@@ -28,6 +28,20 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 # targets using any of these toolchains due to the changed repository name.
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
+
+def _parse_version(version):
+    major, _, version = version.partition(".")
+    minor, _, version = version.partition(".")
+    patch, _, version = version.partition(".")
+    build, _, version = version.partition(".")
+
+    return struct(
+        # use semver vocabulary here
+        major = major,
+        minor = minor,
+        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
+        build = build,
+    )
 
 def _python_impl(module_ctx):
     if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
@@ -62,6 +76,7 @@ def _python_impl(module_ctx):
     registrations = []
     base_url = None
     available_versions = None
+    minor_mapping = None
 
     for mod in module_ctx.modules:
         module_toolchain_versions = []
@@ -69,6 +84,7 @@ def _python_impl(module_ctx):
         python_tools = _process_tag_classes(mod)
         base_url = base_url or python_tools.base_url
         available_versions = available_versions or python_tools.available_versions
+        minor_mapping = minor_mapping or python_tools.minor_mapping
 
         for toolchain_attr in python_tools.registrations:
             toolchain_version = toolchain_attr.python_version
@@ -172,6 +188,7 @@ def _python_impl(module_ctx):
         python_register_toolchains(
             base_url = base_url,
             tool_versions = available_versions,
+            minor_mapping = minor_mapping,
             # TODO @aignas 2024-08-08: allow modifying these values via the bzlmod extension
             # distutils_content = None,
             **kwargs
@@ -204,7 +221,7 @@ def _python_impl(module_ctx):
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(toolchains)
         ],
-        toolchain_python_versions = [full_version(t.python_version) for t in toolchains],
+        toolchain_python_versions = [full_version(t.python_version, minor_mapping) for t in toolchains],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [
@@ -283,6 +300,7 @@ def _process_tag_classes(mod, fail = fail):
         for version, item in TOOL_VERSIONS.items()
     }
     base_url = DEFAULT_RELEASE_BASE_URL
+    minor_mapping = MINOR_MAPPING
 
     for tag in mod.tags.toolchain:
         registrations.append(_create_toolchain_attrs_struct(tag = tag, toolchain_tag_count = len(mod.tags.toolchain)))
@@ -357,6 +375,17 @@ def _process_tag_classes(mod, fail = fail):
             elif tag.register_all_versions:
                 register_all = True
 
+            if tag.minor_mapping:
+                for minor_version, full_version in tag.minor_mapping.items():
+                    parsed = _parse_version(minor_version)
+                    if parsed.patch or parsed.build:
+                        fail("Expected the key to be of `X.Y` format but got `{}`".format(minor_version))
+                    parsed = _parse_version(full_version)
+                    if not parsed.patch:
+                        fail("Expected the value to at least be of `X.Y.Z` format but got `{}`".format(minor_version))
+
+                minor_mapping = dict(tag.minor_mapping)
+
             break
 
         if register_all:
@@ -370,6 +399,7 @@ def _process_tag_classes(mod, fail = fail):
         available_versions = available_versions if mod.is_root else None,
         base_url = base_url if mod.is_root else None,
         registrations = registrations,
+        minor_mapping = minor_mapping,
     )
 
 def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolchain_tag_count = None):
@@ -474,6 +504,11 @@ _override = tag_class(
             mandatory = False,
             doc = "The base URL to be used when downloading toolchains.",
             default = DEFAULT_RELEASE_BASE_URL,
+        ),
+        "minor_mapping": attr.string_dict(
+            mandatory = False,
+            doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
+            default = MINOR_MAPPING,
         ),
 
         # Internal attributes that are only usable from `rules_python`
