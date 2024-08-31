@@ -238,6 +238,9 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             repo = pip_name,
             dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
         )
+
+        overrides = whl_overrides.get(whl_name)
+
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
             annotation = annotation,
@@ -251,10 +254,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             pip_data_exclude = pip_attr.pip_data_exclude,
             python_interpreter = pip_attr.python_interpreter,
             python_interpreter_target = python_interpreter_target,
+            override_loads = overrides.loads if overrides else None,
             whl_patches = {
                 p: json.encode(args)
-                for p, args in whl_overrides.get(whl_name, {}).items()
-            },
+                for p, args in overrides.patches.items()
+            } if overrides else None,
         )
         whl_library_args.update({k: v for k, v in maybe_args.items() if v})
         maybe_args_with_default = dict(
@@ -441,17 +445,19 @@ def _pip_impl(module_ctx):
                 fail("Duplicate module overrides for '{}'".format(attr.file))
             _overriden_whl_set[attr.file] = None
 
-            for patch in attr.patches:
-                if whl_name not in whl_overrides:
-                    whl_overrides[whl_name] = {}
+            overrides = whl_overrides.setdefault(whl_name, struct(
+                patches = {},
+                loads = attr.library_symbols or {},
+            ))
 
-                if patch not in whl_overrides[whl_name]:
-                    whl_overrides[whl_name][patch] = struct(
+            for patch in attr.patches:
+                overrides.patches.setdefault(
+                    patch,
+                    struct(
                         patch_strip = attr.patch_strip,
                         whls = [],
-                    )
-
-                whl_overrides[whl_name][patch].whls.append(attr.file)
+                    ),
+                ).whls.append(attr.file)
 
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
@@ -726,6 +732,15 @@ The Python distribution file name which needs to be patched. This will be
 applied to all repositories that setup this distribution via the pip.parse tag
 class.""",
             mandatory = True,
+        ),
+        "library_symbols": attr.string_dict(
+            doc = """
+The string dictionary for symbols to be used when defining targets within the `whl_library`.
+
+This allows users to override the rules used for particular wheels for better
+support of generating `py_library` from an `sdist` or potentially improve how
+the `whl_filegroup` defines providers.
+""",
         ),
         "patch_strip": attr.int(
             default = 0,
