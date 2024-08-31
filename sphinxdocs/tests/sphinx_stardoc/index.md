@@ -21,6 +21,6 @@ ibazel build //sphinxdocs/tests/sphinx_stardoc:docs
 :hidden:
 :glob:
 
-*
+**
 genindex
 :::

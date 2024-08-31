@@ -1,3 +1,16 @@
+# Copyright 2024 The Bazel Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """Sphinx extension for documenting Bazel/Starlark objects."""
 
 import ast
@@ -52,35 +65,6 @@ def _position_iter(values: Collection[_T]) -> tuple[bool, bool, _T]:
     last_i = len(values) - 1
     for i, value in enumerate(values):
         yield i == 0, i == last_i, value
-
-
-# TODO: Remove this. Use @repo//pkg:file.bzl%symbol to identify things instead
-# of dots. This more directly reflects the bzl concept and avoids issues with
-# e.g. repos, directories, or files containing dots themselves.
-def _label_to_dotted_name(label: str) -> str:
-    """Convert an absolute label to a dotted name.
-
-    Args:
-        label: Absolute label with optional repo prefix, e.g. `@a//b:c.bzl`
-            or `//b:c.bzl`
-
-    Returns:
-        Label converted to a dotted notation for easier writing of object
-        references.
-    """
-    if label.endswith(".bzl"):
-        label = label[: -len(".bzl")]
-    elif ":BUILD" in label:
-        label = label[: label.find(":BUILD")]
-    else:
-        raise InvalidValueError(
-            f"Malformed label: Label must end with .bzl or :BUILD*, got {label}"
-        )
-
-    # Make a //foo:bar.bzl convert to foo.bar, not .foo.bar
-    if label.startswith("//"):
-        label = label.lstrip("/")
-    return label.replace("@", "").replace("//", "/").replace(":", "/").replace("/", ".")
 
 
 class InvalidValueError(Exception):
@@ -153,14 +137,21 @@ def _index_node_tuple(
 
 
 class _BzlObjectId:
+    """Identifies an object defined by a directive.
+
+    This object is returned by `handle_signature()` and passed onto
+    `add_target_and_index()`. It contains information to identify the object
+    that is being described so that it can be indexed and tracked by the
+    domain.
+    """
+
     def __init__(
         self,
         *,
         repo: str,
-        bzl_file: str = None,
+        label: str,
         namespace: str = None,
         symbol: str = None,
-        target: str = None,
     ):
         """Creates an instance.
 
@@ -172,32 +163,78 @@ class _BzlObjectId:
         """
         if not repo:
             raise InvalidValueError("repo cannot be empty")
-        if not bzl_file:
-            raise InvalidValueError("bzl_file cannot be empty")
-        if not symbol:
-            raise InvalidvalueError("symbol cannot be empty")
+        if not repo.startswith("@"):
+            raise InvalidValueError("repo must start with @")
+        if not label:
+            raise InvalidValueError("label cannot be empty")
+        if not label.startswith("//"):
+            raise InvalidValueError("label must start with //")
+
+        if not label.endswith(".bzl") and (symbol or namespace):
+            raise InvalidValueError(
+                "Symbol and namespace can only be specified for .bzl labels"
+            )
 
         self.repo = repo
-        self.bzl_file = bzl_file
+        self.label = label
+        self.package, self.target_name = self.label.split(":")
         self.namespace = namespace
         self.symbol = symbol  # Relative to namespace
+        # doc-relative identifier for this object
+        self.doc_id = symbol or self.target_name
 
-        clean_repo = repo.replace("@", "")
-        package = _label_to_dotted_name(bzl_file)
-        self.full_id = ".".join(filter(None, [clean_repo, package, namespace, symbol]))
+        if not self.doc_id:
+            raise InvalidValueError("doc_id is empty")
+
+        self.full_id = _full_id_from_parts(repo, label, [namespace, symbol])
 
     @classmethod
     def from_env(
-        cls, env: environment.BuildEnvironment, symbol: str = None, target: str = None
+        cls, env: environment.BuildEnvironment, *, symbol: str = None, label: str = None
     ) -> "_BzlObjectId":
-        if target:
-            symbol = target.lstrip("/:").replace(":", ".")
+        label = label or env.ref_context["bzl:file"]
+        if symbol:
+            namespace = ".".join(env.ref_context["bzl:doc_id_stack"])
+        else:
+            namespace = None
+
         return cls(
             repo=env.ref_context["bzl:repo"],
-            bzl_file=env.ref_context["bzl:file"],
-            namespace=".".join(env.ref_context["bzl:doc_id_stack"]),
+            label=label,
+            namespace=namespace,
             symbol=symbol,
         )
+
+    def __repr__(self):
+        return f"_BzlObjectId({self.full_id=})"
+
+
+def _full_id_from_env(env, object_ids=None):
+    return _full_id_from_parts(
+        env.ref_context["bzl:repo"],
+        env.ref_context["bzl:file"],
+        env.ref_context["bzl:object_id_stack"] + (object_ids or []),
+    )
+
+
+def _full_id_from_parts(repo, bzl_file, symbol_names=None):
+    parts = [repo, bzl_file]
+
+    symbol_names = symbol_names or []
+    symbol_names = list(filter(None, symbol_names))  # Filter out empty values
+    if symbol_names:
+        parts.append("%")
+        parts.append(".".join(symbol_names))
+
+    full_id = "".join(parts)
+    return full_id
+
+
+def _parse_full_id(full_id):
+    repo, slashes, label = full_id.partition("//")
+    label = slashes + label
+    label, _, symbol = label.partition("%")
+    return (repo, label, symbol)
 
 
 class _TypeExprParser(ast.NodeVisitor):
@@ -335,7 +372,7 @@ class _BzlXrefField(docfields.Field):
             )
         index_description = f"{arg_name} ({self.name} in {bzl_file}%{anchor_prefix})"
         anchor_id = f"{anchor_prefix}.{arg_name}"
-        full_id = ".".join(env.ref_context["bzl:object_id_stack"] + [arg_name])
+        full_id = _full_id_from_env(env, [arg_name])
 
         env.get_domain(domain).add_object(
             _ObjectEntry(
@@ -459,9 +496,7 @@ class _BzlCurrentFile(sphinx_docutils.SphinxDirective):
             repo = self.env.config.bzl_default_repository_name
         self.env.ref_context["bzl:repo"] = repo
         self.env.ref_context["bzl:file"] = file_label
-        self.env.ref_context["bzl:object_id_stack"] = [
-            _label_to_dotted_name(repo + file_label)
-        ]
+        self.env.ref_context["bzl:object_id_stack"] = []
         self.env.ref_context["bzl:doc_id_stack"] = []
         return []
 
@@ -511,8 +546,9 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
     @override
     def before_content(self) -> None:
         symbol_name = self.names[-1].symbol
-        self.env.ref_context["bzl:object_id_stack"].append(symbol_name)
-        self.env.ref_context["bzl:doc_id_stack"].append(symbol_name)
+        if symbol_name:
+            self.env.ref_context["bzl:object_id_stack"].append(symbol_name)
+            self.env.ref_context["bzl:doc_id_stack"].append(symbol_name)
 
     @override
     def transform_content(self, content_node: addnodes.desc_content) -> None:
@@ -566,8 +602,9 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
 
     @override
     def after_content(self) -> None:
-        self.env.ref_context["bzl:object_id_stack"].pop()
-        self.env.ref_context["bzl:doc_id_stack"].pop()
+        if self.names[-1].symbol:
+            self.env.ref_context["bzl:object_id_stack"].pop()
+            self.env.ref_context["bzl:doc_id_stack"].pop()
 
     # docs on how to build signatures:
     # https://www.sphinx-doc.org/en/master/extdev/nodes.html#sphinx.addnodes.desc_signature
@@ -668,7 +705,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
                 if signature.return_annotation is not signature.empty:
                     sig_node += addnodes.desc_returns("", signature.return_annotation)
 
-        obj_id = _BzlObjectId.from_env(self.env, relative_name)
+        obj_id = _BzlObjectId.from_env(self.env, symbol=relative_name)
 
         sig_node["bzl:object_id"] = obj_id.full_id
         return obj_id
@@ -683,24 +720,25 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
         self, obj_desc: _BzlObjectId, sig: str, sig_node: addnodes.desc_signature
     ) -> None:
         super().add_target_and_index(obj_desc, sig, sig_node)
-        symbol_name = obj_desc.symbol
-        display_name = sig_node.get("bzl:index_display_name", symbol_name)
+        if obj_desc.symbol:
+            display_name = obj_desc.symbol
+            location = obj_desc.label
+            if obj_desc.namespace:
+                location += f"%{obj_desc.namespace}"
+        else:
+            display_name = obj_desc.target_name
+            location = obj_desc.package
 
         anchor_prefix = ".".join(self.env.ref_context["bzl:doc_id_stack"])
         if anchor_prefix:
-            anchor_id = f"{anchor_prefix}.{symbol_name}"
-            file_location = "%" + anchor_prefix
+            anchor_id = f"{anchor_prefix}.{obj_desc.doc_id}"
         else:
-            anchor_id = symbol_name
-            file_location = ""
+            anchor_id = obj_desc.doc_id
 
         sig_node["ids"].append(anchor_id)
 
         object_type_display = self._get_object_type_display_name()
-        index_description = (
-            f"{display_name} ({object_type_display} in "
-            f"{obj_desc.bzl_file}{file_location})"
-        )
+        index_description = f"{display_name} ({object_type_display} in {location})"
         self.indexnode["entries"].extend(
             _index_node_tuple("single", f"{index_type}; {index_description}", anchor_id)
             for index_type in [object_type_display] + self._get_additional_index_types()
@@ -715,7 +753,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
             object_type=self.objtype,
             search_priority=1,
             index_entry=domains.IndexEntry(
-                name=symbol_name,
+                name=display_name,
                 subtype=_INDEX_SUBTYPE_NORMAL,
                 docname=self.env.docname,
                 anchor=anchor_id,
@@ -732,13 +770,9 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
                 # Options require \@ for leading @, but don't
                 # remove the escaping slash, so we have to do it manually
                 .lstrip("\\")
-                .lstrip("@")
-                .replace("//", "/")
-                .replace(".bzl%", ".")
-                .replace("/", ".")
-                .replace(":", ".")
             )
-        alt_names.extend(self._get_alt_names(object_entry))
+        extra_alt_names = self._get_alt_names(object_entry)
+        alt_names.extend(extra_alt_names)
 
         self.env.get_domain(self.domain).add_object(object_entry, alt_names=alt_names)
 
@@ -749,7 +783,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
     def _object_hierarchy_parts(
         self, sig_node: addnodes.desc_signature
     ) -> tuple[str, ...]:
-        return tuple(sig_node["bzl:object_id"].split("."))
+        return _parse_full_id(sig_node["bzl:object_id"])
 
     @override
     def _toc_entry_name(self, sig_node: addnodes.desc_signature) -> str:
@@ -762,15 +796,25 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
         return self._get_object_type_display_name()
 
     def _get_alt_names(self, object_entry):
-        return [object_entry.full_id.split(".")[-1]]
+        alt_names = []
+        full_id = object_entry.full_id
+        label, _, symbol = full_id.partition("%")
+        if symbol:
+            # Allow referring to the file-relative fully qualified symbol name
+            alt_names.append(symbol)
+            if "." in symbol:
+                # Allow referring to the last component of the symbol
+                alt_names.append(symbol.split(".")[-1])
+        else:
+            # Otherwise, it's a target. Allow referring to just the target name
+            _, _, target_name = label.partition(":")
+            alt_names.append(target_name)
+
+        return alt_names
 
 
 class _BzlCallable(_BzlObject):
     """Abstract base class for objects that are callable."""
-
-    @override
-    def _get_alt_names(self, object_entry):
-        return [object_entry.full_id.split(".")[-1]]
 
 
 class _BzlProvider(_BzlObject):
@@ -789,10 +833,6 @@ class _BzlProvider(_BzlObject):
     ::::
     ```
     """
-
-    @override
-    def _get_alt_names(self, object_entry):
-        return [object_entry.full_id.split(".")[-1]]
 
 
 class _BzlProviderField(_BzlObject):
@@ -822,7 +862,12 @@ class _BzlProviderField(_BzlObject):
 
     @override
     def _get_alt_names(self, object_entry):
-        return [".".join(object_entry.full_id.split(".")[-2:])]
+        alt_names = super()._get_alt_names(object_entry)
+        _, _, symbol = object_entry.full_id.partition("%")
+        # Allow refering to `mod_ext_name.tag_name`, even if the extension
+        # is nested within another object
+        alt_names.append(".".join(symbol.split(".")[-2:]))
+        return alt_names
 
 
 class _BzlRepositoryRule(_BzlCallable):
@@ -1094,6 +1139,15 @@ class _BzlTagClass(_BzlCallable):
     def _get_signature_object_type(self) -> str:
         return ""
 
+    @override
+    def _get_alt_names(self, object_entry):
+        alt_names = super()._get_alt_names(object_entry)
+        _, _, symbol = object_entry.full_id.partition("%")
+        # Allow refering to `ProviderName.field`, even if the provider
+        # is nested within another object
+        alt_names.append(".".join(symbol.split(".")[-2:]))
+        return alt_names
+
 
 class _TargetType(enum.Enum):
     TARGET = "target"
@@ -1120,9 +1174,8 @@ class _BzlTarget(_BzlObject):
         sig_node += addnodes.desc_addname(package, package)
         sig_node += addnodes.desc_name(target_name, target_name)
 
-        obj_id = _BzlObjectId.from_env(self.env, target=sig_text)
+        obj_id = _BzlObjectId.from_env(self.env, label=package + target_name)
         sig_node["bzl:object_id"] = obj_id.full_id
-        sig_node["bzl:index_display_name"] = f"{package}{target_name}"
         return obj_id
 
     @override
@@ -1518,17 +1571,9 @@ class _BzlDomain(domains.Domain):
     def _find_entry_for_xref(
         self, fromdocname: str, object_type: str, target: str
     ) -> _ObjectEntry | None:
-        # Normalize a variety of formats to the dotted format used internally.
-        # --@foo//:bar flags
-        # --@foo//:bar=value labels
-        # //foo:bar.bzl labels
-        target = (
-            target.lstrip("@/:-")
-            .replace("//", "/")
-            .replace(".bzl%", ".")
-            .replace("/", ".")
-            .replace(":", ".")
-        )
+        if target.startswith("--"):
+            target = target.strip("-")
+            object_type = "flag"
         # Elide the value part of --foo=bar flags
         # Note that the flag value could contain `=`
         if "=" in target:
@@ -1566,15 +1611,18 @@ class _BzlDomain(domains.Domain):
         self.data["objects_by_type"].setdefault(entry.object_type, {})
         self.data["objects_by_type"][entry.object_type][entry.full_id] = entry
 
-        base_name = entry.full_id.split(".")[-1]
-
-        without_repo = entry.full_id.split(".", 1)[1]
+        repo, label, symbol = _parse_full_id(entry.full_id)
+        if symbol:
+            base_name = symbol.split(".")[-1]
+        else:
+            base_name = label.split(":")[-1]
 
         if alt_names is not None:
             alt_names = list(alt_names)
-        alt_names.append(without_repo)
+        # Add the repo-less version as an alias
+        alt_names.append(label + (f"%{symbol}" if symbol else ""))
 
-        for alt_name in alt_names:
+        for alt_name in sorted(set(alt_names)):
             if alt_name in self.data["alt_names"]:
                 existing = self.data["alt_names"][alt_name]
                 # This situation usually occurs for the constructor function

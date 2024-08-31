@@ -1,9 +1,9 @@
 :::{default-domain} bzl
 :::
-:::{bzl:currentfile} //python/runtime_env_toolchain:BUILD.bazel
+:::{bzl:currentfile} //python/runtime_env_toolchains:BUILD.bazel
 :::
 
-# //python/runtime_env_toolchain
+# //python/runtime_env_toolchains
 
 ::::{target} all
 

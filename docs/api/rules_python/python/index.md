@@ -30,7 +30,7 @@ Legacy toolchain; despite its name, it doesn't autodetect anything.
 
 :::{deprecated} 0.34.0
 
-Use {obj}`@rules_python//python/runtime_env_toolchain:all` instead.
+Use {obj}`@rules_python//python/runtime_env_toolchains:all` instead.
 :::
 ::::
 
