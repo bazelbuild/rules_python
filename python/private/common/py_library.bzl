@@ -127,14 +127,16 @@ def create_py_library_rule(*, attrs = {}, **kwargs):
 
     # Within Google, the doc attribute is overridden
     kwargs.setdefault("doc", _DEFAULT_PY_LIBRARY_DOC)
+
+    # TODO: b/253818097 - fragments=py is only necessary so that
+    # RequiredConfigFragmentsTest passes
+    fragments = kwargs.pop("fragments", None) or []
     return rule(
         attrs = dicts.add(LIBRARY_ATTRS, attrs),
         toolchains = [
             config_common.toolchain_type(TOOLCHAIN_TYPE, mandatory = False),
             config_common.toolchain_type(EXEC_TOOLS_TOOLCHAIN_TYPE, mandatory = False),
         ],
-        # TODO(b/253818097): fragments=py is only necessary so that
-        # RequiredConfigFragmentsTest passes
-        fragments = ["py"],
+        fragments = fragments + ["py"],
         **kwargs
     )
