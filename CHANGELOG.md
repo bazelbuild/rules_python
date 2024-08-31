@@ -26,6 +26,8 @@ A brief description of the categories of changes:
 
 ### Changed
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
+* (flags) The {obj}`--python_version` flag now also returns
+  {obj}`config_common.FeatureFlagInfo`.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the

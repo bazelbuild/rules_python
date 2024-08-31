@@ -7,6 +7,8 @@ File bzl:type 1 rules/lib/File -
 Label bzl:type 1 rules/lib/Label -
 Target bzl:type 1 rules/lib/builtins/Target -
 bool bzl:type 1 rules/lib/bool -
+config_common.FeatureFlagInfo bzl:type 1 rules/lib/toplevel/config_common#FeatureFlagInfo -
+config_common.toolchain_type bzl:function 1 rules/lib/toplevel/config_common#toolchain_type -
 ctx.actions bzl:obj 1 rules/lib/builtins/ctx#actions -
 ctx.aspect_ids bzl:obj 1 rules/lib/builtins/ctx#aspect_ids -
 ctx.attr bzl:obj 1 rules/lib/builtins/ctx#attr -
@@ -65,6 +67,7 @@ native.repo_name bzl:function 1 rules/lib/toplevel/native#repo_name -
 native.repository_name bzl:function 1 rules/lib/toplevel/native#repository_name -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
+toolchain_type bzl:type 1 ules/lib/builtins/toolchain_type.html -
 Name bzl:type 1 concepts/labels#target-names -
 CcInfo bzl:provider 1 rules/lib/providers/CcInfo -
 CcInfo.linking_context bzl:provider-field 1 rules/lib/providers/CcInfo#linking_context -
