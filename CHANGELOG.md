@@ -46,6 +46,7 @@ A brief description of the categories of changes:
 * (toolchain) Omit third-party python packages from coverage reports from
   stage2 bootstrap template.
 * (bzlmod) Properly handle relative path URLs in parse_simpleapi_html.bzl
+* (gazelle) Correctly resolve deps that have top-level module overlap with a gazelle_python.yaml dep module
 
 ### Added
 * (bzlmod): Toolchain overrides can now be done to fully override anything from

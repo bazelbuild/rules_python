@@ -48,7 +48,7 @@ def _compile(options: "argparse.Namespace") -> None:
             f"Unknown PycInvalidationMode: {options.invalidation_mode}"
         ) from e
 
-    if len(options.srcs) != len(options.src_names) != len(options.pycs):
+    if not (len(options.srcs) == len(options.src_names) == len(options.pycs)):
         raise AssertionError(
             "Mismatched number of --src, --src_name, and/or --pyc args"
         )
