@@ -51,9 +51,9 @@ A brief description of the categories of changes:
 ### Added
 * (bzlmod): Toolchain overrides can now be done to fully override anything from
   within the TOOL_VERSIONS dict using the new 
-  {rule}`python.override`,
-  {rule}`python.single_version_override` and
-  {rule}`python.single_version_platform_override`.
+  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.override`,
+  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_override` and
+  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_platform_override`.
 
 ### Removed
 * Nothing yet

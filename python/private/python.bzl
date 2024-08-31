@@ -517,7 +517,7 @@ Then the python interpreter will be available as `my_python_name`.
     attrs = {
         "configure_coverage_tool": attr.bool(
             mandatory = False,
-            doc = "Whether or not to configure the default coverage tool for the toolchains.",
+            doc = "Whether or not to configure the default coverage tool provided by `rules_python` for the compatible toolchains.",
         ),
         "ignore_root_user_error": attr.bool(
             default = False,
@@ -580,9 +580,11 @@ _single_version_override = tag_class(
 
 :::{note}
 This will replace any existing configuration for the given python version.
+:::
 
+:::{tip}
 If you would like to modify the configuration for a specific `(version,
-platform)`, please use the {obj}`python.single_version_platform_override` tag
+platform)`, please use the {obj}`single_version_platform_override` tag
 class.
 :::
 
@@ -654,7 +656,7 @@ use the same `url` template.
 
 :::{tip}
 If you would like to add or remove platforms to a single python version toolchain
-configuration, please use {obj}`python.single_version_override`.
+configuration, please use {obj}`single_version_override`.
 :::
 
 :::{versionadded} 0.36.0
