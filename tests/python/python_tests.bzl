@@ -89,9 +89,6 @@ def _test_default(env):
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
-    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
-        want_toolchain.python_version: want_toolchain,
-    })
 
 _tests.append(_test_default)
 
@@ -115,9 +112,6 @@ def _test_default_with_patch(env):
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
-    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
-        want_toolchain.python_version: want_toolchain,
-    })
 
 _tests.append(_test_default_with_patch)
 
@@ -151,10 +145,6 @@ def _test_default_non_rules_python(env):
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
-    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
-        my_module_toolchain.python_version: my_module_toolchain,
-        rules_python_toolchain.python_version: rules_python_toolchain,
-    })
 
 _tests.append(_test_default_non_rules_python)
 
@@ -189,10 +179,6 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
-    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
-        my_module_toolchain.python_version: my_module_toolchain,
-        rules_python_toolchain.python_version: rules_python_toolchain,
-    })
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error)
 
@@ -237,11 +223,6 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain, some_module_toolchain])
-    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
-        my_module_toolchain.python_version: my_module_toolchain,
-        some_module_toolchain.python_version: some_module_toolchain,
-        rules_python_toolchain.python_version: rules_python_toolchain,
-    })
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
 

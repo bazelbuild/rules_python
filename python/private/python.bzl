@@ -174,7 +174,7 @@ def parse_mods(mctx, *, logger, fail = fail):
                 toolchain_info = None
             else:
                 toolchain_info = struct(
-                    python_version = toolchain_attr.python_version,
+                    python_version = toolchain_version,
                     name = toolchain_name,
                     module = struct(name = mod.name, is_root = mod.is_root),
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
@@ -220,7 +220,6 @@ def parse_mods(mctx, *, logger, fail = fail):
 
     return struct(
         default_python_version = default_toolchain.python_version,
-        global_toolchain_versions = global_toolchain_versions,
         toolchains = toolchains,
         overrides = overrides,
     )
@@ -283,8 +282,8 @@ def _python_impl(mctx):
     multi_toolchain_aliases(
         name = "python_versions",
         python_versions = {
-            version: toolchain.name
-            for version, toolchain in py.global_toolchain_versions.items()
+            toolchain.python_version: toolchain.name
+            for toolchain in py.toolchains
         },
     )
 
