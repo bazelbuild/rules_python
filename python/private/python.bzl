@@ -44,8 +44,18 @@ def _parse_version(version):
         build = build,
     )
 
-def _python_impl(module_ctx):
-    if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
+def parse_mods(mctx, *, logger, fail = fail):
+    """parse_mods returns a struct with parsed tag class content.
+
+    Args:
+        mctx: module_ctx.
+        logger: logger.
+        fail: fail.
+
+    Returns:
+        a struct with attributes
+    """
+    if mctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
         debug_info = {
             "toolchains_registered": [],
         }
@@ -57,21 +67,19 @@ def _python_impl(module_ctx):
     # so there is special handling to ensure the last entry is the correct one.
     toolchains = []
 
-    # We store the default toolchain separately to ensure it is the last
-    # toolchain added to toolchains.
-    # This is a toolchain_info struct.
-    default_toolchain = None
-
     # Map of string Major.Minor to the toolchain_info struct
     global_toolchain_versions = {}
 
     ignore_root_user_error = None
 
-    logger = repo_utils.logger(module_ctx, "python")
+    # We store the default toolchain separately to ensure it is the last
+    # toolchain added to toolchains.
+    # This is a toolchain_info struct.
+    default_toolchain = None
 
     # if the root module does not register any toolchain then the
     # ignore_root_user_error takes its default value: False
-    if not module_ctx.modules[0].tags.toolchain:
+    if not mctx.modules[0].tags.toolchain:
         ignore_root_user_error = False
 
     registrations = []
@@ -102,7 +110,7 @@ def _python_impl(module_ctx):
         },
     )
 
-    for mod in module_ctx.modules:
+    for mod in mctx.modules:
         module_toolchain_versions = []
 
         requested_toolchains = _process_tag_classes(
@@ -207,21 +215,6 @@ def _python_impl(module_ctx):
             elif toolchain_info:
                 toolchains.append(toolchain_info)
 
-    for r in registrations:
-        # Ensure that we pass the full version here.
-        full_python_version = full_version(r.python_version, overrides.minor_mapping)
-        kwargs = dict(
-            python_version = full_python_version,
-            ignore_root_user_error = r.ignore_root_user_error,
-            register_coverage_tool = r.register_coverage_tool,
-        )
-
-        # Allow overrides per python version
-        kwargs.update(overrides.kwargs.get(r.python_version, {}))
-        kwargs.update(overrides.kwargs.get(full_python_version, {}))
-        kwargs.update(overrides.default)
-        python_register_toolchains(name = r.name, **kwargs)
-
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
     if default_toolchain == None:
@@ -240,23 +233,55 @@ def _python_impl(module_ctx):
     if len(toolchains) > _MAX_NUM_TOOLCHAINS:
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
+    return struct(
+        debug_info = debug_info,
+        default_toolchain = default_toolchain,
+        global_toolchain_versions = global_toolchain_versions,
+        overrides = overrides,
+        registrations = registrations,
+        toolchains = toolchains,
+    )
+
+def _python_impl(mctx):
+    logger = repo_utils.logger(mctx, "python")
+
+    py = parse_mods(
+        mctx,
+        logger = logger,
+    )
+
+    for r in py.registrations:
+        # Ensure that we pass the full version here.
+        full_python_version = full_version(r.python_version, py.overrides.minor_mapping)
+        kwargs = dict(
+            python_version = full_python_version,
+            ignore_root_user_error = r.ignore_root_user_error,
+            register_coverage_tool = r.register_coverage_tool,
+        )
+
+        # Allow overrides per python version
+        kwargs.update(py.overrides.kwargs.get(r.python_version, {}))
+        kwargs.update(py.overrides.kwargs.get(full_python_version, {}))
+        kwargs.update(py.overrides.default)
+        python_register_toolchains(name = r.name, **kwargs)
+
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
     hub_repo(
         name = "pythons_hub",
-        default_python_version = default_toolchain.python_version,
+        default_python_version = py.default_toolchain.python_version,
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
-            for index, toolchain in enumerate(toolchains)
+            for index, toolchain in enumerate(py.toolchains)
         ],
-        toolchain_python_versions = [full_version(t.python_version, overrides.minor_mapping) for t in toolchains],
+        toolchain_python_versions = [full_version(t.python_version, py.overrides.minor_mapping) for t in py.toolchains],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [
-            "True" if i != len(toolchains) - 1 else "False"
-            for i in range(len(toolchains))
+            "True" if i != len(py.toolchains) - 1 else "False"
+            for i in range(len(py.toolchains))
         ],
-        toolchain_user_repository_names = [t.name for t in toolchains],
+        toolchain_user_repository_names = [t.name for t in py.toolchains],
     )
 
     # This is require in order to support multiple version py_test
@@ -265,18 +290,18 @@ def _python_impl(module_ctx):
         name = "python_versions",
         python_versions = {
             version: toolchain.name
-            for version, toolchain in global_toolchain_versions.items()
+            for version, toolchain in py.global_toolchain_versions.items()
         },
     )
 
-    if debug_info != None:
+    if py.debug_info != None:
         _debug_repo(
             name = "rules_python_bzlmod_debug",
-            debug_info = json.encode_indent(debug_info),
+            debug_info = json.encode_indent(py.debug_info),
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
-        return module_ctx.extension_metadata(reproducible = True)
+        return mctx.extension_metadata(reproducible = True)
     else:
         return None
 
