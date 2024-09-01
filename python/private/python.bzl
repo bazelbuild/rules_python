@@ -44,12 +44,13 @@ def _parse_version(version):
         build = build,
     )
 
-def parse_mods(mctx, *, logger, fail = fail):
+def parse_mods(mctx, *, logger, debug = False, fail = fail):
     """parse_mods returns a struct with parsed tag class content.
 
     Args:
         mctx: module_ctx.
         logger: logger.
+        debug: whether to add extra diagnostic information.
         fail: fail.
 
     Returns:
@@ -220,17 +221,24 @@ def parse_mods(mctx, *, logger, fail = fail):
 
     return struct(
         default_python_version = default_toolchain.python_version,
-        toolchains = toolchains,
+        toolchains = [
+            struct(
+                name = t.name,
+                python_version = t.python_version,
+                register_coverage_tool = t.register_coverage_tool,
+            ) if not debug else struct(
+                name = t.name,
+                python_version = t.python_version,
+                register_coverage_tool = t.register_coverage_tool,
+                debug = {"module": t.module} if debug else None,
+            )
+            for t in toolchains
+        ],
         overrides = overrides,
     )
 
 def _python_impl(mctx):
     logger = repo_utils.logger(mctx, "python")
-
-    py = parse_mods(
-        mctx,
-        logger = logger,
-    )
 
     if mctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
         debug_info = {
@@ -238,6 +246,11 @@ def _python_impl(mctx):
         }
     else:
         debug_info = None
+
+    py = parse_mods(
+        mctx,
+        logger = logger,
+    )
 
     for toolchain in py.toolchains:
         # Ensure that we pass the full version here.
@@ -254,9 +267,10 @@ def _python_impl(mctx):
         python_register_toolchains(name = toolchain.name, **kwargs)
         if debug_info:
             debug_info["default"] = py.overrides.default
-            debug_info["toolchains_registered"].append({
-                "name": toolchain.name,
-            })
+            debug_info["toolchains_registered"].append(dict(
+                name = toolchain.name,
+                **toolchain.debug
+            ))
 
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
