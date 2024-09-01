@@ -55,19 +55,13 @@ def parse_mods(mctx, *, logger, fail = fail):
     Returns:
         a struct with attributes
     """
-    if mctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
-        debug_info = {
-            "toolchains_registered": [],
-        }
-    else:
-        debug_info = None
 
     # The toolchain_info structs to register, in the order to register them in.
     # NOTE: The last element is special: it is treated as the default toolchain,
     # so there is special handling to ensure the last entry is the correct one.
     toolchains = []
 
-    # Map of string Major.Minor to the toolchain_info struct
+    # Map of string Major.Minor or Major.Minor.Patch to the toolchain_info struct
     global_toolchain_versions = {}
 
     ignore_root_user_error = None
@@ -192,14 +186,8 @@ def parse_mods(mctx, *, logger, fail = fail):
                     name = toolchain_name,
                     python_version = toolchain_attr.python_version,
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                    ignore_root_user_error = ignore_root_user_error,
                 ))
                 global_toolchain_versions[toolchain_version] = toolchain_info
-                if debug_info:
-                    debug_info["toolchains_registered"].append({
-                        "ignore_root_user_error": ignore_root_user_error,
-                        "name": toolchain_name,
-                    })
 
             if is_default:
                 # This toolchain is setting the default, but the actual
@@ -214,6 +202,11 @@ def parse_mods(mctx, *, logger, fail = fail):
                     default_toolchain = toolchain_info
             elif toolchain_info:
                 toolchains.append(toolchain_info)
+
+    # TODO @aignas 2024-09-01: deprecate the ignore_root_user_error
+    # specification via the `python.toolchain` call and instead use
+    # `python.override`.
+    overrides.default["ignore_root_user_error"] = ignore_root_user_error
 
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
@@ -234,12 +227,11 @@ def parse_mods(mctx, *, logger, fail = fail):
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
     return struct(
-        debug_info = debug_info,
         default_toolchain = default_toolchain,
         global_toolchain_versions = global_toolchain_versions,
-        overrides = overrides,
-        registrations = registrations,
         toolchains = toolchains,
+        registrations = registrations,
+        overrides = overrides,
     )
 
 def _python_impl(mctx):
@@ -250,20 +242,31 @@ def _python_impl(mctx):
         logger = logger,
     )
 
+    if mctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
+        debug_info = {
+            "toolchains_registered": [],
+        }
+    else:
+        debug_info = None
+
     for r in py.registrations:
         # Ensure that we pass the full version here.
         full_python_version = full_version(r.python_version, py.overrides.minor_mapping)
-        kwargs = dict(
-            python_version = full_python_version,
-            ignore_root_user_error = r.ignore_root_user_error,
-            register_coverage_tool = r.register_coverage_tool,
-        )
+        kwargs = {
+            "python_version": full_python_version,
+            "register_coverage_tool": r.register_coverage_tool,
+        }
 
         # Allow overrides per python version
         kwargs.update(py.overrides.kwargs.get(r.python_version, {}))
         kwargs.update(py.overrides.kwargs.get(full_python_version, {}))
         kwargs.update(py.overrides.default)
         python_register_toolchains(name = r.name, **kwargs)
+        if debug_info:
+            debug_info["default"] = py.overrides.default
+            debug_info["toolchains_registered"].append({
+                "name": r.name,
+            })
 
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
@@ -294,10 +297,10 @@ def _python_impl(mctx):
         },
     )
 
-    if py.debug_info != None:
+    if debug_info != None:
         _debug_repo(
             name = "rules_python_bzlmod_debug",
-            debug_info = json.encode_indent(py.debug_info),
+            debug_info = json.encode_indent(debug_info),
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
@@ -313,6 +316,9 @@ def _fail_duplicate_module_toolchain_version(version, module):
     ))
 
 def _warn_duplicate_global_toolchain_version(version, first, second_toolchain_name, second_module_name, logger):
+    if not logger:
+        return
+
     logger.info(lambda: (
         "Ignoring toolchain '{second_toolchain}' from module '{second_module}': " +
         "Toolchain '{first_toolchain}' from module '{first_module}' " +

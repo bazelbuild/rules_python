@@ -49,6 +49,8 @@ python.override(
     ],
     # Also override the `minor_mapping` so that when the modules specify a particular
     # `3.X` version, we decide what gets used.
+    #
+    # TODO @aignas 2024-09-01: calculate the default based on available python versions.
     minor_mapping = {
         "3.10": "3.10.9",
         "3.11": "3.11.8",

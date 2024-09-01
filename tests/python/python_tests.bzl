@@ -28,7 +28,14 @@ def _mock_mctx(root_module, *modules):
                 tags = root_module.tags,
                 is_root = True,
             ),
-        ] + list(modules),
+        ] + [
+            struct(
+                name = mod.name,
+                tags = mod.tags,
+                is_root = False,
+            )
+            for mod in modules
+        ],
     )
 
 def _mod(*, name, toolchain = [], override = [], single_version_override = [], single_version_platform_override = []):
@@ -42,14 +49,15 @@ def _mod(*, name, toolchain = [], override = [], single_version_override = [], s
         ),
     )
 
-def _toolchain(python_version, *, is_default = False):
+def _toolchain(python_version, *, is_default = False, **kwargs):
     return struct(
         is_default = is_default,
         python_version = python_version,
+        **kwargs
     )
 
-def test_default(env):
-    got = parse_mods(
+def _test_default(env):
+    py = parse_mods(
         mctx = _mock_mctx(
             _mod(
                 name = "rules_python",
@@ -58,9 +66,230 @@ def test_default(env):
         ),
         logger = None,
     )
-    env.expect.that_str(got).equals("prefix_foo_py3_none_any_deadbeef")
+    env.expect.that_collection(py.overrides.minor_mapping.keys()).contains_exactly([
+        "3.10",
+        "3.11",
+        "3.12",
+        "3.8",
+        "3.9",
+    ])
+    env.expect.that_collection(py.overrides.kwargs).has_size(0)
+    env.expect.that_collection(py.overrides.default.keys()).contains_exactly([
+        "base_url",
+        "ignore_root_user_error",
+        "tool_versions",
+    ])
+    env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
+    env.expect.that_str(py.default_toolchain.python_version).equals("3.11")
+    want_toolchain = struct(
+        module = struct(is_root = True, name = "rules_python"),
+        name = "python_3_11",
+        python_version = "3.11",
+    )
 
-_tests.append(_test_simple)
+    env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
+    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
+        want_toolchain.python_version: want_toolchain,
+    })
+    env.expect.that_collection(py.registrations).contains_exactly([
+        struct(
+            name = "python_3_11",
+            python_version = "3.11",
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_default)
+
+def _test_default_with_patch(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11.2")],
+            ),
+        ),
+        logger = None,
+    )
+
+    env.expect.that_str(py.default_toolchain.python_version).equals("3.11.2")
+    want_toolchain = struct(
+        module = struct(is_root = True, name = "rules_python"),
+        name = "python_3_11_2",
+        python_version = "3.11.2",
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
+    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
+        want_toolchain.python_version: want_toolchain,
+    })
+    env.expect.that_collection(py.registrations).contains_exactly([
+        struct(
+            name = want_toolchain.name,
+            python_version = want_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_default_with_patch)
+
+def _test_default_non_rules_python(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.12")],
+            ),
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11")],
+            ),
+        ),
+        logger = None,
+    )
+
+    env.expect.that_str(py.default_toolchain.python_version).equals("3.12")
+    my_module_toolchain = struct(
+        module = struct(is_root = True, name = "my_module"),
+        name = "python_3_12",
+        python_version = "3.12",
+    )
+    rules_python_toolchain = struct(
+        module = struct(is_root = False, name = "rules_python"),
+        name = "python_3_11",
+        python_version = "3.11",
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
+    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
+        my_module_toolchain.python_version: my_module_toolchain,
+        rules_python_toolchain.python_version: rules_python_toolchain,
+    })
+    env.expect.that_collection(py.registrations).contains_exactly([
+        struct(
+            name = my_module_toolchain.name,
+            python_version = my_module_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+        struct(
+            name = rules_python_toolchain.name,
+            python_version = rules_python_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_default_non_rules_python)
+
+def _test_default_non_rules_python_ignore_root_user_error(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.12", ignore_root_user_error = True)],
+            ),
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11")],
+            ),
+        ),
+        logger = None,
+    )
+
+    env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(True)
+    env.expect.that_str(py.default_toolchain.python_version).equals("3.12")
+    my_module_toolchain = struct(
+        module = struct(is_root = True, name = "my_module"),
+        name = "python_3_12",
+        python_version = "3.12",
+    )
+    rules_python_toolchain = struct(
+        module = struct(is_root = False, name = "rules_python"),
+        name = "python_3_11",
+        python_version = "3.11",
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
+    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
+        my_module_toolchain.python_version: my_module_toolchain,
+        rules_python_toolchain.python_version: rules_python_toolchain,
+    })
+    env.expect.that_collection(py.registrations).contains_exactly([
+        struct(
+            name = my_module_toolchain.name,
+            python_version = my_module_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+        struct(
+            name = rules_python_toolchain.name,
+            python_version = rules_python_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_default_non_rules_python_ignore_root_user_error)
+
+def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.13")],
+            ),
+            _mod(
+                name = "some_module",
+                toolchain = [_toolchain("3.12", ignore_root_user_error = True)],
+            ),
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11")],
+            ),
+        ),
+        logger = None,
+    )
+
+    env.expect.that_str(py.default_toolchain.python_version).equals("3.13")
+    env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
+    my_module_toolchain = struct(
+        module = struct(is_root = True, name = "my_module"),
+        name = "python_3_13",
+        python_version = "3.13",
+    )
+    some_module_toolchain = struct(
+        module = struct(is_root = False, name = "some_module"),
+        name = "python_3_12",
+        python_version = "3.12",
+    )
+    rules_python_toolchain = struct(
+        module = struct(is_root = False, name = "rules_python"),
+        name = "python_3_11",
+        python_version = "3.11",
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain, some_module_toolchain])
+    env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
+        my_module_toolchain.python_version: my_module_toolchain,
+        some_module_toolchain.python_version: some_module_toolchain,
+        rules_python_toolchain.python_version: rules_python_toolchain,
+    })
+    env.expect.that_collection(py.registrations).contains_exactly([
+        struct(
+            name = my_module_toolchain.name,
+            python_version = my_module_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+        struct(
+            name = some_module_toolchain.name,
+            python_version = some_module_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+        struct(
+            name = rules_python_toolchain.name,
+            python_version = rules_python_toolchain.python_version,
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
 
 def python_test_suite(name):
     """Create the test suite.
