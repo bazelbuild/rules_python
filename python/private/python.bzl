@@ -582,6 +582,7 @@ The Python version, in `major.minor` or `major.minor.patch` format, e.g
     },
 )
 
+# TODO @aignas 2024-09-01: Is the name good enough, should this be something like `python.configure`?
 _override = tag_class(
     doc = """Tag class used to override defaults and behaviour of the module extension.
 
@@ -610,6 +611,9 @@ _override = tag_class(
     ),
 )
 
+# TODO @aignas 2024-09-01: should the attributes within this be incorporated into the `python.toolchain` call?
+# It does sound like the override being done in a separate method is not something that is super ergonomic, because
+# then the ordering needs to be decided and we may need to also think about what to do with the coverage attribute.
 _single_version_override = tag_class(
     doc = """Override single python version URLs and patches for all platforms.
 
@@ -683,6 +687,7 @@ TODO: should be able to:
     },
 )
 
+# Is the name good enough?
 _single_version_platform_override = tag_class(
     doc = """Override single python version for a single existing platform.
 
