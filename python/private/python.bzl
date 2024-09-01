@@ -76,7 +76,6 @@ def parse_mods(mctx, *, logger, fail = fail):
     if not mctx.modules[0].tags.toolchain:
         ignore_root_user_error = False
 
-    registrations = []
     seen_versions = {}
 
     # overrides that can be changed by the root module
@@ -180,10 +179,6 @@ def parse_mods(mctx, *, logger, fail = fail):
                     module = struct(name = mod.name, is_root = mod.is_root),
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
                 )
-
-                # Register the toolchains outside the main loop so that we can ensure that the
-                # overrides are correctly applied globally
-                registrations.append(toolchain_info)
                 global_toolchain_versions[toolchain_version] = toolchain_info
 
             if is_default:
@@ -227,7 +222,6 @@ def parse_mods(mctx, *, logger, fail = fail):
         default_toolchain = default_toolchain,
         global_toolchain_versions = global_toolchain_versions,
         toolchains = toolchains,
-        registrations = registrations,
         overrides = overrides,
     )
 
@@ -246,23 +240,23 @@ def _python_impl(mctx):
     else:
         debug_info = None
 
-    for r in py.registrations:
+    for toolchain in py.toolchains:
         # Ensure that we pass the full version here.
-        full_python_version = full_version(r.python_version, py.overrides.minor_mapping)
+        full_python_version = full_version(toolchain.python_version, py.overrides.minor_mapping)
         kwargs = {
             "python_version": full_python_version,
-            "register_coverage_tool": r.register_coverage_tool,
+            "register_coverage_tool": toolchain.register_coverage_tool,
         }
 
         # Allow overrides per python version
-        kwargs.update(py.overrides.kwargs.get(r.python_version, {}))
+        kwargs.update(py.overrides.kwargs.get(toolchain.python_version, {}))
         kwargs.update(py.overrides.kwargs.get(full_python_version, {}))
         kwargs.update(py.overrides.default)
-        python_register_toolchains(name = r.name, **kwargs)
+        python_register_toolchains(name = toolchain.name, **kwargs)
         if debug_info:
             debug_info["default"] = py.overrides.default
             debug_info["toolchains_registered"].append({
-                "name": r.name,
+                "name": toolchain.name,
             })
 
     # Create the pythons_hub repo for the interpreter meta data and the
