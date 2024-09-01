@@ -227,6 +227,53 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
 
+def _test_first_occurance_of_the_toolchain_wins(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.12")],
+            ),
+            _mod(
+                name = "some_module",
+                toolchain = [_toolchain("3.12", configure_coverage_tool = True)],
+            ),
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11")],
+            ),
+        ),
+        logger = None,
+        debug = True,
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.12")
+    my_module_toolchain = struct(
+        name = "python_3_12",
+        python_version = "3.12",
+        # NOTE: coverage stays disabled even though `some_module` was
+        # configuring something else.
+        register_coverage_tool = False,
+        debug = {
+            "module": struct(is_root = True, name = "my_module"),
+        },
+    )
+    rules_python_toolchain = struct(
+        name = "python_3_11",
+        python_version = "3.11",
+        register_coverage_tool = False,
+        debug = {
+            "module": struct(is_root = False, name = "rules_python"),
+        },
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        rules_python_toolchain,
+        my_module_toolchain,  # default toolchain is last
+    ]).in_order()
+
+_tests.append(_test_first_occurance_of_the_toolchain_wins)
+
 def python_test_suite(name):
     """Create the test suite.
 
