@@ -85,19 +85,14 @@ def _test_default(env):
         module = struct(is_root = True, name = "rules_python"),
         name = "python_3_11",
         python_version = "3.11",
+        register_coverage_tool = False,
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
     env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
         want_toolchain.python_version: want_toolchain,
     })
-    env.expect.that_collection(py.registrations).contains_exactly([
-        struct(
-            name = "python_3_11",
-            python_version = "3.11",
-            register_coverage_tool = False,
-        ),
-    ])
+    env.expect.that_collection(py.registrations).contains_exactly([want_toolchain])
 
 _tests.append(_test_default)
 
@@ -117,19 +112,14 @@ def _test_default_with_patch(env):
         module = struct(is_root = True, name = "rules_python"),
         name = "python_3_11_2",
         python_version = "3.11.2",
+        register_coverage_tool = False,
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
     env.expect.that_dict(py.global_toolchain_versions).contains_exactly({
         want_toolchain.python_version: want_toolchain,
     })
-    env.expect.that_collection(py.registrations).contains_exactly([
-        struct(
-            name = want_toolchain.name,
-            python_version = want_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-    ])
+    env.expect.that_collection(py.registrations).contains_exactly([want_toolchain])
 
 _tests.append(_test_default_with_patch)
 
@@ -153,11 +143,13 @@ def _test_default_non_rules_python(env):
         module = struct(is_root = True, name = "my_module"),
         name = "python_3_12",
         python_version = "3.12",
+        register_coverage_tool = False,
     )
     rules_python_toolchain = struct(
         module = struct(is_root = False, name = "rules_python"),
         name = "python_3_11",
         python_version = "3.11",
+        register_coverage_tool = False,
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
@@ -165,18 +157,7 @@ def _test_default_non_rules_python(env):
         my_module_toolchain.python_version: my_module_toolchain,
         rules_python_toolchain.python_version: rules_python_toolchain,
     })
-    env.expect.that_collection(py.registrations).contains_exactly([
-        struct(
-            name = my_module_toolchain.name,
-            python_version = my_module_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-        struct(
-            name = rules_python_toolchain.name,
-            python_version = rules_python_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-    ])
+    env.expect.that_collection(py.registrations).contains_exactly([my_module_toolchain, rules_python_toolchain])
 
 _tests.append(_test_default_non_rules_python)
 
@@ -201,11 +182,13 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
         module = struct(is_root = True, name = "my_module"),
         name = "python_3_12",
         python_version = "3.12",
+        register_coverage_tool = False,
     )
     rules_python_toolchain = struct(
         module = struct(is_root = False, name = "rules_python"),
         name = "python_3_11",
         python_version = "3.11",
+        register_coverage_tool = False,
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
@@ -213,18 +196,7 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
         my_module_toolchain.python_version: my_module_toolchain,
         rules_python_toolchain.python_version: rules_python_toolchain,
     })
-    env.expect.that_collection(py.registrations).contains_exactly([
-        struct(
-            name = my_module_toolchain.name,
-            python_version = my_module_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-        struct(
-            name = rules_python_toolchain.name,
-            python_version = rules_python_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-    ])
+    env.expect.that_collection(py.registrations).contains_exactly([my_module_toolchain, rules_python_toolchain])
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error)
 
@@ -253,16 +225,19 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
         module = struct(is_root = True, name = "my_module"),
         name = "python_3_13",
         python_version = "3.13",
+        register_coverage_tool = False,
     )
     some_module_toolchain = struct(
         module = struct(is_root = False, name = "some_module"),
         name = "python_3_12",
         python_version = "3.12",
+        register_coverage_tool = False,
     )
     rules_python_toolchain = struct(
         module = struct(is_root = False, name = "rules_python"),
         name = "python_3_11",
         python_version = "3.11",
+        register_coverage_tool = False,
     )
 
     env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain, some_module_toolchain])
@@ -271,23 +246,7 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
         some_module_toolchain.python_version: some_module_toolchain,
         rules_python_toolchain.python_version: rules_python_toolchain,
     })
-    env.expect.that_collection(py.registrations).contains_exactly([
-        struct(
-            name = my_module_toolchain.name,
-            python_version = my_module_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-        struct(
-            name = some_module_toolchain.name,
-            python_version = some_module_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-        struct(
-            name = rules_python_toolchain.name,
-            python_version = rules_python_toolchain.python_version,
-            register_coverage_tool = False,
-        ),
-    ])
+    env.expect.that_collection(py.registrations).contains_exactly([my_module_toolchain, some_module_toolchain, rules_python_toolchain])
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
 

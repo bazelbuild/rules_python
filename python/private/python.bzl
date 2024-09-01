@@ -178,15 +178,12 @@ def parse_mods(mctx, *, logger, fail = fail):
                     python_version = toolchain_attr.python_version,
                     name = toolchain_name,
                     module = struct(name = mod.name, is_root = mod.is_root),
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
                 )
 
                 # Register the toolchains outside the main loop so that we can ensure that the
                 # overrides are correctly applied globally
-                registrations.append(struct(
-                    name = toolchain_name,
-                    python_version = toolchain_attr.python_version,
-                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                ))
+                registrations.append(toolchain_info)
                 global_toolchain_versions[toolchain_version] = toolchain_info
 
             if is_default:
