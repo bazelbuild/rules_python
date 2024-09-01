@@ -281,7 +281,10 @@ def _python_impl(mctx):
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)
         ],
-        toolchain_python_versions = [full_version(t.python_version, py.overrides.minor_mapping) for t in py.toolchains],
+        toolchain_python_versions = [
+            full_version(t.python_version, py.overrides.minor_mapping)
+            for t in py.toolchains
+        ],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [
@@ -391,11 +394,6 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
             } or available_versions[tag.version]["url"],
         }
         available_versions[tag.version] = {k: v for k, v in override.items() if v}
-
-        if tag.enable_coverage == "no":
-            overrides.kwargs.setdefault(tag.version, {})["register_coverage_tool"] = False
-        elif tag.enable_coverage == "yes":
-            overrides.kwargs.setdefault(tag.version, {})["register_coverage_tool"] = True
 
         if tag.distutils_content:
             overrides.kwargs.setdefault(tag.version, {})["distutils_content"] = tag.distutils_content
@@ -610,6 +608,8 @@ _override = tag_class(
                 doc = "The base URL to be used when downloading toolchains.",
                 default = DEFAULT_RELEASE_BASE_URL,
             ),
+            # TODO @aignas 2024-09-01: could be replaced by an attribute on the `toolchain` with
+            # a boolean attribute `is_default_minor`.
             "minor_mapping": attr.string_dict(
                 mandatory = False,
                 doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
@@ -641,6 +641,18 @@ class.
 :::
 """,
     attrs = {
+        # NOTE @aignas 2024-09-01: all of the attributes except for `version`
+        # can be part of the `python.toolchain` call. That would make it more
+        # ergonomic to define new toolchains and to override values for old
+        # toolchains. The same semantics of the `first one wins` would apply,
+        # so technically there is no need for any overrides?
+        #
+        # Although these attributes would override the code that is used by the
+        # code in non-root modules, so technically this could be thought as
+        # being overridden.
+        #
+        # rules_go has a single download call:
+        # https://github.com/bazelbuild/rules_go/blob/master/go/private/extensions.bzl#L38
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
@@ -651,16 +663,6 @@ class.
             doc = "A distutils.cfg file content to be included in the Python installation. " +
                   "Either {attr}`distutils` or {attr}`distutils_content` can be specified, but not both.",
             mandatory = False,
-        ),
-        "enable_coverage": attr.string(
-            default = "auto",
-            values = ["auto", "yes", "no"],
-            doc = """\
-Override coverage registration for a particular version. 'auto' means it will
-be left untouched and will work as the module owner who used `python.toolchain`
-call intended. `no` and `yes` will force-toggle the coverage tooling for the
-given {attr}`version`.
-""",
         ),
         "patch_strip": attr.int(
             mandatory = False,
