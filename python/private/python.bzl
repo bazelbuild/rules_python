@@ -219,7 +219,7 @@ def parse_mods(mctx, *, logger, fail = fail):
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
     return struct(
-        default_toolchain = default_toolchain,
+        default_python_version = default_toolchain.python_version,
         global_toolchain_versions = global_toolchain_versions,
         toolchains = toolchains,
         overrides = overrides,
@@ -263,7 +263,7 @@ def _python_impl(mctx):
     # the various toolchains.
     hub_repo(
         name = "pythons_hub",
-        default_python_version = py.default_toolchain.python_version,
+        default_python_version = py.default_python_version,
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)

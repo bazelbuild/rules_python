@@ -80,7 +80,7 @@ def _test_default(env):
         "tool_versions",
     ])
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
-    env.expect.that_str(py.default_toolchain.python_version).equals("3.11")
+    env.expect.that_str(py.default_python_version).equals("3.11")
     want_toolchain = struct(
         module = struct(is_root = True, name = "rules_python"),
         name = "python_3_11",
@@ -106,7 +106,7 @@ def _test_default_with_patch(env):
         logger = None,
     )
 
-    env.expect.that_str(py.default_toolchain.python_version).equals("3.11.2")
+    env.expect.that_str(py.default_python_version).equals("3.11.2")
     want_toolchain = struct(
         module = struct(is_root = True, name = "rules_python"),
         name = "python_3_11_2",
@@ -136,7 +136,7 @@ def _test_default_non_rules_python(env):
         logger = None,
     )
 
-    env.expect.that_str(py.default_toolchain.python_version).equals("3.12")
+    env.expect.that_str(py.default_python_version).equals("3.12")
     my_module_toolchain = struct(
         module = struct(is_root = True, name = "my_module"),
         name = "python_3_12",
@@ -174,7 +174,7 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
     )
 
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(True)
-    env.expect.that_str(py.default_toolchain.python_version).equals("3.12")
+    env.expect.that_str(py.default_python_version).equals("3.12")
     my_module_toolchain = struct(
         module = struct(is_root = True, name = "my_module"),
         name = "python_3_12",
@@ -215,7 +215,7 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
         logger = None,
     )
 
-    env.expect.that_str(py.default_toolchain.python_version).equals("3.13")
+    env.expect.that_str(py.default_python_version).equals("3.13")
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
     my_module_toolchain = struct(
         module = struct(is_root = True, name = "my_module"),
