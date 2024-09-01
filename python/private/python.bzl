@@ -536,9 +536,11 @@ be `python_{major}_{minor}_{patch}`, e.g. `python_3_10_19`.
 :::{topic} Toolchain detection
 The definition of the first toolchain wins, which means that the root module
 can override settings for any python toolchain available. This relies on the
-documented module traversal from the {attr}`module_ctx.modules`.
+documented module traversal from the {obj}`module_ctx.modules`.
+:::
 
-TODO: add tests for this.
+:::{todo}
+fix the `module_ctx.modules` reference so that we can link back to the bazel page.
 :::
 
 :::{tip}
