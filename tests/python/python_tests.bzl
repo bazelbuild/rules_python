@@ -144,7 +144,10 @@ def _test_default_non_rules_python(env):
         register_coverage_tool = False,
     )
 
-    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        rules_python_toolchain,
+        my_module_toolchain,  # default toolchain is last
+    ]).in_order()
 
 _tests.append(_test_default_non_rules_python)
 
@@ -178,7 +181,10 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
         register_coverage_tool = False,
     )
 
-    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain])
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        rules_python_toolchain,
+        my_module_toolchain,  # default toolchain is last
+    ]).in_order()
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error)
 
@@ -222,7 +228,11 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
         register_coverage_tool = False,
     )
 
-    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain, my_module_toolchain, some_module_toolchain])
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        some_module_toolchain,
+        rules_python_toolchain,
+        my_module_toolchain,  # default toolchain is last
+    ]).in_order()
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
 
