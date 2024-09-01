@@ -533,6 +533,14 @@ If a toolchain is registered in `X.Y.Z`, then similarly the toolchain name will
 be `python_{major}_{minor}_{patch}`, e.g. `python_3_10_19`.
 :::
 
+:::{topic} Toolchain detection
+The definition of the first toolchain wins, which means that the root module
+can override settings for any python toolchain available. This relies on the
+documented module traversal from the {attr}`module_ctx.modules`.
+
+TODO: add tests for this.
+:::
+
 :::{tip}
 In order to use a different name than the above, you can use the following `MODULE.bazel`
 syntax:
@@ -650,12 +658,6 @@ Override coverage registration for a particular version. 'auto' means it will
 be left untouched and will work as the module owner who used `python.toolchain`
 call intended. `no` and `yes` will force-toggle the coverage tooling for the
 given {attr}`version`.
-
-TODO: should be able to:
-- disable coverage for a version.
-- enable coverage for a version with rules_python coverage.py.
-- enable coverage for a specific (version, platform) in addition to that.
-- disable coverage for a specific (version, platform).
 """,
         ),
         "patch_strip": attr.int(
@@ -687,7 +689,9 @@ TODO: should be able to:
     },
 )
 
-# Is the name good enough?
+# TODO @aignas 2024-09-01: Is the name good enough, maybe if the
+# `python.override` is renamed to `python.configure` then this can become
+# `python.override`?
 _single_version_platform_override = tag_class(
     doc = """Override single python version for a single existing platform.
 
