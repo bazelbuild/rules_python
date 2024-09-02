@@ -495,6 +495,11 @@ def _test_add_patches(env):
 
 _tests.append(_test_add_patches)
 
+# TODO @aignas 2024-09-03: add failure tests:
+# * validate the python_version in overrides
+# * incorrect platform failure
+# * missing python_version failure
+
 def python_test_suite(name):
     """Create the test suite.
 

@@ -44,7 +44,7 @@ def _parse_version(version):
         build = build,
     )
 
-def parse_mods(mctx, *, logger, debug = False, fail = fail):
+def parse_mods(*, mctx, logger, debug = False, fail = fail):
     """parse_mods returns a struct with parsed tag class content.
 
     Args:
@@ -244,10 +244,7 @@ def _python_impl(mctx):
     else:
         debug_info = None
 
-    py = parse_mods(
-        mctx,
-        logger = logger,
-    )
+    py = parse_mods(mctx = mctx, logger = logger, debug = debug_info != None)
 
     for toolchain in py.toolchains:
         # Ensure that we pass the full version here.

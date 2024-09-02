@@ -61,7 +61,8 @@ A brief description of the categories of changes:
   have it installed.
 
 ### Removed
-* Nothing yet
+* (toolchains): Removed accidentally exposed `http_archive` symbol from
+  `python/repositories.bzl`.
 
 ## [0.35.0] - 2024-08-15
 
