@@ -53,6 +53,7 @@ A brief description of the categories of changes:
 * (bzlmod): Toolchain overrides can now be done using the new
   {bzl:obj}`python.override`, {bzl:obj}`python.single_version_override` and
   {bzl:obj}`python.single_version_platform_override` tag classes.
+  See [#2081](https://github.com/bazelbuild/rules_python/issues/2081).
 * (rules) Executables provide {obj}`PyExecutableInfo`, which contains
   executable-specific information useful for packaging an executable or
   or deriving a new one from the original.
