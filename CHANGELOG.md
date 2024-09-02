@@ -52,11 +52,9 @@ A brief description of the categories of changes:
 * (gazelle) Correctly resolve deps that have top-level module overlap with a gazelle_python.yaml dep module
 
 ### Added
-* (bzlmod): Toolchain overrides can now be done to fully override anything from
-  within the TOOL_VERSIONS dict using the new 
-  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.override`,
-  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_override` and
-  {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_platform_override`.
+* (bzlmod): Toolchain overrides can now be done using the new
+  {bzl:obj}`python.override`, {bzl:obj}`python.single_version_override` and
+  {bzl:obj}`python.single_version_platform_override` tag classes.
 * (rules) Executables provide {obj}`PyExecutableInfo`, which contains
   executable-specific information useful for packaging an executable or
   or deriving a new one from the original.

@@ -166,16 +166,14 @@ Python toolchains can be utilized in other bazel rules, such as `genrule()`, by 
 
 ### Overriding toolchains
 
-Overrides can be done at 3 different levels:
-* Overrides affecting all python toolchain versions on all platforms - {bzl:obj}`@rules_python//python/extensions:python.bzl%python.override`.
-* Overrides affecting a single toolchain versions on all platforms - {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_override`.
-* Overrides affecting a single toolchain versions on a single platforms - {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_platform_override`.
-
-The overrides cover the following use-cases:
-* Limiting the available toolchains for the entire `bzlmod` transitive graph via {attr}`python.override.available_python_versions`.
-* Setting particular `X.Y.Z` python versions when modules request `X.Y` version via {attr}`python.override.minor_mapping`.
+One can perform various overrides for the registered toolchains from the root module. For example, the following usecases would be supported using the existing attributes:
+* Limiting the available toolchains for the entire `bzlmod` transitive graph
+  via {attr}`python.override.available_python_versions`.
+* Setting particular `X.Y.Z` python versions when modules request `X.Y` version
+  via {attr}`python.override.minor_mapping`.
 * Adding custom {attr}`python.single_version_platform_override.coverage_tool`.
-* Adding new python versions via {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_override` or {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_platform_override`.
+* Adding new python versions via {bzl:obj}`python.single_version_override` or
+  {bzl:obj}`python.single_version_platform_override`.
 
 ## Workspace configuration
 
