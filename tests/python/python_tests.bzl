@@ -56,13 +56,22 @@ def _toolchain(python_version, *, is_default = False, **kwargs):
         **kwargs
     )
 
-def _override(**kwargs):
+def _override(
+        auth_patterns = {},
+        available_python_versions = [],
+        base_url = "",
+        ignore_root_user_error = False,
+        minor_mapping = {},
+        netrc = "",
+        register_all_versions = False):
     return struct(
-        base_url = kwargs.get("base_url", ""),
-        available_python_versions = kwargs.get("available_python_versions", []),
-        register_all_versions = kwargs.get("register_all_versions", False),
-        ignore_root_user_error = kwargs.get("ignore_root_user_error", False),
-        minor_mapping = kwargs.get("minor_mapping", {}),
+        auth_patterns = auth_patterns,
+        available_python_versions = available_python_versions,
+        base_url = base_url,
+        ignore_root_user_error = ignore_root_user_error,
+        minor_mapping = minor_mapping,
+        netrc = netrc,
+        register_all_versions = register_all_versions,
     )
 
 def _test_default(env):
@@ -318,6 +327,49 @@ def _test_first_occurance_of_the_toolchain_wins(env):
     ]).in_order()
 
 _tests.append(_test_first_occurance_of_the_toolchain_wins)
+
+def _test_auth_overrides(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.12")],
+                override = [
+                    _override(
+                        netrc = "/my/netrc",
+                        auth_patterns = {"foo": "bar"},
+                    ),
+                ],
+            ),
+            _mod(
+                name = "rules_python",
+                toolchain = [_toolchain("3.11")],
+            ),
+        ),
+        logger = None,
+    )
+
+    env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
+    env.expect.that_str(py.overrides.default["netrc"]).equals("/my/netrc")
+    env.expect.that_dict(py.overrides.default["auth_patterns"]).contains_exactly({"foo": "bar"})
+    env.expect.that_str(py.default_python_version).equals("3.12")
+    my_module_toolchain = struct(
+        name = "python_3_12",
+        python_version = "3.12",
+        register_coverage_tool = False,
+    )
+    rules_python_toolchain = struct(
+        name = "python_3_11",
+        python_version = "3.11",
+        register_coverage_tool = False,
+    )
+
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        rules_python_toolchain,
+        my_module_toolchain,  # default toolchain is last
+    ]).in_order()
+
+_tests.append(_test_auth_overrides)
 
 def python_test_suite(name):
     """Create the test suite.
