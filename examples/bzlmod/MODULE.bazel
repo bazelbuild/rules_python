@@ -64,6 +64,7 @@ python.single_version_override(
     # The user can specify patches to be applied to all interpreters, they will
     # be applied before the platform specific patches are applied.
     patches = [],
+    python_version = "3.10.2",
     sha256 = {
         "aarch64-apple-darwin": "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
         "aarch64-unknown-linux-gnu": "8f351a8cc348bb45c0f95b8634c8345ec6e749e483384188ad865b7428342703",
@@ -72,7 +73,6 @@ python.single_version_override(
         "x86_64-unknown-linux-gnu": "9b64eca2a94f7aff9409ad70bdaa7fbbf8148692662e764401883957943620dd",
     },
     urls = ["20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz"],
-    version = "3.10.2",
 )
 
 # Or a single platform. This can be used in combination with the
@@ -83,9 +83,9 @@ python.single_version_platform_override(
     patch_strip = 1,
     patches = [],
     platform = "aarch64-apple-darwin",
+    python_version = "3.10.2",
     sha256 = "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
     urls = ["20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz"],
-    version = "3.10.2",
 )
 
 # You only need to load this repositories if you are using multiple Python versions.
