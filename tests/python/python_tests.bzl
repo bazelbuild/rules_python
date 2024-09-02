@@ -15,17 +15,20 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:python.bzl", "parse_mods")  # buildifier: disable=bzl-visibility
+load("//python/private:python.bzl", _parse_mods = "parse_mods")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
-def _mock_mctx(root_module, *modules):
+def parse_mods(*, mctx, **kwargs):
+    return _parse_mods(mctx = mctx, logger = None, **kwargs)
+
+def _mock_mctx(*modules):
     return struct(
         os = struct(environ = {}),
         modules = [
             struct(
-                name = root_module.name,
-                tags = root_module.tags,
+                name = modules[0].name,
+                tags = modules[0].tags,
                 is_root = True,
             ),
         ] + [
@@ -34,7 +37,7 @@ def _mock_mctx(root_module, *modules):
                 tags = mod.tags,
                 is_root = False,
             )
-            for mod in modules
+            for mod in modules[1:]
         ],
     )
 
@@ -82,8 +85,8 @@ def _test_default(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
+
     env.expect.that_collection(py.overrides.minor_mapping.keys()).contains_exactly([
         "3.10",
         "3.11",
@@ -117,7 +120,6 @@ def _test_default_with_patch(env):
                 toolchain = [_toolchain("3.11.2")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_str(py.default_python_version).equals("3.11.2")
@@ -126,7 +128,6 @@ def _test_default_with_patch(env):
         python_version = "3.11.2",
         register_coverage_tool = False,
     )
-
     env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
 
 _tests.append(_test_default_with_patch)
@@ -143,7 +144,6 @@ def _test_default_non_rules_python(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_str(py.default_python_version).equals("3.12")
@@ -177,7 +177,6 @@ def _test_default_non_rules_python_ignore_root_user_error(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(True)
@@ -213,7 +212,6 @@ def _test_default_non_rules_python_ignore_root_user_error_override(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(True)
@@ -252,7 +250,6 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_str(py.default_python_version).equals("3.13")
@@ -297,7 +294,6 @@ def _test_first_occurance_of_the_toolchain_wins(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
         debug = True,
     )
 
@@ -346,7 +342,6 @@ def _test_auth_overrides(env):
                 toolchain = [_toolchain("3.11")],
             ),
         ),
-        logger = None,
     )
 
     env.expect.that_bool(py.overrides.default["ignore_root_user_error"]).equals(False)
