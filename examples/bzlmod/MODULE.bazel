@@ -22,7 +22,7 @@ bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf"
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     configure_coverage_tool = True,
-    # Only set when you have mulitple toolchain versions.
+    # Only set when you have multiple toolchain versions.
     is_default = True,
     python_version = "3.9",
 )
@@ -49,8 +49,6 @@ python.override(
     ],
     # Also override the `minor_mapping` so that when the modules specify a particular
     # `3.X` version, we decide what gets used.
-    #
-    # TODO @aignas 2024-09-01: calculate the default based on available python versions.
     minor_mapping = {
         "3.10": "3.10.9",
         "3.11": "3.11.8",
@@ -61,8 +59,7 @@ python.override(
 # Or the sources that the toolchains come from for all platforms
 python.single_version_override(
     patch_strip = 1,
-    # The user can specify patches to be applied to all interpreters, they will
-    # be applied before the platform specific patches are applied.
+    # The user can specify patches to be applied to all interpreters.
     patches = [],
     python_version = "3.10.2",
     sha256 = {
@@ -77,8 +74,8 @@ python.single_version_override(
 
 # Or a single platform. This can be used in combination with the
 # `single_version_override` and `single_version_platform_override` will be
-# applied after `single_version_override`.
-# TODO @aignas 2024-08-27: implement that
+# applied after `single_version_override`. Any values present in this override
+# will overwrite the values set by the `single_version_override`
 python.single_version_platform_override(
     patch_strip = 1,
     patches = [],
