@@ -445,6 +445,12 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "py_wheel_dist",
+    srcs = ["py_wheel_dist.py"],
+    visibility = ["//visibility:public"],
+)
+
 py_library(
     name = "py_console_script_gen_lib",
     srcs = ["py_console_script_gen.py"],
