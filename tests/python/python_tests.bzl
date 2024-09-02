@@ -83,6 +83,12 @@ def _single_version_override(
         **kwargs
     )
 
+def _single_version_platform_override(
+        **kwargs):
+    return struct(
+        **kwargs
+    )
+
 def _test_default(env):
     py = parse_mods(
         mctx = _mock_mctx(
@@ -391,6 +397,82 @@ def _test_add_new_version(env):
     ])
 
 _tests.append(_test_add_new_version)
+
+def _test_add_patches(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.13")],
+                single_version_override = [
+                    _single_version_override(
+                        python_version = "3.13.0",
+                        sha256 = {
+                            "aarch64-apple-darwin": "deadbeef",
+                            "aarch64-unknown-linux-gnu": "deadbeef",
+                        },
+                        urls = ["example.org"],
+                        patch_strip = 1,
+                        patches = ["common.txt"],
+                        strip_prefix = "prefix",
+                        distutils_content = "",
+                        distutils = None,
+                    ),
+                ],
+                single_version_platform_override = [
+                    _single_version_platform_override(
+                        sha256 = "deadb00f",
+                        urls = ["something.org", "else.org"],
+                        strip_prefix = "python",
+                        platform = "aarch64-unknown-linux-gnu",
+                        coverage_tool = "specific_cov_tool",
+                        python_version = "3.13.0",
+                        patch_strip = 2,
+                        patches = ["specific-patch.txt"],
+                    ),
+                ],
+                override = [
+                    _override(
+                        base_url = "",
+                        available_python_versions = ["3.13.0"],
+                        minor_mapping = {
+                            "3.13": "3.13.0",
+                        },
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.13")
+    env.expect.that_dict(py.overrides.default["tool_versions"]).contains_exactly({
+        "3.13.0": {
+            "coverage_tool": {"aarch64-unknown-linux-gnu": "specific_cov_tool"},
+            "patch_strip": {"aarch64-apple-darwin": 1, "aarch64-unknown-linux-gnu": 2},
+            "patches": {
+                "aarch64-apple-darwin": ["common.txt"],
+                "aarch64-unknown-linux-gnu": ["specific-patch.txt"],
+            },
+            "sha256": {"aarch64-apple-darwin": "deadbeef", "aarch64-unknown-linux-gnu": "deadb00f"},
+            "strip_prefix": {"aarch64-apple-darwin": "prefix", "aarch64-unknown-linux-gnu": "python"},
+            "url": {
+                "aarch64-apple-darwin": ["example.org"],
+                "aarch64-unknown-linux-gnu": ["something.org", "else.org"],
+            },
+        },
+    })
+    env.expect.that_dict(py.overrides.minor_mapping).contains_exactly({
+        "3.13": "3.13.0",
+    })
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        struct(
+            name = "python_3_13",
+            python_version = "3.13",
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_add_patches)
 
 def python_test_suite(name):
     """Create the test suite.

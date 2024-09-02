@@ -410,18 +410,18 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
                 "url": {tag.platform: tag.urls},
             }
 
-        if tag.sha256:
-            available_versions[tag.python_version]["sha256"][tag.platform] = tag.sha256
-        if tag.urls:
-            available_versions[tag.python_version]["url"][tag.platform] = tag.urls
-        if tag.strip_prefix:
-            available_versions[tag.python_version]["strip_prefix"][tag.platform] = tag.strip_prefix
+        if tag.coverage_tool:
+            available_versions[tag.python_version].setdefault("coverage_tool", {})[tag.platform] = tag.coverage_tool
         if tag.patch_strip:
             available_versions[tag.python_version]["patch_strip"][tag.platform] = tag.patch_strip
         if tag.patches:
-            available_versions[tag.python_version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
-        if tag.coverage_tool:
-            available_versions[tag.python_version].setdefault("coverage_tool", {})[tag.platform] = tag.coverage_tool
+            available_versions[tag.python_version]["patches"][tag.platform] = list(tag.patches)
+        if tag.sha256:
+            available_versions[tag.python_version]["sha256"][tag.platform] = tag.sha256
+        if tag.strip_prefix:
+            available_versions[tag.python_version]["strip_prefix"][tag.platform] = tag.strip_prefix
+        if tag.urls:
+            available_versions[tag.python_version]["url"][tag.platform] = tag.urls
 
     register_all = False
     for tag in mod.tags.override:
