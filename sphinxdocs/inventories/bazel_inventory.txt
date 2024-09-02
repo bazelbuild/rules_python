@@ -65,6 +65,13 @@ native.package_name bzl:function 1 rules/lib/toplevel/native#package_name -
 native.package_relative_label bzl:function 1 rules/lib/toplevel/native#package_relative_label -
 native.repo_name bzl:function 1 rules/lib/toplevel/native#repo_name -
 native.repository_name bzl:function 1 rules/lib/toplevel/native#repository_name -
+runfiles bzl:type 1 rules/lib/builtins/runfiles -
+runfiles.empty_filenames bzl:type 1 rules/lib/builtins/runfiles#empty_filenames -
+runfiles.files bzl:type 1 rules/lib/builtins/runfiles#files -
+runfiles.merge bzl:type 1 rules/lib/builtins/runfiles#merge -
+runfiles.merge_all bzl:type 1 rules/lib/builtins/runfiles#merge_all -
+runfiles.root_symlinks bzl:type 1 rules/lib/builtins/runfiles#root_symlinks -
+runfiles.symlinks bzl:type 1 rules/lib/builtins/runfiles#symlinks -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
 toolchain_type bzl:type 1 ules/lib/builtins/toolchain_type.html -
