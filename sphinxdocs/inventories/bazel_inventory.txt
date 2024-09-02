@@ -7,6 +7,7 @@ File bzl:type 1 rules/lib/File -
 Label bzl:type 1 rules/lib/Label -
 Target bzl:type 1 rules/lib/builtins/Target -
 bool bzl:type 1 rules/lib/bool -
+callable bzl:type 1 rules/lib/core/function -
 config_common.FeatureFlagInfo bzl:type 1 rules/lib/toplevel/config_common#FeatureFlagInfo -
 config_common.toolchain_type bzl:function 1 rules/lib/toplevel/config_common#toolchain_type -
 ctx.actions bzl:obj 1 rules/lib/builtins/ctx#actions -
