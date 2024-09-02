@@ -370,16 +370,8 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
                         got = platform,
                     ))
 
-        sha256 = dict(tag.sha256) or available_versions[tag.version]["sha256"]
+        sha256 = dict(tag.sha256) or available_versions[tag.python_version]["sha256"]
         override = {
-            "patch_strip": {
-                platform: tag.patch_strip
-                for platform in sha256
-            },
-            "patches": {
-                platform: list(tag.patches)
-                for platform in sha256
-            },
             "sha256": sha256,
             "strip_prefix": {
                 platform: tag.strip_prefix
@@ -388,50 +380,62 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
             "url": {
                 platform: list(tag.urls)
                 for platform in tag.sha256
-            } or available_versions[tag.version]["url"],
+            } or available_versions[tag.python_version]["url"],
         }
-        available_versions[tag.version] = {k: v for k, v in override.items() if v}
+
+        if tag.patches:
+            override["patch_strip"] = {
+                platform: tag.patch_strip
+                for platform in sha256
+            }
+            override["patches"] = {
+                platform: list(tag.patches)
+                for platform in sha256
+            }
+
+        available_versions[tag.python_version] = {k: v for k, v in override.items() if v}
 
         if tag.distutils_content:
-            overrides.kwargs.setdefault(tag.version, {})["distutils_content"] = tag.distutils_content
+            overrides.kwargs.setdefault(tag.python_version, {})["distutils_content"] = tag.distutils_content
         if tag.distutils:
-            overrides.kwargs.setdefault(tag.version, {})["distutils"] = tag.distutils
+            overrides.kwargs.setdefault(tag.python_version, {})["distutils"] = tag.distutils
 
     for tag in mod.tags.single_version_platform_override:
-        if tag.version not in available_versions:
+        if tag.python_version not in available_versions:
             if not tag.urls or not tag.sha256 or not tag.strip_prefix:
-                fail("When introducing a new version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.version))
-            available_versions[tag.version] = {
+                fail("When introducing a new python_version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.python_version))
+            available_versions[tag.python_version] = {
                 "sha256": {tag.platform: tag.sha256},
                 "strip_prefix": {tag.platform: tag.strip_prefix},
                 "url": {tag.platform: tag.urls},
             }
 
         if tag.sha256:
-            available_versions[tag.version]["sha256"][tag.platform] = tag.sha256
+            available_versions[tag.python_version]["sha256"][tag.platform] = tag.sha256
         if tag.urls:
-            available_versions[tag.version]["url"][tag.platform] = tag.urls
+            available_versions[tag.python_version]["url"][tag.platform] = tag.urls
         if tag.strip_prefix:
-            available_versions[tag.version]["strip_prefix"][tag.platform] = tag.strip_prefix
+            available_versions[tag.python_version]["strip_prefix"][tag.platform] = tag.strip_prefix
         if tag.patch_strip:
-            available_versions[tag.version]["patch_strip"][tag.platform] = tag.patch_strip
+            available_versions[tag.python_version]["patch_strip"][tag.platform] = tag.patch_strip
         if tag.patches:
-            available_versions[tag.version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
+            available_versions[tag.python_version]["patches"].setdefault(tag.platform, []).extend(tag.patches)
         if tag.coverage_tool:
-            available_versions[tag.version].setdefault("coverage_tool", {})[tag.platform] = tag.coverage_tool
+            available_versions[tag.python_version].setdefault("coverage_tool", {})[tag.platform] = tag.coverage_tool
 
     register_all = False
     for tag in mod.tags.override:
         overrides.kwargs["base_url"] = tag.base_url
         if tag.available_python_versions:
-            all_known_versions = sorted(available_versions)
-            available_versions = {
-                v: available_versions[v] if v in available_versions else fail("unknown version '{}', known versions are: {}".format(
+            all_versions = dict(available_versions)
+            available_versions.clear()
+            available_versions.update({
+                v: all_versions[v] if v in all_versions else fail("unknown version '{}', known versions are: {}".format(
                     v,
-                    all_known_versions,
+                    sorted(all_versions),
                 ))
                 for v in tag.available_python_versions
-            }
+            })
 
         if tag.register_all_versions and mod.name != "rules_python":
             fail("This override can only be used by 'rules_python'")
@@ -687,6 +691,10 @@ class.
             mandatory = False,
             doc = "A list of labels pointing to patch files to apply for the interpreter repository. They are applied in the list order and are applied before any platform-specific patches are applied.",
         ),
+        "python_version": attr.string(
+            mandatory = True,
+            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
+        ),
         "sha256": attr.string_dict(
             mandatory = False,
             doc = "The python platform to sha256 dict. See {attr}`python.single_version_platform_override.platform` for allowed key values.",
@@ -699,10 +707,6 @@ class.
         "urls": attr.string_list(
             mandatory = False,
             doc = "The URL template to fetch releases for this Python version. See {attr}`python.single_version_platform_override.urls` for documentation.",
-        ),
-        "version": attr.string(
-            mandatory = True,
-            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
         ),
     },
 )
@@ -742,6 +746,10 @@ The coverage tool to be used for a particular Python interpreter. This can overr
             values = PLATFORMS.keys(),
             doc = "The platform to override the values for, must be one of:\n{}.".format("\n".join(sorted(["* `{}`".format(p) for p in PLATFORMS]))),
         ),
+        "python_version": attr.string(
+            mandatory = True,
+            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
+        ),
         "sha256": attr.string(
             mandatory = False,
             doc = "The sha256 for the archive",
@@ -754,10 +762,6 @@ The coverage tool to be used for a particular Python interpreter. This can overr
         "urls": attr.string_list(
             mandatory = False,
             doc = "The URL template to fetch releases for this Python version. If the URL template results in a relative fragment, default base URL is going to be used. Occurrences of `{python_version}`, `{platform}` and `{build}` will be interpolated based on the contents in the override and the known {attr}`platform` values.",
-        ),
-        "version": attr.string(
-            mandatory = True,
-            doc = "The python version to override URLs for. Must be in `X.Y.Z` format.",
         ),
     },
 )

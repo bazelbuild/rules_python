@@ -77,6 +77,12 @@ def _override(
         register_all_versions = register_all_versions,
     )
 
+def _single_version_override(
+        **kwargs):
+    return struct(
+        **kwargs
+    )
+
 def _test_default(env):
     py = parse_mods(
         mctx = _mock_mctx(
@@ -329,6 +335,62 @@ def _test_auth_overrides(env):
     ]).in_order()
 
 _tests.append(_test_auth_overrides)
+
+def _test_add_new_version(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.13")],
+                single_version_override = [
+                    _single_version_override(
+                        python_version = "3.13.0",
+                        sha256 = {
+                            "aarch64-unknown-linux-gnu": "deadbeef",
+                        },
+                        urls = ["example.org"],
+                        patch_strip = 0,
+                        patches = [],
+                        strip_prefix = "prefix",
+                        distutils_content = "",
+                        distutils = None,
+                    ),
+                ],
+                override = [
+                    _override(
+                        base_url = "",
+                        available_python_versions = ["3.12.4", "3.13.0"],
+                        minor_mapping = {
+                            "3.13": "3.13.0",
+                        },
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.13")
+    env.expect.that_collection(py.overrides.default["tool_versions"].keys()).contains_exactly([
+        "3.12.4",
+        "3.13.0",
+    ])
+    env.expect.that_dict(py.overrides.default["tool_versions"]["3.13.0"]).contains_exactly({
+        "sha256": {"aarch64-unknown-linux-gnu": "deadbeef"},
+        "strip_prefix": {"aarch64-unknown-linux-gnu": "prefix"},
+        "url": {"aarch64-unknown-linux-gnu": ["example.org"]},
+    })
+    env.expect.that_dict(py.overrides.minor_mapping).contains_exactly({
+        "3.13": "3.13.0",
+    })
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        struct(
+            name = "python_3_13",
+            python_version = "3.13",
+            register_coverage_tool = False,
+        ),
+    ])
+
+_tests.append(_test_add_new_version)
 
 def python_test_suite(name):
     """Create the test suite.
