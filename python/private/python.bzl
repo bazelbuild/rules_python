@@ -196,10 +196,7 @@ def parse_mods(mctx, *, logger, debug = False, fail = fail):
             elif toolchain_info:
                 toolchains.append(toolchain_info)
 
-    # TODO @aignas 2024-09-01: deprecate the ignore_root_user_error
-    # specification via the `python.toolchain` call and instead use
-    # `python.override`.
-    overrides.default["ignore_root_user_error"] = ignore_root_user_error
+    overrides.default.setdefault("ignore_root_user_error", ignore_root_user_error)
 
     # A default toolchain is required so that the non-version-specific rules
     # are able to match a toolchain.
@@ -453,9 +450,9 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
             overrides.minor_mapping.clear()
             overrides.minor_mapping.update(tag.minor_mapping)
 
-        for key in AUTH_ATTRS:
-            if getattr(tag, key):
-                overrides.defaults[key] = getattr(tag, key)
+        for key in sorted(AUTH_ATTRS) + ["ignore_root_user_error"]:
+            if getattr(tag, key, None):
+                overrides.default[key] = getattr(tag, key)
 
         break
 
@@ -608,6 +605,20 @@ _override = tag_class(
                 doc = "The base URL to be used when downloading toolchains.",
                 default = DEFAULT_RELEASE_BASE_URL,
             ),
+            "ignore_root_user_error": attr.bool(
+                default = False,
+                doc = """\
+If `False`, the Python runtime installation will be made read only. This improves
+the ability for Bazel to cache it, but prevents the interpreter from creating
+`.pyc` files for the standard library dynamically at runtime as they are loaded.
+
+If `True`, the Python runtime installation is read-write. This allows the
+interpreter to create `.pyc` files for the standard library, but, because they are
+created as needed, it adversely affects Bazel's ability to cache the runtime and
+can result in spurious build failures.
+""",
+                mandatory = False,
+            ),
             # TODO @aignas 2024-09-01: could be replaced by an attribute on the `toolchain` with
             # a boolean attribute `is_default_minor`.
             "minor_mapping": attr.string_dict(
@@ -653,6 +664,9 @@ class.
         #
         # rules_go has a single download call:
         # https://github.com/bazelbuild/rules_go/blob/master/go/private/extensions.bzl#L38
+        #
+        # However, we need to understand how to accommodate the fact that
+        # {attr}`single_version_override.version` only allows patch versions.
         "distutils": attr.label(
             allow_single_file = True,
             doc = "A distutils.cfg file to be included in the Python installation. " +
@@ -693,9 +707,6 @@ class.
     },
 )
 
-# TODO @aignas 2024-09-01: Is the name good enough, maybe if the
-# `python.override` is renamed to `python.configure` then this can become
-# `python.override`?
 _single_version_platform_override = tag_class(
     doc = """Override single python version for a single existing platform.
 
