@@ -362,10 +362,22 @@ def _test_add_new_version(env):
                         distutils = None,
                     ),
                 ],
+                single_version_platform_override = [
+                    _single_version_platform_override(
+                        sha256 = "deadb00f",
+                        urls = ["something.org", "else.org"],
+                        strip_prefix = "python",
+                        platform = "aarch64-unknown-linux-gnu",
+                        coverage_tool = "specific_cov_tool",
+                        python_version = "3.13.1",
+                        patch_strip = 2,
+                        patches = ["specific-patch.txt"],
+                    ),
+                ],
                 override = [
                     _override(
                         base_url = "",
-                        available_python_versions = ["3.12.4", "3.13.0"],
+                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1"],
                         minor_mapping = {
                             "3.13": "3.13.0",
                         },
@@ -379,11 +391,20 @@ def _test_add_new_version(env):
     env.expect.that_collection(py.overrides.default["tool_versions"].keys()).contains_exactly([
         "3.12.4",
         "3.13.0",
+        "3.13.1",
     ])
     env.expect.that_dict(py.overrides.default["tool_versions"]["3.13.0"]).contains_exactly({
         "sha256": {"aarch64-unknown-linux-gnu": "deadbeef"},
         "strip_prefix": {"aarch64-unknown-linux-gnu": "prefix"},
         "url": {"aarch64-unknown-linux-gnu": ["example.org"]},
+    })
+    env.expect.that_dict(py.overrides.default["tool_versions"]["3.13.1"]).contains_exactly({
+        "coverage_tool": {"aarch64-unknown-linux-gnu": "specific_cov_tool"},
+        "patch_strip": {"aarch64-unknown-linux-gnu": 2},
+        "patches": {"aarch64-unknown-linux-gnu": ["specific-patch.txt"]},
+        "sha256": {"aarch64-unknown-linux-gnu": "deadb00f"},
+        "strip_prefix": {"aarch64-unknown-linux-gnu": "python"},
+        "url": {"aarch64-unknown-linux-gnu": ["something.org", "else.org"]},
     })
     env.expect.that_dict(py.overrides.minor_mapping).contains_exactly({
         "3.13": "3.13.0",

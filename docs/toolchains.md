@@ -164,9 +164,10 @@ Remember to call `use_repo()` to make repos visible to your module:
 Python toolchains can be utilized in other bazel rules, such as `genrule()`, by adding the `toolchains=["@rules_python//python:current_py_toolchain"]` attribute. You can obtain the path to the Python interpreter using the `$(PYTHON2)` and `$(PYTHON3)` ["Make" Variables](https://bazel.build/reference/be/make-variables). See the
 {gh-path}`test_current_py_toolchain <tests/load_from_macro/BUILD.bazel>` target for an example.
 
-### Overriding toolchains
+### Overriding toolchain defaults and adding more toolchains
 
 One can perform various overrides for the registered toolchains from the root module. For example, the following usecases would be supported using the existing attributes:
+
 * Limiting the available toolchains for the entire `bzlmod` transitive graph
   via {attr}`python.override.available_python_versions`.
 * Setting particular `X.Y.Z` python versions when modules request `X.Y` version
