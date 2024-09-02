@@ -221,6 +221,11 @@ bzl_library(
 )
 
 bzl_library(
+    name = "py_executable_info_bzl",
+    srcs = ["py_executable_info.bzl"],
+)
+
+bzl_library(
     name = "py_interpreter_program_bzl",
     srcs = ["py_interpreter_program.bzl"],
     deps = ["@bazel_skylib//rules:common_settings"],
@@ -439,6 +444,12 @@ py_binary(
     visibility = [
         "//visibility:public",
     ],
+)
+
+py_binary(
+    name = "py_wheel_dist",
+    srcs = ["py_wheel_dist.py"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(

@@ -140,6 +140,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "py_executable_info_bzl",
+    srcs = ["py_executable_info.bzl"],
+    deps = ["//python/private:py_executable_info_bzl"],
+)
+
+bzl_library(
     name = "py_import_bzl",
     srcs = ["py_import.bzl"],
     deps = [":py_info_bzl"],

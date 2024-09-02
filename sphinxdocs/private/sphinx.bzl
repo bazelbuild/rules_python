@@ -272,8 +272,9 @@ def _run_sphinx(ctx, format, source_path, inputs, output_prefix):
         # Not added to run_args because run_args is for debugging
         args.add("--quiet")  # Suppress stdout informational text
 
-    args.add("--jobs", "auto")  # Build in parallel, if possible
-    run_args.extend(("--jobs", "auto"))
+    # Build in parallel, if possible
+    # Don't add to run_args: parallel building breaks interactive debugging
+    args.add("--jobs", "auto")
     args.add("--fresh-env")  # Don't try to use cache files. Bazel can't make use of them.
     run_args.append("--fresh-env")
     args.add("--write-all")  # Write all files; don't try to detect "changed" files

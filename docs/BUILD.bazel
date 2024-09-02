@@ -84,6 +84,7 @@ sphinx_stardocs(
         "//python:pip_bzl",
         "//python:py_binary_bzl",
         "//python:py_cc_link_params_info_bzl",
+        "//python:py_executable_info_bzl",
         "//python:py_library_bzl",
         "//python:py_runtime_bzl",
         "//python:py_runtime_info_bzl",

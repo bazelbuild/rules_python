@@ -1,4 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//python:py_test.bzl", "py_test")
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
 load("//sphinxdocs:sphinx_stardoc.bzl", "sphinx_stardoc", "sphinx_stardocs")
@@ -84,4 +85,11 @@ sphinx_build_binary(
         "@dev_pip//sphinx",
         "@dev_pip//typing_extensions",  # Needed by sphinx_stardoc
     ],
+)
+
+py_test(
+    name = "sphinx_output_test",
+    srcs = ["sphinx_output_test.py"],
+    data = [":docs"],
+    deps = ["@dev_pip//absl_py"],
 )

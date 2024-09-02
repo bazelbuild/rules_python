@@ -14,7 +14,7 @@ P2 = provider()
 def _impl(ctx):
     _ = ctx  # @unused
 
-my_rule = rule(
+bzl_rule = rule(
     implementation = _impl,
     attrs = {
         "srcs": attr.label(

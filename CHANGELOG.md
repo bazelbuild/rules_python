@@ -27,6 +27,9 @@ A brief description of the categories of changes:
 ### Changed
 * (gazelle): Update error messages when unable to resolve a dependency to be
   more human-friendly.
+* (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
+* (flags) The {obj}`--python_version` flag now also returns
+  {obj}`config_common.FeatureFlagInfo`.
 * (toolchain): The toolchain patches now expose the `patch_strip` attribute
   that one should use when patching toolchains. Please set it if you are
   patching python interpreter. In the next release the default will be set to
@@ -54,6 +57,11 @@ A brief description of the categories of changes:
   {bzl:obj}`@rules_python//python/extensions:python.bzl%python.override`,
   {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_override` and
   {bzl:obj}`@rules_python//python/extensions:python.bzl%python.single_version_platform_override`.
+* (rules) Executables provide {obj}`PyExecutableInfo`, which contains
+  executable-specific information useful for packaging an executable or
+  or deriving a new one from the original.
+* (py_wheel) Removed use of bash to avoid failures on Windows machines which do not
+  have it installed.
 
 ### Removed
 * Nothing yet
