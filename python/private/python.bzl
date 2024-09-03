@@ -35,10 +35,10 @@ def parse_mods(*, mctx, logger, debug = False, fail = fail):
     """parse_mods returns a struct with parsed tag class content.
 
     Args:
-        mctx: module_ctx.
-        logger: logger.
-        debug: whether to add extra diagnostic information.
-        fail: fail.
+        mctx: {type}`module_ctx`.
+        logger: logger for diagnostic output.
+        debug: whether to add extra diagnostic information about the configured toolchains.
+        fail: {type}`function` the fail for failure handling.
 
     Returns:
         a struct with attributes

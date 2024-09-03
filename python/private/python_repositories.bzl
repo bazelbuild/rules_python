@@ -82,12 +82,12 @@ def is_standalone_interpreter(rctx, python_interpreter_path, *, logger = None):
     """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
 
     Args:
-        rctx (repository_ctx): The repository rule's context object.
-        python_interpreter_path (path): A path representing the interpreter.
-        logger: Optional logger to use for operations.
+        rctx: {type}`repository_ctx` The repository rule's context object.
+        python_interpreter_path: {type}`path` A path representing the interpreter.
+        logger: {type}`struct` Optional logger to use for operations.
 
     Returns:
-        bool: Whether or not the target is from a rules_python generated toolchain.
+        {type}`bool`: Whether or not the target is from a rules_python generated toolchain.
     """
 
     # Only update the location when using a hermetic toolchain.
@@ -587,18 +587,20 @@ def python_register_toolchains(
     root module one can see the docs for the {rule}`python` extension.
 
     Args:
-        name: base name for all created repos, like "python38".
-        python_version: the Python version.
-        distutils: see the {attr}`python_repository.distutils`.
-        distutils_content: see the {attr}`python_repository.distutils_content`.
-        register_toolchains: Whether or not to register the downloaded toolchains.
-        register_coverage_tool: Whether or not to register the downloaded coverage tool to the toolchains.
-            NOTE: Coverage support using the toolchain is only supported in Bazel 6 and higher.
-
-        set_python_version_constraint: When set to true, target_compatible_with for the toolchains will include a version constraint.
-        tool_versions: a dict containing a mapping of version with SHASUM and platform info. If not supplied, the defaults
-            in python/versions.bzl will be used.
-        **kwargs: passed to each {rule}`python_repositories` call.
+        name: {type}`str` base name for all created repos, like "python38".
+        python_version: {type}`str` the Python version.
+        distutils: {type}`Label` see the {attr}`python_repository.distutils`.
+        distutils_content: {type}`str` see the {attr}`python_repository.distutils_content`.
+        register_toolchains: {type}`bool` Whether or not to register the downloaded toolchains.
+        register_coverage_tool: {type}`bool` Whether or not to register the
+            downloaded coverage tool to the toolchains.
+        set_python_version_constraint: {type}`bool` When set to true,
+            target_compatible_with for the toolchains will include a version
+            constraint.
+        tool_versions: {type}`dict[str, dict[str, dict[str]]]` contains a
+            mapping of version with SHASUM and platform info. If not supplied,
+            the defaults in `python/versions.bzl` will be used.
+        **kwargs: passed to each {obj}`python_repository` call.
     """
 
     tool_versions = tool_versions or TOOL_VERSIONS
@@ -723,11 +725,11 @@ def python_register_multi_toolchains(
     """Convenience macro for registering multiple Python toolchains.
 
     Args:
-        name: base name for each name in python_register_toolchains call.
-        python_versions: the Python version.
-        default_version: the default Python version. If not set, the first version in
-            python_versions is used.
-        **kwargs: passed to each {rule}`python_register_toolchains` call.
+        name: {type}`str` base name for each name in python_register_toolchains call.
+        python_versions: {type}`list[str]` the Python version.
+        default_version: {type}`str` the default Python version. If not set,
+            the first version in python_versions is used.
+        **kwargs: passed to each {obj}`python_register_toolchains` call.
     """
     if len(python_versions) == 0:
         fail("python_versions must not be empty")

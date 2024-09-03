@@ -80,7 +80,8 @@ Name bzl:type 1 concepts/labels#target-names -
 CcInfo bzl:provider 1 rules/lib/providers/CcInfo -
 CcInfo.linking_context bzl:provider-field 1 rules/lib/providers/CcInfo#linking_context -
 ToolchainInfo bzl:type 1 rules/lib/providers/ToolchainInfo.html -
-module_ctx bzl:obj 1 rules/lib/builtins/module_ctx -
+repository_ctx bzl:type 1 rules/lib/builtins/repository_ctx -
+module_ctx bzl:type 1 rules/lib/builtins/module_ctx -
 module_ctx.download bzl:function 1 rules/lib/builtins/module_ctx#download -
 module_ctx.download_and_extract bzl:function 1 rules/lib/builtins/module_ctx#download_and_extract -
 module_ctx.execute bzl:function 1 rules/lib/builtins/module_ctx#execute -
