@@ -98,3 +98,4 @@ module_ctx.report_progress bzl:function 1 rules/lib/builtins/module_ctx#report_p
 module_ctx.root_module_has_non_dev_dependency bzl:function 1 rules/lib/builtins/module_ctx#root_module_has_non_dev_dependency -
 module_ctx.watch bzl:function 1 rules/lib/builtins/module_ctx#watch -
 module_ctx.which bzl:function 1 rules/lib/builtins/module_ctx#which -
+path bzl:type 1 rules/lib/builtins/path -

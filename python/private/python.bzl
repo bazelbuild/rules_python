@@ -518,10 +518,6 @@ can override settings for any python toolchain available. This relies on the
 documented module traversal from the {obj}`module_ctx.modules`.
 :::
 
-:::{todo}
-fix the `module_ctx.modules` reference so that we can link back to the bazel page.
-:::
-
 :::{tip}
 In order to use a different name than the above, you can use the following `MODULE.bazel`
 syntax:
