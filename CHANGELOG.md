@@ -776,8 +776,7 @@ Breaking changes:
 
 ### Added
 
-* (bzlmod, entry_point) Added
-  [`py_console_script_binary`](./docs/py_console_script_binary.md), which
+* (bzlmod, entry_point) Added {obj}`py_console_script_binary`, which
   allows adding custom dependencies to a package's entry points and customizing
   the `py_binary` rule used to build it.
 

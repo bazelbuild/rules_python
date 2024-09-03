@@ -2,6 +2,5 @@
 
 ```{toctree}
 :glob:
-*
 */index
 ```
