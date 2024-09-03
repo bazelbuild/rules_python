@@ -135,6 +135,7 @@ bzl_library(
         ":python_repositories_bzl",
         ":pythons_hub_bzl",
         ":repo_utils_bzl",
+        ":semver_bzl",
         ":toolchains_repo_bzl",
         ":util_bzl",
         "@bazel_features//:features",
@@ -292,6 +293,12 @@ bzl_library(
 bzl_library(
     name = "repo_utils_bzl",
     srcs = ["repo_utils.bzl"],
+)
+
+bzl_library(
+    name = "semver_bzl",
+    srcs = ["semver.bzl"],
+    visibility = ["//:__subpackages__"],
 )
 
 bzl_library(

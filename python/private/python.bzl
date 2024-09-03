@@ -21,6 +21,7 @@ load(":full_version.bzl", "full_version")
 load(":python_repositories.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
+load(":semver.bzl", "semver")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
 load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
@@ -29,20 +30,6 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 # targets using any of these toolchains due to the changed repository name.
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
-
-def _parse_version(version):
-    major, _, version = version.partition(".")
-    minor, _, version = version.partition(".")
-    patch, _, version = version.partition(".")
-    build, _, version = version.partition(".")
-
-    return struct(
-        # use semver vocabulary here
-        major = major,
-        minor = minor,
-        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
-        build = build,
-    )
 
 def parse_mods(*, mctx, logger, debug = False, fail = fail):
     """parse_mods returns a struct with parsed tag class content.
@@ -437,10 +424,10 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
 
         if tag.minor_mapping:
             for minor_version, full_version in tag.minor_mapping.items():
-                parsed = _parse_version(minor_version)
+                parsed = semver(minor_version)
                 if parsed.patch or parsed.build:
                     fail("Expected the key to be of `X.Y` format but got `{}`".format(minor_version))
-                parsed = _parse_version(full_version)
+                parsed = semver(full_version)
                 if not parsed.patch:
                     fail("Expected the value to at least be of `X.Y.Z` format but got `{}`".format(minor_version))
 
