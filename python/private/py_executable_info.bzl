@@ -31,5 +31,10 @@ The runfiles the program needs, but without the original executable,
 files only added to support the original executable, or files specific to the
 original program.
 """,
+        "build_data_file": """
+:type: File
+
+A symlink to build_data.txt if stamping is enabled, otherwise None.
+""",
     },
 )
