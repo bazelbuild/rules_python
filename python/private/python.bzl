@@ -578,7 +578,17 @@ _override = tag_class(
         {
             "available_python_versions": attr.string_list(
                 mandatory = False,
-                doc = "The list of available python tool versions to use. Must be in `X.Y.Z` format.",
+                doc = """\
+The list of available python tool versions to use. Must be in `X.Y.Z` format.
+If the unknown version given the processing of the extension will fail - all of
+the versions in the list have to be defined with
+{obj}`python.single_version_override` or
+{obj}`python.single_version_platform_override` before they are used in this
+list.
+
+This attribute is usually used in order to ensure that no unexpected transitive
+dependencies are introduced.
+""",
             ),
             "base_url": attr.string(
                 mandatory = False,
