@@ -78,15 +78,49 @@ def _override(
     )
 
 def _single_version_override(
-        **kwargs):
+        python_version = "",
+        sha256 = {},
+        urls = [],
+        patch_strip = 0,
+        patches = [],
+        strip_prefix = "python",
+        distutils_content = "",
+        distutils = None):
+    if not python_version:
+        fail("missing mandatory args: python_version ({})".format(python_version))
+
     return struct(
-        **kwargs
+        python_version = python_version,
+        sha256 = sha256,
+        urls = urls,
+        patch_strip = patch_strip,
+        patches = patches,
+        strip_prefix = strip_prefix,
+        distutils_content = distutils_content,
+        distutils = distutils,
     )
 
 def _single_version_platform_override(
-        **kwargs):
+        coverage_tool = None,
+        patch_strip = 0,
+        patches = [],
+        platform = "",
+        python_version = "",
+        sha256 = "",
+        strip_prefix = "python",
+        urls = []):
+    if not platform or not python_version:
+        fail("missing mandatory args: platform ({}) and python_version ({})".format(platform, python_version))
+
     return struct(
-        **kwargs
+        sha256 = sha256,
+        urls = urls,
+        strip_prefix = strip_prefix,
+        platform = platform,
+        coverage_tool = coverage_tool,
+        python_version = python_version,
+        patch_strip = patch_strip,
+        patches = patches,
     )
 
 def _test_default(env):
@@ -283,6 +317,7 @@ def _test_first_occurance_of_the_toolchain_wins(env):
         # configuring something else.
         register_coverage_tool = False,
         debug = {
+            "ignore_root_user_error": False,
             "module": struct(is_root = True, name = "my_module"),
         },
     )
@@ -291,6 +326,7 @@ def _test_first_occurance_of_the_toolchain_wins(env):
         python_version = "3.11",
         register_coverage_tool = False,
         debug = {
+            "ignore_root_user_error": False,
             "module": struct(is_root = False, name = "rules_python"),
         },
     )
@@ -418,6 +454,68 @@ def _test_add_new_version(env):
     ])
 
 _tests.append(_test_add_new_version)
+
+def _test_register_all_versions(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(
+                name = "my_module",
+                toolchain = [_toolchain("3.13")],
+                single_version_override = [
+                    _single_version_override(
+                        python_version = "3.13.0",
+                        sha256 = {
+                            "aarch64-unknown-linux-gnu": "deadbeef",
+                        },
+                        urls = ["example.org"],
+                    ),
+                ],
+                single_version_platform_override = [
+                    _single_version_platform_override(
+                        sha256 = "deadb00f",
+                        urls = ["something.org"],
+                        platform = "aarch64-unknown-linux-gnu",
+                        python_version = "3.13.1",
+                    ),
+                ],
+                override = [
+                    _override(
+                        base_url = "",
+                        available_python_versions = ["3.12.4", "3.13.0", "3.13.1"],
+                        minor_mapping = {"3.12": "3.12.4", "3.13": "3.13.0"},
+                        register_all_versions = True,
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    env.expect.that_str(py.default_python_version).equals("3.13")
+    env.expect.that_collection(py.overrides.default["tool_versions"].keys()).contains_exactly([
+        "3.12.4",
+        "3.13.0",
+        "3.13.1",
+    ])
+    env.expect.that_dict(py.overrides.minor_mapping).contains_exactly({
+        "3.12": "3.12.4",
+        "3.13": "3.13.0",
+    })
+    env.expect.that_collection(py.toolchains).contains_exactly([
+        struct(
+            name = name,
+            python_version = version,
+            register_coverage_tool = False,
+        )
+        for name, version in {
+            "python_3_12": "3.12",
+            "python_3_12_4": "3.12.4",
+            "python_3_13": "3.13",
+            "python_3_13_0": "3.13.0",
+            "python_3_13_1": "3.13.1",
+        }.items()
+    ])
+
+_tests.append(_test_register_all_versions)
 
 def _test_add_patches(env):
     py = parse_mods(

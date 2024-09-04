@@ -420,9 +420,7 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
                 for v in tag.available_python_versions
             })
 
-        if tag.register_all_versions and mod.name != "rules_python":
-            fail("This override can only be used by 'rules_python'")
-        elif tag.register_all_versions:
+        if tag.register_all_versions:
             register_all = True
 
         if tag.minor_mapping:
@@ -447,7 +445,7 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
         # FIXME @aignas 2024-08-30: this is technically not correct
         registrations.extend([
             _create_toolchain_attrs_struct(python_version = v)
-            for v in available_versions.keys()
+            for v in available_versions.keys() + overrides.minor_mapping.keys()
             if v not in seen_versions
         ])
 
