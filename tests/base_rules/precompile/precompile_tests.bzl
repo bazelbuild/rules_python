@@ -23,7 +23,7 @@ load("//python:py_binary.bzl", "py_binary")
 load("//python:py_info.bzl", "PyInfo")
 load("//python:py_library.bzl", "py_library")
 load("//python:py_test.bzl", "py_test")
-load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
+load("//tests/support:py_info_subject.bzl", "py_info_subject")
 load(
     "//tests/support:support.bzl",
     "CC_TOOLCHAIN",

@@ -27,7 +27,8 @@ WINDOWS = Label("//tests/support:windows")
 WINDOWS_X86_64 = Label("//tests/support:windows_x86_64")
 
 PLATFORM_TOOLCHAIN = str(Label("//tests/support:platform_toolchain"))
-CC_TOOLCHAIN = str(Label("//tests/cc:all"))
+CC_TOOLCHAIN = str(Label("//tests/support/cc_toolchains:all"))
+CROSSTOOL_TOP = Label("//tests/cc:cc_toolchain_suite")
 
 # str() around Label() is necessary because rules_testing's config_settings
 # doesn't accept yet Label objects.

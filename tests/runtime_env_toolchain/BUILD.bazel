@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("//tests/support:sh_py_run_test.bzl", "py_reconfig_test")
+load("//tests/support:support.bzl", "CC_TOOLCHAIN")
 load(":runtime_env_toolchain_tests.bzl", "runtime_env_toolchain_test_suite")
 
 runtime_env_toolchain_test_suite(name = "runtime_env_toolchain_tests")
@@ -26,7 +27,7 @@ py_reconfig_test(
     extra_toolchains = [
         "//python/runtime_env_toolchains:all",
         # Necessary for RBE CI
-        "//tests/cc:all",
+        CC_TOOLCHAIN,
     ],
     main = "toolchain_runs_test.py",
     deps = ["//python/runfiles"],
