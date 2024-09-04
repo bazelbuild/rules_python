@@ -24,7 +24,7 @@ import sys
 
 def _create_parser() -> "argparse.Namespace":
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
-    parser.add_argument("--invalidation_mode", default="TIMESTAMP")
+    parser.add_argument("--invalidation_mode", default="CHECKED_HASH")
     parser.add_argument("--optimize", type=int, default=-1)
     parser.add_argument("--python_version")
 
@@ -48,7 +48,7 @@ def _compile(options: "argparse.Namespace") -> None:
             f"Unknown PycInvalidationMode: {options.invalidation_mode}"
         ) from e
 
-    if len(options.srcs) != len(options.src_names) != len(options.pycs):
+    if not (len(options.srcs) == len(options.src_names) == len(options.pycs)):
         raise AssertionError(
             "Mismatched number of --src, --src_name, and/or --pyc args"
         )
