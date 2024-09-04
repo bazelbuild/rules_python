@@ -214,7 +214,10 @@ def parse_mods(*, mctx, logger, debug = False, fail = fail):
                 name = t.name,
                 python_version = t.python_version,
                 register_coverage_tool = t.register_coverage_tool,
-                debug = {"module": t.module} if debug else None,
+                debug = {
+                    "ignore_root_user_error": ignore_root_user_error,
+                    "module": t.module,
+                } if debug else None,
             )
             for t in toolchains
         ],
