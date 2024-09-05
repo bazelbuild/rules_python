@@ -3,9 +3,17 @@
 # Version: 7.3.0
 # The remainder of this file is compressed using zlib
 Action bzl:type 1 rules/lib/Action -
+ExecutionInfo bzl:type 1 rules/lib/providers/ExecutionInfo -
 File bzl:type 1 rules/lib/File -
 Label bzl:type 1 rules/lib/Label -
+RunEnvironmentInfo bzl:type 1 rules/lib/providers/RunEnvironmentInfo -
 Target bzl:type 1 rules/lib/builtins/Target -
+attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
+attr.int bzl:type 1 rules/lib/toplevel/attr#int -
+attr.label bzl:type 1 rules/lib/toplevel/attr#label -
+attr.label_list bzl:type 1 rules/lib/toplevel/attr#label_list -
+attr.string bzl:type 1 rules/lib/toplevel/attr#string -
+attr.string_list bzl:type 1 rules/lib/toplevel/attr#string_list -
 bool bzl:type 1 rules/lib/bool -
 callable bzl:type 1 rules/lib/core/function -
 config_common.FeatureFlagInfo bzl:type 1 rules/lib/toplevel/config_common#FeatureFlagInfo -
@@ -48,12 +56,6 @@ int bzl:type 1 rules/lib/int -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
 label bzl:type 1 concepts/labels -
-attr.bool bzl:type 1 rules/lib/toplevel/attr#bool -
-attr.int bzl:type 1 rules/lib/toplevel/attr#int -
-attr.label bzl:type 1 rules/lib/toplevel/attr#label -
-attr.label_list bzl:type 1 rules/lib/toplevel/attr#label_list -
-attr.string bzl:type 1 rules/lib/toplevel/attr#string -
-attr.string_list bzl:type 1 rules/lib/toplevel/attr#string_list -
 list bzl:type 1 rules/lib/list -
 native.existing_rule bzl:function 1 rules/lib/toplevel/native#existing_rule -
 native.existing_rules bzl:function 1 rules/lib/toplevel/native#existing_rules -
@@ -75,6 +77,10 @@ runfiles.root_symlinks bzl:type 1 rules/lib/builtins/runfiles#root_symlinks -
 runfiles.symlinks bzl:type 1 rules/lib/builtins/runfiles#symlinks -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
+testing bzl:obj 1 rules/lib/toplevel/testing -
+testing.analysis_test bzl:rule 1 rules/lib/toplevel/testing#analysis_test -
+testing.ExecutionInfo bzl:function 1 rules/lib/toplevel/testing#ExecutionInfo -
+testing.TestEnvironment bzl:function 1 rules/lib/toplevel/testing#TestEnvironment -
 toolchain_type bzl:type 1 ules/lib/builtins/toolchain_type.html -
 Name bzl:type 1 concepts/labels#target-names -
 CcInfo bzl:provider 1 rules/lib/providers/CcInfo -
