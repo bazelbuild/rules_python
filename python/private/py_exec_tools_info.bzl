@@ -48,7 +48,7 @@ when constructing the action invocation for running the precompiler program
 (typically `exec_interpreter`). See the `PyInterpreterProgramInfo` provider docs
 for details on how to construct an invocation.
 
-If `testing.ExecutionInfo` is provided, it will be used to set execution
+If {obj}`testing.ExecutionInfo` is provided, it will be used to set execution
 requirements. This can be used to control persistent worker settings.
 
 The precompiler command line API is:
