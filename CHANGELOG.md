@@ -44,6 +44,10 @@ A brief description of the categories of changes:
   stage2 bootstrap template.
 * (bzlmod) Properly handle relative path URLs in parse_simpleapi_html.bzl
 * (gazelle) Correctly resolve deps that have top-level module overlap with a gazelle_python.yaml dep module
+* (rules) Make `RUNFILES_MANIFEST_FILE`-based invocations work when used with
+  {obj}`--bootstrap_impl=script`.
+  ([#2186](https://github.com/bazelbuild/rules_python/issues/2186)).
+
 
 ### Added
 * (rules) Executables provide {obj}`PyExecutableInfo`, which contains
