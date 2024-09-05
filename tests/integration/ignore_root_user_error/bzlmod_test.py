@@ -31,12 +31,12 @@ class BzlmodTest(unittest.TestCase):
             {
                 "ignore_root_user_error": True,
                 "module": {"is_root": False, "name": "submodule"},
-                "name": "python_3_11",
+                "name": "python_3_10",
             },
             {
                 "ignore_root_user_error": True,
                 "module": {"is_root": True, "name": "ignore_root_user_error"},
-                "name": "python_3_10",
+                "name": "python_3_11",
             },
         ]
         self.assertCountEqual(debug_info["toolchains_registered"], expected)
