@@ -20,6 +20,7 @@ load("//python:py_info.bzl", "PyInfo")
 load("//python/config_settings:transition.bzl", py_binary_transitioned = "py_binary", py_test_transitioned = "py_test")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
+load("//tests/support:support.bzl", "CC_TOOLCHAIN")
 
 # NOTE @aignas 2024-06-04: we are using here something that is registered in the MODULE.Bazel
 # and if you find tests failing, it could be because of the toolchain resolution issues here.
@@ -87,7 +88,7 @@ def _setup_py_binary_windows(name, *, impl, build_python_zip):
         impl = impl,
         config_settings = {
             "//command_line_option:build_python_zip": build_python_zip,
-            "//command_line_option:extra_toolchains": "//tests/cc:all",
+            "//command_line_option:extra_toolchains": CC_TOOLCHAIN,
             "//command_line_option:platforms": str(Label("//tests/support:windows_x86_64")),
         },
     )
