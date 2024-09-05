@@ -57,13 +57,13 @@ orig_runfiles_dir="$RUNFILES_DIR"
 unset RUNFILES_DIR
 
 # Test invocation using manifest within runfiles directory (output manifest)
-# Note that this file may not actually exist in our test, but that's OK; the
+# NOTE: this file may not actually exist in our test, but that's OK; the
 # bootstrap just uses the path to find the runfiles directory.
 export RUNFILES_MANIFEST_FILE="$orig_runfiles_dir/MANIFEST"
 test_invocation
 
 # Test invocation using manifest outside runfiles (input manifest)
-# Note that this file may not actually exist in our test, but that's OK; the
+# NOTE: this file may not actually exist in our test, but that's OK; the
 # bootstrap just uses the path to find the runfiles directory.
 export RUNFILES_MANIFEST_FILE="${orig_runfiles_dir%%.runfiles}.runfiles_manifest"
 test_invocation
