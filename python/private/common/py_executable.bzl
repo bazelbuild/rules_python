@@ -426,7 +426,8 @@ def _get_base_runfiles_for_binary(
         * data_runfiles: The data runfiles
         * runfiles_without_exe: The default runfiles, but without the executable
           or files specific to the original program/executable.
-        * build_data_file: A file with build stamp information if stamping is enabled, otherwise None.
+        * build_data_file: A file with build stamp information if stamping is enabled, otherwise
+          None.
     """
     common_runfiles_depsets = [main_py_files]
 
@@ -466,12 +467,11 @@ def _get_base_runfiles_for_binary(
     data_runfiles = runfiles_with_exe
 
     if is_stamping_enabled(ctx, semantics) and semantics.should_include_build_data(ctx):
-        build_data_runfiles = _create_runfiles_with_build_data(
+        build_data_file, build_data_runfiles = _create_runfiles_with_build_data(
             ctx,
             semantics.get_central_uncachable_version_file(ctx),
             semantics.get_extra_write_build_data_env(ctx),
         )
-        build_data_file = build_data_runfiles.symlinks.to_list()[0].target_file
         default_runfiles = runfiles_with_exe.merge(build_data_runfiles)
     else:
         build_data_file = None
@@ -488,15 +488,15 @@ def _create_runfiles_with_build_data(
         ctx,
         central_uncachable_version_file,
         extra_write_build_data_env):
-    return ctx.runfiles(
-        symlinks = {
-            BUILD_DATA_SYMLINK_PATH: _write_build_data(
-                ctx,
-                central_uncachable_version_file,
-                extra_write_build_data_env,
-            ),
-        },
+    build_data_file = _write_build_data(
+        ctx,
+        central_uncachable_version_file,
+        extra_write_build_data_env,
     )
+    build_data_runfiles = ctx.runfiles(symlinks = {
+        BUILD_DATA_SYMLINK_PATH: build_data_file,
+    })
+    return build_data_file, build_data_runfiles
 
 def _write_build_data(ctx, central_uncachable_version_file, extra_write_build_data_env):
     # TODO: Remove this logic when a central file is always available
