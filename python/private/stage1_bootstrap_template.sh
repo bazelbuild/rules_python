@@ -57,7 +57,6 @@ else
     if [[ "$stub_filename" != /* ]]; then
       stub_filename="$PWD/$stub_filename"
     fi
-
     while true; do
       module_space="${stub_filename}.runfiles"
       if [[ -d "$module_space" ]]; then
