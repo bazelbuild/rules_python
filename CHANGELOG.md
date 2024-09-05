@@ -51,9 +51,12 @@ A brief description of the categories of changes:
   or deriving a new one from the original.
 * (py_wheel) Removed use of bash to avoid failures on Windows machines which do not
   have it installed.
+* (docs) Automatically generated documentation for {bzl:obj}`python_register_toolchains`
+  and related symbols.
 
 ### Removed
-* Nothing yet
+* (toolchains): Removed accidentally exposed `http_archive` symbol from
+  `python/repositories.bzl`.
 
 ## [0.35.0] - 2024-08-15
 
