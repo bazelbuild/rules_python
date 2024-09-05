@@ -47,7 +47,7 @@ else
       echo "${RUNFILES_MANIFEST_FILE%%.runfiles_manifest}.runfiles"
       return 0
     elif [[ "${RUNFILES_MANIFEST_FILE:-}" = *".runfiles/MANIFEST" ]]; then
-      echo "${RUNFILES_MANIFEST_FILE%%.runfiles/MANIFEST}"
+      echo "${RUNFILES_MANIFEST_FILE%%.runfiles/MANIFEST}.runfiles"
       return 0
     fi
 
