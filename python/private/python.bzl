@@ -15,7 +15,7 @@
 "Python toolchain module extensions for use with bzlmod."
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "MINOR_MAPPING", "PLATFORMS", "TOOL_VERSIONS")
+load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "PLATFORMS", "TOOL_VERSIONS")
 load(":auth.bzl", "AUTH_ATTRS")
 load(":full_version.bzl", "full_version")
 load(":python_repositories.bzl", "python_register_toolchains")
@@ -69,7 +69,7 @@ def parse_mods(*, mctx, logger, debug = False, fail = fail):
     # overrides that can be changed by the root module
     overrides = struct(
         kwargs = {},
-        minor_mapping = dict(MINOR_MAPPING),
+        minor_mapping = {},
         default = {
             "base_url": DEFAULT_RELEASE_BASE_URL,
             "tool_versions": {
@@ -441,6 +441,17 @@ def _process_tag_classes(mod, *, seen_versions, overrides, fail = fail):
 
         break
 
+    if not overrides.minor_mapping:
+        versions = {}
+        for version_string in available_versions:
+            v = semver(version_string)
+            versions.setdefault("{}.{}".format(v.major, v.minor), []).append((int(v.patch), version_string))
+
+        overrides.minor_mapping.update({
+            major_minor: max(subset)[1]
+            for major_minor, subset in versions.items()
+        })
+
     if register_all:
         # FIXME @aignas 2024-08-30: this is technically not correct
         registrations.extend([
@@ -611,7 +622,18 @@ can result in spurious build failures.
             ),
             "minor_mapping": attr.string_dict(
                 mandatory = False,
-                doc = "The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up toolchains.",
+                doc = """\
+The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up
+toolchains. It defaults to the interpreter with the highest available patch
+version for each minor version. For example if one registers `3.10.3`, `3.10.4`
+and `3.11.4` then the default for the `minor_mapping` dict will be:
+```starlark
+{
+    "3.10": "3.10.4",
+    "3.11": "3.11.4",
+}
+```
+""",
                 default = {},
             ),
             "register_all_versions": attr.bool(default = False, doc = "Add all versions"),

@@ -15,6 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("//python:versions.bzl", "MINOR_MAPPING")
 load("//python/private:python.bzl", _parse_mods = "parse_mods")  # buildifier: disable=bzl-visibility
 
 _tests = []
@@ -130,13 +131,10 @@ def _test_default(env):
         ),
     )
 
-    env.expect.that_collection(py.overrides.minor_mapping.keys()).contains_exactly([
-        "3.10",
-        "3.11",
-        "3.12",
-        "3.8",
-        "3.9",
-    ])
+    # The value there should be consistent in bzlmod with the automatically
+    # calculated value Please update the MINOR_MAPPING in //python:versions.bzl
+    # when this part starts failing.
+    env.expect.that_dict(py.overrides.minor_mapping).contains_exactly(MINOR_MAPPING)
     env.expect.that_collection(py.overrides.kwargs).has_size(0)
     env.expect.that_collection(py.overrides.default.keys()).contains_exactly([
         "base_url",
@@ -482,7 +480,6 @@ def _test_register_all_versions(env):
                     _override(
                         base_url = "",
                         available_python_versions = ["3.12.4", "3.13.0", "3.13.1"],
-                        minor_mapping = {"3.12": "3.12.4", "3.13": "3.13.0"},
                         register_all_versions = True,
                     ),
                 ],
@@ -497,8 +494,9 @@ def _test_register_all_versions(env):
         "3.13.1",
     ])
     env.expect.that_dict(py.overrides.minor_mapping).contains_exactly({
+        # The mapping is calculated automatically
         "3.12": "3.12.4",
-        "3.13": "3.13.0",
+        "3.13": "3.13.1",
     })
     env.expect.that_collection(py.toolchains).contains_exactly([
         struct(

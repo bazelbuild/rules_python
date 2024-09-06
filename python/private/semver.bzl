@@ -25,8 +25,7 @@ def semver(version):
     """
     major, _, version = version.partition(".")
     minor, _, version = version.partition(".")
-    patch, _, version = version.partition(".")
-    build, _, version = version.partition("+")
+    patch, _, build = version.partition("+")
 
     return struct(
         # use semver vocabulary here
