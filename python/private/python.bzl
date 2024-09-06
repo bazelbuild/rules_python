@@ -310,34 +310,40 @@ def _fail_multiple_default_toolchains(first, second):
 def _process_overrides(*, modules, fail = fail):
     kwargs = {}
     minor_mapping = {}
-    default = {
-        "base_url": DEFAULT_RELEASE_BASE_URL,
-        "tool_versions": {
-            version: {
-                # Use a dicts straight away so that we could do URL overrides for a
-                # single version.
-                "sha256": dict(item["sha256"]),
-                "strip_prefix": {
-                    platform: item["strip_prefix"]
-                    for platform in item["sha256"]
-                },
-                "url": {
-                    platform: [item["url"]]
-                    for platform in item["sha256"]
-                },
-            }
-            for version, item in TOOL_VERSIONS.items()
-        },
+    default = {}
+    base_url = DEFAULT_RELEASE_BASE_URL
+    available_versions = {
+        version: {
+            # Use a dicts straight away so that we could do URL overrides for a
+            # single version.
+            "sha256": dict(item["sha256"]),
+            "strip_prefix": {
+                platform: item["strip_prefix"]
+                for platform in item["sha256"]
+            },
+            "url": {
+                platform: [item["url"]]
+                for platform in item["sha256"]
+            },
+        }
+        for version, item in TOOL_VERSIONS.items()
     }
     register_all = False
-
-    available_versions = default["tool_versions"]
 
     for mod in modules:
         if not mod.is_root:
             break
 
+        overriden_keys = []
         for tag in mod.tags.single_version_override:
+            key = (tag.python_version,)
+            if key not in overriden_keys:
+                overriden_keys.append(key)
+            else:
+                fail("Only a single python.single_override can be present for each 'python_version', observed a duplicate override for '{}'".format(
+                    *key
+                ))
+
             if tag.sha256 or tag.urls:
                 if not (tag.sha256 and tag.urls):
                     fail("Both `sha256` and `urls` overrides need to be provided together")
@@ -380,6 +386,14 @@ def _process_overrides(*, modules, fail = fail):
                 kwargs.setdefault(tag.python_version, {})["distutils"] = tag.distutils
 
         for tag in mod.tags.single_version_platform_override:
+            key = (tag.python_version, tag.platform)
+            if key not in overriden_keys:
+                overriden_keys.append(key)
+            else:
+                fail("Only a single python.single_version_platform_override can be present for each ('python_version', 'platform') tuple, duplicate override for ('{}', '{}')".format(
+                    *key
+                ))
+
             if tag.python_version not in available_versions:
                 if not tag.urls or not tag.sha256 or not tag.strip_prefix:
                     fail("When introducing a new python_version '{}', 'sha256', 'strip_prefix' and 'urls' must be specified".format(tag.python_version))
@@ -399,16 +413,23 @@ def _process_overrides(*, modules, fail = fail):
                 available_versions[tag.python_version].setdefault("url", {})[tag.platform] = tag.urls
 
         for tag in mod.tags.override:
-            kwargs["base_url"] = tag.base_url
+            key = ("",)
+            if key not in overriden_keys:
+                overriden_keys.append(overriden_keys)
+            else:
+                fail("Only a single 'python.override' can be present")
+
+            base_url = tag.base_url
             if tag.available_python_versions:
                 all_versions = dict(available_versions)
-                available_versions = {
+                available_versions.clear()
+                available_versions.update({
                     v: all_versions[v] if v in all_versions else fail("unknown version '{}', known versions are: {}".format(
                         v,
                         sorted(all_versions),
                     ))
                     for v in tag.available_python_versions
-                }
+                })
 
             if tag.register_all_versions:
                 register_all = True
@@ -428,20 +449,21 @@ def _process_overrides(*, modules, fail = fail):
                 if getattr(tag, key, None):
                     default[key] = getattr(tag, key)
 
-            # Process only the first one
-            break
-
     if not minor_mapping:
         versions = {}
         for version_string in available_versions:
             v = semver(version_string)
             versions.setdefault("{}.{}".format(v.major, v.minor), []).append((int(v.patch), version_string))
 
-        minor_mapping.update({
+        minor_mapping = {
             major_minor: max(subset)[1]
             for major_minor, subset in versions.items()
-        })
+        }
 
+    default.update({
+        "base_url": base_url,
+        "tool_versions": available_versions,
+    })
     return struct(
         kwargs = kwargs,
         minor_mapping = minor_mapping,
