@@ -599,8 +599,6 @@ def python_register_toolchains(
         **kwargs: passed to each {obj}`python_repository` call.
     """
 
-    tool_versions = tool_versions or TOOL_VERSIONS
-
     if BZLMOD_ENABLED:
         # you cannot used native.register_toolchains when using bzlmod.
         register_toolchains = False
