@@ -29,7 +29,8 @@ py_repositories = _py_repositories
 python_register_multi_toolchains = _python_register_multi_toolchains
 python_register_toolchains = _python_register_toolchains
 
-# Useful for documentation.
+# Useful for documentation, but is not intended for public use - the python
+# module extension will be the main interface in the future.
 python_repository = _python_repository
 
 # These symbols are of questionable public visibility. They were probably
