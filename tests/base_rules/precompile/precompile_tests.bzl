@@ -302,7 +302,6 @@ def _test_precompiler_action(name):
 _tests.append(_test_precompiler_action)
 
 def _test_precompiler_action_impl(env, target):
-    #env.expect.that_target(target).runfiles().contains_exactly([])
     action = env.expect.that_target(target).action_named("PyCompile")
     action.contains_flag_values([
         ("--optimize", "2"),
