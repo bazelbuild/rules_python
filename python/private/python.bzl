@@ -411,7 +411,7 @@ def _process_overrides(*, modules, fail = fail):
                 }
 
             if tag.register_all_versions:
-                register_all.append(True)
+                register_all = True
 
             if tag.minor_mapping:
                 for minor_version, full_version in tag.minor_mapping.items():
