@@ -58,7 +58,7 @@ string_flag(
 
 string_flag(
     name = "precompile_source_retention",
-    build_setting_default = PrecompileSourceRetentionFlag.KEEP_SOURCE,
+    build_setting_default = PrecompileSourceRetentionFlag.AUTO,
     values = sorted(PrecompileSourceRetentionFlag.__members__.values()),
     # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],

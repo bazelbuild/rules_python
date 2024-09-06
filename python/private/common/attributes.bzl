@@ -16,7 +16,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "CcInfo")
 load("//python/private:enum.bzl", "enum")
-load("//python/private:flags.bzl", "PrecompileFlag")
+load("//python/private:flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
@@ -85,7 +85,7 @@ PrecompileInvalidationModeAttr = enum(
 def _precompile_source_retention_get_effective_value(ctx):
     attr_value = ctx.attr.precompile_source_retention
     if attr_value == PrecompileSourceRetentionAttr.INHERIT:
-        attr_value = ctx.attr._precompile_source_retention_flag[BuildSettingInfo].value
+        attr_value = PrecompileSourceRetentionFlag.get_effective_value(ctx)
 
     if attr_value not in (
         PrecompileSourceRetentionAttr.KEEP_SOURCE,

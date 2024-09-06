@@ -74,10 +74,18 @@ PrecompileFlag = enum(
     get_effective_value = _precompile_flag_get_effective_value,
 )
 
+def _precompile_source_retention_flag_get_effective_value(ctx):
+    value = ctx.attr._precompile_source_retention_flag[BuildSettingInfo].value
+    if value == PrecompileSourceRetentionFlag.AUTO:
+        value = PrecompileSourceRetentionFlag.KEEP_SOURCE
+    return value
+
 # Determines if, when a source file is compiled, if the source file is kept
 # in the resulting output or not.
 # buildifier: disable=name-conventions
 PrecompileSourceRetentionFlag = enum(
+    # Automatically decide the effective value based on environment, etc.
+    AUTO = "auto",
     # Include the original py source in the output.
     KEEP_SOURCE = "keep_source",
     # Don't include the original py source.
@@ -85,6 +93,7 @@ PrecompileSourceRetentionFlag = enum(
     # Keep the original py source if it's a regular source file, but omit it
     # if it's a generated file.
     OMIT_IF_GENERATED_SOURCE = "omit_if_generated_source",
+    get_effective_value = _precompile_source_retention_flag_get_effective_value,
 )
 
 # Determines if a target adds its compiled files to its runfiles. When a target
