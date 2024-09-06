@@ -41,9 +41,9 @@ Information about the header files, struct with fields:
     represents).
 """,
         "libs": """\
-:type: struct
+:type: struct | None
 
-Information about C libraries, struct with fields:
+If available, information about C libraries, struct with fields:
   * providers_map: A dict of string to provider instances. The key should be
     a fully qualified name (e.g. `@rules_foo//bar:baz.bzl#MyInfo`) of the
     provider to uniquely identify its type.
