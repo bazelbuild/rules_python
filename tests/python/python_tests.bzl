@@ -30,7 +30,7 @@ def _mock_mctx(*modules, environ = {}):
             struct(
                 name = modules[0].name,
                 tags = modules[0].tags,
-                is_root = True,
+                is_root = modules[0].is_root,
             ),
         ] + [
             struct(
@@ -42,7 +42,7 @@ def _mock_mctx(*modules, environ = {}):
         ],
     )
 
-def _mod(*, name, toolchain = [], override = [], single_version_override = [], single_version_platform_override = []):
+def _mod(*, name, toolchain = [], override = [], single_version_override = [], single_version_platform_override = [], is_root = True):
     return struct(
         name = name,
         tags = struct(
@@ -51,6 +51,7 @@ def _mod(*, name, toolchain = [], override = [], single_version_override = [], s
             single_version_override = single_version_override,
             single_version_platform_override = single_version_platform_override,
         ),
+        is_root = is_root,
     )
 
 def _toolchain(python_version, *, is_default = False, **kwargs):
@@ -153,6 +154,34 @@ def _test_default(env):
 
 _tests.append(_test_default)
 
+def _test_default_some_module(env):
+    py = parse_mods(
+        mctx = _mock_mctx(
+            _mod(name = "rules_python", toolchain = [_toolchain("3.11")], is_root = False),
+        ),
+    )
+
+    # The value there should be consistent in bzlmod with the automatically
+    # calculated value Please update the MINOR_MAPPING in //python:versions.bzl
+    # when this part starts failing.
+    env.expect.that_dict(py.overrides.minor_mapping).contains_exactly(MINOR_MAPPING)
+    env.expect.that_collection(py.overrides.kwargs).has_size(0)
+    env.expect.that_collection(py.overrides.default.keys()).contains_exactly([
+        "base_url",
+        "ignore_root_user_error",
+        "tool_versions",
+    ])
+    env.expect.that_str(py.default_python_version).equals("3.11")
+
+    want_toolchain = struct(
+        name = "python_3_11",
+        python_version = "3.11",
+        register_coverage_tool = False,
+    )
+    env.expect.that_collection(py.toolchains).contains_exactly([want_toolchain])
+
+_tests.append(_test_default_some_module)
+
 def _test_default_with_patch(env):
     py = parse_mods(
         mctx = _mock_mctx(
@@ -174,27 +203,20 @@ _tests.append(_test_default_with_patch)
 def _test_default_non_rules_python(env):
     py = parse_mods(
         mctx = _mock_mctx(
-            _mod(name = "my_module", toolchain = [_toolchain("3.12")]),
-            _mod(name = "rules_python", toolchain = [_toolchain("3.11")]),
+            # NOTE @aignas 2024-09-06: the first item in the module_ctx.modules
+            # could be a non-root module, which is the case if the root module
+            # does not make any calls to the extension.
+            _mod(name = "rules_python", toolchain = [_toolchain("3.11")], is_root = False),
         ),
     )
 
-    env.expect.that_str(py.default_python_version).equals("3.12")
-
-    my_module_toolchain = struct(
-        name = "python_3_12",
-        python_version = "3.12",
-        register_coverage_tool = False,
-    )
+    env.expect.that_str(py.default_python_version).equals("3.11")
     rules_python_toolchain = struct(
         name = "python_3_11",
         python_version = "3.11",
         register_coverage_tool = False,
     )
-    env.expect.that_collection(py.toolchains).contains_exactly([
-        rules_python_toolchain,
-        my_module_toolchain,  # default toolchain is last
-    ]).in_order()
+    env.expect.that_collection(py.toolchains).contains_exactly([rules_python_toolchain])
 
 _tests.append(_test_default_non_rules_python)
 
