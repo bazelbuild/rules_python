@@ -266,14 +266,14 @@ _tests.append(_test_precompile_add_to_runfiles_decided_elsewhere)
 
 def _test_precompile_add_to_runfiles_decided_elsewhere_impl(env, targets):
     env.expect.that_target(targets.binary).runfiles().contains_at_least([
-        "{workspace}/tests/base_rules/precompile/__pycache__/bin.fakepy-45.pyc",
-        "{workspace}/tests/base_rules/precompile/__pycache__/lib.fakepy-45.pyc",
-        "{workspace}/tests/base_rules/precompile/bin.py",
-        "{workspace}/tests/base_rules/precompile/lib.py",
+        "{workspace}/{package}/__pycache__/bin.fakepy-45.pyc",
+        "{workspace}/{package}/__pycache__/lib.fakepy-45.pyc",
+        "{workspace}/{package}/bin.py",
+        "{workspace}/{package}/lib.py",
     ])
 
     env.expect.that_target(targets.library).runfiles().contains_exactly([
-        "{workspace}/tests/base_rules/precompile/lib.py",
+        "{workspace}/{package}/lib.py",
     ])
 
 def _test_precompiler_action(name):
