@@ -28,6 +28,10 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
   {obj}`config_common.FeatureFlagInfo`.
+* (toolchains) When {obj}`py_runtime.interpreter_version_info` isn't specified,
+  the {obj}`--python_version` flag will determine the value. This allows
+  specifying the build-time Python version for the
+  {obj}`runtime_env_toolchains`.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the

@@ -22,6 +22,7 @@ load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_info.bzl", "PyRuntimeInfo")
 load("//tests/base_rules:util.bzl", br_util = "util")
 load("//tests/support:py_runtime_info_subject.bzl", "py_runtime_info_subject")
+load("//tests/support:support.bzl", "PYTHON_VERSION")
 
 _tests = []
 
@@ -527,6 +528,31 @@ def _test_interpreter_version_info_parses_values_to_struct_impl(env, target):
     version_info.serial().equals(1)
 
 _tests.append(_test_interpreter_version_info_parses_values_to_struct)
+
+def _test_version_info_from_flag(name):
+    py_runtime(
+        name = name + "_subject",
+        interpreter_version_info = None,
+        interpreter_path = "/bogus",
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_version_info_from_flag_impl,
+        config_settings = {
+            PYTHON_VERSION: "3.12",
+        },
+    )
+
+def _test_version_info_from_flag_impl(env, target):
+    version_info = env.expect.that_target(target).provider(PyRuntimeInfo, factory = py_runtime_info_subject).interpreter_version_info()
+    version_info.major().equals(3)
+    version_info.minor().equals(12)
+    version_info.micro().equals(None)
+    version_info.releaselevel().equals(None)
+    version_info.serial().equals(None)
+
+_tests.append(_test_version_info_from_flag)
 
 def py_runtime_test_suite(name):
     test_suite(
