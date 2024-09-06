@@ -65,6 +65,15 @@ buildifier:
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
+.lockfile_mode_error: &lockfile_mode_error
+  # For testing lockfile support
+  skip_in_bazel_downstream_pipeline: "Lockfile depends on the bazel version"
+  build_flags:
+    - "--lockfile_mode=error"
+  test_flags:
+    - "--lockfile_mode=error"
+  coverage_flags:
+    - "--lockfile_mode=error"
 .coverage_targets_example_bzlmod: &coverage_targets_example_bzlmod
   coverage_targets: ["..."]
 .coverage_targets_example_bzlmod_build_file_generation: &coverage_targets_example_bzlmod_build_file_generation
@@ -230,12 +239,6 @@ tasks:
     name: "examples/bzlmod: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod
     platform: ubuntu2004
-    build_flags:
-      - "--lockfile_mode=update"
-    test_flags:
-      - "--lockfile_mode=update"
-    coverage_flags:
-      - "--lockfile_mode=update"
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
@@ -260,6 +263,20 @@ tasks:
     name: "examples/bzlmod: Windows"
     working_directory: examples/bzlmod
     platform: windows
+  integration_test_bzlmod_ubuntu_lockfile:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
+    <<: *lockfile_mode_error
+    name: "examples/bzlmod: Ubuntu with lockfile"
+    working_directory: examples/bzlmod
+    platform: ubuntu2004
+  integration_test_bzlmod_macos_lockfile:
+    <<: *reusable_build_test_all
+    <<: *coverage_targets_example_bzlmod
+    <<: *lockfile_mode_error
+    name: "examples/bzlmod: macOS with lockfile"
+    working_directory: examples/bzlmod
+    platform: macos
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
     <<: *minimum_supported_version
