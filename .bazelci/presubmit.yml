@@ -38,11 +38,18 @@ buildifier:
     - "..."
   test_flags:
     - "--test_tag_filters=-integration-test"
-.common_workspace_flags: &common_workspace_flags
+.common_workspace_flags_min_bazel: &common_workspace_flags_min_bazel
   test_flags:
     - "--noenable_bzlmod"
   build_flags:
     - "--noenable_bzlmod"
+.common_workspace_flags: &common_workspace_flags
+  test_flags:
+    - "--noenable_bzlmod"
+    - "--enable_workspace"
+  build_flags:
+    - "--noenable_bzlmod"
+    - "--enable_workspace"
 .common_bazelinbazel_config: &common_bazelinbazel_config
     build_flags:
       - "--build_tag_filters=integration-test"
@@ -84,7 +91,7 @@ buildifier:
     - "--test_tag_filters=-integration-test,-doc_check_test"
 tasks:
   gazelle_extension_min:
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     <<: *minimum_supported_version
     name: "Gazelle: workspace, minumum supported Bazel version"
     platform: ubuntu2004
@@ -108,7 +115,7 @@ tasks:
   ubuntu_min_workspace:
     <<: *minimum_supported_version
     <<: *reusable_config
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     name: "Default: Ubuntu, workspace, minimum Bazel"
     platform: ubuntu2004
   ubuntu_min_bzlmod:
@@ -187,7 +194,7 @@ tasks:
   integration_test_build_file_generation_ubuntu_minimum_supported_workspace:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     name: "examples/build_file_generation: Ubuntu, workspace, minimum Bazel"
     working_directory: examples/build_file_generation
     platform: ubuntu2004
@@ -325,7 +332,7 @@ tasks:
 
   integration_test_pip_parse_ubuntu_min_workspace:
     <<: *minimum_supported_version
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     <<: *reusable_build_test_all
     name: "examples/pip_parse: Ubuntu, workspace, minimum supporte Bazel version"
     working_directory: examples/pip_parse
@@ -359,7 +366,7 @@ tasks:
 
   integration_test_pip_parse_vendored_ubuntu_min_workspace:
     <<: *minimum_supported_version
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     <<: *reusable_build_test_all
     name: "examples/pip_parse_vendored: Ubuntu, workspace, minimum Bazel"
     working_directory: examples/pip_parse_vendored
@@ -538,7 +545,7 @@ tasks:
 
   integration_compile_pip_requirements_test_from_external_repo_ubuntu_min_workspace:
     <<: *minimum_supported_version
-    <<: *common_workspace_flags
+    <<: *common_workspace_flags_min_bazel
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu, workspace, minimum Bazel"
     working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004

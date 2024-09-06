@@ -18,8 +18,8 @@ load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS", rt_util = "util")
 load("//python:defs.bzl", "PyInfo")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility
-load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
 load("//tests/base_rules:util.bzl", pt_util = "util")
+load("//tests/support:py_info_subject.bzl", "py_info_subject")
 
 _tests = []
 

@@ -99,7 +99,7 @@ def _make_reconfig_rule(**kwargs):
             doc = """
 Value for the --extra_toolchains flag.
 
-NOTE: You'll likely have to also specify //tests/cc:all (or some CC toolchain)
+NOTE: You'll likely have to also specify //tests/support/cc_toolchains:all (or some CC toolchain)
 to make the RBE presubmits happy, which disable auto-detection of a CC
 toolchain.
 """,

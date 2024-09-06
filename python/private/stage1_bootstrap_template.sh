@@ -44,10 +44,10 @@ else
       echo "$RUNFILES_DIR"
       return 0
     elif [[ "${RUNFILES_MANIFEST_FILE:-}" = *".runfiles_manifest" ]]; then
-      echo "${RUNFILES_MANIFEST_FILE%%.runfiles_manifest}"
+      echo "${RUNFILES_MANIFEST_FILE%%.runfiles_manifest}.runfiles"
       return 0
     elif [[ "${RUNFILES_MANIFEST_FILE:-}" = *".runfiles/MANIFEST" ]]; then
-      echo "${RUNFILES_MANIFEST_FILE%%.runfiles/MANIFEST}"
+      echo "${RUNFILES_MANIFEST_FILE%%.runfiles/MANIFEST}.runfiles"
       return 0
     fi
 
@@ -57,7 +57,6 @@ else
     if [[ "$stub_filename" != /* ]]; then
       stub_filename="$PWD/$stub_filename"
     fi
-
     while true; do
       module_space="${stub_filename}.runfiles"
       if [[ -d "$module_space" ]]; then

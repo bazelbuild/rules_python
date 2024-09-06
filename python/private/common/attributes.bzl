@@ -16,7 +16,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "CcInfo")
 load("//python/private:enum.bzl", "enum")
-load("//python/private:flags.bzl", "PrecompileFlag")
+load("//python/private:flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":providers.bzl", "PyInfo")
@@ -85,7 +85,7 @@ PrecompileInvalidationModeAttr = enum(
 def _precompile_source_retention_get_effective_value(ctx):
     attr_value = ctx.attr.precompile_source_retention
     if attr_value == PrecompileSourceRetentionAttr.INHERIT:
-        attr_value = ctx.attr._precompile_source_retention_flag[BuildSettingInfo].value
+        attr_value = PrecompileSourceRetentionFlag.get_effective_value(ctx)
 
     if attr_value not in (
         PrecompileSourceRetentionAttr.KEEP_SOURCE,
@@ -278,9 +278,7 @@ attribute.
         ),
         "precompile": attr.string(
             doc = """
-Whether py source files should be precompiled.
-
-See also: {flag}`--precompile` flag, which can override this attribute in some cases.
+Whether py source files **for this target** should be precompiled.
 
 Values:
 
@@ -291,6 +289,15 @@ Values:
 * `disabled`: Don't compile Python source files at build time.
 * `if_generated_source`: Compile Python source files, but only if they're a
   generated file.
+
+:::{seealso}
+
+* The {flag}`--precompile` flag, which can override this attribute in some cases
+  and will affect all targets when building.
+* The {obj}`pyc_collection` attribute for transitively enabling precompiling on
+  a per-target basis.
+* The [Precompiling](precompiling) docs for a guide about using precompiling.
+:::
 """,
             default = PrecompileAttr.INHERIT,
             values = sorted(PrecompileAttr.__members__.values()),

@@ -23,7 +23,7 @@ load("//python:py_binary.bzl", "py_binary")
 load("//python:py_info.bzl", "PyInfo")
 load("//python:py_library.bzl", "py_library")
 load("//python:py_test.bzl", "py_test")
-load("//tests/base_rules:py_info_subject.bzl", "py_info_subject")
+load("//tests/support:py_info_subject.bzl", "py_info_subject")
 load(
     "//tests/support:support.bzl",
     "CC_TOOLCHAIN",
@@ -302,7 +302,6 @@ def _test_precompiler_action(name):
 _tests.append(_test_precompiler_action)
 
 def _test_precompiler_action_impl(env, target):
-    #env.expect.that_target(target).runfiles().contains_exactly([])
     action = env.expect.that_target(target).action_named("PyCompile")
     action.contains_flag_values([
         ("--optimize", "2"),

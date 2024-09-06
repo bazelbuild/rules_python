@@ -36,7 +36,7 @@ except for the case of `force_enabled` and `forced_disabled`.
 
 Values:
 
-* `auto`: Automatically decide the effective value based on environment,
+* `auto`: (default) Automatically decide the effective value based on environment,
   target platform, etc.
 * `enabled`: Compile Python source files at build time. Note that
   {bzl:obj}`--precompile_add_to_runfiles` affects how the compiled files are included into
@@ -65,11 +65,17 @@ attribute.
 
 Values:
 
+* `auto`: (default) Automatically decide the effective value based on environment,
+  target platform, etc.
 * `keep_source`: Include the original Python source.
 * `omit_source`: Don't include the orignal py source.
 * `omit_if_generated_source`: Keep the original source if it's a regular source
   file, but omit it if it's a generated file.
+
 :::{versionadded} 0.33.0
+:::
+:::{versionadded} 0.36.0
+The `auto` value
 :::
 ::::
 

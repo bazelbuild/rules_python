@@ -16,9 +16,8 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching", "subjects")
-load("//tests:cc_info_subject.bzl", "cc_info_subject")
-load("//tests:default_info_subject.bzl", "default_info_subject")
-load("//tests:py_cc_toolchain_info_subject.bzl", "PyCcToolchainInfoSubject")
+load("//tests/support:cc_info_subject.bzl", "cc_info_subject")
+load("//tests/support:py_cc_toolchain_info_subject.bzl", "PyCcToolchainInfoSubject")
 
 _tests = []
 
@@ -26,10 +25,10 @@ def _py_cc_toolchain_test(name):
     analysis_test(
         name = name,
         impl = _py_cc_toolchain_test_impl,
-        target = "//tests/cc:fake_py_cc_toolchain_impl",
+        target = "//tests/support/cc_toolchains:fake_py_cc_toolchain_impl",
         attrs = {
             "header": attr.label(
-                default = "//tests/cc:fake_header.h",
+                default = "//tests/support/cc_toolchains:fake_header.h",
                 allow_single_file = True,
             ),
         },
@@ -63,15 +62,9 @@ def _py_cc_toolchain_test_impl(env, target):
         matching.str_matches("*/fake_include"),
     ])
 
-    # TODO: Once subjects.default_info is available, do
-    # default_info = headers_providers.get("DefaultInfo", factory=subjects.default_info)
-    # https://github.com/bazelbuild/rules_python/issues/1297
-    default_info = default_info_subject(
-        headers_providers.get("DefaultInfo", factory = lambda v, meta: v),
-        meta = env.expect.meta.derive(expr = "default_info"),
-    )
+    default_info = headers_providers.get("DefaultInfo", factory = subjects.default_info)
     default_info.runfiles().contains_predicate(
-        matching.str_matches("*/cc/data.txt"),
+        matching.str_matches("*/cc_toolchains/data.txt"),
     )
 
     libs_providers = toolchain.libs().providers_map()
@@ -82,7 +75,7 @@ def _py_cc_toolchain_test_impl(env, target):
     cc_info.linking_context().linker_inputs().has_size(2)
 
     default_info = libs_providers.get("DefaultInfo", factory = subjects.default_info)
-    default_info.runfiles().contains("{workspace}/tests/cc/libdata.txt")
+    default_info.runfiles().contains("{workspace}/tests/support/cc_toolchains/libdata.txt")
     default_info.runfiles().contains_predicate(
         matching.str_matches("/libpython3."),
     )

@@ -84,10 +84,10 @@ def is_standalone_interpreter(rctx, python_interpreter_path, *, logger = None):
     Args:
         rctx: {type}`repository_ctx` The repository rule's context object.
         python_interpreter_path: {type}`path` A path representing the interpreter.
-        logger: {type}`struct` Optional logger to use for operations.
+        logger: Optional logger to use for operations.
 
     Returns:
-        {type}`bool`: Whether or not the target is from a rules_python generated toolchain.
+        {type}`bool` Whether or not the target is from a rules_python generated toolchain.
     """
 
     # Only update the location when using a hermetic toolchain.
@@ -564,8 +564,6 @@ The default value of `1` is kept for backwards compatibility, it will be set to
 def python_register_toolchains(
         name,
         python_version,
-        distutils = None,
-        distutils_content = None,
         register_toolchains = True,
         register_coverage_tool = False,
         set_python_version_constraint = False,
@@ -573,7 +571,7 @@ def python_register_toolchains(
         **kwargs):
     """Convenience macro for users which does typical setup in `WORKSPACE`.
 
-    - Create a repository for each built-in platform like "python_linux_amd64" -
+    - Create a repository for each built-in platform like "python_3_8_linux_amd64" -
       this repository is lazily fetched when Python is needed for that platform.
     - Create a repository exposing toolchains for each platform like
       "python_platforms".
@@ -587,19 +585,17 @@ def python_register_toolchains(
     root module one can see the docs for the {rule}`python` extension.
 
     Args:
-        name: {type}`str` base name for all created repos, like "python38".
+        name: {type}`str` base name for all created repos, e.g. "python_3_8".
         python_version: {type}`str` the Python version.
-        distutils: {type}`Label` see the {attr}`python_repository.distutils`.
-        distutils_content: {type}`str` see the {attr}`python_repository.distutils_content`.
         register_toolchains: {type}`bool` Whether or not to register the downloaded toolchains.
         register_coverage_tool: {type}`bool` Whether or not to register the
             downloaded coverage tool to the toolchains.
-        set_python_version_constraint: {type}`bool` When set to true,
-            target_compatible_with for the toolchains will include a version
+        set_python_version_constraint: {type}`bool` When set to `True`,
+            `target_compatible_with` for the toolchains will include a version
             constraint.
-        tool_versions: {type}`dict[str, dict[str, dict[str]]]` contains a
-            mapping of version with SHASUM and platform info. If not supplied,
-            the defaults in `python/versions.bzl` will be used.
+        tool_versions: {type}`dict` contains a mapping of version with SHASUM
+            and platform info. If not supplied, the defaults in
+            python/versions.bzl will be used.
         **kwargs: passed to each {obj}`python_repository` call.
     """
 
@@ -610,6 +606,7 @@ def python_register_toolchains(
         register_toolchains = False
 
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
+    tool_versions = tool_versions or TOOL_VERSIONS
 
     python_version = full_version(python_version)
 
@@ -668,8 +665,6 @@ def python_register_toolchains(
             python_version = python_version,
             release_filename = release_filename,
             urls = urls,
-            distutils = distutils,
-            distutils_content = distutils_content,
             strip_prefix = strip_prefix,
             coverage_tool = coverage_tool,
             # Will be one of
@@ -725,8 +720,8 @@ def python_register_multi_toolchains(
     """Convenience macro for registering multiple Python toolchains.
 
     Args:
-        name: {type}`str` base name for each name in python_register_toolchains call.
-        python_versions: {type}`list[str]` the Python version.
+        name: {type}`str` base name for each name in {obj}`python_register_toolchains` call.
+        python_versions: {type}`list[str]` the Python versions.
         default_version: {type}`str` the default Python version. If not set,
             the first version in python_versions is used.
         **kwargs: passed to each {obj}`python_register_toolchains` call.
