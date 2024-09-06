@@ -18,7 +18,6 @@
 load(
     "//python/private:python_repositories.bzl",
     _STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER_FILENAME",
-    _http_archive = "http_archive",
     _is_standalone_interpreter = "is_standalone_interpreter",
     _py_repositories = "py_repositories",
     _python_register_multi_toolchains = "python_register_multi_toolchains",
@@ -30,9 +29,11 @@ py_repositories = _py_repositories
 python_register_multi_toolchains = _python_register_multi_toolchains
 python_register_toolchains = _python_register_toolchains
 
+# Useful for documentation, but is not intended for public use - the python
+# module extension will be the main interface in the future.
+python_repository = _python_repository
+
 # These symbols are of questionable public visibility. They were probably
 # not intended to be actually public.
 STANDALONE_INTERPRETER_FILENAME = _STANDALONE_INTERPRETER_FILENAME
-http_archive = _http_archive
 is_standalone_interpreter = _is_standalone_interpreter
-python_repository = _python_repository
