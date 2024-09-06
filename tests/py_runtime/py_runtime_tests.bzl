@@ -530,6 +530,9 @@ def _test_interpreter_version_info_parses_values_to_struct_impl(env, target):
 _tests.append(_test_interpreter_version_info_parses_values_to_struct)
 
 def _test_version_info_from_flag(name):
+    if not config.enable_pystar:
+        rt_util.skip_test(name)
+        return
     py_runtime(
         name = name + "_subject",
         interpreter_version_info = None,
