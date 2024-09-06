@@ -665,10 +665,6 @@ def python_register_toolchains(
             urls = urls,
             strip_prefix = strip_prefix,
             coverage_tool = coverage_tool,
-            # Will be one of
-            # * auth_patterns
-            # * ignore_root_user_error
-            # * netrc
             **kwargs
         )
         if register_toolchains:
