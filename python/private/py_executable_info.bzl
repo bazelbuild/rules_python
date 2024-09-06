@@ -10,6 +10,11 @@ This provider is for executable-specific information (e.g. tests and binaries).
 :::
 """,
     fields = {
+        "build_data_file": """
+:type: None | File
+
+A symlink to build_data.txt if stamping is enabled, otherwise None.
+""",
         "interpreter_path": """
 :type: None | str
 
