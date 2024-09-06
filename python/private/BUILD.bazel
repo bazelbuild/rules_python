@@ -214,6 +214,7 @@ bzl_library(
     srcs = ["py_exec_tools_toolchain.bzl"],
     deps = [
         ":py_exec_tools_info_bzl",
+        ":sentinel_bzl",
         ":toolchain_types_bzl",
         "//python/private/common:providers_bzl",
         "@bazel_skylib//lib:paths",

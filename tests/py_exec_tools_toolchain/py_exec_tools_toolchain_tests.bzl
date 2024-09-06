@@ -15,7 +15,7 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
+load("//python/private:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
