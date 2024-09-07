@@ -643,7 +643,7 @@ def python_register_toolchains(
             continue
 
         loaded_platforms.append(platform)
-        (release_filename, urls, strip_prefix, patches) = get_release_info(platform, python_version, base_url, tool_versions)
+        (release_filename, urls, strip_prefix, patches, patch_strip) = get_release_info(platform, python_version, base_url, tool_versions)
 
         # allow passing in a tool version
         coverage_tool = None
@@ -669,6 +669,7 @@ def python_register_toolchains(
             ),
             sha256 = sha256,
             patches = patches,
+            patch_strip = patch_strip,
             platform = platform,
             python_version = python_version,
             release_filename = release_filename,

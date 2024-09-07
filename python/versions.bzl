@@ -636,7 +636,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         tool_versions: A dict listing the interpreter versions, their SHAs and URL
 
     Returns:
-        A tuple of (filename, url, and archive strip prefix)
+        A tuple of (filename, url, archive strip prefix, patches, patch_strip)
     """
 
     url = tool_versions[python_version]["url"]
@@ -674,7 +674,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         else:
             patches = []
 
-    return (release_filename, rendered_urls, strip_prefix, patches)
+    return (release_filename, rendered_urls, strip_prefix, patches, 1)
 
 def print_toolchains_checksums(name):
     native.genrule(
