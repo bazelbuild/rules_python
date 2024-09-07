@@ -28,6 +28,9 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
   {obj}`config_common.FeatureFlagInfo`.
+* (toolchains) {obj}`py_cc_toolchain.libs` and {obj}`PyCcToolchainInfo.libs` is
+  optional. This is to support situations where only the Python headers are
+  available.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the

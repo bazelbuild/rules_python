@@ -16,15 +16,16 @@
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching", "subjects")
+load("//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
 load("//tests/support:cc_info_subject.bzl", "cc_info_subject")
 load("//tests/support:py_cc_toolchain_info_subject.bzl", "PyCcToolchainInfoSubject")
 
 _tests = []
 
-def _py_cc_toolchain_test(name):
+def _test_py_cc_toolchain(name):
     analysis_test(
         name = name,
-        impl = _py_cc_toolchain_test_impl,
+        impl = _test_py_cc_toolchain_impl,
         target = "//tests/support/cc_toolchains:fake_py_cc_toolchain_impl",
         attrs = {
             "header": attr.label(
@@ -34,7 +35,7 @@ def _py_cc_toolchain_test(name):
         },
     )
 
-def _py_cc_toolchain_test_impl(env, target):
+def _test_py_cc_toolchain_impl(env, target):
     env.expect.that_target(target).has_provider(platform_common.ToolchainInfo)
 
     toolchain = PyCcToolchainInfoSubject.new(
@@ -80,7 +81,26 @@ def _py_cc_toolchain_test_impl(env, target):
         matching.str_matches("/libpython3."),
     )
 
-_tests.append(_py_cc_toolchain_test)
+_tests.append(_test_py_cc_toolchain)
+
+def _test_libs_optional(name):
+    py_cc_toolchain(
+        name = name + "_subject",
+        libs = None,
+        headers = "//tests/support/cc_toolchains:fake_headers",
+        python_version = "4.5",
+    )
+    analysis_test(
+        name = name,
+        target = name + "_subject",
+        impl = _test_libs_optional_impl,
+    )
+
+def _test_libs_optional_impl(env, target):
+    libs = target[platform_common.ToolchainInfo].py_cc_toolchain.libs
+    env.expect.that_bool(libs == None).equals(True)
+
+_tests.append(_test_libs_optional)
 
 def py_cc_toolchain_test_suite(name):
     test_suite(
