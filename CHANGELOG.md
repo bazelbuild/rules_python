@@ -63,8 +63,13 @@ A brief description of the categories of changes:
   have it installed.
 * (docs) Automatically generated documentation for {bzl:obj}`python_register_toolchains`
   and related symbols.
-* (toolchains) Added {attr}`python_repository.patch_strip` attribute for allowing values
-  that are other than `1`, which was hard-coded up until now.
+* (toolchains) Added {attr}`python_repository.patch_strip` attribute for
+  allowing values that are other than `1`, which has been hard-coded up until
+  now. If you are relying on the undocumented `patches` support in
+  `TOOL_VERSIONS` for registering patched toolchains please consider setting
+  the `patch_strip` explicitly to `1` if you depend on this value - in the
+  future the value may change to default to `0`.
+
 
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
