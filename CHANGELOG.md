@@ -48,6 +48,8 @@ A brief description of the categories of changes:
   {obj}`--bootstrap_impl=script`. This fixes invocations using non-sandboxed
   test execution with `--enable_runfiles=false --build_runfile_manifests=true`.
   ([#2186](https://github.com/bazelbuild/rules_python/issues/2186)).
+* (py_wheel) Fix incorrectly generated `Required-Dist` when specifying requirements with markers
+  in extra_requires in py_wheel rule.
 
 
 ### Added
