@@ -63,6 +63,8 @@ A brief description of the categories of changes:
   have it installed.
 * (docs) Automatically generated documentation for {bzl:obj}`python_register_toolchains`
   and related symbols.
+* (toolchains) Added {attr}`python_repository.patch_strip` attribute for allowing values
+  that are other than `1`, which was hard-coded up until now.
 
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from

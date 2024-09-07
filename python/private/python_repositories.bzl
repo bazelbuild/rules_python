@@ -179,7 +179,7 @@ def _python_repository_impl(rctx):
     if patches:
         for patch in patches:
             # Should take the strip as an attr, but this is fine for the moment
-            rctx.patch(patch, strip = 1)
+            rctx.patch(patch, strip = rctx.attr.patch_strip)
 
     # Write distutils.cfg to the Python installation.
     if "windows" in platform:
@@ -450,6 +450,7 @@ py_exec_tools_toolchain(
         "ignore_root_user_error": rctx.attr.ignore_root_user_error,
         "name": rctx.attr.name,
         "netrc": rctx.attr.netrc,
+        "patch_strip": rctx.attr.patch_strip,
         "patches": rctx.attr.patches,
         "platform": platform,
         "python_version": python_version,
@@ -514,6 +515,21 @@ For more information see the official bazel docs
         ),
         "netrc": attr.string(
             doc = ".netrc file to use for authentication; mirrors the eponymous attribute from http_archive",
+        ),
+        "patch_strip": attr.int(
+            doc = """
+Same as the --strip argument of Unix patch.
+
+:::{note}
+In the future the default value will be set to `0`, to mimic the wellk known
+function defaults (e.g. `single_version_override` for `MODULE.bazel` files.
+:::
+
+:::{versionadded} 0.36.0
+:::
+""",
+            default = 1,
+            mandatory = False,
         ),
         "patches": attr.label_list(
             doc = "A list of patch files to apply to the unpacked interpreter",
