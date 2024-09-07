@@ -333,6 +333,27 @@ py_wheel(
     version = "0.0.1",
 )
 
+py_wheel(
+    name = "extra_requires",
+    distribution = "extra_requires",
+    extra_requires = {"example": [
+        "pyyaml>=6.0.0,!=6.0.1",
+        'toml; (python_version == "3.11" or python_version == "3.12") and python_version != "3.8"',
+        'wheel; python_version == "3.11" or python_version == "3.12" ',
+    ]},
+    python_tag = "py3",
+    # py_wheel can use text files to specify their requirements. This
+    # can be convenient for users of `compile_pip_requirements` who have
+    # granular `requirements.in` files per package.
+    requires = [
+        "tomli>=2.0.0",
+        "starlark",
+        'pytest; python_version != "3.8"',
+    ],
+    version = "0.0.1",
+    deps = [":example_pkg"],
+)
+
 py_test(
     name = "wheel_test",
     srcs = ["wheel_test.py"],
@@ -341,6 +362,7 @@ py_test(
         ":custom_package_root_multi_prefix",
         ":custom_package_root_multi_prefix_reverse_order",
         ":customized",
+        ":extra_requires",
         ":filename_escaping",
         ":minimal_data_files",
         ":minimal_with_py_library",
