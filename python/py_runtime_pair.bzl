@@ -25,6 +25,8 @@ _py_runtime_pair = _starlark_impl if IS_BAZEL_6_OR_HIGHER else _bazel_tools_impl
 def py_runtime_pair(name, py2_runtime = None, py3_runtime = None, **attrs):
     """A toolchain rule for Python.
 
+    This is a macro around the underlying {rule}`py_runtime_pair` rule.
+
     This used to wrap up to two Python runtimes, one for Python 2 and one for Python 3.
     However, Python 2 is no longer supported, so it now only wraps a single Python 3
     runtime.
