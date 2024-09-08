@@ -184,8 +184,16 @@ def parse_modules(module_ctx):
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
     return struct(
-        toolchains = toolchains,
+        toolchains = [
+            struct(
+                python_version = t.python_version,
+                name = t.name,
+                register_coverage_tool = t.register_coverage_tool,
+            )
+            for t in toolchains
+        ],
         debug_info = debug_info,
+        default_python_version = toolchains[-1].python_version,
         defaults = {
             "ignore_root_user_error": ignore_root_user_error,
         },
@@ -207,7 +215,7 @@ def _python_impl(module_ctx):
     hub_repo(
         name = "pythons_hub",
         # Last toolchain is default
-        default_python_version = py.toolchains[-1].python_version,
+        default_python_version = py.default_python_version,
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)
