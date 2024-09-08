@@ -130,12 +130,6 @@ def _python_impl(module_ctx):
                     register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     module = struct(name = mod.name, is_root = mod.is_root),
                 )
-                python_register_toolchains(
-                    name = toolchain_info.name,
-                    python_version = toolchain_info.python_version,
-                    register_coverage_tool = toolchain_info.register_coverage_tool,
-                    ignore_root_user_error = ignore_root_user_error,
-                )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
                     debug_info["toolchains_registered"].append({
@@ -174,6 +168,14 @@ def _python_impl(module_ctx):
 
     if len(toolchains) > _MAX_NUM_TOOLCHAINS:
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
+
+    for toolchain_info in toolchains:
+        python_register_toolchains(
+            name = toolchain_info.name,
+            python_version = toolchain_info.python_version,
+            register_coverage_tool = toolchain_info.register_coverage_tool,
+            ignore_root_user_error = ignore_root_user_error,
+        )
 
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
