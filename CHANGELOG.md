@@ -32,6 +32,9 @@ A brief description of the categories of changes:
   the {obj}`--python_version` flag will determine the value. This allows
   specifying the build-time Python version for the
   {obj}`runtime_env_toolchains`.
+* (toolchains) {obj}`py_cc_toolchain.libs` and {obj}`PyCcToolchainInfo.libs` is
+  optional. This is to support situations where only the Python headers are
+  available.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the
@@ -52,6 +55,8 @@ A brief description of the categories of changes:
   {obj}`--bootstrap_impl=script`. This fixes invocations using non-sandboxed
   test execution with `--enable_runfiles=false --build_runfile_manifests=true`.
   ([#2186](https://github.com/bazelbuild/rules_python/issues/2186)).
+* (py_wheel) Fix incorrectly generated `Required-Dist` when specifying requirements with markers
+  in extra_requires in py_wheel rule.
 
 
 ### Added

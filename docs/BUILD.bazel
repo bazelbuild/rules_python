@@ -72,6 +72,8 @@ sphinx_docs(
     deps = [
         ":bzl_api_docs",
         ":py_api_srcs",
+        ":py_cc_toolchain",
+        ":py_runtime_pair",
         "//sphinxdocs/docs:docs_lib",
     ],
 )
@@ -123,8 +125,7 @@ sphinx_stardoc(
 sphinx_stardoc(
     name = "py_runtime_pair",
     src = "//python/private:py_runtime_pair_rule_bzl",
-    prefix = "api/rules_python",
-    public_load_path = "//python:py_runtime_pair.bzl",
+    prefix = "api/rules_python/",
     tags = ["docs"],
     target_compatible_with = _TARGET_COMPATIBLE_WITH,
 )

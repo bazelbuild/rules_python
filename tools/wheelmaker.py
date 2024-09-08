@@ -537,9 +537,34 @@ def main() -> None:
 
         # Search for any `Requires-Dist` entries that refer to other files and
         # expand them.
+
+        def get_new_requirement_line(reqs_text, extra):
+            req = Requirement(reqs_text.strip())
+            if req.marker:
+                if extra:
+                    return f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
+                else:
+                    return f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
+            else:
+                return f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
+
         for meta_line in metadata.splitlines():
-            if not meta_line.startswith("Requires-Dist: @"):
+            if not meta_line.startswith("Requires-Dist: "):
                 continue
+
+            if not meta_line[len("Requires-Dist: ") :].startswith("@"):
+                # This is a normal requirement.
+                package, _, extra = meta_line[len("Requires-Dist: ") :].rpartition(";")
+                if not package:
+                    # This is when the package requirement does not have markers.
+                    continue
+                extra = extra.strip()
+                metadata = metadata.replace(
+                    meta_line, get_new_requirement_line(package, extra)
+                )
+                continue
+
+            # This is a requirement that refers to a file.
             file, _, extra = meta_line[len("Requires-Dist: @") :].partition(";")
             extra = extra.strip()
 
@@ -552,20 +577,7 @@ def main() -> None:
                 # Strip any comments
                 reqs_text, _, _ = reqs_text.partition("#")
 
-                req = Requirement(reqs_text.strip())
-                if req.marker:
-                    if extra:
-                        reqs.append(
-                            f"Requires-Dist: {req.name}{req.specifier}; ({req.marker}) and {extra}"
-                        )
-                    else:
-                        reqs.append(
-                            f"Requires-Dist: {req.name}{req.specifier}; {req.marker}"
-                        )
-                else:
-                    reqs.append(
-                        f"Requires-Dist: {req.name}{req.specifier}; {extra}".strip(" ;")
-                    )
+                reqs.append(get_new_requirement_line(reqs_text, extra))
 
             metadata = metadata.replace(meta_line, "\n".join(reqs))
 
