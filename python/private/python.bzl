@@ -124,16 +124,17 @@ def _python_impl(module_ctx):
                     )
                 toolchain_info = None
             else:
-                python_register_toolchains(
-                    name = toolchain_name,
-                    python_version = toolchain_attr.python_version,
-                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
-                    ignore_root_user_error = ignore_root_user_error,
-                )
                 toolchain_info = struct(
                     python_version = toolchain_attr.python_version,
                     name = toolchain_name,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     module = struct(name = mod.name, is_root = mod.is_root),
+                )
+                python_register_toolchains(
+                    name = toolchain_info.name,
+                    python_version = toolchain_info.python_version,
+                    register_coverage_tool = toolchain_info.register_coverage_tool,
+                    ignore_root_user_error = ignore_root_user_error,
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
