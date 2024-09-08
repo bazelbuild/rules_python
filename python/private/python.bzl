@@ -28,21 +28,6 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
 
-def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
-    """Calls python_register_toolchains and returns a struct used to collect the toolchains.
-    """
-    python_register_toolchains(
-        name = name,
-        python_version = toolchain_attr.python_version,
-        register_coverage_tool = toolchain_attr.configure_coverage_tool,
-        ignore_root_user_error = ignore_root_user_error,
-    )
-    return struct(
-        python_version = toolchain_attr.python_version,
-        name = name,
-        module = struct(name = module.name, is_root = module.is_root),
-    )
-
 def _python_impl(module_ctx):
     if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
         debug_info = {
@@ -139,11 +124,16 @@ def _python_impl(module_ctx):
                     )
                 toolchain_info = None
             else:
-                toolchain_info = _python_register_toolchains(
-                    toolchain_name,
-                    toolchain_attr,
-                    module = mod,
+                python_register_toolchains(
+                    name = toolchain_name,
+                    python_version = toolchain_attr.python_version,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
                     ignore_root_user_error = ignore_root_user_error,
+                )
+                toolchain_info = struct(
+                    python_version = toolchain_attr.python_version,
+                    name = toolchain_name,
+                    module = struct(name = mod.name, is_root = mod.is_root),
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
