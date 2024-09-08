@@ -521,7 +521,7 @@ For more information see the official bazel docs
 Same as the --strip argument of Unix patch.
 
 :::{note}
-In the future the default value will be set to `0`, to mimic the wellk known
+In the future the default value will be set to `0`, to mimic the well known
 function defaults (e.g. `single_version_override` for `MODULE.bazel` files.
 :::
 
