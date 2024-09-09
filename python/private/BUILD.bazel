@@ -79,7 +79,18 @@ bzl_library(
     srcs = ["config_settings.bzl"],
     deps = [
         "//python:versions_bzl",
+        ":bzlmod_enabled_bzl",
+        ":python_version_flag_bzl",
         "@bazel_skylib//lib:selects",
+    ],
+)
+
+bzl_library(
+    name = "python_version_flag_bzl",
+    srcs = ["python_version_flag.bzl"],
+    deps = [
+        "//python:versions_bzl",
+        "@bazel_skylib//rules:common_settings",
     ],
 )
 

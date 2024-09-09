@@ -14,11 +14,11 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
-load("//python/private:full_version.bzl", "full_version")
-load(
-    "//python/private:toolchains_repo.bzl",
-    "python_toolchain_build_file_content",
-)
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
+load(":full_version.bzl", "full_version")
+load(":python_version_flag.bzl", "flag_values")
+load(":text_util.bzl", "render")
+load(":toolchains_repo.bzl", "python_toolchain_build_file_content")
 
 def _have_same_length(*lists):
     if not lists:
@@ -28,10 +28,23 @@ def _have_same_length(*lists):
 _HUB_BUILD_FILE_TEMPLATE = """\
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_suite")
+load("@@{rules_python}//python/private:config_settings.bzl", "construct_config_settings")
+load("//:version_flag_values.bzl", "VERSION_FLAG_VALUES")
+
+construct_config_settings(
+    name = "construct_config_settings",
+    version_flag_values = VERSION_FLAG_VALUES,
+)
 
 bzl_library(
     name = "interpreters_bzl",
     srcs = ["interpreters.bzl"],
+    visibility = ["@rules_python//:__subpackages__"],
+)
+
+bzl_library(
+    name = "version_flag_values_bzl",
+    srcs = ["version_flag_values.bzl"],
     visibility = ["@rules_python//:__subpackages__"],
 )
 
@@ -43,7 +56,8 @@ def _hub_build_file_content(
         python_versions,
         set_python_version_constraints,
         user_repository_names,
-        workspace_location):
+        workspace_location,
+        default_python_version):
     """This macro iterates over each of the lists and returns the toolchain content.
 
     python_toolchain_build_file_content is called to generate each of the toolchain
@@ -70,6 +84,7 @@ def _hub_build_file_content(
     return _HUB_BUILD_FILE_TEMPLATE.format(
         toolchains = toolchains,
         rules_python = workspace_location.workspace_name,
+        default_python_version = default_python_version,
     )
 
 _interpreters_bzl_template = """
@@ -94,6 +109,7 @@ def _hub_repo_impl(rctx):
             rctx.attr.toolchain_set_python_version_constraints,
             rctx.attr.toolchain_user_repository_names,
             rctx.attr._rules_python_workspace,
+            rctx.attr.default_python_version,
         ),
         executable = False,
     )
@@ -104,6 +120,12 @@ def _hub_repo_impl(rctx):
         _line_for_hub_template.format(name = name)
         for name in rctx.attr.toolchain_user_repository_names
     ])
+
+    rctx.file(
+        "version_flag_values.bzl",
+        "VERSION_FLAG_VALUES = " + render.dict(flag_values(TOOL_VERSIONS.keys(), MINOR_MAPPING)),
+        executable = False,
+    )
 
     rctx.file(
         "interpreters.bzl",

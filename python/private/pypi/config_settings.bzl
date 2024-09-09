@@ -111,7 +111,7 @@ def config_settings(
         is_python = "is_python_{}".format(python_version or "version_unset")
         native.alias(
             name = is_python,
-            actual = Label("//python/config_settings:" + is_python),
+            actual = Label("@pythons_hub//:" + is_python),
             visibility = visibility,
         )
 

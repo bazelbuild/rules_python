@@ -16,60 +16,11 @@
 """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
+load(":python_version_flag.bzl", "python_version_flag")
 
 _PYTHON_VERSION_FLAG = str(Label("//python/config_settings:python_version"))
 
-def _ver_key(s):
-    major, _, s = s.partition(".")
-    minor, _, s = s.partition(".")
-    micro, _, s = s.partition(".")
-    return (int(major), int(minor), int(micro))
-
-def _flag_values(python_versions):
-    """Construct a map of python_version to a list of toolchain values.
-
-    This mapping maps the concept of a config setting to a list of compatible toolchain versions.
-    For using this in the code, the VERSION_FLAG_VALUES should be used instead.
-
-    Args:
-        python_versions: list of strings; all X.Y.Z python versions
-
-    Returns:
-        A `map[str, list[str]]`. Each key is a python_version flag value. Each value
-        is a list of the python_version flag values that should match when for the
-        `key`. For example:
-        ```
-         "3.8" -> ["3.8", "3.8.1", "3.8.2", ..., "3.8.19"]  # All 3.8 versions
-         "3.8.2" -> ["3.8.2"]  # Only 3.8.2
-         "3.8.19" -> ["3.8.19", "3.8"]  # The latest version should also match 3.8 so
-             as when the `3.8` toolchain is used we just use the latest `3.8` toolchain.
-             this makes the `select("is_python_3.8.19")` work no matter how the user
-             specifies the latest python version to use.
-        ```
-    """
-    ret = {}
-
-    for micro_version in sorted(python_versions, key = _ver_key):
-        minor_version, _, _ = micro_version.rpartition(".")
-
-        # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
-        # It's private because matching the concept of e.g. "3.8" value is done
-        # using the `is_python_X.Y` config setting group, which is aware of the
-        # minor versions that could match instead.
-        ret.setdefault(minor_version, [minor_version]).append(micro_version)
-
-        # Ensure that is_python_3.9.8 is matched if python_version is set
-        # to 3.9 if MINOR_MAPPING points to 3.9.8
-        default_micro_version = MINOR_MAPPING[minor_version]
-        ret[micro_version] = [micro_version, minor_version] if default_micro_version == micro_version else [micro_version]
-
-    return ret
-
-VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
-
-def is_python_config_setting(name, *, python_version, reuse_conditions = None, **kwargs):
+def is_python_config_setting(name, *, python_version, reuse_conditions = None, version_flag_values = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.
 
     This function is mainly intended for internal use within the `whl_library` and `pip_parse`
@@ -94,15 +45,19 @@ def is_python_config_setting(name, *, python_version, reuse_conditions = None, *
             reuse config_setting targets instead of creating them from scratch. This
             is useful when using is_python_config_setting multiple times in the
             same package with the same `major.minor` python versions.
+        version_flag_values: A dict for using the version flag values.
         **kwargs: extra kwargs passed to the `config_setting`.
     """
     if python_version not in name:
         fail("The name '{}' must have the python version '{}' in it".format(name, python_version))
 
-    if python_version not in VERSION_FLAG_VALUES:
-        fail("The 'python_version' must be known to 'rules_python', choose from the values: {}".format(VERSION_FLAG_VALUES.keys()))
+    if python_version not in version_flag_values:
+        fail("The 'python_version' must be known to 'rules_python', got '{}', please choose from the values: {}".format(
+            python_version,
+            version_flag_values.keys(),
+        ))
 
-    python_versions = VERSION_FLAG_VALUES[python_version]
+    python_versions = version_flag_values[python_version]
     extra_flag_values = kwargs.pop("flag_values", {})
     if _PYTHON_VERSION_FLAG in extra_flag_values:
         fail("Cannot set '{}' in the flag values".format(_PYTHON_VERSION_FLAG))
@@ -125,7 +80,7 @@ def is_python_config_setting(name, *, python_version, reuse_conditions = None, *
     }
     match_any = list(create_config_settings.keys())
     for version, condition in reuse_conditions.items():
-        if len(VERSION_FLAG_VALUES[version]) == 1:
+        if len(version_flag_values[version]) == 1:
             match_any.append(condition)
             continue
 
@@ -161,35 +116,32 @@ def is_python_config_setting(name, *, python_version, reuse_conditions = None, *
         visibility = kwargs.get("visibility", []),
     )
 
-def construct_config_settings(name = None):  # buildifier: disable=function-docstring
+def construct_config_settings(name = None, version_flag_values = None):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.
 
     This mainly includes the targets that are used in the toolchain and pip hub
     repositories that only match on the 'python_version' flag values.
 
     Args:
-        name(str): A dummy name value that is no-op for now.
+        name: {type}`str` A dummy name value that is no-op for now.
+        version_flag_values: {type}`dict[str, str]` the version flag values
     """
-    _python_version_flag(
+    if not version_flag_values:
+        native.alias(
+            name = "python_version",
+            actual = "@pythons_hub//:python_version",
+            visibility = ["//visibility:public"],
+        )
+        return
+
+    python_version_flag(
         name = "python_version",
-        # TODO: The default here should somehow match the MODULE config. Until
-        # then, use the empty string to indicate an unknown version. This
-        # also prevents version-unaware targets from inadvertently matching
-        # a select condition when they shouldn't.
         build_setting_default = "",
-        values = [""] + VERSION_FLAG_VALUES.keys(),
+        values = [""] + version_flag_values.keys(),
         visibility = ["//visibility:public"],
     )
 
-    native.config_setting(
-        name = "is_python_version_unset",
-        flag_values = {
-            Label("//python/config_settings:python_version"): "",
-        },
-        visibility = ["//visibility:public"],
-    )
-
-    for version, matching_versions in VERSION_FLAG_VALUES.items():
+    for version, matching_versions in version_flag_values.items():
         is_python_config_setting(
             name = "is_python_{}".format(version),
             python_version = version,
@@ -198,37 +150,14 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
                 for v in matching_versions
                 if v != version
             },
+            version_flag_values = version_flag_values,
             visibility = ["//visibility:public"],
         )
 
-def _python_version_flag_impl(ctx):
-    value = ctx.build_setting_value
-    if value not in ctx.attr.values:
-        fail((
-            "Invalid --python_version value: {actual}\nAllowed values {allowed}"
-        ).format(
-            actual = value,
-            allowed = ", ".join(sorted(ctx.attr.values)),
-        ))
-
-    return [
-        # BuildSettingInfo is the original provider returned, so continue to
-        # return it for compatibility
-        BuildSettingInfo(value = value),
-        # FeatureFlagInfo is returned so that config_setting respects the value
-        # as returned by this rule instead of as originally seen on the command
-        # line.
-        # It is also for Google compatibility, which expects the FeatureFlagInfo
-        # provider.
-        config_common.FeatureFlagInfo(value = value),
-    ]
-
-_python_version_flag = rule(
-    implementation = _python_version_flag_impl,
-    build_setting = config.string(flag = True),
-    attrs = {
-        "values": attr.string_list(
-            doc = "Allowed values.",
-        ),
-    },
-)
+    native.config_setting(
+        name = "is_python_version_unset",
+        flag_values = {
+            Label("//python/config_settings:python_version"): "",
+        },
+        visibility = ["//visibility:public"],
+    )
