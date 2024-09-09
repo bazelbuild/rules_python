@@ -34,7 +34,7 @@ from sphinx.util import docutils as sphinx_docutils
 from sphinx.util import inspect, logging
 from sphinx.util import nodes as sphinx_nodes
 from sphinx.util import typing as sphinx_typing
-from typing_extensions import override
+from typing_extensions import override, TypeAlias
 
 _logger = logging.getLogger(__name__)
 _LOG_PREFIX = f"[{_logger.name}] "
@@ -46,10 +46,10 @@ _INDEX_SUBTYPE_SUB_ENTRY = 2
 _T = TypeVar("_T")
 
 # See https://www.sphinx-doc.org/en/master/extdev/domainapi.html#sphinx.domains.Domain.get_objects
-_GetObjectsTuple: typing.TypeAlias = tuple[str, str, str, str, str, int]
+_GetObjectsTuple: TypeAlias = tuple[str, str, str, str, str, int]
 
 # See SphinxRole.run definition; the docs for role classes are pretty sparse.
-_RoleRunResult: typing.TypeAlias = tuple[
+_RoleRunResult: TypeAlias = tuple[
     list[docutils_nodes.Node], list[docutils_nodes.system_message]
 ]
 
@@ -126,9 +126,9 @@ def _index_node_tuple(
     entry_type: str,
     entry_name: str,
     target: str,
-    main: str | None = None,
-    category_key: str | None = None,
-) -> tuple[str, str, str, str | None, str | None]:
+    main: typing.Union[str, None] = None,
+    category_key: typing.Union[str, None] = None,
+) -> tuple[str, str, str, typing.Union[str, None], typing.Union[str, None]]:
     # For this tuple definition, see:
     # https://www.sphinx-doc.org/en/master/extdev/nodes.html#sphinx.addnodes.index
     # For the definition of entry_type, see:
@@ -339,10 +339,10 @@ class _BzlXrefField(docfields.Field):
         domain: str,
         target: str,
         innernode: type[sphinx_typing.TextlikeNode] = addnodes.literal_emphasis,
-        contnode: docutils_nodes.Node | None = None,
-        env: environment.BuildEnvironment | None = None,
-        inliner: states.Inliner | None = None,
-        location: docutils_nodes.Element | None = None,
+        contnode: typing.Union[docutils_nodes.Node, None] = None,
+        env: typing.Union[environment.BuildEnvironment, None] = None,
+        inliner: typing.Union[states.Inliner, None] = None,
+        location: typing.Union[docutils_nodes.Element, None] = None,
     ) -> list[docutils_nodes.Node]:
         if rolename in ("arg", "attr"):
             return self._make_xrefs_for_arg_attr(
@@ -359,10 +359,10 @@ class _BzlXrefField(docfields.Field):
         domain: str,
         arg_name: str,
         innernode: type[sphinx_typing.TextlikeNode] = addnodes.literal_emphasis,
-        contnode: docutils_nodes.Node | None = None,
-        env: environment.BuildEnvironment | None = None,
-        inliner: states.Inliner | None = None,
-        location: docutils_nodes.Element | None = None,
+        contnode: typing.Union[docutils_nodes.Node, None] = None,
+        env: typing.Union[environment.BuildEnvironment, None] = None,
+        inliner: typing.Union[states.Inliner, None] = None,
+        location: typing.Union[docutils_nodes.Element, None] = None,
     ) -> list[docutils_nodes.Node]:
         bzl_file = env.ref_context["bzl:file"]
         anchor_prefix = ".".join(env.ref_context["bzl:doc_id_stack"])
@@ -445,8 +445,8 @@ class _BzlCsvField(_BzlXrefField):
         domain: str,
         item: tuple,
         env: environment.BuildEnvironment = None,
-        inliner: states.Inliner | None = None,
-        location: docutils_nodes.Element | None = None,
+        inliner: typing.Union[states.Inliner, None] = None,
+        location: typing.Union[docutils_nodes.Element, None] = None,
     ) -> docutils_nodes.field:
         field_text = item[1][0].astext()
         parts = [p.strip() for p in field_text.split(",")]
@@ -552,7 +552,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
 
     @override
     def transform_content(self, content_node: addnodes.desc_content) -> None:
-        def first_child_with_class_name(root, class_name) -> "None | Element":
+        def first_child_with_class_name(root, class_name) -> typing.Union[None, docutils_nodes.Element]:
             matches = root.findall(
                 lambda node: isinstance(node, docutils_nodes.Element)
                 and class_name in node["classes"]
@@ -1509,7 +1509,7 @@ class _BzlDomain(domains.Domain):
     }
 
     @override
-    def get_full_qualified_name(self, node: docutils_nodes.Element) -> str | None:
+    def get_full_qualified_name(self, node: docutils_nodes.Element) -> typing.Union[str, None]:
         bzl_file = node.get("bzl:file")
         symbol_name = node.get("bzl:symbol")
         ref_target = node.get("reftarget")
@@ -1553,7 +1553,7 @@ class _BzlDomain(domains.Domain):
         target: str,
         node: addnodes.pending_xref,
         contnode: docutils_nodes.Element,
-    ) -> docutils_nodes.Element | None:
+    ) -> typing.Union[docutils_nodes.Element, None]:
         _log_debug(
             "resolve_xref: fromdocname=%s, typ=%s, target=%s", fromdocname, typ, target
         )
@@ -1570,7 +1570,7 @@ class _BzlDomain(domains.Domain):
 
     def _find_entry_for_xref(
         self, fromdocname: str, object_type: str, target: str
-    ) -> _ObjectEntry | None:
+    ) -> typing.Union[_ObjectEntry, None]:
         if target.startswith("--"):
             target = target.strip("-")
             object_type = "flag"
