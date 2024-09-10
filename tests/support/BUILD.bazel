@@ -18,8 +18,6 @@
 # to force them to resolve in the proper context.
 # ====================
 
-load("//python:py_runtime.bzl", "py_runtime")
-load("//python:py_runtime_pair.bzl", "py_runtime_pair")
 load(":sh_py_run_test.bzl", "current_build_settings")
 
 package(
@@ -87,27 +85,6 @@ platform(
         "@platforms//os:windows",
         "@platforms//cpu:aarch64",
     ],
-)
-
-py_runtime(
-    name = "platform_runtime",
-    implementation_name = "fakepy",
-    interpreter_path = "/fake/python3.9",
-    interpreter_version_info = {
-        "major": "4",
-        "minor": "5",
-    },
-)
-
-py_runtime_pair(
-    name = "platform_runtime_pair",
-    py3_runtime = ":platform_runtime",
-)
-
-toolchain(
-    name = "platform_toolchain",
-    toolchain = ":platform_runtime_pair",
-    toolchain_type = "//python:toolchain_type",
 )
 
 current_build_settings(
