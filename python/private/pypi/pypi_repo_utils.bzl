@@ -14,7 +14,6 @@
 
 ""
 
-load("@bazel_skylib//lib:types.bzl", "types")
 load("//python/private:repo_utils.bzl", "repo_utils")
 
 def _get_python_interpreter_attr(mrctx, *, python_interpreter = None):
@@ -127,7 +126,10 @@ def _execute_checked(mrctx, *, srcs, **kwargs):
 
     env = kwargs.pop("environment", {})
     pythonpath = env.get("PYTHONPATH", "")
-    if pythonpath and not types.is_string(pythonpath):
+
+    # NOTE @aignas 2024-09-11: Not using `bazel_skylib` `types` module to avoid
+    # a circular dependency in WORKSPACE
+    if pythonpath and not type(pythonpath) == type(""):
         env["PYTHONPATH"] = _construct_pypath(mrctx, entries = pythonpath)
 
     return repo_utils.execute_checked(
