@@ -89,7 +89,7 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
             # deps when reused from `whl_library`.
             entries = _PYTHON_PATH_ENTRIES,
         ),
-    }
+    } | rctx.attr.environment
 
     whl_path = whl_path
     if not whl_path and rctx.attr.whl_file:
@@ -309,7 +309,17 @@ The list of urls of the whl to be downloaded using bazel downloader.
         default = _PYTHON_PATH_ENTRIES,
     ),
     "_rule_name": attr.string(default = "whl_library"),
-}, **ATTRS)
+}, **{
+    k: v
+    for k, v in ATTRS.items()
+    if k not in [
+        # These only apply to when we use `pip` to download packages
+        "download_only",
+        "enable_implicit_namespace_pkgs",
+        "extra_pip_args",
+        "isolated",
+    ]
+})
 whl_archive_attrs.update(AUTH_ATTRS)
 
 whl_archive = repository_rule(
