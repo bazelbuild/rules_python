@@ -91,6 +91,7 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
         ),
     }
 
+    whl_path = whl_path
     if not whl_path and rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
 
@@ -118,6 +119,10 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
 
         if not result.success:
             fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
+
+        whl_path = rctx.path(filename)
+    else:
+        fail("Either 'whl_path', 'whl_file' or 'urls' point to a wheel need to be specified")
 
     if rctx.attr.whl_patches:
         patches = {}

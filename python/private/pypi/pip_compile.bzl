@@ -124,19 +124,19 @@ def pip_compile(
     args.extend(extra_args)
 
     deps = [
-        Label("@pypi__build//:lib"),
-        Label("@pypi__click//:lib"),
-        Label("@pypi__colorama//:lib"),
-        Label("@pypi__importlib_metadata//:lib"),
-        Label("@pypi__more_itertools//:lib"),
         Label("@pypi__packaging//:lib"),
-        Label("@pypi__pep517//:lib"),
-        Label("@pypi__pip//:lib"),
-        Label("@pypi__pip_tools//:lib"),
-        Label("@pypi__pyproject_hooks//:lib"),
-        Label("@pypi__setuptools//:lib"),
-        Label("@pypi__tomli//:lib"),
-        Label("@pypi__zipp//:lib"),
+        Label("@pypi__build//:pkg"),
+        Label("@pypi__click//:pkg"),
+        Label("@pypi__colorama//:pkg"),
+        Label("@pypi__importlib_metadata//:pkg"),
+        Label("@pypi__more_itertools//:pkg"),
+        Label("@pypi__pep517//:pkg"),
+        Label("@pypi__pip//:pkg"),
+        Label("@pypi__pip_tools//:pkg"),
+        Label("@pypi__pyproject_hooks//:pkg"),
+        Label("@pypi__setuptools//:pkg"),
+        Label("@pypi__tomli//:pkg"),
+        Label("@pypi__zipp//:pkg"),
         Label("//python/runfiles:runfiles"),
     ] + extra_deps
 

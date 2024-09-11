@@ -1231,7 +1231,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "M3PPL9umTVP/yUC+67sXfG+eJZgN3kOQx0ySEMrkFM8=",
+        "bzlTransitiveDigest": "WDcraNnRJKLpmCPDflfOh3A9rKYAZHe4o2toCchdm1M=",
         "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
@@ -1282,8 +1282,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_musllinux_1_1_aarch64_b9b7a708": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1310,8 +1310,8 @@
             }
           },
           "pip_39_snowballstemmer_py2_none_any_c8e1716e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1338,8 +1338,8 @@
             }
           },
           "pip_39_astroid_py3_none_any_10e0ad5f": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1417,8 +1417,8 @@
             }
           },
           "pip_39_tomlkit_py3_none_any_07de26b0": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1540,8 +1540,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_manylinux_2_5_x86_64_40e7bc81": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1568,8 +1568,8 @@
             }
           },
           "pip_39_pygments_py3_none_any_13fc09fa": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1694,8 +1694,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_macosx_10_9_x86_64_9eb6caa9": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1722,8 +1722,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_manylinux_2_17_x86_64_05fb2117": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1750,8 +1750,8 @@
             }
           },
           "pip_39_websockets_py3_none_any_6681ba9e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1778,8 +1778,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_macosx_10_9_universal2_8023faf4": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1834,8 +1834,8 @@
             }
           },
           "pip_39_platformdirs_py3_none_any_1a89a123": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1899,8 +1899,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_win_amd64_510c9dee": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1954,8 +1954,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_manylinux_2_17_aarch64_5773183b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -1982,8 +1982,8 @@
             }
           },
           "pip_39_typing_extensions_py3_none_any_04e5ca03": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2061,8 +2061,8 @@
             }
           },
           "pip_39_yamllint_py2_none_any_89bb5b5a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2117,8 +2117,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_musllinux_1_1_aarch64_1fdf26fa": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2394,8 +2394,8 @@
             }
           },
           "pip_39_packaging_py3_none_any_8c491190": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2579,8 +2579,8 @@
             }
           },
           "pip_39_idna_py2_none_any_b97d804b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2607,8 +2607,8 @@
             }
           },
           "pip_39_pylint_py3_none_any_349c8cd3": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2656,8 +2656,8 @@
             }
           },
           "pip_39_jinja2_py3_none_any_bc5dd2ab": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2722,8 +2722,8 @@
             }
           },
           "pip_39_pathspec_py3_none_any_3c95343a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2799,8 +2799,8 @@
             }
           },
           "pip_39_python_magic_py2_none_any_c212960a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2864,8 +2864,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_musllinux_1_1_x86_64_9a3a87cf": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2920,8 +2920,8 @@
             }
           },
           "pip_39_tabulate_py3_none_any_024ca478": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2961,8 +2961,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_manylinux_2_17_aarch64_9dcdfd0e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -2989,8 +2989,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_win_amd64_dee60e1d": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3017,8 +3017,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_musllinux_1_1_aarch64_21713819": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3094,8 +3094,8 @@
             }
           },
           "pip_39_sphinx_py3_none_any_1e09160a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3187,8 +3187,8 @@
             }
           },
           "pip_39_alabaster_py3_none_any_1ee19aca": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3215,8 +3215,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_musllinux_1_1_x86_64_34aa51c4": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3243,8 +3243,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_musllinux_1_1_aarch64_ab4a0df4": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3271,8 +3271,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_manylinux_2_17_aarch64_6f1a3f10": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3299,8 +3299,8 @@
             }
           },
           "pip_39_s3cmd_py2_none_any_49cd23d5": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3432,8 +3432,8 @@
             }
           },
           "pip_39_imagesize_py2_none_any_0d8d18d0": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3460,8 +3460,8 @@
             }
           },
           "pip_39_setuptools_py3_none_any_57f6f22b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3488,8 +3488,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_win_amd64_a899b10e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3516,8 +3516,8 @@
             }
           },
           "pip_39_sphinxcontrib_devhelp_py3_none_any_fe8009ae": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3581,8 +3581,8 @@
             }
           },
           "pip_39_colorama_py2_none_any_4f1d9991": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3609,8 +3609,8 @@
             }
           },
           "pip_39_chardet_py2_none_any_f864054d": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3679,8 +3679,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_manylinux_2_5_x86_64_18dd842b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3728,8 +3728,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_macosx_10_9_x86_64_6b2b5695": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3784,8 +3784,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_macosx_10_9_x86_64_366c32fe": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3812,8 +3812,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_win_amd64_3fd4abcb": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3840,8 +3840,8 @@
             }
           },
           "pip_39_wheel_py3_none_any_d236b20e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:wheel.json",
               "dep_template": "@pip//{name}:{target}",
@@ -3869,8 +3869,8 @@
             }
           },
           "pip_39_certifi_py3_none_any_92d60375": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3897,8 +3897,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_macosx_11_0_arm64_988635d1": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3946,8 +3946,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_musllinux_1_1_x86_64_97b52894": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -3995,8 +3995,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_macosx_10_9_x86_64_3232822c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4023,8 +4023,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_musllinux_1_1_x86_64_04ac92ad": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4051,8 +4051,8 @@
             }
           },
           "pip_39_sphinxcontrib_jsmath_py2_none_any_2ec2eaeb": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4158,8 +4158,8 @@
             }
           },
           "pip_39_importlib_metadata_py3_none_any_66f342cc": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4330,8 +4330,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_manylinux_2_17_x86_64_bc1bf292": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4386,8 +4386,8 @@
             }
           },
           "pip_39_tomli_py3_none_any_939de3e7": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4414,8 +4414,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_win_amd64_c792ea4e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4442,8 +4442,8 @@
             }
           },
           "pip_39_sphinxcontrib_qthelp_py3_none_any_bf76886e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4598,8 +4598,8 @@
             }
           },
           "pip_39_pylint_print_py3_none_any_a2b2599e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4709,8 +4709,8 @@
             }
           },
           "pip_39_six_py2_none_any_8abb2f1d": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4737,8 +4737,8 @@
             }
           },
           "pip_39_urllib3_py2_none_any_34b97092": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4765,8 +4765,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_macosx_11_0_arm64_3580dd9c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4863,8 +4863,8 @@
             }
           },
           "pip_39_mccabe_py2_none_any_6c2d30ab": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -4989,8 +4989,8 @@
             }
           },
           "pip_39_wrapt_cp39_cp39_manylinux_2_17_aarch64_9cca3c2c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5017,8 +5017,8 @@
             }
           },
           "pip_39_lazy_object_proxy_cp39_cp39_manylinux_2_17_aarch64_2297f08f": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5094,8 +5094,8 @@
             }
           },
           "pip_39_python_dateutil_py2_none_any_961d03dc": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5266,8 +5266,8 @@
             }
           },
           "pip_39_sphinxcontrib_serializinghtml_py3_none_any_9b36e503": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5313,8 +5313,8 @@
             }
           },
           "pip_39_markupsafe_cp39_cp39_musllinux_1_1_x86_64_0a4e4a1a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5369,8 +5369,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_manylinux_2_5_x86_64_279e5de4": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5397,8 +5397,8 @@
             }
           },
           "pip_39_sphinxcontrib_applehelp_py3_none_any_094c4d56": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5434,8 +5434,8 @@
             }
           },
           "pip_39_zipp_py3_none_any_58da6168": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5504,8 +5504,8 @@
             }
           },
           "pip_39_requests_py2_none_any_c210084e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:requests.json",
               "dep_template": "@pip//{name}:{target}",
@@ -5538,8 +5538,8 @@
             }
           },
           "pip_39_docutils_py3_none_any_96f387a2": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5566,8 +5566,8 @@
             }
           },
           "pip_39_isort_py3_none_any_c033fd0e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5622,8 +5622,8 @@
             }
           },
           "pip_39_sphinxcontrib_htmlhelp_py3_none_any_8001661c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5659,8 +5659,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_macosx_10_9_universal2_777354ee": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5708,8 +5708,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_manylinux_2_17_s390x_b786eecb": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5764,8 +5764,8 @@
             }
           },
           "pip_39_websockets_cp39_cp39_macosx_10_9_x86_64_8c82f119": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5862,8 +5862,8 @@
             }
           },
           "pip_39_pyyaml_cp39_cp39_macosx_11_0_arm64_c8098ddc": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5912,8 +5912,8 @@
             }
           },
           "pip_39_dill_py3_none_any_a07ffd23": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -5940,8 +5940,8 @@
             }
           },
           "pip_39_babel_py3_none_any_7077a498": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
               "envsubst": [
@@ -6140,7 +6140,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "zJFm0kuM8gFhTHrwS0DUDjlxIhgwMjQUyJiC5F0wmCc=",
+        "bzlTransitiveDigest": "gSr0uL+iZLkosMvngSbzbnNCpUPE6OjZsxWQcYSZRto=",
         "usagesDigest": "Y8ihY+R57BAFhalrVLVdJFrpwlbsiKz9JPJ99ljF7HA=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
@@ -6154,8 +6154,8 @@
         },
         "generatedRepoSpecs": {
           "rules_python_publish_deps_311_cffi_cp311_cp311_manylinux_2_17_aarch64_3548db28": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6220,8 +6220,8 @@
             }
           },
           "rules_python_publish_deps_311_cffi_cp311_cp311_manylinux_2_17_ppc64le_91fc98ad": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6242,8 +6242,8 @@
             }
           },
           "rules_python_publish_deps_311_requests_py3_none_any_64299f49": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6289,8 +6289,8 @@
             }
           },
           "rules_python_publish_deps_311_readme_renderer_py3_none_any_f67a16ca": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6336,8 +6336,8 @@
             }
           },
           "rules_python_publish_deps_311_idna_py3_none_any_82fee1fc": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6356,8 +6356,8 @@
             }
           },
           "rules_python_publish_deps_311_certifi_py3_none_any_c198e21b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6376,8 +6376,8 @@
             }
           },
           "rules_python_publish_deps_311_requests_toolbelt_py2_none_any_18565aa5": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6401,8 +6401,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_macosx_10_9_universal2_802fe99c": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6421,8 +6421,8 @@
             }
           },
           "rules_python_publish_deps_311_cffi_cp311_cp311_manylinux_2_17_x86_64_94411f22": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6443,8 +6443,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_musllinux_1_1_x86_64_6d0fbe73": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6465,8 +6465,8 @@
             }
           },
           "rules_python_publish_deps_311_pygments_py3_none_any_fa7bd7bd": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6490,8 +6490,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_musllinux_1_1_aarch64_3c6048f2": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6512,8 +6512,8 @@
             }
           },
           "rules_python_publish_deps_311_bleach_py3_none_any_33c16e33": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6537,8 +6537,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_manylinux_2_17_aarch64_a1327f28": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6559,8 +6559,8 @@
             }
           },
           "rules_python_publish_deps_311_keyring_py3_none_any_771ed2a9": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6609,8 +6609,8 @@
             }
           },
           "rules_python_publish_deps_311_rich_py3_none_any_7c963f0d": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6634,8 +6634,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_manylinux_2_17_x86_64_6ffb03d4": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6656,8 +6656,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_manylinux_2_17_s390x_8c7fe7af": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6700,8 +6700,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_musllinux_1_1_ppc64le_5995f016": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6722,8 +6722,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_musllinux_1_2_aarch64_887623fe": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6769,8 +6769,8 @@
             }
           },
           "rules_python_publish_deps_311_importlib_metadata_py3_none_any_7efb448e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6819,8 +6819,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_musllinux_1_1_x86_64_761e8904": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6841,8 +6841,8 @@
             }
           },
           "rules_python_publish_deps_311_certifi_py3_none_any_4ad3232f": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6863,8 +6863,8 @@
             }
           },
           "rules_python_publish_deps_311_jeepney_py3_none_any_c0a454ad": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6885,8 +6885,8 @@
             }
           },
           "rules_python_publish_deps_311_secretstorage_py3_none_any_f356e662": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6907,8 +6907,8 @@
             }
           },
           "rules_python_publish_deps_311_idna_py3_none_any_90b77e79": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6929,8 +6929,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_manylinux_2_28_x86_64_44a64043": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6951,8 +6951,8 @@
             }
           },
           "rules_python_publish_deps_311_urllib3_py2_none_any_75edcdc2": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -6993,8 +6993,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_py3_none_any_7e189e2e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7040,8 +7040,8 @@
             }
           },
           "rules_python_publish_deps_311_pywin32_ctypes_py2_none_any_9dc2d991": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7058,8 +7058,8 @@
             }
           },
           "rules_python_publish_deps_311_pkginfo_py3_none_any_4b7a555a": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7083,8 +7083,8 @@
             }
           },
           "rules_python_publish_deps_311_cffi_cp311_cp311_musllinux_1_1_x86_64_cc4d65ae": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7167,8 +7167,8 @@
             }
           },
           "rules_python_publish_deps_311_mdurl_py3_none_any_84008a41": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7192,8 +7192,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_musllinux_1_2_x86_64_ce8613be": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7214,8 +7214,8 @@
             }
           },
           "rules_python_publish_deps_311_more_itertools_py3_none_any_250e83d7": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7314,8 +7314,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_macosx_11_0_arm64_549a3a73": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7334,8 +7334,8 @@
             }
           },
           "rules_python_publish_deps_311_six_py2_none_any_8abb2f1d": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7359,8 +7359,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_py3_none_any_3e4d1f65": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7379,8 +7379,8 @@
             }
           },
           "rules_python_publish_deps_311_cryptography_cp39_abi3_manylinux_2_28_aarch64_1df6fcbf": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7401,8 +7401,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_manylinux_2_17_aarch64_14e76c0f": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7448,8 +7448,8 @@
             }
           },
           "rules_python_publish_deps_311_markdown_it_py_py3_none_any_93de681e": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7518,8 +7518,8 @@
             }
           },
           "rules_python_publish_deps_311_twine_py3_none_any_929bc3c2": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7568,8 +7568,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_musllinux_1_1_s390x_4a8fcf28": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7615,8 +7615,8 @@
             }
           },
           "rules_python_publish_deps_311_urllib3_py2_none_any_37a03444": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7635,8 +7635,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_manylinux_2_17_x86_64_79909e27": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7679,8 +7679,8 @@
             }
           },
           "rules_python_publish_deps_311_jaraco_classes_py3_none_any_2353de32": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7704,8 +7704,8 @@
             }
           },
           "rules_python_publish_deps_311_pycparser_py2_none_any_8ee45429": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7819,8 +7819,8 @@
             }
           },
           "rules_python_publish_deps_311_zipp_py3_none_any_83a28fcb": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7841,8 +7841,8 @@
             }
           },
           "rules_python_publish_deps_311_docutils_py3_none_any_5e1de4d8": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7891,8 +7891,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_win_amd64_66394663": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7953,8 +7953,8 @@
             }
           },
           "rules_python_publish_deps_311_zipp_py3_none_any_f091755f": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -7998,8 +7998,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_manylinux_2_17_ppc64le_0c0a5902": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -8020,8 +8020,8 @@
             }
           },
           "rules_python_publish_deps_311_rfc3986_py2_none_any_50b1502b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -8135,8 +8135,8 @@
             }
           },
           "rules_python_publish_deps_311_webencodings_py2_none_any_a0af1213": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -8182,8 +8182,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_musllinux_1_1_aarch64_72966d1b": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [
@@ -8204,8 +8204,8 @@
             }
           },
           "rules_python_publish_deps_311_charset_normalizer_cp311_cp311_macosx_10_9_x86_64_573f6eac": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_archive.bzl",
+            "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@rules_python_publish_deps//{name}:{target}",
               "experimental_target_platforms": [

@@ -86,6 +86,7 @@ bzl_library(
     name = "deps_bzl",
     srcs = ["deps.bzl"],
     deps = [
+        ":whl_archive_bzl",
         "//python/private:bazel_tools_bzl",
     ],
 )
@@ -214,7 +215,6 @@ bzl_library(
     name = "pip_compile_bzl",
     srcs = ["pip_compile.bzl"],
     deps = [
-        ":deps_bzl",
         "//python:defs_bzl",
     ],
 )
@@ -287,15 +287,12 @@ bzl_library(
     srcs = ["whl_archive.bzl"],
     deps = [
         ":attrs_bzl",
-        ":deps_bzl",
         ":generate_whl_library_build_bazel_bzl",
         ":parse_whl_name_bzl",
         ":patch_whl_bzl",
         ":pypi_repo_utils_bzl",
         ":whl_target_platforms_bzl",
         "//python/private:auth_bzl",
-        "//python/private:envsubst_bzl",
-        "//python/private:python_repositories_bzl",
         "//python/private:repo_utils_bzl",
     ],
 )

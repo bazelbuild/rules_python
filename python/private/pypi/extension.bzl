@@ -29,6 +29,7 @@ load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "whl_alias")
 load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 load(":simpleapi_download.bzl", "simpleapi_download")
+load(":whl_archive.bzl", "whl_archive")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "whl_repo_name")
 
@@ -307,7 +308,10 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                         if len(requirements) > 1:
                             target_platforms = requirement.target_platforms
 
-                    whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
+                    if distribution.filename.endswith(".whl"):
+                        whl_archive(name = repo_name, **dict(sorted(whl_library_args.items())))
+                    else:
+                        whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
 
                     whl_map[hub_name].setdefault(whl_name, []).append(
                         whl_alias(

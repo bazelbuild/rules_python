@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load(":whl_archive.bzl", "whl_archive")
 
 _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
@@ -130,11 +131,31 @@ def pypi_deps():
     Fetch dependencies these rules depend on. Workspaces that use the pip_parse rule can call this.
     """
     for (name, url, sha256) in _RULE_DEPS:
-        maybe(
-            http_archive,
-            name,
-            url = url,
-            sha256 = sha256,
-            type = "zip",
-            build_file_content = _GENERIC_WHEEL,
-        )
+        if name in ["pypi__installer", "pypi__packaging"]:
+            maybe(
+                http_archive,
+                name,
+                url = url,
+                sha256 = sha256,
+                type = "zip",
+                build_file_content = _GENERIC_WHEEL,
+            )
+        else:
+            maybe(
+                whl_archive,
+                name,
+                urls = [url],
+                sha256 = sha256,
+                requirement = name.split("_")[-1],
+                repo = "pypi_",
+                experimental_target_platforms = [
+                    "linux_x86_64",
+                    "linux_aarch64",
+                    "linux_i386",
+                    "linux_s390x",
+                    "linux_ppc",
+                    "osx_x86_64",
+                    "osx_arch64",
+                    "windows_x86_64",
+                ],
+            )
