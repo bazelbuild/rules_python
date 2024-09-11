@@ -1,4 +1,4 @@
-# Copyright 2023 The Bazel Authors. All rights reserved.
+# Copyright 2024 The Bazel Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,15 @@ load("//python/private:python_repositories.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":attrs.bzl", "ATTRS", "use_isolated")
 load(":deps.bzl", "all_repo_names")
+load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
+load(":parse_whl_name.bzl", "parse_whl_name")
+load(":patch_whl.bzl", "patch_whl")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
-load(":whl_archive.bzl", "whl_archive_impl")
+load(":whl_target_platforms.bzl", "whl_target_platforms")
 
 _CPPFLAGS = "CPPFLAGS"
 _COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
+_WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
 
 def _get_xcode_location_cflags(rctx):
     """Query the xcode sdk location to update cflags
@@ -169,31 +173,7 @@ def _create_repository_execution_environment(rctx, python_interpreter, logger = 
 
     return env
 
-def _build_or_download_wheel(*, rctx, args, environment, logger):
-    if rctx.attr.urls:
-        op_tmpl = "whl_library.BuildWheelFromSource({name}, {requirement})"
-    elif rctx.attr.download_only:
-        op_tmpl = "whl_library.DownloadWheel({name}, {requirement})"
-    else:
-        op_tmpl = "whl_library.ResolveRequirement({name}, {requirement})"
-
-    repo_utils.execute_checked(
-        rctx,
-        op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement),
-        arguments = args,
-        environment = environment,
-        quiet = rctx.attr.quiet,
-        timeout = rctx.attr.timeout,
-        logger = logger,
-    )
-
-    whl_path = rctx.path(json.decode(rctx.read("whl_file.json"))["whl_file"])
-    if not rctx.delete("whl_file.json"):
-        fail("failed to delete the whl_file.json file")
-
-    return whl_path
-
-def _whl_library_impl(rctx):
+def _whl_archive_impl(rctx):
     logger = repo_utils.logger(rctx)
     python_interpreter = pypi_repo_utils.resolve_python_interpreter(
         rctx,
@@ -213,47 +193,7 @@ def _whl_library_impl(rctx):
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
     environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
 
-    whl_path = None
-    need_to_build_to_use_pip = False
-    if rctx.attr.whl_file:
-        pass
-    elif rctx.attr.urls:
-        filename = rctx.attr.filename
-        urls = rctx.attr.urls
-        if not filename:
-            _, _, filename = urls[0].rpartition("/")
-
-        if not (filename.endswith(".whl") or filename.endswith("tar.gz") or filename.endswith(".zip")):
-            if rctx.attr.filename:
-                msg = "got '{}'".format(filename)
-            else:
-                msg = "detected '{}' from url:\n{}".format(filename, urls[0])
-            fail("Only '.whl', '.tar.gz' or '.zip' files are supported, {}".format(msg))
-
-        if not filename.endswith(".whl"):
-            need_to_build_to_use_pip = True
-            result = rctx.download(
-                url = urls,
-                output = filename,
-                sha256 = rctx.attr.sha256,
-                auth = get_auth(rctx, urls),
-            )
-
-            if not result.success:
-                fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
-
-            # It is an sdist and we need to tell PyPI to use a file in this directory
-            # and, allow getting build dependencies from PYTHONPATH, which we
-            # setup in this repository rule, but still download any necessary
-            # build deps from PyPI (e.g. `flit_core`) if they are missing.
-            extra_pip_args.extend(["--no-build-isolation", "--find-links", "."])
-    else:
-        need_to_build_to_use_pip = True
-
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
-
-    if not need_to_build_to_use_pip:
-        whl_path = _build_or_download_wheel(rctx = rctx, args = args, environment = environment, logger = logger)
 
     whl_archive_impl(
         rctx = rctx,
@@ -261,11 +201,167 @@ def _whl_library_impl(rctx):
         environment = environment,
         logger = logger,
         python_interpreter = python_interpreter,
-        whl_path = whl_path,
     )
 
+def whl_archive_impl(*, rctx, args, environment, logger, python_interpreter, whl_path = None):
+    """whl_archive implementation.
+
+    Args:
+        rctx: {type}`repository_ctx` The repository context.
+        whl_path: {type}`path` The whl path.
+        python_interpreter: {type}`path` The path to the python interpreter.
+        args: {type}`list[str]` The default args used for the `whl_installer` tool.
+        environment: {type}`dict[str, str]` The environment set for the `whl_installer` tool.
+        logger: {type}`struct` The logger.
+    """
+    if not whl_path and rctx.attr.whl_file:
+        whl_path = rctx.path(rctx.attr.whl_file)
+
+        # Simulate the behaviour where the whl is present in the current directory.
+        rctx.symlink(whl_path, whl_path.basename)
+        whl_path = rctx.path(whl_path.basename)
+
+        if not whl_path.basename.endswith(".whl"):
+            fail("only whls are supported by this rule")
+    elif not whl_path and rctx.attr.urls:
+        filename = rctx.attr.filename
+        urls = rctx.attr.urls
+        if not filename:
+            _, _, filename = urls[0].rpartition("/")
+
+        if not filename.endswith(".whl"):
+            fail("only whls are supported by this rule")
+
+        result = rctx.download(
+            url = urls,
+            output = filename,
+            sha256 = rctx.attr.sha256,
+            auth = get_auth(rctx, urls),
+        )
+
+        if not result.success:
+            fail("could not download the '{}' from {}:\n{}".format(filename, urls, result))
+
+    if rctx.attr.whl_patches:
+        patches = {}
+        for patch_file, json_args in rctx.attr.whl_patches.items():
+            patch_dst = struct(**json.decode(json_args))
+            if whl_path.basename in patch_dst.whls:
+                patches[patch_file] = patch_dst.patch_strip
+
+        whl_path = patch_whl(
+            rctx,
+            op = "whl_library.PatchWhl({}, {})".format(rctx.attr.name, rctx.attr.requirement),
+            python_interpreter = python_interpreter,
+            whl_path = whl_path,
+            patches = patches,
+            quiet = rctx.attr.quiet,
+            timeout = rctx.attr.timeout,
+        )
+
+    target_platforms = rctx.attr.experimental_target_platforms
+    if target_platforms:
+        parsed_whl = parse_whl_name(whl_path.basename)
+        if parsed_whl.platform_tag != "any":
+            # NOTE @aignas 2023-12-04: if the wheel is a platform specific
+            # wheel, we only include deps for that target platform
+            target_platforms = [
+                p.target_platform
+                for p in whl_target_platforms(
+                    platform_tag = parsed_whl.platform_tag,
+                    abi_tag = parsed_whl.abi_tag,
+                )
+            ]
+
+    repo_utils.execute_checked(
+        rctx,
+        op = "whl_library.ExtractWheel({}, {})".format(rctx.attr.name, whl_path),
+        arguments = args + [
+            "--whl-file",
+            whl_path,
+        ] + ["--platform={}".format(p) for p in target_platforms],
+        environment = environment,
+        quiet = rctx.attr.quiet,
+        timeout = rctx.attr.timeout,
+        logger = logger,
+    )
+
+    metadata = json.decode(rctx.read("metadata.json"))
+    rctx.delete("metadata.json")
+
+    # NOTE @aignas 2024-06-22: this has to live on until we stop supporting
+    # passing `twine` as a `:pkg` library via the `WORKSPACE` builds.
+    #
+    # See ../../packaging.bzl line 190
+    entry_points = {}
+    for item in metadata["entry_points"]:
+        name = item["name"]
+        module = item["module"]
+        attribute = item["attribute"]
+
+        # There is an extreme edge-case with entry_points that end with `.py`
+        # See: https://github.com/bazelbuild/bazel/blob/09c621e4cf5b968f4c6cdf905ab142d5961f9ddc/src/test/java/com/google/devtools/build/lib/rules/python/PyBinaryConfiguredTargetTest.java#L174
+        entry_point_without_py = name[:-3] + "_py" if name.endswith(".py") else name
+        entry_point_target_name = (
+            _WHEEL_ENTRY_POINT_PREFIX + "_" + entry_point_without_py
+        )
+        entry_point_script_name = entry_point_target_name + ".py"
+
+        rctx.file(
+            entry_point_script_name,
+            _generate_entry_point_contents(module, attribute),
+        )
+        entry_points[entry_point_without_py] = entry_point_script_name
+
+    build_file_contents = generate_whl_library_build_bazel(
+        dep_template = rctx.attr.dep_template or "@{}{{name}}//:{{target}}".format(rctx.attr.repo_prefix),
+        whl_name = whl_path.basename,
+        dependencies = metadata["deps"],
+        dependencies_by_platform = metadata["deps_by_platform"],
+        group_name = rctx.attr.group_name,
+        group_deps = rctx.attr.group_deps,
+        data_exclude = rctx.attr.pip_data_exclude,
+        tags = [
+            "pypi_name=" + metadata["name"],
+            "pypi_version=" + metadata["version"],
+        ],
+        entry_points = entry_points,
+        annotation = None if not rctx.attr.annotation else struct(**json.decode(rctx.read(rctx.attr.annotation))),
+    )
+    rctx.file("BUILD.bazel", build_file_contents)
+
+    return
+
+def _generate_entry_point_contents(
+        module,
+        attribute,
+        shebang = "#!/usr/bin/env python3"):
+    """Generate the contents of an entry point script.
+
+    Args:
+        module (str): The name of the module to use.
+        attribute (str): The name of the attribute to call.
+        shebang (str, optional): The shebang to use for the entry point python
+            file.
+
+    Returns:
+        str: A string of python code.
+    """
+    contents = """\
+{shebang}
+import sys
+from {module} import {attribute}
+if __name__ == "__main__":
+    sys.exit({attribute}())
+""".format(
+        shebang = shebang,
+        module = module,
+        attribute = attribute,
+    )
+    return contents
+
 # NOTE @aignas 2024-03-21: The usage of dict({}, **common) ensures that all args to `dict` are unique
-whl_library_attrs = dict({
+whl_archive_attrs = dict({
     "annotation": attr.label(
         doc = (
             "Optional json encoded file containing annotation to apply to the extracted wheel. " +
@@ -338,14 +434,14 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
     ),
     "_rule_name": attr.string(default = "whl_library"),
 }, **ATTRS)
-whl_library_attrs.update(AUTH_ATTRS)
+whl_archive_attrs.update(AUTH_ATTRS)
 
-whl_library = repository_rule(
-    attrs = whl_library_attrs,
+whl_archive = repository_rule(
+    attrs = whl_archive_attrs,
     doc = """
 Download and extracts a single wheel based into a bazel repo based on the requirement string passed in.
 Instantiated from pip_repository and inherits config options from there.""",
-    implementation = _whl_library_impl,
+    implementation = _whl_archive_impl,
     environ = [
         "RULES_PYTHON_PIP_ISOLATED",
         REPO_DEBUG_ENV_VAR,
