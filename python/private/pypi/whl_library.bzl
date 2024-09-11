@@ -252,7 +252,7 @@ def _whl_library_impl(rctx):
 
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
 
-    if not need_to_build_to_use_pip:
+    if need_to_build_to_use_pip:
         whl_path = _build_or_download_wheel(rctx = rctx, args = args, environment = environment, logger = logger)
 
     whl_archive_impl(

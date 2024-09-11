@@ -63,7 +63,7 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
 
     Args:
         rctx: {type}`repository_ctx` The repository context.
-        whl_path: {type}`path` The whl path.
+        whl_path: {type}`path | None` The whl path.
         logger: {type}`struct` The logger.
     """
     python_interpreter = pypi_repo_utils.resolve_python_interpreter(
@@ -91,8 +91,9 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
         ),
     } | rctx.attr.environment
 
-    whl_path = whl_path
-    if not whl_path and rctx.attr.whl_file:
+    if whl_path:
+        pass
+    elif rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
 
         # Simulate the behaviour where the whl is present in the current directory.
@@ -101,7 +102,7 @@ def whl_archive_impl(*, rctx, logger, whl_path = None):
 
         if not whl_path.basename.endswith(".whl"):
             fail("only whls are supported by this rule")
-    elif not whl_path and rctx.attr.urls:
+    elif rctx.attr.urls:
         filename = rctx.attr.filename
         urls = rctx.attr.urls
         if not filename:
