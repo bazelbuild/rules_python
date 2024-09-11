@@ -2,7 +2,7 @@ load("//python:defs.bzl", "py_test")
 
 alias(
     name = "lib",
-    actual = "//python/private/pypi/whl_installer:lib",
+    actual = "//python/private/pypi/whl_installer:pkg",
 )
 
 py_test(

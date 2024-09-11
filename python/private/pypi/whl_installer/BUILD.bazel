@@ -1,7 +1,7 @@
 load("//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
-    name = "lib",
+    name = "pkg",
     srcs = [
         "arguments.py",
         "namespace_pkgs.py",
