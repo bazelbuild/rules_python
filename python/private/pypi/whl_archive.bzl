@@ -313,9 +313,8 @@ The list of urls of the whl to be downloaded using bazel downloader.
     k: v
     for k, v in ATTRS.items()
     if k not in [
-        # These only apply to when we use `pip` to download packages
         "download_only",
-        "enable_implicit_namespace_pkgs",
+        "envsubst",
         "extra_pip_args",
         "isolated",
     ]

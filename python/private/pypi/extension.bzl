@@ -309,6 +309,8 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                             target_platforms = requirement.target_platforms
 
                     if distribution.filename.endswith(".whl"):
+                        # This is not used by the rule
+                        whl_library_args.pop("envsubst", None)
                         whl_archive(name = repo_name, **dict(sorted(whl_library_args.items())))
                     else:
                         whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))

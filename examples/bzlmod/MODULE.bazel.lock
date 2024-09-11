@@ -1231,7 +1231,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "i/gPpKGupvoZ+7kLWS87kovxSn2HFqNYO5BeYBQ7fB8=",
+        "bzlTransitiveDigest": "aRN8izvoiRjhPOf7aNtgRNV1zmpxgD3Hro9oLFjq4XU=",
         "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
@@ -1258,9 +1258,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1286,9 +1283,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1314,9 +1308,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1342,9 +1333,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1421,9 +1409,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1449,9 +1434,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1486,9 +1468,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1544,9 +1523,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1572,9 +1548,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1621,9 +1594,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1670,9 +1640,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1698,9 +1665,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1726,9 +1690,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1754,9 +1715,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1782,9 +1740,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1810,9 +1765,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1838,9 +1790,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1866,9 +1815,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1903,9 +1849,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1958,9 +1901,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -1986,9 +1926,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2065,9 +2002,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2093,9 +2027,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2121,9 +2052,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2149,9 +2077,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2186,9 +2111,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2256,9 +2178,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2284,9 +2203,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2312,9 +2228,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2349,9 +2262,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2398,9 +2308,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2447,9 +2354,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2527,9 +2431,6 @@
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:wheel.json",
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2555,9 +2456,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2583,9 +2481,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2611,9 +2506,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2660,9 +2552,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2688,9 +2577,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2726,9 +2612,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2775,9 +2658,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2803,9 +2683,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2831,9 +2708,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2868,9 +2742,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2896,9 +2767,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2924,9 +2792,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2965,9 +2830,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -2993,9 +2855,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3021,9 +2880,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3070,9 +2926,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3098,9 +2951,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3135,9 +2985,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3163,9 +3010,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3191,9 +3035,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3219,9 +3060,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3247,9 +3085,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3275,9 +3110,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3303,9 +3135,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3331,9 +3160,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3359,9 +3185,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3387,9 +3210,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3436,9 +3256,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3464,9 +3281,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3492,9 +3306,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3520,9 +3331,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3557,9 +3365,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3585,9 +3390,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3613,9 +3415,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3683,9 +3482,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3732,9 +3528,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3760,9 +3553,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3788,9 +3578,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3816,9 +3603,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3845,9 +3629,6 @@
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:wheel.json",
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3873,9 +3654,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3901,9 +3679,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3950,9 +3725,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -3999,9 +3771,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4027,9 +3796,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4055,9 +3821,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4134,9 +3897,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4162,9 +3922,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4190,9 +3947,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4334,9 +4088,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4362,9 +4113,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4390,9 +4138,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4418,9 +4163,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4446,9 +4188,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4546,9 +4285,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4574,9 +4310,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4602,9 +4335,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4630,9 +4360,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4659,9 +4386,6 @@
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:requests.json",
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4713,9 +4437,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4741,9 +4462,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4769,9 +4487,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4818,9 +4533,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4867,9 +4579,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4937,9 +4646,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4965,9 +4671,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -4993,9 +4696,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5021,9 +4721,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5070,9 +4767,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5098,9 +4792,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5156,9 +4847,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5184,9 +4872,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5242,9 +4927,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5270,9 +4952,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5317,9 +4996,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5345,9 +5021,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5373,9 +5046,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5401,9 +5071,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5438,9 +5105,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5509,9 +5173,6 @@
             "attributes": {
               "annotation": "@@rules_python~~pip~whl_mods_hub//:requests.json",
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5542,9 +5203,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5570,9 +5228,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5598,9 +5253,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5626,9 +5278,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5663,9 +5312,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5712,9 +5358,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5740,9 +5383,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5768,9 +5408,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5838,9 +5475,6 @@
             "ruleClassName": "whl_library",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5866,9 +5500,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5916,9 +5547,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -5944,9 +5572,6 @@
             "ruleClassName": "whl_archive",
             "attributes": {
               "dep_template": "@pip//{name}:{target}",
-              "envsubst": [
-                "PIP_INDEX_URL"
-              ],
               "experimental_target_platforms": [
                 "cp39_linux_aarch64",
                 "cp39_linux_arm",
@@ -6140,7 +5765,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "fLE942C4vKZ4x5Nkd5YIehIi72vwxlmQkBXXnHNGj0A=",
+        "bzlTransitiveDigest": "9Um0aPDQ0+IHxKFh921W9+P3ydelvT3X2BNlh+aVq/Q=",
         "usagesDigest": "Y8ihY+R57BAFhalrVLVdJFrpwlbsiKz9JPJ99ljF7HA=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
