@@ -1231,13 +1231,13 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "WDcraNnRJKLpmCPDflfOh3A9rKYAZHe4o2toCchdm1M=",
+        "bzlTransitiveDigest": "MLO1syEGRSULaLo53Waond83pK6lJ02Xuuts7r4ZGUc=",
         "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
           "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
           "@@//requirements_lock_3_10.txt": "5e7083982a7e60f34998579a0ae83b520d46ab8f2552cc51337217f024e6def5",
-          "@@rules_python~~internal_deps~pypi__packaging//BUILD.bazel": "8d36246aeefaab4b26fb9c1175cfaf13df5b6f1587e6753f1e78b132bad74795",
+          "@@rules_python~~internal_deps~pypi__packaging//BUILD.bazel": "a9b949c6c578b3a3b2210ac227a226c0118c49df14feed705ae05b513c0c859d",
           "@@//whl_mods/appended_build_content.BUILD": "87745b00382c66e5efbd7cb44a08fc3edbf7fd5099cf593f87599188f1557a9e",
           "@@//requirements_lock_3_9.txt": "6a4990586366467d1e7d56d9f2ec9bafdd7e17fb29dc959aa5a6b0395c22eac7",
           "@@rules_python~~internal_deps~pypi__packaging//packaging-24.0.dist-info/RECORD": "be1aea790359b4c2c9ea83d153c1a57c407742a35b95ee36d00723509f5ed5dd",
@@ -6140,7 +6140,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "gSr0uL+iZLkosMvngSbzbnNCpUPE6OjZsxWQcYSZRto=",
+        "bzlTransitiveDigest": "+lhcK2Arrl32I8pLn5MbLKD3467Q5Q28NiDlEu+6/ck=",
         "usagesDigest": "Y8ihY+R57BAFhalrVLVdJFrpwlbsiKz9JPJ99ljF7HA=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",

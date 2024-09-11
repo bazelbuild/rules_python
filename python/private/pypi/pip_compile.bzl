@@ -103,7 +103,8 @@ def pip_compile(
 
     # Use the Label constructor so this is expanded in the context of the file
     # where it appears, which is to say, in @rules_python
-    pip_compile = Label("//python/private/pypi/dependency_resolver:dependency_resolver.py")
+    pip_compile_lib = Label("//python/private/pypi/dependency_resolver")
+    pip_compile_main = Label("//python/private/pypi/dependency_resolver:dependency_resolver.py")
 
     loc = "$(rlocationpath {})"
 
@@ -124,20 +125,7 @@ def pip_compile(
     args.extend(extra_args)
 
     deps = [
-        Label("@pypi__packaging//:lib"),
-        Label("@pypi__build//:pkg"),
-        Label("@pypi__click//:pkg"),
-        Label("@pypi__colorama//:pkg"),
-        Label("@pypi__importlib_metadata//:pkg"),
-        Label("@pypi__more_itertools//:pkg"),
-        Label("@pypi__pep517//:pkg"),
-        Label("@pypi__pip//:pkg"),
-        Label("@pypi__pip_tools//:pkg"),
-        Label("@pypi__pyproject_hooks//:pkg"),
-        Label("@pypi__setuptools//:pkg"),
-        Label("@pypi__tomli//:pkg"),
-        Label("@pypi__zipp//:pkg"),
-        Label("//python/runfiles:runfiles"),
+        pip_compile_lib,
     ] + extra_deps
 
     tags = tags or []
@@ -148,8 +136,8 @@ def pip_compile(
         "args": args,
         "data": data,
         "deps": deps,
-        "main": pip_compile,
-        "srcs": [pip_compile],
+        "main": pip_compile_main,
+        "srcs": [pip_compile_main],
         "tags": tags,
         "visibility": visibility,
     }

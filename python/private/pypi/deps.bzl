@@ -104,7 +104,7 @@ package(default_visibility = ["//visibility:public"])
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
-    name = "lib",
+    name = "pkg",
     srcs = glob(["**/*.py"]),
     data = glob(["**/*"], exclude=[
         # These entries include those put into user-installed dependencies by
@@ -155,7 +155,8 @@ def pypi_deps():
                     "linux_s390x",
                     "linux_ppc",
                     "osx_x86_64",
-                    "osx_arch64",
+                    "osx_aarch64",
                     "windows_x86_64",
                 ],
+                dep_template = "@pypi__{name}//:{target}",
             )
