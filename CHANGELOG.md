@@ -28,6 +28,10 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
   {obj}`config_common.FeatureFlagInfo`.
+* (toolchains) When {obj}`py_runtime.interpreter_version_info` isn't specified,
+  the {obj}`--python_version` flag will determine the value. This allows
+  specifying the build-time Python version for the
+  {obj}`runtime_env_toolchains`.
 * (toolchains) {obj}`py_cc_toolchain.libs` and {obj}`PyCcToolchainInfo.libs` is
   optional. This is to support situations where only the Python headers are
   available.
@@ -63,6 +67,13 @@ A brief description of the categories of changes:
   have it installed.
 * (docs) Automatically generated documentation for {bzl:obj}`python_register_toolchains`
   and related symbols.
+* (toolchains) Added {attr}`python_repository.patch_strip` attribute for
+  allowing values that are other than `1`, which has been hard-coded up until
+  now. If you are relying on the undocumented `patches` support in
+  `TOOL_VERSIONS` for registering patched toolchains please consider setting
+  the `patch_strip` explicitly to `1` if you depend on this value - in the
+  future the value may change to default to `0`.
+
 
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
