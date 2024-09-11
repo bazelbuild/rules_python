@@ -28,22 +28,21 @@ load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
 _MAX_NUM_TOOLCHAINS = 9999
 _TOOLCHAIN_INDEX_PAD_LENGTH = len(str(_MAX_NUM_TOOLCHAINS))
 
-def _python_register_toolchains(name, toolchain_attr, module, ignore_root_user_error):
-    """Calls python_register_toolchains and returns a struct used to collect the toolchains.
-    """
-    python_register_toolchains(
-        name = name,
-        python_version = toolchain_attr.python_version,
-        register_coverage_tool = toolchain_attr.configure_coverage_tool,
-        ignore_root_user_error = ignore_root_user_error,
-    )
-    return struct(
-        python_version = toolchain_attr.python_version,
-        name = name,
-        module = struct(name = module.name, is_root = module.is_root),
-    )
+def parse_modules(module_ctx):
+    """Parse the modules and return a struct for registrations.
 
-def _python_impl(module_ctx):
+    Args:
+        module_ctx: {type}`module_ctx` module context.
+
+    Returns:
+        A struct with the following attributes:
+            * `toolchains`: The list of toolchains to register. The last
+              element is special and is treated as the default toolchain.
+            * `defaults`: The default `kwargs` passed to
+              {bzl:obj}`python_register_toolchains`.
+            * `debug_info`: {type}`None | dict` extra information to be passed
+              to the debug repo.
+    """
     if module_ctx.os.environ.get("RULES_PYTHON_BZLMOD_DEBUG", "0") == "1":
         debug_info = {
             "toolchains_registered": [],
@@ -61,7 +60,7 @@ def _python_impl(module_ctx):
     # This is a toolchain_info struct.
     default_toolchain = None
 
-    # Map of string Major.Minor to the toolchain_info struct
+    # Map of version string to the toolchain_info struct
     global_toolchain_versions = {}
 
     ignore_root_user_error = None
@@ -139,11 +138,11 @@ def _python_impl(module_ctx):
                     )
                 toolchain_info = None
             else:
-                toolchain_info = _python_register_toolchains(
-                    toolchain_name,
-                    toolchain_attr,
-                    module = mod,
-                    ignore_root_user_error = ignore_root_user_error,
+                toolchain_info = struct(
+                    python_version = toolchain_attr.python_version,
+                    name = toolchain_name,
+                    register_coverage_tool = toolchain_attr.configure_coverage_tool,
+                    module = struct(name = mod.name, is_root = mod.is_root),
                 )
                 global_toolchain_versions[toolchain_version] = toolchain_info
                 if debug_info:
@@ -184,23 +183,51 @@ def _python_impl(module_ctx):
     if len(toolchains) > _MAX_NUM_TOOLCHAINS:
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
+    return struct(
+        toolchains = [
+            struct(
+                python_version = t.python_version,
+                name = t.name,
+                register_coverage_tool = t.register_coverage_tool,
+            )
+            for t in toolchains
+        ],
+        debug_info = debug_info,
+        default_python_version = toolchains[-1].python_version,
+        defaults = {
+            "ignore_root_user_error": ignore_root_user_error,
+        },
+    )
+
+def _python_impl(module_ctx):
+    py = parse_modules(module_ctx)
+
+    for toolchain_info in py.toolchains:
+        python_register_toolchains(
+            name = toolchain_info.name,
+            python_version = toolchain_info.python_version,
+            register_coverage_tool = toolchain_info.register_coverage_tool,
+            **py.defaults
+        )
+
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
     hub_repo(
         name = "pythons_hub",
-        default_python_version = default_toolchain.python_version,
+        # Last toolchain is default
+        default_python_version = py.default_python_version,
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
-            for index, toolchain in enumerate(toolchains)
+            for index, toolchain in enumerate(py.toolchains)
         ],
-        toolchain_python_versions = [t.python_version for t in toolchains],
+        toolchain_python_versions = [t.python_version for t in py.toolchains],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [
-            "True" if i != len(toolchains) - 1 else "False"
-            for i in range(len(toolchains))
+            "True" if i != len(py.toolchains) - 1 else "False"
+            for i in range(len(py.toolchains))
         ],
-        toolchain_user_repository_names = [t.name for t in toolchains],
+        toolchain_user_repository_names = [t.name for t in py.toolchains],
     )
 
     # This is require in order to support multiple version py_test
@@ -208,15 +235,15 @@ def _python_impl(module_ctx):
     multi_toolchain_aliases(
         name = "python_versions",
         python_versions = {
-            version: toolchain.name
-            for version, toolchain in global_toolchain_versions.items()
+            toolchain.python_version: toolchain.name
+            for toolchain in py.toolchains
         },
     )
 
-    if debug_info != None:
+    if py.debug_info != None:
         _debug_repo(
             name = "rules_python_bzlmod_debug",
-            debug_info = json.encode_indent(debug_info),
+            debug_info = json.encode_indent(py.debug_info),
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
