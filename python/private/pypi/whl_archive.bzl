@@ -15,84 +15,22 @@
 ""
 
 load("//python/private:auth.bzl", "AUTH_ATTRS", "get_auth")
-load("//python/private:envsubst.bzl", "envsubst")
-load("//python/private:python_repositories.bzl", "is_standalone_interpreter")
 load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
-load(":attrs.bzl", "ATTRS", "use_isolated")
-load(":deps.bzl", "all_repo_names")
+load(":attrs.bzl", "ATTRS")
 load(":generate_whl_library_build_bazel.bzl", "generate_whl_library_build_bazel")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":patch_whl.bzl", "patch_whl")
 load(":pypi_repo_utils.bzl", "pypi_repo_utils")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
-_CPPFLAGS = "CPPFLAGS"
-_COMMAND_LINE_TOOLS_PATH_SLUG = "commandlinetools"
 _WHEEL_ENTRY_POINT_PREFIX = "rules_python_wheel_entry_point"
+_PYTHON_PATH_ENTRIES = [
+    Label("//:BUILD.bazel"),
+    Label("@pypi__packaging//:BUILD.bazel"),
+    Label("@pypi__installer//:BUILD.bazel"),
+]
 
-def _get_xcode_location_cflags(rctx):
-    """Query the xcode sdk location to update cflags
-
-    Figure out if this interpreter target comes from rules_python, and patch the xcode sdk location if so.
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
-    """
-
-    # Only run on MacOS hosts
-    if not rctx.os.name.lower().startswith("mac os"):
-        return []
-
-    xcode_sdk_location = repo_utils.execute_unchecked(
-        rctx,
-        op = "GetXcodeLocation",
-        arguments = [repo_utils.which_checked(rctx, "xcode-select"), "--print-path"],
-    )
-    if xcode_sdk_location.return_code != 0:
-        return []
-
-    xcode_root = xcode_sdk_location.stdout.strip()
-    if _COMMAND_LINE_TOOLS_PATH_SLUG not in xcode_root.lower():
-        # This is a full xcode installation somewhere like /Applications/Xcode13.0.app/Contents/Developer
-        # so we need to change the path to to the macos specific tools which are in a different relative
-        # path than xcode installed command line tools.
-        xcode_root = "{}/Platforms/MacOSX.platform/Developer".format(xcode_root)
-    return [
-        "-isysroot {}/SDKs/MacOSX.sdk".format(xcode_root),
-    ]
-
-def _get_toolchain_unix_cflags(rctx, python_interpreter, logger = None):
-    """Gather cflags from a standalone toolchain for unix systems.
-
-    Pip won't be able to compile c extensions from sdists with the pre built python distributions from indygreg
-    otherwise. See https://github.com/indygreg/python-build-standalone/issues/103
-    """
-
-    # Only run on Unix systems
-    if not rctx.os.name.lower().startswith(("mac os", "linux")):
-        return []
-
-    # Only update the location when using a standalone toolchain.
-    if not is_standalone_interpreter(rctx, python_interpreter, logger = logger):
-        return []
-
-    stdout = repo_utils.execute_checked_stdout(
-        rctx,
-        op = "GetPythonVersionForUnixCflags",
-        arguments = [
-            python_interpreter,
-            "-c",
-            "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}', end='')",
-        ],
-    )
-    _python_version = stdout
-    include_path = "{}/include/python{}".format(
-        python_interpreter.dirname,
-        _python_version,
-    )
-
-    return ["-isystem {}".format(include_path)]
-
-def _parse_optional_attrs(rctx, args, extra_pip_args = None):
+def _parse_optional_attrs(rctx, args):
     """Helper function to parse common attributes of pip_repository and whl_library repository rules.
 
     This function also serializes the structured arguments as JSON
@@ -101,35 +39,8 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     Args:
         rctx: Handle to the rule repository context.
         args: A list of parsed args for the rule.
-        extra_pip_args: The pip args to pass.
     Returns: Augmented args list.
     """
-
-    if use_isolated(rctx, rctx.attr):
-        args.append("--isolated")
-
-    # Bazel version 7.1.0 and later (and rolling releases from version 8.0.0-pre.20240128.3)
-    # support rctx.getenv(name, default): When building incrementally, any change to the value of
-    # the variable named by name will cause this repository to be re-fetched.
-    if "getenv" in dir(rctx):
-        getenv = rctx.getenv
-    else:
-        getenv = rctx.os.environ.get
-
-    # Check for None so we use empty default types from our attrs.
-    # Some args want to be list, and some want to be dict.
-    if extra_pip_args != None:
-        args += [
-            "--extra_pip_args",
-            json.encode(struct(arg = [
-                envsubst(pip_arg, rctx.attr.envsubst, getenv)
-                for pip_arg in extra_pip_args
-            ])),
-        ]
-
-    if rctx.attr.download_only:
-        args.append("--download_only")
-
     if rctx.attr.pip_data_exclude != None:
         args += [
             "--pip_data_exclude",
@@ -139,47 +50,28 @@ def _parse_optional_attrs(rctx, args, extra_pip_args = None):
     if rctx.attr.enable_implicit_namespace_pkgs:
         args.append("--enable_implicit_namespace_pkgs")
 
-    if rctx.attr.environment != None:
-        args += [
-            "--environment",
-            json.encode(struct(arg = rctx.attr.environment)),
-        ]
-
     return args
 
-def _create_repository_execution_environment(rctx, python_interpreter, logger = None):
-    """Create a environment dictionary for processes we spawn with rctx.execute.
+def _whl_archive_impl(rctx):
+    whl_archive_impl(
+        rctx = rctx,
+        logger = repo_utils.logger(rctx),
+    )
+
+def whl_archive_impl(*, rctx, logger, whl_path = None):
+    """whl_archive implementation.
 
     Args:
-        rctx (repository_ctx): The repository context.
-        python_interpreter (path): The resolved python interpreter.
-        logger: Optional logger to use for operations.
-    Returns:
-        Dictionary of environment variable suitable to pass to rctx.execute.
+        rctx: {type}`repository_ctx` The repository context.
+        whl_path: {type}`path` The whl path.
+        logger: {type}`struct` The logger.
     """
-
-    # Gather any available CPPFLAGS values
-    cppflags = []
-    cppflags.extend(_get_xcode_location_cflags(rctx))
-    cppflags.extend(_get_toolchain_unix_cflags(rctx, python_interpreter, logger = logger))
-
-    env = {
-        "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
-            rctx,
-            entries = rctx.attr._python_path_entries,
-        ),
-        _CPPFLAGS: " ".join(cppflags),
-    }
-
-    return env
-
-def _whl_archive_impl(rctx):
-    logger = repo_utils.logger(rctx)
     python_interpreter = pypi_repo_utils.resolve_python_interpreter(
         rctx,
         python_interpreter = rctx.attr.python_interpreter,
         python_interpreter_target = rctx.attr.python_interpreter_target,
     )
+
     args = [
         python_interpreter,
         "-m",
@@ -187,33 +79,18 @@ def _whl_archive_impl(rctx):
         "--requirement",
         rctx.attr.requirement,
     ]
-    extra_pip_args = []
-    extra_pip_args.extend(rctx.attr.extra_pip_args)
+    args = _parse_optional_attrs(rctx, args)
 
     # Manually construct the PYTHONPATH since we cannot use the toolchain here
-    environment = _create_repository_execution_environment(rctx, python_interpreter, logger = logger)
+    environment = {
+        "PYTHONPATH": pypi_repo_utils.construct_pythonpath(
+            rctx,
+            # Use a const instead of the attribute value, so that the extraction code is using a subset of
+            # deps when reused from `whl_library`.
+            entries = _PYTHON_PATH_ENTRIES,
+        ),
+    }
 
-    args = _parse_optional_attrs(rctx, args, extra_pip_args)
-
-    whl_archive_impl(
-        rctx = rctx,
-        args = args,
-        environment = environment,
-        logger = logger,
-        python_interpreter = python_interpreter,
-    )
-
-def whl_archive_impl(*, rctx, args, environment, logger, python_interpreter, whl_path = None):
-    """whl_archive implementation.
-
-    Args:
-        rctx: {type}`repository_ctx` The repository context.
-        whl_path: {type}`path` The whl path.
-        python_interpreter: {type}`path` The path to the python interpreter.
-        args: {type}`list[str]` The default args used for the `whl_installer` tool.
-        environment: {type}`dict[str, str]` The environment set for the `whl_installer` tool.
-        logger: {type}`struct` The logger.
-    """
     if not whl_path and rctx.attr.whl_file:
         whl_path = rctx.path(rctx.attr.whl_file)
 
@@ -406,8 +283,8 @@ DEPRECATED. Only left for people who vendor requirements.bzl.
     ),
     "urls": attr.string_list(
         doc = """\
-The list of urls of the whl to be downloaded using bazel downloader. Using this
-attr makes `extra_pip_args` and `download_only` ignored.""",
+The list of urls of the whl to be downloaded using bazel downloader.
+""",
     ),
     "whl_file": attr.label(
         doc = "The whl file that should be used instead of downloading or building the whl.",
@@ -424,13 +301,7 @@ attr makes `extra_pip_args` and `download_only` ignored.""",
         # in order to avoid unnecessary repository fetching restarts.
         #
         # This is very similar to what was done in https://github.com/bazelbuild/rules_go/pull/3478
-        default = [
-            Label("//:BUILD.bazel"),
-        ] + [
-            # Includes all the external dependencies from repositories.bzl
-            Label("@" + repo + "//:BUILD.bazel")
-            for repo in all_repo_names
-        ],
+        default = _PYTHON_PATH_ENTRIES,
     ),
     "_rule_name": attr.string(default = "whl_library"),
 }, **ATTRS)

@@ -257,10 +257,7 @@ def _whl_library_impl(rctx):
 
     whl_archive_impl(
         rctx = rctx,
-        args = args,
-        environment = environment,
         logger = logger,
-        python_interpreter = python_interpreter,
         whl_path = whl_path,
     )
 
