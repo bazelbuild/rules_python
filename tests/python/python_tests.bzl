@@ -200,7 +200,7 @@ def _test_default_non_rules_python_ignore_root_user_error_non_root_module(env):
     env.expect.that_collection(py.toolchains).contains_exactly([
         some_module_toolchain,
         rules_python_toolchain,
-        my_module_toolchain,
+        my_module_toolchain, # this was the only toolchain, default to that
     ]).in_order()
 
 _tests.append(_test_default_non_rules_python_ignore_root_user_error_non_root_module)
