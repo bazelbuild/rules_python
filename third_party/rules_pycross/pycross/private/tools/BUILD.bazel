@@ -20,7 +20,8 @@ py_binary(
     srcs = ["wheel_installer.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "//python/private/pypi/whl_installer:lib",
-        "@pypi__installer//:lib",
+        "//python/private/pypi/whl_installer:pkg",
+        "@pypi__installer//:pkg",
+        "@pypi__packaging//:pkg",
     ],
 )

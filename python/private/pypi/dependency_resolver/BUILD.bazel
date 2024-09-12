@@ -1,7 +1,20 @@
+load("//python:py_library.bzl", "py_library")
+
 exports_files(["dependency_resolver.py"])
 
 filegroup(
     name = "distribution",
     srcs = glob(["**"]),
     visibility = ["//python/private/pypi:__subpackages__"],
+)
+
+py_library(
+    name = "dependency_resolver",
+    srcs = ["dependency_resolver.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//python/runfiles",
+        "@pypi__click//:pkg",
+        "@pypi__pip_tools//:pkg",
+    ],
 )

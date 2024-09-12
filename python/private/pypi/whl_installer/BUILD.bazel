@@ -1,7 +1,7 @@
 load("//python:defs.bzl", "py_binary", "py_library")
 
 py_library(
-    name = "lib",
+    name = "pkg",
     srcs = [
         "arguments.py",
         "namespace_pkgs.py",
@@ -13,10 +13,10 @@ py_library(
         "//:__subpackages__",
     ],
     deps = [
-        "@pypi__installer//:lib",
-        "@pypi__packaging//:lib",
-        "@pypi__pip//:lib",
-        "@pypi__setuptools//:lib",
+        "@pypi__installer//:pkg",
+        "@pypi__packaging//:pkg",
+        "@pypi__pip//:pkg",
+        "@pypi__setuptools//:pkg",
     ],
 )
 
@@ -25,7 +25,7 @@ py_binary(
     srcs = [
         "wheel_installer.py",
     ],
-    deps = [":lib"],
+    deps = [":pkg"],
 )
 
 filegroup(
