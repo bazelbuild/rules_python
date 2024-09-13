@@ -1,8 +1,5 @@
 common --enable_bzlmod
-
-# Update the lockfile by running:
-# bazel mod deps --lockfile_mode=update
-common --lockfile_mode=error
+common --lockfile_mode=update
 
 coverage --java_runtime_version=remotejdk_11
 
