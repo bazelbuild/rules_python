@@ -84,12 +84,23 @@ def _test_semver_sort(env):
             "1.0.0-rc.1",
             "1.0.0-rc.2",
             "1.0.0",
+            # Also handle missing minor and patch version strings
             "2.0",
             "3",
+            # Alphabetic comparison for different builds
+            "3.0.0+build0",
+            "3.0.0+build1",
         ]
     ]
     actual = sorted(want, key = lambda x: x.key())
     env.expect.that_collection(actual).contains_exactly(want).in_order()
+    for i, greater in enumerate(want[1:]):
+        smaller = actual[i]
+        if greater.key() <= smaller.key():
+            env.fail("Expected '{}' to be smaller than '{}', but got otherwise".format(
+                smaller.str(),
+                greater.str(),
+            ))
 
 _tests.append(_test_semver_sort)
 

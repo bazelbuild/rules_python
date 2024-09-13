@@ -19,7 +19,9 @@ def _key(version):
         version.major,
         version.minor,
         version.patch,
+        # non pre-release versions are higher
         version.pre_release == "",
+        # then we compare each element of the pre_release tag separately
         tuple([
             (
                 i if not i.isdigit() else "",
@@ -28,6 +30,8 @@ def _key(version):
             )
             for i in version.pre_release.split(".")
         ]) if version.pre_release else None,
+        # And build info is just alphabetic
+        version.build,
     )
 
 def semver(version):
@@ -41,9 +45,9 @@ def semver(version):
     """
 
     # Implement the https://semver.org/ spec
-    major, _, version = version.partition(".")
-    minor, _, version = version.partition(".")
-    patch, _, build = version.partition("+")
+    major, _, tail = version.partition(".")
+    minor, _, tail = tail.partition(".")
+    patch, _, build = tail.partition("+")
     patch, _, pre_release = patch.partition("-")
 
     public = struct(
@@ -55,6 +59,7 @@ def semver(version):
         build = build,
         # buildifier: disable=uninitialized
         key = lambda: _key(self.actual),
+        str = lambda: version,
     )
     self = struct(actual = public)
     return public
