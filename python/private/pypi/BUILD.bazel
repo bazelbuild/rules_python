@@ -59,6 +59,7 @@ bzl_library(
     srcs = ["extension.bzl"],
     deps = [
         ":attrs_bzl",
+        "//python/private:semver_bzl",
         ":hub_repository_bzl",
         ":parse_requirements_bzl",
         ":evaluate_markers_bzl",
