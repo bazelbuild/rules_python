@@ -29,7 +29,7 @@ def _whl_library_alias_impl(rctx):
         build_content.append(_whl_library_render_alias_target(
             alias_name = alias_name,
             default_repo_prefix = default_repo_prefix,
-            minor_mapping = rctx.minor_mapping,
+            minor_mapping = rctx.attr.minor_mapping,
             rules_python = rules_python,
             version_map = version_map,
             wheel_name = rctx.attr.wheel_name,
