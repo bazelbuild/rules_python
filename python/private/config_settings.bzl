@@ -27,14 +27,15 @@ def _ver_key(s):
     micro, _, s = s.partition(".")
     return (int(major), int(minor), int(micro))
 
-def _flag_values(python_versions):
+def _flag_values(*, python_versions, minor_mapping):
     """Construct a map of python_version to a list of toolchain values.
 
     This mapping maps the concept of a config setting to a list of compatible toolchain versions.
     For using this in the code, the VERSION_FLAG_VALUES should be used instead.
 
     Args:
-        python_versions: list of strings; all X.Y.Z python versions
+        python_versions: {type}`list[str]` X.Y.Z` python versions.
+        minor_mapping: {type}`dict[str, str]` `X.Y` to `X.Y.Z` mapping.
 
     Returns:
         A `map[str, list[str]]`. Each key is a python_version flag value. Each value
@@ -61,13 +62,13 @@ def _flag_values(python_versions):
         ret.setdefault(minor_version, [minor_version]).append(micro_version)
 
         # Ensure that is_python_3.9.8 is matched if python_version is set
-        # to 3.9 if MINOR_MAPPING points to 3.9.8
-        default_micro_version = MINOR_MAPPING[minor_version]
+        # to 3.9 if minor_mapping points to 3.9.8
+        default_micro_version = minor_mapping[minor_version]
         ret[micro_version] = [micro_version, minor_version] if default_micro_version == micro_version else [micro_version]
 
     return ret
 
-VERSION_FLAG_VALUES = _flag_values(TOOL_VERSIONS.keys())
+VERSION_FLAG_VALUES = _flag_values(python_versions = TOOL_VERSIONS.keys(), minor_mapping = MINOR_MAPPING)
 
 def is_python_config_setting(name, *, python_version, reuse_conditions = None, **kwargs):
     """Create a config setting for matching 'python_version' configuration flag.

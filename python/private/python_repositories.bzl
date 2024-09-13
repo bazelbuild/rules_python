@@ -22,6 +22,7 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
     "//python:versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
+    "MINOR_MAPPING",
     "PLATFORMS",
     "TOOL_VERSIONS",
     "get_release_info",
@@ -583,6 +584,7 @@ def python_register_toolchains(
         register_coverage_tool = False,
         set_python_version_constraint = False,
         tool_versions = None,
+        minor_mapping = None,
         **kwargs):
     """Convenience macro for users which does typical setup.
 
@@ -607,6 +609,8 @@ def python_register_toolchains(
         tool_versions: {type}`dict` contains a mapping of version with SHASUM
             and platform info. If not supplied, the defaults in
             python/versions.bzl will be used.
+        minor_mapping: {type}`dict[str, str]` contains a mapping from `X.Y` to `X.Y.Z`
+            version.
         **kwargs: passed to each {obj}`python_repository` call.
     """
 
@@ -616,8 +620,9 @@ def python_register_toolchains(
 
     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
     tool_versions = tool_versions or TOOL_VERSIONS
+    minor_mapping = minor_mapping or MINOR_MAPPING
 
-    python_version = full_version(python_version)
+    python_version = full_version(version = python_version, minor_mapping = minor_mapping)
 
     toolchain_repo_name = "{name}_toolchains".format(name = name)
 

@@ -287,6 +287,7 @@ bzl_library(
     srcs = ["whl_library_alias.bzl"],
     deps = [
         ":render_pkg_aliases_bzl",
+        "//python:versions_bzl",
         "//python/private:full_version_bzl",
     ],
 )
