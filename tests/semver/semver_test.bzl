@@ -69,6 +69,12 @@ def _test_semver_sort(env):
     want = [
         semver(item)
         for item in [
+            # The items are sorted from lowest to highest version
+            "0.0.1",
+            "0.1.0-rc",
+            "0.1.0",
+            "0.9.11",
+            "0.9.12",
             "1.0.0-alpha",
             "1.0.0-alpha.1",
             "1.0.0-alpha.beta",
@@ -78,6 +84,8 @@ def _test_semver_sort(env):
             "1.0.0-rc.1",
             "1.0.0-rc.2",
             "1.0.0",
+            "2.0",
+            "3",
         ]
     ]
     actual = sorted(want, key = lambda x: x.key())

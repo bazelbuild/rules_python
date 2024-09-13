@@ -16,6 +16,9 @@
 
 def _key(version):
     return (
+        version.major,
+        version.minor,
+        version.patch,
         version.pre_release == "",
         tuple([
             (
@@ -25,9 +28,6 @@ def _key(version):
             )
             for i in version.pre_release.split(".")
         ]) if version.pre_release else None,
-        version.patch,
-        version.minor,
-        version.major,
     )
 
 def semver(version):
@@ -47,7 +47,6 @@ def semver(version):
     patch, _, pre_release = patch.partition("-")
 
     public = struct(
-        # use semver vocabulary here
         major = int(major),
         minor = int(minor or "0"),
         # NOTE: this is called `micro` in the Python interpreter versioning scheme
