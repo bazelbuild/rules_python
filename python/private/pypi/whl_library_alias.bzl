@@ -14,7 +14,6 @@
 
 """whl_library aliases for multi_pip_parse."""
 
-load("//python:versions.bzl", "MINOR_MAPPING")
 load("//python/private:full_version.bzl", "full_version")
 load(":render_pkg_aliases.bzl", "NO_MATCH_ERROR_MESSAGE_TEMPLATE")
 
@@ -96,7 +95,7 @@ whl_library_alias = repository_rule(
                   "not specified, then the default rules won't be able to " +
                   "resolve a wheel and an error will occur.",
         ),
-        "minor_mapping": attr.string_dict(mandatory = True, default = MINOR_MAPPING),
+        "minor_mapping": attr.string_dict(mandatory = True),
         "version_map": attr.string_dict(mandatory = True),
         "wheel_name": attr.string(mandatory = True),
         "_rules_python_workspace": attr.label(default = Label("//:WORKSPACE")),

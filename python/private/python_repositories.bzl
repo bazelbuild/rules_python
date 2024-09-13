@@ -721,6 +721,7 @@ def python_register_multi_toolchains(
         name,
         python_versions,
         default_version = None,
+        minor_mapping = None,
         **kwargs):
     """Convenience macro for registering multiple Python toolchains.
 
@@ -729,10 +730,14 @@ def python_register_multi_toolchains(
         python_versions: {type}`list[str]` the Python versions.
         default_version: {type}`str` the default Python version. If not set,
             the first version in python_versions is used.
+        minor_mapping: {type}`dict[str, str]` mapping between `X.Y` to `X.Y.Z`
+            format. Defaults to the value in `//python:versions.bzl`.
         **kwargs: passed to each {obj}`python_register_toolchains` call.
     """
     if len(python_versions) == 0:
         fail("python_versions must not be empty")
+
+    minor_mapping = minor_mapping or MINOR_MAPPING
 
     if not default_version:
         default_version = python_versions.pop(0)
@@ -747,12 +752,14 @@ def python_register_multi_toolchains(
             name = name + "_" + python_version.replace(".", "_"),
             python_version = python_version,
             set_python_version_constraint = True,
+            minor_mapping = minor_mapping,
             **kwargs
         )
     python_register_toolchains(
         name = name + "_" + default_version.replace(".", "_"),
         python_version = default_version,
         set_python_version_constraint = False,
+        minor_mapping = minor_mapping,
         **kwargs
     )
 
@@ -762,4 +769,5 @@ def python_register_multi_toolchains(
             python_version: name + "_" + python_version.replace(".", "_")
             for python_version in (python_versions + [default_version])
         },
+        minor_mapping = minor_mapping,
     )

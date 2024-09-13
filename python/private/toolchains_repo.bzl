@@ -358,11 +358,13 @@ def multi_pip_parse(name, requirements_lock, **kwargs):
         name = name,
         python_versions = {python_versions},
         requirements_lock = requirements_lock,
+        minor_mapping = {minor_mapping},
         **kwargs
     )
 
 """.format(
         python_versions = rctx.attr.python_versions.keys(),
+        minor_mapping = render.indent(render.dict(rctx.attr.minor_mapping), indent = " " * 8).lstrip(),
         rules_python = rules_python,
     )
     rctx.file("pip.bzl", content = pip_bzl)
@@ -371,6 +373,7 @@ def multi_pip_parse(name, requirements_lock, **kwargs):
 multi_toolchain_aliases = repository_rule(
     _multi_toolchain_aliases_impl,
     attrs = {
+        "minor_mapping": attr.string_dict(doc = "The mapping between `X.Y` and `X.Y.Z` python version values"),
         "python_versions": attr.string_dict(doc = "The Python versions."),
         "_rules_python_workspace": attr.label(default = Label("//:WORKSPACE")),
     },
