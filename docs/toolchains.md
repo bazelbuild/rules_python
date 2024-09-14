@@ -161,9 +161,13 @@ Remember to call `use_repo()` to make repos visible to your module:
 
 #### Toolchain usage in other rules
 
-Python toolchains can be utilized in other bazel rules, such as `genrule()`, by adding the `toolchains=["@rules_python//python:current_py_toolchain"]` attribute. You can obtain the path to the Python interpreter using the `$(PYTHON2)` and `$(PYTHON3)` ["Make" Variables](https://bazel.build/reference/be/make-variables). See the
-{gh-path}`test_current_py_toolchain <tests/load_from_macro/BUILD.bazel>` target for an example.
-
+Python toolchains can be utilized in other bazel rules, such as `genrule()`, by
+adding the `toolchains=["@rules_python//python:current_py_toolchain"]`
+attribute. You can obtain the path to the Python interpreter using the
+`$(PYTHON2)` and `$(PYTHON3)` ["Make"
+Variables](https://bazel.build/reference/be/make-variables). See the
+{gh-path}`test_current_py_toolchain <tests/load_from_macro/BUILD.bazel>` target
+for an example.
 
 ## Workspace configuration
 
@@ -242,3 +246,193 @@ there is a toolchain misconfiguration somewhere.
 To aid migration off the Bazel-builtin toolchain, rules_python provides
 {obj}`@rules_python//python/runtime_env_toolchains:all`. This is an equivalent
 toolchain, but is implemented using rules_python's objects.
+
+
+## Custom toolchains
+
+While rules_python provides toolchains by default, it is not required to use
+them, and you can define your own toolchains to use instead. This section
+gives an introduction for how to define them yourself.
+
+:::{note}
+* Defining your own toolchains is an advanced feature.
+* APIs used for defining them are less stable and may change more often.
+:::
+
+Under the hood, there are multiple toolchains that comprise the different
+information necessary to build Python targets. Each one has an
+associated _toolchain type_ that identifies it. We call the collection of these
+toolchains a "toolchain suite".
+
+One of the underlying design goals of the toolchains is to support complex and
+bespoke environments. Such environments may use an arbitrary combination of
+{obj}`RBE`, cross-platform building, multiple Python versions,
+building Python from source, embeding Python (as opposed to building separate
+interpreters), using prebuilt binaries, or using binaries built from source. To
+that end, many of the attributes they accept, and fields they provide, are
+optional.
+
+### Target toolchain type
+
+The target toolchain type is {obj}`//python:toolchain_type`, and it
+is for _target configuration_ runtime information, e.g., the Python version
+and interpreter binary that a program will use.
+
+The is typically implemented using {obj}`py_runtime()`, which
+provides the {obj}`PyRuntimeInfo` provider. For historical reasons from the
+Python 2 transition, `py_runtime` is wrapped in {obj}`py_runtime_pair`,
+which provides {obj}`ToolchainInfo` with the field `py3_runtime`, which is an
+instance of `PyRuntimeInfo`.
+
+This toolchain type is intended to hold only _target configuration_ values. As
+such, when defining its associated {external:bzl:obj}`toolchain` target, only
+set {external:bzl:obj}`toolchain.target_compatible_with` and/or
+{external:bzl:obj}`toolchain.target_settings` constraints; there is no need to
+set {external:bzl:obj}`toolchain.exec_compatible_with`.
+
+### Python C toolchain type
+
+The Python C toolchain type ("py cc") is {obj}`//python/cc:toolchain_type`, and
+it has C/C++ information for the _target configuration_, e.g. the C headers that
+provide `Python.h`.
+
+This is typically implemented using {obj}`py_cc_toolchain()`, which provides
+{obj}`ToolchainInfo` with the field `py_cc_toolchain` set, which is a
+{obj}`PyCcToolchainInfo` provider instance. 
+
+This toolchain type is intended to hold only _target configuration_ values
+relating to the C/C++ information for the Python runtime. As such, when defining
+its associated {external:obj}`toolchain` target, only set
+{external:bzl:obj}`toolchain.target_compatible_with` and/or
+{external:bzl:obj}`toolchain.target_settings` constraints; there is no need to
+set {external:bzl:obj}`toolchain.exec_compatible_with`.
+
+### Exec tools toolchain type
+
+The exec tools toolchain type is {obj}`//python:exec_tools_toolchain_type`,
+and it is for supporting tools for _building_ programs, e.g. the binary to
+precompile code at build time.
+
+This toolchain type is intended to hold only _exec configuration_ values --
+usually tools (prebuilt or from-source) used to build Python targets.
+
+This is typically implemented using {obj}`py_exec_tools_toolchain`, which
+provides {obj}`ToolchainInfo` with the field `exec_tools` set, which is an
+instance of {obj}`PyExecToolsInfo`.
+
+The toolchain constraints of this toolchain type can be a bit more nuanced than
+the other toolchain types. Typically, you set
+{external:bzl:obj}`toolchain.target_settings` to the Python version the tools
+are for, and {external:bzl:obj}`toolchain.exec_compatible_with` to the platform
+they can run on. This allows the toolchain to first be considered based on the
+target configuration (e.g. Python version), then for one to be chosen based on
+finding one compatible with the available host platforms to run the tool on.
+
+However, what `target_compatible_with`/`target_settings` and
+`exec_compatible_with` values to use depend on details of the tools being used.
+For example:
+* If you had a precompiler that supported any version of Python, then
+  putting the Python version in `target_settings` is unnecessary.
+* If you had a prebuilt polyglot precompiler binary that could run on any
+  platform, then setting `exec_compatible_with` is unnecessary.
+
+This can work because, when the rules invoke these build tools, they pass along
+all necessary information so that the tool can be entirely independent of the
+target configuration being built for.
+
+Alternatively, if you had a precompiler that only ran on linux, and only
+produced valid output for programs intended to run on linux, then _both_
+`exec_compatible_with` and `target_compatible_with` must be set to linux.
+
+### Custom toolchain example
+
+Here, we show an example for a semi-complicated toolchain suite, one that is:
+
+* A CPython-based interpreter
+* For Python version 3.12.0
+* Using an in-build interpreter built from source
+* That only runs on Linux
+* Using a prebuilt precompiler that only runs on Linux, and only produces byte
+  code valid for 3.12
+* With the exec tools interpreter disabled (unnecessary with a prebuild
+  precompiler)
+* Providing C headers and libraries
+
+Defining toolchains for this might look something like this:
+
+```
+# File: toolchain_impls/BUILD
+load("@rules_python//python:py_cc_toolchain.bzl", "py_cc_toolchain")
+load("@rules_python//python:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
+load("@rules_python//python:py_runtime.bzl", "py_runtime")
+load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
+
+MAJOR = 3
+MINOR = 12
+MICRO = 0
+
+py_runtime(
+    name = "runtime",
+    interpreter = ":python",
+    interpreter_version_info = {
+        "major": str(MAJOR),
+        "minor": str(MINOR),
+        "micro": str(MICRO),
+    }
+    implementation = "cpython"
+)
+py_runtime_pair(
+    name = "runtime_pair",
+    py3_runtime = ":runtime"
+)
+
+py_cc_toolchain(
+    name = "py_cc_toolchain_impl",
+    headers = ":headers",
+    libs = ":libs",
+    python_version = "{}.{}".format(MAJOR, MINOR)
+)
+
+py_exec_tools_toolchain(
+    name = "exec_tools_toolchain_impl",
+    exec_interpreter = "@rules_python/python:null_target",
+    precompiler = "precompiler-cpython-3.12"
+)
+
+cc_binary(name = "python3.12", ...)
+cc_library(name = "headers", ...)
+cc_library(name = "libs", ...)
+
+# File: toolchains/BUILD
+# Putting toolchain() calls in a separate package from the toolchain
+# implementations minimizes Bazel loading overhead
+
+toolchain(
+    name = "runtime_toolchain",
+    toolchain = "//toolchain_impl:runtime_pair",
+    toolchain_type = "@rules_python//python:toolchain_type",
+    target_compatible_with = ["@platforms/os:linux"]
+)
+toolchain(
+    name = "py_cc_toolchain",
+    toolchain = "//toolchain_impl:py_cc_toolchain_impl",
+    toolchain_type = "@rules_python//python/cc:toolchain_type",
+    target_compatible_with = ["@platforms/os:linux"]
+)
+
+toolchain(
+    name = "exec_tools_toolchain",
+    toolchain = "//toolchain_impl:exec_tools_toolchain_impl",
+    toolchain_type = "@rules_python//python:exec_tools_toolchain_type",
+    target_settings = [
+        "@rules_python//python/config_settings:is_python_3.12",
+    ],
+    exec_comaptible_with = ["@platforms/os:linux"]
+)
+```
+
+:::{note}
+The toolchain() calls should be in a separate BUILD file from everything else.
+This avoids Bazel having to perform unnecessary work when it discovers the list
+of available toolchains.
+:::
