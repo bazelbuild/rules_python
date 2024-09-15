@@ -16,9 +16,10 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
-load("//python:versions.bzl", "TOOL_VERSIONS")
-load("//python/private:repo_utils.bzl", "repo_utils")
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
+load(":full_version.bzl", "full_version")
 load(":pythons_hub.bzl", "hub_repo")
+load(":repo_utils.bzl", "repo_utils")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
 load(":util.bzl", "IS_BAZEL_6_4_OR_HIGHER")
@@ -184,6 +185,11 @@ def parse_modules(module_ctx):
         fail("more than {} python versions are not supported".format(_MAX_NUM_TOOLCHAINS))
 
     return struct(
+        debug_info = debug_info,
+        default_python_version = toolchains[-1].python_version,
+        defaults = {
+            "ignore_root_user_error": ignore_root_user_error,
+        },
         toolchains = [
             struct(
                 python_version = t.python_version,
@@ -192,11 +198,6 @@ def parse_modules(module_ctx):
             )
             for t in toolchains
         ],
-        debug_info = debug_info,
-        default_python_version = toolchains[-1].python_version,
-        defaults = {
-            "ignore_root_user_error": ignore_root_user_error,
-        },
     )
 
 def _python_impl(module_ctx):
@@ -207,6 +208,7 @@ def _python_impl(module_ctx):
             name = toolchain_info.name,
             python_version = toolchain_info.python_version,
             register_coverage_tool = toolchain_info.register_coverage_tool,
+            minor_mapping = MINOR_MAPPING,
             **py.defaults
         )
 
@@ -220,7 +222,10 @@ def _python_impl(module_ctx):
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)
         ],
-        toolchain_python_versions = [t.python_version for t in py.toolchains],
+        toolchain_python_versions = [
+            full_version(version = t.python_version, minor_mapping = MINOR_MAPPING)
+            for t in py.toolchains
+        ],
         # The last toolchain is the default; it can't have version constraints
         # Despite the implication of the arg name, the values are strs, not bools
         toolchain_set_python_version_constraints = [

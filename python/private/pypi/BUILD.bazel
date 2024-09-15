@@ -157,7 +157,10 @@ bzl_library(
 bzl_library(
     name = "multi_pip_parse_bzl",
     srcs = ["multi_pip_parse.bzl"],
-    deps = ["pip_repository_bzl"],
+    deps = [
+        "pip_repository_bzl",
+        "//python/private:text_util_bzl",
+    ],
 )
 
 bzl_library(
