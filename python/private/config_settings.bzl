@@ -178,7 +178,6 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         # also prevents version-unaware targets from inadvertently matching
         # a select condition when they shouldn't.
         build_setting_default = "",
-        values = [""] + VERSION_FLAG_VALUES.keys(),
         visibility = ["//visibility:public"],
     )
 
@@ -204,14 +203,6 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
 
 def _python_version_flag_impl(ctx):
     value = ctx.build_setting_value
-    if value not in ctx.attr.values:
-        fail((
-            "Invalid --python_version value: {actual}\nAllowed values {allowed}"
-        ).format(
-            actual = value,
-            allowed = ", ".join(sorted(ctx.attr.values)),
-        ))
-
     return [
         # BuildSettingInfo is the original provider returned, so continue to
         # return it for compatibility
@@ -227,9 +218,5 @@ def _python_version_flag_impl(ctx):
 _python_version_flag = rule(
     implementation = _python_version_flag_impl,
     build_setting = config.string(flag = True),
-    attrs = {
-        "values": attr.string_list(
-            doc = "Allowed values.",
-        ),
-    },
+    attrs = {},
 )
