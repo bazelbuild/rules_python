@@ -14,6 +14,7 @@
 
 """A pip_parse implementation for version aware toolchains in WORKSPACE."""
 
+load("//python/private:text_util.bzl", "render")
 load(":pip_repository.bzl", pip_parse = "pip_repository")
 
 def _multi_pip_parse_impl(rctx):
@@ -97,6 +98,7 @@ def install_deps(**whl_library_kwargs):
             name = "{name}_" + wheel_name,
             wheel_name = wheel_name,
             default_version = "{default_version}",
+            minor_mapping = {minor_mapping},
             version_map = _version_map[wheel_name],
         )
 """.format(
@@ -107,6 +109,7 @@ def install_deps(**whl_library_kwargs):
         process_requirements_calls = "\n".join(process_requirements_calls),
         rules_python = rules_python,
         default_version = rctx.attr.default_version,
+        minor_mapping = render.indent(render.dict(rctx.attr.minor_mapping)).lstrip(),
     )
     rctx.file("requirements.bzl", requirements_bzl)
     rctx.file("BUILD.bazel", "exports_files(['requirements.bzl'])")
@@ -115,12 +118,13 @@ _multi_pip_parse = repository_rule(
     _multi_pip_parse_impl,
     attrs = {
         "default_version": attr.string(),
+        "minor_mapping": attr.string_dict(),
         "pip_parses": attr.string_dict(),
         "_rules_python_workspace": attr.label(default = Label("//:WORKSPACE")),
     },
 )
 
-def multi_pip_parse(name, default_version, python_versions, python_interpreter_target, requirements_lock, **kwargs):
+def multi_pip_parse(name, default_version, python_versions, python_interpreter_target, requirements_lock, minor_mapping, **kwargs):
     """NOT INTENDED FOR DIRECT USE!
 
     This is intended to be used by the multi_pip_parse implementation in the template of the
@@ -128,10 +132,11 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
 
     Args:
         name: the name of the multi_pip_parse repository.
-        default_version: the default Python version.
-        python_versions: all Python toolchain versions currently registered.
-        python_interpreter_target: a dictionary which keys are Python versions and values are resolved host interpreters.
-        requirements_lock: a dictionary which keys are Python versions and values are locked requirements files.
+        default_version: {type}`str` the default Python version.
+        python_versions: {type}`list[str]` all Python toolchain versions currently registered.
+        python_interpreter_target: {type}`dict[str, Label]` a dictionary which keys are Python versions and values are resolved host interpreters.
+        requirements_lock: {type}`dict[str, Label]` a dictionary which keys are Python versions and values are locked requirements files.
+        minor_mapping: {type}`dict[str, str]` mapping between `X.Y` to `X.Y.Z` format.
         **kwargs: extra arguments passed to all wrapped pip_parse.
 
     Returns:
@@ -157,4 +162,5 @@ def multi_pip_parse(name, default_version, python_versions, python_interpreter_t
         name = name,
         default_version = default_version,
         pip_parses = pip_parses,
+        minor_mapping = minor_mapping,
     )
