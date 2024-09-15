@@ -14,10 +14,11 @@
 """Setup a python-build-standalone based toolchain."""
 
 load("@rules_cc//cc:defs.bzl", "cc_import", "cc_library")
-load("@rules_python//python:py_runtime.bzl", "py_runtime")
-load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
-load("@rules_python//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
-load("@rules_python//python/private:py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
+load("//python:py_runtime.bzl", "py_runtime")
+load("//python:py_runtime_pair.bzl", "py_runtime_pair")
+load("//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
+load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
+load(":semver.bzl", "semver")
 
 def define_hermetic_runtime_toolchain_impl(
         *,
@@ -48,9 +49,8 @@ def define_hermetic_runtime_toolchain_impl(
             use.
     """
     _ = name  # @unused
-    python_version_info = python_version.split(".")
-    major = python_version_info[0]
-    minor = python_version_info[1]
+    version_info = semver(python_version)
+    version_dict = version_info.to_dict()
     native.filegroup(
         name = "files",
         srcs = native.glob(
@@ -67,19 +67,19 @@ def define_hermetic_runtime_toolchain_impl(
                 "**/* *",  # Bazel does not support spaces in file names.
                 # Unused shared libraries. `python` executable and the `:libpython` target
                 # depend on `libpython{python_version}.so.1.0`.
-                "lib/libpython{}.{}.so".format(major, minor),
+                "lib/libpython{major}.{minor}.so".format(**version_dict),
                 # static libraries
                 "lib/**/*.a",
                 # tests for the standard libraries.
-                "lib/python{}.{}/**/test/**".format(major, minor),
-                "lib/python{}.{}/**/tests/**".format(major, minor),
+                "lib/python{major}.{minor}/**/test/**".format(**version_dict),
+                "lib/python{major}.{minor}/**/tests/**".format(**version_dict),
                 "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
             ] + extra_files_glob_exclude,
         ),
     )
     cc_import(
         name = "interface",
-        interface_library = "libs/python{}{}.lib".format(major, minor),
+        interface_library = "libs/python{major}{minor}.lib".format(**version_dict),
         system_provided = True,
     )
 
@@ -96,8 +96,8 @@ def define_hermetic_runtime_toolchain_impl(
         hdrs = [":includes"],
         includes = [
             "include",
-            "include/python{}.{}".format(major, minor),
-            "include/python{}.{}m".format(major, minor),
+            "include/python{major}.{minor}".format(**version_dict),
+            "include/python{major}.{minor}m".format(**version_dict),
         ],
     )
     cc_library(
@@ -105,11 +105,11 @@ def define_hermetic_runtime_toolchain_impl(
         hdrs = [":includes"],
         srcs = select({
             "@platforms//os:linux": [
-                "lib/libpython{}.{}.so".format(major, minor),
-                "lib/libpython{}.{}.so.1.0".format(major, minor),
+                "lib/libpython{major}.{minor}.so".format(**version_dict),
+                "lib/libpython{major}.{minor}.so.1.0".format(**version_dict),
             ],
-            "@platforms//os:macos": ["lib/libpython{}.{}.dylib".format(major, minor)],
-            "@platforms//os:windows": ["python3.dll", "libs/python{}{}.lib".format(major, minor)],
+            "@platforms//os:macos": ["lib/libpython{major}.{minor}.dylib".format(**version_dict)],
+            "@platforms//os:windows": ["python3.dll", "libs/python{major}{minor}.lib".format(**version_dict)],
         }),
     )
 
@@ -122,24 +122,22 @@ def define_hermetic_runtime_toolchain_impl(
         values = {"collect_code_coverage": "true"},
         visibility = ["//visibility:private"],
     )
-    py_runtime_kwargs = {}
-    if coverage_tool:
-        # Earlier versions of Bazel don't support this attribute.
-        py_runtime_kwargs["coverage_tool"] = coverage_tool
 
     py_runtime(
         name = "py3_runtime",
         files = [":files"],
         interpreter = python_bin,
         interpreter_version_info = {
-            "major": str(major),
-            "micro": str(python_version_info[2]),
-            "minor": str(minor),
+            "major": str(version_info.major),
+            "micro": str(version_info.patch),
+            "minor": str(version_info.minor),
         },
+        # Convert empty string to None
+        coverage_tool = coverage_tool or None,
         python_version = "PY3",
         implementation_name = "cpython",
-        pyc_tag = "cpython-{}{}".format(major, minor),
-        **py_runtime_kwargs
+        # See https://peps.python.org/pep-3147/ for pyc tag infix format
+        pyc_tag = "cpython-{major}{minor}".format(**version_dict),
     )
 
     py_runtime_pair(
@@ -157,5 +155,7 @@ def define_hermetic_runtime_toolchain_impl(
 
     py_exec_tools_toolchain(
         name = "py_exec_tools_toolchain",
-        precompiler = "@rules_python//tools/precompiler:precompiler",
+        # This macro is called in another repo: use Label() to ensure it
+        # resolves in the rules_python context.
+        precompiler = Label("//tools/precompiler:precompiler"),
     )
