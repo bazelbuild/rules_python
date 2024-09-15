@@ -18,13 +18,7 @@
 load(
     "//python/private:config_settings.bzl",
     _construct_config_settings = "construct_config_settings",
-    _is_python_config_setting = "is_python_config_setting",
 )
-
-# This is exposed only for cases where the pip hub repo needs to use this rule
-# to define hub-repo scoped config_settings for platform specific wheel
-# support.
-is_python_config_setting = _is_python_config_setting
 
 # This is exposed for usage in rules_python only.
 construct_config_settings = _construct_config_settings
