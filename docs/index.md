@@ -57,7 +57,7 @@ by buildifier.
 self
 getting-started
 pypi-dependencies
-toolchains
+Toolchains <toolchains>
 pip
 coverage
 precompiling
