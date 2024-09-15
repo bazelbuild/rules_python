@@ -8,6 +8,14 @@
 :::{bzl:target} toolchain_type
 
 Identifier for the toolchain type for the target platform.
+
+This toolchain type gives information about the runtime for the target platform.
+It is typically implemented by the {obj}`py_runtime` rule
+
+::::{seealso}
+{any}`Custom Toolchains` for how to define custom toolchains
+::::
+
 :::
 
 :::{bzl:target} exec_tools_toolchain_type

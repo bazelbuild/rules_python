@@ -25,3 +25,10 @@ This target provides:
 
 * `CcInfo`: The C++ information about the Python libraries.
 :::
+
+:::{bzl:target} toolchain_type
+
+Toolchain type identifier for the Python C toolchain.
+
+This toolchain type is typically implemented by {obj}`py_cc_toolchain`.
+:::

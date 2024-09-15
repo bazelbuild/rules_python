@@ -90,7 +90,7 @@ chevrons (`<>`):
 {obj}`the binary rule <py_binary>`
 ```
 
-Finally, specific types of objects (rules, functions, providers, etc) can be
+Specific types of objects (rules, functions, providers, etc) can be
 specified to help disambiguate short names:
 
 ```
@@ -98,11 +98,20 @@ specified to help disambiguate short names:
 {rule}`py_binary`  # Refers to the underlying rule
 ```
 
+Finally, objects built into Bazel can be explicitly referenced by forcing
+a lookup outside the local project using `{external}`. For example, the symbol
+`toolchain` is a builtin Bazel function, but it could also be the name of a tag
+class in the local project. To force looking up the builtin Bazel `toolchain` rule,
+`{external:bzl:rule}` can be used, e.g.:
+
+```
+{external:bzl:obj}`toolchain`
+```
+
 Those are the basics of cross referencing. Sphinx has several additional
 syntaxes for finding and referencing objects; see
 [the MyST docs for supported
 syntaxes](https://myst-parser.readthedocs.io/en/latest/syntax/cross-referencing.html#reference-roles)
-
 
 ### Cross reference roles
 
