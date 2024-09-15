@@ -19,6 +19,7 @@ load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_L
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
+load("//python/private:semver.bzl", "semver")
 load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
@@ -32,22 +33,8 @@ load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_library.bzl", "whl_library")
 load(":whl_repo_name.bzl", "whl_repo_name")
 
-def _parse_version(version):
-    major, _, version = version.partition(".")
-    minor, _, version = version.partition(".")
-    patch, _, version = version.partition(".")
-    build, _, version = version.partition(".")
-
-    return struct(
-        # use semver vocabulary here
-        major = major,
-        minor = minor,
-        patch = patch,  # this is called `micro` in the Python interpreter versioning scheme
-        build = build,
-    )
-
 def _major_minor_version(version):
-    version = _parse_version(version)
+    version = semver(version)
     return "{}.{}".format(version.major, version.minor)
 
 def _whl_mods_impl(mctx):
