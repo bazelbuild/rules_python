@@ -49,8 +49,8 @@ def http_archive(**kwargs):
 def py_repositories():
     """Runtime dependencies that users must install.
 
-    This function should be loaded and called in the user's WORKSPACE.
-    With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
+    This function should be loaded and called in the user's `WORKSPACE`.
+    With `bzlmod` enabled, this function is not needed since `MODULE.bazel` handles transitive deps.
     """
     maybe(
         internal_config_repo,
@@ -180,7 +180,6 @@ def _python_repository_impl(rctx):
     patches = rctx.attr.patches
     if patches:
         for patch in patches:
-            # Should take the strip as an attr, but this is fine for the moment
             rctx.patch(patch, strip = rctx.attr.patch_strip)
 
     # Write distutils.cfg to the Python installation.
@@ -358,27 +357,11 @@ python_repository = repository_rule(
             doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
         ),
         "coverage_tool": attr.string(
-            # Mirrors the definition at
-            # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
             doc = """
-This is a target to use for collecting code coverage information from `py_binary`
-and `py_test` targets.
+This is a target to use for collecting code coverage information from {rule}`py_binary`
+and {rule}`py_test` targets.
 
-If set, the target must either produce a single file or be an executable target.
-The path to the single file, or the executable if the target is executable,
-determines the entry point for the python coverage tool.  The target and its
-runfiles will be added to the runfiles when coverage is enabled.
-
-The entry point for the tool must be loadable by a Python interpreter (e.g. a
-`.py` or `.pyc` file).  It must accept the command line arguments
-of coverage.py (https://coverage.readthedocs.io), at least including
-the `run` and `lcov` subcommands.
-
-The target is accepted as a string by the python_repository and evaluated within
-the context of the toolchain repository.
-
-For more information see the official bazel docs
-(https://bazel.build/reference/be/python#py_runtime.coverage_tool).
+For more information see {attr}`py_runtime.coverage_tool`.
 """,
         ),
         "distutils": attr.label(
@@ -469,7 +452,7 @@ def python_register_toolchains(
         tool_versions = None,
         minor_mapping = None,
         **kwargs):
-    """Convenience macro for users which does typical setup.
+    """Convenience macro for users which does typical setup in `WORKSPACE`.
 
     - Create a repository for each built-in platform like "python_3_8_linux_amd64" -
       this repository is lazily fetched when Python is needed for that platform.
@@ -479,6 +462,10 @@ def python_register_toolchains(
 
     Users can avoid this macro and do these steps themselves, if they want more
     control.
+
+    With `bzlmod` enabled, this function is not needed since `rules_python` is
+    handling everything. In order to override the default behaviour from the
+    root module one can see the docs for the {rule}`python` extension.
 
     Args:
         name: {type}`str` base name for all created repos, e.g. "python_3_8".

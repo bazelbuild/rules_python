@@ -81,7 +81,7 @@ dev_python = use_extension(
     "python",
     dev_dependency = True,
 )
-dev_python.rules_python_private_testing(
+dev_python.override(
     register_all_versions = True,
 )
 

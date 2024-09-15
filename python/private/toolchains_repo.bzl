@@ -56,9 +56,6 @@ def python_toolchain_build_file_content(
         build_content: Text containing toolchain definitions
     """
 
-    # We create a list of toolchain content from iterating over
-    # the enumeration of PLATFORMS.  We enumerate PLATFORMS in
-    # order to get us an index to increment the increment.
     return "\n\n".join([
         """\
 py_toolchain_suite(

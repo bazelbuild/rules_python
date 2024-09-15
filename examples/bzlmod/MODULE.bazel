@@ -22,7 +22,7 @@ bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf"
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     configure_coverage_tool = True,
-    # Only set when you have mulitple toolchain versions.
+    # Only set when you have multiple toolchain versions.
     is_default = True,
     python_version = "3.9",
 )
@@ -35,6 +35,54 @@ python.toolchain(
 python.toolchain(
     configure_coverage_tool = True,
     python_version = "3.10",
+)
+
+# One can override the actual toolchain versions that are available, which can be useful
+# to when optimizing what gets downloaded and when.
+python.override(
+    available_python_versions = [
+        "3.10.9",
+        "3.9.19",
+        # The following is used by the `other_module` and we need to include it here
+        # as well.
+        "3.11.8",
+    ],
+    # Also override the `minor_mapping` so that when the modules specify a particular
+    # `3.X` version, we decide what gets used.
+    minor_mapping = {
+        "3.10": "3.10.9",
+        "3.11": "3.11.8",
+        "3.9": "3.9.19",
+    },
+)
+
+# Or the sources that the toolchains come from for all platforms
+python.single_version_override(
+    patch_strip = 1,
+    # The user can specify patches to be applied to all interpreters.
+    patches = [],
+    python_version = "3.10.2",
+    sha256 = {
+        "aarch64-apple-darwin": "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
+        "aarch64-unknown-linux-gnu": "8f351a8cc348bb45c0f95b8634c8345ec6e749e483384188ad865b7428342703",
+        "x86_64-apple-darwin": "8146ad4390710ec69b316a5649912df0247d35f4a42e2aa9615bffd87b3e235a",
+        "x86_64-pc-windows-msvc": "a1d9a594cd3103baa24937ad9150c1a389544b4350e859200b3e5c036ac352bd",
+        "x86_64-unknown-linux-gnu": "9b64eca2a94f7aff9409ad70bdaa7fbbf8148692662e764401883957943620dd",
+    },
+    urls = ["20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz"],
+)
+
+# Or a single platform. This can be used in combination with the
+# `single_version_override` and `single_version_platform_override` will be
+# applied after `single_version_override`. Any values present in this override
+# will overwrite the values set by the `single_version_override`
+python.single_version_platform_override(
+    patch_strip = 1,
+    patches = [],
+    platform = "aarch64-apple-darwin",
+    python_version = "3.10.2",
+    sha256 = "1409acd9a506e2d1d3b65c1488db4e40d8f19d09a7df099667c87a506f71c0ef",
+    urls = ["20220227/cpython-{python_version}+20220227-{platform}-{build}.tar.gz"],
 )
 
 # You only need to load this repositories if you are using multiple Python versions.

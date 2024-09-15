@@ -59,7 +59,6 @@ bzl_library(
     srcs = ["extension.bzl"],
     deps = [
         ":attrs_bzl",
-        "//python/private:semver_bzl",
         ":hub_repository_bzl",
         ":parse_requirements_bzl",
         ":evaluate_markers_bzl",
@@ -71,6 +70,7 @@ bzl_library(
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
         "//python/private:version_label_bzl",
+        "//python/private:semver_bzl",
         "@bazel_features//:features",
     ] + [
         "@pythons_hub//:interpreters_bzl",

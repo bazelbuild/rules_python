@@ -17,8 +17,8 @@
 def _key(version):
     return (
         version.major,
-        version.minor,
-        version.patch,
+        version.minor or 0,
+        version.patch or 0,
         # non pre-release versions are higher
         version.pre_release == "",
         # then we compare each element of the pre_release tag separately
@@ -47,7 +47,7 @@ def semver(version):
     """Parse the semver version and return the values as a struct.
 
     Args:
-        version: {type}`str` the version string
+        version: {type}`str` the version string.
 
     Returns:
         A {type}`struct` with `major`, `minor`, `patch` and `build` attributes.
@@ -62,9 +62,9 @@ def semver(version):
     # buildifier: disable=uninitialized
     self = struct(
         major = int(major),
-        minor = int(minor or "0"),
+        minor = int(minor) if minor.isdigit() else None,
         # NOTE: this is called `micro` in the Python interpreter versioning scheme
-        patch = int(patch or "0"),
+        patch = int(patch) if patch.isdigit() else None,
         pre_release = pre_release,
         build = build,
         # buildifier: disable=uninitialized
