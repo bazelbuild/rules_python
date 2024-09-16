@@ -11,14 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Provider for C/C++ information from the toolchain.
+"""Toolchain for build-time tools."""
 
-:::{seealso}
-* {any}`Custom toolchains` for how to define custom toolchains.
-* {obj}`py_cc_toolchain` rule for defining the toolchain.
-:::
-"""
+load("//python/private:py_exec_tools_toolchain.bzl", _py_exec_tools_toolchain = "py_exec_tools_toolchain")
 
-load("//python/private:py_cc_toolchain_info.bzl", _PyCcToolchainInfo = "PyCcToolchainInfo")
-
-PyCcToolchainInfo = _PyCcToolchainInfo
+py_exec_tools_toolchain = _py_exec_tools_toolchain

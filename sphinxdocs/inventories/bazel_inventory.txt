@@ -59,7 +59,7 @@ ctx.version_file bzl:obj 1 rules/lib/builtins/ctx#version_file -
 ctx.workspace_name bzl:obj 1 rules/lib/builtins/ctx#workspace_name -
 depset bzl:type 1 rules/lib/depset -
 dict bzl:type 1 rules/lib/dict -
-exec_compatible_with bzl:attribute 1 reference/be/common-definitions#common.exec_compatible_with -
+exec_compatible_with bzl:attr 1 reference/be/common-definitions#common.exec_compatible_with -
 int bzl:type 1 rules/lib/int -
 label bzl:type 1 concepts/labels -
 list bzl:type 1 rules/lib/list -
@@ -133,13 +133,13 @@ runfiles.root_symlinks bzl:type 1 rules/lib/builtins/runfiles#root_symlinks -
 runfiles.symlinks bzl:type 1 rules/lib/builtins/runfiles#symlinks -
 str bzl:type 1 rules/lib/string -
 struct bzl:type 1 rules/lib/builtins/struct -
-target_compatible_with bzl:attribute 1 reference/be/common-definitions#common.target_compatible_with -
+target_compatible_with bzl:attr 1 reference/be/common-definitions#common.target_compatible_with -
 testing bzl:obj 1 rules/lib/toplevel/testing -
 testing.ExecutionInfo bzl:function 1 rules/lib/toplevel/testing#ExecutionInfo -
 testing.TestEnvironment bzl:function 1 rules/lib/toplevel/testing#TestEnvironment -
 testing.analysis_test bzl:rule 1 rules/lib/toplevel/testing#analysis_test -
 toolchain bzl:rule 1 reference/be/platforms-and-toolchains#toolchain -
 toolchain.exec_compatible_with bzl:rule 1 reference/be/platforms-and-toolchains#toolchain.exec_compatible_with -
-toolchain.target_settings bzl:attribute 1 reference/be/platforms-and-toolchains#toolchain.target_settings -
-toolchain.target_compatible_with bzl:attribute 1 reference/be/platforms-and-toolchains#toolchain.target_compatible_with -
+toolchain.target_settings bzl:attr 1 reference/be/platforms-and-toolchains#toolchain.target_settings -
+toolchain.target_compatible_with bzl:attr 1 reference/be/platforms-and-toolchains#toolchain.target_compatible_with -
 toolchain_type bzl:type 1 rules/lib/builtins/toolchain_type.html -

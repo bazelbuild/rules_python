@@ -168,15 +168,16 @@ bzl_library(
 )
 
 bzl_library(
-    name = "py_cc_toolchain_bzl",
-    srcs = [
-        "py_cc_toolchain_macro.bzl",
-        "py_cc_toolchain_rule.bzl",
+    name = "py_cc_toolchain_macro_bzl",
+    srcs = ["py_cc_toolchain_macro.bzl"],
+    deps = [
+        ":py_cc_toolchain_rule_bzl",
     ],
-    visibility = [
-        "//docs:__subpackages__",
-        "//python/cc:__pkg__",
-    ],
+)
+
+bzl_library(
+    name = "py_cc_toolchain_rule_bzl",
+    srcs = ["py_cc_toolchain_rule.bzl"],
     deps = [
         ":py_cc_toolchain_info_bzl",
         ":rules_cc_srcs_bzl",
@@ -188,7 +189,6 @@ bzl_library(
 bzl_library(
     name = "py_cc_toolchain_info_bzl",
     srcs = ["py_cc_toolchain_info.bzl"],
-    visibility = ["//python/cc:__pkg__"],
 )
 
 bzl_library(
@@ -370,7 +370,6 @@ exports_files(
     [
         "coverage.patch",
         "repack_whl.py",
-        "py_cc_toolchain_rule.bzl",
         "py_package.bzl",
         "py_wheel.bzl",
         "py_wheel_normalize_pep440.bzl",

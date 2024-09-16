@@ -1,3 +1,5 @@
+:::{default-domain} bzl
+:::
 :::{bzl:currentfile} //python/cc:BUILD.bazel
 :::
 # //python/cc
@@ -31,4 +33,9 @@ This target provides:
 Toolchain type identifier for the Python C toolchain.
 
 This toolchain type is typically implemented by {obj}`py_cc_toolchain`.
+
+::::{seealso}
+{any}`Custom Toolchains` for how to define custom toolchains
+::::
+
 :::

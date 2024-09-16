@@ -22,8 +22,10 @@ load(":util.bzl", "add_tag")
 def py_cc_toolchain(**kwargs):
     """Creates a py_cc_toolchain target.
 
+    This is a macro around the {rule}`py_cc_toolchain` rule.
+
     Args:
-        **kwargs: Keyword args to pass onto underlying rule.
+        **kwargs: Keyword args to pass onto underlying {rule}`py_cc_toolchain` rule.
     """
 
     #  This tag is added to easily identify usages through other macros.
