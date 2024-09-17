@@ -330,6 +330,8 @@ def _create_stage2_bootstrap(
         imports,
         runtime_details):
     output = ctx.actions.declare_file(
+        # Prepend with underscore to prevent pytest from trying to
+        # process the bootstrap for files starting with `test_`
         "_{}_stage2_bootstrap.py".format(output_prefix),
         sibling = output_sibling,
     )
