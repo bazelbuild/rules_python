@@ -56,12 +56,10 @@ def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: 
         visibility = ["//visibility:public"],
     )
 
-    minor_versions = {}
+    _reverse_minor_mapping = {full: minor for minor, full in minor_mapping.items()}
     for version in versions:
-        minor_version, _, _ = version.rpartition(".")
-        minor_versions[minor_version] = None
-
-        if minor_mapping[minor_version] != version:
+        minor_version = _reverse_minor_mapping.get(version)
+        if not minor_version:
             native.config_setting(
                 name = "is_python_{}".format(version),
                 flag_values = {":python_version": version},
