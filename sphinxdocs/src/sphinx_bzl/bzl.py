@@ -1439,9 +1439,7 @@ class _BzlDomain(domains.Domain):
     object_types = {
         "arg": domains.ObjType("arg", "arg", "obj"),  # macro/function arg
         "aspect": domains.ObjType("aspect", "aspect", "obj"),
-        "attribute": domains.ObjType(
-            "attribute", "attribute", "attr", "obj"
-        ),  # rule attribute
+        "attr": domains.ObjType("attr", "attr", "obj"),  # rule attribute
         "function": domains.ObjType("function", "func", "obj"),
         "method": domains.ObjType("method", "method", "obj"),
         "module-extension": domains.ObjType(
@@ -1460,6 +1458,7 @@ class _BzlDomain(domains.Domain):
         # types are objects that have a constructor and methods/attrs
         "type": domains.ObjType("type", "type", "obj"),
     }
+
     # This controls:
     # * What is recognized when parsing, e.g. ":bzl:ref:`foo`" requires
     # "ref" to be in the role dict below.
@@ -1508,7 +1507,7 @@ class _BzlDomain(domains.Domain):
         # dict[str, dict[str, _ObjectEntry]]
         "doc_names": {},
         # Objects by a shorter or alternative name
-        # dict[str, _ObjectEntry]
+        # dict[str, dict[str id, _ObjectEntry]]
         "alt_names": {},
     }
 
@@ -1588,8 +1587,14 @@ class _BzlDomain(domains.Domain):
         # Note that the flag value could contain `=`
         if "=" in target:
             target = target[: target.find("=")]
+
         if target in self.data["doc_names"].get(fromdocname, {}):
-            return self.data["doc_names"][fromdocname][target]
+            entry = self.data["doc_names"][fromdocname][target]
+            # Prevent a local doc name masking a global alt name when its of
+            # a different type. e.g. when the macro `foo` refers to the
+            # rule `foo` in another doc.
+            if object_type in self.object_types[entry.object_type].roles:
+                return entry
 
         if object_type == "obj":
             search_space = self.data["objects"]
@@ -1600,7 +1605,15 @@ class _BzlDomain(domains.Domain):
 
         _log_debug("find_entry: alt_names=%s", sorted(self.data["alt_names"].keys()))
         if target in self.data["alt_names"]:
-            return self.data["alt_names"][target]
+            # Give preference to shorter object ids. This is a work around
+            # to allow e.g. `FooInfo` to refer to the FooInfo type rather than
+            # the `FooInfo` constructor.
+            entries = sorted(
+                self.data["alt_names"][target].items(), key=lambda item: len(item[0])
+            )
+            for _, entry in entries:
+                if object_type in self.object_types[entry.object_type].roles:
+                    return entry
 
         return None
 
@@ -1633,17 +1646,8 @@ class _BzlDomain(domains.Domain):
         alt_names.append(label + (f"%{symbol}" if symbol else ""))
 
         for alt_name in sorted(set(alt_names)):
-            if alt_name in self.data["alt_names"]:
-                existing = self.data["alt_names"][alt_name]
-                # This situation usually occurs for the constructor function
-                # of a provider, but could occur for e.g. an exported struct
-                # with an attribute the same name as the struct. For lack
-                # of a better option, take the shorter entry, on the assumption
-                # it refers to some container of the longer entry.
-                if len(entry.full_id) < len(existing.full_id):
-                    self.data["alt_names"][alt_name] = entry
-            else:
-                self.data["alt_names"][alt_name] = entry
+            self.data["alt_names"].setdefault(alt_name, {})
+            self.data["alt_names"][alt_name][entry.full_id] = entry
 
         docname = entry.index_entry.docname
         self.data["doc_names"].setdefault(docname, {})
@@ -1653,11 +1657,11 @@ class _BzlDomain(domains.Domain):
         self, docnames: list[str], otherdata: dict[str, typing.Any]
     ) -> None:
         # Merge in simple dict[key, value] data
-        for top_key in ("objects", "alt_names"):
+        for top_key in ("objects",):
             self.data[top_key].update(otherdata.get(top_key, {}))
 
         # Merge in two-level dict[top_key, dict[sub_key, value]] data
-        for top_key in ("objects_by_type", "doc_names"):
+        for top_key in ("objects_by_type", "doc_names", "alt_names"):
             existing_top_map = self.data[top_key]
             for sub_key, sub_values in otherdata.get(top_key, {}).items():
                 if sub_key not in existing_top_map:

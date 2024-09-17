@@ -395,7 +395,7 @@ py_cc_toolchain(
 
 py_exec_tools_toolchain(
     name = "exec_tools_toolchain_impl",
-    exec_interpreter = "@rules_python/python:null_target",
+    exec_interpreter = "@rules_python/python:none",
     precompiler = "precompiler-cpython-3.12"
 )
 

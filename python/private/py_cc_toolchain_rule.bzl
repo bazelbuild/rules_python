@@ -78,5 +78,11 @@ A toolchain for a Python runtime's C/C++ information (e.g. headers)
 
 This rule carries information about the C/C++ side of a Python runtime, e.g.
 headers, shared libraries, etc.
+
+This provides `ToolchainInfo` with the following attributes:
+* `py_cc_toolchain`: {type}`PyCcToolchainInfo`
+* `toolchain_label`: {type}`Label` _only present when `--visibile_for_testing=True`
+  for internal testing_. The rule's label; this allows identifying what toolchain
+  implmentation was selected for testing purposes.
 """,
 )

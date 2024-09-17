@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Provider for C/C++ information from the toolchain.
+"""Provider for the exec tools toolchain.
 
 :::{seealso}
 * {any}`Custom toolchains` for how to define custom toolchains.
@@ -19,6 +19,6 @@
 :::
 """
 
-load("//python/private:py_cc_toolchain_info.bzl", _PyCcToolchainInfo = "PyCcToolchainInfo")
+load("//python/private:py_exec_tools_info.bzl", _PyExecToolsInfo = "PyExecToolsInfo")
 
-PyCcToolchainInfo = _PyCcToolchainInfo
+PyExecToolsInfo = _PyExecToolsInfo

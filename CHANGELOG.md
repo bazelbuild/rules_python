@@ -73,7 +73,8 @@ A brief description of the categories of changes:
   `TOOL_VERSIONS` for registering patched toolchains please consider setting
   the `patch_strip` explicitly to `1` if you depend on this value - in the
   future the value may change to default to `0`.
-
+* (toolchains) Added `//python:none`, a special target for use with
+  {obj}`py_exec_tools_toolchain.exec_interpreter` to treat the value as `None`.
 
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
