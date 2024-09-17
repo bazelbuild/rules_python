@@ -97,7 +97,7 @@ def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: 
     # It's private because matching the concept of e.g. "3.8" value is done
     # using the `is_python_X.Y` config setting group, which is aware of the
     # minor versions that could match instead.
-    for minor in minor_versions:
+    for minor in minor_mapping.keys():
         native.config_setting(
             name = "is_python_{}".format(minor),
             flag_values = {_PYTHON_MAJOR_MINOR_VERSION_FLAG: minor},
