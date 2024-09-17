@@ -79,6 +79,7 @@ A brief description of the categories of changes:
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
   `python/repositories.bzl`.
+* (toolchains): An internal _is_python_config_setting_ macro has been removed.
 
 ## [0.35.0] - 2024-08-15
 
@@ -274,7 +275,7 @@ A brief description of the categories of changes:
   be automatically deleted correctly. For example, if `python_generation_mode`
   is set to package, when `__init__.py` is deleted, the `py_library` generated
   for this package before will be deleted automatically.
-* (whl_library): Use `is_python_config_setting` to correctly handle multi-python
+* (whl_library): Use _is_python_config_setting_ to correctly handle multi-python
   version dependency select statements when the `experimental_target_platforms`
   includes the Python ABI. The default python version case within the select is
   also now handled correctly, stabilizing the implementation.

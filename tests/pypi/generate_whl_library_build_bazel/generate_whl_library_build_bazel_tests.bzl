@@ -87,7 +87,6 @@ _tests.append(_test_simple)
 def _test_dep_selects(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
-load("@rules_python//python/config_settings:config_settings.bzl", "is_python_config_setting")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
@@ -158,9 +157,11 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-is_python_config_setting(
+config_setting(
     name = "is_python_3.10_linux_ppc",
-    python_version = "3.10",
+    flag_values = {
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.10",
+    },
     constraint_values = [
         "@platforms//cpu:ppc",
         "@platforms//os:linux",
@@ -168,16 +169,20 @@ is_python_config_setting(
     visibility = ["//visibility:private"],
 )
 
-is_python_config_setting(
+config_setting(
     name = "is_python_3.9_anyos_aarch64",
-    python_version = "3.9",
+    flag_values = {
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.9",
+    },
     constraint_values = ["@platforms//cpu:aarch64"],
     visibility = ["//visibility:private"],
 )
 
-is_python_config_setting(
+config_setting(
     name = "is_python_3.9_linux_anyarch",
-    python_version = "3.9",
+    flag_values = {
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.9",
+    },
     constraint_values = ["@platforms//os:linux"],
     visibility = ["//visibility:private"],
 )

@@ -18,7 +18,6 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
-load("//python/config_settings:config_settings.bzl", "is_python_config_setting")
 
 _tests = []
 
@@ -162,21 +161,25 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
     # We have CI runners running on a great deal of the platforms from the list below,
     # hence use all of them within tests.
     for os in ["linux", "osx", "windows"]:
-        is_python_config_setting(
+        native.config_setting(
             name = "is_python_3.11_" + os,
             constraint_values = [
                 "@platforms//os:" + os,
             ],
-            python_version = "3.11",
+            flag_values = {
+                "//python/config_settings:_python_version_major_minor": "3.11",
+            },
         )
 
     for cpu in ["s390x", "ppc", "x86_64", "aarch64"]:
-        is_python_config_setting(
+        native.config_setting(
             name = "is_python_3.11_" + cpu,
             constraint_values = [
                 "@platforms//cpu:" + cpu,
             ],
-            python_version = "3.11",
+            flag_values = {
+                "//python/config_settings:_python_version_major_minor": "3.11",
+            },
         )
 
     for (os, cpu) in [
@@ -188,13 +191,15 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
         ("osx", "x86_64"),
         ("windows", "x86_64"),
     ]:
-        is_python_config_setting(
+        native.config_setting(
             name = "is_python_3.11_{}_{}".format(os, cpu),
             constraint_values = [
                 "@platforms//cpu:" + cpu,
                 "@platforms//os:" + os,
             ],
-            python_version = "3.11",
+            flag_values = {
+                "//python/config_settings:_python_version_major_minor": "3.11",
+            },
         )
 
     test_suite(

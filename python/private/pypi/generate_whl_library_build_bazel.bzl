@@ -157,14 +157,13 @@ def _render_config_settings(dependencies_by_platform):
         constraint_values_str = render.indent(render.list(constraint_values)).lstrip()
 
         if abi:
-            if not loads:
-                loads.append("""load("@rules_python//python/config_settings:config_settings.bzl", "is_python_config_setting")""")
-
             additional_content.append(
                 """\
-is_python_config_setting(
+config_setting(
     name = "is_{name}",
-    python_version = "3.{minor_version}",
+    flag_values = {{
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.{minor_version}",
+    }},
     constraint_values = {constraint_values},
     visibility = ["//visibility:private"],
 )""".format(
