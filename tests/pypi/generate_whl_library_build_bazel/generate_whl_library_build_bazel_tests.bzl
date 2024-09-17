@@ -160,7 +160,7 @@ py_library(
 config_setting(
     name = "is_python_3.10_linux_ppc",
     flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.10",
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.10",
     },
     constraint_values = [
         "@platforms//cpu:ppc",
@@ -172,7 +172,7 @@ config_setting(
 config_setting(
     name = "is_python_3.9_anyos_aarch64",
     flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.9",
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.9",
     },
     constraint_values = ["@platforms//cpu:aarch64"],
     visibility = ["//visibility:private"],
@@ -181,7 +181,7 @@ config_setting(
 config_setting(
     name = "is_python_3.9_linux_anyarch",
     flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.9",
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.9",
     },
     constraint_values = ["@platforms//os:linux"],
     visibility = ["//visibility:private"],

@@ -162,7 +162,7 @@ def _render_config_settings(dependencies_by_platform):
 config_setting(
     name = "is_{name}",
     flag_values = {{
-        "@rules_python//python/config_settings:python_version_major_minor": "3.{minor_version}",
+        "@rules_python//python/config_settings:_python_version_major_minor": "3.{minor_version}",
     }},
     constraint_values = {constraint_values},
     visibility = ["//visibility:private"],

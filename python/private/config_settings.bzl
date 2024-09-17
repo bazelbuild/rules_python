@@ -20,7 +20,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(":semver.bzl", "semver")
 
 _PYTHON_VERSION_FLAG = Label("//python/config_settings:python_version")
-_PYTHON_MAJOR_MINOR_VERSION_FLAG = Label("//python/config_settings:_python_major_minor_version")
+_PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:_python_version_major_minor")
 
 def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.
@@ -45,7 +45,7 @@ def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: 
     )
 
     _python_version_major_minor_flag(
-        name = _PYTHON_MAJOR_MINOR_VERSION_FLAG.name,
+        name = _PYTHON_VERSION_MAJOR_MINOR_FLAG.name,
         build_setting_default = "",
         visibility = ["//visibility:public"],
     )
@@ -100,7 +100,7 @@ def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: 
     for minor in minor_mapping.keys():
         native.config_setting(
             name = "is_python_{}".format(minor),
-            flag_values = {_PYTHON_MAJOR_MINOR_VERSION_FLAG: minor},
+            flag_values = {_PYTHON_VERSION_MAJOR_MINOR_FLAG: minor},
             visibility = ["//visibility:public"],
         )
 
