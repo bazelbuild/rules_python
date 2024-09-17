@@ -319,6 +319,7 @@ def _create_toolchain_attrs_struct(*, tag = None, python_version = None, toolcha
         python_version = python_version if python_version else tag.python_version,
         configure_coverage_tool = getattr(tag, "configure_coverage_tool", False),
         ignore_root_user_error = getattr(tag, "ignore_root_user_error", False),
+        coverage_rc = getattr(tag, "coverage_rc", None),
     )
 
 def _get_bazel_version_specific_kwargs():
@@ -374,6 +375,10 @@ A toolchain's repository name uses the format `python_{major}_{minor}`, e.g.
                 "configure_coverage_tool": attr.bool(
                     mandatory = False,
                     doc = "Whether or not to configure the default coverage tool for the toolchains.",
+                ),
+                "coverage_rc": attr.label(
+                    mandatory = False,
+                    doc = "The coverage configuration file to use for the toolchains.",
                 ),
                 "ignore_root_user_error": attr.bool(
                     default = False,

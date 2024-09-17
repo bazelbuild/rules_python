@@ -82,3 +82,5 @@ build_test(
     name = "all_requirements",
     targets = all_requirements,
 )
+
+exports_files([".coveragerc"])

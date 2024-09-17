@@ -402,9 +402,11 @@ def _RunForCoverage(python_program, main_filename, args, env,
   """
   # We need for coveragepy to use relative paths.  This can only be configured
   unique_id = uuid.uuid4()
-  rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], ".coveragerc_{}".format(unique_id))
-  with open(rcfile_name, "w") as rcfile:
-    rcfile.write('''[run]
+  rcfile_name = "%coverage_rc%"
+  if not rcfile_name:
+    rcfile_name = os.path.join(os.environ['COVERAGE_DIR'], ".coveragerc_{}".format(unique_id))
+    with open(rcfile_name, "w") as rcfile:
+      rcfile.write('''[run]
 relative_files = True
 ''')
   PrintVerboseCoverage('Coverage entrypoint:', coverage_entrypoint)

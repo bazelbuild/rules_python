@@ -343,6 +343,10 @@ def _create_stage2_bootstrap(
         )
     else:
         coverage_tool_runfiles_path = ""
+    if runtime and runtime.coverage_rc:
+        coverage_rc_path = runtime.coverage_rc.path
+    else:
+        coverage_rc_path = ""
 
     template = runtime.stage2_bootstrap_template
 
@@ -351,6 +355,7 @@ def _create_stage2_bootstrap(
         output = output,
         substitutions = {
             "%coverage_tool%": coverage_tool_runfiles_path,
+            "%coverage_rc%": coverage_rc_path,
             "%import_all%": "True" if ctx.fragments.bazel_py.python_import_all_repositories else "False",
             "%imports%": ":".join(imports.to_list()),
             "%main%": "{}/{}".format(ctx.workspace_name, main_py.short_path),
@@ -403,6 +408,12 @@ def _create_stage1_bootstrap(
             subs["%shebang%"] = DEFAULT_STUB_SHEBANG
             template = ctx.file._bootstrap_template
 
+        if runtime and runtime.coverage_rc:
+            coverage_rc_path = runtime.coverage_rc.path
+        else:
+            coverage_rc_path = ""
+
+        subs["%coverage_rc%"] = coverage_rc_path
         subs["%coverage_tool%"] = coverage_tool_runfiles_path
         subs["%import_all%"] = ("True" if ctx.fragments.bazel_py.python_import_all_repositories else "False")
         subs["%imports%"] = ":".join(imports.to_list())

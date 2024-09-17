@@ -27,7 +27,8 @@ def define_hermetic_runtime_toolchain_impl(
         extra_files_glob_exclude,
         python_version,
         python_bin,
-        coverage_tool):
+        coverage_tool,
+        coverage_rc):
     """Define a toolchain implementation for a python-build-standalone repo.
 
     It expected this macro is called in the top-level package of an extracted
@@ -46,6 +47,8 @@ def define_hermetic_runtime_toolchain_impl(
         python_bin: {type}`str` The path to the Python binary within the
             repositoroy.
         coverage_tool: {type}`str` optional target to the coverage tool to
+            use.
+        coverage_rc: {type}`str` optional target to the coverage rc file to
             use.
     """
     _ = name  # @unused
@@ -134,6 +137,7 @@ def define_hermetic_runtime_toolchain_impl(
         },
         # Convert empty string to None
         coverage_tool = coverage_tool or None,
+        coverage_rc = coverage_rc or None,
         python_version = "PY3",
         implementation_name = "cpython",
         # See https://peps.python.org/pep-3147/ for pyc tag infix format

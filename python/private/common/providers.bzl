@@ -73,6 +73,7 @@ def _PyRuntimeInfo_init(
         interpreter = None,
         files = None,
         coverage_tool = None,
+        coverage_rc = None,
         coverage_files = None,
         pyc_tag = None,
         python_version,
@@ -121,6 +122,7 @@ def _PyRuntimeInfo_init(
         "bootstrap_template": bootstrap_template,
         "coverage_files": coverage_files,
         "coverage_tool": coverage_tool,
+        "coverage_rc": coverage_rc,
         "files": files,
         "implementation_name": implementation_name,
         "interpreter": interpreter,
@@ -201,6 +203,12 @@ The files required at runtime for using `coverage_tool`. Will be `None` if no
 :type: File | None
 
 If set, this field is a `File` representing tool used for collecting code
+coverage information from python tests. Otherwise, this is `None`.
+""",
+        "coverage_rc": """
+:type: File | None
+
+If set, this field is a `File` representing the configuration file used by the
 coverage information from python tests. Otherwise, this is `None`.
 """,
         "files": """
