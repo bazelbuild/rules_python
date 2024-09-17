@@ -17,23 +17,25 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 load(":semver.bzl", "semver")
 
 _PYTHON_VERSION_FLAG = Label("//python/config_settings:python_version")
 _PYTHON_MAJOR_MINOR_VERSION_FLAG = Label("//python/config_settings:_python_major_minor_version")
 
-def construct_config_settings(name = None):  # buildifier: disable=function-docstring
+def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.
 
     This mainly includes the targets that are used in the toolchain and pip hub
     repositories that only match on the 'python_version' flag values.
 
     Args:
-        name(str): A dummy name value that is no-op for now.
+        name: {type}`str` A dummy name value that is no-op for now.
+        versions: {type}`list[str]` A list of versions to build constraint settings for.
+        minor_mapping: {type}`dict[str, str]` A mapping from `X.Y` to `X.Y.Z` python versions.
     """
+    _ = name  # @unused
     _python_version_flag(
-        name = "python_version",
+        name = _PYTHON_VERSION_FLAG.name,
         # TODO: The default here should somehow match the MODULE config. Until
         # then, use the empty string to indicate an unknown version. This
         # also prevents version-unaware targets from inadvertently matching
@@ -42,7 +44,7 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         visibility = ["//visibility:public"],
     )
 
-    _python_major_minor(
+    _python_version_major_minor_flag(
         name = _PYTHON_MAJOR_MINOR_VERSION_FLAG.name,
         build_setting_default = "",
         visibility = ["//visibility:public"],
@@ -54,20 +56,12 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
         visibility = ["//visibility:public"],
     )
 
-    # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
-    # It's private because matching the concept of e.g. "3.8" value is done
-    # using the `is_python_X.Y` config setting group, which is aware of the
-    # minor versions that could match instead.
-    for minor in range(20):
-        native.config_setting(
-            name = "is_python_3.{}".format(minor),
-            flag_values = {_PYTHON_MAJOR_MINOR_VERSION_FLAG: "3.{}".format(minor)},
-            visibility = ["//visibility:public"],
-        )
-
-    for version in TOOL_VERSIONS.keys():
+    minor_versions = {}
+    for version in versions:
         minor_version, _, _ = version.rpartition(".")
-        if MINOR_MAPPING[minor_version] != version:
+        minor_versions[minor_version] = None
+
+        if minor_mapping[minor_version] != version:
             native.config_setting(
                 name = "is_python_{}".format(version),
                 flag_values = {":python_version": version},
@@ -101,6 +95,17 @@ def construct_config_settings(name = None):  # buildifier: disable=function-docs
             visibility = ["//visibility:public"],
         )
 
+    # This matches the raw flag value, e.g. --//python/config_settings:python_version=3.8
+    # It's private because matching the concept of e.g. "3.8" value is done
+    # using the `is_python_X.Y` config setting group, which is aware of the
+    # minor versions that could match instead.
+    for minor in minor_versions:
+        native.config_setting(
+            name = "is_python_{}".format(minor),
+            flag_values = {_PYTHON_MAJOR_MINOR_VERSION_FLAG: minor},
+            visibility = ["//visibility:public"],
+        )
+
 def _python_version_flag_impl(ctx):
     value = ctx.build_setting_value
     return [
@@ -121,7 +126,7 @@ _python_version_flag = rule(
     attrs = {},
 )
 
-def _python_major_minor_impl(ctx):
+def _python_version_major_minor_flag_impl(ctx):
     input = ctx.attr._python_version_flag[config_common.FeatureFlagInfo].value
     if input:
         version = semver(input)
@@ -131,8 +136,8 @@ def _python_major_minor_impl(ctx):
 
     return [config_common.FeatureFlagInfo(value = value)]
 
-_python_major_minor = rule(
-    implementation = _python_major_minor_impl,
+_python_version_major_minor_flag = rule(
+    implementation = _python_version_major_minor_flag_impl,
     build_setting = config.string(flag = False),
     attrs = {
         "_python_version_flag": attr.label(
