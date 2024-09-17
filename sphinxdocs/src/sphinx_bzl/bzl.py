@@ -34,7 +34,7 @@ from sphinx.util import docutils as sphinx_docutils
 from sphinx.util import inspect, logging
 from sphinx.util import nodes as sphinx_nodes
 from sphinx.util import typing as sphinx_typing
-from typing_extensions import override, TypeAlias
+from typing_extensions import TypeAlias, override
 
 _logger = logging.getLogger(__name__)
 _LOG_PREFIX = f"[{_logger.name}] "
@@ -552,7 +552,9 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
 
     @override
     def transform_content(self, content_node: addnodes.desc_content) -> None:
-        def first_child_with_class_name(root, class_name) -> typing.Union[None, docutils_nodes.Element]:
+        def first_child_with_class_name(
+            root, class_name
+        ) -> typing.Union[None, docutils_nodes.Element]:
             matches = root.findall(
                 lambda node: isinstance(node, docutils_nodes.Element)
                 and class_name in node["classes"]
@@ -1437,7 +1439,9 @@ class _BzlDomain(domains.Domain):
     object_types = {
         "arg": domains.ObjType("arg", "arg", "obj"),  # macro/function arg
         "aspect": domains.ObjType("aspect", "aspect", "obj"),
-        "attribute": domains.ObjType("attribute", "attribute", "obj"),  # rule attribute
+        "attribute": domains.ObjType(
+            "attribute", "attribute", "attr", "obj"
+        ),  # rule attribute
         "function": domains.ObjType("function", "func", "obj"),
         "method": domains.ObjType("method", "method", "obj"),
         "module-extension": domains.ObjType(
@@ -1509,7 +1513,9 @@ class _BzlDomain(domains.Domain):
     }
 
     @override
-    def get_full_qualified_name(self, node: docutils_nodes.Element) -> typing.Union[str, None]:
+    def get_full_qualified_name(
+        self, node: docutils_nodes.Element
+    ) -> typing.Union[str, None]:
         bzl_file = node.get("bzl:file")
         symbol_name = node.get("bzl:symbol")
         ref_target = node.get("reftarget")
@@ -1574,6 +1580,10 @@ class _BzlDomain(domains.Domain):
         if target.startswith("--"):
             target = target.strip("-")
             object_type = "flag"
+
+        # Allow using parentheses, e.g. `foo()` or `foo(x=...)`
+        target, _, _ = target.partition("(")
+
         # Elide the value part of --foo=bar flags
         # Note that the flag value could contain `=`
         if "=" in target:

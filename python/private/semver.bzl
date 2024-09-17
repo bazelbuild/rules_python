@@ -34,6 +34,15 @@ def _key(version):
         version.build,
     )
 
+def _to_dict(self):
+    return {
+        "build": self.build,
+        "major": self.major,
+        "minor": self.minor,
+        "patch": self.patch,
+        "pre_release": self.pre_release,
+    }
+
 def semver(version):
     """Parse the semver version and return the values as a struct.
 
@@ -50,7 +59,8 @@ def semver(version):
     patch, _, build = tail.partition("+")
     patch, _, pre_release = patch.partition("-")
 
-    public = struct(
+    # buildifier: disable=uninitialized
+    self = struct(
         major = int(major),
         minor = int(minor or "0"),
         # NOTE: this is called `micro` in the Python interpreter versioning scheme
@@ -58,8 +68,8 @@ def semver(version):
         pre_release = pre_release,
         build = build,
         # buildifier: disable=uninitialized
-        key = lambda: _key(self.actual),
+        key = lambda: _key(self),
         str = lambda: version,
+        to_dict = lambda: _to_dict(self),
     )
-    self = struct(actual = public)
-    return public
+    return self
