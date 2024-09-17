@@ -46,9 +46,6 @@ python.toolchain(
     is_default = True,
     python_version = "3.11",
 )
-python.toolchain(
-    python_version = "3.12",
-)
 use_repo(python, "python_3_11", "python_versions", "pythons_hub")
 
 # This call registers the Python toolchains.
@@ -96,11 +93,6 @@ dev_pip = use_extension(
 dev_pip.parse(
     hub_name = "dev_pip",
     python_version = "3.11",
-    requirements_lock = "//docs:requirements.txt",
-)
-dev_pip.parse(
-    hub_name = "dev_pip",
-    python_version = "3.12",
     requirements_lock = "//docs:requirements.txt",
 )
 dev_pip.parse(

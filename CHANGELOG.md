@@ -78,16 +78,7 @@ A brief description of the categories of changes:
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
   `python/repositories.bzl`.
-* (toolchains): An internal _is_python_config_setting_ has been removed
-  from rules_python as it can now be replaced by:
-  ```starlark
-  native.config_setting(
-      name = "my_config_setting",
-      flag_values = {
-          "@rules_python//python/config_settings:python_version_major_minor": "3.11",
-      },
-  )
-  ```
+* (toolchains): An internal _is_python_config_setting_ macro has been removed.
 
 ## [0.35.0] - 2024-08-15
 
