@@ -108,6 +108,71 @@ def is_standalone_interpreter(rctx, python_interpreter_path, *, logger = None):
         logger = logger,
     ).return_code == 0
 
+def _chmod(rctx, platform = None):
+    if platform == None:
+        platform = "{}-{}".format(rctx.os.arch, rctx.os.name.split(" ")[0])
+    map = {
+        "aarch64-linux": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-aarch64-unknown-linux-musl.tar.gz",
+            integrity = "sha256-doU+ZfTyA5I8RSwDAcsOkEI3BZXFuFwBfEbg+diS06g=",
+            binary = "coreutils-0.0.27-aarch64-unknown-linux-musl/coreutils",
+        ),
+        "aarch64-mac": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-aarch64-apple-darwin.tar.gz",
+            integrity = "sha256-BjAeGgJ8+sLCIwmokCOkfelCCLtnNRH49QcFnrDq8a4=",
+            binary = "coreutils-0.0.27-coreutils-0.0.27-aarch64-apple-darwin/coreutils",
+        ),
+        "amd64-linux": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-x86_64-unknown-linux-musl.tar.gz",
+            integrity = "sha256-tM+hJd16cCjflJyMwsCaevPYZMiBkIKZJm7/XC+760w=",
+            binary = "coreutils-0.0.27-x86_64-unknown-linux-musl/coreutils",
+        ),
+        "amd64-windows": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-x86_64-pc-windows-msvc.zip",
+            integrity = "sha256-DC4H+hQX51aHoFudV39n7u217NDcNL9AiG4o4edboV0=",
+            binary = "coreutils-0.0.27-x86_64-pc-windows-msvc/coreutils.exe",
+        ),
+        "arm-linux": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-arm-unknown-linux-gnueabihf.tar.gz",
+            integrity = "sha256-rmrDzyyfPUkAEqhXJegox53j4x/Cp/XfIiaWziHEQr4=",
+            binary = "coreutils-0.0.27-arm-unknown-linux-gnueabihf/coreutils",
+        ),
+        "i386-linux": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-i686-unknown-linux-musl.tar.gz",
+            integrity = "sha256-8LZQ/Pf5hHNTS0csAtB4dXGOI9HAlbkgv21Z8zJ5Lfc=",
+            binary = "coreutils-0.0.27-i686-unknown-linux-musl/coreutils",
+        ),
+        "x86_64-mac": struct(
+            url = "https://github.com/uutils/coreutils/releases/download/0.0.27/coreutils-0.0.27-x86_64-apple-darwin.tar.gz",
+            integrity = "sha256-1ivz4ue8/ROUYhPh22Bg2ASPgC6MKMulR52nLgZvTBo=",
+            binary = "coreutils-0.0.27-x86_64-apple-darwin/coreutils",
+        ),
+    }
+    if platform not in map:
+        repo_utils.which_checked(rctx, "chmod")
+
+    data = map[platform]
+    output = rctx.path(".coreutils")
+    rctx.download_and_extract(
+        url = data.url,
+        integrity = data.integrity,
+        output = output,
+    )
+
+    binary = output.get_child(data.binary)
+    if not binary.exists:
+        fail("Invalid `coreutils` link: {}".format(binary))
+
+    if binary.basename.endswith(".exe"):
+        chmod = output.get_child("chmod.bat")
+        content = "@echo off\n{} chmod %* || break".format(binary)
+        rctx.file(chmod, content)
+        return chmod
+
+    chmod = output.get_child("chmod")
+    rctx.symlink(binary, chmod)
+    return chmod
+
 def _python_repository_impl(rctx):
     if rctx.attr.distutils and rctx.attr.distutils_content:
         fail("Only one of (distutils, distutils_content) should be set.")
@@ -214,36 +279,18 @@ def _python_repository_impl(rctx):
     # * The pycs are not deterministic (they contain timestamps)
     # * Multiple processes trying to write the same pycs can result in errors.
     if not rctx.attr.ignore_root_user_error:
-        if "windows" not in platform:
-            lib_dir = "lib" if "windows" not in platform else "Lib"
+        lib_dir = "lib" if "windows" not in platform else "Lib"
 
-            repo_utils.execute_checked(
-                rctx,
-                op = "python_repository.MakeReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "chmod"), "-R", "ugo-w", lib_dir],
-                logger = logger,
-            )
-            exec_result = repo_utils.execute_unchecked(
-                rctx,
-                op = "python_repository.TestReadOnly",
-                arguments = [repo_utils.which_checked(rctx, "touch"), "{}/.test".format(lib_dir)],
-                logger = logger,
-            )
+        chmod = _chmod(rctx)
 
-            # The issue with running as root is the installation is no longer
-            # read-only, so the problems due to pyc can resurface.
-            if exec_result.return_code == 0:
-                stdout = repo_utils.execute_checked_stdout(
-                    rctx,
-                    op = "python_repository.GetUserId",
-                    arguments = [repo_utils.which_checked(rctx, "id"), "-u"],
-                    logger = logger,
-                )
-                uid = int(stdout.strip())
-                if uid == 0:
-                    fail("The current user is root, please run as non-root when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
-                else:
-                    fail("The current user has CAP_DAC_OVERRIDE set, please drop this capability when using the hermetic Python interpreter. See https://github.com/bazelbuild/rules_python/pull/713.")
+        repo_utils.execute_checked(
+            rctx,
+            op = "python_repository.MakeReadOnly",
+            arguments = [chmod, "-R", "ugo-w", lib_dir],
+            logger = logger,
+        )
+
+        rctx.delete(chmod.dirname)
 
     python_bin = "python.exe" if ("windows" in platform) else "bin/python3"
 
