@@ -101,13 +101,14 @@ def create_executable_rule(*, attrs, **kwargs):
         **kwargs
     )
 
-def py_executable_bazel_impl(ctx, *, is_test, inherited_environment):
+def py_executable_bazel_impl(ctx, *, is_test, inherited_environment, coverage_rc = None):
     """Common code for executables for Bazel."""
     return py_executable_base_impl(
         ctx = ctx,
         semantics = create_binary_semantics_bazel(),
         is_test = is_test,
         inherited_environment = inherited_environment,
+        coverage_rc = coverage_rc,
     )
 
 def create_binary_semantics_bazel():

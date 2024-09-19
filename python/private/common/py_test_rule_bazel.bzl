@@ -16,12 +16,12 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
-load("//python/private:py_executable_info.bzl", "PyExecutableInfo")
 load(
     ":py_executable_bazel.bzl",
     "create_executable_rule",
     "py_executable_bazel_impl",
 )
+load("//python/private:toolchain_types.bzl", "PY_TEST_TOOLCHAIN_TYPE")
 
 _BAZEL_PY_TEST_ATTRS = {
     # This *might* be a magic attribute to help C++ coverage work. There's no
@@ -39,21 +39,21 @@ _BAZEL_PY_TEST_ATTRS = {
         executable = True,
     ),
 }
-_PY_TEST_TOOLCHAIN_TYPE = "@rules_python//python:test_runner_toolchain_type"
 
 def _py_test_impl(ctx):
-    binary_info, providers = py_executable_bazel_impl(
+    py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
+    if py_test_toolchain:
+        coverage_rc = py_test_toolchain.py_test_info.coverage_rc
+    else:
+        coverage_rc = None
+    providers = py_executable_bazel_impl(
         ctx = ctx,
         is_test = True,
         inherited_environment = ctx.attr.env_inherit,
+        coverage_rc = coverage_rc,
     )
     maybe_add_test_execution_info(providers, ctx)
-    py_test_toolchain = ctx.exec_groups["test"].toolchains[_PY_TEST_TOOLCHAIN_TYPE]
-    if not py_test_toolchain:
-        return providers
-    _ = providers.pop(0)
-    test_providers = py_test_toolchain.py_test_info.get_runner.func(ctx, binary_info)
-    providers.extend(test_providers)
+
     return providers
 
 py_test = create_executable_rule(
@@ -61,6 +61,6 @@ py_test = create_executable_rule(
     attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
     test = True,
     exec_groups = {
-        "test": exec_group(toolchains = [config_common.toolchain_type(_PY_TEST_TOOLCHAIN_TYPE, mandatory = False)]),
+        "test": exec_group(toolchains = [config_common.toolchain_type(PY_TEST_TOOLCHAIN_TYPE, mandatory = False)]),
     },
 )

@@ -36,6 +36,10 @@ python.toolchain(
     configure_coverage_tool = True,
     python_version = "3.10",
 )
+python.converage(
+    name = "coverage",
+    coveragerc = "coverage.rc",
+)
 
 # You only need to load this repositories if you are using multiple Python versions.
 # See the tests folder for various examples on using multiple Python versions.

@@ -140,7 +140,7 @@ Valid values are:
     allow_none = True,
 )
 
-def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = []):
+def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = [], coverage_rc):
     """Base rule implementation for a Python executable.
 
     Google and Bazel call this common base and apply customizations using the
@@ -246,6 +246,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         inherited_environment = inherited_environment,
         semantics = semantics,
         output_groups = exec_result.output_groups,
+        coverage_rc = coverage_rc,
     )
 
 def _get_build_info(ctx, cc_toolchain):
@@ -789,6 +790,7 @@ def _create_providers(
         inherited_environment,
         runtime_details,
         output_groups,
+        coverage_rc,
         semantics):
     """Creates the providers an executable should return.
 
@@ -816,29 +818,26 @@ def _create_providers(
     Returns:
         A list of modern providers.
     """
-    default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
-        ctx,
-        runfiles_details.default_runfiles,
-    )
-    data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
-        ctx,
-        runfiles_details.data_runfiles,
-    )
-    binary_info = struct(
-        files = default_outputs,
-        default_runfiles = default_runfiles,
-        data_runfiles = data_runfiles,
-        executable = executable,
-    )
+    if coverage_rc:
+        extra_test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].path}
+        default_runfiles = default_runfiles.merge(ctx.runfiles(files = coverage_rc.files.to_list()))
+    else:
+        extra_test_env = {}
     providers = [
         DefaultInfo(
             executable = executable,
             files = default_outputs,
-            default_runfiles = default_runfiles,
-            data_runfiles = data_runfiles,
+            default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
+                ctx,
+                runfiles_details.default_runfiles,
+            ),
+            data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
+                ctx,
+                runfiles_details.data_runfiles,
+            ),
         ),
         create_instrumented_files_info(ctx),
-        _create_run_environment_info(ctx, inherited_environment),
+        _create_run_environment_info(ctx, inherited_environment, extra_test_env),
         PyExecutableInfo(
             main = main_py,
             runfiles_without_exe = runfiles_details.runfiles_without_exe,
@@ -905,9 +904,9 @@ def _create_providers(
         runtime_details = runtime_details,
     )
     providers.extend(extra_providers)
-    return binary_info, providers
+    return providers
 
-def _create_run_environment_info(ctx, inherited_environment):
+def _create_run_environment_info(ctx, inherited_environment, extra_test_env):
     expanded_env = {}
     for key, value in ctx.attr.env.items():
         expanded_env[key] = _py_builtins.expand_location_and_make_variables(
@@ -916,6 +915,7 @@ def _create_run_environment_info(ctx, inherited_environment):
             expression = value,
             targets = ctx.attr.data,
         )
+    expanded_env.update(extra_test_env)
     return RunEnvironmentInfo(
         environment = expanded_env,
         inherited_environment = inherited_environment,

@@ -20,8 +20,10 @@ load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "PY_CC_TOOLCHAIN_TYPE",
+    "PY_TEST_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )
+load(":py_test_toolchain.bzl", "py_test_toolchain")
 
 _IS_EXEC_TOOLCHAIN_ENABLED = Label("//python/config_settings:is_exec_tools_toolchain_enabled")
 
@@ -177,3 +179,15 @@ def define_local_toolchain_suites(name, version_aware_repo_names, version_unawar
             target_settings = [],
             target_compatible_with = ["@{}//:os".format(repo)],
         )
+
+def register_py_test_toolchain(name, coverage_rc):
+    # Need to create a repository rule for this to work.
+    py_test_toolchain(
+        name = "_{}_py_test_toolchain".format(name),
+        coverage_rc = coverage_rc,
+    )
+    native.toolchain(
+        name = "{}_py_test_toolchain".format(name),
+        toolchain = ":_{}_py_test_toolchain".format(name),
+        toolchain_type = PY_TEST_TOOLCHAIN_TYPE,
+    )

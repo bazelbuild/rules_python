@@ -17,6 +17,7 @@
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:repositories.bzl", "python_register_toolchains")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
+load("//python/private:py_toolchain_suite.bzl", "register_py_test_toolchain")
 load(":full_version.bzl", "full_version")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
@@ -74,6 +75,11 @@ def parse_modules(module_ctx):
         ignore_root_user_error = False
 
     for mod in module_ctx.modules:
+        for tag in mod.tags.converage:
+            register_py_test_toolchain(
+                name = tag.name,
+                coverage_rc = tag.coveragerc,
+            )
         module_toolchain_versions = []
 
         toolchain_attr_structs = _create_toolchain_attr_structs(mod)
@@ -398,6 +404,19 @@ can result in spurious build failures.
                     doc = "The Python version, in `major.minor` format, e.g " +
                           "'3.12', to create a toolchain for. Patch level " +
                           "granularity (e.g. '3.12.1') is not supported.",
+                ),
+            },
+        ),
+        "converage": tag_class(
+            doc = """Tag class used to register Python toolchains.""",
+            attrs = {
+                "name": attr.string(
+                    mandatory = True,
+                    doc = "Whether or not to configure the default coverage tool for the toolchains.",
+                ),
+                "coveragerc": attr.label(
+                    doc = """ """,
+                    mandatory = True,
                 ),
             },
         ),
