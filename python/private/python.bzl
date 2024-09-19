@@ -158,6 +158,7 @@ def parse_modules(*, module_ctx, _fail = fail):
                 if debug_info:
                     debug_info["toolchains_registered"].append({
                         "ignore_root_user_error": ignore_root_user_error,
+                        "module": {"is_root": mod.is_root, "name": mod.name},
                         "name": toolchain_name,
                     })
 
