@@ -48,6 +48,12 @@ py_test(
     deps = ["//libs/my_lib"],
 )
 
+py_test(
+    name = "coverage_rc_is_set_test",
+    srcs = ["coverage_rc_is_set_test.py"],
+    main = "coverage_rc_is_set_test.py",
+)
+
 py_test_3_9(
     name = "my_lib_3_9_test",
     srcs = ["my_lib_test.py"],

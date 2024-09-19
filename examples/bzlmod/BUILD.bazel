@@ -11,6 +11,8 @@ load("@python_3_9//:defs.bzl", py_test_with_transition = "py_test")
 load("@python_versions//3.10:defs.bzl", compile_pip_requirements_3_10 = "compile_pip_requirements")
 load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 
+exports_files([".coveragerc"])
+
 # This stanza calls a rule that generates targets for managing pip dependencies
 # with pip-compile for a particular python version.
 compile_pip_requirements_3_10(
