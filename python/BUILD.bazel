@@ -231,6 +231,7 @@ bzl_library(
     deps = [
         "//python/private:py_repositories_bzl",
         "//python/private:python_repositories_bzl",
+        "//python/private:python_repository_bzl",
     ],
 )
 

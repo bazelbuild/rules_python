@@ -22,8 +22,8 @@ load(
     _is_standalone_interpreter = "is_standalone_interpreter",
     _python_register_multi_toolchains = "python_register_multi_toolchains",
     _python_register_toolchains = "python_register_toolchains",
-    _python_repository = "python_repository",
 )
+load("//python/private:python_repository.bzl", _python_repository = "python_repository")
 
 py_repositories = _py_repositories
 python_register_multi_toolchains = _python_register_multi_toolchains
