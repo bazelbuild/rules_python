@@ -14,6 +14,7 @@
 """Implementation of py_test rule."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//python/private:toolchain_types.bzl", "PY_TEST_TOOLCHAIN_TYPE")
 load(":attributes.bzl", "AGNOSTIC_TEST_ATTRS")
 load(":common.bzl", "maybe_add_test_execution_info")
 load(
@@ -52,4 +53,7 @@ py_test = create_executable_rule(
     implementation = _py_test_impl,
     attrs = dicts.add(AGNOSTIC_TEST_ATTRS, _BAZEL_PY_TEST_ATTRS),
     test = True,
+    exec_groups = {
+        "test": exec_group(toolchains = [config_common.toolchain_type(PY_TEST_TOOLCHAIN_TYPE, mandatory = False)]),
+    },
 )
