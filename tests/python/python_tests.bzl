@@ -338,8 +338,8 @@ def _test_first_occurance_of_the_toolchain_wins(env):
 
     env.expect.that_dict(py.debug_info).contains_exactly({
         "toolchains_registered": [
-            {"ignore_root_user_error": False, "name": "python_3_12"},
-            {"ignore_root_user_error": False, "name": "python_3_11"},
+            {"ignore_root_user_error": False, "module": {"is_root": True, "name": "my_module"}, "name": "python_3_12"},
+            {"ignore_root_user_error": False, "module": {"is_root": False, "name": "rules_python"}, "name": "python_3_11"},
         ],
     })
 
