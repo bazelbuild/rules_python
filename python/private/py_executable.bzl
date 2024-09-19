@@ -69,6 +69,7 @@ load(
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    "PY_TEST_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
     TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
@@ -1015,6 +1016,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         inherited_environment = inherited_environment,
         semantics = semantics,
         output_groups = exec_result.output_groups,
+        is_test = is_test,
     )
 
 def _get_build_info(ctx, cc_toolchain):
@@ -1580,7 +1582,8 @@ def _create_providers(
         inherited_environment,
         runtime_details,
         output_groups,
-        semantics):
+        semantics,
+        is_test):
     """Creates the providers an executable should return.
 
     Args:
@@ -1614,13 +1617,24 @@ def _create_providers(
     Returns:
         A list of modern providers.
     """
+
+    default_runfiles = runfiles_details.default_runfiles
+    extra_test_env = {}
+
+    if is_test:
+        py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
+        if py_test_toolchain:
+            coverage_rc = py_test_toolchain.py_test_info.coverage_rc
+            extra_test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].path}
+            default_runfiles = default_runfiles.merge(ctx.runfiles(files = coverage_rc.files.to_list()))
+
     providers = [
         DefaultInfo(
             executable = executable,
             files = default_outputs,
             default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
                 ctx,
-                runfiles_details.default_runfiles,
+                default_runfiles,
             ),
             data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
                 ctx,
@@ -1628,7 +1642,7 @@ def _create_providers(
             ),
         ),
         create_instrumented_files_info(ctx),
-        _create_run_environment_info(ctx, inherited_environment),
+        _create_run_environment_info(ctx, inherited_environment, extra_test_env),
         PyExecutableInfo(
             main = main_py,
             runfiles_without_exe = runfiles_details.runfiles_without_exe,
@@ -1701,7 +1715,7 @@ def _create_providers(
     providers.extend(extra_providers)
     return providers
 
-def _create_run_environment_info(ctx, inherited_environment):
+def _create_run_environment_info(ctx, inherited_environment, extra_test_env):
     expanded_env = {}
     for key, value in ctx.attr.env.items():
         expanded_env[key] = _py_builtins.expand_location_and_make_variables(
@@ -1710,6 +1724,7 @@ def _create_run_environment_info(ctx, inherited_environment):
             expression = value,
             targets = ctx.attr.data,
         )
+    expanded_env.update(extra_test_env)
     return RunEnvironmentInfo(
         environment = expanded_env,
         inherited_environment = inherited_environment,
