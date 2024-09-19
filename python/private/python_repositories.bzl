@@ -17,8 +17,6 @@
 For historic reasons, pip_repositories() is defined in //python:pip.bzl.
 """
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(
     "//python:versions.bzl",
     "DEFAULT_RELEASE_BASE_URL",
@@ -27,12 +25,10 @@ load(
     "TOOL_VERSIONS",
     "get_release_info",
 )
-load("//python/private/pypi:deps.bzl", "pypi_deps")
 load(":auth.bzl", "get_auth")
 load(":bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load(":coverage_deps.bzl", "coverage_dep")
 load(":full_version.bzl", "full_version")
-load(":internal_config_repo.bzl", "internal_config_repo")
 load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":text_util.bzl", "render")
 load(
@@ -42,39 +38,6 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
-
-def http_archive(**kwargs):
-    maybe(_http_archive, **kwargs)
-
-def py_repositories():
-    """Runtime dependencies that users must install.
-
-    This function should be loaded and called in the user's WORKSPACE.
-    With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
-    """
-    maybe(
-        internal_config_repo,
-        name = "rules_python_internal",
-    )
-    http_archive(
-        name = "bazel_skylib",
-        sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-        ],
-    )
-    http_archive(
-        name = "rules_cc",
-        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
-        sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
-        strip_prefix = "rules_cc-0.0.9",
-    )
-    pypi_deps()
-
-########
-# Remaining content of the file is only used to support toolchains.
-########
 
 STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
 
