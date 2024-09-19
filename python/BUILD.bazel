@@ -229,7 +229,11 @@ bzl_library(
     name = "repositories_bzl",
     srcs = ["repositories.bzl"],
     deps = [
-        "//python/private:python_repositories_bzl",
+        "//python/private:is_standalone_interpreter_bzl",
+        "//python/private:py_repositories_bzl",
+        "//python/private:python_register_multi_toolchains_bzl",
+        "//python/private:python_register_toolchains_bzl",
+        "//python/private:python_repository_bzl",
     ],
 )
 

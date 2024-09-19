@@ -15,9 +15,9 @@
 "Python toolchain module extensions for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("//python:repositories.bzl", "python_register_toolchains")
 load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 load(":full_version.bzl", "full_version")
+load(":python_register_toolchains.bzl", "python_register_toolchains")
 load(":pythons_hub.bzl", "hub_repo")
 load(":repo_utils.bzl", "repo_utils")
 load(":text_util.bzl", "render")
