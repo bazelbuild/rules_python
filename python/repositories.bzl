@@ -15,11 +15,14 @@
 """This file contains macros to be called during WORKSPACE evaluation.
 """
 
+load(
+    "//python/private:is_standalone_interpreter.bzl",
+    _STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER_FILENAME",
+    _is_standalone_interpreter = "is_standalone_interpreter",
+)
 load("//python/private:py_repositories.bzl", _py_repositories = "py_repositories")
 load(
     "//python/private:python_repositories.bzl",
-    _STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER_FILENAME",
-    _is_standalone_interpreter = "is_standalone_interpreter",
     _python_register_multi_toolchains = "python_register_multi_toolchains",
     _python_register_toolchains = "python_register_toolchains",
 )

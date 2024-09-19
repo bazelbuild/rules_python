@@ -27,7 +27,6 @@ load(":bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load(":coverage_deps.bzl", "coverage_dep")
 load(":full_version.bzl", "full_version")
 load(":python_repository.bzl", "python_repository")
-load(":repo_utils.bzl", "repo_utils")
 load(
     ":toolchains_repo.bzl",
     "host_toolchain",
@@ -35,38 +34,6 @@ load(
     "toolchain_aliases",
     "toolchains_repo",
 )
-
-STANDALONE_INTERPRETER_FILENAME = "STANDALONE_INTERPRETER"
-
-def is_standalone_interpreter(rctx, python_interpreter_path, *, logger = None):
-    """Query a python interpreter target for whether or not it's a rules_rust provided toolchain
-
-    Args:
-        rctx: {type}`repository_ctx` The repository rule's context object.
-        python_interpreter_path: {type}`path` A path representing the interpreter.
-        logger: Optional logger to use for operations.
-
-    Returns:
-        {type}`bool` Whether or not the target is from a rules_python generated toolchain.
-    """
-
-    # Only update the location when using a hermetic toolchain.
-    if not python_interpreter_path:
-        return False
-
-    # This is a rules_python provided toolchain.
-    return repo_utils.execute_unchecked(
-        rctx,
-        op = "IsStandaloneInterpreter",
-        arguments = [
-            "ls",
-            "{}/{}".format(
-                python_interpreter_path.dirname,
-                STANDALONE_INTERPRETER_FILENAME,
-            ),
-        ],
-        logger = logger,
-    ).return_code == 0
 
 # Wrapper macro around everything above, this is the primary API.
 def python_register_toolchains(
