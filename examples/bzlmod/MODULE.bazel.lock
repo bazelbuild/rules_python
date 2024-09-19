@@ -6297,6 +6297,26 @@
         ]
       }
     },
+    "@@rules_python~//python/extensions:python_test.bzl%python_test": {
+      "general": {
+        "bzlTransitiveDigest": "SEH8ZrdlM2SCRF7dzdR/sGS1tbitMAmMMJ4ibAgTE+0=",
+        "usagesDigest": "aGmuY9IjHfwnuGdDvQH7QBfq7RWp2wTNV6oueQMpky0=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "py_test_toolchain": {
+            "bzlFile": "@@rules_python~//python/private:py_test_toolchain.bzl",
+            "ruleClassName": "py_test_toolchain_repo",
+            "attributes": {
+              "coverage_rc": "@@//:.coveragerc",
+              "toolchain_type": "'@@rules_python~//python:py_test_toolchain_type'"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": []
+      }
+    },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
         "bzlTransitiveDigest": "pgIPI+ouKZGvpe1ZWE13QCQ5n0E4veB3tzWhx5XURJ0=",
