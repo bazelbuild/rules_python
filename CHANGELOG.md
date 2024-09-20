@@ -60,6 +60,8 @@ A brief description of the categories of changes:
   in extra_requires in py_wheel rule.
 * (rules) Prevent pytest from trying run the generated stage2
   bootstrap .py file when using {obj}`--bootstrap_impl=script`
+* (toolchain) The {bzl:obj}`gen_python_config_settings` has been fixed to include
+  the flag_values from the platform definitions.
 
 
 ### Added
