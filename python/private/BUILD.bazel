@@ -124,6 +124,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "is_standalone_interpreter_bzl",
+    srcs = ["is_standalone_interpreter.bzl"],
+    deps = [
+        ":repo_utils_bzl",
+    ],
+)
+
+bzl_library(
     name = "normalize_name_bzl",
     srcs = ["normalize_name.bzl"],
 )
@@ -133,7 +141,7 @@ bzl_library(
     srcs = ["python.bzl"],
     deps = [
         ":full_version_bzl",
-        ":python_repositories_bzl",
+        ":python_register_toolchains_bzl",
         ":pythons_hub_bzl",
         ":repo_utils_bzl",
         ":semver_bzl",
@@ -144,19 +152,50 @@ bzl_library(
 )
 
 bzl_library(
-    name = "python_repositories_bzl",
-    srcs = ["python_repositories.bzl"],
+    name = "py_repositories_bzl",
+    srcs = ["py_repositories.bzl"],
     deps = [
-        "//python:versions_bzl",
-        "//python/private:auth_bzl",
-        "//python/private:bazel_tools_bzl",
-        "//python/private:bzlmod_enabled_bzl",
-        "//python/private:coverage_deps_bzl",
-        "//python/private:full_version_bzl",
-        "//python/private:internal_config_repo_bzl",
-        "//python/private:repo_utils_bzl",
-        "//python/private:toolchains_repo_bzl",
+        ":bazel_tools_bzl",
+        ":internal_config_repo_bzl",
         "//python/private/pypi:deps_bzl",
+    ],
+)
+
+bzl_library(
+    name = "python_register_toolchains_bzl",
+    srcs = ["python_register_toolchains.bzl"],
+    deps = [
+        ":auth_bzl",
+        ":bazel_tools_bzl",
+        ":bzlmod_enabled_bzl",
+        ":coverage_deps_bzl",
+        ":full_version_bzl",
+        ":internal_config_repo_bzl",
+        ":python_repository_bzl",
+        ":toolchains_repo_bzl",
+        "//python:versions_bzl",
+        "//python/private/pypi:deps_bzl",
+    ],
+)
+
+bzl_library(
+    name = "python_repository_bzl",
+    srcs = ["python_repository.bzl"],
+    deps = [
+        ":auth_bzl",
+        ":repo_utils_bzl",
+        ":text_util_bzl",
+        "//python:versions_bzl",
+    ],
+)
+
+bzl_library(
+    name = "python_register_multi_toolchains_bzl",
+    srcs = ["python_register_multi_toolchains.bzl"],
+    deps = [
+        ":python_register_toolchains_bzl",
+        ":toolchains_repo_bzl",
+        "//python:versions_bzl",
     ],
 )
 

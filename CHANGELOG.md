@@ -61,6 +61,8 @@ A brief description of the categories of changes:
   ([#2186](https://github.com/bazelbuild/rules_python/issues/2186)).
 * (py_wheel) Fix incorrectly generated `Required-Dist` when specifying requirements with markers
   in extra_requires in py_wheel rule.
+* (rules) Prevent pytest from trying run the generated stage2
+  bootstrap .py file when using {obj}`--bootstrap_impl=script`
 
 
 ### Added
