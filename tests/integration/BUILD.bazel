@@ -19,8 +19,12 @@ load(":integration_test.bzl", "rules_python_integration_test")
 
 licenses(["notice"])
 
-_WORKSPACE_FLAGS = [
+_LEGACY_WORKSPACE_FLAGS = [
     "--noenable_bzlmod",
+]
+
+_WORKSPACE_FLAGS = _LEGACY_WORKSPACE_FLAGS + [
+    "--enable_workspace",
 ]
 
 _WORKSPACE_GAZELLE_PLUGIN_FLAGS = [
@@ -30,6 +34,24 @@ _WORKSPACE_GAZELLE_PLUGIN_FLAGS = [
 _GAZELLE_PLUGIN_FLAGS = [
     "--override_module=rules_python_gazelle_plugin=../../../rules_python_gazelle_plugin",
 ]
+
+default_test_runner(
+    name = "bazel_6_4_workspace_test_runner",
+    bazel_cmds = [
+        "info {}".format(" ".join(_LEGACY_WORKSPACE_FLAGS)),
+        "test {} //...".format(" ".join(_LEGACY_WORKSPACE_FLAGS)),
+    ],
+    visibility = ["//visibility:public"],
+)
+
+default_test_runner(
+    name = "bazel_6_4_workspace_test_runner_gazelle_plugin",
+    bazel_cmds = [
+        "info {}".format(" ".join(_LEGACY_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
+        "test {} //...".format(" ".join(_LEGACY_WORKSPACE_FLAGS + _WORKSPACE_GAZELLE_PLUGIN_FLAGS)),
+    ],
+    visibility = ["//visibility:public"],
+)
 
 default_test_runner(
     name = "workspace_test_runner",

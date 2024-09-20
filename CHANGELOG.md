@@ -35,6 +35,7 @@ A brief description of the categories of changes:
 * (toolchains) {obj}`py_cc_toolchain.libs` and {obj}`PyCcToolchainInfo.libs` is
   optional. This is to support situations where only the Python headers are
   available.
+* (bazel) Minimum bazel 7 version that we test against has been bumped to `7.1`.
 
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the
