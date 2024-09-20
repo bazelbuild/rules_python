@@ -27,7 +27,7 @@ python.toolchain(
 use_repo(python, "python_3_11")
 ```
 
-For more in-depth documentation see the {rule}`python.toolchain`.
+For more in-depth documentation see the {obj}`python.toolchain`.
 
 ## Overrides
 

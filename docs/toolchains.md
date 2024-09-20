@@ -177,10 +177,11 @@ existing attributes:
 
 * Limiting the available toolchains for the entire `bzlmod` transitive graph
   via {attr}`python.override.available_python_versions`.
-* Setting particular `X.Y.Z` python versions when modules request `X.Y` version
+* Setting particular `X.Y.Z` Python versions when modules request `X.Y` version
   via {attr}`python.override.minor_mapping`.
-* Adding custom {attr}`python.single_version_platform_override.coverage_tool`.
-* Adding new python versions via {bzl:obj}`python.single_version_override` or
+* Per-version control of the coverage tool used using
+  {attr}`python.single_version_platform_override.coverage_tool`.
+* Adding additional Python versions via {bzl:obj}`python.single_version_override` or
   {bzl:obj}`python.single_version_platform_override`.
 
 ## Workspace configuration
