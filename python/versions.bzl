@@ -722,5 +722,6 @@ def gen_python_config_settings(name = ""):
     for platform in PLATFORMS.keys():
         native.config_setting(
             name = "{name}{platform}".format(name = name, platform = platform),
+            flag_values = PLATFORMS[platform].flag_values,
             constraint_values = PLATFORMS[platform].compatible_with,
         )
