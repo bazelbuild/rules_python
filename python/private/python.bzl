@@ -325,7 +325,7 @@ def _process_single_version_overrides(*, tag, _fail = fail, default):
             _fail("Both `sha256` and `urls` overrides need to be provided together")
             return
 
-        for platform in tag.sha256 or []:
+        for platform in (tag.sha256 or []):
             if platform not in PLATFORMS:
                 _fail("The platform must be one of {allowed} but got '{got}'".format(
                     allowed = sorted(PLATFORMS),
@@ -658,11 +658,10 @@ _override = tag_class(
 :::{versionadded} 0.36.0
 :::
 """,
-    attrs = dict(
-        {
-            "available_python_versions": attr.string_list(
-                mandatory = False,
-                doc = """\
+    attrs = {
+        "available_python_versions": attr.string_list(
+            mandatory = False,
+            doc = """\
 The list of available python tool versions to use. Must be in `X.Y.Z` format.
 If the unknown version given the processing of the extension will fail - all of
 the versions in the list have to be defined with
@@ -673,15 +672,15 @@ list.
 This attribute is usually used in order to ensure that no unexpected transitive
 dependencies are introduced.
 """,
-            ),
-            "base_url": attr.string(
-                mandatory = False,
-                doc = "The base URL to be used when downloading toolchains.",
-                default = DEFAULT_RELEASE_BASE_URL,
-            ),
-            "ignore_root_user_error": attr.bool(
-                default = False,
-                doc = """\
+        ),
+        "base_url": attr.string(
+            mandatory = False,
+            doc = "The base URL to be used when downloading toolchains.",
+            default = DEFAULT_RELEASE_BASE_URL,
+        ),
+        "ignore_root_user_error": attr.bool(
+            default = False,
+            doc = """\
 If `False`, the Python runtime installation will be made read only. This improves
 the ability for Bazel to cache it, but prevents the interpreter from creating
 `.pyc` files for the standard library dynamically at runtime as they are loaded.
@@ -691,28 +690,26 @@ interpreter to create `.pyc` files for the standard library, but, because they a
 created as needed, it adversely affects Bazel's ability to cache the runtime and
 can result in spurious build failures.
 """,
-                mandatory = False,
-            ),
-            "minor_mapping": attr.string_dict(
-                mandatory = False,
-                doc = """\
+            mandatory = False,
+        ),
+        "minor_mapping": attr.string_dict(
+            mandatory = False,
+            doc = """\
 The mapping between `X.Y` to `X.Y.Z` versions to be used when setting up
 toolchains. It defaults to the interpreter with the highest available patch
 version for each minor version. For example if one registers `3.10.3`, `3.10.4`
 and `3.11.4` then the default for the `minor_mapping` dict will be:
 ```starlark
 {
-    "3.10": "3.10.4",
-    "3.11": "3.11.4",
+"3.10": "3.10.4",
+"3.11": "3.11.4",
 }
 ```
 """,
-                default = {},
-            ),
-            "register_all_versions": attr.bool(default = False, doc = "Add all versions"),
-        },
-        **AUTH_ATTRS
-    ),
+            default = {},
+        ),
+        "register_all_versions": attr.bool(default = False, doc = "Add all versions"),
+    } | AUTH_ATTRS,
 )
 
 _single_version_override = tag_class(
