@@ -46,6 +46,10 @@ def python_register_toolchains(
         **kwargs):
     """Convenience macro for users which does typical setup.
 
+    With `bzlmod` enabled, this function is not needed since `rules_python` is
+    handling everything. In order to override the default behaviour from the
+    root module one can see the docs for the {rule}`python` extension.
+
     - Create a repository for each built-in platform like "python_3_8_linux_amd64" -
       this repository is lazily fetched when Python is needed for that platform.
     - Create a repository exposing toolchains for each platform like

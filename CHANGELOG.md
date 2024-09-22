@@ -28,6 +28,10 @@ A brief description of the categories of changes:
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
   {obj}`config_common.FeatureFlagInfo`.
+* (toolchain): The toolchain patches now expose the `patch_strip` attribute
+  that one should use when patching toolchains. Please set it if you are
+  patching python interpreter. In the next release the default will be set to
+  `0` which better reflects the defaults used in public `bazel` APIs.
 * (toolchains) When {obj}`py_runtime.interpreter_version_info` isn't specified,
   the {obj}`--python_version` flag will determine the value. This allows
   specifying the build-time Python version for the
@@ -65,6 +69,10 @@ A brief description of the categories of changes:
 
 
 ### Added
+* (bzlmod): Toolchain overrides can now be done using the new
+  {bzl:obj}`python.override`, {bzl:obj}`python.single_version_override` and
+  {bzl:obj}`python.single_version_platform_override` tag classes.
+  See [#2081](https://github.com/bazelbuild/rules_python/issues/2081).
 * (rules) Executables provide {obj}`PyExecutableInfo`, which contains
   executable-specific information useful for packaging an executable or
   or deriving a new one from the original.

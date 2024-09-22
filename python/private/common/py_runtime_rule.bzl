@@ -202,8 +202,8 @@ See @bazel_tools//tools/python:python_bootstrap_template.txt for more variables.
         "coverage_tool": attr.label(
             allow_files = False,
             doc = """
-This is a target to use for collecting code coverage information from `py_binary`
-and `py_test` targets.
+This is a target to use for collecting code coverage information from
+{rule}`py_binary` and {rule}`py_test` targets.
 
 If set, the target must either produce a single file or be an executable target.
 The path to the single file, or the executable if the target is executable,
@@ -212,7 +212,7 @@ runfiles will be added to the runfiles when coverage is enabled.
 
 The entry point for the tool must be loadable by a Python interpreter (e.g. a
 `.py` or `.pyc` file).  It must accept the command line arguments
-of coverage.py (https://coverage.readthedocs.io), at least including
+of [`coverage.py`](https://coverage.readthedocs.io), at least including
 the `run` and `lcov` subcommands.
 """,
         ),
@@ -311,7 +311,7 @@ The template to use when two stage bootstrapping is enabled
             default = DEFAULT_STUB_SHEBANG,
             doc = """
 "Shebang" expression prepended to the bootstrapping Python stub script
-used when executing `py_binary` targets.
+used when executing {rule}`py_binary` targets.
 
 See https://github.com/bazelbuild/bazel/issues/8685 for
 motivation.

@@ -124,7 +124,6 @@ def _python_repository_impl(rctx):
     patches = rctx.attr.patches
     if patches:
         for patch in patches:
-            # Should take the strip as an attr, but this is fine for the moment
             rctx.patch(patch, strip = rctx.attr.patch_strip)
 
     # Write distutils.cfg to the Python installation.
@@ -302,27 +301,14 @@ python_repository = repository_rule(
             doc = "Override mapping of hostnames to authorization patterns; mirrors the eponymous attribute from http_archive",
         ),
         "coverage_tool": attr.string(
-            # Mirrors the definition at
-            # https://github.com/bazelbuild/bazel/blob/master/src/main/starlark/builtins_bzl/common/python/py_runtime_rule.bzl
             doc = """
-This is a target to use for collecting code coverage information from `py_binary`
-and `py_test` targets.
-
-If set, the target must either produce a single file or be an executable target.
-The path to the single file, or the executable if the target is executable,
-determines the entry point for the python coverage tool.  The target and its
-runfiles will be added to the runfiles when coverage is enabled.
-
-The entry point for the tool must be loadable by a Python interpreter (e.g. a
-`.py` or `.pyc` file).  It must accept the command line arguments
-of coverage.py (https://coverage.readthedocs.io), at least including
-the `run` and `lcov` subcommands.
+This is a target to use for collecting code coverage information from {rule}`py_binary`
+and {rule}`py_test` targets.
 
 The target is accepted as a string by the python_repository and evaluated within
 the context of the toolchain repository.
 
-For more information see the official bazel docs
-(https://bazel.build/reference/be/python#py_runtime.coverage_tool).
+For more information see {attr}`py_runtime.coverage_tool`.
 """,
         ),
         "distutils": attr.label(

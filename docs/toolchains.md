@@ -169,6 +169,21 @@ Variables](https://bazel.build/reference/be/make-variables). See the
 {gh-path}`test_current_py_toolchain <tests/load_from_macro/BUILD.bazel>` target
 for an example.
 
+### Overriding toolchain defaults and adding more versions
+
+One can perform various overrides for the registered toolchains from the root
+module. For example, the following use cases would be supported using the
+existing attributes:
+
+* Limiting the available toolchains for the entire `bzlmod` transitive graph
+  via {attr}`python.override.available_python_versions`.
+* Setting particular `X.Y.Z` Python versions when modules request `X.Y` version
+  via {attr}`python.override.minor_mapping`.
+* Per-version control of the coverage tool used using
+  {attr}`python.single_version_platform_override.coverage_tool`.
+* Adding additional Python versions via {bzl:obj}`python.single_version_override` or
+  {bzl:obj}`python.single_version_platform_override`.
+
 ## Workspace configuration
 
 To import rules_python in your project, you first need to add it to your
@@ -244,7 +259,7 @@ automatically registers a higher-priority toolchain; it won't be used unless
 there is a toolchain misconfiguration somewhere.
 
 To aid migration off the Bazel-builtin toolchain, rules_python provides
-{obj}`@rules_python//python/runtime_env_toolchains:all`. This is an equivalent
+{bzl:obj}`@rules_python//python/runtime_env_toolchains:all`. This is an equivalent
 toolchain, but is implemented using rules_python's objects.
 
 

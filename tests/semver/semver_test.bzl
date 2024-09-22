@@ -22,8 +22,8 @@ _tests = []
 def _test_semver_from_major(env):
     actual = semver("3")
     env.expect.that_int(actual.major).equals(3)
-    env.expect.that_int(actual.minor).equals(0)
-    env.expect.that_int(actual.patch).equals(0)
+    env.expect.that_int(actual.minor).equals(None)
+    env.expect.that_int(actual.patch).equals(None)
     env.expect.that_str(actual.build).equals("")
 
 _tests.append(_test_semver_from_major)
@@ -32,7 +32,7 @@ def _test_semver_from_major_minor_version(env):
     actual = semver("4.9")
     env.expect.that_int(actual.major).equals(4)
     env.expect.that_int(actual.minor).equals(9)
-    env.expect.that_int(actual.patch).equals(0)
+    env.expect.that_int(actual.patch).equals(None)
     env.expect.that_str(actual.build).equals("")
 
 _tests.append(_test_semver_from_major_minor_version)

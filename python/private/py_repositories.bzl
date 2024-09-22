@@ -25,8 +25,8 @@ def http_archive(**kwargs):
 def py_repositories():
     """Runtime dependencies that users must install.
 
-    This function should be loaded and called in the user's WORKSPACE.
-    With bzlmod enabled, this function is not needed since MODULE.bazel handles transitive deps.
+    This function should be loaded and called in the user's `WORKSPACE`.
+    With `bzlmod` enabled, this function is not needed since `MODULE.bazel` handles transitive deps.
     """
     maybe(
         internal_config_repo,
