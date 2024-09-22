@@ -305,6 +305,9 @@ python_repository = repository_rule(
 This is a target to use for collecting code coverage information from {rule}`py_binary`
 and {rule}`py_test` targets.
 
+The target is accepted as a string by the python_repository and evaluated within
+the context of the toolchain repository.
+
 For more information see {attr}`py_runtime.coverage_tool`.
 """,
         ),
