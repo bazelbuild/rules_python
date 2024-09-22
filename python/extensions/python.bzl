@@ -14,7 +14,7 @@
 
 """Python toolchain module extensions for use with bzlmod.
 
-:::{topic}Basic usage
+:::{topic} Basic usage
 
 The simplest way to configure the toolchain with `rules_python` is as follows.
 
@@ -32,7 +32,7 @@ For more in-depth documentation see the {obj}`python.toolchain`.
 ::::
 :::
 
-:::{topic}Overrides
+:::{topic} Overrides
 
 Overrides can be done at 3 different levels:
 * Overrides affecting all python toolchain versions on all platforms - {obj}`python.override`.
