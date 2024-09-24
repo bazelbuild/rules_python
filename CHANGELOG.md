@@ -25,6 +25,22 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* Nothing yet
+
+### Fixed
+* Nothing yet
+
+### Added
+* Nothing yet
+
+### Removed
+* Nothing yet
+
+## [0.36.0] - 2024-09-24
+
+[0.36.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.36.0
+
+### Changed
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
   {obj}`config_common.FeatureFlagInfo`.
@@ -174,7 +190,6 @@ A brief description of the categories of changes:
 [py_test_main]: https://docs.aspect.build/rulesets/aspect_rules_py/docs/rules/#py_pytest_main
 [pytest_bazel]: https://pypi.org/project/pytest-bazel
 [20240726]: https://github.com/indygreg/python-build-standalone/releases/tag/20240726
-
 
 ## [0.34.0] - 2024-07-04
 
