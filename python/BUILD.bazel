@@ -167,8 +167,8 @@ bzl_library(
     name = "py_info_bzl",
     srcs = ["py_info.bzl"],
     deps = [
+        "//python/private:py_info_bzl",
         "//python/private:reexports_bzl",
-        "//python/private/common:providers_bzl",
         "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
