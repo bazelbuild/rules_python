@@ -5,6 +5,25 @@
 
 # //python/config_settings
 
+:::{bzl:flag} add_srcs_to_runfiles
+Determines if the `srcs` of targets are added to their runfiles.
+
+More specifically, the sources added to runfiles are the `.py` files in `srcs`.
+If precompiling is performed, it is the `.py` files that are kept according
+to {obj}`precompile_source_retention`.
+
+Values:
+* `auto`: (default) Automatically decide the effective value; the current
+  behavior is `disabled`.
+* `disabled`: Don't add `srcs` to a target's runfiles.
+* `enabled`:  Add `srcs` to a target's runfiles.
+::::{versionadded} 0.37.0
+::::
+::::{deprecated} 0.37.0
+This is a transition flag and will be removed in a subsequent release.
+::::
+:::
+
 :::{bzl:flag} python_version
 Determines the default hermetic Python toolchain version. This can be set to
 one of the values that `rules_python` maintains.
@@ -42,12 +61,8 @@ Values:
 
 * `auto`: (default) Automatically decide the effective value based on environment,
   target platform, etc.
-* `enabled`: Compile Python source files at build time. Note that
-  {bzl:obj}`--precompile_add_to_runfiles` affects how the compiled files are included into
-  a downstream binary.
+* `enabled`: Compile Python source files at build time.
 * `disabled`: Don't compile Python source files at build time.
-* `if_generated_source`: Compile Python source files, but only if they're a
-  generated file.
 * `force_enabled`: Like `enabled`, except overrides target-level setting. This
   is mostly useful for development, testing enabling precompilation more
   broadly, or as an escape hatch if build-time compiling is not available.
@@ -55,6 +70,9 @@ Values:
   is useful useful for development, testing enabling precompilation more
   broadly, or as an escape hatch if build-time compiling is not available.
 :::{versionadded} 0.33.0
+:::
+:::{versionchanged} 0.37.0
+The `if_generated_source` value was removed
 :::
 ::::
 
@@ -73,45 +91,14 @@ Values:
   target platform, etc.
 * `keep_source`: Include the original Python source.
 * `omit_source`: Don't include the orignal py source.
-* `omit_if_generated_source`: Keep the original source if it's a regular source
-  file, but omit it if it's a generated file.
 
 :::{versionadded} 0.33.0
 :::
 :::{versionadded} 0.36.0
 The `auto` value
 :::
-::::
-
-::::{bzl:flag} precompile_add_to_runfiles
-Determines if a target adds its compiled files to its runfiles.
-
-When a target compiles its files, but doesn't add them to its own runfiles, it
-relies on a downstream target to retrieve them from
-{bzl:obj}`PyInfo.transitive_pyc_files`
-
-Values:
-* `always`: Always include the compiled files in the target's runfiles.
-* `decided_elsewhere`: Don't include the compiled files in the target's
-  runfiles; they are still added to {bzl:obj}`PyInfo.transitive_pyc_files`. See
-  also: {bzl:obj}`py_binary.pyc_collection` attribute. This is useful for allowing
-  incrementally enabling precompilation on a per-binary basis.
-:::{versionadded} 0.33.0
-:::
-::::
-
-::::{bzl:flag} pyc_collection
-Determine if `py_binary` collects transitive pyc files.
-
-:::{note}
-This flag is overridden by the target level `pyc_collection` attribute.
-:::
-
-Values:
-* `include_pyc`: Include `PyInfo.transitive_pyc_files` as part of the binary.
-* `disabled`: Don't include `PyInfo.transitive_pyc_files` as part of the binary.
-:::{versionadded} 0.33.0
-:::
+:::{versionchanged} 0.37.0
+The `omit_if_generated_source` value was removed
 ::::
 
 ::::{bzl:flag} py_linux_libc

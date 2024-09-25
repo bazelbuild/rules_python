@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 "Implementation of py_package rule"
+
+load(":builders.bzl", "builders")
+load(":py_info.bzl", "PyInfoBuilder")
 
 def _path_inside_wheel(input_file):
     # input_file.short_path is sometimes relative ("../${repository_root}/foobar")
@@ -31,10 +33,20 @@ def _path_inside_wheel(input_file):
     return short_path
 
 def _py_package_impl(ctx):
-    inputs = depset(
-        transitive = [dep[DefaultInfo].data_runfiles.files for dep in ctx.attr.deps] +
-                     [dep[DefaultInfo].default_runfiles.files for dep in ctx.attr.deps],
-    )
+    inputs = builders.DepsetBuilder()
+    py_info = PyInfoBuilder()
+    for dep in ctx.attr.deps:
+        inputs.add(dep[DefaultInfo].data_runfiles.files)
+        inputs.add(dep[DefaultInfo].default_runfiles.files)
+        py_info.merge_target(dep)
+    py_info = py_info.build()
+    inputs.add(py_info.transitive_sources)
+
+    # Remove conditional once Bazel 6 support dropped.
+    if hasattr(py_info, "transitive_pyc_files"):
+        inputs.add(py_info.transitive_pyc_files)
+
+    inputs = inputs.build()
 
     # TODO: '/' is wrong on windows, but the path separator is not available in starlark.
     # Fix this once ctx.configuration has directory separator information.

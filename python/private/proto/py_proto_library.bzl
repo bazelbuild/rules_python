@@ -16,6 +16,7 @@
 
 load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load("//python:defs.bzl", "PyInfo")
+load("//python/api:api.bzl", _py_common = "py_common")
 
 PY_PROTO_TOOLCHAIN = "@rules_python//python/proto:toolchain_type"
 
@@ -25,6 +26,7 @@ _PyProtoInfo = provider(
         "imports": """
             (depset[str]) The field forwarding PyInfo.imports coming from
             the proto language runtime dependency.""",
+        "py_info": "PyInfo from proto runtime (or other deps) to propagate.",
         "runfiles_from_proto_deps": """
             (depset[File]) Files from the transitive closure implicit proto
             dependencies""",
@@ -70,6 +72,11 @@ def _py_proto_aspect_impl(target, ctx):
         proto_lang_toolchain_info = toolchain.proto
     else:
         proto_lang_toolchain_info = getattr(ctx.attr, "_aspect_proto_toolchain")[proto_common.ProtoLangToolchainInfo]
+
+    py_common = _py_common.get(ctx)
+    py_info = py_common.PyInfoBuilder().merge_target(
+        proto_lang_toolchain_info.runtime,
+    ).build()
 
     api_deps = [proto_lang_toolchain_info.runtime]
 
@@ -127,16 +134,19 @@ def _py_proto_aspect_impl(target, ctx):
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
+            py_info = py_info,
         ),
     ]
 
 _py_proto_aspect = aspect(
     implementation = _py_proto_aspect_impl,
-    attrs = {} if _incompatible_toolchains_enabled() else {
-        "_aspect_proto_toolchain": attr.label(
-            default = ":python_toolchain",
-        ),
-    },
+    attrs = _py_common.API_ATTRS | (
+        {} if _incompatible_toolchains_enabled() else {
+            "_aspect_proto_toolchain": attr.label(
+                default = ":python_toolchain",
+            ),
+        }
+    ),
     attr_aspects = ["deps"],
     required_providers = [ProtoInfo],
     provides = [_PyProtoInfo],
@@ -159,6 +169,17 @@ def _py_proto_library_rule(ctx):
         transitive = [info.transitive_sources for info in pyproto_infos],
     )
 
+    py_common = _py_common.get(ctx)
+
+    py_info = py_common.PyInfoBuilder()
+    py_info.set_has_py2_only_sources(False)
+    py_info.set_has_py3_only_sources(False)
+    py_info.transitive_sources.add(default_outputs)
+    py_info.imports.add([info.imports for info in pyproto_infos])
+    py_info.merge_all([
+        pyproto_info.py_info
+        for pyproto_info in pyproto_infos
+    ])
     return [
         DefaultInfo(
             files = default_outputs,
@@ -171,13 +192,7 @@ def _py_proto_library_rule(ctx):
         OutputGroupInfo(
             default = depset(),
         ),
-        PyInfo(
-            transitive_sources = default_outputs,
-            imports = depset(transitive = [info.imports for info in pyproto_infos]),
-            # Proto always produces 2- and 3- compatible source files
-            has_py2_only_sources = False,
-            has_py3_only_sources = False,
-        ),
+        py_info.build(),
     ]
 
 py_proto_library = rule(
@@ -218,6 +233,6 @@ proto_library(
             providers = [ProtoInfo],
             aspects = [_py_proto_aspect],
         ),
-    },
+    } | _py_common.API_ATTRS,
     provides = [PyInfo],
 )

@@ -2,12 +2,11 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@pythons_hub//:versions.bzl", "DEFAULT_PYTHON_VERSION", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load(
     "//python/private:flags.bzl",
+    "AddSrcsToRunfilesFlag",
     "BootstrapImplFlag",
     "ExecToolsToolchainFlag",
-    "PrecompileAddToRunfilesFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
-    "PycCollectionFlag",
 )
 load(
     "//python/private/pypi:flags.bzl",
@@ -31,6 +30,14 @@ construct_config_settings(
     default_version = DEFAULT_PYTHON_VERSION,
     minor_mapping = MINOR_MAPPING,
     versions = PYTHON_VERSIONS,
+)
+
+string_flag(
+    name = "add_srcs_to_runfiles",
+    build_setting_default = AddSrcsToRunfilesFlag.AUTO,
+    values = AddSrcsToRunfilesFlag.flag_values(),
+    # NOTE: Only public because it is dependency of public rules.
+    visibility = ["//visibility:public"],
 )
 
 string_flag(
@@ -64,22 +71,6 @@ string_flag(
     name = "precompile_source_retention",
     build_setting_default = PrecompileSourceRetentionFlag.AUTO,
     values = sorted(PrecompileSourceRetentionFlag.__members__.values()),
-    # NOTE: Only public because it's an implicit dependency
-    visibility = ["//visibility:public"],
-)
-
-string_flag(
-    name = "precompile_add_to_runfiles",
-    build_setting_default = PrecompileAddToRunfilesFlag.ALWAYS,
-    values = sorted(PrecompileAddToRunfilesFlag.__members__.values()),
-    # NOTE: Only public because it's an implicit dependency
-    visibility = ["//visibility:public"],
-)
-
-string_flag(
-    name = "pyc_collection",
-    build_setting_default = PycCollectionFlag.DISABLED,
-    values = sorted(PycCollectionFlag.__members__.values()),
     # NOTE: Only public because it's an implicit dependency
     visibility = ["//visibility:public"],
 )

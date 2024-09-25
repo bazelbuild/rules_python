@@ -25,6 +25,14 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
+* **BREAKING** `py_library` no longer puts its source files or generated pyc
+  files in runfiles; it's the responsibility of consumers (e.g. binaries) to
+  populate runfiles with the necessary files. Adding source files to runfiles
+  can be temporarily restored by setting {obj}`--add_srcs_to_runfiles=enabled`,
+  but this flag will be removed in a subsequent releases.
+* {obj}`PyInfo.transitive_sources` is now added to runfiles. These files are
+  `.py` files that are required to be added to runfiles by downstream binaries
+  (or equivalent).
 * (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
   (previously it defaulted to None).
 
@@ -47,6 +55,9 @@ A brief description of the categories of changes:
 * (rules) `compile_pip_requirements` passes `env` to the `X.update` target (and
   not only to the `X_test` target, a bug introduced in
   [#1067](https://github.com/bazelbuild/rules_python/pull/1067)).
+* (precompiling) The {obj}`pyc_collection` attribute now correctly
+  enables (or disables) using pyc files from targets transitively
+>>>>>>> 607a9c3c (wip: fix pyc_collection bug)
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
@@ -63,12 +74,18 @@ A brief description of the categories of changes:
     * `3.10 -> 3.10.15`
     * `3.11 -> 3.11.10`
     * `3.12 -> 3.12.7`
-[20241008]: https://github.com/indygreg/python-build-standalone/releases/tag/20241008
 * (coverage) Add support for python 3.13 and bump `coverage.py` to 7.6.1.
+* (api) PyInfo fields: {obj}`PyInfo.transitive_implicit_pyc_files`,
+  {obj}`PyInfo.transitive_implicit_pyc_source_files`.
 
+[20241008]: https://github.com/indygreg/python-build-standalone/releases/tag/20241008
 
 ### Removed
-* Nothing yet
+* (precompiling) {obj}`--precompile_add_to_runfiles` has been removed.
+* (precompiling) {obj}`--pyc_collection` has been removed. The `pyc_collection`
+  attribute now bases its default on {obj}`--precompile`.
+* (precompiling) The {obj}`precompile=if_generated_source` value has been removed.
+* (precompiling) The {obj}`precompile_source_retention=omit_if_generated_source` value has been removed.
 
 ## [0.36.0] - 2024-09-24
 
