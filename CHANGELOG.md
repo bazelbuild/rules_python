@@ -33,6 +33,8 @@ A brief description of the categories of changes:
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
   compression to speed up development.
+* (api) Added {obj}`merge_py_infos()` so user rules can merge and propagate
+  `PyInfo` without losing information.
 
 ### Removed
 * Nothing yet
