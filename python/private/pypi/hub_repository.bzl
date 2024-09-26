@@ -35,7 +35,6 @@ def _impl(rctx):
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
-        default_version = rctx.attr.default_version,
         default_config_setting = "//_config:is_python_" + rctx.attr.default_version,
         requirement_cycles = rctx.attr.groups,
     )

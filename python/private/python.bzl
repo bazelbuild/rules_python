@@ -236,6 +236,7 @@ def _python_impl(module_ctx):
         name = "pythons_hub",
         # Last toolchain is default
         default_python_version = py.default_python_version,
+        minor_mapping = py.config.minor_mapping,
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)
@@ -493,20 +494,23 @@ def _get_toolchain_config(*, modules, _fail = fail):
         _fail = _fail,
     )
 
-    minor_mapping = default.pop("minor_mapping", {})
     register_all_versions = default.pop("register_all_versions", False)
     kwargs = default.pop("kwargs", {})
 
-    if not minor_mapping:
-        versions = {}
-        for version_string in available_versions:
-            v = semver(version_string)
-            versions.setdefault("{}.{}".format(v.major, v.minor), []).append((int(v.patch), version_string))
+    versions = {}
+    for version_string in available_versions:
+        v = semver(version_string)
+        versions.setdefault("{}.{}".format(v.major, v.minor), []).append((int(v.patch), version_string))
 
-        minor_mapping = {
-            major_minor: max(subset)[1]
-            for major_minor, subset in versions.items()
-        }
+    minor_mapping = {
+        major_minor: max(subset)[1]
+        for major_minor, subset in versions.items()
+    }
+
+    # The following ensures that all of the versions will be present in the minor_mapping
+    minor_mapping_overrides = default.pop("minor_mapping", {})
+    for major_minor, full in minor_mapping_overrides.items():
+        minor_mapping[major_minor] = full
 
     return struct(
         kwargs = kwargs,
@@ -705,6 +709,10 @@ and `3.11.4` then the default for the `minor_mapping` dict will be:
 "3.11": "3.11.4",
 }
 ```
+
+:::{versionchanged} 0.37.0
+The values in this mapping override the default values and do not replace them.
+:::
 """,
             default = {},
         ),

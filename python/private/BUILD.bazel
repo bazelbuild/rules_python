@@ -204,6 +204,7 @@ bzl_library(
     srcs = ["pythons_hub.bzl"],
     deps = [
         ":py_toolchain_suite_bzl",
+        ":text_util_bzl",
     ],
 )
 

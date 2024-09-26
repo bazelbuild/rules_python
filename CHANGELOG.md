@@ -28,7 +28,11 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* Nothing yet
+* (bzlmod) The `python.override(minor_mapping)` now merges the default and the
+  overridden versions ensuring that the resultant `minor_mapping` will always
+  have all of the python versions.
+* (bzlmod) The default value for the {obj}`--python_version` flag will now be
+  always set to the default python toolchain version value.
 
 ### Added
 * Nothing yet

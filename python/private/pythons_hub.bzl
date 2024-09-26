@@ -14,10 +14,8 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
-load(
-    "//python/private:toolchains_repo.bzl",
-    "python_toolchain_build_file_content",
-)
+load(":text_util.bzl", "render")
+load(":toolchains_repo.bzl", "python_toolchain_build_file_content")
 
 def _have_same_length(*lists):
     if not lists:
@@ -76,6 +74,8 @@ INTERPRETER_LABELS = {{
 {interpreter_labels}
 }}
 DEFAULT_PYTHON_VERSION = "{default_python_version}"
+MINOR_MAPPING = {minor_mapping}
+PYTHON_VERSIONS = {python_versions}
 """
 
 _line_for_hub_template = """\
@@ -107,8 +107,13 @@ def _hub_repo_impl(rctx):
     rctx.file(
         "interpreters.bzl",
         _interpreters_bzl_template.format(
-            interpreter_labels = interpreter_labels,
             default_python_version = rctx.attr.default_python_version,
+            interpreter_labels = interpreter_labels,
+            minor_mapping = render.dict(rctx.attr.minor_mapping),
+            python_versions = render.list(sorted({
+                v: None
+                for v in rctx.attr.toolchain_python_versions
+            })),
         ),
         executable = False,
     )
@@ -123,6 +128,10 @@ This rule also writes out the various toolchains for the different Python versio
     attrs = {
         "default_python_version": attr.string(
             doc = "Default Python version for the build in `X.Y` or `X.Y.Z` format.",
+            mandatory = True,
+        ),
+        "minor_mapping": attr.string_dict(
+            doc = "The minor mapping of the `X.Y` to `X.Y.Z` format that is used in config settings.",
             mandatory = True,
         ),
         "toolchain_prefixes": attr.string_list(
