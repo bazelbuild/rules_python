@@ -143,12 +143,11 @@ def _python_repository_impl(rctx):
         # dyld lookup errors. To fix, set the full path to the dylib as
         # it appears in the Bazel workspace as its LC_ID_DYLIB using
         # the `install_name_tool` bundled with macOS.
-        dylib = "lib/libpython{}.dylib".format(python_short_version)
-        full_dylib_path = rctx.path(dylib)
+        dylib = "libpython{}.dylib".format(python_short_version)
         repo_utils.execute_checked(
             rctx,
             op = "python_repository.FixUpDyldIdPath",
-            arguments = [repo_utils.which_checked(rctx, "install_name_tool"), "-id", full_dylib_path, dylib],
+            arguments = [repo_utils.which_checked(rctx, "install_name_tool"), "-id", "@rpath/{}".format(dylib), "lib/{}".format(dylib)],
             logger = logger,
         )
 
