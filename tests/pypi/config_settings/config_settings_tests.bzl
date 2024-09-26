@@ -55,6 +55,8 @@ def _analysis_test(*, name, dist, want, config_settings = [_flag.platform("linux
     config_settings = dict(config_settings)
     if not config_settings:
         fail("For reproducibility on different platforms, the config setting must be specified")
+    python_version, default_value = _flag.python_version("3.7.10")
+    config_settings.setdefault(python_version, default_value)
 
     analysis_test(
         name = name,
@@ -75,7 +77,7 @@ def _test_sdist_default(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_sdist": "sdist",
+            "is_cp3.7_sdist": "sdist",
         },
         want = "sdist",
     )
@@ -86,7 +88,7 @@ def _test_sdist_no_whl(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_sdist": "sdist",
+            "is_cp3.7_sdist": "sdist",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -101,7 +103,7 @@ def _test_sdist_no_sdist(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_sdist": "sdist",
+            "is_cp3.7_sdist": "sdist",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -118,8 +120,8 @@ def _test_basic_whl_default(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py_none_any": "whl",
-            "is_sdist": "sdist",
+            "is_cp3.7_py_none_any": "whl",
+            "is_cp3.7_sdist": "sdist",
         },
         want = "whl",
     )
@@ -130,8 +132,8 @@ def _test_basic_whl_nowhl(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py_none_any": "whl",
-            "is_sdist": "sdist",
+            "is_cp3.7_py_none_any": "whl",
+            "is_cp3.7_sdist": "sdist",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -146,8 +148,8 @@ def _test_basic_whl_nosdist(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py_none_any": "whl",
-            "is_sdist": "sdist",
+            "is_cp3.7_py_none_any": "whl",
+            "is_cp3.7_sdist": "sdist",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -162,8 +164,8 @@ def _test_whl_default(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_none_any": "whl",
-            "is_py_none_any": "basic_whl",
+            "is_cp3.7_py3_none_any": "whl",
+            "is_cp3.7_py_none_any": "basic_whl",
         },
         want = "whl",
     )
@@ -174,8 +176,8 @@ def _test_whl_nowhl(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_none_any": "whl",
-            "is_py_none_any": "basic_whl",
+            "is_cp3.7_py3_none_any": "whl",
+            "is_cp3.7_py_none_any": "basic_whl",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -190,7 +192,7 @@ def _test_whl_nosdist(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_none_any": "whl",
+            "is_cp3.7_py3_none_any": "whl",
         },
         config_settings = [
             _flag.platform("linux_aarch64"),
@@ -205,8 +207,8 @@ def _test_abi_whl_is_prefered(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_abi3_any": "abi_whl",
-            "is_py3_none_any": "whl",
+            "is_cp3.7_py3_abi3_any": "abi_whl",
+            "is_cp3.7_py3_none_any": "whl",
         },
         want = "abi_whl",
     )
@@ -217,9 +219,9 @@ def _test_whl_with_constraints_is_prefered(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_none_any": "default_whl",
-            "is_py3_none_any_linux_aarch64": "whl",
-            "is_py3_none_any_linux_x86_64": "amd64_whl",
+            "is_cp3.7_py3_none_any": "default_whl",
+            "is_cp3.7_py3_none_any_linux_aarch64": "whl",
+            "is_cp3.7_py3_none_any_linux_x86_64": "amd64_whl",
         },
         want = "whl",
     )
@@ -230,9 +232,9 @@ def _test_cp_whl_is_prefered_over_py3(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_none_any": "cp",
-            "is_py3_abi3_any": "py3_abi3",
-            "is_py3_none_any": "py3",
+            "is_cp3.7_cp3x_none_any": "cp",
+            "is_cp3.7_py3_abi3_any": "py3_abi3",
+            "is_cp3.7_py3_none_any": "py3",
         },
         want = "cp",
     )
@@ -243,8 +245,8 @@ def _test_cp_abi_whl_is_prefered_over_py3(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_abi3_any": "cp",
-            "is_py3_abi3_any": "py3",
+            "is_cp3.7_cp3x_abi3_any": "cp",
+            "is_cp3.7_py3_abi3_any": "py3",
         },
         want = "cp",
     )
@@ -258,7 +260,6 @@ def _test_cp_version_is_selected_when_python_version_is_specified(name):
             "is_cp3.10_cp3x_none_any": "cp310",
             "is_cp3.8_cp3x_none_any": "cp38",
             "is_cp3.9_cp3x_none_any": "cp39",
-            "is_cp3x_none_any": "cp_default",
         },
         want = "cp310",
         config_settings = [
@@ -319,11 +320,11 @@ def _test_platform_whl_is_prefered_over_any_whl_with_constraints(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_abi3_any": "better_default_whl",
-            "is_py3_abi3_any_linux_aarch64": "better_default_any_whl",
-            "is_py3_none_any": "default_whl",
-            "is_py3_none_any_linux_aarch64": "whl",
-            "is_py3_none_linux_aarch64": "platform_whl",
+            "is_cp3.7_py3_abi3_any": "better_default_whl",
+            "is_cp3.7_py3_abi3_any_linux_aarch64": "better_default_any_whl",
+            "is_cp3.7_py3_none_any": "default_whl",
+            "is_cp3.7_py3_none_any_linux_aarch64": "whl",
+            "is_cp3.7_py3_none_linux_aarch64": "platform_whl",
         },
         want = "platform_whl",
     )
@@ -334,8 +335,8 @@ def _test_abi3_platform_whl_preference(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_py3_abi3_linux_aarch64": "abi3_platform",
-            "is_py3_none_linux_aarch64": "platform",
+            "is_cp3.7_py3_abi3_linux_aarch64": "abi3_platform",
+            "is_cp3.7_py3_none_linux_aarch64": "platform",
         },
         want = "abi3_platform",
     )
@@ -346,8 +347,8 @@ def _test_glibc(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_cp_manylinux_aarch64": "glibc",
-            "is_py3_abi3_linux_aarch64": "abi3_platform",
+            "is_cp3.7_cp3x_cp_manylinux_aarch64": "glibc",
+            "is_cp3.7_py3_abi3_linux_aarch64": "abi3_platform",
         },
         want = "glibc",
     )
@@ -358,9 +359,9 @@ def _test_glibc_versioned(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_cp_manylinux_2_14_aarch64": "glibc",
-            "is_cp3x_cp_manylinux_2_17_aarch64": "glibc",
-            "is_py3_abi3_linux_aarch64": "abi3_platform",
+            "is_cp3.7_cp3x_cp_manylinux_2_14_aarch64": "glibc",
+            "is_cp3.7_cp3x_cp_manylinux_2_17_aarch64": "glibc",
+            "is_cp3.7_py3_abi3_linux_aarch64": "abi3_platform",
         },
         want = "glibc",
         config_settings = [
@@ -378,8 +379,8 @@ def _test_glibc_compatible_exists(name):
         dist = {
             # Code using the conditions will need to construct selects, which
             # do the version matching correctly.
-            "is_cp3x_cp_manylinux_2_14_aarch64": "2_14_whl_via_2_14_branch",
-            "is_cp3x_cp_manylinux_2_17_aarch64": "2_14_whl_via_2_17_branch",
+            "is_cp3.7_cp3x_cp_manylinux_2_14_aarch64": "2_14_whl_via_2_14_branch",
+            "is_cp3.7_cp3x_cp_manylinux_2_17_aarch64": "2_14_whl_via_2_17_branch",
         },
         want = "2_14_whl_via_2_17_branch",
         config_settings = [
@@ -395,7 +396,7 @@ def _test_musl(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_cp_musllinux_aarch64": "musl",
+            "is_cp3.7_cp3x_cp_musllinux_aarch64": "musl",
         },
         want = "musl",
         config_settings = [
@@ -410,7 +411,7 @@ def _test_windows(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_cp3x_cp_windows_x86_64": "whl",
+            "is_cp3.7_cp3x_cp_windows_x86_64": "whl",
         },
         want = "whl",
         config_settings = [
@@ -425,8 +426,8 @@ def _test_osx(name):
         name = name,
         dist = {
             # We prefer arch specific whls over universal
-            "is_cp3x_cp_osx_x86_64": "whl",
-            "is_cp3x_cp_osx_x86_64_universal2": "universal_whl",
+            "is_cp3.7_cp3x_cp_osx_x86_64": "whl",
+            "is_cp3.7_cp3x_cp_osx_x86_64_universal2": "universal_whl",
         },
         want = "whl",
         config_settings = [
@@ -441,7 +442,7 @@ def _test_osx_universal_default(name):
         name = name,
         dist = {
             # We default to universal if only that exists
-            "is_cp3x_cp_osx_x86_64_universal2": "whl",
+            "is_cp3.7_cp3x_cp_osx_x86_64_universal2": "whl",
         },
         want = "whl",
         config_settings = [
@@ -456,8 +457,8 @@ def _test_osx_universal_only(name):
         name = name,
         dist = {
             # If we prefer universal, then we use that
-            "is_cp3x_cp_osx_x86_64": "whl",
-            "is_cp3x_cp_osx_x86_64_universal2": "universal",
+            "is_cp3.7_cp3x_cp_osx_x86_64": "whl",
+            "is_cp3.7_cp3x_cp_osx_x86_64_universal2": "universal",
         },
         want = "universal",
         config_settings = [
@@ -474,7 +475,7 @@ def _test_osx_os_version(name):
         dist = {
             # Similarly to the libc version, the user of the config settings will have to
             # construct the select so that the version selection is correct.
-            "is_cp3x_cp_osx_10_9_x86_64": "whl",
+            "is_cp3.7_cp3x_cp_osx_10_9_x86_64": "whl",
         },
         want = "whl",
         config_settings = [
@@ -489,7 +490,7 @@ def _test_all(name):
     _analysis_test(
         name = name,
         dist = {
-            "is_" + f: f
+            "is_cp3.7_" + f: f
             for f in [
                 "{py}_{abi}_{plat}".format(py = valid_py, abi = valid_abi, plat = valid_plat)
                 # we have py2.py3, py3, cp3x
@@ -528,7 +529,7 @@ def config_settings_test_suite(name):  # buildifier: disable=function-docstring
 
     config_settings(
         name = "dummy",
-        python_versions = ["3.8", "3.9", "3.10"],
+        python_versions = ["3.7", "3.8", "3.9", "3.10"],
         glibc_versions = [(2, 14), (2, 17)],
         muslc_versions = [(1, 1)],
         osx_versions = [(10, 9), (11, 0)],
