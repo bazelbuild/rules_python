@@ -182,6 +182,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             python_version = major_minor,
             logger = logger,
         ),
+        extra_pip_args = pip_attr.extra_pip_args,
         get_index_urls = get_index_urls,
         # NOTE @aignas 2024-08-02: , we will execute any interpreter that we find either
         # in the PATH or if specified as a label. We will configure the env
