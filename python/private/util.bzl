@@ -15,6 +15,7 @@
 """Functionality shared by multiple pieces of code."""
 
 load("@bazel_skylib//lib:types.bzl", "types")
+load("@rules_python_internal//:rules_python_config.bzl", "config")
 
 def copy_propagating_kwargs(from_kwargs, into_kwargs = None):
     """Copies args that must be compatible between two targets with a dependency relationship.
@@ -60,7 +61,8 @@ def add_migration_tag(attrs):
     Returns:
         The same `attrs` object, but modified.
     """
-    add_tag(attrs, _MIGRATION_TAG)
+    if not config.enable_pystar:
+        add_tag(attrs, _MIGRATION_TAG)
     return attrs
 
 def add_tag(attrs, tag):
