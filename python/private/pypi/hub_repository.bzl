@@ -35,7 +35,6 @@ def _impl(rctx):
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
-        default_config_setting = "//_config:is_python_" + rctx.attr.default_version,
         requirement_cycles = rctx.attr.groups,
     )
     for path, contents in aliases.items():
@@ -66,13 +65,6 @@ def _impl(rctx):
 
 hub_repository = repository_rule(
     attrs = {
-        "default_version": attr.string(
-            mandatory = True,
-            doc = """\
-This is the default python version in the format of X.Y. This should match
-what is setup by the 'python' extension using the 'is_default = True'
-setting.""",
-        ),
         "groups": attr.string_list_dict(
             mandatory = False,
         ),

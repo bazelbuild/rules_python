@@ -198,7 +198,9 @@ def render_pkg_aliases(*, aliases, default_config_setting = None, requirement_cy
     Args:
         aliases: dict, the keys are normalized distribution names and values are the
             whl_alias instances.
-        default_config_setting: the default to be used for the aliases.
+        default_config_setting: the default to be used for the aliases. Effectively
+            only used in WORKSPACE because we are not setting the value of the
+            {obj}`--python_version` by default there.
         requirement_cycles: any package groups to also add.
 
     Returns:

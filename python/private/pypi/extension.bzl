@@ -15,7 +15,7 @@
 "pip module extension for use with bzlmod"
 
 load("@bazel_features//:features.bzl", "bazel_features")
-load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "INTERPRETER_LABELS")
+load("@pythons_hub//:interpreters.bzl", "INTERPRETER_LABELS")
 load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
@@ -500,7 +500,6 @@ def _pip_impl(module_ctx):
                 key: json.encode(value)
                 for key, value in whl_map.items()
             },
-            default_version = _major_minor_version(DEFAULT_PYTHON_VERSION),
             packages = sorted(exposed_packages.get(hub_name, {})),
             groups = hub_group_map.get(hub_name),
         )
