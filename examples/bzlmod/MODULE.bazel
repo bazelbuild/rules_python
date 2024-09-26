@@ -42,17 +42,16 @@ python.toolchain(
 python.override(
     available_python_versions = [
         "3.10.9",
+        "3.9.18",
         "3.9.19",
         # The following is used by the `other_module` and we need to include it here
         # as well.
         "3.11.8",
     ],
     # Also override the `minor_mapping` so that the root module,
-    # instead of rules_python's defaults, controls what full version
-    # is used when `3.x` is requested.
+    # instead of rules_python's defaulting to the latest available version,
+    # controls what full version is used when `3.x` is requested.
     minor_mapping = {
-        "3.10": "3.10.9",
-        "3.11": "3.11.8",
         "3.9": "3.9.19",
     },
 )
@@ -90,7 +89,7 @@ python.single_version_platform_override(
 # See the tests folder for various examples on using multiple Python versions.
 # The names "python_3_9" and "python_3_10" are autmatically created by the repo
 # rules based on the `python_version` arg values.
-use_repo(python, "python_3_10", "python_3_9", "python_versions")
+use_repo(python, "python_3_10", "python_3_9", "python_versions", "pythons_hub")
 
 # EXPERIMENTAL: This is experimental and may be removed without notice
 uv = use_extension("@rules_python//python/uv:extensions.bzl", "uv")
