@@ -18,6 +18,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archi
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//python/private/pypi:deps.bzl", "pypi_deps")
 load(":internal_config_repo.bzl", "internal_config_repo")
+load(":pythons_hub.bzl", "hub_repo")
 
 def http_archive(**kwargs):
     maybe(_http_archive, **kwargs)
@@ -31,6 +32,16 @@ def py_repositories():
     maybe(
         internal_config_repo,
         name = "rules_python_internal",
+    )
+    maybe(
+        hub_repo,
+        name = "pythons_hub",
+        minor_mapping = {},
+        default_python_version = "",
+        toolchain_prefixes = [],
+        toolchain_python_versions = [],
+        toolchain_set_python_version_constraints = [],
+        toolchain_user_repository_names = [],
     )
     http_archive(
         name = "bazel_skylib",
