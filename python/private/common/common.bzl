@@ -13,9 +13,9 @@
 # limitations under the License.
 """Various things common to Bazel and Google rule implementations."""
 
+load("//python/private:py_info.bzl", "PyInfo")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":cc_helper.bzl", "cc_helper")
-load(":providers.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(
     ":semantics.bzl",

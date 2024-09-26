@@ -19,6 +19,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "cc_common")
 load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
 load("//python/private:py_executable_info.bzl", "PyExecutableInfo")
+load("//python/private:py_info.bzl", "PyInfo")
 load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     "//python/private:toolchain_types.bzl",
@@ -52,7 +53,6 @@ load(
 load(
     ":providers.bzl",
     "PyCcLinkParamsProvider",
-    "PyInfo",
     "PyRuntimeInfo",
 )
 load(":py_internal.bzl", "py_internal")
