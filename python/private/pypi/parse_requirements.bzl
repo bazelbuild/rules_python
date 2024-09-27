@@ -48,7 +48,7 @@ def parse_requirements(
             different package versions (or different packages) for different
             os, arch combinations.
         extra_pip_args (string list): Extra pip arguments to perform extra validations and to
-            be joined with args fined in files.
+            be joined with args found in files.
         get_index_urls: Callable[[ctx, list[str]], dict], a callable to get all
             of the distribution URLs from a PyPI index. Accepts ctx and
             distribution names to query.
