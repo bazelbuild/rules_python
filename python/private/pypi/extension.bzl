@@ -275,8 +275,13 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                     if pip_attr.auth_patterns:
                         whl_library_args["auth_patterns"] = pip_attr.auth_patterns
 
-                    # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
-                    whl_library_args.pop("extra_pip_args", None)
+                    if distribution.filename.endswith(".whl"):
+                        # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
+                        whl_library_args.pop("extra_pip_args", None)
+                    else:
+                        # For sdists, they will be built by `pip`, so we still
+                        # need to pass the extra args there.
+                        pass
 
                     # This is no-op because pip is not used to download the wheel.
                     whl_library_args.pop("download_only", None)
