@@ -102,9 +102,9 @@ class _WhlFile(zipfile.ZipFile):
         filename,
         *,
         mode,
+        compression,
         distribution_prefix: str,
         strip_path_prefixes=None,
-        compression=zipfile.ZIP_DEFLATED,
         **kwargs,
     ):
         self._distribution_prefix = distribution_prefix
@@ -227,6 +227,7 @@ class WheelMaker(object):
         python_tag,
         abi,
         platform,
+        compress,
         outfile=None,
         strip_path_prefixes=None,
     ):
@@ -238,6 +239,7 @@ class WheelMaker(object):
         self._platform = platform
         self._outfile = outfile
         self._strip_path_prefixes = strip_path_prefixes
+        self._compress = compress
         self._wheelname_fragment_distribution_name = escape_filename_distribution_name(
             self._name
         )
@@ -254,6 +256,7 @@ class WheelMaker(object):
             mode="w",
             distribution_prefix=self._distribution_prefix,
             strip_path_prefixes=self._strip_path_prefixes,
+            compression=zipfile.ZIP_DEFLATED if self._compress else zipfile.ZIP_STORED,
         )
         return self
 
@@ -389,6 +392,11 @@ def parse_args() -> argparse.Namespace:
         "--out", type=str, default=None, help="Override name of ouptut file"
     )
     output_group.add_argument(
+        "--no_compress",
+        action="store_true",
+        help="Disable compression of the final archive",
+    )
+    output_group.add_argument(
         "--name_file",
         type=Path,
         help="A file where the canonical name of the " "wheel will be written",
@@ -516,6 +524,7 @@ def main() -> None:
         platform=arguments.platform,
         outfile=arguments.out,
         strip_path_prefixes=strip_prefixes,
+        compress=not arguments.no_compress,
     ) as maker:
         for package_filename, real_filename in all_files:
             maker.add_file(package_filename, real_filename)
