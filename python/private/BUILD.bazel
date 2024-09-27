@@ -70,6 +70,14 @@ bzl_library(
 )
 
 bzl_library(
+    name = "builders_bzl",
+    srcs = ["builders.bzl"],
+    deps = [
+        "@bazel_skylib//lib:types",
+    ],
+)
+
+bzl_library(
     name = "bzlmod_enabled_bzl",
     srcs = ["bzlmod_enabled.bzl"],
 )
@@ -270,8 +278,10 @@ bzl_library(
     name = "py_info_bzl",
     srcs = ["py_info.bzl"],
     deps = [
+        ":builders_bzl",
         ":reexports_bzl",
         ":util_bzl",
+        "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
 

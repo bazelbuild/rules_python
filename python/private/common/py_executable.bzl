@@ -17,6 +17,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "cc_common")
+load("//python/private:builders.bzl", "builders")
 load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
 load("//python/private:py_executable_info.bzl", "PyExecutableInfo")
 load("//python/private:py_info.bzl", "PyInfo")
@@ -170,9 +171,10 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     direct_pyc_files = depset(precompile_result.pyc_files)
 
     executable = _declare_executable_file(ctx)
-    default_outputs = [executable]
-    default_outputs.extend(precompile_result.keep_srcs)
-    default_outputs.extend(precompile_result.pyc_files)
+    default_outputs = builders.DepsetBuilder()
+    default_outputs.add(executable)
+    default_outputs.add(precompile_result.keep_srcs)
+    default_outputs.add(precompile_result.pyc_files)
 
     imports = collect_imports(ctx, semantics)
 
@@ -219,6 +221,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         native_deps_details = native_deps_details,
         runfiles_details = runfiles_details,
     )
+    default_outputs.add(exec_result.extra_files_to_build)
 
     extra_exec_runfiles = exec_result.extra_runfiles.merge(
         ctx.runfiles(transitive_files = exec_result.extra_files_to_build),
@@ -240,7 +243,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         imports = imports,
         direct_sources = direct_sources,
         direct_pyc_files = direct_pyc_files,
-        default_outputs = depset(default_outputs, transitive = [exec_result.extra_files_to_build]),
+        default_outputs = default_outputs.build(),
         runtime_details = runtime_details,
         cc_info = cc_details.cc_info_for_propagating,
         inherited_environment = inherited_environment,
@@ -429,26 +432,25 @@ def _get_base_runfiles_for_binary(
         * build_data_file: A file with build stamp information if stamping is enabled, otherwise
           None.
     """
-    common_runfiles_depsets = [main_py_files]
+    common_runfiles = builders.RunfilesBuilder()
+    common_runfiles.add(main_py_files)
 
     if ctx.attr._precompile_add_to_runfiles_flag[BuildSettingInfo].value == PrecompileAddToRunfilesFlag.ALWAYS:
-        common_runfiles_depsets.append(direct_pyc_files)
+        common_runfiles.add(direct_pyc_files)
     elif PycCollectionAttr.is_pyc_collection_enabled(ctx):
-        common_runfiles_depsets.append(direct_pyc_files)
+        common_runfiles.add(direct_pyc_files)
         for dep in (ctx.attr.deps + extra_deps):
             if PyInfo not in dep:
                 continue
-            common_runfiles_depsets.append(dep[PyInfo].transitive_pyc_files)
+            common_runfiles.add(dep[PyInfo].transitive_pyc_files)
 
-    common_runfiles = collect_runfiles(ctx, depset(
-        transitive = common_runfiles_depsets,
-    ))
+    common_runfiles.add(collect_runfiles(ctx))
+    common_runfiles.add(collect_runfiles(ctx))
     if extra_deps:
-        common_runfiles = common_runfiles.merge_all([
-            t[DefaultInfo].default_runfiles
-            for t in extra_deps
-        ])
-    common_runfiles = common_runfiles.merge_all(extra_common_runfiles)
+        common_runfiles.add_runfiles(targets = extra_deps)
+    common_runfiles.add(extra_common_runfiles)
+
+    common_runfiles = common_runfiles.build(ctx)
 
     if semantics.should_create_init_files(ctx):
         common_runfiles = _py_builtins.merge_runfiles_with_generated_inits_empty_files_supplier(

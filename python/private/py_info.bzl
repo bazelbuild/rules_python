@@ -13,6 +13,9 @@
 # limitations under the License.
 """Implementation of PyInfo provider and PyInfo-specific utilities."""
 
+load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:reexports.bzl", "BuiltinPyInfo")
+load(":builders.bzl", "builders")
 load(":util.bzl", "define_bazel_6_provider")
 
 def _check_arg_type(name, required_type, value):
@@ -113,3 +116,123 @@ This field is currently unused in Bazel and may go away in the future.
 """,
     },
 )
+
+# The "effective" PyInfo is what the canonical //python:py_info.bzl%PyInfo symbol refers to
+_EffectivePyInfo = PyInfo if config.enable_pystar else BuiltinPyInfo
+
+def PyInfoBuilder():
+    # buildifier: disable=uninitialized
+    self = struct(
+        _has_py2_only_sources = [False],
+        _has_py3_only_sources = [False],
+        _uses_shared_libraries = [False],
+        build = lambda *a, **k: _PyInfoBuilder_build(self, *a, **k),
+        build_builtin_py_info = lambda *a, **k: _PyInfoBuilder_build_builtin_py_info(self, *a, **k),
+        direct_pyc_files = builders.DepsetBuilder(),
+        get_has_py2_only_sources = lambda *a, **k: _PyInfoBuilder_get_has_py2_only_sources(self, *a, **k),
+        get_has_py3_only_sources = lambda *a, **k: _PyInfoBuilder_get_has_py3_only_sources(self, *a, **k),
+        get_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_get_uses_shared_libraries(self, *a, **k),
+        imports = builders.DepsetBuilder(),
+        merge = lambda *a, **k: _PyInfoBuilder_merge(self, *a, **k),
+        merge_all = lambda *a, **k: _PyInfoBuilder_merge_all(self, *a, **k),
+        merge_has_py2_only_sources = lambda *a, **k: _PyInfoBuilder_merge_has_py2_only_sources(self, *a, **k),
+        merge_has_py3_only_sources = lambda *a, **k: _PyInfoBuilder_merge_has_py3_only_sources(self, *a, **k),
+        merge_target = lambda *a, **k: _PyInfoBuilder_merge_target(self, *a, **k),
+        merge_targets = lambda *a, **k: _PyInfoBuilder_merge_targets(self, *a, **k),
+        merge_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_merge_uses_shared_libraries(self, *a, **k),
+        set_has_py2_only_sources = lambda *a, **k: _PyInfoBuilder_set_has_py2_only_sources(self, *a, **k),
+        set_has_py3_only_sources = lambda *a, **k: _PyInfoBuilder_set_has_py3_only_sources(self, *a, **k),
+        set_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_set_uses_shared_libraries(self, *a, **k),
+        transitive_pyc_files = builders.DepsetBuilder(),
+        transitive_sources = builders.DepsetBuilder(),
+    )
+    return self
+
+def _PyInfoBuilder_get_has_py3_only_sources(self):
+    return self._has_py3_only_sources[0]
+
+def _PyInfoBuilder_get_has_py2_only_sources(self):
+    return self._has_py2_only_sources[0]
+
+def _PyInfoBuilder_set_has_py2_only_sources(self, value):
+    self._has_py2_only_sources[0] = value
+    return self
+
+def _PyInfoBuilder_set_has_py3_only_sources(self, value):
+    self._has_py3_only_sources[0] = value
+    return self
+
+def _PyInfoBuilder_merge_has_py2_only_sources(self, value):
+    self._has_py2_only_sources[0] = self._has_py2_only_sources[0] or value
+    return self
+
+def _PyInfoBuilder_merge_has_py3_only_sources(self, value):
+    self._has_py3_only_sources[0] = self._has_py3_only_sources[0] or value
+    return self
+
+def _PyInfoBuilder_merge_uses_shared_libraries(self, value):
+    self._uses_shared_libraries[0] = self._uses_shared_libraries[0] or value
+    return self
+
+def _PyInfoBuilder_get_uses_shared_libraries(self):
+    return self._uses_shared_libraries[0]
+
+def _PyInfoBuilder_set_uses_shared_libraries(self, value):
+    self._uses_shared_libraries[0] = value
+    return self
+
+def _PyInfoBuilder_merge(self, *infos):
+    return self.merge_all(infos)
+
+def _PyInfoBuilder_merge_all(self, py_infos):
+    for info in py_infos:
+        self.imports.add(info.imports)
+        self.merge_has_py2_only_sources(info.has_py2_only_sources)
+        self.merge_has_py3_only_sources(info.has_py3_only_sources)
+        self.merge_uses_shared_libraries(info.uses_shared_libraries)
+        self.transitive_sources.add(info.transitive_sources)
+
+        # BuiltinPyInfo doesn't have these fields
+        if hasattr(info, "transitive_pyc_files"):
+            self.transitive_pyc_files.add(info.transitive_pyc_files)
+
+    return self
+
+def _PyInfoBuilder_merge_target(self, target):
+    if PyInfo in target:
+        self.merge(target[PyInfo])
+    elif BuiltinPyInfo in target:
+        self.merge(target[BuiltinPyInfo])
+    return self
+
+def _PyInfoBuilder_merge_targets(self, targets):
+    for t in targets:
+        self.merge_target(t)
+    return self
+
+def _PyInfoBuilder_build(self):
+    if config.enable_pystar:
+        kwargs = dict(
+            direct_pyc_files = self.direct_pyc_files.build(),
+            transitive_pyc_files = self.transitive_pyc_files.build(),
+        )
+    else:
+        kwargs = {}
+
+    return _EffectivePyInfo(
+        has_py2_only_sources = self._has_py2_only_sources[0],
+        has_py3_only_sources = self._has_py3_only_sources[0],
+        imports = self.imports.build(),
+        transitive_sources = self.transitive_sources.build(),
+        uses_shared_libraries = self._uses_shared_libraries[0],
+        **kwargs
+    )
+
+def _PyInfoBuilder_build_builtin_py_info(self):
+    return BuiltinPyInfo(
+        has_py2_only_sources = self._has_py2_only_sources[0],
+        has_py3_only_sources = self._has_py3_only_sources[0],
+        imports = self.imports.build(),
+        transitive_sources = self.transitive_sources.build(),
+        uses_shared_libraries = self._uses_shared_libraries[0],
+    )
