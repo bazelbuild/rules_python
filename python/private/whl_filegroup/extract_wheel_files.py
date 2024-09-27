@@ -6,7 +6,7 @@ import zipfile
 from collections.abc import Iterable
 from pathlib import Path
 
-WhlRecord = dict[str, tuple[str, int]]
+WhlRecord = Iterable[str]
 
 
 def get_record(whl_path: Path) -> WhlRecord:
@@ -20,18 +20,16 @@ def get_record(whl_path: Path) -> WhlRecord:
     except ValueError:
         raise RuntimeError(f"{whl_path} doesn't contain exactly one .dist-info/RECORD")
     record_lines = zipf.read(record_file).decode().splitlines()
-    return {
-        file: (filehash, int(filelen))
+    return (
+        line.split(",")[0]
         for line in record_lines
-        for file, filehash, filelen in [line.split(",")]
-        if filehash  # Skip RECORD itself, which has no hash or length
-    }
+    )
 
 
 def get_files(whl_record: WhlRecord, regex_pattern: str) -> list[str]:
     """Get files in a wheel that match a regex pattern."""
     p = re.compile(regex_pattern)
-    return [filepath for filepath in whl_record.keys() if re.match(p, filepath)]
+    return [filepath for filepath in whl_record if re.match(p, filepath)]
 
 
 def extract_files(whl_path: Path, files: Iterable[str], outdir: Path) -> None:

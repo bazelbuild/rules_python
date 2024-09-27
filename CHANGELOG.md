@@ -28,7 +28,7 @@ A brief description of the categories of changes:
 * Nothing yet
 
 ### Fixed
-* Nothing yet
+* (whl_filegroup): Provide per default also the `RECORD` file
 
 ### Added
 * Nothing yet
@@ -82,7 +82,6 @@ A brief description of the categories of changes:
   bootstrap .py file when using {obj}`--bootstrap_impl=script`
 * (toolchain) The {bzl:obj}`gen_python_config_settings` has been fixed to include
   the flag_values from the platform definitions.
-
 
 ### Added
 * (bzlmod): Toolchain overrides can now be done using the new
