@@ -102,9 +102,9 @@ class _WhlFile(zipfile.ZipFile):
         filename,
         *,
         mode,
-        compression,
         distribution_prefix: str,
         strip_path_prefixes=None,
+        compression=zipfile.ZIP_DEFLATED,
         **kwargs,
     ):
         self._distribution_prefix = distribution_prefix
