@@ -219,7 +219,6 @@ def _PyInfoBuilder_build(self):
     else:
         kwargs = {}
 
-    # todo: for bazel 6, make this return BuiltinPyInfo
     return _EffectivePyInfo(
         has_py2_only_sources = self._has_py2_only_sources[0],
         has_py3_only_sources = self._has_py3_only_sources[0],
