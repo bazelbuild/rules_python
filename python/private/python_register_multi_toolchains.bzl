@@ -15,7 +15,7 @@
 """This file contains repository rules and macros to support toolchain registration.
 """
 
-load("@pythons_hub//:interpreters.bzl", "MINOR_MAPPING")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load(":python_register_toolchains.bzl", "python_register_toolchains")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")
 

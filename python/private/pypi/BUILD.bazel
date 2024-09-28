@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -59,9 +58,9 @@ bzl_library(
     srcs = ["extension.bzl"],
     deps = [
         ":attrs_bzl",
+        ":evaluate_markers_bzl",
         ":hub_repository_bzl",
         ":parse_requirements_bzl",
-        ":evaluate_markers_bzl",
         ":parse_whl_name_bzl",
         ":pip_repository_attrs_bzl",
         ":simpleapi_download_bzl",
@@ -69,12 +68,11 @@ bzl_library(
         ":whl_repo_name_bzl",
         "//python/private:full_version_bzl",
         "//python/private:normalize_name_bzl",
-        "//python/private:version_label_bzl",
         "//python/private:semver_bzl",
+        "//python/private:version_label_bzl",
         "@bazel_features//:features",
-    ] + [
         "@pythons_hub//:interpreters_bzl",
-    ] if BZLMOD_ENABLED else [],
+    ],
 )
 
 bzl_library(

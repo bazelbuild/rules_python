@@ -1,7 +1,7 @@
 load("@python_versions//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
 load("@python_versions//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@python_versions//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
-load("@pythons_hub//:interpreters.bzl", "MINOR_MAPPING")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python/config_settings:transition.bzl", py_versioned_binary = "py_binary", py_versioned_test = "py_test")
 

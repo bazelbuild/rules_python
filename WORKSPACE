@@ -41,7 +41,7 @@ load("//:internal_setup.bzl", "rules_python_internal_setup")
 
 rules_python_internal_setup()
 
-load("@pythons_hub//:interpreters.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load("//python:repositories.bzl", "python_register_multi_toolchains")
 
 python_register_multi_toolchains(
