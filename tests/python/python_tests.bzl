@@ -14,8 +14,8 @@
 
 ""
 
+load("@pythons_hub//:interpreter.bzl", "MINOR_MAPPING")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python:versions.bzl", "MINOR_MAPPING")
 load("//python/private:python.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
 
 _tests = []

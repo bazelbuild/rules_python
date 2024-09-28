@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", _http_archive = "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python:versions.bzl", "MINOR_MAPPING", "TOOL_VERSIONS")
 load("//python/private/pypi:deps.bzl", "pypi_deps")
 load(":internal_config_repo.bzl", "internal_config_repo")
 load(":pythons_hub.bzl", "hub_repo")
@@ -36,12 +37,13 @@ def py_repositories():
     maybe(
         hub_repo,
         name = "pythons_hub",
-        minor_mapping = {},
+        minor_mapping = MINOR_MAPPING,
         default_python_version = "",
         toolchain_prefixes = [],
         toolchain_python_versions = [],
         toolchain_set_python_version_constraints = [],
         toolchain_user_repository_names = [],
+        python_versions = sorted(TOOL_VERSIONS.keys()),
     )
     http_archive(
         name = "bazel_skylib",

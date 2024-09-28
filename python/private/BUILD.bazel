@@ -158,6 +158,7 @@ bzl_library(
         ":bazel_tools_bzl",
         ":internal_config_repo_bzl",
         ":pythons_hub_bzl",
+        "//python:versions_bzl",
         "//python/private/pypi:deps_bzl",
     ],
 )

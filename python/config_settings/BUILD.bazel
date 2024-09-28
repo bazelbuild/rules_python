@@ -1,7 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@pythons_hub//:interpreters.bzl", "DEFAULT_PYTHON_VERSION", "MINOR_MAPPING", "PYTHON_VERSIONS")
-load("//python:versions.bzl", "TOOL_VERSIONS", _DEFAULT_MINOR_MAPPING = "MINOR_MAPPING")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")
 load(
     "//python/private:flags.bzl",
     "BootstrapImplFlag",
@@ -31,8 +29,8 @@ filegroup(
 construct_config_settings(
     name = "construct_config_settings",
     default_version = DEFAULT_PYTHON_VERSION,
-    minor_mapping = MINOR_MAPPING if BZLMOD_ENABLED else _DEFAULT_MINOR_MAPPING,
-    versions = PYTHON_VERSIONS if BZLMOD_ENABLED else sorted(TOOL_VERSIONS.keys()),
+    minor_mapping = MINOR_MAPPING,
+    versions = PYTHON_VERSIONS,
 )
 
 string_flag(

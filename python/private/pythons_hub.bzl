@@ -110,7 +110,7 @@ def _hub_repo_impl(rctx):
             default_python_version = rctx.attr.default_python_version,
             interpreter_labels = interpreter_labels,
             minor_mapping = render.dict(rctx.attr.minor_mapping),
-            python_versions = render.list(sorted({
+            python_versions = rctx.attr.python_versions or render.list(sorted({
                 v: None
                 for v in rctx.attr.toolchain_python_versions
             })),
@@ -133,6 +133,10 @@ This rule also writes out the various toolchains for the different Python versio
         "minor_mapping": attr.string_dict(
             doc = "The minor mapping of the `X.Y` to `X.Y.Z` format that is used in config settings.",
             mandatory = True,
+        ),
+        "python_versions": attr.string_list(
+            doc = "The list of python versions to include in the `interpreters.bzl` if the toolchains are not specified. Used in `WORKSPACE` builds.",
+            mandatory = False,
         ),
         "toolchain_prefixes": attr.string_list(
             doc = "List prefixed for the toolchains",
