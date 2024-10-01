@@ -31,7 +31,8 @@ A brief description of the categories of changes:
 * (whl_filegroup): Provide per default also the `RECORD` file
 
 ### Added
-* Nothing yet
+* (py_wheel) Now supports `compress = (True|False)` to allow disabling
+  compression to speed up development.
 
 ### Removed
 * Nothing yet

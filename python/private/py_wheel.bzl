@@ -34,6 +34,10 @@ _distribution_attrs = {
         default = "none",
         doc = "Python ABI tag. 'none' for pure-Python wheels.",
     ),
+    "compress": attr.bool(
+        default = True,
+        doc = "Enable compression of the final archive.",
+    ),
     "distribution": attr.string(
         mandatory = True,
         doc = """\
@@ -465,6 +469,9 @@ def _py_wheel_impl(ctx):
         description_file = ctx.file.description_file
         args.add("--description_file", description_file)
         other_inputs.append(description_file)
+
+    if not ctx.attr.compress:
+        args.add("--no_compress")
 
     for target, filename in ctx.attr.extra_distinfo_files.items():
         target_files = target.files.to_list()
