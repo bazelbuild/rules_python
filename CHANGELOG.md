@@ -33,9 +33,11 @@ A brief description of the categories of changes:
   {obj}`whl_library` for `sdist` distributions when using
   {attr}`pip.parse.experimental_index_url`. See
   [#2239](https://github.com/bazelbuild/rules_python/issues/2239).
+* (whl_filegroup): Provide per default also the `RECORD` file
 
 ### Added
-* Nothing yet
+* (py_wheel) Now supports `compress = (True|False)` to allow disabling
+  compression to speed up development.
 
 ### Removed
 * Nothing yet
@@ -86,7 +88,6 @@ A brief description of the categories of changes:
   bootstrap .py file when using {obj}`--bootstrap_impl=script`
 * (toolchain) The {bzl:obj}`gen_python_config_settings` has been fixed to include
   the flag_values from the platform definitions.
-
 
 ### Added
 * (bzlmod): Toolchain overrides can now be done using the new

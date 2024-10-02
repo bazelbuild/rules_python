@@ -13,9 +13,9 @@
 # limitations under the License.
 """Various things common to Bazel and Google rule implementations."""
 
+load("//python/private:py_info.bzl", "PyInfo", "PyInfoBuilder")
 load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":cc_helper.bzl", "cc_helper")
-load(":providers.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
 load(
     ":semantics.bzl",
@@ -282,7 +282,7 @@ def collect_imports(ctx, semantics):
         if BuiltinPyInfo in dep
     ])
 
-def collect_runfiles(ctx, files):
+def collect_runfiles(ctx, files = depset()):
     """Collects the necessary files from the rule's context.
 
     This presumes the ctx is for a py_binary, py_test, or py_library rule.
@@ -364,84 +364,50 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
         transitive sources collected from dependencies (the latter is only
         necessary for deprecated extra actions support).
     """
-    uses_shared_libraries = False
-    has_py2_only_sources = ctx.attr.srcs_version in ("PY2", "PY2ONLY")
-    has_py3_only_sources = ctx.attr.srcs_version in ("PY3", "PY3ONLY")
-    transitive_sources_depsets = []  # list of depsets
-    transitive_sources_files = []  # list of Files
-    transitive_pyc_depsets = [direct_pyc_files]  # list of depsets
+
+    py_info = PyInfoBuilder()
+    py_info.direct_pyc_files.add(direct_pyc_files)
+    py_info.transitive_pyc_files.add(direct_pyc_files)
+    py_info.imports.add(imports)
+    py_info.merge_has_py2_only_sources(ctx.attr.srcs_version in ("PY2", "PY2ONLY"))
+    py_info.merge_has_py3_only_sources(ctx.attr.srcs_version in ("PY3", "PY3ONLY"))
+
     for target in ctx.attr.deps:
         # PyInfo may not be present e.g. cc_library rules.
         if PyInfo in target or BuiltinPyInfo in target:
-            info = _get_py_info(target)
-            transitive_sources_depsets.append(info.transitive_sources)
-            uses_shared_libraries = uses_shared_libraries or info.uses_shared_libraries
-            has_py2_only_sources = has_py2_only_sources or info.has_py2_only_sources
-            has_py3_only_sources = has_py3_only_sources or info.has_py3_only_sources
-
-            # BuiltinPyInfo doesn't have this field.
-            if hasattr(info, "transitive_pyc_files"):
-                transitive_pyc_depsets.append(info.transitive_pyc_files)
+            py_info.merge(_get_py_info(target))
         else:
             # TODO(b/228692666): Remove this once non-PyInfo targets are no
             # longer supported in `deps`.
             files = target.files.to_list()
             for f in files:
                 if f.extension == "py":
-                    transitive_sources_files.append(f)
-                uses_shared_libraries = (
-                    uses_shared_libraries or
-                    cc_helper.is_valid_shared_library_artifact(f)
-                )
-    deps_transitive_sources = depset(
-        direct = transitive_sources_files,
-        transitive = transitive_sources_depsets,
-    )
+                    py_info.transitive_sources.add(f)
+                py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
+
+    deps_transitive_sources = py_info.transitive_sources.build()
+    py_info.transitive_sources.add(direct_sources)
 
     # We only look at data to calculate uses_shared_libraries, if it's already
     # true, then we don't need to waste time looping over it.
-    if not uses_shared_libraries:
+    if not py_info.get_uses_shared_libraries():
         # Similar to the above, except we only calculate uses_shared_libraries
         for target in ctx.attr.data:
             # TODO(b/234730058): Remove checking for PyInfo in data once depot
             # cleaned up.
             if PyInfo in target or BuiltinPyInfo in target:
                 info = _get_py_info(target)
-                uses_shared_libraries = info.uses_shared_libraries
+                py_info.merge_uses_shared_libraries(info.uses_shared_libraries)
             else:
                 files = target.files.to_list()
                 for f in files:
-                    uses_shared_libraries = cc_helper.is_valid_shared_library_artifact(f)
-                    if uses_shared_libraries:
+                    py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
+                    if py_info.get_uses_shared_libraries():
                         break
-            if uses_shared_libraries:
+            if py_info.get_uses_shared_libraries():
                 break
 
-    py_info_kwargs = dict(
-        transitive_sources = depset(
-            transitive = [deps_transitive_sources, direct_sources],
-        ),
-        imports = imports,
-        # NOTE: This isn't strictly correct, but with Python 2 gone,
-        # the srcs_version logic is largely defunct, so shouldn't matter in
-        # practice.
-        has_py2_only_sources = has_py2_only_sources,
-        has_py3_only_sources = has_py3_only_sources,
-        uses_shared_libraries = uses_shared_libraries,
-        direct_pyc_files = direct_pyc_files,
-        transitive_pyc_files = depset(transitive = transitive_pyc_depsets),
-    )
-
-    # TODO(b/203567235): Set `uses_shared_libraries` field, though the Bazel
-    # docs indicate it's unused in Bazel and may be removed.
-    py_info = PyInfo(**py_info_kwargs)
-
-    # Remove args that BuiltinPyInfo doesn't support
-    py_info_kwargs.pop("direct_pyc_files")
-    py_info_kwargs.pop("transitive_pyc_files")
-    builtin_py_info = BuiltinPyInfo(**py_info_kwargs)
-
-    return py_info, deps_transitive_sources, builtin_py_info
+    return py_info.build(), deps_transitive_sources, py_info.build_builtin_py_info()
 
 def _get_py_info(target):
     return target[PyInfo] if PyInfo in target else target[BuiltinPyInfo]

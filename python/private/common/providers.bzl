@@ -14,25 +14,13 @@
 """Providers for Python rules."""
 
 load("@rules_cc//cc:defs.bzl", "CcInfo")
-load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER")
+load("//python/private:util.bzl", "define_bazel_6_provider")
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
 DEFAULT_BOOTSTRAP_TEMPLATE = Label("//python/private:bootstrap_template")
 
 _PYTHON_VERSION_VALUES = ["PY2", "PY3"]
-
-# Helper to make the provider definitions not crash under Bazel 5.4:
-# Bazel 5.4 doesn't support the `init` arg of `provider()`, so we have to
-# not pass that when using Bazel 5.4. But, not passing the `init` arg
-# changes the return value from a two-tuple to a single value, which then
-# breaks Bazel 6+ code.
-# This isn't actually used under Bazel 5.4, so just stub out the values
-# to get past the loading phase.
-def _define_provider(doc, fields, **kwargs):
-    if not IS_BAZEL_6_OR_HIGHER:
-        return provider("Stub, not used", fields = []), None
-    return provider(doc = doc, fields = fields, **kwargs)
 
 def _optional_int(value):
     return int(value) if value != None else None
@@ -133,9 +121,7 @@ def _PyRuntimeInfo_init(
         "zip_main_template": zip_main_template,
     }
 
-# TODO(#15897): Rename this to PyRuntimeInfo when we're ready to replace the Java
-# implemented provider with the Starlark one.
-PyRuntimeInfo, _unused_raw_py_runtime_info_ctor = _define_provider(
+PyRuntimeInfo, _unused_raw_py_runtime_info_ctor = define_bazel_6_provider(
     doc = """Contains information about a Python runtime, as returned by the `py_runtime`
 rule.
 
@@ -314,102 +300,13 @@ The following substitutions are made during template expansion:
     },
 )
 
-def _check_arg_type(name, required_type, value):
-    value_type = type(value)
-    if value_type != required_type:
-        fail("parameter '{}' got value of type '{}', want '{}'".format(
-            name,
-            value_type,
-            required_type,
-        ))
-
-def _PyInfo_init(
-        *,
-        transitive_sources,
-        uses_shared_libraries = False,
-        imports = depset(),
-        has_py2_only_sources = False,
-        has_py3_only_sources = False,
-        direct_pyc_files = depset(),
-        transitive_pyc_files = depset()):
-    _check_arg_type("transitive_sources", "depset", transitive_sources)
-
-    # Verify it's postorder compatible, but retain is original ordering.
-    depset(transitive = [transitive_sources], order = "postorder")
-
-    _check_arg_type("uses_shared_libraries", "bool", uses_shared_libraries)
-    _check_arg_type("imports", "depset", imports)
-    _check_arg_type("has_py2_only_sources", "bool", has_py2_only_sources)
-    _check_arg_type("has_py3_only_sources", "bool", has_py3_only_sources)
-    _check_arg_type("direct_pyc_files", "depset", direct_pyc_files)
-    _check_arg_type("transitive_pyc_files", "depset", transitive_pyc_files)
-    return {
-        "direct_pyc_files": direct_pyc_files,
-        "has_py2_only_sources": has_py2_only_sources,
-        "has_py3_only_sources": has_py2_only_sources,
-        "imports": imports,
-        "transitive_pyc_files": transitive_pyc_files,
-        "transitive_sources": transitive_sources,
-        "uses_shared_libraries": uses_shared_libraries,
-    }
-
-PyInfo, _unused_raw_py_info_ctor = _define_provider(
-    doc = "Encapsulates information provided by the Python rules.",
-    init = _PyInfo_init,
-    fields = {
-        "direct_pyc_files": """
-:type: depset[File]
-
-Precompiled Python files that are considered directly provided
-by the target.
-""",
-        "has_py2_only_sources": """
-:type: bool
-
-Whether any of this target's transitive sources requires a Python 2 runtime.
-""",
-        "has_py3_only_sources": """
-:type: bool
-
-Whether any of this target's transitive sources requires a Python 3 runtime.
-""",
-        "imports": """\
-:type: depset[str]
-
-A depset of import path strings to be added to the `PYTHONPATH` of executable
-Python targets. These are accumulated from the transitive `deps`.
-The order of the depset is not guaranteed and may be changed in the future. It
-is recommended to use `default` order (the default).
-""",
-        "transitive_pyc_files": """
-:type: depset[File]
-
-Direct and transitive precompiled Python files that are provided by the target.
-""",
-        "transitive_sources": """\
-:type: depset[File]
-
-A (`postorder`-compatible) depset of `.py` files appearing in the target's
-`srcs` and the `srcs` of the target's transitive `deps`.
-""",
-        "uses_shared_libraries": """
-:type: bool
-
-Whether any of this target's transitive `deps` has a shared library file (such
-as a `.so` file).
-
-This field is currently unused in Bazel and may go away in the future.
-""",
-    },
-)
-
 def _PyCcLinkParamsProvider_init(cc_info):
     return {
         "cc_info": CcInfo(linking_context = cc_info.linking_context),
     }
 
 # buildifier: disable=name-conventions
-PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = _define_provider(
+PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = define_bazel_6_provider(
     doc = ("Python-wrapper to forward {obj}`CcInfo.linking_context`. This is to " +
            "allow Python targets to propagate C++ linking information, but " +
            "without the Python target appearing to be a valid C++ rule dependency"),
