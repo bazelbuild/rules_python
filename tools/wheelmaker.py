@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import argparse
 import base64
+import csv
 import hashlib
+import io
 import os
 import re
 import stat
@@ -208,14 +210,23 @@ class _WhlFile(zipfile.ZipFile):
         """Write RECORD file to the distribution."""
         record_path = self.distinfo_path("RECORD")
         entries = self._record + [(record_path, b"", b"")]
-        contents = b""
-        for filename, digest, size in entries:
-            if isinstance(filename, str):
-                filename = filename.lstrip("/").encode("utf-8", "surrogateescape")
-            contents += b"%s,%s,%s\n" % (filename, digest, size)
+        with io.StringIO() as contents_io:
+            writer = csv.writer(contents_io, lineterminator="\n")
+            for filename, digest, size in entries:
+                if isinstance(filename, str):
+                    filename = filename.lstrip("/")
+                writer.writerow(
+                    (
+                        c
+                        if isinstance(c, str)
+                        else c.decode("utf-8", "surrogateescape")
+                        for c in (filename, digest, size)
+                    )
+                )
 
-        self.add_string(record_path, contents)
-        return contents
+            contents = contents_io.getvalue()
+            self.add_string(record_path, contents)
+            return contents.encode("utf-8", "surrogateescape")
 
 
 class WheelMaker(object):
