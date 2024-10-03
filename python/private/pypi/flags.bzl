@@ -70,6 +70,14 @@ INTERNAL_FLAGS = [
     "whl_pycp3x_abicp",
 ]
 
+# Determines if we use CPython with free-threading (disabled GIL)
+#
+# buildifier: disable=name-conventions
+UseFreeThreadingFlag = enum(
+    YES = "yes",
+    NO = "no",
+)
+
 def define_pypi_internal_flags(name):
     for flag in INTERNAL_FLAGS:
         string_flag(

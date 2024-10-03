@@ -129,6 +129,12 @@ def python_register_toolchains(
                 )],
             )
 
+        flag_values = tool_versions[python_version].get("flag_values", None)
+        free_threading_label = "@rules_python//python/config_settings:free_threading"
+        free_threading = False
+        if flag_values:
+            free_threading = flag_values.get(free_threading_label, False) == "yes"
+        suffix = tool_versions[python_version].get("suffix", "")
         python_repository(
             name = "{name}_{platform}".format(
                 name = name,
@@ -143,6 +149,7 @@ def python_register_toolchains(
             urls = urls,
             strip_prefix = strip_prefix,
             coverage_tool = coverage_tool,
+            free_threading = free_threading,
             **kwargs
         )
         if register_toolchains:

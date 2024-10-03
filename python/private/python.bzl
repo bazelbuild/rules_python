@@ -357,6 +357,13 @@ def _process_single_version_overrides(*, tag, _fail = fail, default):
             for platform in sha256
         }
 
+    if tag.flag_values:
+        # Normalize flag keys to strings
+        flag_values = {str(k): v for k, v in tag.flag_values.items()}
+        override["flag_values"] = flag_values
+    if tag.suffix:
+        override["suffix"] = tag.suffix
+
     available_versions[tag.python_version] = {k: v for k, v in override.items() if v}
 
     if tag.distutils_content:
@@ -789,6 +796,15 @@ class.
             mandatory = False,
             doc = "The URL template to fetch releases for this Python version. See {attr}`python.single_version_platform_override.urls` for documentation.",
         ),
+        "flag_values": attr.string_dict(
+            mandatory = False,
+            doc = "TODO",
+        ),
+        "suffix": attr.string(
+            mandatory = False,
+            doc = "TODO",
+            default = "",
+        )
     },
 )
 
