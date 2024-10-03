@@ -13,7 +13,7 @@
 # limitations under the License.
 """Tests for construction of Python version matching config settings."""
 
-load("@pythons_hub//:interpreter.bzl", "MINOR_MAPPING")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
