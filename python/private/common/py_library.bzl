@@ -15,6 +15,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//python/private:builders.bzl", "builders")
 load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
 load(
     "//python/private:toolchain_types.bzl",
@@ -67,16 +68,19 @@ def py_library_impl(ctx, *, semantics):
 
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)
     direct_pyc_files = depset(precompile_result.pyc_files)
-    default_outputs = depset(precompile_result.keep_srcs, transitive = [direct_pyc_files])
+    default_outputs = builders.DepsetBuilder()
+    default_outputs.add(precompile_result.keep_srcs)
+    default_outputs.add(direct_pyc_files)
+    default_outputs = default_outputs.build()
 
-    extra_runfiles_depsets = [depset(precompile_result.keep_srcs)]
+    runfiles = builders.RunfilesBuilder()
+    runfiles.add(precompile_result.keep_srcs)
+
     if ctx.attr._precompile_add_to_runfiles_flag[BuildSettingInfo].value == PrecompileAddToRunfilesFlag.ALWAYS:
-        extra_runfiles_depsets.append(direct_pyc_files)
+        runfiles.add(direct_pyc_files)
 
-    runfiles = collect_runfiles(
-        ctx = ctx,
-        files = depset(transitive = extra_runfiles_depsets),
-    )
+    runfiles.add(collect_runfiles(ctx))
+    runfiles = runfiles.build(ctx)
 
     cc_info = semantics.get_cc_info_for_library(ctx)
     py_info, deps_transitive_sources, builtins_py_info = create_py_info(
