@@ -22,6 +22,11 @@ def _mock_ctx():
         "requirements_direct": """\
 foo[extra] @ https://some-url
 """,
+        "requirements_extra_args": """\
+--index-url=example.org
+
+foo[extra]==0.0.1 --hash=sha256:deadbeef
+""",
         "requirements_linux": """\
 foo==0.0.3 --hash=sha256:deadbaaf
 """,
@@ -92,6 +97,43 @@ def _test_simple(env):
     ).equals("0.0.1")
 
 _tests.append(_test_simple)
+
+def _test_extra_pip_args(env):
+    got = parse_requirements(
+        ctx = _mock_ctx(),
+        requirements_by_platform = {
+            "requirements_extra_args": ["linux_x86_64"],
+        },
+        extra_pip_args = ["--trusted-host=example.org"],
+    )
+    env.expect.that_dict(got).contains_exactly({
+        "foo": [
+            struct(
+                distribution = "foo",
+                extra_pip_args = ["--index-url=example.org", "--trusted-host=example.org"],
+                requirement_line = "foo[extra]==0.0.1 --hash=sha256:deadbeef",
+                srcs = struct(
+                    requirement = "foo[extra]==0.0.1",
+                    shas = ["deadbeef"],
+                    version = "0.0.1",
+                ),
+                target_platforms = [
+                    "linux_x86_64",
+                ],
+                whls = [],
+                sdist = None,
+                is_exposed = True,
+            ),
+        ],
+    })
+    env.expect.that_str(
+        select_requirement(
+            got["foo"],
+            platform = "linux_x86_64",
+        ).srcs.version,
+    ).equals("0.0.1")
+
+_tests.append(_test_extra_pip_args)
 
 def _test_dupe_requirements(env):
     got = parse_requirements(
