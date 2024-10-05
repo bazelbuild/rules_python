@@ -30,11 +30,13 @@ inaccessible. So instead we access the builtin here and export it under a
 different name. Then we can load it from elsewhere.
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
+
 # Don't use underscore prefix, since that would make the symbol local to this
 # file only. Use a non-conventional name to emphasize that this is not a public
 # symbol.
 # buildifier: disable=name-conventions
-BuiltinPyInfo = PyInfo
+BuiltinPyInfo = getattr(bazel_features.globals, "PyInfo", None)
 
 # buildifier: disable=name-conventions
-BuiltinPyRuntimeInfo = PyRuntimeInfo
+BuiltinPyRuntimeInfo = getattr(bazel_features.globals, "PyRuntimeInfo", None)

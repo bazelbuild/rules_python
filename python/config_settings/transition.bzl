@@ -101,12 +101,12 @@ def _transition_py_impl(ctx):
     ]
     if PyInfo in target:
         providers.append(target[PyInfo])
-    if BuiltinPyInfo in target and PyInfo != BuiltinPyInfo:
+    if BuiltinPyInfo != None and BuiltinPyInfo in target and PyInfo != BuiltinPyInfo:
         providers.append(target[BuiltinPyInfo])
 
     if PyRuntimeInfo in target:
         providers.append(target[PyRuntimeInfo])
-    if BuiltinPyRuntimeInfo in target and PyRuntimeInfo != BuiltinPyRuntimeInfo:
+    if BuiltinPyRuntimeInfo != None and BuiltinPyRuntimeInfo in target and PyRuntimeInfo != BuiltinPyRuntimeInfo:
         providers.append(target[BuiltinPyRuntimeInfo])
     return providers
 

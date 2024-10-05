@@ -280,7 +280,7 @@ def collect_imports(ctx, semantics):
         dep[BuiltinPyInfo].imports
         for dep in ctx.attr.deps
         if BuiltinPyInfo in dep
-    ])
+    ] if BuiltinPyInfo != None else [])
 
 def collect_runfiles(ctx, files = depset()):
     """Collects the necessary files from the rule's context.
@@ -374,7 +374,7 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
 
     for target in ctx.attr.deps:
         # PyInfo may not be present e.g. cc_library rules.
-        if PyInfo in target or BuiltinPyInfo in target:
+        if PyInfo in target or (BuiltinPyInfo != None and BuiltinPyInfo in target):
             py_info.merge(_get_py_info(target))
         else:
             # TODO(b/228692666): Remove this once non-PyInfo targets are no
@@ -395,7 +395,7 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
         for target in ctx.attr.data:
             # TODO(b/234730058): Remove checking for PyInfo in data once depot
             # cleaned up.
-            if PyInfo in target or BuiltinPyInfo in target:
+            if PyInfo in target or (BuiltinPyInfo != None and BuiltinPyInfo in target):
                 info = _get_py_info(target)
                 py_info.merge_uses_shared_libraries(info.uses_shared_libraries)
             else:
@@ -410,7 +410,7 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
     return py_info.build(), deps_transitive_sources, py_info.build_builtin_py_info()
 
 def _get_py_info(target):
-    return target[PyInfo] if PyInfo in target else target[BuiltinPyInfo]
+    return target[PyInfo] if PyInfo in target or BuiltinPyInfo == None else target[BuiltinPyInfo]
 
 def create_instrumented_files_info(ctx):
     return _coverage_common.instrumented_files_info(

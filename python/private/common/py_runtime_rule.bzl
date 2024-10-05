@@ -125,18 +125,20 @@ def _py_runtime_impl(ctx):
     if not IS_BAZEL_7_OR_HIGHER:
         builtin_py_runtime_info_kwargs.pop("bootstrap_template")
 
-    return [
+    providers = [
         PyRuntimeInfo(**py_runtime_info_kwargs),
-        # Return the builtin provider for better compatibility.
-        # 1. There is a legacy code path in py_binary that
-        #    checks for the provider when toolchains aren't used
-        # 2. It makes it easier to transition from builtins to rules_python
-        BuiltinPyRuntimeInfo(**builtin_py_runtime_info_kwargs),
         DefaultInfo(
             files = runtime_files,
             runfiles = runfiles,
         ),
     ]
+    if BuiltinPyRuntimeInfo != None:
+        # Return the builtin provider for better compatibility.
+        # 1. There is a legacy code path in py_binary that
+        #    checks for the provider when toolchains aren't used
+        # 2. It makes it easier to transition from builtins to rules_python
+        providers.append(BuiltinPyRuntimeInfo(**builtin_py_runtime_info_kwargs))
+    return providers
 
 # Bind to the name "py_runtime" to preserve the kind/rule_class it shows up
 # as elsewhere.
