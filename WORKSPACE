@@ -18,9 +18,12 @@ workspace(name = "rules_python")
 # should not copy it to their WORKSPACE.
 
 load("//:internal_deps.bzl", "rules_python_internal_deps")
-load("//python:py_repositories_deps.bzl", "py_repositories_rules_deps")
 
 rules_python_internal_deps()
+
+load("//python:repositories_deps.bzl", "py_repositories_deps")
+
+py_repositories_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
