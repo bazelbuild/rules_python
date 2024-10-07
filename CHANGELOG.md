@@ -44,6 +44,9 @@ A brief description of the categories of changes:
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
   compression to speed up development.
+* (toolchains): A public `//python/config_settings:python_version_major_minor` has
+  been exposed for users to be able to match on the `X.Y` version of a Python
+  interpreter.
 
 ### Removed
 * Nothing yet

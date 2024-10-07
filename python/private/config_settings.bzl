@@ -20,7 +20,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(":semver.bzl", "semver")
 
 _PYTHON_VERSION_FLAG = Label("//python/config_settings:python_version")
-_PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:_python_version_major_minor")
+_PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:python_version_major_minor")
 
 def construct_config_settings(*, name, default_version, versions, minor_mapping):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.

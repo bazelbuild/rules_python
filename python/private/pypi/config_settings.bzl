@@ -116,7 +116,7 @@ def config_settings(
         native.config_setting(
             name = is_python,
             flag_values = {
-                Label("//python/config_settings:_python_version_major_minor"): python_version,
+                Label("//python/config_settings:python_version_major_minor"): python_version,
             },
             visibility = visibility,
         )
