@@ -25,7 +25,8 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
+  (previously it defaulted to None).
 
 ### Fixed
 * (bzlmod) The `python.override(minor_mapping)` now merges the default and the
