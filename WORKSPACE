@@ -21,9 +21,9 @@ load("//:internal_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
 
-load("//python:repositories_deps.bzl", "py_repositories_deps")
-
-py_repositories_deps()
+##load("//python:repositories_deps.bzl", "py_repositories_deps")
+##
+##py_repositories_deps()
 
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 

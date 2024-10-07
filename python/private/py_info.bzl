@@ -118,7 +118,7 @@ This field is currently unused in Bazel and may go away in the future.
 )
 
 # The "effective" PyInfo is what the canonical //python:py_info.bzl%PyInfo symbol refers to
-_EffectivePyInfo = PyInfo if config.enable_pystar or BuiltinPyInfo == None else BuiltinPyInfo
+_EffectivePyInfo = PyInfo if (config.enable_pystar or BuiltinPyInfo == None) else BuiltinPyInfo
 
 def PyInfoBuilder():
     # buildifier: disable=uninitialized

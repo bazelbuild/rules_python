@@ -132,7 +132,7 @@ def _py_runtime_impl(ctx):
             runfiles = runfiles,
         ),
     ]
-    if BuiltinPyRuntimeInfo != None:
+    if BuiltinPyRuntimeInfo != None and BuiltinPyRuntimeInfo != PyRuntimeInfo:
         # Return the builtin provider for better compatibility.
         # 1. There is a legacy code path in py_binary that
         #    checks for the provider when toolchains aren't used

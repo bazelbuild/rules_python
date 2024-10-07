@@ -19,13 +19,12 @@ load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", rt_util = "util")
 load("//python:py_executable_info.bzl", "PyExecutableInfo")
+load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
 load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")  # buildifier: disable=bzl-visibility
 load("//tests/base_rules:base_tests.bzl", "create_base_tests")
 load("//tests/base_rules:util.bzl", "WINDOWS_ATTR", pt_util = "util")
 load("//tests/support:py_executable_info_subject.bzl", "PyExecutableInfoSubject")
 load("//tests/support:support.bzl", "CC_TOOLCHAIN", "CROSSTOOL_TOP", "LINUX_X86_64", "WINDOWS_X86_64")
-
-_BuiltinPyRuntimeInfo = PyRuntimeInfo
 
 _tests = []
 
@@ -359,9 +358,10 @@ def _test_py_runtime_info_provided_impl(env, target):
     # Make sure that the rules_python loaded symbol is provided.
     env.expect.that_target(target).has_provider(RulesPythonPyRuntimeInfo)
 
-    # For compatibility during the transition, the builtin PyRuntimeInfo should
-    # also be provided.
-    env.expect.that_target(target).has_provider(_BuiltinPyRuntimeInfo)
+    if BuiltinPyRuntimeInfo != None:
+        # For compatibility during the transition, the builtin PyRuntimeInfo should
+        # also be provided.
+        env.expect.that_target(target).has_provider(BuiltinPyRuntimeInfo)
 
 _tests.append(_test_py_runtime_info_provided)
 
