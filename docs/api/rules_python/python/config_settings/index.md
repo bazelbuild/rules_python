@@ -10,6 +10,10 @@ Determines the default hermetic Python toolchain version. This can be set to
 one of the values that `rules_python` maintains.
 :::
 
+:::{bzl:target} python_version_major_minor
+Parses the value of the `python_version` and transforms it into a `X.Y` value.
+:::
+
 ::::{bzl:flag} exec_tools_toolchain
 Determines if the {obj}`exec_tools_toolchain_type` toolchain is enabled.
 

@@ -167,7 +167,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//os:" + os,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 
@@ -178,7 +178,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//cpu:" + cpu,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 
@@ -198,7 +198,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//os:" + os,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 
