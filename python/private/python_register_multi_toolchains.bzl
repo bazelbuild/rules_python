@@ -15,6 +15,10 @@
 """This file contains repository rules and macros to support toolchain registration.
 """
 
+# NOTE @aignas 2024-10-07:  we are not importing this from `@pythons_hub` because of this
+# leading to a backwards incompatible change - the `//python:repositories.bzl` is loading
+# from this file and it will cause a circular import loop and an error. If the users in
+# WORKSPACE world want to override the `minor_mapping`, they will have to pass an argument.
 load("//python:versions.bzl", "MINOR_MAPPING")
 load(":python_register_toolchains.bzl", "python_register_toolchains")
 load(":toolchains_repo.bzl", "multi_toolchain_aliases")

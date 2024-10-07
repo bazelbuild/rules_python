@@ -29,6 +29,11 @@ A brief description of the categories of changes:
   (previously it defaulted to None).
 
 ### Fixed
+* (bzlmod) The `python.override(minor_mapping)` now merges the default and the
+  overridden versions ensuring that the resultant `minor_mapping` will always
+  have all of the python versions.
+* (bzlmod) The default value for the {obj}`--python_version` flag will now be
+  always set to the default python toolchain version value.
 * (bzlmod) correctly wire the {attr}`pip.parse.extra_pip_args` all the
   way to {obj}`whl_library`. What is more we will pass the `extra_pip_args` to
   {obj}`whl_library` for `sdist` distributions when using

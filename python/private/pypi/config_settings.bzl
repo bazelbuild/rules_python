@@ -109,9 +109,15 @@ def config_settings(
 
     for python_version in [""] + python_versions:
         is_python = "is_python_{}".format(python_version or "version_unset")
-        native.alias(
+
+        # The aliases defined in @rules_python//python/config_settings may not
+        # have config settings for the versions we need, so define our own
+        # config settings instead.
+        native.config_setting(
             name = is_python,
-            actual = Label("//python/config_settings:" + is_python),
+            flag_values = {
+                Label("//python/config_settings:_python_version_major_minor"): python_version,
+            },
             visibility = visibility,
         )
 
