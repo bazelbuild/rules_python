@@ -14,8 +14,8 @@
 
 ""
 
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python:versions.bzl", "MINOR_MAPPING")
 load("//python/private:python.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
 
 _tests = []
@@ -451,6 +451,7 @@ def _test_add_new_version(env):
         "url": {"aarch64-unknown-linux-gnu": ["something.org", "else.org"]},
     })
     env.expect.that_dict(py.config.minor_mapping).contains_exactly({
+        "3.12": "3.12.4",  # The `minor_mapping` will be overriden only for the missing keys
         "3.13": "3.13.0",
     })
     env.expect.that_collection(py.toolchains).contains_exactly([

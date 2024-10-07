@@ -110,7 +110,6 @@ _tests.append(_test_legacy_aliases)
 def _test_bzlmod_aliases(env):
     # Use this function as it is used in pip_repository
     actual = render_multiplatform_pkg_aliases(
-        default_config_setting = "//:my_config_setting",
         aliases = {
             "bar-baz": [
                 whl_alias(version = "3.2", repo = "pypi_32_bar_baz", config_setting = "//:my_config_setting"),
@@ -124,6 +123,23 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 
 package(default_visibility = ["//visibility:public"])
 
+_NO_MATCH_ERROR = \"\"\"\\
+No matching wheel for current configuration's Python version.
+
+The current build configuration's Python version doesn't match any of the Python
+wheels available for this wheel. This wheel supports the following Python
+configuration settings:
+    //:my_config_setting
+
+To determine the current configuration's Python version, run:
+    `bazel config <config id>` (shown further below)
+and look for
+    rules_python//python/config_settings:python_version
+
+If the value is missing, then the "default" Python version is being used,
+which has a "null" version value and will not match version constraints.
+\"\"\"
+
 alias(
     name = "bar_baz",
     actual = ":pkg",
@@ -133,11 +149,9 @@ alias(
     name = "pkg",
     actual = selects.with_or(
         {
-            (
-                "//:my_config_setting",
-                "//conditions:default",
-            ): "@pypi_32_bar_baz//:pkg",
+            "//:my_config_setting": "@pypi_32_bar_baz//:pkg",
         },
+        no_match_error = _NO_MATCH_ERROR,
     ),
 )
 
@@ -145,11 +159,9 @@ alias(
     name = "whl",
     actual = selects.with_or(
         {
-            (
-                "//:my_config_setting",
-                "//conditions:default",
-            ): "@pypi_32_bar_baz//:whl",
+            "//:my_config_setting": "@pypi_32_bar_baz//:whl",
         },
+        no_match_error = _NO_MATCH_ERROR,
     ),
 )
 
@@ -157,11 +169,9 @@ alias(
     name = "data",
     actual = selects.with_or(
         {
-            (
-                "//:my_config_setting",
-                "//conditions:default",
-            ): "@pypi_32_bar_baz//:data",
+            "//:my_config_setting": "@pypi_32_bar_baz//:data",
         },
+        no_match_error = _NO_MATCH_ERROR,
     ),
 )
 
@@ -169,11 +179,9 @@ alias(
     name = "dist_info",
     actual = selects.with_or(
         {
-            (
-                "//:my_config_setting",
-                "//conditions:default",
-            ): "@pypi_32_bar_baz//:dist_info",
+            "//:my_config_setting": "@pypi_32_bar_baz//:dist_info",
         },
+        no_match_error = _NO_MATCH_ERROR,
     ),
 )"""
 
@@ -198,7 +206,6 @@ _tests.append(_test_bzlmod_aliases)
 
 def _test_bzlmod_aliases_with_no_default_version(env):
     actual = render_multiplatform_pkg_aliases(
-        default_config_setting = None,
         aliases = {
             "bar-baz": [
                 whl_alias(
@@ -291,106 +298,8 @@ alias(
 
 _tests.append(_test_bzlmod_aliases_with_no_default_version)
 
-def _test_bzlmod_aliases_for_non_root_modules(env):
-    actual = render_pkg_aliases(
-        # NOTE @aignas 2024-01-17: if the default X.Y version coincides with the
-        # versions that are used in the root module, then this would be the same as
-        # as _test_bzlmod_aliases.
-        #
-        # However, if the root module uses a different default version than the
-        # non-root module, then we will have a no-match-error because the
-        # default_config_setting is not in the list of the versions in the
-        # whl_map.
-        default_config_setting = "//_config:is_python_3.3",
-        aliases = {
-            "bar-baz": [
-                whl_alias(version = "3.2", repo = "pypi_32_bar_baz"),
-                whl_alias(version = "3.1", repo = "pypi_31_bar_baz"),
-            ],
-        },
-    )
-
-    want_key = "bar_baz/BUILD.bazel"
-    want_content = """\
-load("@bazel_skylib//lib:selects.bzl", "selects")
-
-package(default_visibility = ["//visibility:public"])
-
-_NO_MATCH_ERROR = \"\"\"\\
-No matching wheel for current configuration's Python version.
-
-The current build configuration's Python version doesn't match any of the Python
-wheels available for this wheel. This wheel supports the following Python
-configuration settings:
-    //_config:is_python_3.1
-    //_config:is_python_3.2
-
-To determine the current configuration's Python version, run:
-    `bazel config <config id>` (shown further below)
-and look for
-    rules_python//python/config_settings:python_version
-
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-\"\"\"
-
-alias(
-    name = "bar_baz",
-    actual = ":pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:pkg",
-            "//_config:is_python_3.2": "@pypi_32_bar_baz//:pkg",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "whl",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:whl",
-            "//_config:is_python_3.2": "@pypi_32_bar_baz//:whl",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "data",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:data",
-            "//_config:is_python_3.2": "@pypi_32_bar_baz//:data",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "dist_info",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
-            "//_config:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)"""
-
-    env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(want_content)
-
-_tests.append(_test_bzlmod_aliases_for_non_root_modules)
-
 def _test_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
-        default_config_setting = "//_config:is_python_3.2",
         aliases = {
             "bar": [
                 whl_alias(version = "3.1", repo = "pypi_31_bar"),
@@ -414,7 +323,6 @@ _tests.append(_test_aliases_are_created_for_all_wheels)
 
 def _test_aliases_with_groups(env):
     actual = render_pkg_aliases(
-        default_config_setting = "//_config:is_python_3.2",
         aliases = {
             "bar": [
                 whl_alias(version = "3.1", repo = "pypi_31_bar"),
@@ -555,13 +463,12 @@ def _test_config_settings(
         *,
         filename,
         want,
+        python_version,
         want_versions = {},
         target_platforms = [],
         glibc_versions = [],
         muslc_versions = [],
-        osx_versions = [],
-        python_version = "",
-        python_default = True):
+        osx_versions = []):
     got, got_default_version_settings = get_filename_config_settings(
         filename = filename,
         target_platforms = target_platforms,
@@ -569,7 +476,6 @@ def _test_config_settings(
         muslc_versions = muslc_versions,
         osx_versions = osx_versions,
         python_version = python_version,
-        python_default = python_default,
     )
     env.expect.that_collection(got).contains_exactly(want)
     env.expect.that_dict(got_default_version_settings).contains_exactly(want_versions)
@@ -580,42 +486,21 @@ def _test_sdist(env):
         _test_config_settings(
             env,
             filename = "foo-0.0.1" + ext,
-            want = [":is_sdist"],
+            python_version = "3.2",
+            want = [":is_cp3.2_sdist"],
         )
 
     ext = ".zip"
     _test_config_settings(
         env,
         filename = "foo-0.0.1" + ext,
-        target_platforms = [
-            "linux_aarch64",
-        ],
-        want = [":is_sdist_linux_aarch64"],
-    )
-
-    _test_config_settings(
-        env,
-        filename = "foo-0.0.1" + ext,
         python_version = "3.2",
-        want = [
-            ":is_sdist",
-            ":is_cp3.2_sdist",
-        ],
-    )
-
-    _test_config_settings(
-        env,
-        filename = "foo-0.0.1" + ext,
-        python_version = "3.2",
-        python_default = True,
         target_platforms = [
             "linux_aarch64",
             "linux_x86_64",
         ],
         want = [
-            ":is_sdist_linux_aarch64",
             ":is_cp3.2_sdist_linux_aarch64",
-            ":is_sdist_linux_x86_64",
             ":is_cp3.2_sdist_linux_x86_64",
         ],
     )
@@ -626,25 +511,8 @@ def _test_py2_py3_none_any(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-py2.py3-none-any.whl",
-        want = [":is_py_none_any"],
-    )
-
-    _test_config_settings(
-        env,
-        filename = "foo-0.0.1-py2.py3-none-any.whl",
-        target_platforms = [
-            "linux_aarch64",
-        ],
-        want = [":is_py_none_any_linux_aarch64"],
-    )
-
-    _test_config_settings(
-        env,
-        filename = "foo-0.0.1-py2.py3-none-any.whl",
         python_version = "3.2",
-        python_default = True,
         want = [
-            ":is_py_none_any",
             ":is_cp3.2_py_none_any",
         ],
     )
@@ -653,13 +521,10 @@ def _test_py2_py3_none_any(env):
         env,
         filename = "foo-0.0.1-py2.py3-none-any.whl",
         python_version = "3.2",
-        python_default = False,
         target_platforms = [
             "osx_x86_64",
         ],
-        want = [
-            ":is_cp3.2_py_none_any_osx_x86_64",
-        ],
+        want = [":is_cp3.2_py_none_any_osx_x86_64"],
     )
 
 _tests.append(_test_py2_py3_none_any)
@@ -668,14 +533,16 @@ def _test_py3_none_any(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-py3-none-any.whl",
-        want = [":is_py3_none_any"],
+        python_version = "3.1",
+        want = [":is_cp3.1_py3_none_any"],
     )
 
     _test_config_settings(
         env,
         filename = "foo-0.0.1-py3-none-any.whl",
+        python_version = "3.1",
         target_platforms = ["linux_x86_64"],
-        want = [":is_py3_none_any_linux_x86_64"],
+        want = [":is_cp3.1_py3_none_any_linux_x86_64"],
     )
 
 _tests.append(_test_py3_none_any)
@@ -684,19 +551,20 @@ def _test_py3_none_macosx_10_9_universal2(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-py3-none-macosx_10_9_universal2.whl",
+        python_version = "3.1",
         osx_versions = [
             (10, 9),
             (11, 0),
         ],
         want = [],
         want_versions = {
-            ":is_py3_none_osx_aarch64_universal2": {
-                (10, 9): ":is_py3_none_osx_10_9_aarch64_universal2",
-                (11, 0): ":is_py3_none_osx_11_0_aarch64_universal2",
+            ":is_cp3.1_py3_none_osx_aarch64_universal2": {
+                (10, 9): ":is_cp3.1_py3_none_osx_10_9_aarch64_universal2",
+                (11, 0): ":is_cp3.1_py3_none_osx_11_0_aarch64_universal2",
             },
-            ":is_py3_none_osx_x86_64_universal2": {
-                (10, 9): ":is_py3_none_osx_10_9_x86_64_universal2",
-                (11, 0): ":is_py3_none_osx_11_0_x86_64_universal2",
+            ":is_cp3.1_py3_none_osx_x86_64_universal2": {
+                (10, 9): ":is_cp3.1_py3_none_osx_10_9_x86_64_universal2",
+                (11, 0): ":is_cp3.1_py3_none_osx_11_0_x86_64_universal2",
             },
         },
     )
@@ -707,20 +575,8 @@ def _test_cp37_abi3_linux_x86_64(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-cp37-abi3-linux_x86_64.whl",
-        want = [
-            ":is_cp3x_abi3_linux_x86_64",
-        ],
-    )
-
-    _test_config_settings(
-        env,
-        filename = "foo-0.0.1-cp37-abi3-linux_x86_64.whl",
-        python_version = "3.2",
-        python_default = True,
-        want = [
-            ":is_cp3x_abi3_linux_x86_64",
-            ":is_cp3.2_cp3x_abi3_linux_x86_64",
-        ],
+        python_version = "3.7",
+        want = [":is_cp3.7_cp3x_abi3_linux_x86_64"],
     )
 
 _tests.append(_test_cp37_abi3_linux_x86_64)
@@ -729,9 +585,8 @@ def _test_cp37_abi3_windows_x86_64(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-cp37-abi3-windows_x86_64.whl",
-        want = [
-            ":is_cp3x_abi3_windows_x86_64",
-        ],
+        python_version = "3.7",
+        want = [":is_cp3.7_cp3x_abi3_windows_x86_64"],
     )
 
 _tests.append(_test_cp37_abi3_windows_x86_64)
@@ -740,6 +595,7 @@ def _test_cp37_abi3_manylinux_2_17_x86_64(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+        python_version = "3.7",
         glibc_versions = [
             (2, 16),
             (2, 17),
@@ -747,9 +603,9 @@ def _test_cp37_abi3_manylinux_2_17_x86_64(env):
         ],
         want = [],
         want_versions = {
-            ":is_cp3x_abi3_manylinux_x86_64": {
-                (2, 17): ":is_cp3x_abi3_manylinux_2_17_x86_64",
-                (2, 18): ":is_cp3x_abi3_manylinux_2_18_x86_64",
+            ":is_cp3.7_cp3x_abi3_manylinux_x86_64": {
+                (2, 17): ":is_cp3.7_cp3x_abi3_manylinux_2_17_x86_64",
+                (2, 18): ":is_cp3.7_cp3x_abi3_manylinux_2_18_x86_64",
             },
         },
     )
@@ -761,6 +617,7 @@ def _test_cp37_abi3_manylinux_2_17_musllinux_1_1_aarch64(env):
     _test_config_settings(
         env,
         filename = "foo-0.0.1-cp37-cp37-manylinux_2_17_arm64.musllinux_1_1_arm64.whl",
+        python_version = "3.7",
         glibc_versions = [
             (2, 16),
             (2, 17),
@@ -771,12 +628,12 @@ def _test_cp37_abi3_manylinux_2_17_musllinux_1_1_aarch64(env):
         ],
         want = [],
         want_versions = {
-            ":is_cp3x_cp_manylinux_aarch64": {
-                (2, 17): ":is_cp3x_cp_manylinux_2_17_aarch64",
-                (2, 18): ":is_cp3x_cp_manylinux_2_18_aarch64",
+            ":is_cp3.7_cp3x_cp_manylinux_aarch64": {
+                (2, 17): ":is_cp3.7_cp3x_cp_manylinux_2_17_aarch64",
+                (2, 18): ":is_cp3.7_cp3x_cp_manylinux_2_18_aarch64",
             },
-            ":is_cp3x_cp_musllinux_aarch64": {
-                (1, 1): ":is_cp3x_cp_musllinux_1_1_aarch64",
+            ":is_cp3.7_cp3x_cp_musllinux_aarch64": {
+                (1, 1): ":is_cp3.7_cp3x_cp_musllinux_1_1_aarch64",
             },
         },
     )
@@ -785,7 +642,7 @@ _tests.append(_test_cp37_abi3_manylinux_2_17_musllinux_1_1_aarch64)
 
 def _test_multiplatform_whl_aliases_empty(env):
     # Check that we still work with an empty requirements.txt
-    got = multiplatform_whl_aliases(aliases = [], default_version = None)
+    got = multiplatform_whl_aliases(aliases = [])
     env.expect.that_collection(got).contains_exactly([])
 
 _tests.append(_test_multiplatform_whl_aliases_empty)
@@ -798,7 +655,7 @@ def _test_multiplatform_whl_aliases_nofilename(env):
             version = "3.1",
         ),
     ]
-    got = multiplatform_whl_aliases(aliases = aliases, default_version = None)
+    got = multiplatform_whl_aliases(aliases = aliases)
     env.expect.that_collection(got).contains_exactly(aliases)
 
 _tests.append(_test_multiplatform_whl_aliases_nofilename)
@@ -827,7 +684,6 @@ def _test_multiplatform_whl_aliases_filename(env):
     ]
     got = multiplatform_whl_aliases(
         aliases = aliases,
-        default_version = "3.1",
         glibc_versions = [],
         muslc_versions = [],
         osx_versions = [],
@@ -837,9 +693,6 @@ def _test_multiplatform_whl_aliases_filename(env):
         whl_alias(config_setting = "//_config:is_cp3.1_py3_none_any_linux_aarch64", repo = "foo-0.0.2", version = "3.1"),
         whl_alias(config_setting = "//_config:is_cp3.1_py3_none_any_linux_x86_64", repo = "foo-0.0.2", version = "3.1"),
         whl_alias(config_setting = "//_config:is_cp3.2_py3_none_any", repo = "foo-py3-0.0.3", version = "3.2"),
-        whl_alias(config_setting = "//_config:is_py3_none_any", repo = "foo-py3-0.0.1", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_py3_none_any_linux_aarch64", repo = "foo-0.0.2", version = "3.1"),
-        whl_alias(config_setting = "//_config:is_py3_none_any_linux_x86_64", repo = "foo-0.0.2", version = "3.1"),
     ]
     env.expect.that_collection(got).contains_exactly(want)
 
@@ -865,7 +718,6 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
     ]
     got = multiplatform_whl_aliases(
         aliases = aliases,
-        default_version = None,
         glibc_versions = [(2, 17), (2, 18)],
         muslc_versions = [(1, 1), (1, 2)],
         osx_versions = [],
@@ -931,7 +783,6 @@ def _test_config_settings_exist(env):
 
                 got_aliases = multiplatform_whl_aliases(
                     aliases = aliases,
-                    default_version = None,
                     glibc_versions = kwargs.get("glibc_versions", []),
                     muslc_versions = kwargs.get("muslc_versions", []),
                     osx_versions = kwargs.get("osx_versions", []),

@@ -20,9 +20,9 @@ load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(":semver.bzl", "semver")
 
 _PYTHON_VERSION_FLAG = Label("//python/config_settings:python_version")
-_PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:_python_version_major_minor")
+_PYTHON_VERSION_MAJOR_MINOR_FLAG = Label("//python/config_settings:python_version_major_minor")
 
-def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: disable=function-docstring
+def construct_config_settings(*, name, default_version, versions, minor_mapping):  # buildifier: disable=function-docstring
     """Create a 'python_version' config flag and construct all config settings used in rules_python.
 
     This mainly includes the targets that are used in the toolchain and pip hub
@@ -30,17 +30,14 @@ def construct_config_settings(*, name, versions, minor_mapping):  # buildifier: 
 
     Args:
         name: {type}`str` A dummy name value that is no-op for now.
+        default_version: {type}`str` the default value for the `python_version` flag.
         versions: {type}`list[str]` A list of versions to build constraint settings for.
         minor_mapping: {type}`dict[str, str]` A mapping from `X.Y` to `X.Y.Z` python versions.
     """
     _ = name  # @unused
     _python_version_flag(
         name = _PYTHON_VERSION_FLAG.name,
-        # TODO: The default here should somehow match the MODULE config. Until
-        # then, use the empty string to indicate an unknown version. This
-        # also prevents version-unaware targets from inadvertently matching
-        # a select condition when they shouldn't.
-        build_setting_default = "",
+        build_setting_default = default_version,
         visibility = ["//visibility:public"],
     )
 
