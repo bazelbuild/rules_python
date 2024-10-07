@@ -33,6 +33,11 @@ A brief description of the categories of changes:
   have all of the python versions.
 * (bzlmod) The default value for the {obj}`--python_version` flag will now be
   always set to the default python toolchain version value.
+* (bzlmod) correctly wire the {attr}`pip.parse.extra_pip_args` all the
+  way to {obj}`whl_library`. What is more we will pass the `extra_pip_args` to
+  {obj}`whl_library` for `sdist` distributions when using
+  {attr}`pip.parse.experimental_index_url`. See
+  [#2239](https://github.com/bazelbuild/rules_python/issues/2239).
 * (whl_filegroup): Provide per default also the `RECORD` file
 
 ### Added
