@@ -181,11 +181,16 @@ def _PyInfoBuilder_set_uses_shared_libraries(self, value):
     self._uses_shared_libraries[0] = value
     return self
 
-def _PyInfoBuilder_merge(self, *infos):
-    return self.merge_all(infos)
+def _PyInfoBuilder_merge(self, *infos, direct = []):
+    return self.merge_all(list(infos), direct = direct)
 
-def _PyInfoBuilder_merge_all(self, py_infos):
-    for info in py_infos:
+def _PyInfoBuilder_merge_all(self, transitive, *, direct = []):
+    for info in direct:
+        # BuiltinPyInfo doesn't have this field
+        if hasattr(info, "direct_pyc_files"):
+            self.direct_pyc_files.add(info.direct_pyc_files)
+
+    for info in direct + transitive:
         self.imports.add(info.imports)
         self.merge_has_py2_only_sources(info.has_py2_only_sources)
         self.merge_has_py3_only_sources(info.has_py3_only_sources)

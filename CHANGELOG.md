@@ -47,6 +47,8 @@ A brief description of the categories of changes:
 * (toolchains): A public `//python/config_settings:python_version_major_minor` has
   been exposed for users to be able to match on the `X.Y` version of a Python
   interpreter.
+* (api) Added {obj}`merge_py_infos()` so user rules can merge and propagate
+  `PyInfo` without losing information.
 
 ### Removed
 * Nothing yet
