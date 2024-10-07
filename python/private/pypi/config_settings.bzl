@@ -110,8 +110,9 @@ def config_settings(
     for python_version in [""] + python_versions:
         is_python = "is_python_{}".format(python_version or "version_unset")
 
-        # Do not rely on aliases in the `rules_python` so that we can just blindly
-        # add all of the found wheels on the internet to the select statement.
+        # The aliases defined in @rules_python//python/config_settings may not
+        # have config settings for the versions we need, so define our own
+        # config settings instead.
         native.config_setting(
             name = is_python,
             flag_values = {
