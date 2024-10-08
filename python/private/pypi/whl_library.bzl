@@ -244,7 +244,10 @@ def _whl_library_impl(rctx):
 
         repo_utils.execute_checked(
             rctx,
-            op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement),
+            # truncate the requirement value when logging it / reporting
+            # progress since it may contain several ' --hash=sha256:...
+            # --hash=sha256:...' substrings that fill up the console
+            op = op_tmpl.format(name = rctx.attr.name, requirement = rctx.attr.requirement.split(" ", 1)[0]),
             arguments = args,
             environment = environment,
             quiet = rctx.attr.quiet,
