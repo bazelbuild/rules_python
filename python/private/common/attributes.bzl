@@ -253,6 +253,8 @@ COMMON_ATTRS = union_attrs(
     allow_none = True,
 )
 
+_MaybeBuiltinPyInfo = [[BuiltinPyInfo]] if BuiltinPyInfo != None else []
+
 # Attributes common to rules accepting Python sources and deps.
 PY_SRCS_ATTRS = union_attrs(
     {
@@ -260,8 +262,7 @@ PY_SRCS_ATTRS = union_attrs(
             providers = [
                 [PyInfo],
                 [CcInfo],
-                [BuiltinPyInfo],
-            ],
+            ] + _MaybeBuiltinPyInfo,
             # TODO(b/228692666): Google-specific; remove these allowances once
             # the depot is cleaned up.
             allow_rules = DEPS_ATTR_ALLOW_RULES,

@@ -855,7 +855,7 @@ def _create_providers(
         # builtin py_runtime rule or defined their own. We can't directly detect
         # the type of the provider object, but the rules_python PyRuntimeInfo
         # object has an extra attribute that the builtin one doesn't.
-        if hasattr(py_runtime_info, "interpreter_version_info"):
+        if hasattr(py_runtime_info, "interpreter_version_info") and BuiltinPyRuntimeInfo != None:
             providers.append(BuiltinPyRuntimeInfo(
                 interpreter_path = py_runtime_info.interpreter_path,
                 interpreter = py_runtime_info.interpreter,
@@ -890,7 +890,8 @@ def _create_providers(
         )
 
     providers.append(py_info)
-    providers.append(builtin_py_info)
+    if builtin_py_info:
+        providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
     extra_providers = semantics.get_extra_providers(

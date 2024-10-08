@@ -191,7 +191,8 @@ def _test_py_info_builder_impl(env, targets):
             ])
 
     check(builder.build())
-    check(builder.build_builtin_py_info())
+    if BuiltinPyInfo != None:
+        check(builder.build_builtin_py_info())
 
     builder.set_has_py2_only_sources(False)
     builder.set_has_py3_only_sources(False)
