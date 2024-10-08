@@ -54,8 +54,8 @@ register_toolchains("@pythons_hub//:all")
 #####################
 # Install twine for our own runfiles wheel publishing and allow bzlmod users to use it.
 
-pip = use_extension("//python/private/pypi:pip.bzl", "pip_internal")
-pip.parse(
+pypi = use_extension("//python/private/pypi:pypi.bzl", "pypi")
+pypi.install(
     hub_name = "rules_python_publish_deps",
     python_version = "3.11",
     requirements_by_platform = {
@@ -64,7 +64,7 @@ pip.parse(
         "//tools/publish:requirements_windows.txt": "windows_*",
     },
 )
-use_repo(pip, "rules_python_publish_deps")
+use_repo(pypi, "rules_python_publish_deps")
 
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
 bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
@@ -85,22 +85,22 @@ dev_python.override(
     register_all_versions = True,
 )
 
-dev_pip = use_extension(
-    "//python/private/pypi:pip.bzl",
-    "pip_internal",
+dev_pypi = use_extension(
+    "//python/private/pypi:pypi.bzl",
+    "pypi",
     dev_dependency = True,
 )
-dev_pip.parse(
+dev_pypi.install(
     hub_name = "dev_pip",
     python_version = "3.11",
     requirements_lock = "//docs:requirements.txt",
 )
-dev_pip.parse(
+dev_pypi.install(
     hub_name = "pypiserver",
     python_version = "3.11",
     requirements_lock = "//examples/wheel:requirements_server.txt",
 )
-use_repo(dev_pip, "dev_pip", "pypiserver")
+use_repo(dev_pypi, "dev_pip", "pypiserver")
 
 # Bazel integration test setup below
 

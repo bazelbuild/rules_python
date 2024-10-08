@@ -104,11 +104,11 @@ register_toolchains("@uv_toolchains//:all")
 # See @rules_python//python/extensions:whl_mods.bzl attributes for more information
 # on each of the attributes.
 # You are able to set a hub name, so that you can have different modifications of the same
-# wheel in different pip hubs.
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+# wheel in different pypi hubs.
+pypi = use_extension("@rules_python//python/extensions:pypi.bzl", "pypi")
 
 # Call whl_mods.create for the requests package.
-pip.whl_mods(
+pypi.whl_mods(
     # we are using the appended_build_content.BUILD file
     # to add content to the request wheel BUILD file.
     additive_build_content_file = "//whl_mods:appended_build_content.BUILD",
@@ -127,7 +127,7 @@ write_file(
 """
 
 # Call whl_mods.create for the wheel package.
-pip.whl_mods(
+pypi.whl_mods(
     additive_build_content = ADDITIVE_BUILD_CONTENT,
     copy_executables = {
         "@@//whl_mods:data/copy_executable.py": "copied_content/executable.py",
@@ -140,27 +140,24 @@ pip.whl_mods(
     hub_name = "whl_mods_hub",
     whl_name = "wheel",
 )
-use_repo(pip, "whl_mods_hub")
+use_repo(pypi, "whl_mods_hub")
 
-# To fetch pip dependencies, use pip.parse. We can pass in various options,
+# To fetch pypi dependencies, use pypi.install. We can pass in various options,
 # but typically we pass requirements and the Python version. The Python
 # version must have been configured by a corresponding `python.toolchain()`
 # call.
 # Alternatively, `python_interpreter_target` can be used to directly specify
 # the Python interpreter to run to resolve dependencies.
-pip.parse(
+pypi.install(
     # We can use `envsubst in the above
     envsubst = ["PIP_INDEX_URL"],
-    # Use the bazel downloader to query the simple API for downloading the sources
-    # Note, that we can use envsubst for this value.
-    experimental_index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
     # One can also select a particular index for a particular package.
     # This ensures that the setup is resistant against confusion attacks.
-    # experimental_index_url_overrides = {
+    # index_url_overrides = {
     #    "my_package": "https://different-index-url.com",
     # },
     # Or you can specify extra indexes like with `pip`:
-    # experimental_extra_index_urls = [
+    # extra_index_urls = [
     #    "https://different-index-url.com",
     # ],
     experimental_requirement_cycles = {
@@ -182,6 +179,9 @@ pip.parse(
         "cp39_*",
     ],
     hub_name = "pip",
+    # Use the bazel downloader to query the simple API for downloading the sources
+    # Note, that we can use envsubst for this value.
+    index_url = "${PIP_INDEX_URL:-https://pypi.org/simple}",
     python_version = "3.9",
     requirements_lock = "requirements_lock_3_9.txt",
     # These modifications were created above and we
@@ -192,7 +192,7 @@ pip.parse(
         "@whl_mods_hub//:wheel.json": "wheel",
     },
 )
-pip.parse(
+pypi.install(
     experimental_requirement_cycles = {
         "sphinx": [
             "sphinx",
@@ -240,7 +240,7 @@ pip.parse(
 # You can add patches that will be applied on the whl contents.
 #
 # The patches have to be in the unified-diff format.
-pip.override(
+pypi.override(
     file = "requests-2.25.1-py2.py3-none-any.whl",
     patch_strip = 1,
     patches = [
@@ -249,7 +249,7 @@ pip.override(
         "@//patches:requests_record.patch",
     ],
 )
-use_repo(pip, "pip")
+use_repo(pypi, "pip")
 
 bazel_dep(name = "other_module", version = "", repo_name = "our_other_module")
 local_path_override(
