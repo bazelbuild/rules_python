@@ -1230,7 +1230,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "V5/A3wVb+XNcASpqTHoh6Z6Z+R/HKhIhJmjAj2UComY=",
+        "bzlTransitiveDigest": "4lUj1TkJdZDIeU5gj4x+CPLc/YPIPmllR6JcmB2b0wY=",
         "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
@@ -2954,7 +2954,6 @@
               "whl_map": {
                 "absl_py": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"other_module_pip_311_absl_py\",\"target_platforms\":null,\"version\":\"3.11\"}]"
               },
-              "default_version": "3.9",
               "packages": [],
               "groups": {}
             }
@@ -4266,7 +4265,6 @@
                 "sphinxcontrib_applehelp": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_applehelp-1.0.7-py3-none-any.whl\",\"repo\":\"pip_39_sphinxcontrib_applehelp_py3_none_any_094c4d56\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_applehelp-1.0.7.tar.gz\",\"repo\":\"pip_39_sphinxcontrib_applehelp_sdist_39fdc8d7\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_sphinxcontrib_applehelp\",\"target_platforms\":null,\"version\":\"3.10\"}]",
                 "sphinxcontrib_serializinghtml": "[{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_serializinghtml-1.1.9-py3-none-any.whl\",\"repo\":\"pip_39_sphinxcontrib_serializinghtml_py3_none_any_9b36e503\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"sphinxcontrib_serializinghtml-1.1.9.tar.gz\",\"repo\":\"pip_39_sphinxcontrib_serializinghtml_sdist_0c64ff89\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_sphinxcontrib_serializinghtml\",\"target_platforms\":null,\"version\":\"3.10\"}]"
               },
-              "default_version": "3.9",
               "packages": [
                 "alabaster",
                 "astroid",
@@ -6139,7 +6137,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "zISCcWz4Z1a0lts3XL4XkZIqXIths46zHs69auV0Blc=",
+        "bzlTransitiveDigest": "tnRMaTW/8XjBqR/9zHkS6YVvAGjmBTbJSuZHQOASLE0=",
         "usagesDigest": "Y8ihY+R57BAFhalrVLVdJFrpwlbsiKz9JPJ99ljF7HA=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
@@ -8104,7 +8102,6 @@
                 "importlib_metadata": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"importlib_metadata-6.0.0-py3-none-any.whl\",\"repo\":\"rules_python_publish_deps_311_importlib_metadata_py3_none_any_7efb448e\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"importlib_metadata-6.0.0.tar.gz\",\"repo\":\"rules_python_publish_deps_311_importlib_metadata_sdist_e354bede\",\"target_platforms\":null,\"version\":\"3.11\"}]",
                 "pywin32_ctypes": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"pywin32_ctypes-0.2.0-py2.py3-none-any.whl\",\"repo\":\"rules_python_publish_deps_311_pywin32_ctypes_py2_none_any_9dc2d991\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"pywin32-ctypes-0.2.0.tar.gz\",\"repo\":\"rules_python_publish_deps_311_pywin32_ctypes_sdist_24ffc3b3\",\"target_platforms\":null,\"version\":\"3.11\"}]"
               },
-              "default_version": "3.9",
               "packages": [
                 "bleach",
                 "certifi",

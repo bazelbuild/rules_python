@@ -111,30 +111,25 @@ def _test_py_info_builder(name):
         name = name + "_misc",
         srcs = ["trans.py", "direct.pyc", "trans.pyc"],
     )
-    rt_util.helper_target(
-        provide_py_info,
-        name = name + "_py1",
-        transitive_sources = ["py1-trans.py"],
-        direct_pyc_files = ["py1-direct-pyc.pyc"],
-        imports = ["py1import"],
-        transitive_pyc_files = ["py1-trans.pyc"],
-    )
-    rt_util.helper_target(
-        provide_py_info,
-        name = name + "_py2",
-        transitive_sources = ["py2-trans.py"],
-        direct_pyc_files = ["py2-direct.pyc"],
-        imports = ["py2import"],
-        transitive_pyc_files = ["py2-trans.pyc"],
-    )
+
+    py_info_targets = {}
+    for n in range(1, 7):
+        py_info_name = "{}_py{}".format(name, n)
+        py_info_targets["py{}".format(n)] = py_info_name
+        rt_util.helper_target(
+            provide_py_info,
+            name = py_info_name,
+            transitive_sources = ["py{}-trans.py".format(n)],
+            direct_pyc_files = ["py{}-direct.pyc".format(n)],
+            imports = ["py{}import".format(n)],
+            transitive_pyc_files = ["py{}-trans.pyc".format(n)],
+        )
     analysis_test(
         name = name,
         impl = _test_py_info_builder_impl,
         targets = {
             "misc": name + "_misc",
-            "py1": name + "_py1",
-            "py2": name + "_py2",
-        },
+        } | py_info_targets,
     )
 
 def _test_py_info_builder_impl(env, targets):
@@ -151,6 +146,9 @@ def _test_py_info_builder_impl(env, targets):
     builder.merge_target(targets.py1)
     builder.merge_targets([targets.py2])
 
+    builder.merge(targets.py3[PyInfo], direct = [targets.py4[PyInfo]])
+    builder.merge_all([targets.py5[PyInfo]], direct = [targets.py6[PyInfo]])
+
     def check(actual):
         subject = py_info_subject(actual, meta = env.expect.meta)
 
@@ -162,20 +160,34 @@ def _test_py_info_builder_impl(env, targets):
             "tests/base_rules/py_info/trans.py",
             "tests/base_rules/py_info/py1-trans.py",
             "tests/base_rules/py_info/py2-trans.py",
+            "tests/base_rules/py_info/py3-trans.py",
+            "tests/base_rules/py_info/py4-trans.py",
+            "tests/base_rules/py_info/py5-trans.py",
+            "tests/base_rules/py_info/py6-trans.py",
         ])
         subject.imports().contains_exactly([
             "import-path",
             "py1import",
             "py2import",
+            "py3import",
+            "py4import",
+            "py5import",
+            "py6import",
         ])
         if hasattr(actual, "direct_pyc_files"):
             subject.direct_pyc_files().contains_exactly([
                 "tests/base_rules/py_info/direct.pyc",
+                "tests/base_rules/py_info/py4-direct.pyc",
+                "tests/base_rules/py_info/py6-direct.pyc",
             ])
             subject.transitive_pyc_files().contains_exactly([
                 "tests/base_rules/py_info/trans.pyc",
                 "tests/base_rules/py_info/py1-trans.pyc",
                 "tests/base_rules/py_info/py2-trans.pyc",
+                "tests/base_rules/py_info/py3-trans.pyc",
+                "tests/base_rules/py_info/py4-trans.pyc",
+                "tests/base_rules/py_info/py5-trans.pyc",
+                "tests/base_rules/py_info/py6-trans.pyc",
             ])
 
     check(builder.build())

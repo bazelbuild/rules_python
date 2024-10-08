@@ -13,7 +13,7 @@
 # limitations under the License.
 """Tests for construction of Python version matching config settings."""
 
-load("@//python:versions.bzl", "MINOR_MAPPING")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
@@ -167,7 +167,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//os:" + os,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 
@@ -178,7 +178,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//cpu:" + cpu,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 
@@ -198,7 +198,7 @@ def construct_config_settings_test_suite(name):  # buildifier: disable=function-
                 "@platforms//os:" + os,
             ],
             flag_values = {
-                "//python/config_settings:_python_version_major_minor": "3.11",
+                "//python/config_settings:python_version_major_minor": "3.11",
             },
         )
 

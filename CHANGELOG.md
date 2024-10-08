@@ -25,9 +25,15 @@ A brief description of the categories of changes:
 [x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
 
 ### Changed
-* Nothing yet
+* (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
+  (previously it defaulted to None).
 
 ### Fixed
+* (bzlmod) The `python.override(minor_mapping)` now merges the default and the
+  overridden versions ensuring that the resultant `minor_mapping` will always
+  have all of the python versions.
+* (bzlmod) The default value for the {obj}`--python_version` flag will now be
+  always set to the default python toolchain version value.
 * (bzlmod) correctly wire the {attr}`pip.parse.extra_pip_args` all the
   way to {obj}`whl_library`. What is more we will pass the `extra_pip_args` to
   {obj}`whl_library` for `sdist` distributions when using
@@ -38,6 +44,11 @@ A brief description of the categories of changes:
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
   compression to speed up development.
+* (toolchains): A public `//python/config_settings:python_version_major_minor` has
+  been exposed for users to be able to match on the `X.Y` version of a Python
+  interpreter.
+* (api) Added {obj}`merge_py_infos()` so user rules can merge and propagate
+  `PyInfo` without losing information.
 
 ### Removed
 * Nothing yet

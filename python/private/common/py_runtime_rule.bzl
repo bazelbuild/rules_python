@@ -228,6 +228,7 @@ runtime. For a platform runtime this attribute must not be set.
         ),
         "implementation_name": attr.string(
             doc = "The Python implementation name (`sys.implementation.name`)",
+            default = "cpython",
         ),
         "interpreter": attr.label(
             # We set `allow_files = True` to allow specifying executable

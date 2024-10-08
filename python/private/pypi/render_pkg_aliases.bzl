@@ -73,7 +73,6 @@ which has a "null" version value and will not match version constraints.
 def _render_whl_library_alias(
         *,
         name,
-        default_config_setting,
         aliases,
         target_name,
         **kwargs):
@@ -97,9 +96,6 @@ def _render_whl_library_alias(
     for alias in sorted(aliases, key = lambda x: x.version):
         actual = "@{repo}//:{name}".format(repo = alias.repo, name = target_name)
         selects.setdefault(actual, []).append(alias.config_setting)
-        if alias.config_setting == default_config_setting:
-            selects[actual].append("//conditions:default")
-            no_match_error = None
 
     return render.alias(
         name = name,
@@ -121,7 +117,7 @@ def _render_whl_library_alias(
         **kwargs
     )
 
-def _render_common_aliases(*, name, aliases, default_config_setting = None, group_name = None):
+def _render_common_aliases(*, name, aliases, group_name = None):
     lines = [
         """load("@bazel_skylib//lib:selects.bzl", "selects")""",
         """package(default_visibility = ["//visibility:public"])""",
@@ -131,9 +127,7 @@ def _render_common_aliases(*, name, aliases, default_config_setting = None, grou
     if aliases:
         config_settings = sorted([v.config_setting for v in aliases if v.config_setting])
 
-    if not config_settings or default_config_setting in config_settings:
-        pass
-    else:
+    if config_settings:
         error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE_V2.format(
             config_settings = render.indent(
                 "\n".join(config_settings),
@@ -145,10 +139,6 @@ def _render_common_aliases(*, name, aliases, default_config_setting = None, grou
             error_msg = error_msg,
         ))
 
-        # This is to simplify the code in _render_whl_library_alias and to ensure
-        # that we don't pass a 'default_version' that is not in 'versions'.
-        default_config_setting = None
-
     lines.append(
         render.alias(
             name = name,
@@ -159,7 +149,6 @@ def _render_common_aliases(*, name, aliases, default_config_setting = None, grou
         [
             _render_whl_library_alias(
                 name = name,
-                default_config_setting = default_config_setting,
                 aliases = aliases,
                 target_name = target_name,
                 visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
@@ -188,7 +177,7 @@ def _render_common_aliases(*, name, aliases, default_config_setting = None, grou
 
     return "\n\n".join(lines)
 
-def render_pkg_aliases(*, aliases, default_config_setting = None, requirement_cycles = None):
+def render_pkg_aliases(*, aliases, requirement_cycles = None):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -198,7 +187,6 @@ def render_pkg_aliases(*, aliases, default_config_setting = None, requirement_cy
     Args:
         aliases: dict, the keys are normalized distribution names and values are the
             whl_alias instances.
-        default_config_setting: the default to be used for the aliases.
         requirement_cycles: any package groups to also add.
 
     Returns:
@@ -227,7 +215,6 @@ def render_pkg_aliases(*, aliases, default_config_setting = None, requirement_cy
         "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
             name = normalize_name(name),
             aliases = pkg_aliases,
-            default_config_setting = default_config_setting,
             group_name = whl_group_mapping.get(normalize_name(name)),
         ).strip()
         for name, pkg_aliases in aliases.items()
@@ -278,13 +265,12 @@ def whl_alias(*, repo, version = None, config_setting = None, filename = None, t
         target_platforms = target_platforms,
     )
 
-def render_multiplatform_pkg_aliases(*, aliases, default_version = None, **kwargs):
+def render_multiplatform_pkg_aliases(*, aliases, **kwargs):
     """Render the multi-platform pkg aliases.
 
     Args:
         aliases: dict[str, list(whl_alias)] A list of aliases that will be
           transformed from ones having `filename` to ones having `config_setting`.
-        default_version: str, the default python version. Defaults to None.
         **kwargs: extra arguments passed to render_pkg_aliases.
 
     Returns:
@@ -302,7 +288,6 @@ def render_multiplatform_pkg_aliases(*, aliases, default_version = None, **kwarg
     config_setting_aliases = {
         pkg: multiplatform_whl_aliases(
             aliases = pkg_aliases,
-            default_version = default_version,
             glibc_versions = flag_versions.get("glibc_versions", []),
             muslc_versions = flag_versions.get("muslc_versions", []),
             osx_versions = flag_versions.get("osx_versions", []),
@@ -317,14 +302,13 @@ def render_multiplatform_pkg_aliases(*, aliases, default_version = None, **kwarg
     contents["_config/BUILD.bazel"] = _render_config_settings(**flag_versions)
     return contents
 
-def multiplatform_whl_aliases(*, aliases, default_version = None, **kwargs):
+def multiplatform_whl_aliases(*, aliases, **kwargs):
     """convert a list of aliases from filename to config_setting ones.
 
     Args:
         aliases: list(whl_alias): The aliases to process. Any aliases that have
             the filename set will be converted to a list of aliases, each with
             an appropriate config_setting value.
-        default_version: string | None, the default python version to use.
         **kwargs: Extra parameters passed to get_filename_config_settings.
 
     Returns:
@@ -344,7 +328,6 @@ def multiplatform_whl_aliases(*, aliases, default_version = None, **kwargs):
             filename = alias.filename,
             target_platforms = alias.target_platforms,
             python_version = alias.version,
-            python_default = default_version == alias.version,
             **kwargs
         )
 
@@ -511,8 +494,7 @@ def get_filename_config_settings(
         glibc_versions,
         muslc_versions,
         osx_versions,
-        python_version = "",
-        python_default = True):
+        python_version):
     """Get the filename config settings.
 
     Args:
@@ -522,7 +504,6 @@ def get_filename_config_settings(
         muslc_versions: list[tuple[int, int]], list of versions.
         osx_versions: list[tuple[int, int]], list of versions.
         python_version: the python version to generate the config_settings for.
-        python_default: if we should include the setting when python_version is not set.
 
     Returns:
         A tuple:
@@ -573,18 +554,9 @@ def get_filename_config_settings(
         prefixes = ["sdist"]
         suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
 
-    if python_default and python_version:
-        prefixes += ["cp{}_{}".format(python_version, p) for p in prefixes]
-    elif python_version:
-        prefixes = ["cp{}_{}".format(python_version, p) for p in prefixes]
-    elif python_default:
-        pass
-    else:
-        fail("BUG: got no python_version and it is not default")
-
     versioned = {
-        ":is_{}_{}".format(p, suffix): {
-            version: ":is_{}_{}".format(p, setting)
+        ":is_cp{}_{}_{}".format(python_version, p, suffix): {
+            version: ":is_cp{}_{}_{}".format(python_version, p, setting)
             for version, setting in versions.items()
         }
         for p in prefixes
@@ -592,9 +564,9 @@ def get_filename_config_settings(
     }
 
     if suffixes or versioned:
-        return [":is_{}_{}".format(p, s) for p in prefixes for s in suffixes], versioned
+        return [":is_cp{}_{}_{}".format(python_version, p, s) for p in prefixes for s in suffixes], versioned
     else:
-        return [":is_{}".format(p) for p in prefixes], setting_supported_versions
+        return [":is_cp{}_{}".format(python_version, p) for p in prefixes], setting_supported_versions
 
 def _whl_config_setting_suffixes(
         platform_tag,
