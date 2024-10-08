@@ -98,14 +98,16 @@ def py_library_impl(ctx, *, semantics):
             dependency_transitive_python_sources = deps_transitive_sources,
         )
 
-    return [
+    providers = [
         DefaultInfo(files = default_outputs, runfiles = runfiles),
         py_info,
-        builtins_py_info,
         create_instrumented_files_info(ctx),
         PyCcLinkParamsProvider(cc_info = cc_info),
         create_output_group_info(py_info.transitive_sources, extra_groups = {}),
     ]
+    if builtins_py_info:
+        providers.append(builtins_py_info)
+    return providers
 
 _DEFAULT_PY_LIBRARY_DOC = """
 A library of Python code that can be depended upon.

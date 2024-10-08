@@ -229,6 +229,9 @@ def _PyInfoBuilder_build(self):
     )
 
 def _PyInfoBuilder_build_builtin_py_info(self):
+    if BuiltinPyInfo == None:
+        return None
+
     return BuiltinPyInfo(
         has_py2_only_sources = self._has_py2_only_sources[0],
         has_py3_only_sources = self._has_py3_only_sources[0],

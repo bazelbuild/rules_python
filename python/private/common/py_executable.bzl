@@ -890,7 +890,8 @@ def _create_providers(
         )
 
     providers.append(py_info)
-    providers.append(builtin_py_info)
+    if builtin_py_info:
+        providers.append(builtin_py_info)
     providers.append(create_output_group_info(py_info.transitive_sources, output_groups))
 
     extra_providers = semantics.get_extra_providers(
