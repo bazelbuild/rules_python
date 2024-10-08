@@ -76,10 +76,6 @@ load("@rules_python//python:repositories.bzl", "py_repositories", "python_regist
 # Perform general setup
 py_repositories()
 
-load("@rules_python//python:repositories_deps.bzl", "py_repositories_deps")
-
-py_repositories_deps()
-
 # We now register a hermetic Python interpreter rather than relying on a system-installed interpreter.
 # This toolchain will allow bazel to download a specific python version, and use that version
 # for compilation.

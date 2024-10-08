@@ -7,10 +7,6 @@ load("@rules_python//python:repositories.bzl", "py_repositories", "python_regist
 
 py_repositories()
 
-load("@rules_python//python:repositories_deps.bzl", "py_repositories_deps")
-
-py_repositories_deps()
-
 python_register_toolchains(
     name = "python39",
     python_version = "3.9",

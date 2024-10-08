@@ -38,10 +38,6 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
-load("@rules_python//python:repositories_deps.bzl", "py_repositories_deps")
-
-py_repositories_deps()
-
 load("//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 # gazelle:repository_macro deps.bzl%go_deps
