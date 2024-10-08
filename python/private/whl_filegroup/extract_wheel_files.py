@@ -1,5 +1,6 @@
 """Extract files from a wheel's RECORD."""
 
+import csv
 import re
 import sys
 import zipfile
@@ -20,10 +21,7 @@ def get_record(whl_path: Path) -> WhlRecord:
     except ValueError:
         raise RuntimeError(f"{whl_path} doesn't contain exactly one .dist-info/RECORD")
     record_lines = zipf.read(record_file).decode().splitlines()
-    return (
-        line.split(",")[0]
-        for line in record_lines
-    )
+    return (row[0] for row in csv.reader(record_lines))
 
 
 def get_files(whl_record: WhlRecord, regex_pattern: str) -> list[str]:

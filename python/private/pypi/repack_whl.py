@@ -22,6 +22,7 @@ out of it and will remove all files that were written to the wheel.
 from __future__ import annotations
 
 import argparse
+import csv
 import difflib
 import logging
 import pathlib
@@ -65,8 +66,8 @@ def _files_to_pack(dir: pathlib.Path, want_record: str) -> list[pathlib.Path]:
     # First get existing files by using the RECORD file
     got_files = []
     got_distinfos = []
-    for line in want_record.splitlines():
-        rec, _, _ = line.partition(",")
+    for row in csv.reader(want_record.splitlines()):
+        rec = row[0]
         path = dir / rec
 
         if not path.exists():

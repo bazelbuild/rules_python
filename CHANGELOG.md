@@ -40,6 +40,8 @@ A brief description of the categories of changes:
   {attr}`pip.parse.experimental_index_url`. See
   [#2239](https://github.com/bazelbuild/rules_python/issues/2239).
 * (whl_filegroup): Provide per default also the `RECORD` file
+* (py_wheel): `RECORD` file entry elements are now quoted if necessary when a
+  wheel is created
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
