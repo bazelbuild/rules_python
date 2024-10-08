@@ -343,7 +343,7 @@ bzl_library(
     ],
     deps = [
         ":bazel_tools_bzl",
-        "@bazel_features//:features",
+        "@rules_python_internal//:rules_python_config_bzl",
     ],
 )
 

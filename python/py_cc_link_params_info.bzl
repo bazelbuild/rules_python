@@ -8,4 +8,3 @@ PyCcLinkParamsInfo = (
         config.enable_pystar or config.BuiltinPyCcLinkParamsProvider == None
     ) else config.BuiltinPyCcLinkParamsProvider
 )
-print(native.legacy_globals)
