@@ -154,18 +154,11 @@ def pip_compile(
         "visibility": visibility,
     }
 
-    # setuptools (the default python build tool) attempts to find user
-    # configuration in the user's home direcotory. This seems to work fine on
-    # linux and macOS, but fails on Windows, so we conditionally provide a fake
-    # USERPROFILE env variable to allow setuptools to proceed without finding
-    # user-provided configuration.
-    kwargs["env"] = select({
-        "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
-        "//conditions:default": {},
-    }) | kwargs.get("env", {})
+    env = kwargs.pop("env", {})
 
     py_binary(
         name = name + ".update",
+        env = env,
         **attrs
     )
 
@@ -174,6 +167,15 @@ def pip_compile(
     py_test(
         name = name + "_test",
         timeout = timeout,
-        # kwargs could contain test-specific attributes like size or timeout
+        # setuptools (the default python build tool) attempts to find user
+        # configuration in the user's home direcotory. This seems to work fine on
+        # linux and macOS, but fails on Windows, so we conditionally provide a fake
+        # USERPROFILE env variable to allow setuptools to proceed without finding
+        # user-provided configuration.
+        env = select({
+            "@@platforms//os:windows": {"USERPROFILE": "Z:\\FakeSetuptoolsHomeDirectoryHack"},
+            "//conditions:default": {},
+        }) | env,
+        # kwargs could contain test-specific attributes like size
         **dict(attrs, **kwargs)
     )

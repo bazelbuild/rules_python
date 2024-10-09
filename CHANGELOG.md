@@ -44,6 +44,9 @@ A brief description of the categories of changes:
   wheel is created
 * (whl_library) truncate progress messages from the repo rule to better handle
   case where a requirement has many `--hash=sha256:...` flags
+* (rules) `compile_pip_requirements` passes `env` to the `X.update` target (and
+  not only to the `X_test` target, a bug introduced in
+  [#1067](https://github.com/bazelbuild/rules_python/pull/1067)).
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
