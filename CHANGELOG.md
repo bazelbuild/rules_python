@@ -53,6 +53,16 @@ A brief description of the categories of changes:
   interpreter.
 * (api) Added {obj}`merge_py_infos()` so user rules can merge and propagate
   `PyInfo` without losing information.
+* (toolchains) New Python versions available: 3.13.0 using the [20241008] release.
+* (toolchains): Bump default toolchain versions to:
+    * `3.8 -> 3.8.20`
+    * `3.9 -> 3.9.20`
+    * `3.10 -> 3.10.15`
+    * `3.11 -> 3.11.10`
+    * `3.12 -> 3.12.7`
+[20241008]: https://github.com/indygreg/python-build-standalone/releases/tag/20241008
+* (coverage) Add support for python 3.13 and bump `coverage.py` to 7.6.1.
+
 
 ### Removed
 * Nothing yet

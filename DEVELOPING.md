@@ -9,6 +9,8 @@
 1. Bump the coverage dependencies using the script using:
    ```
    bazel run //tools/private/update_deps:update_coverage_deps <VERSION>
+   # for example:
+   # bazel run //tools/private/update_deps:update_coverage_deps 7.6.1
    ```
 
 ## Releasing

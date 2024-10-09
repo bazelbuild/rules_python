@@ -46,7 +46,7 @@ load("//python:repositories.bzl", "python_register_multi_toolchains")
 
 python_register_multi_toolchains(
     name = "python",
-    default_version = MINOR_MAPPING.values()[-2],
+    default_version = MINOR_MAPPING.values()[-3],  # Use 3.11.10
     # Integration tests verify each version, so register all of them.
     python_versions = PYTHON_VERSIONS,
 )
