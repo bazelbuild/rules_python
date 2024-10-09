@@ -15,7 +15,7 @@
 "pip module extensions for use with bzlmod."
 
 load("//python/private:auth.bzl", "AUTH_ATTRS")
-load("//python/private/pypi:extension.bzl", "override_tag", "pypi_attrs", "whl_mod_attrs", _pypi = "pypi")
+load(":extension.bzl", "override_tag", "pypi_attrs", "whl_mod_attrs", _pypi = "pypi")
 
 def _impl(module_ctx):
     _pypi(module_ctx)

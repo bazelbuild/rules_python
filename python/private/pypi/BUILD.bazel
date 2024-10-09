@@ -247,6 +247,7 @@ bzl_library(
     srcs = ["pypi.bzl"],
     deps = [
         ":extension_bzl",
+        "//python/private:auth_bzl",
     ],
 )
 

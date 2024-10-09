@@ -14,7 +14,7 @@
 
 "pip module extensions for use with bzlmod."
 
-load("//python/private/pypi:extension.bzl", "override_tag", "pypi", "pypi_attrs", "whl_mod_attrs")
+load(":extension.bzl", "override_tag", "pypi", "pypi_attrs", "whl_mod_attrs")
 
 def _parse_attrs():
     attrs = pypi_attrs()
