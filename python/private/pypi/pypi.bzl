@@ -93,7 +93,8 @@ find in case extra indexes are specified.
 
     # These attributes are not used:
     attrs.pop("download_only")
-    return attrs
+
+    return dict(sorted(attrs.items()))
 
 pypi = module_extension(
     doc = """\

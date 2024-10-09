@@ -580,6 +580,8 @@ code will be re-evaluated when any of files in the default changes.
         ),
     }, **ATTRS)
 
+    attrs.pop("use_hub_alias_dependencies")
+
     return attrs
 
 def whl_mod_attrs():

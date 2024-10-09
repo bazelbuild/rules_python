@@ -1231,7 +1231,7 @@
     },
     "@@rules_python~//python/extensions:pypi.bzl%pypi": {
       "general": {
-        "bzlTransitiveDigest": "gjDBRBtdPu3/gNd1RA9OVoepbF+RWxwusMAoCcNGWdo=",
+        "bzlTransitiveDigest": "Hg4EvWb0QJCp/mEt2E6S9KoFRgWuFOzd9NbSRoiCfBc=",
         "usagesDigest": "4hfh5XRjYFAMFpBvuqI8rKfFp/AizqyXIeBwZ9F2qJ0=",
         "recordedFileInputs": {
           "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
@@ -8342,7 +8342,7 @@
     },
     "@@rules_python~//python/private/pypi:pypi.bzl%pypi": {
       "general": {
-        "bzlTransitiveDigest": "ed89uX54ohvwLZq+8CuRXPh3MN1qtoOKGP8xUm4XwLk=",
+        "bzlTransitiveDigest": "OVK653dUjYsFOttX9k4AUdtiaguTpvbKlRRdvdcWEfA=",
         "usagesDigest": "++JvRlfZZOHAmYZ2eK5fK86wFICFrRIH3Gx/YkD1HUg=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",

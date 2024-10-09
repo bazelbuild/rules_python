@@ -30,7 +30,7 @@ def _parse_attrs():
             doc = "Ignored, please use `pypi.install` instead",
         ),
     })
-    return attrs
+    return dict(sorted(attrs.items()))
 
 pip = module_extension(
     doc = """\
