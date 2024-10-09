@@ -46,6 +46,8 @@ A brief description of the categories of changes:
 * (whl_filegroup): Provide per default also the `RECORD` file
 * (py_wheel): `RECORD` file entry elements are now quoted if necessary when a
   wheel is created
+* (whl_library) truncate progress messages from the repo rule to better handle
+  case where a requirement has many `--hash=sha256:...` flags
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling

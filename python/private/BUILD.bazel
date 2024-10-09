@@ -344,7 +344,10 @@ bzl_library(
     visibility = [
         "//:__subpackages__",
     ],
-    deps = [":bazel_tools_bzl"],
+    deps = [
+        ":bazel_tools_bzl",
+        "@rules_python_internal//:rules_python_config_bzl",
+    ],
 )
 
 bzl_library(

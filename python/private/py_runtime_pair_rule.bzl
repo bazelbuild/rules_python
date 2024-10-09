@@ -56,7 +56,7 @@ def _get_py_runtime_info(target):
     # py_binary (implemented in Java) performs a type check on the provider
     # value to verify it is an instance of the Java-implemented PyRuntimeInfo
     # class.
-    if IS_BAZEL_7_OR_HIGHER and PyRuntimeInfo in target:
+    if (IS_BAZEL_7_OR_HIGHER and PyRuntimeInfo in target) or BuiltinPyRuntimeInfo == None:
         return target[PyRuntimeInfo]
     else:
         return target[BuiltinPyRuntimeInfo]
@@ -70,13 +70,15 @@ def _is_py2_disabled(ctx):
         return False
     return ctx.fragments.py.disable_py2
 
+_MaybeBuiltinPyRuntimeInfo = [[BuiltinPyRuntimeInfo]] if BuiltinPyRuntimeInfo != None else []
+
 py_runtime_pair = rule(
     implementation = _py_runtime_pair_impl,
     attrs = {
         # The two runtimes are used by the py_binary at runtime, and so need to
         # be built for the target platform.
         "py2_runtime": attr.label(
-            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
+            providers = [[PyRuntimeInfo]] + _MaybeBuiltinPyRuntimeInfo,
             cfg = "target",
             doc = """\
 The runtime to use for Python 2 targets. Must have `python_version` set to
@@ -84,7 +86,7 @@ The runtime to use for Python 2 targets. Must have `python_version` set to
 """,
         ),
         "py3_runtime": attr.label(
-            providers = [[PyRuntimeInfo], [BuiltinPyRuntimeInfo]],
+            providers = [[PyRuntimeInfo]] + _MaybeBuiltinPyRuntimeInfo,
             cfg = "target",
             doc = """\
 The runtime to use for Python 3 targets. Must have `python_version` set to

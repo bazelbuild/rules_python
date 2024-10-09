@@ -7,11 +7,17 @@
 
 ::::{target} all
 
-A set of toolchains that invoke `python3` from the runtime environment.
+A set of toolchains that invoke `python3` from the runtime environment (i.e
+after building).
 
-Note that this toolchain provides no build-time information, which makes it of
-limited utility. This is because the invocation of `python3` is done when a
-program is run, not at build time.
+:::{note}
+These toolchains do not provide any build-time information, including but not
+limited to the Python version or C headers. As such, they cannot be used
+for e.g. precompiling, building Python C extension modules, or anything else
+that requires information about the Python runtime at build time. Under the
+hood, these simply create a fake "interpreter" that calls `python3` that
+built programs use to run themselves.
+:::
 
 This is only provided to aid migration off the builtin Bazel toolchain 
 (`@bazel_tools//python:autodetecting_toolchain`), and is largely only applicable
