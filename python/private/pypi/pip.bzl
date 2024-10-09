@@ -21,13 +21,13 @@ def _parse_attrs():
     attrs.update({
         # TODO @aignas 2024-10-08: to be removed in 1.0.0
         "experimental_extra_index_urls": attr.string_list(
-            doc = "Ignored, please use `pypi.install` instead",
+            doc = "Ignored, please use {bzl:obj}`pypi.install` instead",
         ),
         "experimental_index_url": attr.string(
-            doc = "Ignored, please use `pypi.install` instead",
+            doc = "Ignored, please use {bzl:obj}`pypi.install` instead",
         ),
         "experimental_index_url_overrides": attr.string_dict(
-            doc = "Ignored, please use `pypi.install` instead",
+            doc = "Ignored, please use {bzl:obj}`pypi.install` instead",
         ),
     })
     return dict(sorted(attrs.items()))
@@ -43,7 +43,7 @@ We are building a next generation replacement for this extension which:
 * Setup config settings based on whl filenames so that everything still works
   when host platform is not the same as the target platform.
 
-If you need any of the features above, consider using `pypi.install` instead.
+If you need any of the features above, consider using {bzl:obj}`pypi.install` instead.
 :::
 
 :::{topic} pip.parse
