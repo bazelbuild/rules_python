@@ -14,8 +14,8 @@
 """Implementation of PyInfo provider and PyInfo-specific utilities."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":builders.bzl", "builders")
+load(":reexports.bzl", "BuiltinPyInfo")
 load(":util.bzl", "define_bazel_6_provider")
 
 def _check_arg_type(name, required_type, value):

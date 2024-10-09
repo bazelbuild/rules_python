@@ -19,7 +19,7 @@ unnecessary files when all that are needed are flag definitions.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:enum.bzl", "enum")
+load(":enum.bzl", "enum")
 
 def _bootstrap_impl_flag_get_value(ctx):
     return ctx.attr._bootstrap_impl_flag[BuildSettingInfo].value

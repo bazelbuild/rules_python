@@ -13,10 +13,10 @@
 # limitations under the License.
 """Various things common to Bazel and Google rule implementations."""
 
-load("//python/private:py_info.bzl", "PyInfo", "PyInfoBuilder")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":cc_helper.bzl", "cc_helper")
+load(":py_info.bzl", "PyInfo", "PyInfoBuilder")
 load(":py_internal.bzl", "py_internal")
+load(":reexports.bzl", "BuiltinPyInfo")
 load(
     ":semantics.bzl",
     "NATIVE_RULES_MIGRATION_FIX_CMD",
@@ -173,7 +173,7 @@ def create_cc_details_struct(
             runfiles.
         cc_toolchain: CcToolchain that should be used when building.
         feature_config: struct from cc_configure_features(); see
-            //python/private/common:py_executable.bzl%cc_configure_features.
+            //python/private:py_executable.bzl%cc_configure_features.
         **kwargs: Additional keys/values to set in the returned struct. This is to
             facilitate extensions with less patching. Any added fields should
             pick names that are unlikely to collide if the CcDetails API has

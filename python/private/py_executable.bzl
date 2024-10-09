@@ -17,16 +17,6 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "cc_common")
-load("//python/private:builders.bzl", "builders")
-load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
-load("//python/private:py_executable_info.bzl", "PyExecutableInfo")
-load("//python/private:py_info.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
-load(
-    "//python/private:toolchain_types.bzl",
-    "EXEC_TOOLS_TOOLCHAIN_TYPE",
-    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
-)
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -37,6 +27,7 @@ load(
     "create_srcs_attr",
     "create_srcs_version_attr",
 )
+load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
 load(
     ":common.bzl",
@@ -51,18 +42,24 @@ load(
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(
-    ":providers.bzl",
-    "PyCcLinkParamsProvider",
-    "PyRuntimeInfo",
-)
+load(":flags.bzl", "PrecompileAddToRunfilesFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
+load(":py_executable_info.bzl", "PyExecutableInfo")
+load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_runtime_info.bzl", "PyRuntimeInfo")
+load(":reexports.bzl", "BuiltinPyRuntimeInfo")
 load(
     ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
+)
+load(
+    ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
 
 _py_builtins = py_internal
@@ -806,7 +803,7 @@ def _create_providers(
         runfiles_details: runfiles that will become the default  and data runfiles.
         imports: depset of strings; the import paths to propagate
         cc_info: optional CcInfo; Linking information to propagate as
-            PyCcLinkParamsProvider. Note that only the linking information
+            PyCcLinkParamsInfo. Note that only the linking information
             is propagated, not the whole CcInfo.
         inherited_environment: list of strings; Environment variable names
             that should be inherited from the environment the executuble
@@ -867,11 +864,11 @@ def _create_providers(
                 bootstrap_template = py_runtime_info.bootstrap_template,
             ))
 
-    # TODO(b/163083591): Remove the PyCcLinkParamsProvider once binaries-in-deps
+    # TODO(b/163083591): Remove the PyCcLinkParamsInfo once binaries-in-deps
     # are cleaned up.
     if cc_info:
         providers.append(
-            PyCcLinkParamsProvider(cc_info = cc_info),
+            PyCcLinkParamsInfo(cc_info = cc_info),
         )
 
     py_info, deps_transitive_sources, builtin_py_info = create_py_info(
