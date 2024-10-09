@@ -170,14 +170,6 @@ pypi.install(
             "sphinxcontrib-serializinghtml",
         ],
     },
-    # You can use one of the values below to specify the target platform
-    # to generate the dependency graph for.
-    experimental_target_platforms = [
-        # Specifying the target platforms explicitly
-        "cp39_linux_x86_64",
-        "cp39_linux_*",
-        "cp39_*",
-    ],
     hub_name = "pip",
     # Use the bazel downloader to query the simple API for downloading the sources
     # Note, that we can use envsubst for this value.
@@ -203,18 +195,6 @@ pypi.install(
             "sphinxcontrib-serializinghtml",
         ],
     },
-    # You can use one of the values below to specify the target platform
-    # to generate the dependency graph for.
-    experimental_target_platforms = [
-        # Using host python version
-        "linux_*",
-        "osx_*",
-        "windows_*",
-        # Or specifying an exact platform
-        "linux_x86_64",
-        # Or the following to get the `host` platform only
-        "host",
-    ],
     hub_name = "pip",
     python_version = "3.10",
     # The requirements files for each platform that we want to support.

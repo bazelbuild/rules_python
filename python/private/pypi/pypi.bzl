@@ -92,7 +92,13 @@ find in case extra indexes are specified.
     })
 
     # These attributes are not used:
-    attrs.pop("download_only")
+    for flag in [
+        # This flag is irrelevant for this extension
+        "download_only",
+        # This flag is implicitly determined from wheel filenames
+        "experimental_target_platforms",
+    ]:
+        attrs.pop(flag)
 
     return dict(sorted(attrs.items()))
 

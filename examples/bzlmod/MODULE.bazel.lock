@@ -1231,8 +1231,8 @@
     },
     "@@rules_python~//python/extensions:pypi.bzl%pypi": {
       "general": {
-        "bzlTransitiveDigest": "1gEb0Og4vlmboq5RG8aQCVK5NY2s/oDeloqRGmoiSLY=",
-        "usagesDigest": "4hfh5XRjYFAMFpBvuqI8rKfFp/AizqyXIeBwZ9F2qJ0=",
+        "bzlTransitiveDigest": "eTBK10VOlUTs8Q4WdpRGDZy4IY1L5HMxXIS7JK7eZ1g=",
+        "usagesDigest": "usLdcwexti6VXAeiB9/ge3QVniULmG9/NPxucvoBgOs=",
         "recordedFileInputs": {
           "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
           "@@//requirements_lock_3_10.txt": "5e7083982a7e60f34998579a0ae83b520d46ab8f2552cc51337217f024e6def5",
@@ -8342,7 +8342,7 @@
     },
     "@@rules_python~//python/private/pypi:pypi.bzl%pypi": {
       "general": {
-        "bzlTransitiveDigest": "sEe7o1SO9I+ZC0/SnCumv2TCwdALNCcxTcMg57ET8po=",
+        "bzlTransitiveDigest": "ZZ6jQSx9lFvBLlBmql2/LU2QZ6B1VHG9NUCLxHz6C0A=",
         "usagesDigest": "++JvRlfZZOHAmYZ2eK5fK86wFICFrRIH3Gx/YkD1HUg=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
