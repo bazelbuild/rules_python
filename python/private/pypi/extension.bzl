@@ -16,7 +16,6 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "INTERPRETER_LABELS")
-load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:semver.bzl", "semver")
@@ -86,7 +85,14 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
+def _create_whl_repos(
+        module_ctx,
+        pip_attr,
+        whl_map,
+        whl_overrides,
+        group_map,
+        simpleapi_cache,
+        exposed_packages):
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -151,9 +157,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     get_index_urls = None
     if getattr(pip_attr, "index_url", None):
-        if pip_attr.download_only:
-            fail("Currently unsupported to use `download_only` and `index_url`")
-
         get_index_urls = lambda ctx, distributions: simpleapi_download(
             ctx,
             attr = struct(
@@ -229,7 +232,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
             annotation = annotation,
-            download_only = pip_attr.download_only,
+            download_only = getattr(pip_attr, "download_only", None),
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
             envsubst = pip_attr.envsubst,
@@ -284,9 +287,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                         # need to pass the extra args there.
                         pass
 
-                    # This is no-op because pip is not used to download the wheel.
-                    whl_library_args.pop("download_only", None)
-
                     repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
                     whl_library_args["requirement"] = requirement.srcs.requirement
                     whl_library_args["urls"] = [distribution.url]
@@ -318,7 +318,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
         requirement = select_requirement(
             requirements,
-            platform = None if pip_attr.download_only else repository_platform,
+            platform = None if getattr(pip_attr, "download_only", None) else repository_platform,
         )
         if not requirement:
             # Sometimes the package is not present for host platform if there
@@ -553,23 +553,6 @@ hubs can be created, and each program can use its respective hub's targets.
 Targets from different hubs should not be used together.
 """,
         ),
-        "parallel_download": attr.bool(
-            doc = """\
-The flag allows to make use of parallel downloading feature in bazel 7.1 and above
-when the bazel downloader is used. This is by default enabled as it improves the
-performance by a lot, but in case the queries to the simple API are very expensive
-or when debugging authentication issues one may want to disable this feature.
-
-NOTE, This will download (potentially duplicate) data for multiple packages if
-there is more than one index available, but in general this should be negligible
-because the simple API calls are very cheap and the user should not notice any
-extra overhead.
-
-If we are in synchronous mode, then we will use the first result that we
-find in case extra indexes are specified.
-""",
-            default = True,
-        ),
         "python_version": attr.string(
             mandatory = True,
             doc = """
@@ -596,7 +579,6 @@ code will be re-evaluated when any of files in the default changes.
 """,
         ),
     }, **ATTRS)
-    attrs.update(AUTH_ATTRS)
 
     return attrs
 

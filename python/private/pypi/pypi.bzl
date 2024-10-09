@@ -14,6 +14,7 @@
 
 "pip module extensions for use with bzlmod."
 
+load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private/pypi:extension.bzl", "override_tag", "pypi_attrs", "whl_mod_attrs", _pypi = "pypi")
 
 def _impl(module_ctx):
@@ -25,6 +26,7 @@ def _impl(module_ctx):
 
 def _install_attrs():
     attrs = pypi_attrs()
+    attrs.update(AUTH_ATTRS)
     attrs.update({
         "extra_index_urls": attr.string_list(
             doc = """\
@@ -70,7 +72,27 @@ The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
         ),
+        "parallel_download": attr.bool(
+            doc = """\
+The flag allows to make use of parallel downloading feature in bazel 7.1 and above
+when the bazel downloader is used. This is by default enabled as it improves the
+performance by a lot, but in case the queries to the simple API are very expensive
+or when debugging authentication issues one may want to disable this feature.
+
+NOTE, This will download (potentially duplicate) data for multiple packages if
+there is more than one index available, but in general this should be negligible
+because the simple API calls are very cheap and the user should not notice any
+extra overhead.
+
+If we are in synchronous mode, then we will use the first result that we
+find in case extra indexes are specified.
+""",
+            default = True,
+        ),
     })
+
+    # These attributes are not used:
+    attrs.pop("download_only")
     return attrs
 
 pypi = module_extension(
