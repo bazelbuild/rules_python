@@ -57,7 +57,6 @@ A brief description of the categories of changes:
   [#1067](https://github.com/bazelbuild/rules_python/pull/1067)).
 * (precompiling) The {obj}`pyc_collection` attribute now correctly
   enables (or disables) using pyc files from targets transitively
->>>>>>> 607a9c3c (wip: fix pyc_collection bug)
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
