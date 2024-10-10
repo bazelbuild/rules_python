@@ -127,11 +127,11 @@ def _python_repository_impl(rctx):
         for patch in patches:
             rctx.patch(patch, strip = rctx.attr.patch_strip)
 
+    ft_postfix = "t" if free_threading else ""
     # Write distutils.cfg to the Python installation.
     if "windows" in platform:
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
-        ft_postfix = "t" if free_threading else ""
         distutils_path = "lib/python{}{}/distutils/distutils.cfg".format(python_short_version, ft_postfix)
     if rctx.attr.distutils:
         rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
@@ -145,7 +145,7 @@ def _python_repository_impl(rctx):
         # dyld lookup errors. To fix, set the full path to the dylib as
         # it appears in the Bazel workspace as its LC_ID_DYLIB using
         # the `install_name_tool` bundled with macOS.
-        dylib = "libpython{}.dylib".format(python_short_version)
+        dylib = "libpython{}{}.dylib".format(python_short_version, ft_postfix)
         repo_utils.execute_checked(
             rctx,
             op = "python_repository.FixUpDyldIdPath",

@@ -43,7 +43,7 @@ py_exec_tools_toolchain = rule(
 Provides a toolchain for build time tools.
 
 This provides `ToolchainInfo` with the following attributes:
-* `exec_tools`: {type}`PyExecToolsInfo` 
+* `exec_tools`: {type}`PyExecToolsInfo`
 * `toolchain_label`: {type}`Label` _only present when `--visibile_for_testing=True`
   for internal testing_. The rule's label; this allows identifying what toolchain
   implmentation was selected for testing purposes.

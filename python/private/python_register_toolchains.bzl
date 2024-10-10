@@ -109,35 +109,37 @@ def python_register_toolchains(
         if not sha256:
             continue
 
+        build_option = tool_versions[python_version].get("build_option", None)
         loaded_platforms.append(platform)
-        (release_filename, urls, strip_prefix, patches, patch_strip) = get_release_info(platform, python_version, base_url, tool_versions)
+        (release_filename, urls, strip_prefix, patches, patch_strip, free_threading) = get_release_info(
+            platform, python_version, base_url, tool_versions, build_option=build_option
+        )
 
+        build_opt_str = ("_" + build_option.replace("+", "-")) if build_option else ""
+        name_with_build_opt = "{name}{build_opt}".format(
+            name = name,
+            build_opt = build_opt_str
+        )
         # allow passing in a tool version
         coverage_tool = None
         coverage_tool = tool_versions[python_version].get("coverage_tool", {}).get(platform, None)
         if register_coverage_tool and coverage_tool == None:
             coverage_tool = coverage_dep(
                 name = "{name}_{platform}_coverage".format(
-                    name = name,
+                    name = name_with_build_opt,
                     platform = platform,
                 ),
                 python_version = python_version,
                 platform = platform,
                 visibility = ["@{name}_{platform}//:__subpackages__".format(
-                    name = name,
+                    name = name_with_build_opt,
                     platform = platform,
                 )],
             )
 
-        flag_values = tool_versions[python_version].get("flag_values", None)
-        free_threading_label = "@rules_python//python/config_settings:free_threading"
-        free_threading = False
-        if flag_values:
-            free_threading = flag_values.get(free_threading_label, False) == "yes"
-        suffix = tool_versions[python_version].get("suffix", "")
         python_repository(
             name = "{name}_{platform}".format(
-                name = name,
+                name = name_with_build_opt,
                 platform = platform,
             ),
             sha256 = sha256,
@@ -166,12 +168,12 @@ def python_register_toolchains(
                 platform = platform,
             ))
 
-    host_toolchain(name = name + "_host")
+    host_toolchain(name = name_with_build_opt + "_host")
 
     toolchain_aliases(
         name = name,
         python_version = python_version,
-        user_repository_name = name,
+        user_repository_name = name_with_build_opt,
         platforms = loaded_platforms,
     )
 
@@ -183,5 +185,5 @@ def python_register_toolchains(
         name = toolchain_repo_name,
         python_version = python_version,
         set_python_version_constraint = set_python_version_constraint,
-        user_repository_name = name,
+        user_repository_name = name_with_build_opt,
     )

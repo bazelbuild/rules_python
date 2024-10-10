@@ -703,7 +703,9 @@ PLATFORMS = {
     ),
 }
 
-def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
+def get_release_info(
+    platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS, build_option = None
+):
     """Resolve the release URL for the requested interpreter version
 
     Args:
@@ -711,12 +713,18 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         python_version: The version of the interpreter to get
         base_url: The URL to prepend to the 'url' attr in the tool_versions dict
         tool_versions: A dict listing the interpreter versions, their SHAs and URL
+        build_option: Python build option, default: "install_only"
 
     Returns:
-        A tuple of (filename, url, archive strip prefix, patches, patch_strip)
+        A tuple of (filename, url, archive strip prefix, patches, patch_strip, free_threading)
     """
 
     url = tool_versions[python_version]["url"]
+    if not build_option:
+        build_option = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only"
+        free_threading = False
+    else:
+        free_threading = True if build_option.startswith("freethreaded") else False
 
     if type(url) == type({}):
         url = url[platform]
@@ -734,7 +742,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         release_filename = u.format(
             platform = platform,
             python_version = python_version,
-            build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
+            build = build_option,
         )
         if "://" in release_filename:  # is absolute url?
             rendered_urls.append(release_filename)
@@ -757,7 +765,7 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
         else:
             patch_strip = None
 
-    return (release_filename, rendered_urls, strip_prefix, patches, patch_strip)
+    return (release_filename, rendered_urls, strip_prefix, patches, patch_strip, free_threading)
 
 def print_toolchains_checksums(name):
     native.genrule(
