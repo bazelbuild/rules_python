@@ -59,4 +59,11 @@ def py_repositories():
         sha256 = "d9bdd3ec66b6871456ec9c965809f43a0901e692d754885e89293807762d3d80",
         strip_prefix = "rules_cc-0.0.13",
     )
+    # Needed by rules_cc, triggerred by @rules_java_prebuilt in Bazel by using @rules_cc//cc:defs.bzl
+    http_archive(
+        name = "protobuf",
+        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
+        strip_prefix = "protobuf-27.0",
+        url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
+    )
     pypi_deps()
