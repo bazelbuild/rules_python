@@ -60,6 +60,8 @@ A brief description of the categories of changes:
   ([#1675](https://github.com/bazelbuild/rules_python/issues/1675)).
 * (precompiling) The {obj}`pyc_collection` attribute now correctly
   enables (or disables) using pyc files from targets transitively
+* (pip) Skip patching wheels not matching `pip.override`'s `file`
+  ([#2294](https://github.com/bazelbuild/rules_python/pull/2294)).
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling

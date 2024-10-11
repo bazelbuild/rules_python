@@ -60,6 +60,9 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
     if not rctx.delete(whl_file_zip):
         fail("Failed to remove the symlink after extracting")
 
+    if not patches:
+        fail("Trying to patch wheel without any patches")
+
     for patch_file, patch_strip in patches.items():
         rctx.patch(patch_file, strip = patch_strip)
 
