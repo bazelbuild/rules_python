@@ -29,6 +29,26 @@ load(
 
 _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", None)
 
+# Due to how the common exec_properties attribute works, rules must add exec
+# groups even if they don't actually use them. This is due to two interactions:
+# 1. Rules give an error if users pass an unsupported exec group.
+# 2. exec_properties is configurable, so macro-code can't always filter out
+#    exec group names that aren't supported by the rule.
+# The net effect is, if a user passes exec_properties to a macro, and the macro
+# invokes two rules, the macro can't always ensure each rule is only passed
+# valid exec groups, and is thus liable to cause an error.
+#
+# NOTE: These are no-op/empty exec groups. If a rule *does* support an exec
+# group and needs custom settings, it should merge this dict with one that
+# overrides the supported key.
+REQUIRED_EXEC_GROUPS = {
+    # py_binary may invoke C++ linking, or py rules may be used in combination
+    # with cc rules (e.g. within the same macro), so support that exec group.
+    # This exec group is defined by rules_cc for the cc rules.
+    "cpp_link": exec_group(),
+    "py_precompile": exec_group(),
+}
+
 _STAMP_VALUES = [-1, 0, 1]
 
 def _precompile_attr_get_effective_value(ctx):
@@ -50,7 +70,6 @@ def _precompile_attr_get_effective_value(ctx):
     if precompile not in (
         PrecompileAttr.ENABLED,
         PrecompileAttr.DISABLED,
-        PrecompileAttr.IF_GENERATED_SOURCE,
     ):
         fail("Unexpected final precompile value: {}".format(repr(precompile)))
 
@@ -60,14 +79,10 @@ def _precompile_attr_get_effective_value(ctx):
 PrecompileAttr = enum(
     # Determine the effective value from --precompile
     INHERIT = "inherit",
-    # Compile Python source files at build time. Note that
-    # --precompile_add_to_runfiles affects how the compiled files are included
-    # into a downstream binary.
+    # Compile Python source files at build time.
     ENABLED = "enabled",
     # Don't compile Python source files at build time.
     DISABLED = "disabled",
-    # Compile Python source files, but only if they're a generated file.
-    IF_GENERATED_SOURCE = "if_generated_source",
     get_effective_value = _precompile_attr_get_effective_value,
 )
 
@@ -90,7 +105,6 @@ def _precompile_source_retention_get_effective_value(ctx):
     if attr_value not in (
         PrecompileSourceRetentionAttr.KEEP_SOURCE,
         PrecompileSourceRetentionAttr.OMIT_SOURCE,
-        PrecompileSourceRetentionAttr.OMIT_IF_GENERATED_SOURCE,
     ):
         fail("Unexpected final precompile_source_retention value: {}".format(repr(attr_value)))
     return attr_value
@@ -100,14 +114,17 @@ PrecompileSourceRetentionAttr = enum(
     INHERIT = "inherit",
     KEEP_SOURCE = "keep_source",
     OMIT_SOURCE = "omit_source",
-    OMIT_IF_GENERATED_SOURCE = "omit_if_generated_source",
     get_effective_value = _precompile_source_retention_get_effective_value,
 )
 
 def _pyc_collection_attr_is_pyc_collection_enabled(ctx):
     pyc_collection = ctx.attr.pyc_collection
     if pyc_collection == PycCollectionAttr.INHERIT:
-        pyc_collection = ctx.attr._pyc_collection_flag[BuildSettingInfo].value
+        precompile_flag = PrecompileFlag.get_effective_value(ctx)
+        if precompile_flag in (PrecompileFlag.ENABLED, PrecompileFlag.FORCE_ENABLED):
+            pyc_collection = PycCollectionAttr.INCLUDE_PYC
+        else:
+            pyc_collection = PycCollectionAttr.DISABLED
 
     if pyc_collection not in (PycCollectionAttr.INCLUDE_PYC, PycCollectionAttr.DISABLED):
         fail("Unexpected final pyc_collection value: {}".format(repr(pyc_collection)))
@@ -283,13 +300,9 @@ Whether py source files **for this target** should be precompiled.
 
 Values:
 
-* `inherit`: Determine the value from the {flag}`--precompile` flag.
-* `enabled`: Compile Python source files at build time. Note that
-  --precompile_add_to_runfiles affects how the compiled files are included into
-  a downstream binary.
+* `inherit`: Allow the downstream binary decide if precompiled files are used.
+* `enabled`: Compile Python source files at build time.
 * `disabled`: Don't compile Python source files at build time.
-* `if_generated_source`: Compile Python source files, but only if they're a
-  generated file.
 
 :::{seealso}
 
@@ -344,8 +357,6 @@ in the resulting output or not. Valid values are:
 * `inherit`: Inherit the value from the {flag}`--precompile_source_retention` flag.
 * `keep_source`: Include the original Python source.
 * `omit_source`: Don't include the original py source.
-* `omit_if_generated_source`: Keep the original source if it's a regular source
-  file, but omit it if it's a generated file.
 """,
         ),
         # Required attribute, but details vary by rule.
@@ -357,10 +368,6 @@ in the resulting output or not. Valid values are:
         # Required attribute, but the details vary by rule.
         # Use create_srcs_version_attr to create one.
         "srcs_version": None,
-        "_precompile_add_to_runfiles_flag": attr.label(
-            default = "//python/config_settings:precompile_add_to_runfiles",
-            providers = [BuildSettingInfo],
-        ),
         "_precompile_flag": attr.label(
             default = "//python/config_settings:precompile",
             providers = [BuildSettingInfo],

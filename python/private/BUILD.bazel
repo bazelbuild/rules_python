@@ -297,6 +297,10 @@ bzl_library(
     name = "py_package_bzl",
     srcs = ["py_package.bzl"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        ":builders_bzl",
+        ":py_info_bzl",
+    ],
 )
 
 bzl_library(
