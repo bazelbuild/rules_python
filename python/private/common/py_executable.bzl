@@ -16,7 +16,7 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc:defs.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("//python/private:builders.bzl", "builders")
 load("//python/private:flags.bzl", "PrecompileAddToRunfilesFlag")
 load("//python/private:py_executable_info.bzl", "PyExecutableInfo")

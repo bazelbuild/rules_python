@@ -14,7 +14,7 @@
 
 """Tests for current_py_cc_libs."""
 
-load("@rules_cc//cc:defs.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("//tests/support:cc_info_subject.bzl", "cc_info_subject")
