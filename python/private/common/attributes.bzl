@@ -44,6 +44,7 @@ _PackageSpecificationInfo = getattr(py_internal, "PackageSpecificationInfo", Non
 REQUIRED_EXEC_GROUPS = {
     # py_binary may invoke C++ linking, or py rules may be used in combination
     # with cc rules (e.g. within the same macro), so support that exec group.
+    # This exec group is defined by rules_cc for the cc rules.
     "cpp_link": exec_group(),
     "py_precompile": exec_group(),
 }
