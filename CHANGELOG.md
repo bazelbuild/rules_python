@@ -77,6 +77,8 @@ A brief description of the categories of changes:
     * `3.11 -> 3.11.10`
     * `3.12 -> 3.12.7`
 * (coverage) Add support for python 3.13 and bump `coverage.py` to 7.6.1.
+* (bzlmod) Add support for `download_only` flag to disable usage of `sdists`
+  when {bzl:attr}`pip.parse.experimental_index_url` is set.
 * (api) PyInfo fields: {obj}`PyInfo.transitive_implicit_pyc_files`,
   {obj}`PyInfo.transitive_implicit_pyc_source_files`.
 

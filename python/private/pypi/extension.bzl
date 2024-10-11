@@ -151,9 +151,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     get_index_urls = None
     if pip_attr.experimental_index_url:
-        if pip_attr.download_only:
-            fail("Currently unsupported to use `download_only` and `experimental_index_url`")
-
         get_index_urls = lambda ctx, distributions: simpleapi_download(
             ctx,
             attr = struct(
@@ -263,11 +260,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
             is_exposed = False
             for requirement in requirements:
                 is_exposed = is_exposed or requirement.is_exposed
-                for distribution in requirement.whls + [requirement.sdist]:
-                    if not distribution:
-                        # sdist may be None
-                        continue
+                dists = requirement.whls
+                if not pip_attr.download_only and requirement.sdist:
+                    dists = dists + [requirement.sdist]
 
+                for distribution in dists:
                     found_something = True
                     is_hub_reproducible = False
 
@@ -564,6 +561,11 @@ In the future this could be defaulted to `https://pypi.org` when this feature be
 stable.
 
 This is equivalent to `--index-url` `pip` option.
+
+:::{versionchanged} 0.37.0
+If {attr}`download_only` is set, then `sdist` archives will be discarded and `pip.parse` will
+operate in wheel-only mode.
+:::
 """,
         ),
         "experimental_index_url_overrides": attr.string_dict(
