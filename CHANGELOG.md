@@ -27,6 +27,10 @@ A brief description of the categories of changes:
 ### Changed
 * (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
   (previously it defaulted to None).
+* (bzlmod) **BREAKING** The `experimental_index_url` feature has been removed
+  from `pip.parse` and a new extension (`pypi.install`) has been created in
+  order to ensure that `MODULE.bazel.lock` remains working for others.
+  Fixes [#2268](https://github.com/bazelbuild/rules_python/issues/2268).
 
 ### Fixed
 * (bzlmod) The `python.override(minor_mapping)` now merges the default and the

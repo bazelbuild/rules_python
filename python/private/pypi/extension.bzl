@@ -16,7 +16,6 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("@pythons_hub//:interpreters.bzl", "INTERPRETER_LABELS")
-load("//python/private:auth.bzl", "AUTH_ATTRS")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:repo_utils.bzl", "repo_utils")
 load("//python/private:semver.bzl", "semver")
@@ -86,7 +85,14 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
+def _create_whl_repos(
+        module_ctx,
+        pip_attr,
+        whl_map,
+        whl_overrides,
+        group_map,
+        simpleapi_cache,
+        exposed_packages):
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -150,16 +156,13 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
     # Create a new wheel library for each of the different whls
 
     get_index_urls = None
-    if pip_attr.experimental_index_url:
-        if pip_attr.download_only:
-            fail("Currently unsupported to use `download_only` and `experimental_index_url`")
-
+    if getattr(pip_attr, "index_url", None):
         get_index_urls = lambda ctx, distributions: simpleapi_download(
             ctx,
             attr = struct(
-                index_url = pip_attr.experimental_index_url,
-                extra_index_urls = pip_attr.experimental_extra_index_urls or [],
-                index_url_overrides = pip_attr.experimental_index_url_overrides or {},
+                index_url = pip_attr.index_url,
+                extra_index_urls = pip_attr.extra_index_urls or [],
+                index_url_overrides = pip_attr.index_url_overrides or {},
                 sources = distributions,
                 envsubst = pip_attr.envsubst,
                 # Auth related info
@@ -229,11 +232,11 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
             annotation = annotation,
-            download_only = pip_attr.download_only,
+            download_only = getattr(pip_attr, "download_only", None),
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
             envsubst = pip_attr.envsubst,
-            experimental_target_platforms = pip_attr.experimental_target_platforms,
+            experimental_target_platforms = getattr(pip_attr, "experimental_target_platforms", None),
             group_deps = group_deps,
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
@@ -284,9 +287,6 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                         # need to pass the extra args there.
                         pass
 
-                    # This is no-op because pip is not used to download the wheel.
-                    whl_library_args.pop("download_only", None)
-
                     repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
                     whl_library_args["requirement"] = requirement.srcs.requirement
                     whl_library_args["urls"] = [distribution.url]
@@ -318,7 +318,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
         requirement = select_requirement(
             requirements,
-            platform = None if pip_attr.download_only else repository_platform,
+            platform = None if getattr(pip_attr, "download_only", None) else repository_platform,
         )
         if not requirement:
             # Sometimes the package is not present for host platform if there
@@ -348,7 +348,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     return is_hub_reproducible
 
-def _pip_impl(module_ctx):
+def pypi(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
     This implementation iterates through all of the `pip.parse` calls and creates
@@ -412,6 +412,9 @@ def _pip_impl(module_ctx):
 
     Args:
         module_ctx: module contents
+
+    Returns:
+        Extension metadata
     """
 
     # Build all of the wheel modifications if the tag class is called.
@@ -461,7 +464,7 @@ def _pip_impl(module_ctx):
     is_extension_reproducible = True
 
     for mod in module_ctx.modules:
-        for pip_attr in mod.tags.parse:
+        for pip_attr in (getattr(mod.tags, "parse", None) or getattr(mod.tags, "install")):
             hub_name = pip_attr.hub_name
             if hub_name not in pip_hub_map:
                 pip_hub_map[pip_attr.hub_name] = struct(
@@ -511,78 +514,23 @@ def _pip_impl(module_ctx):
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
-        # If we are not using the `experimental_index_url feature, the extension is fully
+        # If we are not using the `index_url feature, the extension is fully
         # deterministic and we don't need to create a lock entry for it.
         #
-        # In order to be able to dogfood the `experimental_index_url` feature before it gets
+        # In order to be able to dogfood the `index_url` feature before it gets
         # stabilized, we have created the `_pip_non_reproducible` function, that will result
         # in extra entries in the lock file.
         return module_ctx.extension_metadata(reproducible = is_extension_reproducible)
     else:
         return None
 
-def _pip_non_reproducible(module_ctx):
-    _pip_impl(module_ctx)
-
-    # We default to calling the PyPI index and that will go into the
-    # MODULE.bazel.lock file, hence return nothing here.
-    return None
-
-def _pip_parse_ext_attrs(**kwargs):
+def pypi_attrs():
     """Get the attributes for the pip extension.
-
-    Args:
-        **kwargs: A kwarg for setting defaults for the specific attributes. The
-        key is expected to be the same as the attribute key.
 
     Returns:
         A dict of attributes.
     """
     attrs = dict({
-        "experimental_extra_index_urls": attr.string_list(
-            doc = """\
-The extra index URLs to use for downloading wheels using bazel downloader.
-Each value is going to be subject to `envsubst` substitutions if necessary.
-
-The indexes must support Simple API as described here:
-https://packaging.python.org/en/latest/specifications/simple-repository-api/
-
-This is equivalent to `--extra-index-urls` `pip` option.
-""",
-            default = [],
-        ),
-        "experimental_index_url": attr.string(
-            default = kwargs.get("experimental_index_url", ""),
-            doc = """\
-The index URL to use for downloading wheels using bazel downloader. This value is going
-to be subject to `envsubst` substitutions if necessary.
-
-The indexes must support Simple API as described here:
-https://packaging.python.org/en/latest/specifications/simple-repository-api/
-
-In the future this could be defaulted to `https://pypi.org` when this feature becomes
-stable.
-
-This is equivalent to `--index-url` `pip` option.
-""",
-        ),
-        "experimental_index_url_overrides": attr.string_dict(
-            doc = """\
-The index URL overrides for each package to use for downloading wheels using
-bazel downloader. This value is going to be subject to `envsubst` substitutions
-if necessary.
-
-The key is the package name (will be normalized before usage) and the value is the
-index URL.
-
-This design pattern has been chosen in order to be fully deterministic about which
-packages come from which source. We want to avoid issues similar to what happened in
-https://pytorch.org/blog/compromised-nightly-dependency/.
-
-The indexes must support Simple API as described here:
-https://packaging.python.org/en/latest/specifications/simple-repository-api/
-""",
-        ),
         "hub_name": attr.string(
             mandatory = True,
             doc = """
@@ -604,23 +552,6 @@ means if different programs need different versions of some library, separate
 hubs can be created, and each program can use its respective hub's targets.
 Targets from different hubs should not be used together.
 """,
-        ),
-        "parallel_download": attr.bool(
-            doc = """\
-The flag allows to make use of parallel downloading feature in bazel 7.1 and above
-when the bazel downloader is used. This is by default enabled as it improves the
-performance by a lot, but in case the queries to the simple API are very expensive
-or when debugging authentication issues one may want to disable this feature.
-
-NOTE, This will download (potentially duplicate) data for multiple packages if
-there is more than one index available, but in general this should be negligible
-because the simple API calls are very cheap and the user should not notice any
-extra overhead.
-
-If we are in synchronous mode, then we will use the first result that we
-find in case extra indexes are specified.
-""",
-            default = True,
         ),
         "python_version": attr.string(
             mandatory = True,
@@ -648,11 +579,12 @@ code will be re-evaluated when any of files in the default changes.
 """,
         ),
     }, **ATTRS)
-    attrs.update(AUTH_ATTRS)
+
+    attrs.pop("use_hub_alias_dependencies")
 
     return attrs
 
-def _whl_mod_attrs():
+def whl_mod_attrs():
     attrs = {
         "additive_build_content": attr.string(
             doc = "(str, optional): Raw text to add to the generated `BUILD` file of a package.",
@@ -710,7 +642,7 @@ cannot have a child module that uses the same `hub_name`.
 
 # NOTE: the naming of 'override' is taken from the bzlmod native
 # 'archive_override', 'git_override' bzlmod functions.
-_override_tag = tag_class(
+override_tag = tag_class(
     attrs = {
         "file": attr.string(
             doc = """\
@@ -735,100 +667,6 @@ and BUILD.bazel file is generated.""",
     doc = """\
 Apply any overrides (e.g. patches) to a given Python distribution defined by
 other tags in this extension.""",
-)
-
-pypi = module_extension(
-    doc = """\
-This extension is used to make dependencies from pip available.
-
-pip.parse:
-To use, call `pip.parse()` and specify `hub_name` and your requirements file.
-Dependencies will be downloaded and made available in a repo named after the
-`hub_name` argument.
-
-Each `pip.parse()` call configures a particular Python version. Multiple calls
-can be made to configure different Python versions, and will be grouped by
-the `hub_name` argument. This allows the same logical name, e.g. `@pip//numpy`
-to automatically resolve to different, Python version-specific, libraries.
-
-pip.whl_mods:
-This tag class is used to help create JSON files to describe modifications to
-the BUILD files for wheels.
-""",
-    implementation = _pip_impl,
-    tag_classes = {
-        "override": _override_tag,
-        "parse": tag_class(
-            attrs = _pip_parse_ext_attrs(),
-            doc = """\
-This tag class is used to create a pip hub and all of the spokes that are part of that hub.
-This tag class reuses most of the pip attributes that are found in
-@rules_python//python/pip_install:pip_repository.bzl.
-The exception is it does not use the arg 'repo_prefix'.  We set the repository
-prefix for the user and the alias arg is always True in bzlmod.
-""",
-        ),
-        "whl_mods": tag_class(
-            attrs = _whl_mod_attrs(),
-            doc = """\
-This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
-JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
-create different modifications based on the type of attribute. Previously to bzlmod these
-JSON files where referred to as annotations, and were renamed to whl_modifications in this
-extension.
-""",
-        ),
-    },
-)
-
-pypi_internal = module_extension(
-    doc = """\
-This extension is used to make dependencies from pypi available.
-
-For now this is intended to be used internally so that usage of the `pip`
-extension in `rules_python` does not affect the evaluations of the extension
-for the consumers.
-
-pip.parse:
-To use, call `pip.parse()` and specify `hub_name` and your requirements file.
-Dependencies will be downloaded and made available in a repo named after the
-`hub_name` argument.
-
-Each `pip.parse()` call configures a particular Python version. Multiple calls
-can be made to configure different Python versions, and will be grouped by
-the `hub_name` argument. This allows the same logical name, e.g. `@pypi//numpy`
-to automatically resolve to different, Python version-specific, libraries.
-
-pip.whl_mods:
-This tag class is used to help create JSON files to describe modifications to
-the BUILD files for wheels.
-""",
-    implementation = _pip_non_reproducible,
-    tag_classes = {
-        "override": _override_tag,
-        "parse": tag_class(
-            attrs = _pip_parse_ext_attrs(
-                experimental_index_url = "https://pypi.org/simple",
-            ),
-            doc = """\
-This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
-This tag class reuses most of the pypi attributes that are found in
-@rules_python//python/pip_install:pip_repository.bzl.
-The exception is it does not use the arg 'repo_prefix'.  We set the repository
-prefix for the user and the alias arg is always True in bzlmod.
-""",
-        ),
-        "whl_mods": tag_class(
-            attrs = _whl_mod_attrs(),
-            doc = """\
-This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
-JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
-create different modifications based on the type of attribute. Previously to bzlmod these
-JSON files where referred to as annotations, and were renamed to whl_modifications in this
-extension.
-""",
-        ),
-    },
 )
 
 def _whl_mods_repo_impl(rctx):

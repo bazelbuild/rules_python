@@ -109,6 +109,7 @@ sphinx_stardocs(
     ] if IS_BAZEL_7_OR_HIGHER else []) + ([
         # This depends on @pythons_hub, which is only created under bzlmod,
         "//python/extensions:pip_bzl",
+        "//python/extensions:pypi_bzl",
     ] if IS_BAZEL_7_OR_HIGHER and BZLMOD_ENABLED else []),
     prefix = "api/rules_python/",
     tags = ["docs"],

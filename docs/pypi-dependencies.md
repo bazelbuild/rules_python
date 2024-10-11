@@ -13,10 +13,10 @@ Using PyPI packages (aka "pip install") involves two main steps.
 
 ### Using bzlmod
 
-To add pip dependencies to your `MODULE.bazel` file, use the `pip.parse`
-extension, and call it to create the central external repo and individual wheel
-external repos. Include in the `MODULE.bazel` the toolchain extension as shown
-in the first bzlmod example above.
+To add pip dependencies to your `MODULE.bazel` file, use the {bzl:obj}`pip.parse` or 
+{bzl:obj}`pypi.install` extension, and call it to create the central external
+repo and individual wheel external repos. Include in the `MODULE.bazel` the
+toolchain extension as shown in the first bzlmod example above.
 
 ```starlark
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
@@ -27,6 +27,7 @@ pip.parse(
 )
 use_repo(pip, "my_deps")
 ```
+
 For more documentation, including how the rules can update/create a requirements
 file, see the bzlmod examples under the {gh-path}`examples` folder or the documentation
 for the {obj}`@rules_python//python/extensions:pip.bzl` extension.
@@ -43,6 +44,78 @@ This will enable symlinks on Windows and help with bootstrap performance of sett
 hermetic host python interpreter on this platform. Linux and OSX users should see no
 difference.
 ```
+
+(bazel-downloader)=
+#### Using `pypi.install` extension
+
+:::{warning}
+The APIs here have been well tested but may still change in backwards
+incompatible ways if major design flaws are found.
+:::
+
+`pypi.install` provides almost a drop-in replacement for the `pip.parse` extension:
+```starlark
+pypi = use_extension("@rules_python//python/extensions:pypi.bzl", "pypi")
+pypi.install(
+    hub_name = "my_deps",
+    python_version = "3.11",
+    requirements_lock = "//:requirements_lock_3_11.txt",
+)
+use_repo(pypi, "my_deps")
+```
+
+The `bzlmod` `pypi.install` call supports pulling information from `PyPI` (or a
+compatible mirror) and it will ensure that the [bazel
+downloader][bazel_downloader] is used for downloading the wheels or the sdists
+in the requirements file. This allows the users to use the [credential
+helper](#credential-helper) to authenticate with the mirror and it also ensures
+that the distribution downloads are cached.
+It also avoids using `pip` altogether and results in much faster dependency
+fetching.
+
+See the {gh-path}`examples/bzlmod/MODULE.bazel` example for more info.
+
+:::{warning}
+For now there is a limitation that the lock
+files consumed by the `pypi.install` extension must have hashes, similarly to
+all our examples. Hence, the `requirements.txt` files produced by `pip lock` or
+by `uv pip compile` but without generating hashes will fail.
+:::
+
+Note, when using this feature during the `pip` extension evaluation you will see the accessed indexes similar to below:
+```console
+Loading: 0 packages loaded
+    currently loading: docs/
+    Fetching module extension pip in @@//python/extensions:pypi.bzl; starting
+    Fetching https://pypi.org/simple/twine/
+```
+
+This does not mean that `rules_python` is fetching the wheels eagerly, but it
+rather means that it is calling the PyPI server to get the Simple API response
+to get the list of all available source and wheel distributions. Once it has
+got all of the available distributions, it will select the right ones depending
+on the `sha256` values in your `requirements_lock.txt` file. The compatible
+distribution URLs will be then written to the `MODULE.bazel.lock` file. Currently
+users wishing to use the lock file with `rules_python` with this feature have
+to set an environment variable `RULES_PYTHON_OS_ARCH_LOCK_FILE=0` which will
+become default in the next release.
+
+Fetching the distribution information from the PyPI allows `rules_python` to
+know which `whl` should be used on which target platform and it will determine
+that by parsing the `whl` filename based on [PEP600], [PEP656] standards. This
+allows the user to configure the behaviour by using the following publicly
+available flags:
+* {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
+* {obj}`--@rules_python//python/config_settings:pip_whl` for selecting `whl` distribution preference.
+* {obj}`--@rules_python//python/config_settings:pip_whl_osx_arch` for selecting MacOS wheel preference.
+* {obj}`--@rules_python//python/config_settings:pip_whl_glibc_version` for selecting the GLIBC version compatibility.
+* {obj}`--@rules_python//python/config_settings:pip_whl_muslc_version` for selecting the musl version compatibility.
+* {obj}`--@rules_python//python/config_settings:pip_whl_osx_version` for selecting MacOS version compatibility.
+
+[bazel_downloader]: https://bazel.build/rules/lib/builtins/repository_ctx#download
+[pep600]: https://peps.python.org/pep-0600/
+[pep656]: https://peps.python.org/pep-0656/
+
 
 ### Using a WORKSPACE file
 
@@ -133,6 +206,13 @@ As with any repository rule, if you would like to ensure that `pip_parse` is
 re-executed to pick up a non-hermetic change to your environment (e.g., updating
 your system `python` interpreter), you can force it to re-execute by running
 `bazel sync --only [pip_parse name]`.
+
+:::{note}
+The same is not necessarily true for the `pypi.install` bazel extension as it is
+not relying on the built in interpreter environment information and yields the same
+set of dependencies irrespective of the host machine and the python interpreter used
+to pull the Python dependencies.
+:::
 
 {#using-third-party-packages}
 ## Using third party packages as dependencies
@@ -305,55 +385,6 @@ Alternatively, one could use `rules_python`'s patching features to remove one
 leg of the dependency manually. For instance by making
 `apache-airflow-providers-postgres` not explicitly depend on `apache-airflow` or
 perhaps `apache-airflow-providers-common-sql`.
-
-
-(bazel-downloader)=
-### Bazel downloader and multi-platform wheel hub repository.
-
-The `bzlmod` `pip.parse` call supports pulling information from `PyPI` (or a
-compatible mirror) and it will ensure that the [bazel
-downloader][bazel_downloader] is used for downloading the wheels. This allows
-the users to use the [credential helper](#credential-helper) to authenticate
-with the mirror and it also ensures that the distribution downloads are cached.
-It also avoids using `pip` altogether and results in much faster dependency
-fetching.
-
-This can be enabled by `experimental_index_url` and related flags as shown in
-the {gh-path}`examples/bzlmod/MODULE.bazel` example.
-
-When using this feature during the `pip` extension evaluation you will see the accessed indexes similar to below:
-```console
-Loading: 0 packages loaded
-    currently loading: docs/
-    Fetching module extension pip in @@//python/extensions:pip.bzl; starting
-    Fetching https://pypi.org/simple/twine/
-```
-
-This does not mean that `rules_python` is fetching the wheels eagerly, but it
-rather means that it is calling the PyPI server to get the Simple API response
-to get the list of all available source and wheel distributions. Once it has
-got all of the available distributions, it will select the right ones depending
-on the `sha256` values in your `requirements_lock.txt` file. The compatible
-distribution URLs will be then written to the `MODULE.bazel.lock` file. Currently
-users wishing to use the lock file with `rules_python` with this feature have
-to set an environment variable `RULES_PYTHON_OS_ARCH_LOCK_FILE=0` which will
-become default in the next release.
-
-Fetching the distribution information from the PyPI allows `rules_python` to
-know which `whl` should be used on which target platform and it will determine
-that by parsing the `whl` filename based on [PEP600], [PEP656] standards. This
-allows the user to configure the behaviour by using the following publicly
-available flags:
-* {obj}`--@rules_python//python/config_settings:py_linux_libc` for selecting the Linux libc variant.
-* {obj}`--@rules_python//python/config_settings:pip_whl` for selecting `whl` distribution preference.
-* {obj}`--@rules_python//python/config_settings:pip_whl_osx_arch` for selecting MacOS wheel preference.
-* {obj}`--@rules_python//python/config_settings:pip_whl_glibc_version` for selecting the GLIBC version compatibility.
-* {obj}`--@rules_python//python/config_settings:pip_whl_muslc_version` for selecting the musl version compatibility.
-* {obj}`--@rules_python//python/config_settings:pip_whl_osx_version` for selecting MacOS version compatibility.
-
-[bazel_downloader]: https://bazel.build/rules/lib/builtins/repository_ctx#download
-[pep600]: https://peps.python.org/pep-0600/
-[pep656]: https://peps.python.org/pep-0656/
 
 (credential-helper)=
 ### Credential Helper
