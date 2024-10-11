@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_toolchain_suite")
+load("@rules_cc//cc/tolchains:cc_toolchain.bzl", "cc_toolchain")
+load("@rules_cc//cc/tolchains:cc_toolchain_suite.bzl", "cc_toolchain_suite")
 load("@rules_testing//lib:util.bzl", "PREVENT_IMPLICIT_BUILDING_TAGS")
 load("//python/cc:py_cc_toolchain.bzl", "py_cc_toolchain")
 load(":fake_cc_toolchain_config.bzl", "fake_cc_toolchain_config")

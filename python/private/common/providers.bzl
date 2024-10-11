@@ -13,7 +13,7 @@
 # limitations under the License.
 """Providers for Python rules."""
 
-load("@rules_cc//cc:defs.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//python/private:util.bzl", "define_bazel_6_provider")
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
