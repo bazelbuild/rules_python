@@ -228,7 +228,11 @@ def _python_impl(module_ctx):
         kwargs.update(py.config.kwargs.get(toolchain_info.python_version, {}))
         kwargs.update(py.config.kwargs.get(full_python_version, {}))
         kwargs.update(py.config.default)
-        python_register_toolchains(name = toolchain_info.name, **kwargs)
+        python_register_toolchains(
+            name = toolchain_info.name,
+            _internal_bzlmod_toolchain_call = True,
+            **kwargs
+        )
 
     # Create the pythons_hub repo for the interpreter meta data and the
     # the various toolchains.
