@@ -68,6 +68,8 @@ A brief description of the categories of changes:
     * `3.12 -> 3.12.7`
 [20241008]: https://github.com/indygreg/python-build-standalone/releases/tag/20241008
 * (coverage) Add support for python 3.13 and bump `coverage.py` to 7.6.1.
+* (bzlmod) Add support for `download_only` flag to disable usage of `sdists`
+  when {bzl:attr}`pip.parse.experimental_index_url` is set.
 
 
 ### Removed
