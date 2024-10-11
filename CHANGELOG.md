@@ -47,6 +47,9 @@ A brief description of the categories of changes:
 * (rules) `compile_pip_requirements` passes `env` to the `X.update` target (and
   not only to the `X_test` target, a bug introduced in
   [#1067](https://github.com/bazelbuild/rules_python/pull/1067)).
+* (bzlmod) In hybrid bzlmod with WORKSPACE builds,
+  `python_register_toolchains(register_toolchains=True)` is respected
+  ([#1675](https://github.com/bazelbuild/rules_python/issues/1675)).
 
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
