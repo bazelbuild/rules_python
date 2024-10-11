@@ -13,7 +13,6 @@
 # limitations under the License.
 """Definitions related to the Python toolchain."""
 
-
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//python:py_runtime.bzl", "py_runtime")
 load("//python:py_runtime_pair.bzl", "py_runtime_pair")
