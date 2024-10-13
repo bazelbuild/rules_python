@@ -2,10 +2,12 @@
 
 ## `rules_python` `bzlmod` support
 
-- Status: Beta
+- Status: GA
 - Full Feature Parity: No
+    - `rules_python`: Yes
+    - `rules_python_gazelle_plugin`: No (see below).
 
-Some features are missing or broken, and the public APIs are not yet stable.
+In general `bzlmod` has more features than `WORKSPACE` and users are encouraged to migrate.
 
 ## Configuration
 
@@ -27,15 +29,6 @@ A user does not use `local_path_override` stanza and would define the version in
 
 A second example, in [examples/bzlmod_build_file_generation](examples/bzlmod_build_file_generation) demonstrates the use of `bzlmod` to configure `gazelle` support for `rules_python`.
 
-## Feature parity
-
-This rule set does not have full feature partity with the older `WORKSPACE` type configuration:
-
-1. Gazelle does not support finding deps in sub-modules.  For instance we can have a dep like ` "@our_other_module//other_module/pkg:lib",` in a `py_test` definition.
-2. We have some features that are still not fully flushed out, and the user interface may change.
-
-Check ["issues"](/bazelbuild/rules_python/issues) for an up to date list.
-
 ## Differences in behavior from WORKSPACE
 
 ### Default toolchain is not the local system Python
@@ -52,10 +45,30 @@ platforms.
 If you want to use the same toolchain as what WORKSPACE used, then manually
 register the builtin Bazel Python toolchain by doing
 `register_toolchains("@bazel_tools//tools/python:autodetecting_toolchain")`.
-**IMPORTANT: this should only be done in a root module, and may intefere with
+**IMPORTANT: this should only be done in a root module, and may interfere with
 the toolchains rules_python registers**.
 
 NOTE: Regardless of your toolchain, due to
 [#691](https://github.com/bazelbuild/rules_python/issues/691), `rules_python`
 still relies on a local Python being available to bootstrap the program before
-handing over execution to the toolchain Python.
+handing over execution to the toolchain Python. To override this behaviour see
+{obj}`--bootstrap_impl=script`, which switches to `bash`-based bootstrap on
+UNIX systems.
+
+### Better PyPI package downloading on bzlmod
+
+On `bzlmod` users have the option to use the `bazel_downloader` to download packages
+and work correctly when `host` platform is not the same as the `target` platform. This
+provides faster package download times and integration with the credentials helper.
+
+### Extra targets in `whl_library` repos
+
+Due to how `bzlmod` is designed and the visibility rules that it enforces, it is best to use
+the targets in the `whl` repos as they are and not rely on using the `annotations` API to
+add extra targets to so-called `spoke` repos. For alternatives that should cover most of the
+existing usecases please see:
+* {bzl:obj}`py_console_script_binary` to create `entry_point` targets.
+* {bzl:obj}`whl_filegroup` to extract filegroups from the `whl` targets (e.g. `@pip//numpy:whl`)
+* {bzl:obj}`pip.override` to patch the downloaded `whl` files. Using that you
+  can change the `METADATA` of the `whl` file that will influence how
+  `rules_python` code generation behaves.
