@@ -51,9 +51,10 @@ the toolchains rules_python registers**.
 NOTE: Regardless of your toolchain, due to
 [#691](https://github.com/bazelbuild/rules_python/issues/691), `rules_python`
 still relies on a local Python being available to bootstrap the program before
-handing over execution to the toolchain Python. To override this behaviour see
-{obj}`--bootstrap_impl=script`, which switches to `bash`-based bootstrap on
-UNIX systems.
+handing over execution to the toolchain Python.
+
+To override this behaviour see {obj}`--bootstrap_impl=script`, which switches
+to `bash`-based bootstrap on UNIX systems.
 
 ### Better PyPI package downloading on bzlmod
 
