@@ -255,3 +255,28 @@ My docs
 Documents a flag. It has the same format as `{bzl:target}`
 :::
 
+
+:::{rst:directive} .. bzl:typedef:: typename
+
+Documents a user-defined structural "type".  These are typically generated
+by following [User-defined types] to create a struct with a `TYPEDEF` field.
+
+```
+::::{bzl:typedef} Square
+
+:::{bzl:field} width
+:type: int
+:::
+
+:::{bzl:function} new(size)
+:::
+
+:::{bzl:function} area()
+:::
+::::
+```
+
+Note that, due to a Sphinx and/or MyST bug, the number of colons for the
+outer typedef directive must be greater than the inner directives. Otherwise,
+only the first nested directive is parsed as part of the type def.
+:::

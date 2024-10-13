@@ -424,7 +424,7 @@ class _BzlXrefField(docfields.Field):
         return [wrapper]
 
 
-class _BzlField(_BzlXrefField, docfields.Field):
+class _BzlDocField(_BzlXrefField, docfields.Field):
     """A non-repeated field with xref support."""
 
 
@@ -623,6 +623,7 @@ class _BzlObject(sphinx_directives.ObjectDescription[_BzlObjectId]):
         relative_name = relative_name.strip()
 
         name_prefix, _, base_symbol_name = relative_name.rpartition(".")
+
         if name_prefix:
             # Respect whatever the signature wanted
             display_prefix = name_prefix
@@ -819,6 +820,26 @@ class _BzlCallable(_BzlObject):
     """Abstract base class for objects that are callable."""
 
 
+class _BzlTypedef(_BzlObject):
+    """Documents a typedef.
+
+    A typedef describes objects with well known attributes.
+
+    ::::{bzl:typedef} Square
+
+    :::{bzl:field} width
+    :type: int
+    :::
+
+    :::{bzl:function} new(size)
+    :::
+
+    :::{bzl:function} area()
+    :::
+    ::::
+    """
+
+
 class _BzlProvider(_BzlObject):
     """Documents a provider type.
 
@@ -837,7 +858,7 @@ class _BzlProvider(_BzlObject):
     """
 
 
-class _BzlProviderField(_BzlObject):
+class _BzlField(_BzlObject):
     """Documents a field of a provider.
 
     Fields can optionally have a type specified using the `:type:` option.
@@ -870,6 +891,10 @@ class _BzlProviderField(_BzlObject):
         # is nested within another object
         alt_names.append(".".join(symbol.split(".")[-2:]))
         return alt_names
+
+
+class _BzlProviderField(_BzlField):
+    pass
 
 
 class _BzlRepositoryRule(_BzlCallable):
@@ -951,7 +976,7 @@ class _BzlRule(_BzlCallable):
             rolename="attr",
             can_collapse=False,
         ),
-        _BzlField(
+        _BzlDocField(
             "provides",
             label="Provides",
             has_arg=False,
@@ -1078,13 +1103,13 @@ class _BzlModuleExtension(_BzlObject):
     """
 
     doc_field_types = [
-        _BzlField(
+        _BzlDocField(
             "os-dependent",
             label="OS Dependent",
             has_arg=False,
             names=["os-dependent"],
         ),
-        _BzlField(
+        _BzlDocField(
             "arch-dependent",
             label="Arch Dependent",
             has_arg=False,
@@ -1448,7 +1473,8 @@ class _BzlDomain(domains.Domain):
         # Providers are close enough to types that we include "type". This
         # also makes :type: Foo work in directive options.
         "provider": domains.ObjType("provider", "provider", "type", "obj"),
-        "provider-field": domains.ObjType("provider field", "field", "obj"),
+        "provider-field": domains.ObjType("provider field", "provider-field", "obj"),
+        "field": domains.ObjType("field", "field", "obj"),
         "repo-rule": domains.ObjType("repository rule", "repo_rule", "obj"),
         "rule": domains.ObjType("rule", "rule", "obj"),
         "tag-class": domains.ObjType("tag class", "tag_class", "obj"),
@@ -1457,6 +1483,7 @@ class _BzlDomain(domains.Domain):
         "flag": domains.ObjType("flag", "flag", "target", "obj"),
         # types are objects that have a constructor and methods/attrs
         "type": domains.ObjType("type", "type", "obj"),
+        "typedef": domains.ObjType("typedef", "typedef", "type", "obj"),
     }
 
     # This controls:
@@ -1483,7 +1510,9 @@ class _BzlDomain(domains.Domain):
         "function": _BzlFunction,
         "module-extension": _BzlModuleExtension,
         "provider": _BzlProvider,
+        "typedef": _BzlTypedef,
         "provider-field": _BzlProviderField,
+        "field": _BzlField,
         "repo-rule": _BzlRepositoryRule,
         "rule": _BzlRule,
         "tag-class": _BzlTagClass,
