@@ -561,7 +561,27 @@ TOOL_VERSIONS = {
         "strip_prefix": "python",
     },
     "3.13.0": {
-        "url": "20241008/cpython-{python_version}+20241008-{platform}-{build}.tar.gz",
+        "url": {
+            platform + suffix: "20241008/cpython-{python_version}+20241008-" + build
+            for platform, opt in {
+                "aarch64-apple-darwin": "pgo+lto",
+                "aarch64-unknown-linux-gnu": "lto",
+                "ppc64le-unknown-linux-gnu": "lto",
+                "s390x-unknown-linux-gnu": "lto",
+                "x86_64-apple-darwin": "pgo+lto",
+                "x86_64-pc-windows-msvc": "pgo",
+                "x86_64-unknown-linux-gnu": "pgo+lto",
+            }.items()
+            for suffix, build in {
+                "": platform + "-{build}.tar.gz",
+                "-freethreaded": "".join([
+                    platform,
+                    "-shared" if "windows" in platform else "",
+                    "-freethreaded+" + opt,
+                    "-full.tar.zst",
+                ]),
+            }.items()
+        },
         "sha256": {
             "aarch64-apple-darwin": "5d3cb8d7ca4cfbbe7ae1f118f26be112ee417d982fab8c6d85cfd8ccccf70718",
             "aarch64-unknown-linux-gnu": "c1142af8f2c85923d2ba8201a35b913bb903a5d15f052c38bbecf2f49e2342dc",
@@ -570,6 +590,14 @@ TOOL_VERSIONS = {
             "x86_64-apple-darwin": "b58ca12d9ae14bbd79f9e5cf4b748211ff1953e59abeac63b0f4e8e49845669f",
             "x86_64-pc-windows-msvc": "c7651a7a575104f47c808902b020168057f3ad80f277e54cecfaf79a9ff50e22",
             "x86_64-unknown-linux-gnu": "455200e1a202e9d9ef4b630c04af701c0a91dcaa6462022efc76893fc762ec95",
+            # Add freethreaded variants
+            "aarch64-apple-darwin-freethreaded": "8cc1586c4ee730bb33b7e6d39f1b6388f895075fadb1771e3c27b0561abb9242",
+            "aarch64-unknown-linux-gnu-freethreaded": "56b11e29095e7c183ae191bf9f5ec4e7a71ac41e9c759786faf16c707b83b6b0",
+            "ppc64le-unknown-linux-gnu-freethreaded": "abac77abeb3c39c355fbc2cd74216254c46bcb28dda10b525daf821bf1d364dc",
+            "s390x-unknown-linux-gnu-freethreaded": "9adab574543ab8c5fc0ad9e313050030dbdae85160629b1dcbbc3e9d9515a0da",
+            "x86_64-apple-darwin-freethreaded": "117528b68096379b1303faee1f4f9e32ef3d255207ec92fb063f1bd0b942549d",
+            "x86_64-pc-windows-msvc-freethreaded": "fc665561556f4dc843cd3eeba4d482f716aec65d5b89a657316829cfbdc9462a",
+            "x86_64-unknown-linux-gnu-freethreaded": "00a159a64640ce614bdac064b270a9854d86d40d1d8387a822daf1fe0881e64b",
         },
         "strip_prefix": "python",
     },
@@ -586,121 +614,135 @@ MINOR_MAPPING = {
 }
 
 PLATFORMS = {
-    "aarch64-apple-darwin": struct(
-        compatible_with = [
-            "@platforms//os:macos",
-            "@platforms//cpu:aarch64",
-        ],
-        flag_values = {},
-        os_name = MACOS_NAME,
-        # Matches the value returned from:
-        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        arch = "arm64",
-    ),
-    "aarch64-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:aarch64",
-        ],
+    p + suffix: struct(
+        compatible_with = v.compatible_with,
         flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        # Note: this string differs between OSX and Linux
-        # Matches the value returned from:
-        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        arch = "aarch64",
-    ),
-    "armv7-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:armv7",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        arch = "armv7",
-    ),
-    "i386-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:i386",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        arch = "i386",
-    ),
-    "ppc64le-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:ppc",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        # Note: this string differs between OSX and Linux
-        # Matches the value returned from:
-        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        arch = "ppc64le",
-    ),
-    "riscv64-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:riscv64",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        arch = "riscv64",
-    ),
-    "s390x-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:s390x",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        # Note: this string differs between OSX and Linux
-        # Matches the value returned from:
-        # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-        arch = "s390x",
-    ),
-    "x86_64-apple-darwin": struct(
-        compatible_with = [
-            "@platforms//os:macos",
-            "@platforms//cpu:x86_64",
-        ],
-        flag_values = {},
-        os_name = MACOS_NAME,
-        arch = "x86_64",
-    ),
-    "x86_64-pc-windows-msvc": struct(
-        compatible_with = [
-            "@platforms//os:windows",
-            "@platforms//cpu:x86_64",
-        ],
-        flag_values = {},
-        os_name = WINDOWS_NAME,
-        arch = "x86_64",
-    ),
-    "x86_64-unknown-linux-gnu": struct(
-        compatible_with = [
-            "@platforms//os:linux",
-            "@platforms//cpu:x86_64",
-        ],
-        flag_values = {
-            Label("//python/config_settings:py_linux_libc"): "glibc",
-        },
-        os_name = LINUX_NAME,
-        arch = "x86_64",
-    ),
+            Label("//python/config_settings:py_freethreaded"): freethreaded,
+        } | v.flag_values,
+        os_name = v.os_name,
+        arch = v.arch,
+    )
+    for p, v in {
+        "aarch64-apple-darwin": struct(
+            compatible_with = [
+                "@platforms//os:macos",
+                "@platforms//cpu:aarch64",
+            ],
+            flag_values = {},
+            os_name = MACOS_NAME,
+            # Matches the value returned from:
+            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            arch = "arm64",
+        ),
+        "aarch64-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:aarch64",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            # Note: this string differs between OSX and Linux
+            # Matches the value returned from:
+            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            arch = "aarch64",
+        ),
+        "armv7-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:armv7",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            arch = "armv7",
+        ),
+        "i386-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:i386",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            arch = "i386",
+        ),
+        "ppc64le-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:ppc",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            # Note: this string differs between OSX and Linux
+            # Matches the value returned from:
+            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            arch = "ppc64le",
+        ),
+        "riscv64-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:riscv64",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            arch = "riscv64",
+        ),
+        "s390x-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:s390x",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            # Note: this string differs between OSX and Linux
+            # Matches the value returned from:
+            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            arch = "s390x",
+        ),
+        "x86_64-apple-darwin": struct(
+            compatible_with = [
+                "@platforms//os:macos",
+                "@platforms//cpu:x86_64",
+            ],
+            flag_values = {},
+            os_name = MACOS_NAME,
+            arch = "x86_64",
+        ),
+        "x86_64-pc-windows-msvc": struct(
+            compatible_with = [
+                "@platforms//os:windows",
+                "@platforms//cpu:x86_64",
+            ],
+            flag_values = {},
+            os_name = WINDOWS_NAME,
+            arch = "x86_64",
+        ),
+        "x86_64-unknown-linux-gnu": struct(
+            compatible_with = [
+                "@platforms//os:linux",
+                "@platforms//cpu:x86_64",
+            ],
+            flag_values = {
+                Label("//python/config_settings:py_linux_libc"): "glibc",
+            },
+            os_name = LINUX_NAME,
+            arch = "x86_64",
+        ),
+    }.items()
+    for suffix, freethreaded in {
+        "": "no",
+        "-freethreaded": "yes",
+    }.items()
 }
 
 def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
@@ -760,6 +802,15 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     return (release_filename, rendered_urls, strip_prefix, patches, patch_strip)
 
 def print_toolchains_checksums(name):
+    """A macro to print checksums for a particular Python interpreter version.
+
+    Args:
+        name: {type}`str`: the name of the runnable target.
+    """
+    commands = []
+    for python_version in TOOL_VERSIONS.keys():
+        commands.append(_commands_for_version(python_version))
+
     native.genrule(
         name = name,
         srcs = [],
@@ -775,10 +826,7 @@ echo "Fetching hashes..."
 {commands}
 EOF
         """.format(
-            commands = "\n".join([
-                _commands_for_version(python_version)
-                for python_version in TOOL_VERSIONS.keys()
-            ]),
+            commands = "\n".join(commands),
         ),
         executable = True,
     )

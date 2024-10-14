@@ -390,6 +390,9 @@ def _get_host_platform(os_name, arch):
     """
     host_platform = None
     for platform, meta in PLATFORMS.items():
+        if "freethreaded" in platform:
+            continue
+
         if meta.os_name == os_name and meta.arch == arch:
             host_platform = platform
     if not host_platform:

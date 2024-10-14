@@ -92,6 +92,16 @@ string_flag(
     visibility = ["//visibility:public"],
 )
 
+string_flag(
+    name = "py_freethreaded",
+    build_setting_default = "no",
+    values = [
+        "yes",
+        "no",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 # pip.parse related flags
 
 string_flag(
