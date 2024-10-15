@@ -44,7 +44,6 @@ load(
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(":flags.bzl", "PrecompileAddToRunfilesFlag")
 load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_executable_info.bzl", "PyExecutableInfo")
 load(":py_info.bzl", "PyInfo")
