@@ -305,6 +305,7 @@ Directive options:
 :type: int | None | str
 
 Doc about field
+:::
 ````
 :::::
 
@@ -322,5 +323,6 @@ Directive options:
 :type: depset[File] | None
 
 Doc about the provider field
+:::
 ````
 :::::
