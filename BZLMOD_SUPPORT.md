@@ -45,6 +45,10 @@ platforms.
 If you want to use the same toolchain as what WORKSPACE used, then manually
 register the builtin Bazel Python toolchain by doing
 `register_toolchains("@bazel_tools//tools/python:autodetecting_toolchain")`.
+
+Note that using this builtin Bazel toolchain is deprecated and unsupported.
+See the {obj}`runtime_env_toolchains` docs for a replacement that is marginally
+better supported.
 **IMPORTANT: this should only be done in a root module, and may interfere with
 the toolchains rules_python registers**.
 
