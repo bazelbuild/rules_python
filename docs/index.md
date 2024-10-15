@@ -8,7 +8,7 @@ The core Python rules -- `py_library`, `py_binary`, `py_test`,
 `py_proto_library`, and related symbols that provide the basis for Python
 support in Bazel.
 
-When using bazel 6, the core rules built into the Bazel binary, and the symbols
+When using bazel 6 (or earlier), the core rules are bundled into the Bazel binary, and the symbols
 in this repository are simple aliases. On bazel 7 and above `rules_python` uses
 a separate Starlark implementation,
 see {ref}`Migrating from the Bundled Rules` below.
@@ -22,21 +22,21 @@ outlined in the [support](support) page.
 :::{topic} PyPI integration
 
 Package installation rules for integrating with PyPI and other SimpleAPI
-complying indexes.
+compatible indexes.
 
 These rules are still `experimental` and the APIs might change more often
 than the core rules or you may experience regressions between the minor
-releases. In that case, please raise tickets to the GH issues bug tracker.
+releases. In that case, please raise a GH issue.
 
 :::
 
 :::{topic} Sphinxdocs
 
-`sphinxdocs` rules allowing users to generate documentation from bazel or
+`sphinxdocs` rules allow users to generate documentation from bazel or
 Python source code.
 
 This is available as is and the semantic versioning used by `rules_python` does
-not apply to bazel rules or the output.
+not apply.
 
 :::
 
@@ -46,7 +46,7 @@ not apply to bazel rules or the output.
 code.
 
 This is available as is and the semantic versioning used by `rules_python` does
-not apply to the plugin.
+not apply.
 
 :::
 

@@ -1,6 +1,6 @@
 # Getting started
 
-This doc is a simplified guide to help get started started quickly. It provides
+This doc is a simplified guide to help get started quickly. It provides
 a simplified introduction to having a working Python program for both `bzlmod`
 and the older way of using `WORKSPACE`.
 

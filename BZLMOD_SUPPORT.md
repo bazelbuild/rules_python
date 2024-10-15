@@ -65,7 +65,7 @@ provides faster package download times and integration with the credentials help
 ### Extra targets in `whl_library` repos
 
 Due to how `bzlmod` is designed and the visibility rules that it enforces, it is best to use
-the targets in the `whl` repos as they are and not rely on using the `annotations` API to
+the targets in the `whl` repos as they do not rely on using the `annotations` API to
 add extra targets to so-called `spoke` repos. For alternatives that should cover most of the
 existing usecases please see:
 * {bzl:obj}`py_console_script_binary` to create `entry_point` targets.
