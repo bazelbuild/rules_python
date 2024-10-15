@@ -317,9 +317,9 @@ sphinx-reredirects==0.1.5 \
     --hash=sha256:444ae1438fba4418242ca76d6a6de3eaee82aaf0d8f2b0cac71a15d32ce6eba2 \
     --hash=sha256:cfa753b441020a22708ce8eb17d4fd553a28fc87a609330092917ada2a6da0d8
     # via rules-python-docs (docs/pyproject.toml)
-sphinx-rtd-theme==2.0.0 \
-    --hash=sha256:bd5d7b80622406762073a04ef8fadc5f9151261563d47027de09910ce03afe6b \
-    --hash=sha256:ec93d0856dc280cf3aee9a4c9807c60e027c7f7b461b77aeffed682e68f0e586
+sphinx-rtd-theme==3.0.1 \
+    --hash=sha256:921c0ece75e90633ee876bd7b148cfaad136b481907ad154ac3669b6fc957916 \
+    --hash=sha256:a4c5745d1b06dfcb80b7704fe532eb765b44065a8fad9851e4258c8804140703
     # via rules-python-docs (docs/pyproject.toml)
 sphinxcontrib-applehelp==2.0.0 \
     --hash=sha256:2f29ef331735ce958efa4734873f084941970894c6090408b079c61b2e1c06d1 \
