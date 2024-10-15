@@ -8,8 +8,8 @@ The core Python rules -- `py_library`, `py_binary`, `py_test`,
 `py_proto_library`, and related symbols that provide the basis for Python
 support in Bazel.
 
-When using bazel 6 (or earlier), the core rules are bundled into the Bazel binary, and the symbols
-in this repository are simple aliases. On bazel 7 and above `rules_python` uses
+When using Bazel 6 (or earlier), the core rules are bundled into the Bazel binary, and the symbols
+in this repository are simple aliases. On Bazel 7 and above `rules_python` uses
 a separate Starlark implementation,
 see {ref}`Migrating from the Bundled Rules` below.
 
@@ -32,11 +32,12 @@ releases. In that case, please raise a GH issue.
 
 :::{topic} Sphinxdocs
 
-`sphinxdocs` rules allow users to generate documentation from bazel or
-Python source code.
+`sphinxdocs` rules allow users to generate documentation using Sphinx powered by Bazel, with additional functionality for documenting
+Starlark and Bazel code.
 
-This is available as is and the semantic versioning used by `rules_python` does
-not apply.
+The functionality is exposed because other projects find it useful, but 
+it is available as is and **the semantic versioning and
+compatibility policy used by `rules_python` does not apply**. 
 
 :::
 
