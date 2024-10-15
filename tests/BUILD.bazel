@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//:version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
