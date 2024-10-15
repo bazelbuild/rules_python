@@ -514,6 +514,35 @@ def _test_pyc_collection_include_dep_omit_source_impl(env, target):
 
 _tests.append(_test_pyc_collection_include_dep_omit_source)
 
+def _test_precompile_attr_inherit_pyc_collection_disabled_precompile_flag_enabled(name):
+    rt_util.helper_target(
+        py_binary,
+        name = name + "_subject",
+        srcs = ["bin.py"],
+        main = "bin.py",
+        precompile = "inherit",
+        pyc_collection = "disabled",
+    )
+    analysis_test(
+        name = name,
+        impl = _test_precompile_attr_inherit_pyc_collection_disabled_precompile_flag_enabled_impl,
+        target = name + "_subject",
+        config_settings = _COMMON_CONFIG_SETTINGS | {
+            PRECOMPILE: "enabled",
+        },
+    )
+
+def _test_precompile_attr_inherit_pyc_collection_disabled_precompile_flag_enabled_impl(env, target):
+    target = env.expect.that_target(target)
+    target.runfiles().not_contains_predicate(
+        matching.str_matches("/bin.*pyc"),
+    )
+    target.default_outputs().not_contains_predicate(
+        matching.file_path_matches("/bin.*pyc"),
+    )
+
+_tests.append(_test_precompile_attr_inherit_pyc_collection_disabled_precompile_flag_enabled)
+
 def runfiles_contains_at_least_predicates(runfiles, predicates):
     for predicate in predicates:
         runfiles.contains_predicate(predicate)
