@@ -20,24 +20,24 @@ While precompiling helps runtime performance, it has two main costs:
 
 ## Binary-level opt-in
 
-Because of the costs of precompiling, it may not be feasible to globally enable it
-for your repo for everything. For example, some binaries may be
-particularly large, and doubling the number of runfiles isn't doable.
+Binary-level opt-in allows enabling precompiling on a per-target basic. This is
+useful for situations such as:
 
-If this is the case, there's an alternative way to more selectively and
-incrementally control precompiling on a per-binry basis.
+* Globally enabling precompiling in your `.bazelrc` isn't feasible. This may
+  be because some targets don't work with precompiling, e.g. because they're too
+  big.
+* Enabling precompiling for build tools (exec config targets) separately from
+  target-config programs.
 
-To use this approach, the two basic steps are:
-1. Disable pyc files from being automatically added to runfiles:
-   {bzl:obj}`--@rules_python//python/config_settings:precompile_add_to_runfiles=decided_elsewhere`,
-2. Set the `pyc_collection` attribute on the binaries/tests that should or should
-   not use precompiling.
+To use this approach, set the {bzl:attr}`pyc_collection` attribute on the
+binaries/tests that should or should not use precompiling. Then change the
+{bzl:flag}`--precompile` default.
 
-The default for the `pyc_collection` attribute is controlled by the flag
-{bzl:obj}`--@rules_python//python/config_settings:pyc_collection`, so you
+The default for the {bzl:attr}`pyc_collection` attribute is controlled by the flag
+{bzl:obj}`--@rules_python//python/config_settings:precompile`, so you
 can use an opt-in or opt-out approach by setting its value:
-* targets must opt-out: `--@rules_python//python/config_settings:pyc_collection=include_pyc`
-* targets must opt-in: `--@rules_python//python/config_settings:pyc_collection=disabled`
+* targets must opt-out: `--@rules_python//python/config_settings:precompile=enabled`
+* targets must opt-in: `--@rules_python//python/config_settings:precompile=disabled`
 
 ## Advanced precompiler customization
 
@@ -48,7 +48,7 @@ not work as well for remote execution builds. To customize the precompiler, two
 mechanisms are available:
 
 * The exec tools toolchain allows customizing the precompiler binary used with
-  the `precompiler` attribute. Arbitrary binaries are supported.
+  the {bzl:attr}`precompiler` attribute. Arbitrary binaries are supported.
 * The execution requirements can be customized using
   `--@rules_python//tools/precompiler:execution_requirements`. This is a list
   flag that can be repeated. Each entry is a key=value that is added to the
@@ -92,3 +92,9 @@ Note that any execution requirements values can be specified in the flag.
   `foo.cpython-39.opt-2.pyc`). This works fine (it's all byte code), but also
   means the interpreter `-O` argument can't be used -- doing so will cause the
   interpreter to look for the non-existent `opt-N` named files.
+* Targets with the same source files and different exec properites will result
+  in action conflicts. This most commonly occurs when a `py_binary` and
+  `py_library` have the same source files. To fix, modify both targets so
+  they have the same exec properties. If this is difficult because unsupported
+  exec groups end up being passed to the Python rules, please file an issue
+  to have those exec groups added to the Python rules.

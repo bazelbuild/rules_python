@@ -21,6 +21,40 @@ unnecessary files when all that are needed are flag definitions.
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(":enum.bzl", "enum")
 
+def _FlagEnum_flag_values(self):
+    return sorted(self.__members__.values())
+
+def FlagEnum(**kwargs):
+    """Define an enum specialized for flags.
+
+    Args:
+        **kwargs: members of the enum.
+
+    Returns:
+        {type}`FlagEnum` struct. This is an enum with the following extras:
+        * `flag_values`: A function that returns a sorted list of the
+          flag values (enum `__members__`). Useful for passing to the
+          `values` attribute for string flags.
+    """
+    return enum(
+        methods = dict(flag_values = _FlagEnum_flag_values),
+        **kwargs
+    )
+
+def _AddSrcsToRunfilesFlag_is_enabled(ctx):
+    value = ctx.attr._add_srcs_to_runfiles_flag[BuildSettingInfo].value
+    if value == AddSrcsToRunfilesFlag.AUTO:
+        value = AddSrcsToRunfilesFlag.ENABLED
+    return value == AddSrcsToRunfilesFlag.ENABLED
+
+# buildifier: disable=name-conventions
+AddSrcsToRunfilesFlag = FlagEnum(
+    AUTO = "auto",
+    ENABLED = "enabled",
+    DISABLED = "disabled",
+    is_enabled = _AddSrcsToRunfilesFlag_is_enabled,
+)
+
 def _bootstrap_impl_flag_get_value(ctx):
     return ctx.attr._bootstrap_impl_flag[BuildSettingInfo].value
 
@@ -55,17 +89,13 @@ PrecompileFlag = enum(
     # Automatically decide the effective value based on environment,
     # target platform, etc.
     AUTO = "auto",
-    # Compile Python source files at build time. Note that
-    # --precompile_add_to_runfiles affects how the compiled files are included
-    # into a downstream binary.
+    # Compile Python source files at build time.
     ENABLED = "enabled",
     # Don't compile Python source files at build time.
     DISABLED = "disabled",
-    # Compile Python source files, but only if they're a generated file.
-    IF_GENERATED_SOURCE = "if_generated_source",
     # Like `enabled`, except overrides target-level setting. This is mostly
     # useful for development, testing enabling precompilation more broadly, or
-    # as an escape hatch if build-time compiling is not available.
+    # as an escape hatch to force all transitive deps to precompile.
     FORCE_ENABLED = "force_enabled",
     # Like `disabled`, except overrides target-level setting. This is useful
     # useful for development, testing enabling precompilation more broadly, or
@@ -90,32 +120,5 @@ PrecompileSourceRetentionFlag = enum(
     KEEP_SOURCE = "keep_source",
     # Don't include the original py source.
     OMIT_SOURCE = "omit_source",
-    # Keep the original py source if it's a regular source file, but omit it
-    # if it's a generated file.
-    OMIT_IF_GENERATED_SOURCE = "omit_if_generated_source",
     get_effective_value = _precompile_source_retention_flag_get_effective_value,
-)
-
-# Determines if a target adds its compiled files to its runfiles. When a target
-# compiles its files, but doesn't add them to its own runfiles, it relies on
-# a downstream target to retrieve them from `PyInfo.transitive_pyc_files`
-# buildifier: disable=name-conventions
-PrecompileAddToRunfilesFlag = enum(
-    # Always include the compiled files in the target's runfiles.
-    ALWAYS = "always",
-    # Don't include the compiled files in the target's runfiles; they are
-    # still added to `PyInfo.transitive_pyc_files`. See also:
-    # `py_binary.pyc_collection` attribute. This is useful for allowing
-    # incrementally enabling precompilation on a per-binary basis.
-    DECIDED_ELSEWHERE = "decided_elsewhere",
-)
-
-# Determine if `py_binary` collects transitive pyc files.
-# NOTE: This flag is only respect if `py_binary.pyc_collection` is `inherit`.
-# buildifier: disable=name-conventions
-PycCollectionFlag = enum(
-    # Include `PyInfo.transitive_pyc_files` as part of the binary.
-    INCLUDE_PYC = "include_pyc",
-    # Don't include `PyInfo.transitive_pyc_files` as part of the binary.
-    DISABLED = "disabled",
 )

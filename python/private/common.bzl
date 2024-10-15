@@ -348,15 +348,29 @@ def collect_runfiles(ctx, files = depset()):
         collect_default = True,
     )
 
-def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
+def create_py_info(
+        ctx,
+        *,
+        required_py_files,
+        required_pyc_files,
+        implicit_pyc_files,
+        implicit_pyc_source_files,
+        imports):
     """Create PyInfo provider.
 
     Args:
         ctx: rule ctx.
-        direct_sources: depset of Files; the direct, raw `.py` sources for the
-            target. This should only be Python source files. It should not
-            include pyc files.
-        direct_pyc_files: depset of Files; the direct `.pyc` sources for the target.
+        required_py_files: `depset[File]`; the direct, `.py` sources for the
+            target that **must** be included by downstream targets. This should
+            only be Python source files. It should not include pyc files.
+        required_pyc_files: `depset[File]`; the direct `.pyc` files this target
+            produces.
+        implicit_pyc_files: `depset[File]` pyc files that are only used if pyc
+            collection is enabled.
+        implicit_pyc_source_files: `depset[File]` source files for implicit pyc
+            files that are used when the implicit pyc files are not.
+        implicit_pyc_files: {type}`depset[File]` Implicitly generated pyc files
+            that a binary can choose to include.
         imports: depset of strings; the import path values to propagate.
 
     Returns:
@@ -366,8 +380,10 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
     """
 
     py_info = PyInfoBuilder()
-    py_info.direct_pyc_files.add(direct_pyc_files)
-    py_info.transitive_pyc_files.add(direct_pyc_files)
+    py_info.direct_pyc_files.add(required_pyc_files)
+    py_info.transitive_pyc_files.add(required_pyc_files)
+    py_info.transitive_implicit_pyc_files.add(implicit_pyc_files)
+    py_info.transitive_implicit_pyc_source_files.add(implicit_pyc_source_files)
     py_info.imports.add(imports)
     py_info.merge_has_py2_only_sources(ctx.attr.srcs_version in ("PY2", "PY2ONLY"))
     py_info.merge_has_py3_only_sources(ctx.attr.srcs_version in ("PY3", "PY3ONLY"))
@@ -386,7 +402,7 @@ def create_py_info(ctx, *, direct_sources, direct_pyc_files, imports):
                 py_info.merge_uses_shared_libraries(cc_helper.is_valid_shared_library_artifact(f))
 
     deps_transitive_sources = py_info.transitive_sources.build()
-    py_info.transitive_sources.add(direct_sources)
+    py_info.transitive_sources.add(required_py_files)
 
     # We only look at data to calculate uses_shared_libraries, if it's already
     # true, then we don't need to waste time looping over it.

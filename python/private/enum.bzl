@@ -17,10 +17,13 @@
 This is a separate file to minimize transitive loads.
 """
 
-def enum(**kwargs):
+def enum(methods = {}, **kwargs):
     """Creates a struct whose primary purpose is to be like an enum.
 
     Args:
+        methods: {type}`dict[str, callable]` functions that will be
+            added to the created enum object, but will have the enum object
+            itself passed as the first positional arg when calling them.
         **kwargs: The fields of the returned struct. All uppercase names will
             be treated as enum values and added to `__members__`.
 
@@ -33,4 +36,10 @@ def enum(**kwargs):
         for key, value in kwargs.items()
         if key.upper() == key
     }
-    return struct(__members__ = members, **kwargs)
+
+    for name, unbound_method in methods.items():
+        # buildifier: disable=uninitialized
+        kwargs[name] = lambda *a, **k: unbound_method(self, *a, **k)
+
+    self = struct(__members__ = members, **kwargs)
+    return self
