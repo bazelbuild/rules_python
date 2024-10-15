@@ -59,7 +59,7 @@ This page contains auto-generated API reference documentation [#f1]_.
 autodoc2_docstring_parser_regexes = [
     (".*", "myst"),
 ]
- 
+
 # NOTE: The redirects generation will clobber existing files.
 redirects = {
     "api/tools/precompiler/index": "/api/rules_python/tools/precompiler/index.html",
@@ -69,10 +69,10 @@ redirects = {
     "api/python/defs": "/api/rules_python/python/defs.html",
     "api/python/index": "/api/rules_python/python/index.html",
     "api/python/py_runtime_info": "/api/rules_python/python/py_runtime_info.html",
-    "api/python/private/common/py_library_rule_bazel": "/api/rules_python/python/private/common/py_library_rule_bazel.html",
-    "api/python/private/common/py_test_rule_bazel": "/api/rules_python/python/private/common/py_test_rule_bazel.html",
-    "api/python/private/common/py_binary_rule_bazel": "/api/rules_python/python/private/common/py_binary_rule_bazel.html",
-    "api/python/private/common/py_runtime_rule": "/api/rules_python/python/private/common/py_runtime_rule.html",
+    "api/python/private/common/py_library_rule_bazel": "/api/rules_python/python/private/py_library_rule_bazel.html",
+    "api/python/private/common/py_test_rule_bazel": "/api/rules_python/python/private/py_test_rule_bazel.html",
+    "api/python/private/common/py_binary_rule_bazel": "/api/rules_python/python/private/py_binary_rule_bazel.html",
+    "api/python/private/common/py_runtime_rule": "/api/rules_python/python/private/py_runtime_rule.html",
     "api/python/extensions/pip": "/api/rules_python/python/extensions/pip.html",
     "api/python/extensions/python": "/api/rules_python/python/extensions/python.html",
     "api/python/entry_points/py_console_script_binary": "/api/rules_python/python/entry_points/py_console_script_binary.html",
