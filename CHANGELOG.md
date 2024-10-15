@@ -35,6 +35,7 @@ A brief description of the categories of changes:
   (or equivalent).
 * (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
   (previously it defaulted to None).
+* (deps) stardoc 0.6.2 added as dependency.
 
 ### Fixed
 * (bzlmod) The `python.override(minor_mapping)` now merges the default and the
