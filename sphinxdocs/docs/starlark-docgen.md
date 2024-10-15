@@ -85,7 +85,8 @@ using the {rst:directive}`bzl:typedef` directive and puts all the struct's field
 within the typedef. The net result is the rendered docs look similar to how
 a class would be documented in other programming languages.
 
-For example, a `Square` object with a `area()` method would look like:
+For example, a the Starlark implemenation of a `Square` object with a `area()`
+method would look like:
 
 ```
 
@@ -133,15 +134,18 @@ A square with fixed size
 :type: int
 :::
 :::{bzl:function} new()
-...
+...args etc from _Square_new...
 :::
 :::{bzl:function} area()
-...
+...args etc from _Square_area...
 :::
 ::::
 ```
 
 Which renders as:
+
+:::{bzl:currentfile} //example:square.bzl
+:::
 
 ::::{bzl:typedef} Square
 A square with fixed size

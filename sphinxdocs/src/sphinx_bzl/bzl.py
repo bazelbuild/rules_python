@@ -825,6 +825,7 @@ class _BzlTypedef(_BzlObject):
 
     A typedef describes objects with well known attributes.
 
+    `````
     ::::{bzl:typedef} Square
 
     :::{bzl:field} width
@@ -837,6 +838,7 @@ class _BzlTypedef(_BzlObject):
     :::{bzl:function} area()
     :::
     ::::
+    `````
     """
 
 
