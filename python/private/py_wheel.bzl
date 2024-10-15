@@ -14,6 +14,7 @@
 
 "Implementation of py_wheel rule"
 
+load("//python/config_settings:transition.bzl", "public_trans")
 load("//python/private:stamp.bzl", "is_stamping_enabled")
 load(":py_package.bzl", "py_package_lib")
 load(":py_wheel_normalize_pep440.bzl", "normalize_pep440")
@@ -537,6 +538,11 @@ py_wheel_lib = struct(
     implementation = _py_wheel_impl,
     attrs = _concat_dicts(
         {
+            "python_version": attr.string(),
+            # Required to Opt-in to the transitions feature.
+            "_allowlist_function_transition": attr.label(
+                default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+            ),
             "deps": attr.label_list(
                 doc = """\
 Targets to be included in the distribution.
@@ -573,4 +579,5 @@ For example, a `bazel query` for a user's `py_wheel` macro expands to `py_wheel`
 in the way they expect.
 """,
     attrs = py_wheel_lib.attrs,
+    cfg = public_trans,
 )
