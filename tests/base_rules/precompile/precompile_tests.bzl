@@ -515,6 +515,9 @@ def _test_pyc_collection_include_dep_omit_source_impl(env, target):
 _tests.append(_test_pyc_collection_include_dep_omit_source)
 
 def _test_precompile_attr_inherit_pyc_collection_disabled_precompile_flag_enabled(name):
+    if not rp_config.enable_pystar:
+        rt_util.skip_test(name = name)
+        return
     rt_util.helper_target(
         py_binary,
         name = name + "_subject",
