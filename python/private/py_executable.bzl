@@ -175,7 +175,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     default_outputs = builders.DepsetBuilder()
     default_outputs.add(executable)
     default_outputs.add(precompile_result.keep_srcs)
-    default_outputs.add(precompile_result.pyc_files)
+    default_outputs.add(required_pyc_files)
 
     imports = collect_imports(ctx, semantics)
 
