@@ -256,3 +256,6 @@ local_path_override(
     module_name = "other_module",
     path = "other_module",
 )
+
+# example test dependencies
+bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)

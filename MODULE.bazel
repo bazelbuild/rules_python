@@ -72,6 +72,7 @@ bazel_dep(name = "stardoc", version = "0.6.2", repo_name = "io_bazel_stardoc")
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
 bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)
 
 # Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
 # We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
