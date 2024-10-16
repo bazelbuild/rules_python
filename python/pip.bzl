@@ -17,6 +17,10 @@ This contains a set of rules that are used to support inclusion of third-party
 dependencies via fully locked `requirements.txt` files. Some of the exported
 symbols should not be used and they are either undocumented here or marked as
 for internal use only.
+
+If you are using a bazel version 7 or above with `bzlmod`, you should only care
+about the {bzl:obj}`compile_pip_requirements` macro exposed in this file. The
+rest of the symbols are for legacy `WORKSPACE` setups.
 """
 
 load("//python/private:normalize_name.bzl", "normalize_name")
