@@ -42,7 +42,7 @@ string_flag(
 
 string_flag(
     name = "exec_tools_toolchain",
-    build_setting_default = ExecToolsToolchainFlag.DISABLED,
+    build_setting_default = ExecToolsToolchainFlag.ENABLED,
     values = sorted(ExecToolsToolchainFlag.__members__.values()),
     # NOTE: Only public because it is used in py_toolchain_suite from toolchain
     # repositories

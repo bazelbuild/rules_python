@@ -35,6 +35,9 @@ A brief description of the categories of changes:
   (or equivalent).
 * (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
   (previously it defaulted to None).
+* (toolchains) The exec tools toolchain is enabled by default. It can be
+  disabled by setting
+  {obj}`--@rules_python//python/config_settings:exec_tools_toolchain=disabled`.
 * (deps) stardoc 0.6.2 added as dependency.
 
 ### Fixed
