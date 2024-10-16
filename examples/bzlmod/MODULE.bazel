@@ -258,4 +258,4 @@ local_path_override(
 )
 
 # example test dependencies
-bazel_dep(name = "rules_shell", version = "0.1.1", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)
