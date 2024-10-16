@@ -193,6 +193,22 @@ func_info: {
         self.assertIn('{default-value}`"@repo//pkg:file.bzl"`', actual)
         self.assertIn("{default-value}`'<function foo from //bar:baz.bzl>'", actual)
 
+    def test_render_typedefs(self):
+        proto_text = """
+file: "@repo//pkg:foo.bzl"
+func_info: { function_name: "Zeta.TYPEDEF" }
+func_info: { function_name: "Carl.TYPEDEF" }
+func_info: { function_name: "Carl.ns.Alpha.TYPEDEF" }
+func_info: { function_name: "Beta.TYPEDEF" }
+func_info: { function_name: "Beta.Sub.TYPEDEF" }
+"""
+        actual = self._render(proto_text)
+        self.assertIn("\n:::::::::::::{bzl:typedef} Beta\n", actual)
+        self.assertIn("\n::::::::::::{bzl:typedef} Beta.Sub\n", actual)
+        self.assertIn("\n:::::::::::::{bzl:typedef} Carl\n", actual)
+        self.assertIn("\n::::::::::::{bzl:typedef} Carl.ns.Alpha\n", actual)
+        self.assertIn("\n:::::::::::::{bzl:typedef} Zeta\n", actual)
+
 
 if __name__ == "__main__":
     absltest.main()

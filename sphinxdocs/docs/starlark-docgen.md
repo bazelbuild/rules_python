@@ -73,3 +73,90 @@ bzl_library(
    deps = ...
 )
 ```
+
+## User-defined types
+
+While Starlark doesn't have user-defined types as a first-class concept, it's
+still possible to create such objects using `struct` and lambdas. For the
+purposes of documentation, they can be documented by creating a module-level
+`struct` with matching fields *and* also a field named `TYPEDEF`. When the
+`sphinx_stardoc` rule sees a struct with a `TYPEDEF` field, it generates doc
+using the {rst:directive}`bzl:typedef` directive and puts all the struct's fields
+within the typedef. The net result is the rendered docs look similar to how
+a class would be documented in other programming languages.
+
+For example, a the Starlark implemenation of a `Square` object with a `area()`
+method would look like:
+
+```
+
+def _Square_typedef():
+    """A square with fixed size.
+
+    :::{field} width
+    :type: int
+    :::
+    """
+
+def _Square_new(width):
+    """Creates a Square.
+
+    Args:
+        width: {type}`int` width of square
+
+    Returns:
+        {type}`Square`
+    """
+    self = struct(
+        area = lambda *a, **k: _Square_area(self, *a, **k),
+        width = width
+    )
+    return self
+
+def _Square_area(self, ):
+   """Tells the area of the square."""
+   return self.width * self.width
+
+Square = struct(
+  TYPEDEF = _Square_typedef,
+  new = _Square_new,
+  area = _Square_area,
+)
+```
+
+This will then genereate markdown that looks like:
+
+```
+::::{bzl:typedef} Square
+A square with fixed size
+
+:::{bzl:field} width
+:type: int
+:::
+:::{bzl:function} new()
+...args etc from _Square_new...
+:::
+:::{bzl:function} area()
+...args etc from _Square_area...
+:::
+::::
+```
+
+Which renders as:
+
+:::{bzl:currentfile} //example:square.bzl
+:::
+
+::::{bzl:typedef} Square
+A square with fixed size
+
+:::{bzl:field} width
+:type: int
+:::
+:::{bzl:function} new()
+...
+:::
+:::{bzl:function} area()
+...
+:::
+::::
