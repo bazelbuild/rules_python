@@ -16,9 +16,9 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:sentinel.bzl", "SentinelInfo")
-load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 load(":py_exec_tools_info.bzl", "PyExecToolsInfo")
+load(":sentinel.bzl", "SentinelInfo")
+load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 
 def _py_exec_tools_toolchain_impl(ctx):
     extra_kwargs = {}
@@ -43,7 +43,7 @@ py_exec_tools_toolchain = rule(
 Provides a toolchain for build time tools.
 
 This provides `ToolchainInfo` with the following attributes:
-* `exec_tools`: {type}`PyExecToolsInfo` 
+* `exec_tools`: {type}`PyExecToolsInfo`
 * `toolchain_label`: {type}`Label` _only present when `--visibile_for_testing=True`
   for internal testing_. The rule's label; this allows identifying what toolchain
   implmentation was selected for testing purposes.

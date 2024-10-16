@@ -16,11 +16,11 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:reexports.bzl", "BuiltinPyRuntimeInfo")
-load("//python/private:util.bzl", "IS_BAZEL_7_OR_HIGHER")
 load(":attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
-load(":providers.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_runtime_info.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
+load(":reexports.bzl", "BuiltinPyRuntimeInfo")
+load(":util.bzl", "IS_BAZEL_7_OR_HIGHER")
 
 _py_builtins = py_internal
 

@@ -15,13 +15,6 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:builders.bzl", "builders")
-load("//python/private:flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
-load(
-    "//python/private:toolchain_types.bzl",
-    "EXEC_TOOLS_TOOLCHAIN_TYPE",
-    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
-)
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
@@ -32,6 +25,7 @@ load(
     "create_srcs_attr",
     "create_srcs_version_attr",
 )
+load(":builders.bzl", "builders")
 load(
     ":common.bzl",
     "check_native_allowed",
@@ -43,8 +37,14 @@ load(
     "filter_to_py_srcs",
     "union_attrs",
 )
-load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(
+    ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
+)
 
 _py_builtins = py_internal
 
@@ -121,7 +121,7 @@ def py_library_impl(ctx, *, semantics):
         DefaultInfo(files = default_outputs, runfiles = runfiles),
         py_info,
         create_instrumented_files_info(ctx),
-        PyCcLinkParamsProvider(cc_info = cc_info),
+        PyCcLinkParamsInfo(cc_info = cc_info),
         create_output_group_info(py_info.transitive_sources, extra_groups = {}),
     ]
     if builtins_py_info:

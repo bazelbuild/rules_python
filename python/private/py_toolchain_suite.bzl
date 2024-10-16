@@ -15,7 +15,7 @@
 """Create the toolchain defs in a BUILD.bazel file."""
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("//python/private:text_util.bzl", "render")
+load(":text_util.bzl", "render")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",

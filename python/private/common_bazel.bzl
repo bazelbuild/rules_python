@@ -16,13 +16,13 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
-load("//python/private:flags.bzl", "PrecompileFlag")
-load("//python/private:py_interpreter_program.bzl", "PyInterpreterProgramInfo")
-load("//python/private:toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 load(":attributes.bzl", "PrecompileAttr", "PrecompileInvalidationModeAttr", "PrecompileSourceRetentionAttr")
 load(":common.bzl", "is_bool")
-load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":flags.bzl", "PrecompileFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_interpreter_program.bzl", "PyInterpreterProgramInfo")
+load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 
 _py_builtins = py_internal
 
@@ -45,8 +45,8 @@ def collect_cc_info(ctx, extra_deps = []):
         if CcInfo in dep:
             cc_infos.append(dep[CcInfo])
 
-        if PyCcLinkParamsProvider in dep:
-            cc_infos.append(dep[PyCcLinkParamsProvider].cc_info)
+        if PyCcLinkParamsInfo in dep:
+            cc_infos.append(dep[PyCcLinkParamsInfo].cc_info)
 
     return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
