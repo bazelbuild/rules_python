@@ -14,7 +14,7 @@
 
 """Create a repository for a locally installed Python runtime."""
 
-load("//python/private:enum.bzl", "enum")
+load(":enum.bzl", "enum")
 load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 
 # buildifier: disable=name-conventions

@@ -14,9 +14,9 @@
 
 "Implementation of py_wheel rule"
 
-load("//python/private:stamp.bzl", "is_stamping_enabled")
 load(":py_package.bzl", "py_package_lib")
 load(":py_wheel_normalize_pep440.bzl", "normalize_pep440")
+load(":stamp.bzl", "is_stamping_enabled")
 
 PyWheelInfo = provider(
     doc = "Information about a wheel produced by `py_wheel`",
