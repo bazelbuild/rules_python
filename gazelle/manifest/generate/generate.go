@@ -55,7 +55,7 @@ func main() {
 		&pipRepositoryName,
 		"pip-repository-name",
 		"",
-		"The name of the pip_install or pip_repository target.")
+		"The name of the pip_parse or pip.parse target.")
 	flag.StringVar(
 		&modulesMappingPath,
 		"modules-mapping",
