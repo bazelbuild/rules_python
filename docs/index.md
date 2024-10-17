@@ -24,9 +24,10 @@ outlined in the [support](support) page.
 Package installation rules for integrating with PyPI and other SimpleAPI
 compatible indexes.
 
-These rules are still `experimental` and the APIs might change more often
-than the core rules or you may experience regressions between the minor
-releases. In that case, please raise a GH issue.
+These rules work and can be used in production, but the cross-platform building
+that supports pulling PyPI dependencies for a target platform that is different
+from the host platform is still in beta and the APIs that are subject to potential
+change are marked as `experimental`.
 
 :::
 
