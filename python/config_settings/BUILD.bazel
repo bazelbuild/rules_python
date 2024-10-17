@@ -11,6 +11,7 @@ load(
 load(
     "//python/private/pypi:flags.bzl",
     "UniversalWhlFlag",
+    "UseFreeThreadingFlag",
     "UseWhlFlag",
     "WhlLibcFlag",
     "define_pypi_internal_flags",
@@ -160,4 +161,11 @@ string_flag(
 
 define_pypi_internal_flags(
     name = "define_pypi_internal_flags",
+)
+
+string_flag(
+    name = "free_threading",
+    build_setting_default = UseFreeThreadingFlag.NO,
+    values = sorted(UseFreeThreadingFlag.__members__.values()),
+    visibility = ["//visibility:public"],
 )
