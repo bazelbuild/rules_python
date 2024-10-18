@@ -27,7 +27,8 @@ def define_hermetic_runtime_toolchain_impl(
         extra_files_glob_exclude,
         python_version,
         python_bin,
-        coverage_tool):
+        coverage_tool,
+        free_threading = False):
     """Define a toolchain implementation for a python-build-standalone repo.
 
     It expected this macro is called in the top-level package of an extracted
@@ -44,13 +45,17 @@ def define_hermetic_runtime_toolchain_impl(
         python_version: {type}`str` The Python version, in `major.minor.micro`
             format.
         python_bin: {type}`str` The path to the Python binary within the
-            repositoroy.
+            repository.
         coverage_tool: {type}`str` optional target to the coverage tool to
             use.
+        free_threading: {type}`bool` optional free-threading support.
+            Default, False.
     """
     _ = name  # @unused
     version_info = semver(python_version)
     version_dict = version_info.to_dict()
+    version_dict["ft_postfix"] = "t" if free_threading else ""
+
     native.filegroup(
         name = "files",
         srcs = native.glob(
@@ -67,19 +72,19 @@ def define_hermetic_runtime_toolchain_impl(
                 "**/* *",  # Bazel does not support spaces in file names.
                 # Unused shared libraries. `python` executable and the `:libpython` target
                 # depend on `libpython{python_version}.so.1.0`.
-                "lib/libpython{major}.{minor}.so".format(**version_dict),
+                "lib/libpython{major}.{minor}{ft_postfix}.so".format(**version_dict),
                 # static libraries
                 "lib/**/*.a",
                 # tests for the standard libraries.
-                "lib/python{major}.{minor}/**/test/**".format(**version_dict),
-                "lib/python{major}.{minor}/**/tests/**".format(**version_dict),
+                "lib/python{major}.{minor}{ft_postfix}/**/test/**".format(**version_dict),
+                "lib/python{major}.{minor}{ft_postfix}/**/tests/**".format(**version_dict),
                 "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
             ] + extra_files_glob_exclude,
         ),
     )
     cc_import(
         name = "interface",
-        interface_library = "libs/python{major}{minor}.lib".format(**version_dict),
+        interface_library = "libs/python{major}{minor}{ft_postfix}.lib".format(**version_dict),
         system_provided = True,
     )
 
@@ -96,7 +101,7 @@ def define_hermetic_runtime_toolchain_impl(
         hdrs = [":includes"],
         includes = [
             "include",
-            "include/python{major}.{minor}".format(**version_dict),
+            "include/python{major}.{minor}{ft_postfix}".format(**version_dict),
             "include/python{major}.{minor}m".format(**version_dict),
         ],
     )
@@ -105,11 +110,11 @@ def define_hermetic_runtime_toolchain_impl(
         hdrs = [":includes"],
         srcs = select({
             "@platforms//os:linux": [
-                "lib/libpython{major}.{minor}.so".format(**version_dict),
-                "lib/libpython{major}.{minor}.so.1.0".format(**version_dict),
+                "lib/libpython{major}.{minor}{ft_postfix}.so".format(**version_dict),
+                "lib/libpython{major}.{minor}{ft_postfix}.so.1.0".format(**version_dict),
             ],
-            "@platforms//os:macos": ["lib/libpython{major}.{minor}.dylib".format(**version_dict)],
-            "@platforms//os:windows": ["python3.dll", "libs/python{major}{minor}.lib".format(**version_dict)],
+            "@platforms//os:macos": ["lib/libpython{major}.{minor}{ft_postfix}.dylib".format(**version_dict)],
+            "@platforms//os:windows": ["python3.dll", "libs/python{major}{minor}{ft_postfix}.lib".format(**version_dict)],
         }),
     )
 
