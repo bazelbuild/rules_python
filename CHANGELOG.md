@@ -20,9 +20,9 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
-## Unreleased
+## [0.37.0] - 2024-10-18
 
-[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
+[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.0
 
 ### Changed
 * **BREAKING** `py_library` no longer puts its source files or generated pyc
