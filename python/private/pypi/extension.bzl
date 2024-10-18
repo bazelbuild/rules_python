@@ -390,21 +390,72 @@ You cannot use both the additive_build_content and additive_build_content_file a
 
                 whl_overrides[whl_name][patch].whls.append(attr.file)
 
+    # Used to track all the different pip hubs and the spoke pip Python
+    # versions.
+    pip_hub_map = {}
+
+    # Keeps track of all the hub's whl repos across the different versions.
+    # dict[hub, dict[whl, dict[version, str pip]]]
+    # Where hub, whl, and pip are the repo names
+    hub_whl_map = {}
+    hub_group_map = {}
+    exposed_packages = {}
+    simpleapi_cache = {}
+
+    is_extension_reproducible = True
+
+    for mod in module_ctx.modules:
+        for pip_attr in mod.tags.parse:
+            hub_name = pip_attr.hub_name
+            if hub_name not in pip_hub_map:
+                pip_hub_map[pip_attr.hub_name] = struct(
+                    module_name = mod.name,
+                    python_versions = [pip_attr.python_version],
+                )
+            elif pip_hub_map[hub_name].module_name != mod.name:
+                # We cannot have two hubs with the same name in different
+                # modules.
+                fail((
+                    "Duplicate cross-module pip hub named '{hub}': pip hub " +
+                    "names must be unique across modules. First defined " +
+                    "by module '{first_module}', second attempted by " +
+                    "module '{second_module}'"
+                ).format(
+                    hub = hub_name,
+                    first_module = pip_hub_map[hub_name].module_name,
+                    second_module = mod.name,
+                ))
+
+            elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
+                fail((
+                    "Duplicate pip python version '{version}' for hub " +
+                    "'{hub}' in module '{module}': the Python versions " +
+                    "used for a hub must be unique"
+                ).format(
+                    hub = hub_name,
+                    module = mod.name,
+                    version = pip_attr.python_version,
+                ))
+            else:
+                pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
+
+            is_hub_reproducible = _create_whl_repos(
+                module_ctx,
+                exposed_packages = exposed_packages,
+                group_map = hub_group_map,
+                pip_attr = pip_attr,
+                simpleapi_cache = simpleapi_cache,
+                whl_map = hub_whl_map,
+                whl_overrides = whl_overrides,
+            )
+            is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
+
     return struct(
         whl_mods = whl_mods,
-        whl_overrides = whl_overrides,
-
-        # Used to track all the different pip hubs and the spoke pip Python
-        # versions.
-        pip_hub_map = {},
-
-        # Keeps track of all the hub's whl repos across the different versions.
-        # dict[hub, dict[whl, dict[version, str pip]]]
-        # Where hub, whl, and pip are the repo names
-        hub_whl_map = {},
-        hub_group_map = {},
-        exposed_packages = {},
-        simpleapi_cache = {},
+        hub_whl_map = hub_whl_map,
+        hub_group_map = hub_group_map,
+        exposed_packages = exposed_packages,
+        is_extension_reproducible = is_extension_reproducible,
     )
 
 def _pip_impl(module_ctx):
@@ -478,54 +529,6 @@ def _pip_impl(module_ctx):
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(mods.whl_mods)
 
-    is_extension_reproducible = True
-
-    for mod in module_ctx.modules:
-        for pip_attr in mod.tags.parse:
-            hub_name = pip_attr.hub_name
-            if hub_name not in mods.pip_hub_map:
-                mods.pip_hub_map[pip_attr.hub_name] = struct(
-                    module_name = mod.name,
-                    python_versions = [pip_attr.python_version],
-                )
-            elif mods.pip_hub_map[hub_name].module_name != mod.name:
-                # We cannot have two hubs with the same name in different
-                # modules.
-                fail((
-                    "Duplicate cross-module pip hub named '{hub}': pip hub " +
-                    "names must be unique across modules. First defined " +
-                    "by module '{first_module}', second attempted by " +
-                    "module '{second_module}'"
-                ).format(
-                    hub = hub_name,
-                    first_module = mods.pip_hub_map[hub_name].module_name,
-                    second_module = mod.name,
-                ))
-
-            elif pip_attr.python_version in mods.pip_hub_map[hub_name].python_versions:
-                fail((
-                    "Duplicate pip python version '{version}' for hub " +
-                    "'{hub}' in module '{module}': the Python versions " +
-                    "used for a hub must be unique"
-                ).format(
-                    hub = hub_name,
-                    module = mod.name,
-                    version = pip_attr.python_version,
-                ))
-            else:
-                mods.pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
-
-            is_hub_reproducible = _create_whl_repos(
-                module_ctx,
-                exposed_packages = mods.exposed_packages,
-                group_map = mods.hub_group_map,
-                pip_attr = pip_attr,
-                simpleapi_cache = mods.simpleapi_cache,
-                whl_map = mods.hub_whl_map,
-                whl_overrides = mods.whl_overrides,
-            )
-            is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
-
     for hub_name, whl_map in mods.hub_whl_map.items():
         hub_repository(
             name = hub_name,
@@ -545,7 +548,7 @@ def _pip_impl(module_ctx):
         # In order to be able to dogfood the `experimental_index_url` feature before it gets
         # stabilized, we have created the `_pip_non_reproducible` function, that will result
         # in extra entries in the lock file.
-        return module_ctx.extension_metadata(reproducible = is_extension_reproducible)
+        return module_ctx.extension_metadata(reproducible = mods.is_extension_reproducible)
     else:
         return None
 
