@@ -194,8 +194,13 @@ The general process is:
    of. The API for the control mechanism can be removed in this release.
 
 Note that the `+1` and `+2` releases are just examples; the steps are not
-required to happen in immedially subsequent releases.
+required to happen in immediately subsequent releases.
 
+Once The first major version is released, the process will be:
+1. In `N.M.0` we introduce the new behaviour, but it is disabled by a feature flag.
+2. In `N.M+1.0` we may choose the behaviour to become the default if it is not too
+   disruptive.
+3. In `N+1.0.0` we get rid of the old behaviour.
 
 ### How to control breaking changes
 

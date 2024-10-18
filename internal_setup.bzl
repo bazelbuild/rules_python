@@ -43,7 +43,6 @@ def rules_python_internal_setup():
         python_versions = sorted(TOOL_VERSIONS.keys()),
     )
 
-    # Because we don't use the pip_install rule, we have to call this to fetch its deps
     pypi_deps()
 
     bazel_skylib_workspace()

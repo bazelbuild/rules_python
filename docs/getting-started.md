@@ -1,7 +1,7 @@
 # Getting started
 
-This doc is a simplified guide to help get started started quickly. It provides
-a simplified introduction to having a working Python program for both bzlmod
+This doc is a simplified guide to help get started quickly. It provides
+a simplified introduction to having a working Python program for both `bzlmod`
 and the older way of using `WORKSPACE`.
 
 It assumes you have a `requirements.txt` file with your PyPI dependencies.
@@ -23,11 +23,11 @@ bazel_dep(name = "rules_python", version = "0.0.0")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    hub_name = "my_deps",
+    hub_name = "pypi",
     python_version = "3.11",
     requirements_lock = "//:requirements.txt",
 )
-use_repo(pip, "my_deps")
+use_repo(pip, "pypi")
 ```
 
 ## Using a WORKSPACE file
@@ -38,19 +38,14 @@ using Bzlmod. Here is a simplified setup to download the prebuilt runtimes.
 ```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-
-# Update the SHA and VERSION to the lastest version available here:
-# https://github.com/bazelbuild/rules_python/releases.
-
-SHA="84aec9e21cc56fbc7f1335035a71c850d1b9b5cc6ff497306f84cced9a769841"
-
-VERSION="0.23.1"
+# Update the snippet based on the latest release below
+# https://github.com/bazelbuild/rules_python/releases
 
 http_archive(
     name = "rules_python",
-    sha256 = SHA,
-    strip_prefix = "rules_python-{}".format(VERSION),
-    url = "https://github.com/bazelbuild/rules_python/releases/download/{}/rules_python-{}.tar.gz".format(VERSION,VERSION),
+    sha256 = "ca77768989a7f311186a29747e3e95c936a41dffac779aff6b443db22290d913",
+    strip_prefix = "rules_python-0.36.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.36.0/rules_python-0.36.0.tar.gz",
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
@@ -66,14 +61,12 @@ python_register_toolchains(
     python_version = "3.11",
 )
 
-load("@python_3_11//:defs.bzl", "interpreter")
-
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
-    ...
-    python_interpreter_target = interpreter,
-    ...
+    name = "pypi",
+    python_interpreter_target = "@python_3_11_host//:python",
+    requirements_lock = "//:requirements.txt",
 )
 ```
 
@@ -89,8 +82,8 @@ py_binary(
   name = "main",
   srcs = ["main.py"],
   deps = [
-      "@my_deps//foo",
-      "@my_deps//bar",
+      "@pypi//foo",
+      "@pypi//bar",
   ]
 )
 ```
