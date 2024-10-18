@@ -403,7 +403,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
     exposed_packages = {}
     whl_libraries = {}
 
-    is_extension_reproducible = True
+    is_reproducible = True
 
     for mod in module_ctx.modules:
         for pip_attr in mod.tags.parse:
@@ -450,15 +450,18 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 whl_overrides = whl_overrides,
                 whl_libraries = whl_libraries,
             )
-            is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
+            is_reproducible = is_reproducible and is_hub_reproducible
 
     return struct(
         whl_mods = whl_mods,
         hub_whl_map = hub_whl_map,
         hub_group_map = hub_group_map,
-        exposed_packages = exposed_packages,
+        exposed_packages = {
+            name: sorted(value)
+            for name, value in exposed_packages.items()
+        },
         whl_libraries = whl_libraries,
-        is_extension_reproducible = is_extension_reproducible,
+        is_reproducible = is_reproducible,
     )
 
 def _pip_impl(module_ctx):
@@ -545,7 +548,7 @@ def _pip_impl(module_ctx):
                 key: json.encode(value)
                 for key, value in whl_map.items()
             },
-            packages = sorted(mods.exposed_packages.get(hub_name, {})),
+            packages = mods.exposed_packages.get(hub_name, {}),
             groups = mods.hub_group_map.get(hub_name),
         )
 
@@ -556,7 +559,7 @@ def _pip_impl(module_ctx):
         # In order to be able to dogfood the `experimental_index_url` feature before it gets
         # stabilized, we have created the `_pip_non_reproducible` function, that will result
         # in extra entries in the lock file.
-        return module_ctx.extension_metadata(reproducible = mods.is_extension_reproducible)
+        return module_ctx.extension_metadata(reproducible = mods.is_reproducible)
     else:
         return None
 
