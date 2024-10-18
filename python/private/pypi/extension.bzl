@@ -62,7 +62,7 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
+def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages, whl_libraries):
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -273,7 +273,7 @@ def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map
                         if len(requirements) > 1:
                             target_platforms = requirement.target_platforms
 
-                    whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
+                    whl_libraries[repo_name] = dict(whl_library_args.items())
 
                     whl_map[hub_name].setdefault(whl_name, []).append(
                         whl_alias(
@@ -311,7 +311,7 @@ def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.
         repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
+        whl_libraries[repo_name] = dict(whl_library_args.items())
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
@@ -393,6 +393,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
     pip_hub_map = {}
+    simpleapi_cache = {}
 
     # Keeps track of all the hub's whl repos across the different versions.
     # dict[hub, dict[whl, dict[version, str pip]]]
@@ -400,7 +401,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
     hub_whl_map = {}
     hub_group_map = {}
     exposed_packages = {}
-    simpleapi_cache = {}
+    whl_libraries = {}
 
     is_extension_reproducible = True
 
@@ -447,6 +448,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 simpleapi_cache = simpleapi_cache,
                 whl_map = hub_whl_map,
                 whl_overrides = whl_overrides,
+                whl_libraries = whl_libraries,
             )
             is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
 
@@ -455,6 +457,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         hub_whl_map = hub_whl_map,
         hub_group_map = hub_group_map,
         exposed_packages = exposed_packages,
+        whl_libraries = whl_libraries,
         is_extension_reproducible = is_extension_reproducible,
     )
 
@@ -528,6 +531,11 @@ def _pip_impl(module_ctx):
 
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(mods.whl_mods)
+
+    for name, args in sorted(mods.whl_libraries.items()):
+        # We sort so that the lock-file remains the same no matter the order of how the
+        # args are manipulated in the code going before.
+        whl_library(name = name, **dict(sorted(args.items())))
 
     for hub_name, whl_map in mods.hub_whl_map.items():
         hub_repository(
