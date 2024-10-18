@@ -13,7 +13,6 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(":version.bzl", "BAZEL_VERSION")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,6 +22,11 @@ exports_files([
     "LICENSE",
     "version.bzl",
 ])
+
+exports_files(
+    [".bazelversion"],
+    visibility = ["//tests:__subpackages__"],
+)
 
 exports_files(
     glob(["*.md"]),
@@ -68,30 +72,4 @@ filegroup(
         "@bazel_tools//tools/python:utils.bzl",
     ],
     visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "assert_bazelversion",
-    srcs = [".bazelversion"],
-    outs = ["assert_bazelversion_test.sh"],
-    cmd = """\
-set -o errexit -o nounset -o pipefail
-current=$$(cat "$(execpath .bazelversion)")
-cat > "$@" <<EOF
-#!/usr/bin/env bash
-set -o errexit -o nounset -o pipefail
-if [[ \"$${{current}}\" != \"{expected}\" ]]; then
-    >&2 echo "ERROR: current bazel version '$${{current}}' is not the expected '{expected}'"
-    exit 1
-fi
-EOF
-""".format(
-        expected = BAZEL_VERSION,
-    ),
-    executable = True,
-)
-
-sh_test(
-    name = "assert_bazelversion_test",
-    srcs = [":assert_bazelversion_test.sh"],
 )

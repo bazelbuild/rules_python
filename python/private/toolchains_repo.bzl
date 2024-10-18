@@ -30,8 +30,8 @@ load(
     "PLATFORMS",
     "WINDOWS_NAME",
 )
-load("//python/private:repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
-load("//python/private:text_util.bzl", "render")
+load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
+load(":text_util.bzl", "render")
 
 def get_repository_name(repository_workspace):
     dummy_label = "//:_"
