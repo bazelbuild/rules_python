@@ -182,7 +182,7 @@ class _MySTRenderer:
         for tag in mod_ext.tag_class:
             tag_name = f"{mod_ext.extension_name}.{tag.tag_name}"
             tag_name = f"{tag.tag_name}"
-            self._write(":::::{bzl:tag-class} ", tag_name, "\n\n")
+            self._write(":::::{bzl:tag-class} ")
 
             _sort_attributes_inplace(tag.attribute)
             self._render_signature(
@@ -192,7 +192,12 @@ class _MySTRenderer:
                 get_default=lambda a: a.default_value,
             )
 
-            self._write(tag.doc_string.strip(), "\n\n")
+            if doc_string := tag.doc_string.strip():
+                self._write(doc_string, "\n\n")
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string and tag.attribute:
+                self.write("\n")
             self._render_attributes(tag.attribute)
             self._write(":::::\n")
         self._write("::::::\n")
@@ -292,10 +297,15 @@ class _MySTRenderer:
 
         parameters = self._render_func_signature(func)
 
-        if doc_string := func.doc_string.strip():
+        doc_string = func.doc_string.strip()
+        if doc_string:
             self._write(doc_string, "\n\n")
 
         if parameters:
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string:
+                self._write("\n")
             for param in parameters:
                 self._write(f":arg {param.name}:\n")
                 if param.default_value:
