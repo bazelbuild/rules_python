@@ -367,15 +367,18 @@ You cannot use both the additive_build_content and additive_build_content_file a
     for module in module_ctx.modules:
         for attr in module.tags.override:
             if not module.is_root:
-                fail("overrides are only supported in root modules")
+                _fail("overrides are only supported in root modules")
+                return None
 
             if not attr.file.endswith(".whl"):
-                fail("Only whl overrides are supported at this time")
+                _fail("Only whl overrides are supported at this time")
+                return None
 
             whl_name = normalize_name(parse_whl_name(attr.file).distribution)
 
             if attr.file in _overriden_whl_set:
-                fail("Duplicate module overrides for '{}'".format(attr.file))
+                _fail("Duplicate module overrides for '{}'".format(attr.file))
+                return None
             _overriden_whl_set[attr.file] = None
 
             for patch in attr.patches:
@@ -416,7 +419,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             elif pip_hub_map[hub_name].module_name != mod.name:
                 # We cannot have two hubs with the same name in different
                 # modules.
-                fail((
+                _fail((
                     "Duplicate cross-module pip hub named '{hub}': pip hub " +
                     "names must be unique across modules. First defined " +
                     "by module '{first_module}', second attempted by " +
@@ -426,9 +429,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     first_module = pip_hub_map[hub_name].module_name,
                     second_module = mod.name,
                 ))
+                return None
 
             elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
-                fail((
+                _fail((
                     "Duplicate pip python version '{version}' for hub " +
                     "'{hub}' in module '{module}': the Python versions " +
                     "used for a hub must be unique"
@@ -437,6 +441,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     module = mod.name,
                     version = pip_attr.python_version,
                 ))
+                return None
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
