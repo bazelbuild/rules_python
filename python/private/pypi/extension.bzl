@@ -37,43 +37,19 @@ def _major_minor_version(version):
     version = semver(version)
     return "{}.{}".format(version.major, version.minor)
 
-def _whl_mods_impl(mctx):
+def _whl_mods_impl(whl_mods_dict):
     """Implementation of the pip.whl_mods tag class.
 
     This creates the JSON files used to modify the creation of different wheels.
 """
-    whl_mods_dict = {}
-    for mod in mctx.modules:
-        for whl_mod_attr in mod.tags.whl_mods:
-            if whl_mod_attr.hub_name not in whl_mods_dict.keys():
-                whl_mods_dict[whl_mod_attr.hub_name] = {whl_mod_attr.whl_name: whl_mod_attr}
-            elif whl_mod_attr.whl_name in whl_mods_dict[whl_mod_attr.hub_name].keys():
-                # We cannot have the same wheel name in the same hub, as we
-                # will create the same JSON file name.
-                fail("""\
-Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
-                    whl_mod_attr.whl_name,
-                    whl_mod_attr.hub_name,
-                ))
-            else:
-                whl_mods_dict[whl_mod_attr.hub_name][whl_mod_attr.whl_name] = whl_mod_attr
-
     for hub_name, whl_maps in whl_mods_dict.items():
         whl_mods = {}
 
         # create a struct that we can pass to the _whl_mods_repo rule
         # to create the different JSON files.
         for whl_name, mods in whl_maps.items():
-            build_content = mods.additive_build_content
-            if mods.additive_build_content_file != None and mods.additive_build_content != "":
-                fail("""\
-You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
-""")
-            elif mods.additive_build_content_file != None:
-                build_content = mctx.read(mods.additive_build_content_file)
-
             whl_mods[whl_name] = json.encode(struct(
-                additive_build_content = build_content,
+                additive_build_content = mods.build_content,
                 copy_files = mods.copy_files,
                 copy_executables = mods.copy_executables,
                 data = mods.data,
@@ -86,7 +62,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
+def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages, whl_libraries):
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -297,7 +273,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
                         if len(requirements) > 1:
                             target_platforms = requirement.target_platforms
 
-                    whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
+                    whl_libraries[repo_name] = dict(whl_library_args.items())
 
                     whl_map[hub_name].setdefault(whl_name, []).append(
                         whl_alias(
@@ -335,7 +311,7 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.
         repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_library(name = repo_name, **dict(sorted(whl_library_args.items())))
+        whl_libraries[repo_name] = dict(whl_library_args.items())
         whl_map[hub_name].setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
@@ -344,6 +320,154 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
         )
 
     return is_hub_reproducible
+
+def parse_modules(module_ctx, _fail = fail):
+    """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
+
+    Args:
+        module_ctx: {type}`module_ctx` module context.
+        _fail: {type}`function` the failure function, mainly for testing.
+
+    Returns:
+        A struct with the following attributes:
+    """
+    whl_mods = {}
+    for mod in module_ctx.modules:
+        for whl_mod in mod.tags.whl_mods:
+            if whl_mod.whl_name in whl_mods.get(whl_mod.hub_name, {}):
+                # We cannot have the same wheel name in the same hub, as we
+                # will create the same JSON file name.
+                _fail("""\
+Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
+                    whl_mod.whl_name,
+                    whl_mod.hub_name,
+                ))
+                return None
+
+            build_content = whl_mod.additive_build_content
+            if whl_mod.additive_build_content_file != None and whl_mod.additive_build_content != "":
+                _fail("""\
+You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
+""")
+                return None
+            elif whl_mod.additive_build_content_file != None:
+                build_content = module_ctx.read(whl_mod.additive_build_content_file)
+
+            whl_mods.setdefault(whl_mod.hub_name, {})[whl_mod.whl_name] = struct(
+                build_content = build_content,
+                copy_files = whl_mod.copy_files,
+                copy_executables = whl_mod.copy_executables,
+                data = whl_mod.data,
+                data_exclude_glob = whl_mod.data_exclude_glob,
+                srcs_exclude_glob = whl_mod.srcs_exclude_glob,
+            )
+
+    _overriden_whl_set = {}
+    whl_overrides = {}
+    for module in module_ctx.modules:
+        for attr in module.tags.override:
+            if not module.is_root:
+                _fail("overrides are only supported in root modules")
+                return None
+
+            if not attr.file.endswith(".whl"):
+                _fail("Only whl overrides are supported at this time")
+                return None
+
+            whl_name = normalize_name(parse_whl_name(attr.file).distribution)
+
+            if attr.file in _overriden_whl_set:
+                _fail("Duplicate module overrides for '{}'".format(attr.file))
+                return None
+            _overriden_whl_set[attr.file] = None
+
+            for patch in attr.patches:
+                if whl_name not in whl_overrides:
+                    whl_overrides[whl_name] = {}
+
+                if patch not in whl_overrides[whl_name]:
+                    whl_overrides[whl_name][patch] = struct(
+                        patch_strip = attr.patch_strip,
+                        whls = [],
+                    )
+
+                whl_overrides[whl_name][patch].whls.append(attr.file)
+
+    # Used to track all the different pip hubs and the spoke pip Python
+    # versions.
+    pip_hub_map = {}
+    simpleapi_cache = {}
+
+    # Keeps track of all the hub's whl repos across the different versions.
+    # dict[hub, dict[whl, dict[version, str pip]]]
+    # Where hub, whl, and pip are the repo names
+    hub_whl_map = {}
+    hub_group_map = {}
+    exposed_packages = {}
+    whl_libraries = {}
+
+    is_reproducible = True
+
+    for mod in module_ctx.modules:
+        for pip_attr in mod.tags.parse:
+            hub_name = pip_attr.hub_name
+            if hub_name not in pip_hub_map:
+                pip_hub_map[pip_attr.hub_name] = struct(
+                    module_name = mod.name,
+                    python_versions = [pip_attr.python_version],
+                )
+            elif pip_hub_map[hub_name].module_name != mod.name:
+                # We cannot have two hubs with the same name in different
+                # modules.
+                _fail((
+                    "Duplicate cross-module pip hub named '{hub}': pip hub " +
+                    "names must be unique across modules. First defined " +
+                    "by module '{first_module}', second attempted by " +
+                    "module '{second_module}'"
+                ).format(
+                    hub = hub_name,
+                    first_module = pip_hub_map[hub_name].module_name,
+                    second_module = mod.name,
+                ))
+                return None
+
+            elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
+                _fail((
+                    "Duplicate pip python version '{version}' for hub " +
+                    "'{hub}' in module '{module}': the Python versions " +
+                    "used for a hub must be unique"
+                ).format(
+                    hub = hub_name,
+                    module = mod.name,
+                    version = pip_attr.python_version,
+                ))
+                return None
+            else:
+                pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
+
+            is_hub_reproducible = _create_whl_repos(
+                module_ctx,
+                exposed_packages = exposed_packages,
+                group_map = hub_group_map,
+                pip_attr = pip_attr,
+                simpleapi_cache = simpleapi_cache,
+                whl_map = hub_whl_map,
+                whl_overrides = whl_overrides,
+                whl_libraries = whl_libraries,
+            )
+            is_reproducible = is_reproducible and is_hub_reproducible
+
+    return struct(
+        whl_mods = whl_mods,
+        hub_whl_map = hub_whl_map,
+        hub_group_map = hub_group_map,
+        exposed_packages = {
+            name: sorted(value)
+            for name, value in exposed_packages.items()
+        },
+        whl_libraries = whl_libraries,
+        is_reproducible = is_reproducible,
+    )
 
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
@@ -411,91 +535,17 @@ def _pip_impl(module_ctx):
         module_ctx: module contents
     """
 
+    mods = parse_modules(module_ctx)
+
     # Build all of the wheel modifications if the tag class is called.
-    _whl_mods_impl(module_ctx)
+    _whl_mods_impl(mods.whl_mods)
 
-    _overriden_whl_set = {}
-    whl_overrides = {}
+    # We sort so that the lock-file remains the same no matter the order of how the
+    # args are manipulated in the code going before.
+    for name, args in sorted(mods.whl_libraries.items()):
+        whl_library(name = name, **dict(sorted(args.items())))
 
-    for module in module_ctx.modules:
-        for attr in module.tags.override:
-            if not module.is_root:
-                fail("overrides are only supported in root modules")
-
-            if not attr.file.endswith(".whl"):
-                fail("Only whl overrides are supported at this time")
-
-            whl_name = normalize_name(parse_whl_name(attr.file).distribution)
-
-            if attr.file in _overriden_whl_set:
-                fail("Duplicate module overrides for '{}'".format(attr.file))
-            _overriden_whl_set[attr.file] = None
-
-            for patch in attr.patches:
-                if whl_name not in whl_overrides:
-                    whl_overrides[whl_name] = {}
-
-                if patch not in whl_overrides[whl_name]:
-                    whl_overrides[whl_name][patch] = struct(
-                        patch_strip = attr.patch_strip,
-                        whls = [],
-                    )
-
-                whl_overrides[whl_name][patch].whls.append(attr.file)
-
-    # Used to track all the different pip hubs and the spoke pip Python
-    # versions.
-    pip_hub_map = {}
-
-    # Keeps track of all the hub's whl repos across the different versions.
-    # dict[hub, dict[whl, dict[version, str pip]]]
-    # Where hub, whl, and pip are the repo names
-    hub_whl_map = {}
-    hub_group_map = {}
-    exposed_packages = {}
-
-    simpleapi_cache = {}
-    is_extension_reproducible = True
-
-    for mod in module_ctx.modules:
-        for pip_attr in mod.tags.parse:
-            hub_name = pip_attr.hub_name
-            if hub_name not in pip_hub_map:
-                pip_hub_map[pip_attr.hub_name] = struct(
-                    module_name = mod.name,
-                    python_versions = [pip_attr.python_version],
-                )
-            elif pip_hub_map[hub_name].module_name != mod.name:
-                # We cannot have two hubs with the same name in different
-                # modules.
-                fail((
-                    "Duplicate cross-module pip hub named '{hub}': pip hub " +
-                    "names must be unique across modules. First defined " +
-                    "by module '{first_module}', second attempted by " +
-                    "module '{second_module}'"
-                ).format(
-                    hub = hub_name,
-                    first_module = pip_hub_map[hub_name].module_name,
-                    second_module = mod.name,
-                ))
-
-            elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
-                fail((
-                    "Duplicate pip python version '{version}' for hub " +
-                    "'{hub}' in module '{module}': the Python versions " +
-                    "used for a hub must be unique"
-                ).format(
-                    hub = hub_name,
-                    module = mod.name,
-                    version = pip_attr.python_version,
-                ))
-            else:
-                pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
-
-            is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache, exposed_packages)
-            is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
-
-    for hub_name, whl_map in hub_whl_map.items():
+    for hub_name, whl_map in sorted(mods.hub_whl_map.items()):
         hub_repository(
             name = hub_name,
             repo_name = hub_name,
@@ -503,8 +553,8 @@ def _pip_impl(module_ctx):
                 key: json.encode(value)
                 for key, value in whl_map.items()
             },
-            packages = sorted(exposed_packages.get(hub_name, {})),
-            groups = hub_group_map.get(hub_name),
+            packages = mods.exposed_packages.get(hub_name, {}),
+            groups = mods.hub_group_map.get(hub_name),
         )
 
     if bazel_features.external_deps.extension_metadata_has_reproducible:
@@ -514,7 +564,7 @@ def _pip_impl(module_ctx):
         # In order to be able to dogfood the `experimental_index_url` feature before it gets
         # stabilized, we have created the `_pip_non_reproducible` function, that will result
         # in extra entries in the lock file.
-        return module_ctx.extension_metadata(reproducible = is_extension_reproducible)
+        return module_ctx.extension_metadata(reproducible = mods.is_reproducible)
     else:
         return None
 
