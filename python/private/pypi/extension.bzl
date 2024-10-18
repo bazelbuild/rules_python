@@ -37,43 +37,19 @@ def _major_minor_version(version):
     version = semver(version)
     return "{}.{}".format(version.major, version.minor)
 
-def _whl_mods_impl(mctx):
+def _whl_mods_impl(whl_mods_dict):
     """Implementation of the pip.whl_mods tag class.
 
     This creates the JSON files used to modify the creation of different wheels.
 """
-    whl_mods_dict = {}
-    for mod in mctx.modules:
-        for whl_mod_attr in mod.tags.whl_mods:
-            if whl_mod_attr.hub_name not in whl_mods_dict.keys():
-                whl_mods_dict[whl_mod_attr.hub_name] = {whl_mod_attr.whl_name: whl_mod_attr}
-            elif whl_mod_attr.whl_name in whl_mods_dict[whl_mod_attr.hub_name].keys():
-                # We cannot have the same wheel name in the same hub, as we
-                # will create the same JSON file name.
-                fail("""\
-Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
-                    whl_mod_attr.whl_name,
-                    whl_mod_attr.hub_name,
-                ))
-            else:
-                whl_mods_dict[whl_mod_attr.hub_name][whl_mod_attr.whl_name] = whl_mod_attr
-
     for hub_name, whl_maps in whl_mods_dict.items():
         whl_mods = {}
 
         # create a struct that we can pass to the _whl_mods_repo rule
         # to create the different JSON files.
         for whl_name, mods in whl_maps.items():
-            build_content = mods.additive_build_content
-            if mods.additive_build_content_file != None and mods.additive_build_content != "":
-                fail("""\
-You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
-""")
-            elif mods.additive_build_content_file != None:
-                build_content = mctx.read(mods.additive_build_content_file)
-
             whl_mods[whl_name] = json.encode(struct(
-                additive_build_content = build_content,
+                additive_build_content = mods.build_content,
                 copy_files = mods.copy_files,
                 copy_executables = mods.copy_executables,
                 data = mods.data,
@@ -345,6 +321,51 @@ def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, s
 
     return is_hub_reproducible
 
+def parse_modules(module_ctx, _fail = fail):
+    """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
+
+    Args:
+        module_ctx: {type}`module_ctx` module context.
+        _fail: {type}`function` the failure function, mainly for testing.
+
+    Returns:
+        A struct with the following attributes:
+    """
+    whl_mods = {}
+    for mod in module_ctx.modules:
+        for whl_mod in mod.tags.whl_mods:
+            if whl_mod.whl_name in whl_mods.get(whl_mod.hub_name, {}):
+                # We cannot have the same wheel name in the same hub, as we
+                # will create the same JSON file name.
+                _fail("""\
+Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
+                    whl_mod.whl_name,
+                    whl_mod.hub_name,
+                ))
+                return None
+
+            build_content = whl_mod.additive_build_content
+            if whl_mod.additive_build_content_file != None and whl_mod.additive_build_content != "":
+                _fail("""\
+You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
+""")
+                return None
+            elif whl_mod.additive_build_content_file != None:
+                build_content = module_ctx.read(whl_mod.additive_build_content_file)
+
+            whl_mods.setdefault(whl_mod.hub_name, {})[whl_mod.whl_name] = struct(
+                build_content = build_content,
+                copy_files = whl_mod.copy_files,
+                copy_executables = whl_mod.copy_executables,
+                data = whl_mod.data,
+                data_exclude_glob = whl_mod.data_exclude_glob,
+                srcs_exclude_glob = whl_mod.srcs_exclude_glob,
+            )
+
+    return struct(
+        whl_mods = whl_mods,
+    )
+
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
@@ -411,8 +432,10 @@ def _pip_impl(module_ctx):
         module_ctx: module contents
     """
 
+    mods = parse_modules(module_ctx)
+
     # Build all of the wheel modifications if the tag class is called.
-    _whl_mods_impl(module_ctx)
+    _whl_mods_impl(mods.whl_mods)
 
     _overriden_whl_set = {}
     whl_overrides = {}
