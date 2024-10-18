@@ -535,12 +535,12 @@ def _pip_impl(module_ctx):
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(mods.whl_mods)
 
+    # We sort so that the lock-file remains the same no matter the order of how the
+    # args are manipulated in the code going before.
     for name, args in sorted(mods.whl_libraries.items()):
-        # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before.
         whl_library(name = name, **dict(sorted(args.items())))
 
-    for hub_name, whl_map in mods.hub_whl_map.items():
+    for hub_name, whl_map in sorted(mods.hub_whl_map.items()):
         hub_repository(
             name = hub_name,
             repo_name = hub_name,
