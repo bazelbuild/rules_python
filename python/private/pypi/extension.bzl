@@ -62,7 +62,7 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
+def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages):
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -362,8 +362,37 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 srcs_exclude_glob = whl_mod.srcs_exclude_glob,
             )
 
+    _overriden_whl_set = {}
+    whl_overrides = {}
+    for module in module_ctx.modules:
+        for attr in module.tags.override:
+            if not module.is_root:
+                fail("overrides are only supported in root modules")
+
+            if not attr.file.endswith(".whl"):
+                fail("Only whl overrides are supported at this time")
+
+            whl_name = normalize_name(parse_whl_name(attr.file).distribution)
+
+            if attr.file in _overriden_whl_set:
+                fail("Duplicate module overrides for '{}'".format(attr.file))
+            _overriden_whl_set[attr.file] = None
+
+            for patch in attr.patches:
+                if whl_name not in whl_overrides:
+                    whl_overrides[whl_name] = {}
+
+                if patch not in whl_overrides[whl_name]:
+                    whl_overrides[whl_name][patch] = struct(
+                        patch_strip = attr.patch_strip,
+                        whls = [],
+                    )
+
+                whl_overrides[whl_name][patch].whls.append(attr.file)
+
     return struct(
         whl_mods = whl_mods,
+        whl_overrides = whl_overrides,
     )
 
 def _pip_impl(module_ctx):
@@ -437,35 +466,6 @@ def _pip_impl(module_ctx):
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(mods.whl_mods)
 
-    _overriden_whl_set = {}
-    whl_overrides = {}
-
-    for module in module_ctx.modules:
-        for attr in module.tags.override:
-            if not module.is_root:
-                fail("overrides are only supported in root modules")
-
-            if not attr.file.endswith(".whl"):
-                fail("Only whl overrides are supported at this time")
-
-            whl_name = normalize_name(parse_whl_name(attr.file).distribution)
-
-            if attr.file in _overriden_whl_set:
-                fail("Duplicate module overrides for '{}'".format(attr.file))
-            _overriden_whl_set[attr.file] = None
-
-            for patch in attr.patches:
-                if whl_name not in whl_overrides:
-                    whl_overrides[whl_name] = {}
-
-                if patch not in whl_overrides[whl_name]:
-                    whl_overrides[whl_name][patch] = struct(
-                        patch_strip = attr.patch_strip,
-                        whls = [],
-                    )
-
-                whl_overrides[whl_name][patch].whls.append(attr.file)
-
     # Used to track all the different pip hubs and the spoke pip Python
     # versions.
     pip_hub_map = {}
@@ -515,7 +515,15 @@ def _pip_impl(module_ctx):
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            is_hub_reproducible = _create_whl_repos(module_ctx, pip_attr, hub_whl_map, whl_overrides, hub_group_map, simpleapi_cache, exposed_packages)
+            is_hub_reproducible = _create_whl_repos(
+                module_ctx,
+                exposed_packages = exposed_packages,
+                group_map = hub_group_map,
+                pip_attr = pip_attr,
+                simpleapi_cache = simpleapi_cache,
+                whl_map = hub_whl_map,
+                whl_overrides = mods.whl_overrides,
+            )
             is_extension_reproducible = is_extension_reproducible and is_hub_reproducible
 
     for hub_name, whl_map in hub_whl_map.items():
