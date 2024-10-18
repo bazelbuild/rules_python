@@ -34,3 +34,6 @@ build:rtd --stamp
 build:rtd --enable_bzlmod
 
 build --lockfile_mode=update
+
+# See https://github.com/bazelbuild/rules_python/issues/2282
+build --incompatible_auto_exec_groups
