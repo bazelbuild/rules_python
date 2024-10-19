@@ -319,12 +319,14 @@ def _create_whl_repos(
         whl_map = whl_map,
     )
 
-def parse_modules(module_ctx, _fail = fail):
+def parse_modules(module_ctx, _fail = fail, simpleapi_download = simpleapi_download):
     """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
 
     Args:
         module_ctx: {type}`module_ctx` module context.
         _fail: {type}`function` the failure function, mainly for testing.
+        simpleapi_download: {type}`function` the function to download from PyPI. See
+            {obj}`simpleapi_download` for the API docs.
 
     Returns:
         A struct with the following attributes:
