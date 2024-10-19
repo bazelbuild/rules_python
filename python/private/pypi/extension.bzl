@@ -68,7 +68,7 @@ def _set_or_fail(d, key, value, msg):
 
     d[key] = value
 
-def _create_whl_repos_from_requirements(*, requirements, pip_attr, whl_library_args):
+def _create_whl_repos_from_requirements_main(*, requirements, pip_attr, whl_library_args):
     is_exposed = False
     whl_libraries = []
     for requirement in requirements:
@@ -105,13 +105,64 @@ def _create_whl_repos_from_requirements(*, requirements, pip_attr, whl_library_a
             )
 
     return struct(
-        libs = whl_libraries,
+        repos = whl_libraries,
         is_exposed = is_exposed,
     )
 
-# def _create_whl_repos_from_requirements_fallback():
-#     pass
-#
+def _create_whl_repos_from_requirements_fallback(
+        *,
+        requirements,
+        pip_attr,
+        repository_platform,
+        whl_library_args,
+        is_fallback,
+        logger):
+    requirement = select_requirement(
+        requirements,
+        platform = None if pip_attr.download_only else repository_platform,
+    )
+    if not requirement:
+        # Sometimes the package is not present for host platform if there
+        # are whls specified only in particular requirements files, in that
+        # case just continue, however, if the download_only flag is set up,
+        # then the user can also specify the target platform of the wheel
+        # packages they want to download, in that case there will be always
+        # a requirement here, so we will not be in this code branch.
+        return []
+    elif is_fallback:
+        logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
+
+    whl_library_args["requirement"] = requirement.requirement_line
+    if requirement.extra_pip_args:
+        whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+
+    return [
+        dict(whl_library_args.items()),  # make a copy
+    ]
+
+def _create_whl_repos_from_requirements(*, get_index_urls, requirements, pip_attr, whl_library_args, repository_platform, logger):
+    if get_index_urls:
+        result = _create_whl_repos_from_requirements_main(
+            requirements = requirements,
+            pip_attr = pip_attr,
+            whl_library_args = whl_library_args,
+        )
+
+        if result.repos:
+            return result
+
+    return struct(
+        repos = _create_whl_repos_from_requirements_fallback(
+            requirements = requirements,
+            pip_attr = pip_attr,
+            whl_library_args = whl_library_args,
+            repository_platform = repository_platform,
+            is_fallback = get_index_urls != None,
+            logger = logger,
+        ),
+        is_exposed = False,
+    )
+
 def _create_whl_repos(
         module_ctx,
         *,
@@ -211,80 +262,48 @@ def _create_whl_repos(
             if v != default
         })
 
-        if get_index_urls:
-            result = _create_whl_repos_from_requirements(
-                requirements = requirements,
-                pip_attr = pip_attr,
-                whl_library_args = whl_library_args,
+        result = _create_whl_repos_from_requirements(
+            get_index_urls = get_index_urls,
+            requirements = requirements,
+            pip_attr = pip_attr,
+            whl_library_args = whl_library_args,
+            repository_platform = repository_platform,
+            logger = logger,
+        )
+        for args in result.repos:
+            filename = args.get("filename")
+            if filename:
+                repo_name = whl_repo_name(pip_name, filename, args["sha256"])
+
+                # Pure python wheels or sdists may need to have a platform here
+                # because they need to be used only on particular platforms
+                # because the provided requirements files have different
+                # versions.
+                target_platforms = args["experimental_target_platforms"] if (
+                    filename.endswith("-any.whl") or
+                    not filename.endswith(".whl")
+                ) and len(requirements) > 1 else None
+            else:
+                repo_name = "{}_{}".format(pip_name, whl_name)
+                target_platforms = None
+
+            _set_or_fail(
+                whl_libraries,
+                repo_name,
+                args,
+                lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
             )
-            for args in result.libs:
-                sha256 = args["sha256"]
-                filename = args["filename"]
-                target_platforms = args["experimental_target_platforms"]
+            whl_map.setdefault(whl_name, []).append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                    filename = filename,
+                    target_platforms = target_platforms,
+                ),
+            )
 
-                repo_name = whl_repo_name(pip_name, filename, sha256)
-
-                _set_or_fail(
-                    whl_libraries,
-                    repo_name,
-                    args,
-                    lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
-                )
-                whl_map.setdefault(whl_name, []).append(
-                    whl_alias(
-                        repo = repo_name,
-                        version = major_minor,
-                        filename = filename,
-                        # Pure python wheels or sdists may need to have a
-                        # platform here because they need to be used only
-                        # on particular platforms because the provided
-                        # requirements files have different versions.
-                        target_platforms = target_platforms if (
-                            filename.endswith("-any.whl") or
-                            not filename.endswith(".whl")
-                        ) and len(requirements) > 1 else None,
-                    ),
-                )
-
-            if result.libs:
-                if result.is_exposed:
-                    exposed_packages[whl_name] = None
-                continue
-
-        requirement = select_requirement(
-            requirements,
-            platform = None if pip_attr.download_only else repository_platform,
-        )
-        if not requirement:
-            # Sometimes the package is not present for host platform if there
-            # are whls specified only in particular requirements files, in that
-            # case just continue, however, if the download_only flag is set up,
-            # then the user can also specify the target platform of the wheel
-            # packages they want to download, in that case there will be always
-            # a requirement here, so we will not be in this code branch.
-            continue
-        elif get_index_urls:
-            logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
-
-        whl_library_args["requirement"] = requirement.requirement_line
-        if requirement.extra_pip_args:
-            whl_library_args["extra_pip_args"] = requirement.extra_pip_args
-
-        # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before.
-        repo_name = "{}_{}".format(pip_name, whl_name)
-        _set_or_fail(
-            whl_libraries,
-            repo_name,
-            dict(whl_library_args.items()),  # make a copy
-            lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
-        )
-        whl_map.setdefault(whl_name, []).append(
-            whl_alias(
-                repo = repo_name,
-                version = major_minor,
-            ),
-        )
+        if result.is_exposed:
+            exposed_packages[whl_name] = None
 
     return struct(
         exposed_packages = exposed_packages,
