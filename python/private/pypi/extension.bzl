@@ -70,7 +70,6 @@ def _create_whl_repos(
         get_index_urls = None):
     exposed_packages = {}
     whl_libraries = {}
-    group_map = {}
     whl_map = {}
 
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
@@ -123,12 +122,6 @@ def _create_whl_repos(
             for group_name, group_whls in requirement_cycles.items()
             for whl_name in group_whls
         }
-
-        # TODO @aignas 2024-04-05: how do we support different requirement
-        # cycles for different abis/oses? For now we will need the users to
-        # assume the same groups across all versions/platforms until we start
-        # using an alternative cycle resolution strategy.
-        group_map[hub_name] = pip_attr.experimental_requirement_cycles
     else:
         whl_group_mapping = {}
         requirement_cycles = {}
@@ -313,7 +306,6 @@ def _create_whl_repos(
 
     return struct(
         exposed_packages = exposed_packages,
-        group_map = group_map,
         is_hub_reproducible = is_hub_reproducible,
         whl_libraries = whl_libraries,
         whl_map = whl_map,
@@ -473,7 +465,12 @@ You cannot use both the additive_build_content and additive_build_content_file a
             for hub, config_settings in result.whl_map.items():
                 for whl, settings in config_settings.items():
                     hub_whl_map.setdefault(hub, {}).setdefault(whl, []).extend(settings)
-            hub_group_map.update(result.group_map)
+
+            # TODO @aignas 2024-04-05: how do we support different requirement
+            # cycles for different abis/oses? For now we will need the users to
+            # assume the same groups across all versions/platforms until we start
+            # using an alternative cycle resolution strategy.
+            hub_group_map[pip_attr.hub_name] = pip_attr.experimental_requirement_cycles
             exposed_packages.update(result.exposed_packages)
             is_reproducible = is_reproducible and result.is_hub_reproducible
 
