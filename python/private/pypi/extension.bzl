@@ -103,9 +103,6 @@ def _create_whl_repos(
     )
     major_minor = _major_minor_version(pip_attr.python_version)
 
-    if hub_name not in whl_map:
-        whl_map[hub_name] = {}
-
     whl_modifications = {}
     if pip_attr.whl_modifications != None:
         for mod, whl_name in pip_attr.whl_modifications.items():
@@ -260,7 +257,7 @@ def _create_whl_repos(
 
                     whl_libraries[repo_name] = dict(whl_library_args.items())
 
-                    whl_map[hub_name].setdefault(whl_name, []).append(
+                    whl_map.setdefault(whl_name, []).append(
                         whl_alias(
                             repo = repo_name,
                             version = major_minor,
@@ -297,7 +294,7 @@ def _create_whl_repos(
         # args are manipulated in the code going before.
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_libraries[repo_name] = dict(whl_library_args.items())
-        whl_map[hub_name].setdefault(whl_name, []).append(
+        whl_map.setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
                 version = major_minor,
@@ -462,9 +459,8 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 get_index_urls = get_index_urls,
             )
             whl_libraries.update(result.whl_libraries)
-            for hub, config_settings in result.whl_map.items():
-                for whl, settings in config_settings.items():
-                    hub_whl_map.setdefault(hub, {}).setdefault(whl, []).extend(settings)
+            for whl, aliases in result.whl_map.items():
+                hub_whl_map.setdefault(pip_attr.hub_name, {}).setdefault(whl, []).extend(aliases)
 
             # TODO @aignas 2024-04-05: how do we support different requirement
             # cycles for different abis/oses? For now we will need the users to
