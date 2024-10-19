@@ -209,6 +209,62 @@ func_info: { function_name: "Beta.Sub.TYPEDEF" }
         self.assertIn("\n::::::::::::{bzl:typedef} Carl.ns.Alpha\n", actual)
         self.assertIn("\n:::::::::::::{bzl:typedef} Zeta\n", actual)
 
+    def test_render_func_no_doc_with_args(self):
+        proto_text = """
+file: "@repo//pkg:foo.bzl"
+func_info: {
+  function_name: "func"
+  parameter: {
+    name: "param"
+    doc_string: "param_doc"
+  }
+}
+"""
+        actual = self._render(proto_text)
+        expected = """
+:::::::::::::{bzl:function} func(*param)
+
+:arg param:
+  param_doc
+
+:::::::::::::
+"""
+        self.assertIn(expected, actual)
+
+    def test_render_module_extension(self):
+        proto_text = """
+file: "@repo//pkg:foo.bzl"
+module_extension_info: {
+  extension_name: "bzlmod_ext"
+  tag_class: {
+    tag_name: "bzlmod_ext_tag_a"
+    doc_string: "BZLMOD_EXT_TAG_A_DOC_STRING"
+    attribute: {
+      name: "attr1",
+      doc_string: "attr1doc"
+      type: STRING_LIST
+    }
+  }
+}
+"""
+        actual = self._render(proto_text)
+        expected = """
+:::::{bzl:tag-class} bzlmod_ext_tag_a(attr1)
+
+BZLMOD_EXT_TAG_A_DOC_STRING
+
+:attr attr1:
+  {type}`list[str]`
+  attr1doc
+  :::{bzl:attr-info} Info
+  :::
+
+
+:::::
+::::::
+"""
+        self.assertIn(expected, actual)
+
 
 if __name__ == "__main__":
     absltest.main()
