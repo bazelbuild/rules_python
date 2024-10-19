@@ -268,7 +268,7 @@ def _create_whl_repos(
 
             if found_something:
                 if is_exposed:
-                    exposed_packages.setdefault(hub_name, {})[whl_name] = None
+                    exposed_packages[whl_name] = None
                 continue
 
         requirement = select_requirement(
@@ -401,7 +401,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         for pip_attr in mod.tags.parse:
             hub_name = pip_attr.hub_name
             if hub_name not in pip_hub_map:
-                pip_hub_map[pip_attr.hub_name] = struct(
+                pip_hub_map[hub_name] = struct(
                     module_name = mod.name,
                     python_versions = [pip_attr.python_version],
                 )
@@ -432,7 +432,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 ))
                 return None
             else:
-                pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
+                pip_hub_map[hub_name].python_versions.append(pip_attr.python_version)
 
             get_index_urls = None
             if pip_attr.experimental_index_url:
@@ -460,14 +460,14 @@ You cannot use both the additive_build_content and additive_build_content_file a
             )
             whl_libraries.update(result.whl_libraries)
             for whl, aliases in result.whl_map.items():
-                hub_whl_map.setdefault(pip_attr.hub_name, {}).setdefault(whl, []).extend(aliases)
+                hub_whl_map.setdefault(hub_name, {}).setdefault(whl, []).extend(aliases)
 
             # TODO @aignas 2024-04-05: how do we support different requirement
             # cycles for different abis/oses? For now we will need the users to
             # assume the same groups across all versions/platforms until we start
             # using an alternative cycle resolution strategy.
-            hub_group_map[pip_attr.hub_name] = pip_attr.experimental_requirement_cycles
-            exposed_packages.update(result.exposed_packages)
+            hub_group_map[hub_name] = pip_attr.experimental_requirement_cycles
+            exposed_packages.setdefault(hub_name, {}).update(result.exposed_packages)
             is_reproducible = is_reproducible and result.is_hub_reproducible
 
     return struct(
