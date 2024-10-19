@@ -62,6 +62,12 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
+def _set_or_fail(d, key, value, msg):
+    if key in d:
+        fail(msg(key, d[key], value))
+
+    d[key] = value
+
 def _create_whl_repos(
         module_ctx,
         *,
@@ -255,7 +261,12 @@ def _create_whl_repos(
                         if len(requirements) > 1:
                             target_platforms = requirement.target_platforms
 
-                    whl_libraries[repo_name] = dict(whl_library_args.items())
+                    _set_or_fail(
+                        whl_libraries,
+                        repo_name,
+                        dict(whl_library_args.items()),  # make a copy
+                        lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
+                    )
 
                     whl_map.setdefault(whl_name, []).append(
                         whl_alias(
@@ -293,7 +304,12 @@ def _create_whl_repos(
         # We sort so that the lock-file remains the same no matter the order of how the
         # args are manipulated in the code going before.
         repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_libraries[repo_name] = dict(whl_library_args.items())
+        _set_or_fail(
+            whl_libraries,
+            repo_name,
+            dict(whl_library_args.items()),  # make a copy
+            lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
+        )
         whl_map.setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
