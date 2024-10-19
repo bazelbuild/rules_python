@@ -67,7 +67,7 @@ def _create_whl_repos(
         *,
         pip_attr,
         whl_overrides,
-        simpleapi_cache):
+        get_index_urls = None):
     exposed_packages = {}
     whl_libraries = {}
     group_map = {}
@@ -134,24 +134,6 @@ def _create_whl_repos(
         requirement_cycles = {}
 
     # Create a new wheel library for each of the different whls
-
-    get_index_urls = None
-    if pip_attr.experimental_index_url:
-        get_index_urls = lambda ctx, distributions: simpleapi_download(
-            ctx,
-            attr = struct(
-                index_url = pip_attr.experimental_index_url,
-                extra_index_urls = pip_attr.experimental_extra_index_urls or [],
-                index_url_overrides = pip_attr.experimental_index_url_overrides or {},
-                sources = distributions,
-                envsubst = pip_attr.envsubst,
-                # Auth related info
-                netrc = pip_attr.netrc,
-                auth_patterns = pip_attr.auth_patterns,
-            ),
-            cache = simpleapi_cache,
-            parallel_download = pip_attr.parallel_download,
-        )
 
     requirements_by_platform = parse_requirements(
         module_ctx,
@@ -461,11 +443,29 @@ You cannot use both the additive_build_content and additive_build_content_file a
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
+            get_index_urls = None
+            if pip_attr.experimental_index_url:
+                get_index_urls = lambda ctx, distributions: simpleapi_download(
+                    ctx,
+                    attr = struct(
+                        index_url = pip_attr.experimental_index_url,
+                        extra_index_urls = pip_attr.experimental_extra_index_urls or [],
+                        index_url_overrides = pip_attr.experimental_index_url_overrides or {},
+                        sources = distributions,
+                        envsubst = pip_attr.envsubst,
+                        # Auth related info
+                        netrc = pip_attr.netrc,
+                        auth_patterns = pip_attr.auth_patterns,
+                    ),
+                    cache = simpleapi_cache,
+                    parallel_download = pip_attr.parallel_download,
+                )
+
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = pip_attr,
-                simpleapi_cache = simpleapi_cache,
                 whl_overrides = whl_overrides,
+                get_index_urls = get_index_urls,
             )
             whl_libraries.update(result.whl_libraries)
             for hub, config_settings in result.whl_map.items():
