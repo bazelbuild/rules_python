@@ -459,24 +459,26 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     parallel_download = pip_attr.parallel_download,
                 )
 
+            requirements_by_platform = requirements_files_by_platform(
+                requirements_by_platform = pip_attr.requirements_by_platform,
+                requirements_linux = pip_attr.requirements_linux,
+                requirements_lock = pip_attr.requirements_lock,
+                requirements_osx = pip_attr.requirements_darwin,
+                requirements_windows = pip_attr.requirements_windows,
+                extra_pip_args = pip_attr.extra_pip_args,
+                python_version = _major_minor_version(pip_attr.python_version),
+                logger = repo_utils.logger(module_ctx, "pypi:requirements_files_by_platform"),
+            )
+
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = struct(
-                    requirements_by_platform = requirements_files_by_platform(
-                        requirements_by_platform = pip_attr.requirements_by_platform,
-                        requirements_linux = pip_attr.requirements_linux,
-                        requirements_lock = pip_attr.requirements_lock,
-                        requirements_osx = pip_attr.requirements_darwin,
-                        requirements_windows = pip_attr.requirements_windows,
-                        extra_pip_args = pip_attr.extra_pip_args,
-                        python_version = _major_minor_version(pip_attr.python_version),
-                        logger = repo_utils.logger(module_ctx, "pypi:requirements_files_by_platform"),
-                    ),
                     auth_patterns = pip_attr.auth_patterns,
                     download_only = pip_attr.download_only,
                     enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
                     environment = pip_attr.environment,
                     envsubst = pip_attr.envsubst,
+                    evaluate_markers_srcs = pip_attr._evaluate_markers_srcs,
                     experimental_requirement_cycles = pip_attr.experimental_requirement_cycles,
                     experimental_target_platforms = pip_attr.experimental_target_platforms,
                     extra_pip_args = pip_attr.extra_pip_args,
@@ -488,9 +490,9 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     python_interpreter_target = pip_attr.python_interpreter_target,
                     python_version = pip_attr.python_version,
                     quiet = pip_attr.quiet,
+                    requirements_by_platform = requirements_by_platform,
                     timeout = pip_attr.timeout,
                     whl_modifications = pip_attr.whl_modifications,
-                    evaluate_markers_srcs = pip_attr._evaluate_markers_srcs,
                 ),
                 whl_overrides = whl_overrides,
                 get_index_urls = get_index_urls,
