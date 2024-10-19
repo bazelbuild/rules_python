@@ -38,7 +38,7 @@ def parse_requirements(
         requirements_by_platform = {},
         extra_pip_args = [],
         get_index_urls = None,
-        evaluate_markers = lambda *_: {},
+        evaluate_markers = None,
         logger = None):
     """Get the requirements with platforms that the requirements apply to.
 
@@ -73,6 +73,7 @@ def parse_requirements(
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
+    evaluate_markers = evaluate_markers or (lambda *_: {})
     options = {}
     requirements = {}
     for file, plats in requirements_by_platform.items():

@@ -73,35 +73,15 @@ def _create_whl_repos(
         *,
         pip_attr,
         whl_overrides,
+        evaluate_markers = None,
         get_index_urls = None):
     exposed_packages = {}
     whl_libraries = {}
     whl_map = {}
 
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
-    python_interpreter_target = pip_attr.python_interpreter_target
 
-    # if we do not have the python_interpreter set in the attributes
-    # we programmatically find it.
     hub_name = pip_attr.hub_name
-    if python_interpreter_target == None and not pip_attr.python_interpreter:
-        python_name = "python_{}_host".format(
-            pip_attr.python_version.replace(".", "_"),
-        )
-        if python_name not in INTERPRETER_LABELS:
-            fail((
-                "Unable to find interpreter for pip hub '{hub_name}' for " +
-                "python_version={version}: Make sure a corresponding " +
-                '`python.toolchain(python_version="{version}")` call exists.' +
-                "Expected to find {python_name} among registered versions:\n  {labels}"
-            ).format(
-                hub_name = hub_name,
-                version = pip_attr.python_version,
-                python_name = python_name,
-                labels = "  \n".join(INTERPRETER_LABELS),
-            ))
-        python_interpreter_target = INTERPRETER_LABELS[python_name]
-
     pip_name = "{}_{}".format(
         hub_name,
         version_label(pip_attr.python_version),
@@ -135,28 +115,7 @@ def _create_whl_repos(
         requirements_by_platform = pip_attr.requirements_by_platform,
         extra_pip_args = pip_attr.extra_pip_args,
         get_index_urls = get_index_urls,
-        # NOTE @aignas 2024-08-02: , we will execute any interpreter that we find either
-        # in the PATH or if specified as a label. We will configure the env
-        # markers when evaluating the requirement lines based on the output
-        # from the `requirements_files_by_platform` which should have something
-        # similar to:
-        # {
-        #    "//:requirements.txt": ["cp311_linux_x86_64", ...]
-        # }
-        #
-        # We know the target python versions that we need to evaluate the
-        # markers for and thus we don't need to use multiple python interpreter
-        # instances to perform this manipulation. This function should be executed
-        # only once by the underlying code to minimize the overhead needed to
-        # spin up a Python interpreter.
-        evaluate_markers = lambda module_ctx, requirements: evaluate_markers(
-            module_ctx,
-            requirements = requirements,
-            python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = python_interpreter_target,
-            srcs = pip_attr.evaluate_markers_srcs,
-            logger = logger,
-        ),
+        evaluate_markers = evaluate_markers,
         logger = logger,
     )
 
@@ -189,7 +148,7 @@ def _create_whl_repos(
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
             python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = python_interpreter_target,
+            python_interpreter_target = pip_attr.python_interpreter_target,
             whl_patches = {
                 p: json.encode(args)
                 for p, args in whl_overrides.get(whl_name, {}).items()
@@ -467,6 +426,50 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 logger = repo_utils.logger(module_ctx, "pypi:requirements_files_by_platform"),
             )
 
+            # if we do not have the python_interpreter set in the attributes
+            # we programmatically find it.
+            python_interpreter_target = pip_attr.python_interpreter_target
+            if python_interpreter_target == None and not pip_attr.python_interpreter:
+                python_name = "python_{}_host".format(
+                    pip_attr.python_version.replace(".", "_"),
+                )
+                if python_name not in INTERPRETER_LABELS:
+                    fail((
+                        "Unable to find interpreter for pip hub '{hub_name}' for " +
+                        "python_version={version}: Make sure a corresponding " +
+                        '`python.toolchain(python_version="{version}")` call exists.' +
+                        "Expected to find {python_name} among registered versions:\n  {labels}"
+                    ).format(
+                        hub_name = hub_name,
+                        version = pip_attr.python_version,
+                        python_name = python_name,
+                        labels = "  \n".join(INTERPRETER_LABELS),
+                    ))
+                python_interpreter_target = INTERPRETER_LABELS[python_name]
+
+            # NOTE @aignas 2024-08-02: , we will execute any interpreter that we find either
+            # in the PATH or if specified as a label. We will configure the env
+            # markers when evaluating the requirement lines based on the output
+            # from the `requirements_files_by_platform` which should have something
+            # similar to:
+            # {
+            #    "//:requirements.txt": ["cp311_linux_x86_64", ...]
+            # }
+            #
+            # We know the target python versions that we need to evaluate the
+            # markers for and thus we don't need to use multiple python interpreter
+            # instances to perform this manipulation. This function should be executed
+            # only once by the underlying code to minimize the overhead needed to
+            # spin up a Python interpreter.
+            evaluate_markers_fn = lambda module_ctx, requirements: evaluate_markers(
+                module_ctx,
+                requirements = requirements,
+                python_interpreter = pip_attr.python_interpreter,
+                python_interpreter_target = python_interpreter_target,
+                srcs = pip_attr._evaluate_markers_srcs,
+                logger = repo_utils.logger(module_ctx, "pypi:evaluate_markers"),
+            )
+
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = struct(
@@ -475,7 +478,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
                     environment = pip_attr.environment,
                     envsubst = pip_attr.envsubst,
-                    evaluate_markers_srcs = pip_attr._evaluate_markers_srcs,
                     experimental_requirement_cycles = pip_attr.experimental_requirement_cycles,
                     experimental_target_platforms = pip_attr.experimental_target_platforms,
                     extra_pip_args = pip_attr.extra_pip_args,
@@ -484,7 +486,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     netrc = pip_attr.netrc,
                     pip_data_exclude = pip_attr.pip_data_exclude,
                     python_interpreter = pip_attr.python_interpreter,
-                    python_interpreter_target = pip_attr.python_interpreter_target,
+                    python_interpreter_target = python_interpreter_target,
                     python_version = pip_attr.python_version,
                     quiet = pip_attr.quiet,
                     requirements_by_platform = requirements_by_platform,
@@ -492,6 +494,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     whl_modifications = pip_attr.whl_modifications,
                 ),
                 whl_overrides = whl_overrides,
+                evaluate_markers = evaluate_markers_fn,
                 get_index_urls = get_index_urls,
             )
             whl_libraries.update(result.whl_libraries)
