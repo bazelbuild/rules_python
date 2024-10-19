@@ -80,7 +80,6 @@ def _create_whl_repos(
 
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
-    is_hub_reproducible = True
 
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
@@ -221,7 +220,6 @@ def _create_whl_repos(
 
                 for distribution in dists:
                     found_something = True
-                    is_hub_reproducible = False
 
                     if pip_attr.netrc:
                         whl_library_args["netrc"] = pip_attr.netrc
@@ -310,7 +308,6 @@ def _create_whl_repos(
 
     return struct(
         exposed_packages = exposed_packages,
-        is_hub_reproducible = is_hub_reproducible,
         whl_libraries = whl_libraries,
         whl_map = whl_map,
     )
@@ -507,7 +504,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             # using an alternative cycle resolution strategy.
             hub_group_map[hub_name] = pip_attr.experimental_requirement_cycles
             exposed_packages.setdefault(hub_name, {}).update(result.exposed_packages)
-            is_reproducible = is_reproducible and result.is_hub_reproducible
+            is_reproducible = is_reproducible and get_index_urls == None
 
     return struct(
         whl_mods = whl_mods,
