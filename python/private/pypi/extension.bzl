@@ -62,7 +62,17 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages, whl_libraries):
+def _create_whl_repos(
+        module_ctx,
+        *,
+        pip_attr,
+        whl_overrides,
+        simpleapi_cache):
+    exposed_packages = {}
+    whl_libraries = {}
+    group_map = {}
+    whl_map = {}
+
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -319,7 +329,13 @@ def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map
             ),
         )
 
-    return is_hub_reproducible
+    return struct(
+        exposed_packages = exposed_packages,
+        group_map = group_map,
+        is_hub_reproducible = is_hub_reproducible,
+        whl_libraries = whl_libraries,
+        whl_map = whl_map,
+    )
 
 def parse_modules(module_ctx, _fail = fail):
     """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
@@ -445,17 +461,19 @@ You cannot use both the additive_build_content and additive_build_content_file a
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            is_hub_reproducible = _create_whl_repos(
+            result = _create_whl_repos(
                 module_ctx,
-                exposed_packages = exposed_packages,
-                group_map = hub_group_map,
                 pip_attr = pip_attr,
                 simpleapi_cache = simpleapi_cache,
-                whl_map = hub_whl_map,
                 whl_overrides = whl_overrides,
-                whl_libraries = whl_libraries,
             )
-            is_reproducible = is_reproducible and is_hub_reproducible
+            whl_libraries.update(result.whl_libraries)
+            for hub, config_settings in result.whl_map.items():
+                for whl, settings in config_settings.items():
+                    hub_whl_map.setdefault(hub, {}).setdefault(whl, []).extend(settings)
+            hub_group_map.update(result.group_map)
+            exposed_packages.update(result.exposed_packages)
+            is_reproducible = is_reproducible and result.is_hub_reproducible
 
     return struct(
         whl_mods = whl_mods,
