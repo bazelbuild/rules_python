@@ -162,7 +162,6 @@ def _create_whl_repos(
         *,
         pip_attr,
         whl_overrides,
-        evaluate_markers = None,
         get_index_urls = None):
     exposed_packages = {}
     whl_libraries = {}
@@ -199,17 +198,8 @@ def _create_whl_repos(
 
     # Create a new wheel library for each of the different whls
 
-    requirements_by_platform = parse_requirements(
-        module_ctx,
-        requirements_by_platform = pip_attr.requirements_by_platform,
-        extra_pip_args = pip_attr.extra_pip_args,
-        get_index_urls = get_index_urls,
-        evaluate_markers = evaluate_markers,
-        logger = logger,
-    )
-
     repository_platform = host_platform(module_ctx)
-    for whl_name, requirements in requirements_by_platform.items():
+    for whl_name, requirements in pip_attr.requirements_by_platform.items():
         whl_name = normalize_name(whl_name)
         group_name = whl_group_mapping.get(whl_name)
 
@@ -505,6 +495,15 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 logger = repo_utils.logger(module_ctx, "pypi:evaluate_markers"),
             )
 
+            requirements_by_platform = parse_requirements(
+                module_ctx,
+                requirements_by_platform = requirements_by_platform,
+                extra_pip_args = pip_attr.extra_pip_args,
+                get_index_urls = get_index_urls,
+                evaluate_markers = evaluate_markers_fn,
+                logger = repo_utils.logger(module_ctx, "pypi:parse_requirements"),
+            )
+
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = struct(
@@ -529,7 +528,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     whl_modifications = pip_attr.whl_modifications,
                 ),
                 whl_overrides = whl_overrides,
-                evaluate_markers = evaluate_markers_fn,
                 get_index_urls = get_index_urls,
             )
             whl_libraries.update(result.whl_libraries)
