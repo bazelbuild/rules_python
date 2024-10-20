@@ -1392,7 +1392,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "N6BZfrVuqlJ8zu5Ro4Dop/xRftx4xd9zi+yZiHU9zJs=",
+        "bzlTransitiveDigest": "/jEJJA6bGfPnkYV/Hsk9yzrlT5IoYb/mRVU1PfC0vco=",
         "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
@@ -1487,12 +1487,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "zipp-3.20.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -1629,12 +1623,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "sphinx-7.2.6.tar.gz",
               "group_deps": [
                 "sphinx",
@@ -1701,12 +1689,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "s3cmd-2.1.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -1834,12 +1816,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "lazy-object-proxy-1.10.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -1867,12 +1843,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "websockets-11.0.3.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -2014,12 +1984,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "urllib3-1.26.18.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2075,12 +2039,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "sphinxcontrib_applehelp-1.0.7.tar.gz",
               "group_deps": [
@@ -2309,12 +2267,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "jinja2-3.1.4.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2342,12 +2294,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "sphinxcontrib_qthelp-1.0.6.tar.gz",
               "group_deps": [
@@ -2435,12 +2381,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "setuptools-65.6.3.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2490,12 +2430,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "chardet-4.0.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2524,12 +2458,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "mccabe-0.7.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2557,12 +2485,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "sphinxcontrib_serializinghtml-1.1.9.tar.gz",
               "group_deps": [
@@ -2621,12 +2543,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "docutils-0.20.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -2704,12 +2620,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "tomli-2.0.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -2790,12 +2700,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "Pygments-2.16.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -2824,12 +2728,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "wheel-0.40.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -2946,12 +2844,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "colorama-0.4.6.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3057,12 +2949,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "MarkupSafe-2.1.3.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3118,12 +3004,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "sphinxcontrib_htmlhelp-2.0.4.tar.gz",
               "group_deps": [
@@ -3189,12 +3069,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "typing_extensions-4.12.2.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -3369,12 +3243,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "tomlkit-0.11.6.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3440,12 +3308,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "pylint-2.15.9.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3473,12 +3335,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "pathspec-0.10.3.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -3620,12 +3476,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "packaging-23.2.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3682,12 +3532,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "idna-2.10.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -3736,12 +3580,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "snowballstemmer-2.2.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -3891,12 +3729,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "dill-0.3.6.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -4100,12 +3932,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "platformdirs-2.6.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -4509,12 +4335,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "yamllint-1.28.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -4542,12 +4362,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "python-dateutil-2.8.2.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -4691,12 +4505,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "importlib_metadata-8.4.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -4910,12 +4718,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "sphinxcontrib-jsmath-1.0.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -4943,12 +4745,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "alabaster-0.7.13.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -5006,12 +4802,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "six-1.16.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5040,12 +4830,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "requests-2.25.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -5206,12 +4990,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "Babel-2.13.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5331,12 +5109,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "isort-5.11.4.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5364,12 +5136,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "python-magic-0.4.27.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -5476,12 +5242,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "certifi-2023.7.22.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5568,12 +5328,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "PyYAML-6.0.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5601,12 +5355,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "sphinxcontrib_devhelp-1.0.5.tar.gz",
               "group_deps": [
@@ -5703,12 +5451,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "tabulate-0.9.0.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -5774,12 +5516,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "imagesize-1.4.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -6034,12 +5770,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "astroid-2.12.13.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -6182,12 +5912,6 @@
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
               ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
-              ],
               "filename": "pylint-print-1.0.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
               "repo": "pip_39",
@@ -6285,12 +6009,6 @@
                 "cp39_osx_aarch64",
                 "cp39_osx_x86_64",
                 "cp39_windows_x86_64"
-              ],
-              "extra_pip_args": [
-                "--index-url",
-                "https://pypi.org/simple",
-                "--extra-index-url",
-                "https://pypi.org/simple/"
               ],
               "filename": "wrapt-1.14.1.tar.gz",
               "python_interpreter_target": "@@rules_python~~python~python_3_9_host//:python",
@@ -6581,7 +6299,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "83PhRZFcpp1tFRQ2wE+GfsxZ7T1GBaVzQUj/nsJ9ghg=",
+        "bzlTransitiveDigest": "K0r9pw9npOvi7NrwlOISJ1GyVGq1KoDS6Rno07H336M=",
         "usagesDigest": "Y8ihY+R57BAFhalrVLVdJFrpwlbsiKz9JPJ99ljF7HA=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",

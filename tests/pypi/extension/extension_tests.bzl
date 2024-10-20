@@ -109,9 +109,9 @@ def _test_simple(env):
         },
     )
 
-    env.expect.that_dict(pypi.exposed_packages).contains_exactly({"pypi": []})
-    env.expect.that_dict(pypi.hub_group_map).contains_exactly({"pypi": {}})
-    env.expect.that_dict(pypi.hub_whl_map).contains_exactly({})
+    env.expect.that_dict(pypi.exposed_packages).contains_exactly({})
+    env.expect.that_dict(pypi.hub_group_map).contains_exactly({})
+    env.expect.that_dict(pypi.hub_whl_map).contains_exactly({"pypi": {}})
     env.expect.that_bool(pypi.is_reproducible).equals(True)
     env.expect.that_dict(pypi.whl_libraries).contains_exactly({})
     env.expect.that_dict(pypi.whl_mods).contains_exactly({})
