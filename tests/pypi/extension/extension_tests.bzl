@@ -27,7 +27,7 @@ def _mock_mctx(*modules, environ = {}, read = None):
             name = "unittest",
             arch = "exotic",
         ),
-        read = read or {}.get,
+        read = read or (lambda _: ""),
         modules = [
             struct(
                 name = modules[0].name,
@@ -122,14 +122,16 @@ def _test_simple(env):
     pypi = _parse_modules(
         env,
         module_ctx = _mock_mctx(
-            _mod(name = "rules_python", parse = [_parse(
-                hub_name = "pypi",
-                python_version = "3.15",
-                requirements_lock = "requirements.txt",
-            )]),
-            read = {
-                "requirements.txt": "",
-            }.get,
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        requirements_lock = "requirements.txt",
+                    ),
+                ],
+            ),
         ),
         available_interpreters = {
             "python_3_15_host": "unit_test_interpreter_target",
