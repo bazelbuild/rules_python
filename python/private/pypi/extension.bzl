@@ -69,11 +69,6 @@ def _whl_libraries_using_downloader(*, requirements, **whl_library_args):
     # This is no-op because pip is not used to download the wheel.
     download_only = whl_library_args.pop("download_only", False)
 
-    # pip is not used to download wheels and the python `whl_library` helpers
-    # are only extracting things, however, we need this for sdists because pip
-    # is still used there
-    extra_pip_args = whl_library_args.pop("extra_pip_args", None)
-
     for requirement in requirements:
         is_exposed = is_exposed or requirement.is_exposed
         dists = requirement.whls
@@ -83,8 +78,11 @@ def _whl_libraries_using_downloader(*, requirements, **whl_library_args):
         for distribution in dists:
             args = dict(whl_library_args.items())
 
-            if not distribution.filename.endswith(".whl") and extra_pip_args:
-                args["extra_pip_args"] = extra_pip_args
+            if not distribution.filename.endswith(".whl") and requirement.extra_pip_args:
+                # pip is not used to download wheels and the python `whl_library` helpers
+                # are only extracting things, however, we need this for sdists because pip
+                # is still used there
+                args["extra_pip_args"] = requirement.extra_pip_args
 
             args["requirement"] = requirement.srcs.requirement
             args["urls"] = [distribution.url]
@@ -511,12 +509,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = struct(
-                    download_only = pip_attr.download_only,
                     requirement_cycles = {
                         name: [normalize_name(whl_name) for whl_name in whls]
                         for name, whls in pip_attr.experimental_requirement_cycles.items()
                     },
-                    extra_pip_args = pip_attr.extra_pip_args,
                     hub_name = pip_attr.hub_name,
                     python_version = pip_attr.python_version,
                     requirements_by_platform = requirements_by_platform,
