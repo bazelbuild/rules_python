@@ -15,10 +15,6 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
-load("//python/private:enum.bzl", "enum")
-load("//python/private:flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
-load("//python/private:py_info.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":common.bzl", "union_attrs")
 load(":enum.bzl", "enum")
 load(":flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
