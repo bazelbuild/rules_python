@@ -62,13 +62,7 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _set_or_fail(d, key, value, msg):
-    if key in d:
-        fail(msg(key, d[key], value))
-
-    d[key] = value
-
-def _create_whl_repos_from_requirements_main(*, requirements, pip_attr, whl_library_args):
+def _create_whl_repos_from_requirements_main(*, requirements, pip_attr, **whl_library_args):
     is_exposed = False
     whl_libraries = []
     for requirement in requirements:
@@ -114,9 +108,9 @@ def _create_whl_repos_from_requirements_fallback(
         requirements,
         pip_attr,
         repository_platform,
-        whl_library_args,
         is_fallback,
-        logger):
+        logger,
+        **whl_library_args):
     requirement = select_requirement(
         requirements,
         platform = None if pip_attr.download_only else repository_platform,
@@ -140,12 +134,12 @@ def _create_whl_repos_from_requirements_fallback(
         dict(whl_library_args.items()),  # make a copy
     ]
 
-def _create_whl_repos_from_requirements(*, get_index_urls, requirements, pip_attr, whl_library_args, repository_platform, logger):
+def _create_whl_repos_from_requirements(*, get_index_urls, requirements, pip_attr, repository_platform, logger, **whl_library_args):
     if get_index_urls:
         result = _create_whl_repos_from_requirements_main(
             requirements = requirements,
             pip_attr = pip_attr,
-            whl_library_args = whl_library_args,
+            **whl_library_args
         )
 
         if result.repos:
@@ -153,12 +147,12 @@ def _create_whl_repos_from_requirements(*, get_index_urls, requirements, pip_att
 
     return struct(
         repos = _create_whl_repos_from_requirements_fallback(
+            is_fallback = get_index_urls != None,
             requirements = requirements,
             pip_attr = pip_attr,
-            whl_library_args = whl_library_args,
             repository_platform = repository_platform,
-            is_fallback = get_index_urls != None,
             logger = logger,
+            **whl_library_args
         ),
         is_exposed = False,
     )
@@ -260,9 +254,9 @@ def _create_whl_repos(
             get_index_urls = get_index_urls,
             requirements = requirements,
             pip_attr = pip_attr,
-            whl_library_args = whl_library_args,
             repository_platform = repository_platform,
             logger = logger,
+            **whl_library_args
         )
         for args in result.repos:
             filename = args.get("filename")
@@ -279,14 +273,21 @@ def _create_whl_repos(
                 ) and len(requirements) > 1 else None
             else:
                 repo_name = "{}_{}".format(pip_name, whl_name)
+
+                # TODO @aignas 2024-10-20: derive this from the requirements to get
+                # rid of `select_requirement` function to fix #2268
                 target_platforms = None
 
-            _set_or_fail(
-                whl_libraries,
-                repo_name,
-                args,
-                lambda key, existing, new: "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(key, existing, new),
-            )
+            if repo_name in whl_libraries:
+                fail(
+                    "A value for {} already exists.\nExisting:\n{}\nNew:\n{}".format(
+                        repo_name,
+                        whl_libraries[repo_name],
+                        args,
+                    ),
+                )
+
+            whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
                     repo = repo_name,
