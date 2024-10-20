@@ -231,6 +231,7 @@ def rules_python_internal_deps():
         sha256 = "d9bdd3ec66b6871456ec9c965809f43a0901e692d754885e89293807762d3d80",
         strip_prefix = "rules_cc-0.0.13",
     )
+
     # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
     http_archive(
         name = "protobuf",
