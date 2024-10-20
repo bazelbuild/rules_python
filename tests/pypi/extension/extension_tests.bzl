@@ -16,6 +16,7 @@
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("//python/private/pypi:extension.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
+load(":parse_modules_subject.bzl", "parse_modules_subject")
 
 _tests = []
 
@@ -52,6 +53,12 @@ def _mod(*, name, parse = [], override = [], whl_mods = [], is_root = True):
             whl_mods = whl_mods,
         ),
         is_root = is_root,
+    )
+
+def _parse_modules(env, **kwargs):
+    return parse_modules_subject(
+        parse_modules(**kwargs),
+        meta = env.expect.meta,
     )
 
 def _parse(
@@ -93,7 +100,8 @@ def _parse(
     )
 
 def _test_simple(env):
-    pypi = parse_modules(
+    pypi = _parse_modules(
+        env,
         module_ctx = _mock_mctx(
             _mod(name = "rules_python", parse = [_parse(
                 hub_name = "pypi",
@@ -109,12 +117,12 @@ def _test_simple(env):
         },
     )
 
-    env.expect.that_dict(pypi.exposed_packages).contains_exactly({})
-    env.expect.that_dict(pypi.hub_group_map).contains_exactly({})
-    env.expect.that_dict(pypi.hub_whl_map).contains_exactly({"pypi": {}})
-    env.expect.that_bool(pypi.is_reproducible).equals(True)
-    env.expect.that_dict(pypi.whl_libraries).contains_exactly({})
-    env.expect.that_dict(pypi.whl_mods).contains_exactly({})
+    pypi.is_reproducible().equals(True)
+    pypi.exposed_packages().contains_exactly({})
+    pypi.hub_group_map().contains_exactly({})
+    pypi.hub_whl_map().contains_exactly({"pypi": {}})
+    pypi.whl_libraries().contains_exactly({})
+    pypi.whl_mods().contains_exactly({})
 
 _tests.append(_test_simple)
 
