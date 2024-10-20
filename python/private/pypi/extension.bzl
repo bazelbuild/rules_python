@@ -62,41 +62,37 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _whl_libraries_using_downloader(*, requirements, pip_attr, **whl_library_args):
+def _whl_libraries_using_downloader(*, requirements, **whl_library_args):
     is_exposed = False
     whl_libraries = []
+
+    # This is no-op because pip is not used to download the wheel.
+    download_only = whl_library_args.pop("download_only", False)
+
+    # pip is not used to download wheels and the python `whl_library` helpers
+    # are only extracting things, however, we need this for sdists because pip
+    # is still used there
+    extra_pip_args = whl_library_args.pop("extra_pip_args", None)
+
     for requirement in requirements:
         is_exposed = is_exposed or requirement.is_exposed
         dists = requirement.whls
-        if not pip_attr.download_only and requirement.sdist:
+        if not download_only and requirement.sdist:
             dists = dists + [requirement.sdist]
 
         for distribution in dists:
-            if pip_attr.netrc:
-                whl_library_args["netrc"] = pip_attr.netrc
-            if pip_attr.auth_patterns:
-                whl_library_args["auth_patterns"] = pip_attr.auth_patterns
+            args = dict(whl_library_args.items())
 
-            if distribution.filename.endswith(".whl"):
-                # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
-                whl_library_args.pop("extra_pip_args", None)
-            else:
-                # For sdists, they will be built by `pip`, so we still
-                # need to pass the extra args there.
-                pass
+            if not distribution.filename.endswith(".whl") and extra_pip_args:
+                args["extra_pip_args"] = extra_pip_args
 
-            # This is no-op because pip is not used to download the wheel.
-            whl_library_args.pop("download_only", None)
+            args["requirement"] = requirement.srcs.requirement
+            args["urls"] = [distribution.url]
+            args["sha256"] = distribution.sha256
+            args["filename"] = distribution.filename
+            args["experimental_target_platforms"] = requirement.target_platforms
 
-            whl_library_args["requirement"] = requirement.srcs.requirement
-            whl_library_args["urls"] = [distribution.url]
-            whl_library_args["sha256"] = distribution.sha256
-            whl_library_args["filename"] = distribution.filename
-            whl_library_args["experimental_target_platforms"] = requirement.target_platforms
-
-            whl_libraries.append(
-                dict(whl_library_args.items()),  # make a copy
-            )
+            whl_libraries.append(args)
 
     return struct(
         repos = whl_libraries,
@@ -130,6 +126,10 @@ def _whl_libraries_using_pip(
     if requirement.extra_pip_args:
         whl_library_args["extra_pip_args"] = requirement.extra_pip_args
 
+    # The args that are not used with pip
+    whl_library_args.pop("netrc", None)
+    whl_library_args.pop("auth_patterns", None)
+
     return struct(
         repos = [
             dict(whl_library_args.items()),  # make a copy
@@ -140,7 +140,6 @@ def _whl_libraries_using_pip(
 def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, repository_platform, logger, **whl_library_args):
     result = _whl_libraries_using_downloader(
         requirements = requirements,
-        pip_attr = pip_attr,
         **whl_library_args
     )
 
@@ -170,11 +169,13 @@ def _common_whl_library_args(module_ctx, *, pip_attr):
     )
     maybe_args = dict(
         # The following values are safe to omit if they have false like values
+        auth_patterns = pip_attr.auth_patterns,
         download_only = pip_attr.download_only,
         enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
         environment = pip_attr.environment,
         envsubst = pip_attr.envsubst,
         experimental_target_platforms = pip_attr.experimental_target_platforms,
+        netrc = pip_attr.netrc,
         pip_data_exclude = pip_attr.pip_data_exclude,
         python_interpreter = pip_attr.python_interpreter,
         python_interpreter_target = pip_attr.python_interpreter_target,
@@ -513,27 +514,15 @@ You cannot use both the additive_build_content and additive_build_content_file a
             result = _create_whl_repos(
                 module_ctx,
                 pip_attr = struct(
-                    auth_patterns = pip_attr.auth_patterns,
                     download_only = pip_attr.download_only,
-                    enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
-                    environment = pip_attr.environment,
-                    envsubst = pip_attr.envsubst,
                     requirement_cycles = {
                         name: [normalize_name(whl_name) for whl_name in whls]
                         for name, whls in pip_attr.experimental_requirement_cycles.items()
                     },
-                    experimental_target_platforms = pip_attr.experimental_target_platforms,
                     extra_pip_args = pip_attr.extra_pip_args,
                     hub_name = pip_attr.hub_name,
-                    isolated = pip_attr.isolated,
-                    netrc = pip_attr.netrc,
-                    pip_data_exclude = pip_attr.pip_data_exclude,
-                    python_interpreter = pip_attr.python_interpreter,
-                    python_interpreter_target = python_interpreter_target,
                     python_version = pip_attr.python_version,
-                    quiet = pip_attr.quiet,
                     requirements_by_platform = requirements_by_platform,
-                    timeout = pip_attr.timeout,
                     whl_modifications = {
                         normalize_name(whl_name): mod
                         for mod, whl_name in pip_attr.whl_modifications.items()
@@ -551,12 +540,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                         enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
                         environment = pip_attr.environment,
                         envsubst = pip_attr.envsubst,
-                        requirement_cycles = {
-                            name: [normalize_name(whl_name) for whl_name in whls]
-                            for name, whls in pip_attr.experimental_requirement_cycles.items()
-                        },
                         experimental_target_platforms = pip_attr.experimental_target_platforms,
-                        extra_pip_args = pip_attr.extra_pip_args,
                         hub_name = pip_attr.hub_name,
                         isolated = pip_attr.isolated,
                         netrc = pip_attr.netrc,
@@ -565,12 +549,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                         python_interpreter_target = python_interpreter_target,
                         python_version = pip_attr.python_version,
                         quiet = pip_attr.quiet,
-                        requirements_by_platform = requirements_by_platform,
                         timeout = pip_attr.timeout,
-                        whl_modifications = {
-                            normalize_name(whl_name): mod
-                            for mod, whl_name in pip_attr.whl_modifications.items()
-                        },
                     ),
                 )
             )
