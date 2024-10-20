@@ -72,7 +72,6 @@ def _parse(
         environment = {},
         envsubst = {},
         experimental_index_url = "",
-        experimental_index_url = experimental_index_url,
         experimental_requirement_cycles = {},
         experimental_target_platforms = [],
         extra_pip_args = [],
