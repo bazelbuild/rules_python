@@ -14,8 +14,8 @@
 """Implementation of PyInfo provider and PyInfo-specific utilities."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
 load(":builders.bzl", "builders")
+load(":reexports.bzl", "BuiltinPyInfo")
 load(":util.bzl", "define_bazel_6_provider")
 
 def _check_arg_type(name, required_type, value):
@@ -36,7 +36,9 @@ def _PyInfo_init(
         has_py2_only_sources = False,
         has_py3_only_sources = False,
         direct_pyc_files = depset(),
-        transitive_pyc_files = depset()):
+        transitive_pyc_files = depset(),
+        transitive_implicit_pyc_files = depset(),
+        transitive_implicit_pyc_source_files = depset()):
     _check_arg_type("transitive_sources", "depset", transitive_sources)
 
     # Verify it's postorder compatible, but retain is original ordering.
@@ -49,11 +51,15 @@ def _PyInfo_init(
     _check_arg_type("direct_pyc_files", "depset", direct_pyc_files)
     _check_arg_type("transitive_pyc_files", "depset", transitive_pyc_files)
 
+    _check_arg_type("transitive_implicit_pyc_files", "depset", transitive_pyc_files)
+    _check_arg_type("transitive_implicit_pyc_source_files", "depset", transitive_pyc_files)
     return {
         "direct_pyc_files": direct_pyc_files,
         "has_py2_only_sources": has_py2_only_sources,
         "has_py3_only_sources": has_py2_only_sources,
         "imports": imports,
+        "transitive_implicit_pyc_files": transitive_implicit_pyc_files,
+        "transitive_implicit_pyc_source_files": transitive_implicit_pyc_source_files,
         "transitive_pyc_files": transitive_pyc_files,
         "transitive_sources": transitive_sources,
         "uses_shared_libraries": uses_shared_libraries,
@@ -91,6 +97,26 @@ Python targets. These are accumulated from the transitive `deps`.
 The order of the depset is not guaranteed and may be changed in the future. It
 is recommended to use `default` order (the default).
 """,
+        "transitive_implicit_pyc_files": """
+:type: depset[File]
+
+Automatically generated pyc files that downstream binaries (or equivalent)
+can choose to include in their output. If not included, then
+{obj}`transitive_implicit_pyc_source_files` should be included instead.
+
+::::{versionadded} 0.37.0
+::::
+""",
+        "transitive_implicit_pyc_source_files": """
+:type: depset[File]
+
+Source `.py` files for {obj}`transitive_implicit_pyc_files` that downstream
+binaries (or equivalent) can choose to include in their output. If not included,
+then {obj}`transitive_implicit_pyc_files` should be included instead.
+
+::::{versionadded} 0.37.0
+::::
+""",
         "transitive_pyc_files": """
 :type: depset[File]
 
@@ -105,6 +131,14 @@ to always include these files, as the originating target expects them to exist.
 
 A (`postorder`-compatible) depset of `.py` files appearing in the target's
 `srcs` and the `srcs` of the target's transitive `deps`.
+
+These are `.py` source files that are considered required and downstream
+binaries (or equivalent) must include in their outputs.
+
+::::{versionchanged} 0.37.0
+The files are considered necessary for downstream binaries to function;
+previously they were considerd informational and largely unused.
+::::
 """,
         "uses_shared_libraries": """
 :type: bool
@@ -143,6 +177,8 @@ def PyInfoBuilder():
         set_has_py2_only_sources = lambda *a, **k: _PyInfoBuilder_set_has_py2_only_sources(self, *a, **k),
         set_has_py3_only_sources = lambda *a, **k: _PyInfoBuilder_set_has_py3_only_sources(self, *a, **k),
         set_uses_shared_libraries = lambda *a, **k: _PyInfoBuilder_set_uses_shared_libraries(self, *a, **k),
+        transitive_implicit_pyc_files = builders.DepsetBuilder(),
+        transitive_implicit_pyc_source_files = builders.DepsetBuilder(),
         transitive_pyc_files = builders.DepsetBuilder(),
         transitive_sources = builders.DepsetBuilder(),
     )
@@ -199,6 +235,8 @@ def _PyInfoBuilder_merge_all(self, transitive, *, direct = []):
 
         # BuiltinPyInfo doesn't have these fields
         if hasattr(info, "transitive_pyc_files"):
+            self.transitive_implicit_pyc_files.add(info.transitive_implicit_pyc_files)
+            self.transitive_implicit_pyc_source_files.add(info.transitive_implicit_pyc_source_files)
             self.transitive_pyc_files.add(info.transitive_pyc_files)
 
     return self
@@ -220,6 +258,8 @@ def _PyInfoBuilder_build(self):
         kwargs = dict(
             direct_pyc_files = self.direct_pyc_files.build(),
             transitive_pyc_files = self.transitive_pyc_files.build(),
+            transitive_implicit_pyc_files = self.transitive_implicit_pyc_files.build(),
+            transitive_implicit_pyc_source_files = self.transitive_implicit_pyc_source_files.build(),
         )
     else:
         kwargs = {}

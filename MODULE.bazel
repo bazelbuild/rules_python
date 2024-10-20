@@ -66,10 +66,13 @@ pip.parse(
 )
 use_repo(pip, "rules_python_publish_deps")
 
+# Not a dev dependency to allow usage of //sphinxdocs code, which refers to stardoc repos.
+bazel_dep(name = "stardoc", version = "0.6.2", repo_name = "io_bazel_stardoc")
+
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
-bazel_dep(name = "stardoc", version = "0.6.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)
 
 # Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
 # We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
@@ -91,6 +94,7 @@ dev_pip = use_extension(
     dev_dependency = True,
 )
 dev_pip.parse(
+    download_only = True,  # this will not add the `sdist` values to the transitive closures at all.
     hub_name = "dev_pip",
     python_version = "3.11",
     requirements_lock = "//docs:requirements.txt",

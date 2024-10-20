@@ -14,14 +14,18 @@
 """Common functions that are specific to Bazel rule implementation"""
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//python/private:py_interpreter_program.bzl", "PyInterpreterProgramInfo")
 load("//python/private:toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 load(":attributes.bzl", "PrecompileAttr", "PrecompileInvalidationModeAttr", "PrecompileSourceRetentionAttr")
 load(":common.bzl", "is_bool")
-load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":flags.bzl", "PrecompileFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_interpreter_program.bzl", "PyInterpreterProgramInfo")
+load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 
 _py_builtins = py_internal
 
@@ -44,8 +48,8 @@ def collect_cc_info(ctx, extra_deps = []):
         if CcInfo in dep:
             cc_infos.append(dep[CcInfo])
 
-        if PyCcLinkParamsProvider in dep:
-            cc_infos.append(dep[PyCcLinkParamsProvider].cc_info)
+        if PyCcLinkParamsInfo in dep:
+            cc_infos.append(dep[PyCcLinkParamsInfo].cc_info)
 
     return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
@@ -61,7 +65,7 @@ def maybe_precompile(ctx, srcs):
     Returns:
         Struct of precompiling results with fields:
         * `keep_srcs`: list of File; the input sources that should be included
-          as default outputs and runfiles.
+          as default outputs.
         * `pyc_files`: list of File; the precompiled files.
         * `py_to_pyc_map`: dict of src File input to pyc File output. If a source
           file wasn't precompiled, it won't be in the dict.
@@ -73,9 +77,27 @@ def maybe_precompile(ctx, srcs):
     if exec_tools_toolchain == None or exec_tools_toolchain.exec_tools.precompiler == None:
         precompile = PrecompileAttr.DISABLED
     else:
-        precompile = PrecompileAttr.get_effective_value(ctx)
+        precompile_flag = ctx.attr._precompile_flag[BuildSettingInfo].value
+
+        if precompile_flag == PrecompileFlag.FORCE_ENABLED:
+            precompile = PrecompileAttr.ENABLED
+        elif precompile_flag == PrecompileFlag.FORCE_DISABLED:
+            precompile = PrecompileAttr.DISABLED
+        else:
+            precompile = ctx.attr.precompile
+
+    # Unless explicitly disabled, we always generate a pyc. This allows
+    # binaries to decide whether to include them or not later.
+    if precompile != PrecompileAttr.DISABLED:
+        should_precompile = True
+    else:
+        should_precompile = False
 
     source_retention = PrecompileSourceRetentionAttr.get_effective_value(ctx)
+    keep_source = (
+        not should_precompile or
+        source_retention == PrecompileSourceRetentionAttr.KEEP_SOURCE
+    )
 
     result = struct(
         keep_srcs = [],
@@ -83,26 +105,17 @@ def maybe_precompile(ctx, srcs):
         py_to_pyc_map = {},
     )
     for src in srcs:
-        # The logic below is a bit convoluted. The gist is:
-        # * If precompiling isn't done, add the py source to default outputs.
-        #   Otherwise, the source retention flag decides.
-        # * In order to determine `use_pycache`, we have to know if the source
-        #   is being added to the default outputs.
-        is_generated_source = not src.is_source
-        should_precompile = (
-            precompile == PrecompileAttr.ENABLED or
-            (precompile == PrecompileAttr.IF_GENERATED_SOURCE and is_generated_source)
-        )
-        keep_source = (
-            not should_precompile or
-            source_retention == PrecompileSourceRetentionAttr.KEEP_SOURCE or
-            (source_retention == PrecompileSourceRetentionAttr.OMIT_IF_GENERATED_SOURCE and not is_generated_source)
-        )
         if should_precompile:
+            # NOTE: _precompile() may return None
             pyc = _precompile(ctx, src, use_pycache = keep_source)
+        else:
+            pyc = None
+
+        if pyc:
             result.pyc_files.append(pyc)
             result.py_to_pyc_map[src] = pyc
-        if keep_source:
+
+        if keep_source or not pyc:
             result.keep_srcs.append(src)
 
     return result
@@ -120,6 +133,12 @@ def _precompile(ctx, src, *, use_pycache):
     Returns:
         File of the generated pyc file.
     """
+
+    # Generating a file in another package is an error, so we have to skip
+    # such cases.
+    if ctx.label.package != src.owner.package:
+        return None
+
     exec_tools_info = ctx.toolchains[EXEC_TOOLS_TOOLCHAIN_TYPE].exec_tools
     target_toolchain = ctx.toolchains[TARGET_TOOLCHAIN_TYPE].py3_runtime
 
@@ -150,7 +169,11 @@ def _precompile(ctx, src, *, use_pycache):
     stem = src.basename[:-(len(src.extension) + 1)]
     if use_pycache:
         if not target_toolchain.pyc_tag:
-            fail("Unable to create __pycache__ pyc: pyc_tag is empty")
+            # This is most likely because of a "runtime toolchain", i.e. the
+            # autodetecting toolchain, or some equivalent toolchain that can't
+            # assume to know the runtime Python version at build time.
+            # Instead of failing, just don't generate any pyc.
+            return None
         pyc_path = "__pycache__/{stem}.{tag}.pyc".format(
             stem = stem,
             tag = target_toolchain.pyc_tag,
