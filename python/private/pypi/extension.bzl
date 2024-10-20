@@ -186,7 +186,7 @@ def _create_whl_repos(
     whl_modifications = {}
     if pip_attr.whl_modifications != None:
         for mod, whl_name in pip_attr.whl_modifications.items():
-            whl_modifications[whl_name] = mod
+            whl_modifications[normalize_name(whl_name)] = mod
 
     if pip_attr.experimental_requirement_cycles:
         requirement_cycles = {
@@ -195,7 +195,7 @@ def _create_whl_repos(
         }
 
         whl_group_mapping = {
-            whl_name: group_name
+            normalize_name(whl_name): group_name
             for group_name, group_whls in requirement_cycles.items()
             for whl_name in group_whls
         }
@@ -216,14 +216,8 @@ def _create_whl_repos(
 
     repository_platform = host_platform(module_ctx)
     for whl_name, requirements in requirements_by_platform.items():
-        # We are not using the "sanitized name" because the user
-        # would need to guess what name we modified the whl name
-        # to.
-        annotation = whl_modifications.get(whl_name)
         whl_name = normalize_name(whl_name)
-
         group_name = whl_group_mapping.get(whl_name)
-        group_deps = requirement_cycles.get(group_name, [])
 
         # Construct args separately so that the lock file can be smaller and does not include unused
         # attrs.
@@ -233,13 +227,13 @@ def _create_whl_repos(
         )
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
-            annotation = annotation,
+            annotation = whl_modifications.get(whl_name),
             download_only = pip_attr.download_only,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
             envsubst = pip_attr.envsubst,
             experimental_target_platforms = pip_attr.experimental_target_platforms,
-            group_deps = group_deps,
+            group_deps = requirement_cycles.get(group_name, []),
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
             python_interpreter = pip_attr.python_interpreter,
