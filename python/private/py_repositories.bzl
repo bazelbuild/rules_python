@@ -67,6 +67,7 @@ def py_repositories():
         strip_prefix = "protobuf-27.0",
         url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
     )
+
     # Needed by rules_cc, triggerred by @rules_java_prebuilt in Bazel by using @rules_cc//cc:defs.bzl
     http_archive(
         name = "protobuf",

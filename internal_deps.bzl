@@ -234,6 +234,7 @@ def rules_python_internal_deps():
         sha256 = "0e124567fa85287874eff33a791c3bbdcc5343329a56faa828ef624380d4607c",
         url = "https://github.com/keith/rules_multirun/releases/download/0.9.0/rules_multirun.0.9.0.tar.gz",
     )
+
     # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
     http_archive(
         name = "protobuf",
