@@ -102,14 +102,13 @@ def _whl_libraries_using_downloader(*, requirements, **whl_library_args):
 def _whl_libraries_using_pip(
         *,
         requirements,
-        pip_attr,
         repository_platform,
         logger,
         is_fallback = False,
         **whl_library_args):
     requirement = select_requirement(
         requirements,
-        platform = None if pip_attr.download_only else repository_platform,
+        platform = None if whl_library_args.get("download_only") else repository_platform,
     )
     if not requirement:
         # Sometimes the package is not present for host platform if there
@@ -137,7 +136,7 @@ def _whl_libraries_using_pip(
         is_exposed = False,
     )
 
-def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, repository_platform, logger, **whl_library_args):
+def _whl_libraries_using_downloader_with_fallback(*, requirements, repository_platform, logger, **whl_library_args):
     result = _whl_libraries_using_downloader(
         requirements = requirements,
         **whl_library_args
@@ -149,7 +148,6 @@ def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, rep
     return _whl_libraries_using_pip(
         is_fallback = True,
         requirements = requirements,
-        pip_attr = pip_attr,
         repository_platform = repository_platform,
         logger = logger,
         **whl_library_args
@@ -240,7 +238,6 @@ def _create_whl_repos(
 
         result = requirements_to_whl_libraries(
             requirements = requirements,
-            pip_attr = pip_attr,
             repository_platform = repository_platform,
             logger = logger,
             **_default_whl_library_args(
