@@ -62,7 +62,7 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos_from_requirements_main(*, requirements, pip_attr, **whl_library_args):
+def _whl_libraries_using_downloader(*, requirements, pip_attr, **whl_library_args):
     is_exposed = False
     whl_libraries = []
     for requirement in requirements:
@@ -103,13 +103,13 @@ def _create_whl_repos_from_requirements_main(*, requirements, pip_attr, **whl_li
         is_exposed = is_exposed,
     )
 
-def _create_whl_repos_from_requirements_fallback(
+def _whl_libraries_using_pip(
         *,
         requirements,
         pip_attr,
         repository_platform,
-        is_fallback,
         logger,
+        is_fallback = False,
         **whl_library_args):
     requirement = select_requirement(
         requirements,
@@ -130,31 +130,30 @@ def _create_whl_repos_from_requirements_fallback(
     if requirement.extra_pip_args:
         whl_library_args["extra_pip_args"] = requirement.extra_pip_args
 
-    return [
-        dict(whl_library_args.items()),  # make a copy
-    ]
-
-def _create_whl_repos_from_requirements(*, get_index_urls, requirements, pip_attr, repository_platform, logger, **whl_library_args):
-    if get_index_urls:
-        result = _create_whl_repos_from_requirements_main(
-            requirements = requirements,
-            pip_attr = pip_attr,
-            **whl_library_args
-        )
-
-        if result.repos:
-            return result
-
     return struct(
-        repos = _create_whl_repos_from_requirements_fallback(
-            is_fallback = get_index_urls != None,
-            requirements = requirements,
-            pip_attr = pip_attr,
-            repository_platform = repository_platform,
-            logger = logger,
-            **whl_library_args
-        ),
+        repos = [
+            dict(whl_library_args.items()),  # make a copy
+        ],
         is_exposed = False,
+    )
+
+def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, repository_platform, logger, **whl_library_args):
+    result = _whl_libraries_using_downloader(
+        requirements = requirements,
+        pip_attr = pip_attr,
+        **whl_library_args
+    )
+
+    if result.repos:
+        return result
+
+    return _whl_libraries_using_pip(
+        is_fallback = True,
+        requirements = requirements,
+        pip_attr = pip_attr,
+        repository_platform = repository_platform,
+        logger = logger,
+        **whl_library_args
     )
 
 def _create_whl_repos(
@@ -162,7 +161,7 @@ def _create_whl_repos(
         *,
         pip_attr,
         whl_overrides,
-        get_index_urls = None):
+        requirements_to_whl_libraries):
     exposed_packages = {}
     whl_libraries = {}
     whl_map = {}
@@ -240,14 +239,15 @@ def _create_whl_repos(
             if v != default
         })
 
-        result = _create_whl_repos_from_requirements(
-            get_index_urls = get_index_urls,
+        result = requirements_to_whl_libraries(
             requirements = requirements,
             pip_attr = pip_attr,
             repository_platform = repository_platform,
             logger = logger,
             **whl_library_args
         )
+        if result.is_exposed:
+            exposed_packages[whl_name] = None
         for args in result.repos:
             filename = args.get("filename")
             if filename:
@@ -286,9 +286,6 @@ def _create_whl_repos(
                     target_platforms = target_platforms,
                 ),
             )
-
-        if result.is_exposed:
-            exposed_packages[whl_name] = None
 
     return struct(
         exposed_packages = exposed_packages,
@@ -503,6 +500,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 evaluate_markers = evaluate_markers_fn,
                 logger = repo_utils.logger(module_ctx, "pypi:parse_requirements"),
             )
+            requirements_to_whl_libraries = _whl_libraries_using_downloader_with_fallback if get_index_urls else _whl_libraries_using_pip
 
             result = _create_whl_repos(
                 module_ctx,
@@ -528,7 +526,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     whl_modifications = pip_attr.whl_modifications,
                 ),
                 whl_overrides = whl_overrides,
-                get_index_urls = get_index_urls,
+                requirements_to_whl_libraries = requirements_to_whl_libraries,
             )
             whl_libraries.update(result.whl_libraries)
             for whl, aliases in result.whl_map.items():
