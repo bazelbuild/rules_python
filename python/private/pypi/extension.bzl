@@ -211,11 +211,11 @@ def _create_whl_repos(
         pip_attr,
         whl_overrides,
         requirements_to_whl_libraries,
+        logger,
         **whl_library_args):
     exposed_packages = {}
     whl_libraries = {}
     whl_map = {}
-    logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
 
     hub_name = pip_attr.hub_name
     pip_name = "{}_{}".format(
@@ -295,27 +295,33 @@ def _create_whl_repos(
         whl_map = whl_map,
     )
 
-def parse_modules(module_ctx, _fail = fail, simpleapi_download = simpleapi_download, available_interpreters = INTERPRETER_LABELS):
+def parse_modules(
+        module_ctx,
+        simpleapi_download = simpleapi_download,
+        available_interpreters = INTERPRETER_LABELS,
+        logger = None):
     """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
 
     Args:
         module_ctx: {type}`module_ctx` module context.
-        _fail: {type}`function` the failure function, mainly for testing.
         simpleapi_download: {type}`function` the function to download from PyPI. See
             {obj}`simpleapi_download` for the API docs.
         available_interpreters: {type}`dict[str, Label]` The available registered interpreters
             to use during the `repository_rule` phase. Used for testing.
+        logger: The logger to use.
 
     Returns:
         A struct with the following attributes:
     """
+    logger = logger or repo_utils.logger(module_ctx, "pypi:parse_modules")
+
     whl_mods = {}
     for mod in module_ctx.modules:
         for whl_mod in mod.tags.whl_mods:
             if whl_mod.whl_name in whl_mods.get(whl_mod.hub_name, {}):
                 # We cannot have the same wheel name in the same hub, as we
                 # will create the same JSON file name.
-                _fail("""\
+                logger.fail("""\
 Found same whl_name '{}' in the same hub '{}', please use a different hub_name.""".format(
                     whl_mod.whl_name,
                     whl_mod.hub_name,
@@ -324,7 +330,7 @@ Found same whl_name '{}' in the same hub '{}', please use a different hub_name."
 
             build_content = whl_mod.additive_build_content
             if whl_mod.additive_build_content_file != None and whl_mod.additive_build_content != "":
-                _fail("""\
+                logger.fail("""\
 You cannot use both the additive_build_content and additive_build_content_file arguments at the same time.
 """)
                 return None
@@ -345,17 +351,17 @@ You cannot use both the additive_build_content and additive_build_content_file a
     for module in module_ctx.modules:
         for attr in module.tags.override:
             if not module.is_root:
-                _fail("overrides are only supported in root modules")
+                logger.fail("overrides are only supported in root modules")
                 return None
 
             if not attr.file.endswith(".whl"):
-                _fail("Only whl overrides are supported at this time")
+                logger.fail("Only whl overrides are supported at this time")
                 return None
 
             whl_name = normalize_name(parse_whl_name(attr.file).distribution)
 
             if attr.file in _overriden_whl_set:
-                _fail("Duplicate module overrides for '{}'".format(attr.file))
+                logger.fail("Duplicate module overrides for '{}'".format(attr.file))
                 return None
             _overriden_whl_set[attr.file] = None
 
@@ -397,7 +403,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
             elif pip_hub_map[hub_name].module_name != mod.name:
                 # We cannot have two hubs with the same name in different
                 # modules.
-                _fail((
+                logger.fail((
                     "Duplicate cross-module pip hub named '{hub}': pip hub " +
                     "names must be unique across modules. First defined " +
                     "by module '{first_module}', second attempted by " +
@@ -410,7 +416,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 return None
 
             elif pip_attr.python_version in pip_hub_map[hub_name].python_versions:
-                _fail((
+                logger.fail((
                     "Duplicate pip python version '{version}' for hub " +
                     "'{hub}' in module '{module}': the Python versions " +
                     "used for a hub must be unique"
@@ -452,7 +458,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 requirements_windows = pip_attr.requirements_windows,
                 extra_pip_args = pip_attr.extra_pip_args,
                 python_version = _major_minor_version(pip_attr.python_version),
-                logger = repo_utils.logger(module_ctx, "pypi:requirements_files_by_platform"),
+                logger = logger.child("requirements_by_platform"),
             )
 
             # if we do not have the python_interpreter set in the attributes
@@ -496,7 +502,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 python_interpreter = pip_attr.python_interpreter,
                 python_interpreter_target = python_interpreter_target,
                 srcs = pip_attr._evaluate_markers_srcs,
-                logger = repo_utils.logger(module_ctx, "pypi:evaluate_markers"),
+                logger = logger.child("evaluate_markers"),
             )
 
             requirements_by_platform = parse_requirements(
@@ -505,7 +511,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 extra_pip_args = pip_attr.extra_pip_args,
                 get_index_urls = get_index_urls,
                 evaluate_markers = evaluate_markers_fn,
-                logger = repo_utils.logger(module_ctx, "pypi:parse_requirements"),
+                logger = logger.child("parse_requirements"),
             )
 
             result = _create_whl_repos(
@@ -525,6 +531,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 ),
                 whl_overrides = whl_overrides,
                 requirements_to_whl_libraries = requirements_to_whl_libraries,
+                logger = logger.child("create_whl_repos"),
                 # Construct args separately so that the lock file can be smaller and does
                 # not include unused attrs.
                 **_common_whl_library_args(

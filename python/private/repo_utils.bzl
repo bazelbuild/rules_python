@@ -31,13 +31,14 @@ def _is_repo_debug_enabled(mrctx):
     """
     return _getenv(mrctx, REPO_DEBUG_ENV_VAR) == "1"
 
-def _logger(mrctx, name = None):
+def _logger(mrctx, name = None, fail = fail):
     """Creates a logger instance for printing messages.
 
     Args:
         mrctx: repository_ctx or module_ctx object. If the attribute
             `_rule_name` is present, it will be included in log messages.
         name: name for the logger. Optional for repository_ctx usage.
+        fail: the function to use for failure call printing.
 
     Returns:
         A struct with attributes logging: trace, debug, info, warn, fail.
@@ -83,6 +84,7 @@ def _logger(mrctx, name = None):
         info = lambda message_cb: _log(1, "INFO", message_cb),
         warn = lambda message_cb: _log(0, "WARNING", message_cb),
         fail = lambda message_cb: _log(-1, "FAIL", message_cb, fail),
+        child = lambda suffix: _logger(mrctx, "{}.{}".format(name, suffix)),
     )
 
 def _execute_internal(
