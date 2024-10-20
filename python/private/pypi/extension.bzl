@@ -156,6 +156,51 @@ def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, rep
         **whl_library_args
     )
 
+def _default_whl_library_args(module_ctx, *, hub_name, whl_name, pip_attr, whl_group_mapping, whl_overrides):
+    group_name = whl_group_mapping.get(whl_name)
+    pip_name = "{}_{}".format(
+        hub_name,
+        version_label(pip_attr.python_version),
+    )
+
+    # Construct args separately so that the lock file can be smaller and does not include unused
+    # attrs.
+    whl_library_args = dict(
+        repo = pip_name,
+        dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
+    )
+    maybe_args = dict(
+        # The following values are safe to omit if they have false like values
+        annotation = pip_attr.whl_modifications.get(whl_name),
+        download_only = pip_attr.download_only,
+        enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
+        environment = pip_attr.environment,
+        envsubst = pip_attr.envsubst,
+        experimental_target_platforms = pip_attr.experimental_target_platforms,
+        group_deps = pip_attr.requirement_cycles.get(group_name, []),
+        group_name = group_name,
+        pip_data_exclude = pip_attr.pip_data_exclude,
+        python_interpreter = pip_attr.python_interpreter,
+        python_interpreter_target = pip_attr.python_interpreter_target,
+        whl_patches = {
+            p: json.encode(args)
+            for p, args in whl_overrides.get(whl_name, {}).items()
+        },
+    )
+    whl_library_args.update({k: v for k, v in maybe_args.items() if v})
+    maybe_args_with_default = dict(
+        # The following values have defaults next to them
+        isolated = (use_isolated(module_ctx, pip_attr), True),
+        quiet = (pip_attr.quiet, True),
+        timeout = (pip_attr.timeout, 600),
+    )
+    whl_library_args.update({
+        k: v
+        for k, (v, default) in maybe_args_with_default.items()
+        if v != default
+    })
+    return whl_library_args
+
 def _create_whl_repos(
         module_ctx,
         *,
@@ -165,7 +210,6 @@ def _create_whl_repos(
     exposed_packages = {}
     whl_libraries = {}
     whl_map = {}
-
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
 
     hub_name = pip_attr.hub_name
@@ -184,57 +228,28 @@ def _create_whl_repos(
     repository_platform = host_platform(module_ctx)
     for whl_name, requirements in pip_attr.requirements_by_platform.items():
         whl_name = normalize_name(whl_name)
-        group_name = whl_group_mapping.get(whl_name)
-
-        # Construct args separately so that the lock file can be smaller and does not include unused
-        # attrs.
-        whl_library_args = dict(
-            repo = pip_name,
-            dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
-        )
-        maybe_args = dict(
-            # The following values are safe to omit if they have false like values
-            annotation = pip_attr.whl_modifications.get(whl_name),
-            download_only = pip_attr.download_only,
-            enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
-            environment = pip_attr.environment,
-            envsubst = pip_attr.envsubst,
-            experimental_target_platforms = pip_attr.experimental_target_platforms,
-            group_deps = pip_attr.requirement_cycles.get(group_name, []),
-            group_name = group_name,
-            pip_data_exclude = pip_attr.pip_data_exclude,
-            python_interpreter = pip_attr.python_interpreter,
-            python_interpreter_target = pip_attr.python_interpreter_target,
-            whl_patches = {
-                p: json.encode(args)
-                for p, args in whl_overrides.get(whl_name, {}).items()
-            },
-        )
-        whl_library_args.update({k: v for k, v in maybe_args.items() if v})
-        maybe_args_with_default = dict(
-            # The following values have defaults next to them
-            isolated = (use_isolated(module_ctx, pip_attr), True),
-            quiet = (pip_attr.quiet, True),
-            timeout = (pip_attr.timeout, 600),
-        )
-        whl_library_args.update({
-            k: v
-            for k, (v, default) in maybe_args_with_default.items()
-            if v != default
-        })
 
         result = requirements_to_whl_libraries(
             requirements = requirements,
             pip_attr = pip_attr,
             repository_platform = repository_platform,
             logger = logger,
-            **whl_library_args
+            **_default_whl_library_args(
+                module_ctx,
+                hub_name = hub_name,
+                whl_name = whl_name,
+                pip_attr = pip_attr,
+                whl_group_mapping = whl_group_mapping,
+                whl_overrides = whl_overrides,
+            )
         )
         if result.is_exposed:
             exposed_packages[whl_name] = None
         for args in result.repos:
             filename = args.get("filename")
             if filename:
+                # TODO @aignas 2024-10-20: use hub_name as a prefix so that
+                # we can reuse the same wheel across multiple versions.
                 repo_name = whl_repo_name(pip_name, filename, args["sha256"])
 
                 # Pure python wheels or sdists may need to have a platform here
