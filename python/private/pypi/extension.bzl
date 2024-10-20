@@ -156,10 +156,9 @@ def _whl_libraries_using_downloader_with_fallback(*, requirements, pip_attr, rep
         **whl_library_args
     )
 
-def _default_whl_library_args(module_ctx, *, hub_name, whl_name, pip_attr, whl_group_mapping, whl_overrides):
-    group_name = whl_group_mapping.get(whl_name)
+def _common_whl_library_args(module_ctx, *, pip_attr):
     pip_name = "{}_{}".format(
-        hub_name,
+        pip_attr.hub_name,
         version_label(pip_attr.python_version),
     )
 
@@ -167,25 +166,18 @@ def _default_whl_library_args(module_ctx, *, hub_name, whl_name, pip_attr, whl_g
     # attrs.
     whl_library_args = dict(
         repo = pip_name,
-        dep_template = "@{}//{{name}}:{{target}}".format(hub_name),
+        dep_template = "@{}//{{name}}:{{target}}".format(pip_attr.hub_name),
     )
     maybe_args = dict(
         # The following values are safe to omit if they have false like values
-        annotation = pip_attr.whl_modifications.get(whl_name),
         download_only = pip_attr.download_only,
         enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
         environment = pip_attr.environment,
         envsubst = pip_attr.envsubst,
         experimental_target_platforms = pip_attr.experimental_target_platforms,
-        group_deps = pip_attr.requirement_cycles.get(group_name, []),
-        group_name = group_name,
         pip_data_exclude = pip_attr.pip_data_exclude,
         python_interpreter = pip_attr.python_interpreter,
         python_interpreter_target = pip_attr.python_interpreter_target,
-        whl_patches = {
-            p: json.encode(args)
-            for p, args in whl_overrides.get(whl_name, {}).items()
-        },
     )
     whl_library_args.update({k: v for k, v in maybe_args.items() if v})
     maybe_args_with_default = dict(
@@ -201,12 +193,28 @@ def _default_whl_library_args(module_ctx, *, hub_name, whl_name, pip_attr, whl_g
     })
     return whl_library_args
 
+def _default_whl_library_args(*, whl_name, pip_attr, whl_group_mapping, whl_overrides, **whl_library_args):
+    group_name = whl_group_mapping.get(whl_name)
+    maybe_args = dict(
+        # The following values are safe to omit if they have false like values
+        annotation = pip_attr.whl_modifications.get(whl_name),
+        group_deps = pip_attr.requirement_cycles.get(group_name, []),
+        group_name = group_name,
+        whl_patches = {
+            p: json.encode(args)
+            for p, args in whl_overrides.get(whl_name, {}).items()
+        },
+    )
+    whl_library_args.update({k: v for k, v in maybe_args.items() if v})
+    return whl_library_args
+
 def _create_whl_repos(
         module_ctx,
         *,
         pip_attr,
         whl_overrides,
-        requirements_to_whl_libraries):
+        requirements_to_whl_libraries,
+        **whl_library_args):
     exposed_packages = {}
     whl_libraries = {}
     whl_map = {}
@@ -235,12 +243,11 @@ def _create_whl_repos(
             repository_platform = repository_platform,
             logger = logger,
             **_default_whl_library_args(
-                module_ctx,
-                hub_name = hub_name,
                 whl_name = whl_name,
                 pip_attr = pip_attr,
                 whl_group_mapping = whl_group_mapping,
                 whl_overrides = whl_overrides,
+                **whl_library_args
             )
         )
         if result.is_exposed:
@@ -534,7 +541,40 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 ),
                 whl_overrides = whl_overrides,
                 requirements_to_whl_libraries = requirements_to_whl_libraries,
+                # Construct args separately so that the lock file can be smaller and does
+                # not include unused attrs.
+                **_common_whl_library_args(
+                    module_ctx,
+                    pip_attr = struct(
+                        auth_patterns = pip_attr.auth_patterns,
+                        download_only = pip_attr.download_only,
+                        enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
+                        environment = pip_attr.environment,
+                        envsubst = pip_attr.envsubst,
+                        requirement_cycles = {
+                            name: [normalize_name(whl_name) for whl_name in whls]
+                            for name, whls in pip_attr.experimental_requirement_cycles.items()
+                        },
+                        experimental_target_platforms = pip_attr.experimental_target_platforms,
+                        extra_pip_args = pip_attr.extra_pip_args,
+                        hub_name = pip_attr.hub_name,
+                        isolated = pip_attr.isolated,
+                        netrc = pip_attr.netrc,
+                        pip_data_exclude = pip_attr.pip_data_exclude,
+                        python_interpreter = pip_attr.python_interpreter,
+                        python_interpreter_target = python_interpreter_target,
+                        python_version = pip_attr.python_version,
+                        quiet = pip_attr.quiet,
+                        requirements_by_platform = requirements_by_platform,
+                        timeout = pip_attr.timeout,
+                        whl_modifications = {
+                            normalize_name(whl_name): mod
+                            for mod, whl_name in pip_attr.whl_modifications.items()
+                        },
+                    ),
+                )
             )
+
             whl_libraries.update(result.whl_libraries)
             for whl, aliases in result.whl_map.items():
                 hub_whl_map.setdefault(hub_name, {}).setdefault(whl, []).extend(aliases)
