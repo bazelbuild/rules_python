@@ -241,6 +241,7 @@ def rules_python_internal_deps():
         strip_prefix = "protobuf-27.0",
         url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
     )
+
     # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
     http_archive(
         name = "protobuf",
