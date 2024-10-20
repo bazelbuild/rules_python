@@ -174,29 +174,13 @@ def _create_whl_repos(
         version_label(pip_attr.python_version),
     )
     major_minor = _major_minor_version(pip_attr.python_version)
-
-    whl_modifications = {}
-    if pip_attr.whl_modifications != None:
-        for mod, whl_name in pip_attr.whl_modifications.items():
-            whl_modifications[normalize_name(whl_name)] = mod
-
-    if pip_attr.experimental_requirement_cycles:
-        requirement_cycles = {
-            name: [normalize_name(whl_name) for whl_name in whls]
-            for name, whls in pip_attr.experimental_requirement_cycles.items()
-        }
-
-        whl_group_mapping = {
-            normalize_name(whl_name): group_name
-            for group_name, group_whls in requirement_cycles.items()
-            for whl_name in group_whls
-        }
-    else:
-        whl_group_mapping = {}
-        requirement_cycles = {}
+    whl_group_mapping = {
+        whl_name: group_name
+        for group_name, group_whls in pip_attr.requirement_cycles.items()
+        for whl_name in group_whls
+    }
 
     # Create a new wheel library for each of the different whls
-
     repository_platform = host_platform(module_ctx)
     for whl_name, requirements in pip_attr.requirements_by_platform.items():
         whl_name = normalize_name(whl_name)
@@ -210,13 +194,13 @@ def _create_whl_repos(
         )
         maybe_args = dict(
             # The following values are safe to omit if they have false like values
-            annotation = whl_modifications.get(whl_name),
+            annotation = pip_attr.whl_modifications.get(whl_name),
             download_only = pip_attr.download_only,
             enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
             environment = pip_attr.environment,
             envsubst = pip_attr.envsubst,
             experimental_target_platforms = pip_attr.experimental_target_platforms,
-            group_deps = requirement_cycles.get(group_name, []),
+            group_deps = pip_attr.requirement_cycles.get(group_name, []),
             group_name = group_name,
             pip_data_exclude = pip_attr.pip_data_exclude,
             python_interpreter = pip_attr.python_interpreter,
@@ -419,7 +403,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
             else:
                 pip_hub_map[hub_name].python_versions.append(pip_attr.python_version)
 
-            get_index_urls = None
             if pip_attr.experimental_index_url:
                 get_index_urls = lambda ctx, distributions: simpleapi_download(
                     ctx,
@@ -436,6 +419,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     cache = simpleapi_cache,
                     parallel_download = pip_attr.parallel_download,
                 )
+                requirements_to_whl_libraries = _whl_libraries_using_downloader_with_fallback
+            else:
+                get_index_urls = None
+                requirements_to_whl_libraries = _whl_libraries_using_pip
 
             requirements_by_platform = requirements_files_by_platform(
                 requirements_by_platform = pip_attr.requirements_by_platform,
@@ -500,7 +487,6 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 evaluate_markers = evaluate_markers_fn,
                 logger = repo_utils.logger(module_ctx, "pypi:parse_requirements"),
             )
-            requirements_to_whl_libraries = _whl_libraries_using_downloader_with_fallback if get_index_urls else _whl_libraries_using_pip
 
             result = _create_whl_repos(
                 module_ctx,
@@ -510,7 +496,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     enable_implicit_namespace_pkgs = pip_attr.enable_implicit_namespace_pkgs,
                     environment = pip_attr.environment,
                     envsubst = pip_attr.envsubst,
-                    experimental_requirement_cycles = pip_attr.experimental_requirement_cycles,
+                    requirement_cycles = {
+                        name: [normalize_name(whl_name) for whl_name in whls]
+                        for name, whls in pip_attr.experimental_requirement_cycles.items()
+                    },
                     experimental_target_platforms = pip_attr.experimental_target_platforms,
                     extra_pip_args = pip_attr.extra_pip_args,
                     hub_name = pip_attr.hub_name,
@@ -523,7 +512,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
                     quiet = pip_attr.quiet,
                     requirements_by_platform = requirements_by_platform,
                     timeout = pip_attr.timeout,
-                    whl_modifications = pip_attr.whl_modifications,
+                    whl_modifications = {
+                        normalize_name(whl_name): mod
+                        for mod, whl_name in pip_attr.whl_modifications.items()
+                    },
                 ),
                 whl_overrides = whl_overrides,
                 requirements_to_whl_libraries = requirements_to_whl_libraries,
