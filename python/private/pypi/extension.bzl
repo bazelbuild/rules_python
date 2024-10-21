@@ -862,8 +862,7 @@ the BUILD files for wheels.
             attrs = _pip_parse_ext_attrs(),
             doc = """\
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
-This tag class reuses most of the pip attributes that are found in
-@rules_python//python/pip_install:pip_repository.bzl.
+This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
 The exception is it does not use the arg 'repo_prefix'.  We set the repository
 prefix for the user and the alias arg is always True in bzlmod.
 """,
@@ -912,8 +911,7 @@ the BUILD files for wheels.
             ),
             doc = """\
 This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
-This tag class reuses most of the pypi attributes that are found in
-@rules_python//python/pip_install:pip_repository.bzl.
+This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
 The exception is it does not use the arg 'repo_prefix'.  We set the repository
 prefix for the user and the alias arg is always True in bzlmod.
 """,
