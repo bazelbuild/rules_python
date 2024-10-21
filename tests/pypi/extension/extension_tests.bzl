@@ -27,7 +27,7 @@ def _mock_mctx(*modules, environ = {}, read = None):
             name = "unittest",
             arch = "exotic",
         ),
-        read = read or (lambda _: ""),
+        read = read or (lambda _: "simple==0.0.1 --hash=sha256:deadbeef"),
         modules = [
             struct(
                 name = modules[0].name,
@@ -75,18 +75,18 @@ def _parse(
         experimental_requirement_cycles = {},
         experimental_target_platforms = [],
         extra_pip_args = [],
-        isolated = False,
+        isolated = True,
         netrc = None,
         pip_data_exclude = None,
         python_interpreter = None,
         python_interpreter_target = None,
-        quiet = False,
+        quiet = True,
         requirements_by_platform = {},
         requirements_darwin = None,
         requirements_linux = None,
         requirements_lock = None,
         requirements_windows = None,
-        timeout = 42,
+        timeout = 600,
         whl_modifications = {},
         **kwargs):
     return struct(
@@ -115,6 +115,10 @@ def _parse(
         requirements_windows = requirements_windows,
         timeout = timeout,
         whl_modifications = whl_modifications,
+        # The following are covered by other unit tests
+        experimental_extra_index_urls = [],
+        parallel_download = False,
+        experimental_index_url_overrides = {},
         **kwargs
     )
 
@@ -146,6 +150,87 @@ def _test_simple(env):
     pypi.whl_mods().contains_exactly({})
 
 _tests.append(_test_simple)
+
+def _test_simple_get_index(env):
+    got_simpleapi_download_args = []
+    got_simpleapi_download_kwargs = {}
+
+    def mocksimpleapi_download(*args, **kwargs):
+        got_simpleapi_download_args.extend(args)
+        got_simpleapi_download_kwargs.update(kwargs)
+        return {
+            "simple": struct(
+                whls = {},
+                sdists = {
+                    "deadbeef": struct(
+                        yanked = False,
+                        filename = "simple-0.0.1.tar.gz",
+                        sha256 = "deadbeef",
+                        url = "example.org",
+                    ),
+                },
+            ),
+        }
+
+    pypi = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        requirements_lock = "requirements.txt",
+                        experimental_index_url = "pypi.org",
+                    ),
+                ],
+            ),
+        ),
+        available_interpreters = {
+            "python_3_15_host": "unit_test_interpreter_target",
+        },
+        simpleapi_download = mocksimpleapi_download,
+    )
+
+    pypi.is_reproducible().equals(False)
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
+    pypi.hub_group_map().contains_exactly({})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = "simple-0.0.1.tar.gz",
+                repo = "pypi_315_simple_sdist_deadbeef",
+                target_platforms = None,
+                version = "3.15",
+            ),
+        ],
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_simple_sdist_deadbeef": {
+            "dep_template": "@pypi//{name}:{target}",
+            "experimental_target_platforms": [
+                "cp315_linux_aarch64",
+                "cp315_linux_arm",
+                "cp315_linux_ppc",
+                "cp315_linux_s390x",
+                "cp315_linux_x86_64",
+                "cp315_osx_aarch64",
+                "cp315_osx_x86_64",
+                "cp315_windows_x86_64",
+            ],
+            "filename": "simple-0.0.1.tar.gz",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1",
+            "sha256": "deadbeef",
+            "urls": ["example.org"],
+        },
+    })
+    pypi.whl_mods().contains_exactly({})
+
+_tests.append(_test_simple_get_index)
 
 def extension_test_suite(name):
     """Create the test suite.

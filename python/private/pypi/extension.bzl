@@ -62,7 +62,35 @@ def _whl_mods_impl(whl_mods_dict):
             whl_mods = whl_mods,
         )
 
-def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map, simpleapi_cache, exposed_packages, whl_libraries, available_interpreters):
+def _create_whl_repos(
+        module_ctx,
+        *,
+        pip_attr,
+        whl_map,
+        whl_overrides,
+        group_map,
+        simpleapi_cache,
+        exposed_packages,
+        whl_libraries,
+        available_interpreters = INTERPRETER_LABELS,
+        simpleapi_download = simpleapi_download):
+    """create all of the whl repositories
+
+    Args:
+        module_ctx: TODO
+        pip_attr: TODO
+        whl_map: TODO
+        whl_overrides: TODO
+        group_map: TODO
+        simpleapi_cache: TODO
+        exposed_packages: TODO
+        whl_libraries: TODO
+        simpleapi_download: Used for testing overrides
+        available_interpreters: {type}`dict[str, Label]` The dictionary of available
+            interpreters that have been registered using the `python` bzlmod extension.
+            The keys are in the form `python_{snake_case_version}_host`. This is to be
+            used during the `repository_rule` and must be always compatible with the host.
+    """
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
     is_hub_reproducible = True
@@ -321,16 +349,13 @@ def _create_whl_repos(module_ctx, *, pip_attr, whl_map, whl_overrides, group_map
 
     return is_hub_reproducible
 
-def parse_modules(module_ctx, _fail = fail, available_interpreters = INTERPRETER_LABELS):
+def parse_modules(module_ctx, _fail = fail, **kwargs):
     """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
 
     Args:
         module_ctx: {type}`module_ctx` module context.
         _fail: {type}`function` the failure function, mainly for testing.
-        available_interpreters: {type}`dict[str, Label]` The dictionary of available
-            interpreters that have been registered using the `python` bzlmod extension.
-            The keys are in the form `python_{snake_case_version}_host`. This is to be
-            used during the `repository_rule` and must be always compatible with the host.
+        **kwargs: Extra arguments passed to the layers below.
 
     Returns:
         A struct with the following attributes:
@@ -453,7 +478,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 whl_map = hub_whl_map,
                 whl_overrides = whl_overrides,
                 whl_libraries = whl_libraries,
-                available_interpreters = available_interpreters,
+                **kwargs
             )
             is_reproducible = is_reproducible and is_hub_reproducible
 
@@ -461,7 +486,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
         whl_mods = whl_mods,
         hub_whl_map = hub_whl_map,
         hub_group_map = hub_group_map,
-        exposed_packages = exposed_packages,
+        exposed_packages = {k: sorted(v) for k, v in exposed_packages.items()},
         whl_libraries = whl_libraries,
         is_reproducible = is_reproducible,
     )
@@ -550,7 +575,7 @@ def _pip_impl(module_ctx):
                 key: json.encode(value)
                 for key, value in whl_map.items()
             },
-            packages = sorted(mods.exposed_packages.get(hub_name, {})),
+            packages = mods.exposed_packages.get(hub_name, []),
             groups = mods.hub_group_map.get(hub_name),
         )
 
