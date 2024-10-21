@@ -15,8 +15,8 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("@rules_testing//lib:truth.bzl", "subjects")
 load("//python/private/pypi:extension.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
-load(":parse_modules_subject.bzl", "parse_modules_subject")
 
 _tests = []
 
@@ -56,9 +56,16 @@ def _mod(*, name, parse = [], override = [], whl_mods = [], is_root = True):
     )
 
 def _parse_modules(env, **kwargs):
-    return parse_modules_subject(
+    return env.expect.that_struct(
         parse_modules(**kwargs),
-        meta = env.expect.meta,
+        attrs = dict(
+            is_reproducible = subjects.bool,
+            exposed_packages = subjects.dict,
+            hub_group_map = subjects.dict,
+            hub_whl_map = subjects.dict,
+            whl_libraries = subjects.dict,
+            whl_mods = subjects.dict,
+        ),
     )
 
 def _parse(
