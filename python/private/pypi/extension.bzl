@@ -77,14 +77,15 @@ def _create_whl_repos(
     """create all of the whl repositories
 
     Args:
-        module_ctx: TODO
-        pip_attr: TODO
-        whl_map: TODO
-        whl_overrides: TODO
-        group_map: TODO
-        simpleapi_cache: TODO
-        exposed_packages: TODO
-        whl_libraries: TODO
+        module_ctx: {type}`module_ctx`.
+        pip_attr: {type}`struct` - the struct that comes from the tag class iteration.
+        whl_overrides: {type}`dict[str, struct]` - per-wheel overrides.
+        simpleapi_cache: {type}`dict` - an opaque dictionary used for caching the results from calling
+            SimpleAPI evaluating all of the tag class invocations {bzl:obj}`pip.parse`.
+        whl_map: {type}`dict` - one of the outputs of the function.
+        group_map: {type}`dict` - one of the outputs of the function.
+        exposed_packages: {type}`dict[str, list]` - one of the outputs of the function.
+        whl_libraries: {type}`dict` - one of the outputs of the function.
         simpleapi_download: Used for testing overrides
         available_interpreters: {type}`dict[str, Label]` The dictionary of available
             interpreters that have been registered using the `python` bzlmod extension.
