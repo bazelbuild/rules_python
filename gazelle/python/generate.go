@@ -309,7 +309,7 @@ func (py *Python) GenerateRules(args language.GenerateArgs) language.GenerateRes
 			build()
 
 		if pyLibrary.IsEmpty(py.Kinds()[pyLibrary.Kind()]) {
-			result.Empty = append(result.Gen, pyLibrary)
+			result.Empty = append(result.Empty, pyLibrary)
 		} else {
 			result.Gen = append(result.Gen, pyLibrary)
 			result.Imports = append(result.Imports, pyLibrary.PrivateAttr(config.GazelleImportsKey))
