@@ -483,8 +483,9 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 whl_overrides = whl_overrides,
                 **kwargs
             )
+            hub_whl_map.setdefault(hub_name, {})
             for key, settings in out.whl_map.items():
-                hub_whl_map.setdefault(hub_name, {}).setdefault(key, []).extend(settings)
+                hub_whl_map[hub_name].setdefault(key, []).extend(settings)
             exposed_packages.setdefault(hub_name, {}).update(out.exposed_packages)
             whl_libraries.update(out.whl_libraries)
             is_reproducible = is_reproducible and out.is_reproducible
