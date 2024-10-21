@@ -66,12 +66,8 @@ def _create_whl_repos(
         module_ctx,
         *,
         pip_attr,
-        whl_map,
         whl_overrides,
-        group_map,
         simpleapi_cache,
-        exposed_packages,
-        whl_libraries,
         available_interpreters = INTERPRETER_LABELS,
         simpleapi_download = simpleapi_download):
     """create all of the whl repositories
@@ -82,19 +78,33 @@ def _create_whl_repos(
         whl_overrides: {type}`dict[str, struct]` - per-wheel overrides.
         simpleapi_cache: {type}`dict` - an opaque dictionary used for caching the results from calling
             SimpleAPI evaluating all of the tag class invocations {bzl:obj}`pip.parse`.
-        whl_map: {type}`dict` - one of the outputs of the function.
-        group_map: {type}`dict` - one of the outputs of the function.
-        exposed_packages: {type}`dict[str, list]` - one of the outputs of the function.
-        whl_libraries: {type}`dict` - one of the outputs of the function.
         simpleapi_download: Used for testing overrides
         available_interpreters: {type}`dict[str, Label]` The dictionary of available
             interpreters that have been registered using the `python` bzlmod extension.
             The keys are in the form `python_{snake_case_version}_host`. This is to be
             used during the `repository_rule` and must be always compatible with the host.
+
+    Returns a {type}`struct` with the following attributes:
+        whl_map: {type}`dict[str, list[struct]]` the output is keyed by the
+            normalized package name and the values are the instances of the
+            {bzl:obj}`whl_alias` return values.
+        exposed_packages: {type}`dict[str, Any]` this is just a way to
+            represent a set of string values.
+        whl_libraries: {type}`dict[str, dict[str, Any]]` the keys are the
+            aparent repository names for the hub repo and the values are the
+            arguments that will be passed to {bzl:obj}`whl_library` repository
+            rule.
+        is_reproducible: {type}`bool` set to True if does not make calls to the
+            internet to evaluate the requirements files.
     """
     logger = repo_utils.logger(module_ctx, "pypi:create_whl_repos")
     python_interpreter_target = pip_attr.python_interpreter_target
-    is_hub_reproducible = True
+    is_reproducible = True
+
+    # containers to aggregate outputs from this function
+    whl_map = {}
+    exposed_packages = {}
+    whl_libraries = {}
 
     # if we do not have the python_interpreter set in the attributes
     # we programmatically find it.
@@ -123,9 +133,6 @@ def _create_whl_repos(
     )
     major_minor = _major_minor_version(pip_attr.python_version)
 
-    if hub_name not in whl_map:
-        whl_map[hub_name] = {}
-
     whl_modifications = {}
     if pip_attr.whl_modifications != None:
         for mod, whl_name in pip_attr.whl_modifications.items():
@@ -142,12 +149,6 @@ def _create_whl_repos(
             for group_name, group_whls in requirement_cycles.items()
             for whl_name in group_whls
         }
-
-        # TODO @aignas 2024-04-05: how do we support different requirement
-        # cycles for different abis/oses? For now we will need the users to
-        # assume the same groups across all versions/platforms until we start
-        # using an alternative cycle resolution strategy.
-        group_map[hub_name] = pip_attr.experimental_requirement_cycles
     else:
         whl_group_mapping = {}
         requirement_cycles = {}
@@ -271,7 +272,7 @@ def _create_whl_repos(
 
                 for distribution in dists:
                     found_something = True
-                    is_hub_reproducible = False
+                    is_reproducible = False
 
                     if pip_attr.netrc:
                         whl_library_args["netrc"] = pip_attr.netrc
@@ -304,7 +305,7 @@ def _create_whl_repos(
 
                     whl_libraries[repo_name] = dict(whl_library_args.items())
 
-                    whl_map[hub_name].setdefault(whl_name, []).append(
+                    whl_map.setdefault(whl_name, []).append(
                         whl_alias(
                             repo = repo_name,
                             version = major_minor,
@@ -315,7 +316,7 @@ def _create_whl_repos(
 
             if found_something:
                 if is_exposed:
-                    exposed_packages.setdefault(hub_name, {})[whl_name] = None
+                    exposed_packages[whl_name] = None
                 continue
 
         requirement = select_requirement(
@@ -341,14 +342,19 @@ def _create_whl_repos(
         # args are manipulated in the code going before.
         repo_name = "{}_{}".format(pip_name, whl_name)
         whl_libraries[repo_name] = dict(whl_library_args.items())
-        whl_map[hub_name].setdefault(whl_name, []).append(
+        whl_map.setdefault(whl_name, []).append(
             whl_alias(
                 repo = repo_name,
                 version = major_minor,
             ),
         )
 
-    return is_hub_reproducible
+    return struct(
+        is_reproducible = is_reproducible,
+        whl_map = whl_map,
+        exposed_packages = exposed_packages,
+        whl_libraries = whl_libraries,
+    )
 
 def parse_modules(module_ctx, _fail = fail, **kwargs):
     """Implementation of parsing the tag classes for the extension and return a struct for registering repositories.
@@ -470,25 +476,44 @@ You cannot use both the additive_build_content and additive_build_content_file a
             else:
                 pip_hub_map[pip_attr.hub_name].python_versions.append(pip_attr.python_version)
 
-            is_hub_reproducible = _create_whl_repos(
+            out = _create_whl_repos(
                 module_ctx,
-                exposed_packages = exposed_packages,
-                group_map = hub_group_map,
                 pip_attr = pip_attr,
                 simpleapi_cache = simpleapi_cache,
-                whl_map = hub_whl_map,
                 whl_overrides = whl_overrides,
-                whl_libraries = whl_libraries,
                 **kwargs
             )
-            is_reproducible = is_reproducible and is_hub_reproducible
+            for key, settings in out.whl_map.items():
+                hub_whl_map.setdefault(hub_name, {}).setdefault(key, []).extend(settings)
+            exposed_packages.setdefault(hub_name, {}).update(out.exposed_packages)
+            whl_libraries.update(out.whl_libraries)
+            is_reproducible = is_reproducible and out.is_reproducible
+
+            # TODO @aignas 2024-04-05: how do we support different requirement
+            # cycles for different abis/oses? For now we will need the users to
+            # assume the same groups across all versions/platforms until we start
+            # using an alternative cycle resolution strategy.
+            hub_group_map[hub_name] = pip_attr.experimental_requirement_cycles
 
     return struct(
-        whl_mods = whl_mods,
-        hub_whl_map = hub_whl_map,
-        hub_group_map = hub_group_map,
-        exposed_packages = {k: sorted(v) for k, v in exposed_packages.items()},
-        whl_libraries = whl_libraries,
+        # We sort the output here so that the lock file is sorted
+        whl_mods = dict(sorted(whl_mods.items())),
+        hub_whl_map = {
+            hub_name: {
+                whl_name: sorted(settings, key = lambda x: (x.version, x.filename))
+                for whl_name, settings in sorted(whl_map.items())
+            }
+            for hub_name, whl_map in sorted(hub_whl_map.items())
+        },
+        hub_group_map = {
+            hub_name: {
+                key: sorted(values)
+                for key, values in sorted(group_map.items())
+            }
+            for hub_name, group_map in sorted(hub_group_map.items())
+        },
+        exposed_packages = {k: sorted(v) for k, v in sorted(exposed_packages.items())},
+        whl_libraries = dict(sorted(whl_libraries.items())),
         is_reproducible = is_reproducible,
     )
 

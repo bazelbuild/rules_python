@@ -150,8 +150,8 @@ def _test_simple(env):
     )
 
     pypi.is_reproducible().equals(True)
-    pypi.exposed_packages().contains_exactly({})
-    pypi.hub_group_map().contains_exactly({})
+    pypi.exposed_packages().contains_exactly({"pypi": []})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {}})
     pypi.whl_libraries().contains_exactly({})
     pypi.whl_mods().contains_exactly({})
@@ -202,7 +202,7 @@ def _test_simple_get_index(env):
 
     pypi.is_reproducible().equals(False)
     pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
-    pypi.hub_group_map().contains_exactly({})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
         "simple": [
             struct(
