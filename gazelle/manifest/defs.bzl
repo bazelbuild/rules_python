@@ -39,7 +39,7 @@ def gazelle_python_manifest(
             manifest, meaning testing it is just as expensive as generating it,
             but modifying it is much less likely to result in a merge conflict.
         pip_repository_name: the name of the pip_install or pip_repository target.
-        pip_deps_repository_name: deprecated - the old pip_install target name.
+        pip_deps_repository_name: deprecated - the old {bzl:obj}`pip_parse` target name.
         manifest: the Gazelle manifest file.
             defaults to the same value as manifest.
         **kwargs: other bazel attributes passed to the generate and test targets
