@@ -149,6 +149,13 @@ def go_deps():
         version = "v1.0.0",
     )
     go_repository(
+        name = "com_github_go_python_gpython",
+        importpath = "github.com/go-python/gpython",
+        sum = "h1:MW7m7pFnbpzHL88vhAdIhT1pgG1QUZ0Q5jcF94z5MBI=",
+        version = "v0.2.0",
+    )
+
+    go_repository(
         name = "com_github_golang_glog",
         importpath = "github.com/golang/glog",
         sum = "h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=",
@@ -173,6 +180,31 @@ def go_deps():
         version = "v0.5.9",
     )
     go_repository(
+        name = "com_github_gopherjs_gopherjs",
+        importpath = "github.com/gopherjs/gopherjs",
+        sum = "h1:16eHWuMGvCjSfgRJKqIzapE78onvvTbdi1rMkU00lZw=",
+        version = "v0.0.0-20180825215210-0210a2f0f73c",
+    )
+    go_repository(
+        name = "com_github_gopherjs_gopherwasm",
+        importpath = "github.com/gopherjs/gopherwasm",
+        sum = "h1:fA2uLoctU5+T3OhOn2vYP0DVT6pxc7xhTlBB1paATqQ=",
+        version = "v1.1.0",
+    )
+    go_repository(
+        name = "com_github_mattn_go_runewidth",
+        importpath = "github.com/mattn/go-runewidth",
+        sum = "h1:lTGmDsbAYt5DmK6OnoV7EuIF1wEIFAcxld6ypU4OSgU=",
+        version = "v0.0.13",
+    )
+    go_repository(
+        name = "com_github_peterh_liner",
+        importpath = "github.com/peterh/liner",
+        sum = "h1:aJ4AOodmL+JxOZZEL2u9iJf8omNRpqHc/EbrK+3mAXw=",
+        version = "v1.2.2",
+    )
+
+    go_repository(
         name = "com_github_pmezard_go_difflib",
         importpath = "github.com/pmezard/go-difflib",
         sum = "h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=",
@@ -185,6 +217,13 @@ def go_deps():
         sum = "h1:gQz4mCbXsO+nc9n1hCxHcGA3Zx3Eo+UHZoInFGUIXNM=",
         version = "v0.0.0-20190812154241-14fe0d1b01d4",
     )
+    go_repository(
+        name = "com_github_rivo_uniseg",
+        importpath = "github.com/rivo/uniseg",
+        sum = "h1:3Z3Eu6FGHZWSfNKJTOUiPatWwfc7DzJRU04jFUqJODw=",
+        version = "v0.3.4",
+    )
+
     go_repository(
         name = "com_github_smacker_go_tree_sitter",
         importpath = "github.com/smacker/go-tree-sitter",

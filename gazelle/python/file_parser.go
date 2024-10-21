@@ -94,11 +94,11 @@ func (p *FileParser) parseImportStatements(node ast.Ast, relPath string) {
 		}
 	case *ast.ImportFrom:
 		for _, name := range n.Names {
-			moduleString := string(n.Module)
-			if moduleString == "" {
-				// from . import abc
+			if n.Level > 0 {
+				// from . import abc or from .. import foo
 				continue
 			}
+			moduleString := string(n.Module)
 			p.output.Modules = append(p.output.Modules, module{
 				Name:       moduleString + "." + string(name.Name),
 				LineNumber: uint32(n.GetLineno()),

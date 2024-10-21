@@ -105,6 +105,22 @@ func TestParseImportStatements(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "ignore relative from imports",
+			code: "from .foo import func\nfrom bar import func2\nfrom foo.bar import func3\nfrom .. import foo",
+			result: []module{
+				{
+					Name:       "bar.func2",
+					LineNumber: 2,
+					From:       "bar",
+				},
+				{
+					Name:       "foo.bar.func3",
+					LineNumber: 3,
+					From:       "foo.bar",
+				},
+			},
+		},
 		// align to https://docs.python.org/3/reference/simple_stmts.html#index-34
 		{
 			name: "complex import",
