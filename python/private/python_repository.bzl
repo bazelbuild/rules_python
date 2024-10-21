@@ -67,6 +67,7 @@ def _python_repository_impl(rctx):
     release_filename = rctx.attr.release_filename
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
+    free_threading = rctx.attr.free_threading
 
     if release_filename.endswith(".zst"):
         rctx.download(
@@ -126,11 +127,12 @@ def _python_repository_impl(rctx):
         for patch in patches:
             rctx.patch(patch, strip = rctx.attr.patch_strip)
 
+    ft_postfix = "t" if free_threading else ""
     # Write distutils.cfg to the Python installation.
     if "windows" in platform:
         distutils_path = "Lib/distutils/distutils.cfg"
     else:
-        distutils_path = "lib/python{}/distutils/distutils.cfg".format(python_short_version)
+        distutils_path = "lib/python{}{}/distutils/distutils.cfg".format(python_short_version, ft_postfix)
     if rctx.attr.distutils:
         rctx.file(distutils_path, rctx.read(rctx.attr.distutils))
     elif rctx.attr.distutils_content:
@@ -143,7 +145,7 @@ def _python_repository_impl(rctx):
         # dyld lookup errors. To fix, set the full path to the dylib as
         # it appears in the Bazel workspace as its LC_ID_DYLIB using
         # the `install_name_tool` bundled with macOS.
-        dylib = "libpython{}.dylib".format(python_short_version)
+        dylib = "libpython{}{}.dylib".format(python_short_version, ft_postfix)
         repo_utils.execute_checked(
             rctx,
             op = "python_repository.FixUpDyldIdPath",
@@ -255,6 +257,7 @@ define_hermetic_runtime_toolchain_impl(
   python_version = {python_version},
   python_bin = {python_bin},
   coverage_tool = {coverage_tool},
+  free_threading = {free_threading},
 )
 """.format(
         extra_files_glob_exclude = render.list(glob_exclude),
@@ -262,6 +265,7 @@ define_hermetic_runtime_toolchain_impl(
         python_bin = render.str(python_bin),
         python_version = render.str(rctx.attr.python_version),
         coverage_tool = render.str(coverage_tool),
+        free_threading = free_threading,
     )
     rctx.delete("python")
     rctx.symlink(python_bin, "python")
@@ -320,6 +324,10 @@ For more information see {attr}`py_runtime.coverage_tool`.
             doc = "A distutils.cfg file content to be included in the Python installation. " +
                   "Either distutils or distutils_content can be specified, but not both.",
             mandatory = False,
+        ),
+        "free_threading": attr.bool(
+            doc = "Whether we use CPython interpreter in free-threading mode (disabled GIL).",
+            default = False,
         ),
         "ignore_root_user_error": attr.bool(
             default = False,
