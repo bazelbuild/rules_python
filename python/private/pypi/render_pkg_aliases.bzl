@@ -319,15 +319,24 @@ def multiplatform_whl_aliases(*, aliases, **kwargs):
     versioned_additions = {}
     for alias in aliases:
         if not alias.filename:
-            ret.append(alias)
-            continue
+            if not alias.target_platforms:
+                ret.append(alias)
+
+                # If we have target_platforms, lets continue
+                continue
+            kwargs.setdefault("glibc_versions", None)
+            kwargs.setdefault("muslc_versions", None)
+            kwargs.setdefault("osx_versions", None)
 
         config_settings, all_versioned_settings = get_filename_config_settings(
             # TODO @aignas 2024-05-27: pass the parsed whl to reduce the
             # number of duplicate operations.
-            filename = alias.filename,
+            filename = alias.filename or "",
             target_platforms = alias.target_platforms,
             python_version = alias.version,
+            # If we have multiple platforms but no wheel filename, lets use different
+            # config settings.
+            non_whl_prefix = "sdist" if alias.filename else "",
             **kwargs
         )
 
@@ -494,7 +503,8 @@ def get_filename_config_settings(
         glibc_versions,
         muslc_versions,
         osx_versions,
-        python_version):
+        python_version,
+        non_whl_prefix = "sdist"):
     """Get the filename config settings.
 
     Args:
@@ -504,6 +514,8 @@ def get_filename_config_settings(
         muslc_versions: list[tuple[int, int]], list of versions.
         osx_versions: list[tuple[int, int]], list of versions.
         python_version: the python version to generate the config_settings for.
+        non_whl_prefix: the prefix of the config setting when the whl we don't have
+            a filename ending with ".whl".
 
     Returns:
         A tuple:
@@ -512,19 +524,20 @@ def get_filename_config_settings(
     """
     prefixes = []
     suffixes = []
-    if (0, 0) in glibc_versions:
-        fail("Invalid version in 'glibc_versions': cannot specify (0, 0) as a value")
-    if (0, 0) in muslc_versions:
-        fail("Invalid version in 'muslc_versions': cannot specify (0, 0) as a value")
-    if (0, 0) in osx_versions:
-        fail("Invalid version in 'osx_versions': cannot specify (0, 0) as a value")
-
-    glibc_versions = sorted(glibc_versions)
-    muslc_versions = sorted(muslc_versions)
-    osx_versions = sorted(osx_versions)
     setting_supported_versions = {}
 
     if filename.endswith(".whl"):
+        if (0, 0) in glibc_versions:
+            fail("Invalid version in 'glibc_versions': cannot specify (0, 0) as a value")
+        if (0, 0) in muslc_versions:
+            fail("Invalid version in 'muslc_versions': cannot specify (0, 0) as a value")
+        if (0, 0) in osx_versions:
+            fail("Invalid version in 'osx_versions': cannot specify (0, 0) as a value")
+
+        glibc_versions = sorted(glibc_versions)
+        muslc_versions = sorted(muslc_versions)
+        osx_versions = sorted(osx_versions)
+
         parsed = parse_whl_name(filename)
         if parsed.python_tag == "py2.py3":
             py = "py"
@@ -539,10 +552,10 @@ def get_filename_config_settings(
             abi = parsed.abi_tag
 
         if parsed.platform_tag == "any":
-            prefixes = ["{}_{}_any".format(py, abi)]
+            prefixes = ["_{}_{}_any".format(py, abi)]
             suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
         else:
-            prefixes = ["{}_{}".format(py, abi)]
+            prefixes = ["_{}_{}".format(py, abi)]
             suffixes = _whl_config_setting_suffixes(
                 platform_tag = parsed.platform_tag,
                 glibc_versions = glibc_versions,
@@ -551,12 +564,12 @@ def get_filename_config_settings(
                 setting_supported_versions = setting_supported_versions,
             )
     else:
-        prefixes = ["sdist"]
+        prefixes = [""] if not non_whl_prefix else ["_" + non_whl_prefix]
         suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
 
     versioned = {
-        ":is_cp{}_{}_{}".format(python_version, p, suffix): {
-            version: ":is_cp{}_{}_{}".format(python_version, p, setting)
+        ":is_cp{}{}_{}".format(python_version, p, suffix): {
+            version: ":is_cp{}{}_{}".format(python_version, p, setting)
             for version, setting in versions.items()
         }
         for p in prefixes
@@ -564,9 +577,9 @@ def get_filename_config_settings(
     }
 
     if suffixes or versioned:
-        return [":is_cp{}_{}_{}".format(python_version, p, s) for p in prefixes for s in suffixes], versioned
+        return [":is_cp{}{}_{}".format(python_version, p, s) for p in prefixes for s in suffixes], versioned
     else:
-        return [":is_cp{}_{}".format(python_version, p) for p in prefixes], setting_supported_versions
+        return [":is_cp{}{}".format(python_version, p) for p in prefixes], setting_supported_versions
 
 def _whl_config_setting_suffixes(
         platform_tag,

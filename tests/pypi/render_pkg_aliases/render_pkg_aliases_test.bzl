@@ -660,6 +660,29 @@ def _test_multiplatform_whl_aliases_nofilename(env):
 
 _tests.append(_test_multiplatform_whl_aliases_nofilename)
 
+def _test_multiplatform_whl_aliases_nofilename_target_platforms(env):
+    aliases = [
+        whl_alias(
+            repo = "foo",
+            config_setting = "//:ignored",
+            version = "3.1",
+            target_platforms = [
+                "cp31_linux_x86_64",
+                "cp31_linux_aarch64",
+            ],
+        ),
+    ]
+
+    got = multiplatform_whl_aliases(aliases = aliases)
+
+    want = [
+        whl_alias(config_setting = "//_config:is_cp3.1_linux_x86_64", repo = "foo", version = "3.1"),
+        whl_alias(config_setting = "//_config:is_cp3.1_linux_aarch64", repo = "foo", version = "3.1"),
+    ]
+    env.expect.that_collection(got).contains_exactly(want)
+
+_tests.append(_test_multiplatform_whl_aliases_nofilename_target_platforms)
+
 def _test_multiplatform_whl_aliases_filename(env):
     aliases = [
         whl_alias(
