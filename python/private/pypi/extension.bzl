@@ -327,8 +327,6 @@ def _create_whl_repos(
             if requirement.extra_pip_args:
                 whl_library_args["extra_pip_args"] = requirement.extra_pip_args
 
-            # We sort so that the lock-file remains the same no matter the order of how the
-            # args are manipulated in the code going before.
             repo_name = "{}_{}".format(pip_name, whl_name)
             if len(requirements) > 1:
                 repo_name = "{}__{}".format(repo_name, i)
