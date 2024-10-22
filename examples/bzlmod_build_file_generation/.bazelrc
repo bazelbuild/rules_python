@@ -6,3 +6,4 @@ build --enable_runfiles
 common --experimental_enable_bzlmod
 
 coverage --java_runtime_version=remotejdk_11
+common:bazel7.x --incompatible_python_disallow_native_rules
