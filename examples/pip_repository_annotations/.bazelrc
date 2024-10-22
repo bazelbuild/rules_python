@@ -4,3 +4,4 @@ try-import %workspace%/user.bazelrc
 # This example is WORKSPACE specific. The equivalent functionality
 # is in examples/bzlmod as the `whl_mods` feature.
 build --experimental_enable_bzlmod=false
+common --incompatible_python_disallow_native_rules
