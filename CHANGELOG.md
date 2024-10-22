@@ -31,7 +31,9 @@ A brief description of the categories of changes:
 
 {#v0-0-0-fixed}
 ### Fixed
-- Nothing yet
+* (rules) Setting `--incompatible_python_disallow_native_rules` no longer
+  causes rules_python rules to fail.
+  ([#2326](https://github.com/bazelbuild/rules_python/issues/2326).
 
 {#v0-0-0-added}
 ### Added
