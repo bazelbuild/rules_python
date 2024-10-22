@@ -23,8 +23,6 @@ buildifier:
   # NOTE: Keep in sync with //:version.bzl
   bazel: 6.4.0
   skip_in_bazel_downstream_pipeline: "Bazel 6 required"
-  build_flags:
-    - "--config=bazel6.x"
 .reusable_config: &reusable_config
   build_targets:
     - "--"
