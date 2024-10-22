@@ -225,12 +225,6 @@ def go_deps():
     )
 
     go_repository(
-        name = "com_github_smacker_go_tree_sitter",
-        importpath = "github.com/smacker/go-tree-sitter",
-        sum = "h1:7QZKUmQfnxncZIJGyvX8M8YeMfn8kM10j3J/2KwVTN4=",
-        version = "v0.0.0-20240422154435-0628b34cbf9c",
-    )
-    go_repository(
         name = "com_github_stretchr_objx",
         importpath = "github.com/stretchr/objx",
         sum = "h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=",
