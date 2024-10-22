@@ -34,7 +34,7 @@ A brief description of the categories of changes:
 - The extension evaluation has been adjusted to always generate the same lock
   file irrespective if `experimental_index_url` is set by any module or not.
   Fixes [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
-  issue is that it may break `bazel query` and in these usecases it is advisable
+  issue is that it may break `bazel query` and in these use cases it is advisable
   to use `cquery` until we have `sdist` cross-building from source fully working.
 
 {#v0-0-0-added}
