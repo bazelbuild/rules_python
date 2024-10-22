@@ -33,4 +33,9 @@ build:rtd --stamp
 # Some bzl files contain repos only available under bzlmod
 build:rtd --enable_bzlmod
 
+common:bazel7.x --incompatible_python_disallow_native_rules
+
+# Intentionally empty; used by CI
+common:bazel6.x
+
 build --lockfile_mode=update
