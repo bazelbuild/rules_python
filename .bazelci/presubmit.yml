@@ -23,9 +23,9 @@ buildifier:
   # NOTE: Keep in sync with //:version.bzl
   bazel: 6.4.0
   skip_in_bazel_downstream_pipeline: "Bazel 6 required"
+  build_flags:
+    - "--config=bazel6.x"
 .reusable_config: &reusable_config
-  environment:
-    RP_BAZEL: ${{bazel}}
   build_targets:
     - "--"
     - "..."
@@ -35,7 +35,6 @@ buildifier:
   build_flags:
     - "--keep_going"
     - "--build_tag_filters=-integration-test"
-    - "--$RP_BAZEL"
   test_targets:
     - "--"
     - "..."
@@ -97,11 +96,8 @@ buildifier:
   bazel: "7.x"
   environment:
     RULES_PYTHON_ENABLE_PYSTAR: "1"
-    RP_BAZEL: ${{bazel}}
-    RP_BAZEL2: "7.x"
   build_flags:
-    - "--$RP_BAZEL2"
-    - "--$RP_BAZEL"
+    - "--config=bazel7.x"
   test_flags:
     # The doc check tests fail because the Starlark implementation makes the
     # PyInfo and PyRuntimeInfo symbols become documented.
