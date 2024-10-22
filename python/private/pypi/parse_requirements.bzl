@@ -27,6 +27,7 @@ behavior.
 """
 
 load("//python/private:normalize_name.bzl", "normalize_name")
+load("//python/private:repo_utils.bzl", "repo_utils")
 load(":index_sources.bzl", "index_sources")
 load(":parse_requirements_txt.bzl", "parse_requirements_txt")
 load(":whl_target_platforms.bzl", "select_whls")
@@ -207,6 +208,56 @@ def parse_requirements(
         logger.debug(lambda: "Will configure whl repos: {}".format(ret.keys()))
 
     return ret
+
+def select_requirement(requirements, *, platform):
+    """A simple function to get a requirement for a particular platform.
+
+    Only used in WORKSPACE.
+
+    Args:
+        requirements (list[struct]): The list of requirements as returned by
+            the `parse_requirements` function above.
+        platform (str or None): The host platform. Usually an output of the
+            `host_platform` function. If None, then this function will return
+            the first requirement it finds.
+
+    Returns:
+        None if not found or a struct returned as one of the values in the
+        parse_requirements function. The requirement that should be downloaded
+        by the host platform will be returned.
+    """
+    maybe_requirement = [
+        req
+        for req in requirements
+        if not platform or [p for p in req.target_platforms if p.endswith(platform)]
+    ]
+    if not maybe_requirement:
+        # Sometimes the package is not present for host platform if there
+        # are whls specified only in particular requirements files, in that
+        # case just continue, however, if the download_only flag is set up,
+        # then the user can also specify the target platform of the wheel
+        # packages they want to download, in that case there will be always
+        # a requirement here, so we will not be in this code branch.
+        return None
+
+    return maybe_requirement[0]
+
+def host_platform(ctx):
+    """Return a string representation of the repository OS.
+
+    Only used in WORKSPACE.
+
+    Args:
+        ctx (struct): The `module_ctx` or `repository_ctx` attribute.
+
+    Returns:
+        The string representation of the platform that we can later used in the `pip`
+        machinery.
+    """
+    return "{}_{}".format(
+        repo_utils.get_platforms_os_name(ctx),
+        repo_utils.get_platforms_cpu_name(ctx),
+    )
 
 def _add_dists(*, requirement, index_urls, logger = None):
     """Populate dists based on the information from the PyPI index.
