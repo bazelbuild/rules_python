@@ -28,7 +28,6 @@ load(
 load(":builders.bzl", "builders")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -70,7 +69,6 @@ def py_library_impl(ctx, *, semantics):
     Returns:
         A list of modern providers to propagate.
     """
-    check_native_allowed(ctx)
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
 
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)
