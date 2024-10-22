@@ -757,6 +757,40 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
 
 _tests.append(_test_multiplatform_whl_aliases_filename_versioned)
 
+def _test_config_settings_exist_legacy(env):
+    aliases = [
+        whl_alias(
+            repo = "repo",
+            version = "3.11",
+            target_platforms = [
+                "cp311_linux_aarch64",
+                "cp311_linux_x86_64",
+            ],
+        ),
+    ]
+    available_config_settings = []
+    mock_rule = lambda name, **kwargs: available_config_settings.append(name)
+    config_settings(
+        python_versions = ["3.11"],
+        native = struct(
+            alias = mock_rule,
+            config_setting = mock_rule,
+        ),
+        target_platforms = [
+            "linux_aarch64",
+            "linux_x86_64",
+        ],
+    )
+
+    got_aliases = multiplatform_whl_aliases(
+        aliases = aliases,
+    )
+    got = [a.config_setting.partition(":")[-1] for a in got_aliases]
+
+    env.expect.that_collection(available_config_settings).contains_at_least(got)
+
+_tests.append(_test_config_settings_exist_legacy)
+
 def _test_config_settings_exist(env):
     for py_tag in ["py2.py3", "py3", "py311", "cp311"]:
         if py_tag == "py2.py3":
