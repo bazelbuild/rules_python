@@ -168,7 +168,7 @@ def parse_requirements(
         )
 
     ret = {}
-    for whl_name, reqs in requirements_by_platform.items():
+    for whl_name, reqs in sorted(requirements_by_platform.items()):
         requirement_target_platforms = {}
         for r in reqs.values():
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
