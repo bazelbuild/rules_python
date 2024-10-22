@@ -94,6 +94,8 @@ buildifier:
   bazel: "7.x"
   environment:
     RULES_PYTHON_ENABLE_PYSTAR: "1"
+  build_flags:
+    - "--config=bazel7.x"
   test_flags:
     # The doc check tests fail because the Starlark implementation makes the
     # PyInfo and PyRuntimeInfo symbols become documented.
