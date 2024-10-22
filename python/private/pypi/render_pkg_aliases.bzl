@@ -318,15 +318,9 @@ def multiplatform_whl_aliases(*, aliases, **kwargs):
     ret = []
     versioned_additions = {}
     for alias in aliases:
-        if not alias.filename:
-            if not alias.target_platforms:
-                ret.append(alias)
-
-                # If we have target_platforms, lets continue
-                continue
-            kwargs.setdefault("glibc_versions", None)
-            kwargs.setdefault("muslc_versions", None)
-            kwargs.setdefault("osx_versions", None)
+        if not alias.filename and not alias.target_platforms:
+            ret.append(alias)
+            continue
 
         config_settings, all_versioned_settings = get_filename_config_settings(
             # TODO @aignas 2024-05-27: pass the parsed whl to reduce the
@@ -438,10 +432,7 @@ def get_whl_flag_versions(aliases):
         if a.version:
             python_versions[a.version] = None
 
-        if not a.filename:
-            continue
-
-        if a.filename.endswith(".whl") and not a.filename.endswith("-any.whl"):
+        if a.filename and a.filename.endswith(".whl") and not a.filename.endswith("-any.whl"):
             parsed = parse_whl_name(a.filename)
         else:
             for plat in a.target_platforms or []:
@@ -500,10 +491,10 @@ def get_filename_config_settings(
         *,
         filename,
         target_platforms,
-        glibc_versions,
-        muslc_versions,
-        osx_versions,
         python_version,
+        glibc_versions = None,
+        muslc_versions = None,
+        osx_versions = None,
         non_whl_prefix = "sdist"):
     """Get the filename config settings.
 

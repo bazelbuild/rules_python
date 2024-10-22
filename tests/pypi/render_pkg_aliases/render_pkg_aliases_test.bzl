@@ -387,6 +387,24 @@ def _test_get_python_versions(env):
 
 _tests.append(_test_get_python_versions)
 
+def _test_get_python_versions_with_target_platforms(env):
+    got = get_whl_flag_versions(
+        aliases = [
+            whl_alias(repo = "foo", version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
+            whl_alias(repo = "foo", version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
+        ],
+    )
+    want = {
+        "python_versions": ["3.2", "3.3"],
+        "target_platforms": [
+            "linux_x86_64",
+            "osx_aarch64",
+        ],
+    }
+    env.expect.that_dict(got).contains_exactly(want)
+
+_tests.append(_test_get_python_versions_with_target_platforms)
+
 def _test_get_python_versions_from_filenames(env):
     got = get_whl_flag_versions(
         aliases = [
