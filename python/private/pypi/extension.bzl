@@ -24,7 +24,7 @@ load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
 load(":hub_repository.bzl", "hub_repository")
-load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
+load(":parse_requirements.bzl", "parse_requirements")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "whl_alias")
@@ -212,7 +212,6 @@ def _create_whl_repos(
         logger = logger,
     )
 
-    repository_platform = host_platform(module_ctx)
     for whl_name, requirements in requirements_by_platform.items():
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
@@ -260,10 +259,10 @@ def _create_whl_repos(
             if v != default
         })
 
+        is_exposed = False
         if get_index_urls:
             # TODO @aignas 2024-05-26: move to a separate function
             found_something = False
-            is_exposed = False
             for requirement in requirements:
                 is_exposed = is_exposed or requirement.is_exposed
                 dists = requirement.whls
@@ -319,35 +318,32 @@ def _create_whl_repos(
                     exposed_packages[whl_name] = None
                 continue
 
-        requirement = select_requirement(
-            requirements,
-            platform = None if pip_attr.download_only else repository_platform,
-        )
-        if not requirement:
-            # Sometimes the package is not present for host platform if there
-            # are whls specified only in particular requirements files, in that
-            # case just continue, however, if the download_only flag is set up,
-            # then the user can also specify the target platform of the wheel
-            # packages they want to download, in that case there will be always
-            # a requirement here, so we will not be in this code branch.
-            continue
-        elif get_index_urls:
-            logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
+        for i, requirement in enumerate(requirements):
+            is_exposed = is_exposed or requirement.is_exposed
+            if get_index_urls:
+                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
-        whl_library_args["requirement"] = requirement.requirement_line
-        if requirement.extra_pip_args:
-            whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+            whl_library_args["requirement"] = requirement.requirement_line
+            if requirement.extra_pip_args:
+                whl_library_args["extra_pip_args"] = requirement.extra_pip_args
 
-        # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before.
-        repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_libraries[repo_name] = dict(whl_library_args.items())
-        whl_map.setdefault(whl_name, []).append(
-            whl_alias(
-                repo = repo_name,
-                version = major_minor,
-            ),
-        )
+            # We sort so that the lock-file remains the same no matter the order of how the
+            # args are manipulated in the code going before.
+            repo_name = "{}_{}".format(pip_name, whl_name)
+            if len(requirements) > 1:
+                repo_name = "{}__{}".format(repo_name, i)
+
+            whl_libraries[repo_name] = dict(whl_library_args.items())
+            whl_map.setdefault(whl_name, []).append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                    target_platforms = requirement.target_platforms if len(requirements) > 1 else None,
+                ),
+            )
+
+        if is_exposed:
+            exposed_packages[whl_name] = None
 
     return struct(
         is_reproducible = is_reproducible,

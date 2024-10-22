@@ -150,10 +150,27 @@ def _test_simple(env):
     )
 
     pypi.is_reproducible().equals(True)
-    pypi.exposed_packages().contains_exactly({"pypi": []})
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
-    pypi.hub_whl_map().contains_exactly({"pypi": {}})
-    pypi.whl_libraries().contains_exactly({})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple",
+                target_platforms = None,
+                version = "3.15",
+            ),
+        ],
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_simple": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
+        },
+    })
     pypi.whl_mods().contains_exactly({})
 
 _tests.append(_test_simple)
