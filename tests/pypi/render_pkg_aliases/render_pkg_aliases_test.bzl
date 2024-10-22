@@ -775,6 +775,19 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
 
 _tests.append(_test_multiplatform_whl_aliases_filename_versioned)
 
+def _mock_alias(container):
+    return lambda name, **kwargs: container.append(name)
+
+def _mock_config_setting(container):
+    def _inner(name, flag_values = None, constraint_values = None, **_):
+        if flag_values or constraint_values:
+            container.append(name)
+            return
+
+        fail("At least one of 'flag_values' or 'constraint_values' needs to be set")
+
+    return _inner
+
 def _test_config_settings_exist_legacy(env):
     aliases = [
         whl_alias(
@@ -787,12 +800,11 @@ def _test_config_settings_exist_legacy(env):
         ),
     ]
     available_config_settings = []
-    mock_rule = lambda name, **kwargs: available_config_settings.append(name)
     config_settings(
         python_versions = ["3.11"],
         native = struct(
-            alias = mock_rule,
-            config_setting = mock_rule,
+            alias = _mock_alias(available_config_settings),
+            config_setting = _mock_config_setting(available_config_settings),
         ),
         target_platforms = [
             "linux_aarch64",
@@ -846,12 +858,11 @@ def _test_config_settings_exist(env):
                     ),
                 ]
                 available_config_settings = []
-                mock_rule = lambda name, **kwargs: available_config_settings.append(name)
                 config_settings(
                     python_versions = ["3.11"],
                     native = struct(
-                        alias = mock_rule,
-                        config_setting = mock_rule,
+                        alias = _mock_alias(available_config_settings),
+                        config_setting = _mock_config_setting(available_config_settings),
                     ),
                     **kwargs
                 )

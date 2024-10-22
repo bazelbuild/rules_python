@@ -131,17 +131,6 @@ def config_settings(
                 constraint_values.append("@platforms//cpu:" + cpu)
                 suffix += "_" + cpu
 
-            if suffix:
-                # Add python version + platform config settings
-                _dist_config_setting(
-                    name = suffix.strip("_"),
-                    flag_values = {},
-                    python_version = python_version,
-                    is_python = is_python,
-                    visibility = visibility,
-                    native = native,
-                )
-
             _dist_config_settings(
                 suffix = suffix,
                 plat_flag_values = _plat_flag_values(
@@ -159,6 +148,13 @@ def config_settings(
             )
 
 def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
+    if kwargs.get("constraint_values"):
+        # Add python version + platform config settings
+        _dist_config_setting(
+            name = suffix.strip("_"),
+            **kwargs
+        )
+
     flag_values = {_flags.dist: ""}
 
     # First create an sdist, we will be building upon the flag values, which
