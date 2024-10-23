@@ -323,9 +323,12 @@ def _create_whl_repos(
             if get_index_urls:
                 logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
-            whl_library_args["requirement"] = requirement.requirement_line
+            args = dict(whl_library_args.items())  # make a copy
+            args["requirement"] = requirement.requirement_line
             if requirement.extra_pip_args:
-                whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+                args["extra_pip_args"] = requirement.extra_pip_args
+            if pip_attr.download_only:
+                args.setdefault("experimental_target_platforms", requirement.target_platforms)
 
             repo_name = "{}_{}".format(pip_name, whl_name)
             if len(requirements) > 1:
@@ -334,7 +337,7 @@ def _create_whl_repos(
                     for p in requirement.target_platforms
                 ])))
 
-            whl_libraries[repo_name] = dict(whl_library_args.items())
+            whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
                     repo = repo_name,

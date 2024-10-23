@@ -321,6 +321,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
         "pypi_315_extra": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
+            "experimental_target_platforms": ["cp315_linux_x86_64"],
             "extra_pip_args": ["--platform=manylinux_2_17_x86_64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
@@ -329,6 +330,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
         "pypi_315_simple__linux_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
+            "experimental_target_platforms": ["cp315_linux_x86_64"],
             "extra_pip_args": ["--platform=manylinux_2_17_x86_64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
@@ -337,6 +339,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
         "pypi_315_simple__osx_aarch64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
+            "experimental_target_platforms": ["cp315_osx_aarch64"],
             "extra_pip_args": ["--platform=macosx_10_9_arm64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",

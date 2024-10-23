@@ -348,12 +348,6 @@ pip.parse(
         "requirements.linux_x86_64.txt": "linux_x86_64",
         "requirements.osx_aarch64.txt": "osx_aarch64",
     },
-    # We need to set these values to ensure that the METADATA is
-    # correctly parsed after downloading wheels.
-    experimental_target_platforms = [
-        "cp39_linux_x86_64",
-        "cp39_osx_aarch64",
-    ],
 )
 ```
 
