@@ -52,9 +52,7 @@ A brief description of the categories of changes:
 
 {#v0-0-0-fixed}
 ### Fixed
-* (rules) Setting `--incompatible_python_disallow_native_rules` no longer
-  causes rules_python rules to fail.
-  ([#2326](https://github.com/bazelbuild/rules_python/issues/2326).
+- Nothing yet
 
 {#v0-0-0-added}
 ### Added
@@ -63,6 +61,17 @@ A brief description of the categories of changes:
 {#v0-0-0-removed}
 ### Removed
 - Nothing yet
+
+{#v0-37-1}
+## [0.37.1] - 2024-10-22
+
+[0.37.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.1
+
+{#v0-37-1-fixed}
+### Fixed
+* (rules) Setting `--incompatible_python_disallow_native_rules` no longer
+  causes rules_python rules to fail
+  ([#2326](https://github.com/bazelbuild/rules_python/issues/2326)).
 
 {#v0-37-0}
 ## [0.37.0] - 2024-10-18
