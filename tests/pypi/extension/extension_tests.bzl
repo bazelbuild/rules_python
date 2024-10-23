@@ -475,6 +475,7 @@ some_pkg==0.0.1
             "sha256": "deadbeef",
             "urls": ["example.org"],
         },
+        # We are falling back to regular `pip`
         "pypi_315_some_pkg": {
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
