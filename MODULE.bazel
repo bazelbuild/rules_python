@@ -141,7 +141,7 @@ uv = use_extension(
     "uv",
     dev_dependency = True,
 )
-uv.toolchain(uv_version = "0.2.23")
+uv.toolchain(uv_version = "0.4.25")
 use_repo(uv, "uv_toolchains")
 
 register_toolchains(
