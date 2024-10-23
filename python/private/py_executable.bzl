@@ -33,7 +33,6 @@ load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -269,7 +268,6 @@ def _get_build_info(ctx, cc_toolchain):
 def _validate_executable(ctx):
     if ctx.attr.python_version != "PY3":
         fail("It is not allowed to use Python 2")
-    check_native_allowed(ctx)
 
 def _declare_executable_file(ctx):
     if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):

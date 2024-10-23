@@ -1393,7 +1393,7 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "AOiki3Xguw9OVrlnf3y0I4eLBOAk0jYEHAOpKcSQiEw=",
-        "usagesDigest": "4DwLscAhWhNJwaQSm2VceJB3XypiCbENmoMRpeA4swI=",
+        "usagesDigest": "liRjzEIzbjZQBv14INMJC8JlQSfpDPtkU3dyFjXwwy0=",
         "recordedFileInputs": {
           "@@//requirements_lock_3_10.txt": "5e7083982a7e60f34998579a0ae83b520d46ab8f2552cc51337217f024e6def5",
           "@@rules_python~~internal_deps~pypi__packaging//BUILD.bazel": "8d36246aeefaab4b26fb9c1175cfaf13df5b6f1587e6753f1e78b132bad74795",
