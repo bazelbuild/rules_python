@@ -33,6 +33,21 @@ one of the values that `rules_python` maintains.
 Parses the value of the `python_version` and transforms it into a `X.Y` value.
 :::
 
+:::{bzl:target} is_python_*
+config_settings to match Python versions
+
+The name pattern is `is_python_X.Y` (to match major.minor) and `is_python_X.Y.Z`
+(to match major.minor.patch).
+
+Note that the set of available versions depends on the configured `TOOL_VERSIONS`.
+Versions may not always be available if the root module has customized them, or
+as older Python versions are removed from rules_python's set of known versions.
+
+If you need to match a version that isn't present, you can manually define
+a `config_setting` and have it match `python_version` or
+`python_version_major_minor`.
+:::
+
 ::::{bzl:flag} exec_tools_toolchain
 Determines if the {obj}`exec_tools_toolchain_type` toolchain is enabled.
 
