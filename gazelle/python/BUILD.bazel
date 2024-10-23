@@ -42,8 +42,9 @@ go_library(
         "@com_github_emirpasic_gods//lists/singlylinkedlist",
         "@com_github_emirpasic_gods//sets/treeset",
         "@com_github_emirpasic_gods//utils",
-        "@com_github_smacker_go_tree_sitter//:go-tree-sitter",
-        "@com_github_smacker_go_tree_sitter//python",
+        "@com_github_go_python_gpython//ast",
+        "@com_github_go_python_gpython//parser",
+        "@com_github_go_python_gpython//py",
         "@org_golang_x_sync//errgroup",
     ],
 )
@@ -110,5 +111,6 @@ go_test(
     embed = [":python"],
     deps = [
         "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
     ],
 )

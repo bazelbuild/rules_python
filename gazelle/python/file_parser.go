@@ -15,27 +15,17 @@
 package python
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
-	sitter "github.com/smacker/go-tree-sitter"
-	"github.com/smacker/go-tree-sitter/python"
-)
-
-const (
-	sitterNodeTypeString              = "string"
-	sitterNodeTypeComment             = "comment"
-	sitterNodeTypeIdentifier          = "identifier"
-	sitterNodeTypeDottedName          = "dotted_name"
-	sitterNodeTypeIfStatement         = "if_statement"
-	sitterNodeTypeAliasedImport       = "aliased_import"
-	sitterNodeTypeWildcardImport      = "wildcard_import"
-	sitterNodeTypeImportStatement     = "import_statement"
-	sitterNodeTypeComparisonOperator  = "comparison_operator"
-	sitterNodeTypeImportFromStatement = "import_from_statement"
+	"github.com/go-python/gpython/ast"
+	"github.com/go-python/gpython/parser"
+	"github.com/go-python/gpython/py"
 )
 
 type ParserOutput struct {
@@ -55,147 +45,119 @@ func NewFileParser() *FileParser {
 	return &FileParser{}
 }
 
-func ParseCode(code []byte) (*sitter.Node, error) {
-	parser := sitter.NewParser()
-	parser.SetLanguage(python.GetLanguage())
-
-	tree, err := parser.ParseCtx(context.Background(), nil, code)
-	if err != nil {
-		return nil, err
-	}
-
-	return tree.RootNode(), nil
-}
-
-func (p *FileParser) parseMain(ctx context.Context, node *sitter.Node) bool {
-	for i := 0; i < int(node.ChildCount()); i++ {
-		if err := ctx.Err(); err != nil {
-			return false
+func (p *FileParser) parseMain(m *ast.Module) {
+	for _, stmt := range m.Body {
+		ifStmt, ok := stmt.(*ast.If)
+		if !ok {
+			continue
 		}
-		child := node.Child(i)
-		if child.Type() == sitterNodeTypeIfStatement &&
-			child.Child(1).Type() == sitterNodeTypeComparisonOperator && child.Child(1).Child(1).Type() == "==" {
-			statement := child.Child(1)
-			a, b := statement.Child(0), statement.Child(2)
-			// convert "'__main__' == __name__" to "__name__ == '__main__'"
-			if b.Type() == sitterNodeTypeIdentifier {
-				a, b = b, a
-			}
-			if a.Type() == sitterNodeTypeIdentifier && a.Content(p.code) == "__name__" &&
-				// at github.com/smacker/go-tree-sitter@latest (after v0.0.0-20240422154435-0628b34cbf9c we used)
-				// "__main__" is the second child of b. But now, it isn't.
-				// we cannot use the latest go-tree-sitter because of the top level reference in scanner.c.
-				// https://github.com/smacker/go-tree-sitter/blob/04d6b33fe138a98075210f5b770482ded024dc0f/python/scanner.c#L1
-				b.Type() == sitterNodeTypeString && string(p.code[b.StartByte()+1:b.EndByte()-1]) == "__main__" {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func parseImportStatement(node *sitter.Node, code []byte) (module, bool) {
-	switch node.Type() {
-	case sitterNodeTypeDottedName:
-		return module{
-			Name:       node.Content(code),
-			LineNumber: node.StartPoint().Row + 1,
-		}, true
-	case sitterNodeTypeAliasedImport:
-		return parseImportStatement(node.Child(0), code)
-	case sitterNodeTypeWildcardImport:
-		return module{
-			Name:       "*",
-			LineNumber: node.StartPoint().Row + 1,
-		}, true
-	}
-	return module{}, false
-}
-
-func (p *FileParser) parseImportStatements(node *sitter.Node) bool {
-	if node.Type() == sitterNodeTypeImportStatement {
-		for j := 1; j < int(node.ChildCount()); j++ {
-			m, ok := parseImportStatement(node.Child(j), p.code)
-			if !ok {
-				continue
-			}
-			m.Filepath = p.relFilepath
-			if strings.HasPrefix(m.Name, ".") {
-				continue
-			}
-			p.output.Modules = append(p.output.Modules, m)
-		}
-	} else if node.Type() == sitterNodeTypeImportFromStatement {
-		from := node.Child(1).Content(p.code)
-		if strings.HasPrefix(from, ".") {
-			return true
-		}
-		for j := 3; j < int(node.ChildCount()); j++ {
-			m, ok := parseImportStatement(node.Child(j), p.code)
-			if !ok {
-				continue
-			}
-			m.Filepath = p.relFilepath
-			m.From = from
-			m.Name = fmt.Sprintf("%s.%s", from, m.Name)
-			p.output.Modules = append(p.output.Modules, m)
-		}
-	} else {
-		return false
-	}
-	return true
-}
-
-func (p *FileParser) parseComments(node *sitter.Node) bool {
-	if node.Type() == sitterNodeTypeComment {
-		p.output.Comments = append(p.output.Comments, comment(node.Content(p.code)))
-		return true
-	}
-	return false
-}
-
-func (p *FileParser) SetCodeAndFile(code []byte, relPackagePath, filename string) {
-	p.code = code
-	p.relFilepath = filepath.Join(relPackagePath, filename)
-	p.output.FileName = filename
-}
-
-func (p *FileParser) parse(ctx context.Context, node *sitter.Node) {
-	if node == nil {
-		return
-	}
-	for i := 0; i < int(node.ChildCount()); i++ {
-		if err := ctx.Err(); err != nil {
+		comp, ok := ifStmt.Test.(*ast.Compare)
+		if !ok {
 			return
 		}
-		child := node.Child(i)
-		if p.parseImportStatements(child) {
-			continue
+		if comp.Ops[0] != ast.Eq {
+			return
 		}
-		if p.parseComments(child) {
-			continue
+		var foundName, foundMain bool
+		visit := func(expr ast.Ast) {
+			switch actual := expr.(type) {
+			case *ast.Name:
+				foundName = true
+			case *ast.Str:
+				if actual.S == "__main__" {
+					foundMain = true
+				}
+			}
 		}
-		p.parse(ctx, child)
+		visit(comp.Left)
+		visit(comp.Comparators[0])
+		if foundMain && foundName {
+			p.output.HasMain = true
+			break
+		}
 	}
 }
 
-func (p *FileParser) Parse(ctx context.Context) (*ParserOutput, error) {
-	rootNode, err := ParseCode(p.code)
-	if err != nil {
-		return nil, err
+func (p *FileParser) parseImportStatements(node ast.Ast, relPath string) {
+	switch n := node.(type) {
+	case *ast.Import:
+		for _, name := range n.Names {
+			nameString := string(name.Name)
+			if strings.HasPrefix(nameString, ".") {
+				continue
+			}
+			p.output.Modules = append(p.output.Modules, module{
+				Name:       nameString,
+				LineNumber: uint32(n.GetLineno()),
+				Filepath:   relPath,
+			})
+		}
+	case *ast.ImportFrom:
+		for _, name := range n.Names {
+			if n.Level > 0 {
+				// from . import abc or from .. import foo
+				continue
+			}
+			moduleString := string(n.Module)
+			p.output.Modules = append(p.output.Modules, module{
+				Name:       moduleString + "." + string(name.Name),
+				LineNumber: uint32(n.GetLineno()),
+				Filepath:   relPath,
+				From:       moduleString,
+			})
+		}
 	}
+}
 
-	p.output.HasMain = p.parseMain(ctx, rootNode)
-
-	p.parse(ctx, rootNode)
-	return &p.output, nil
+func (p *FileParser) parseComments(ctx context.Context, input io.Reader) error {
+	scanner := bufio.NewScanner(input)
+	for scanner.Scan() {
+		if ctx.Err() != nil {
+			break
+		}
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "#") {
+			p.output.Comments = append(p.output.Comments, comment(line))
+		}
+	}
+	return nil
 }
 
 func (p *FileParser) ParseFile(ctx context.Context, repoRoot, relPackagePath, filename string) (*ParserOutput, error) {
-	code, err := os.ReadFile(filepath.Join(repoRoot, relPackagePath, filename))
+	relPath := filepath.Join(relPackagePath, filename)
+	absPath := filepath.Join(repoRoot, relPath)
+	fileObj, err := os.Open(absPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("opening %q: %w", relPath, err)
 	}
-	p.SetCodeAndFile(code, relPackagePath, filename)
-	return p.Parse(ctx)
+	defer fileObj.Close()
+	if err := p.parseAST(ctx, fileObj, relPath); err != nil {
+		return nil, fmt.Errorf("parsing AST in %q: %w", relPath, err)
+	}
+	// comments are not included in the AST. Reading the file again to get comments
+	if _, err := fileObj.Seek(0, 0); err != nil {
+		return nil, fmt.Errorf("rewinding %q: %w", relPath, err)
+	}
+	if err := p.parseComments(ctx, fileObj); err != nil {
+		return nil, fmt.Errorf("parsing comments in %q: %w", filename, err)
+	}
+	p.output.FileName = filename
+	return &p.output, nil
+}
+
+func (p *FileParser) parseAST(ctx context.Context, input io.Reader, relPath string) error {
+	mod, err := parser.Parse(input, relPath, py.ExecMode)
+	if err != nil {
+		return fmt.Errorf("parsing %q: %w", relPath, err)
+	}
+	ast.Walk(mod, func(node ast.Ast) bool {
+		switch typedNode := node.(type) {
+		case *ast.Import, *ast.ImportFrom:
+			p.parseImportStatements(node, relPath)
+		case *ast.Module:
+			p.parseMain(typedNode)
+		}
+		return ctx.Err() == nil
+	})
+	return nil
 }
