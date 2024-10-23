@@ -61,7 +61,11 @@ def define_local_runtime_toolchain_impl(
     cc_library(
         name = "_python_headers",
         # NOTE: Keep in sync with watch_tree() called in local_runtime_repo
-        srcs = native.glob(["include/**/*.h"]),
+        srcs = native.glob(
+            ["include/**/*.h"],
+            # A Python install may not have C headers
+            allow_empty = True,
+        ),
         includes = ["include"],
     )
 
@@ -69,10 +73,14 @@ def define_local_runtime_toolchain_impl(
         name = "_libpython",
         # Don't use a recursive glob because the lib/ directory usually contains
         # a subdirectory of the stdlib -- lots of unrelated files
-        srcs = native.glob([
-            "lib/*{}".format(lib_ext),  # Match libpython*.so
-            "lib/*{}*".format(lib_ext),  # Also match libpython*.so.1.0
-        ]),
+        srcs = native.glob(
+            [
+                "lib/*{}".format(lib_ext),  # Match libpython*.so
+                "lib/*{}*".format(lib_ext),  # Also match libpython*.so.1.0
+            ],
+            # A Python install may not have shared libraries.
+            allow_empty = True,
+        ),
         hdrs = [":_python_headers"],
     )
 
