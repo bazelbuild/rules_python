@@ -208,7 +208,7 @@ def _test_simple_multiple_requirements(env):
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple__0",
+                repo = "pypi_315_simple__windows_x86_64",
                 target_platforms = [
                     "cp315_windows_x86_64",
                 ],
@@ -217,7 +217,7 @@ def _test_simple_multiple_requirements(env):
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple__1",
+                repo = "pypi_315_simple__osx_aarch64_osx_x86_64",
                 target_platforms = [
                     "cp315_osx_aarch64",
                     "cp315_osx_x86_64",
@@ -227,17 +227,17 @@ def _test_simple_multiple_requirements(env):
         ],
     }})
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_simple__0": {
-            "dep_template": "@pypi//{name}:{target}",
-            "python_interpreter_target": "unit_test_interpreter_target",
-            "repo": "pypi_315",
-            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
-        },
-        "pypi_315_simple__1": {
+        "pypi_315_simple__osx_aarch64_osx_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
             "requirement": "simple==0.0.2 --hash=sha256:deadb00f",
+        },
+        "pypi_315_simple__windows_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
         },
     })
     pypi.whl_mods().contains_exactly({})
@@ -304,14 +304,14 @@ simple==0.0.3 --hash=sha256:deadbaaf
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple__0",
+                repo = "pypi_315_simple__linux_x86_64",
                 target_platforms = ["cp315_linux_x86_64"],
                 version = "3.15",
             ),
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple__1",
+                repo = "pypi_315_simple__osx_aarch64",
                 target_platforms = ["cp315_osx_aarch64"],
                 version = "3.15",
             ),
@@ -326,7 +326,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
             "repo": "pypi_315",
             "requirement": "extra==0.0.1 --hash=sha256:deadb00f",
         },
-        "pypi_315_simple__0": {
+        "pypi_315_simple__linux_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
             "extra_pip_args": ["--platform=manylinux_2_17_x86_64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
@@ -334,7 +334,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
             "repo": "pypi_315",
             "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
         },
-        "pypi_315_simple__1": {
+        "pypi_315_simple__osx_aarch64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
             "extra_pip_args": ["--platform=macosx_10_9_arm64", "--python-version=315", "--implementation=cp", "--abi=cp315"],

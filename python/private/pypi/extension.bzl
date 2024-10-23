@@ -318,7 +318,7 @@ def _create_whl_repos(
                     exposed_packages[whl_name] = None
                 continue
 
-        for i, requirement in enumerate(requirements):
+        for requirement in requirements:
             is_exposed = is_exposed or requirement.is_exposed
             if get_index_urls:
                 logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
@@ -329,7 +329,10 @@ def _create_whl_repos(
 
             repo_name = "{}_{}".format(pip_name, whl_name)
             if len(requirements) > 1:
-                repo_name = "{}__{}".format(repo_name, i)
+                repo_name = "{}__{}".format(repo_name, "_".join(sorted([
+                    p.partition("_")[-1]
+                    for p in requirement.target_platforms
+                ])))
 
             whl_libraries[repo_name] = dict(whl_library_args.items())
             whl_map.setdefault(whl_name, []).append(
