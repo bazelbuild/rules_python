@@ -36,3 +36,6 @@ build:rtd --enable_bzlmod
 common:bazel7.x --incompatible_python_disallow_native_rules
 
 build --lockfile_mode=update
+
+# See https://github.com/bazelbuild/rules_python/issues/2282
+build --incompatible_auto_exec_groups
