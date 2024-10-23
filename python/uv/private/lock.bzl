@@ -24,7 +24,7 @@ visibility(["//..."])
 
 _REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
-def lock(*, name, srcs, out, upgrade = False, universal = True, python_version = None):
+def lock(*, name, srcs, out, upgrade = False, universal = True, python_version = None, args = [], **kwargs):
     """Pin the requirements based on the src files.
 
     Args:
@@ -36,6 +36,8 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
         universal: Tell `uv` to generate a universal lock file.
         python_version: Tell `rules_python` to use a particular version.
             Defaults to the default py toolchain.
+        args: Extra args to pass to the rule.
+        **kwargs: Extra kwargs passed to the binary rule.
 
     Differences with the current pip-compile rule:
     - This is implemented in shell and uv.
@@ -45,22 +47,25 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
     pkg = native.package_name()
     update_target = name + ".update"
 
-    args = [
+    _args = [
         "--custom-compile-command='bazel run //{}:{}'".format(pkg, update_target),
         "--generate-hashes",
         "--emit-index-url",
         "--no-strip-extras",
         "--python=$(PYTHON3)",
-    ] + [
+    ] + args + [
         "$(location {})".format(src)
         for src in srcs
     ]
     if upgrade:
-        args.append("--upgrade")
+        _args.append("--upgrade")
     if universal:
-        args.append("--universal")
-    args.append("--output-file=$@")
-    cmd = "$(UV_BIN) pip compile " + " ".join(args)
+        _args.append("--universal")
+    _args.append("--output-file=$@")
+    cmd = "$(UV_BIN) pip compile " + " ".join(_args)
+
+    # Make a copy to ensure that we are not modifying the initial list
+    srcs = list(srcs)
 
     # Check if the output file already exists, if yes, first copy it to the
     # output file location in order to make `uv` not change the requirements if
@@ -118,4 +123,5 @@ def lock(*, name, srcs, out, upgrade = False, universal = True, python_version =
             "REQUIREMENTS_FILE": "$(rootpath {})".format(name),
         },
         tags = ["manual"],
+        **kwargs
     )
