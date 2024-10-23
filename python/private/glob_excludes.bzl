@@ -24,7 +24,7 @@ def _version_dependent_exclusions():
         a list of glob exclusion patterns
     """
     major, minor, _ = native.bazel_version.split(".")
-    if major < 7 or (major == 7 and minor < 4):
+    if int(major) < 7 or (int(major) == 7 and int(minor) < 4):
         return ["**/* *"]
     else:
         return []
