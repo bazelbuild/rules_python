@@ -407,26 +407,35 @@ some_pkg==0.0.1
     pypi.is_reproducible().equals(False)
     pypi.exposed_packages().contains_exactly({"pypi": ["simple", "some_pkg"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
-    pypi.hub_whl_map().contains_exactly({"pypi": {
-        "simple": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = "simple-0.0.1-py3-none-any.whl",
-                repo = "pypi_315_simple_py3_none_any_deadbaaf",
-                target_platforms = None,
-                version = "3.15",
-            ),
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = "simple-0.0.1.tar.gz",
-                repo = "pypi_315_simple_sdist_deadbeef",
-                target_platforms = None,
-                version = "3.15",
-            ),
-        ],
-        "some_pkg": [
-        ],
-    }})
+    pypi.hub_whl_map().contains_exactly({
+        "pypi": {
+            "simple": [
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = "simple-0.0.1-py3-none-any.whl",
+                    repo = "pypi_315_simple_py3_none_any_deadbaaf",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = "simple-0.0.1.tar.gz",
+                    repo = "pypi_315_simple_sdist_deadbeef",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+            ],
+            "some_pkg": [
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = None,
+                    repo = "pypi_315_some_pkg",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+            ],
+        },
+    })
     pypi.whl_libraries().contains_exactly({
         "pypi_315_simple_py3_none_any_deadbaaf": {
             "dep_template": "@pypi//{name}:{target}",
