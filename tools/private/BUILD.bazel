@@ -1,0 +1,15 @@
+load("@rules_multirun//:defs.bzl", "multirun")
+
+multirun(
+    name = "requirements_publish.update",
+    commands = [
+        "//tools/publish:{}.update".format(r)
+        for r in [
+            "requirements_universal",
+            "requirements",
+            "requirements_darwin",
+            "requirements_windows",
+            "requirements_linux",
+        ]
+    ],
+)
