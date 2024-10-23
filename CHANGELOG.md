@@ -27,7 +27,7 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-- Nothing yet
+- (publish) The dependencies have been updated to the latest available versions.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -35,7 +35,11 @@ A brief description of the categories of changes:
 
 {#v0-0-0-added}
 ### Added
-- Nothing yet
+- (publish) The requirements file for the `twine` publishing rules have been
+  updated to have a new convention: `requirements_darwin.txt`,
+  `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
+  and one extra file `requirements_universal.txt` if you prefer a single file.
+  The `requirements.txt` file may be removed in the future.
 
 {#v0-0-0-removed}
 ### Removed
