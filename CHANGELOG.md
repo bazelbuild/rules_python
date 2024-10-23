@@ -42,6 +42,8 @@ A brief description of the categories of changes:
 - #617: allow spaces in filenames included in `whl_library`s
 * (pypi) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617))
+* (deps) Bump bazel-features to detect whether spaces are allowed
+  in filenames ([617](https://github.com/bazelbuild/rules_python/issues/617)
 
 {#v0-0-0-added}
 ### Added

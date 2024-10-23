@@ -14,20 +14,18 @@
 
 "Utilities for glob exclusions."
 
+load("@bazel_features//:features.bzl", "bazel_features")
+
 def _version_dependent_exclusions():
     """Returns glob exclusions that are sensitive to Bazel version.
-
-    Bazel 7.4.0+ added support for files with spaces. Prior versions of Bazel
-    do not support files with spaces.
 
     Returns:
         a list of glob exclusion patterns
     """
-    major, minor, _ = native.bazel_version.split(".")
-    if int(major) < 7 or (int(major) == 7 and int(minor) < 4):
-        return ["**/* *"]
-    else:
+    if bazel_features.rules.all_characters_allowed_in_runfiles:
         return []
+    else:
+        return ["**/* *"]
 
 glob_excludes = struct(
     version_dependent_exclusions = _version_dependent_exclusions,

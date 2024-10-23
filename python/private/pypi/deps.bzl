@@ -115,7 +115,7 @@ def _to_comment(comment):
 def _format_exclusions(exclusions, indent_depth):
     indent = " " * indent_depth
     return "\n".join([
-        "{indent}{excl},{comment}".format(
+        "{indent}\"{excl}\",{comment}".format(
             indent = indent,
             excl = excl,
             comment = _to_comment(comment),
