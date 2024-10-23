@@ -53,7 +53,7 @@ The fix being included is commit `deadbeef`.
 1. `git push upstream release/0.37`
 1. `git cherry-pick deadbeef`
 1. Fix merge conflicts, if any. If `MODULE.bazel.lock` conflicts occur, then
-   run `tools/private/update_bzlmod_lockfiles.sh`
+   run `pre-commit run update-bzlmod-lockfiles -a`
 1. `git cherry-pick --continue` (if applicable)
 1. `git push upstream`
 
