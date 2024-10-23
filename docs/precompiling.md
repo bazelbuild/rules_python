@@ -83,7 +83,7 @@ Note that any execution requirements values can be specified in the flag.
 * Mixing rules_python PyInfo with Bazel builtin PyInfo will result in pyc files
   being dropped.
 * Precompiled files may not be used in certain cases prior to Python 3.11. This
-  occurs due Python adding the directory of the binary's main `.py` file, which
+  occurs due to Python adding the directory of the binary's main `.py` file, which
   causes the module to be found in the workspace source directory instead of
   within the binary's runfiles directory (where the pyc files are). This can
   usually be worked around by removing `sys.path[0]` (or otherwise ensuring the

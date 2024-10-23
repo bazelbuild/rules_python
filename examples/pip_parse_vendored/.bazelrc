@@ -6,3 +6,4 @@ build --enable_runfiles
 # Vendoring requirements.bzl files isn't necessary under bzlmod
 # When workspace support is dropped, this example can be removed.
 build --noexperimental_enable_bzlmod
+common:bazel7.x --incompatible_python_disallow_native_rules
