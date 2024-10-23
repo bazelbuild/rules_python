@@ -39,6 +39,6 @@ publish_deps(
         "requirements_universal.txt": "",  # universal
         "requirements_windows.txt": "windows",
     },
-    upgrade = False,
+    upgrade = True,
     visibility = ["//tools:__subpackages__"],
 )
