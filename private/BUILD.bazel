@@ -1,0 +1,20 @@
+load("@rules_multirun//:defs.bzl", "multirun")
+
+# This file has various targets that are using dev-only dependencies that our users should not ideally see.
+
+multirun(
+    name = "requirements.update",
+    commands = [
+        "//tools/publish:{}.update".format(r)
+        for r in [
+            "requirements_universal",
+            "requirements",
+            "requirements_darwin",
+            "requirements_windows",
+            "requirements_linux",
+        ]
+    ] + [
+        "//docs:requirements.update",
+        "//tools/private/update_deps:update_pip_deps",
+    ],
+)

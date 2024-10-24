@@ -4,7 +4,7 @@
 
 1. Modify the `./python/private/pypi/requirements.txt` file and run:
    ```
-   bazel run //tools/private/update_deps:update_pip_deps
+   bazel run //private:requirements.update
    ```
 1. Bump the coverage dependencies using the script using:
    ```

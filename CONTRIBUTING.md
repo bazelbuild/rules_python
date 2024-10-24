@@ -65,6 +65,15 @@ and setup. Subsequent runs will be faster, but there are many tests, and some of
 them are slow. If you're working on a particular area of code, you can run just
 the tests in those directories instead, which can speed up your edit-run cycle.
 
+## Updating tool dependencies
+
+It's suggested to routinely update the tool versions within our repo - some of the
+tools are using requirement files compiled by `uv` and others us other means. In order
+to have everything self-documented, we have a special target -
+`//private:requirements.update`, which uses `rules_multirun` to run in sequence all
+of the requirement updating scripts in one go. This can be done once per release as
+we prepare for releases.
+
 ## Formatting
 
 Starlark files should be formatted by
