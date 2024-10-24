@@ -27,7 +27,8 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-- (publish) The dependencies have been updated to the latest available versions.
+- (publish) The dependencies have been updated to the latest available versions
+  for the `twine` publishing rule.
 
 {#v0-0-0-fixed}
 ### Fixed
