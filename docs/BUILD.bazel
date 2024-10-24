@@ -158,6 +158,7 @@ lock(
     srcs = ["pyproject.toml"],
     out = "requirements.txt",
     upgrade = True,
+    visibility = ["//private:__pkg__"],
 )
 
 # Temporary compatibility aliases for some other projects depending on the old
