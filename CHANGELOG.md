@@ -27,7 +27,10 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-- Nothing yet
+* (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
+  version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
+  and no protobuf version specified)
+  ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
 
 {#v0-0-0-fixed}
 ### Fixed
