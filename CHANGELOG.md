@@ -34,7 +34,8 @@ A brief description of the categories of changes:
 
 {#v0-0-0-fixed}
 ### Fixed
-- Nothing yet
+* (pypi) Allow spaces in filenames included in `whl_library`s
+  ([616](https://github.com/bazelbuild/rules_python/issues/617))
 
 {#v0-0-0-added}
 ### Added

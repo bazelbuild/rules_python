@@ -14,6 +14,7 @@
 
 """Generate the BUILD.bazel contents for a repo defined by a whl_library."""
 
+load("//python/private:glob_excludes.bzl", "glob_excludes")
 load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
 load(
@@ -257,7 +258,6 @@ def generate_whl_library_build_bazel(
             additional_content.append(annotation.additive_build_content)
 
     _data_exclude = [
-        "**/* *",
         "**/*.py",
         "**/*.pyc",
         "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNNN are created
@@ -265,7 +265,7 @@ def generate_whl_library_build_bazel(
         # of generated files produced when wheels are installed. The file is ignored to avoid
         # Bazel caching issues.
         "**/*.dist-info/RECORD",
-    ]
+    ] + glob_excludes.version_dependent_exclusions()
     for item in data_exclude:
         if item not in _data_exclude:
             _data_exclude.append(item)

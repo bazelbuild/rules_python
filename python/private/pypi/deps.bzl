@@ -16,6 +16,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("//python/private:glob_excludes.bzl", "glob_excludes")
 
 _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
@@ -97,6 +98,31 @@ _RULE_DEPS = [
     # END: maintained by 'bazel run //tools/private/update_deps:update_pip_deps'
 ]
 
+_EXCLUSIONS = [
+    ("**/*.py", None),
+    ("**/*.pyc", None),
+    ("**/*.pyc.*", "During pyc creation, temp files named *.pyc.NNN are created"),
+    ("**/*.dist-info/RECORD", None),
+    ("BUILD", None),
+    ("WORKSPACE", None),
+] + [(e, None) for e in glob_excludes.version_dependent_exclusions()]
+
+def _to_comment(comment):
+    if comment:
+        return "  #" + comment
+    return ""
+
+def _format_exclusions(exclusions, indent_depth):
+    indent = " " * indent_depth
+    return "\n".join([
+        "{indent}{excl},{comment}".format(
+            indent = indent,
+            excl = excl,
+            comment = _to_comment(comment),
+        )
+        for excl, comment in exclusions
+    ])
+
 _GENERIC_WHEEL = """\
 package(default_visibility = ["//visibility:public"])
 
@@ -105,22 +131,19 @@ load("@rules_python//python:defs.bzl", "py_library")
 py_library(
     name = "lib",
     srcs = glob(["**/*.py"]),
-    data = glob(["**/*"], exclude=[
+    data = glob(
+        ["**/*"], 
         # These entries include those put into user-installed dependencies by
         # data_exclude to avoid non-determinism.
-        "**/*.py",
-        "**/*.pyc",
-        "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
-        "**/* *",
-        "**/*.dist-info/RECORD",
-        "BUILD",
-        "WORKSPACE",
-    ]),
+        exclude=[
+{exclusions}
+        ],
+    ),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],
 )
-"""
+""".format(exclusions = _format_exclusions(_EXCLUSIONS, 12))
 
 # Collate all the repository names so they can be easily consumed
 all_repo_names = [name for (name, _, _) in _RULE_DEPS]
