@@ -387,6 +387,24 @@ def _test_get_python_versions(env):
 
 _tests.append(_test_get_python_versions)
 
+def _test_get_python_versions_with_target_platforms(env):
+    got = get_whl_flag_versions(
+        aliases = [
+            whl_alias(repo = "foo", version = "3.3", target_platforms = ["cp33_linux_x86_64"]),
+            whl_alias(repo = "foo", version = "3.2", target_platforms = ["cp32_linux_x86_64", "cp32_osx_aarch64"]),
+        ],
+    )
+    want = {
+        "python_versions": ["3.2", "3.3"],
+        "target_platforms": [
+            "linux_x86_64",
+            "osx_aarch64",
+        ],
+    }
+    env.expect.that_dict(got).contains_exactly(want)
+
+_tests.append(_test_get_python_versions_with_target_platforms)
+
 def _test_get_python_versions_from_filenames(env):
     got = get_whl_flag_versions(
         aliases = [
@@ -660,6 +678,29 @@ def _test_multiplatform_whl_aliases_nofilename(env):
 
 _tests.append(_test_multiplatform_whl_aliases_nofilename)
 
+def _test_multiplatform_whl_aliases_nofilename_target_platforms(env):
+    aliases = [
+        whl_alias(
+            repo = "foo",
+            config_setting = "//:ignored",
+            version = "3.1",
+            target_platforms = [
+                "cp31_linux_x86_64",
+                "cp31_linux_aarch64",
+            ],
+        ),
+    ]
+
+    got = multiplatform_whl_aliases(aliases = aliases)
+
+    want = [
+        whl_alias(config_setting = "//_config:is_cp3.1_linux_x86_64", repo = "foo", version = "3.1"),
+        whl_alias(config_setting = "//_config:is_cp3.1_linux_aarch64", repo = "foo", version = "3.1"),
+    ]
+    env.expect.that_collection(got).contains_exactly(want)
+
+_tests.append(_test_multiplatform_whl_aliases_nofilename_target_platforms)
+
 def _test_multiplatform_whl_aliases_filename(env):
     aliases = [
         whl_alias(
@@ -734,6 +775,52 @@ def _test_multiplatform_whl_aliases_filename_versioned(env):
 
 _tests.append(_test_multiplatform_whl_aliases_filename_versioned)
 
+def _mock_alias(container):
+    return lambda name, **kwargs: container.append(name)
+
+def _mock_config_setting(container):
+    def _inner(name, flag_values = None, constraint_values = None, **_):
+        if flag_values or constraint_values:
+            container.append(name)
+            return
+
+        fail("At least one of 'flag_values' or 'constraint_values' needs to be set")
+
+    return _inner
+
+def _test_config_settings_exist_legacy(env):
+    aliases = [
+        whl_alias(
+            repo = "repo",
+            version = "3.11",
+            target_platforms = [
+                "cp311_linux_aarch64",
+                "cp311_linux_x86_64",
+            ],
+        ),
+    ]
+    available_config_settings = []
+    config_settings(
+        python_versions = ["3.11"],
+        native = struct(
+            alias = _mock_alias(available_config_settings),
+            config_setting = _mock_config_setting(available_config_settings),
+        ),
+        target_platforms = [
+            "linux_aarch64",
+            "linux_x86_64",
+        ],
+    )
+
+    got_aliases = multiplatform_whl_aliases(
+        aliases = aliases,
+    )
+    got = [a.config_setting.partition(":")[-1] for a in got_aliases]
+
+    env.expect.that_collection(available_config_settings).contains_at_least(got)
+
+_tests.append(_test_config_settings_exist_legacy)
+
 def _test_config_settings_exist(env):
     for py_tag in ["py2.py3", "py3", "py311", "cp311"]:
         if py_tag == "py2.py3":
@@ -771,12 +858,11 @@ def _test_config_settings_exist(env):
                     ),
                 ]
                 available_config_settings = []
-                mock_rule = lambda name, **kwargs: available_config_settings.append(name)
                 config_settings(
                     python_versions = ["3.11"],
                     native = struct(
-                        alias = mock_rule,
-                        config_setting = mock_rule,
+                        alias = _mock_alias(available_config_settings),
+                        config_setting = _mock_config_setting(available_config_settings),
                     ),
                     **kwargs
                 )

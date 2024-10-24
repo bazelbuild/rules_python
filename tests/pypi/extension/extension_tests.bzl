@@ -27,7 +27,7 @@ def _mock_mctx(*modules, environ = {}, read = None):
             name = "unittest",
             arch = "exotic",
         ),
-        read = read or (lambda _: "simple==0.0.1 --hash=sha256:deadbeef"),
+        read = read or (lambda _: "simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadbaaf"),
         modules = [
             struct(
                 name = modules[0].name,
@@ -150,13 +150,205 @@ def _test_simple(env):
     )
 
     pypi.is_reproducible().equals(True)
-    pypi.exposed_packages().contains_exactly({"pypi": []})
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
-    pypi.hub_whl_map().contains_exactly({"pypi": {}})
-    pypi.whl_libraries().contains_exactly({})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple",
+                target_platforms = None,
+                version = "3.15",
+            ),
+        ],
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_simple": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadbaaf",
+        },
+    })
     pypi.whl_mods().contains_exactly({})
 
 _tests.append(_test_simple)
+
+def _test_simple_multiple_requirements(env):
+    pypi = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        requirements_darwin = "darwin.txt",
+                        requirements_windows = "win.txt",
+                    ),
+                ],
+            ),
+            read = lambda x: {
+                "darwin.txt": "simple==0.0.2 --hash=sha256:deadb00f",
+                "win.txt": "simple==0.0.1 --hash=sha256:deadbeef",
+            }[x],
+        ),
+        available_interpreters = {
+            "python_3_15_host": "unit_test_interpreter_target",
+        },
+    )
+
+    pypi.is_reproducible().equals(True)
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple__windows_x86_64",
+                target_platforms = [
+                    "cp315_windows_x86_64",
+                ],
+                version = "3.15",
+            ),
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple__osx_aarch64_osx_x86_64",
+                target_platforms = [
+                    "cp315_osx_aarch64",
+                    "cp315_osx_x86_64",
+                ],
+                version = "3.15",
+            ),
+        ],
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_simple__osx_aarch64_osx_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.2 --hash=sha256:deadb00f",
+        },
+        "pypi_315_simple__windows_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
+        },
+    })
+    pypi.whl_mods().contains_exactly({})
+
+_tests.append(_test_simple_multiple_requirements)
+
+def _test_download_only_multiple(env):
+    pypi = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        download_only = True,
+                        requirements_by_platform = {
+                            "requirements.linux_x86_64.txt": "linux_x86_64",
+                            "requirements.osx_aarch64.txt": "osx_aarch64",
+                        },
+                    ),
+                ],
+            ),
+            read = lambda x: {
+                "requirements.linux_x86_64.txt": """\
+--platform=manylinux_2_17_x86_64
+--python-version=315
+--implementation=cp
+--abi=cp315
+
+simple==0.0.1 --hash=sha256:deadbeef
+extra==0.0.1 --hash=sha256:deadb00f
+""",
+                "requirements.osx_aarch64.txt": """\
+--platform=macosx_10_9_arm64
+--python-version=315
+--implementation=cp
+--abi=cp315
+
+simple==0.0.3 --hash=sha256:deadbaaf
+""",
+            }[x],
+        ),
+        available_interpreters = {
+            "python_3_15_host": "unit_test_interpreter_target",
+        },
+    )
+
+    pypi.is_reproducible().equals(True)
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
+    pypi.hub_whl_map().contains_exactly({"pypi": {
+        "extra": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_extra",
+                target_platforms = None,
+                version = "3.15",
+            ),
+        ],
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple__linux_x86_64",
+                target_platforms = ["cp315_linux_x86_64"],
+                version = "3.15",
+            ),
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple__osx_aarch64",
+                target_platforms = ["cp315_osx_aarch64"],
+                version = "3.15",
+            ),
+        ],
+    }})
+    pypi.whl_libraries().contains_exactly({
+        "pypi_315_extra": {
+            "dep_template": "@pypi//{name}:{target}",
+            "download_only": True,
+            "experimental_target_platforms": ["cp315_linux_x86_64"],
+            "extra_pip_args": ["--platform=manylinux_2_17_x86_64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "extra==0.0.1 --hash=sha256:deadb00f",
+        },
+        "pypi_315_simple__linux_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "download_only": True,
+            "experimental_target_platforms": ["cp315_linux_x86_64"],
+            "extra_pip_args": ["--platform=manylinux_2_17_x86_64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
+        },
+        "pypi_315_simple__osx_aarch64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "download_only": True,
+            "experimental_target_platforms": ["cp315_osx_aarch64"],
+            "extra_pip_args": ["--platform=macosx_10_9_arm64", "--python-version=315", "--implementation=cp", "--abi=cp315"],
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.3 --hash=sha256:deadbaaf",
+        },
+    })
+    pypi.whl_mods().contains_exactly({})
+
+_tests.append(_test_download_only_multiple)
 
 def _test_simple_get_index(env):
     got_simpleapi_download_args = []
@@ -167,7 +359,14 @@ def _test_simple_get_index(env):
         got_simpleapi_download_kwargs.update(kwargs)
         return {
             "simple": struct(
-                whls = {},
+                whls = {
+                    "deadbaaf": struct(
+                        yanked = False,
+                        filename = "simple-0.0.1-py3-none-any.whl",
+                        sha256 = "deadbaaf",
+                        url = "example.org/whl",
+                    ),
+                },
                 sdists = {
                     "deadbeef": struct(
                         yanked = False,
@@ -193,6 +392,11 @@ def _test_simple_get_index(env):
                     ),
                 ],
             ),
+            read = lambda _: """\
+# Keep sorted
+simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadbaaf
+some_pkg==0.0.1
+""",
         ),
         available_interpreters = {
             "python_3_15_host": "unit_test_interpreter_target",
@@ -201,20 +405,57 @@ def _test_simple_get_index(env):
     )
 
     pypi.is_reproducible().equals(False)
-    pypi.exposed_packages().contains_exactly({"pypi": ["simple"]})
+    pypi.exposed_packages().contains_exactly({"pypi": ["simple", "some_pkg"]})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
-    pypi.hub_whl_map().contains_exactly({"pypi": {
-        "simple": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = "simple-0.0.1.tar.gz",
-                repo = "pypi_315_simple_sdist_deadbeef",
-                target_platforms = None,
-                version = "3.15",
-            ),
-        ],
-    }})
+    pypi.hub_whl_map().contains_exactly({
+        "pypi": {
+            "simple": [
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = "simple-0.0.1-py3-none-any.whl",
+                    repo = "pypi_315_simple_py3_none_any_deadbaaf",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = "simple-0.0.1.tar.gz",
+                    repo = "pypi_315_simple_sdist_deadbeef",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+            ],
+            "some_pkg": [
+                struct(
+                    config_setting = "//_config:is_python_3.15",
+                    filename = None,
+                    repo = "pypi_315_some_pkg",
+                    target_platforms = None,
+                    version = "3.15",
+                ),
+            ],
+        },
+    })
     pypi.whl_libraries().contains_exactly({
+        "pypi_315_simple_py3_none_any_deadbaaf": {
+            "dep_template": "@pypi//{name}:{target}",
+            "experimental_target_platforms": [
+                "cp315_linux_aarch64",
+                "cp315_linux_arm",
+                "cp315_linux_ppc",
+                "cp315_linux_s390x",
+                "cp315_linux_x86_64",
+                "cp315_osx_aarch64",
+                "cp315_osx_x86_64",
+                "cp315_windows_x86_64",
+            ],
+            "filename": "simple-0.0.1-py3-none-any.whl",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1",
+            "sha256": "deadbaaf",
+            "urls": ["example.org/whl"],
+        },
         "pypi_315_simple_sdist_deadbeef": {
             "dep_template": "@pypi//{name}:{target}",
             "experimental_target_platforms": [
@@ -234,8 +475,28 @@ def _test_simple_get_index(env):
             "sha256": "deadbeef",
             "urls": ["example.org"],
         },
+        # We are falling back to regular `pip`
+        "pypi_315_some_pkg": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "some_pkg==0.0.1",
+        },
     })
     pypi.whl_mods().contains_exactly({})
+    env.expect.that_dict(got_simpleapi_download_kwargs).contains_exactly({
+        "attr": struct(
+            auth_patterns = {},
+            envsubst = {},
+            extra_index_urls = [],
+            index_url = "pypi.org",
+            index_url_overrides = {},
+            netrc = None,
+            sources = ["simple", "some_pkg"],
+        ),
+        "cache": {},
+        "parallel_download": False,
+    })
 
 _tests.append(_test_simple_get_index)
 

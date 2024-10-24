@@ -148,6 +148,13 @@ def config_settings(
             )
 
 def _dist_config_settings(*, suffix, plat_flag_values, **kwargs):
+    if kwargs.get("constraint_values"):
+        # Add python version + platform config settings
+        _dist_config_setting(
+            name = suffix.strip("_"),
+            **kwargs
+        )
+
     flag_values = {_flags.dist: ""}
 
     # First create an sdist, we will be building upon the flag values, which
@@ -277,7 +284,7 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     return ret
 
-def _dist_config_setting(*, name, is_pip_whl, is_python, python_version, native = native, **kwargs):
+def _dist_config_setting(*, name, is_python, python_version, is_pip_whl = None, native = native, **kwargs):
     """A macro to create a target that matches is_pip_whl_auto and one more value.
 
     Args:
@@ -308,6 +315,10 @@ def _dist_config_setting(*, name, is_pip_whl, is_python, python_version, native 
     if python_version:
         # Reuse the config_setting targets that we use with the default
         # `python_version` setting.
+        return
+
+    if not is_pip_whl:
+        native.config_setting(name = _name, **kwargs)
         return
 
     config_setting_name = _name + "_setting"
