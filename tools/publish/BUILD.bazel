@@ -40,5 +40,5 @@ publish_deps(
         "requirements_windows.txt": "windows",
     },
     upgrade = True,
-    visibility = ["//tools:__subpackages__"],
+    visibility = ["//private:__pkg__"],
 )
