@@ -22,7 +22,10 @@ load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: dis
 
 visibility(["//..."])
 
-_REQUIREMENTS_TARGET_COMPATIBLE_WITH = [] if BZLMOD_ENABLED else ["@platforms//:incompatible"]
+_REQUIREMENTS_TARGET_COMPATIBLE_WITH = select({
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+}) if BZLMOD_ENABLED else ["@platforms//:incompatible"]
 
 def lock(*, name, srcs, out, upgrade = False, universal = True, python_version = None, args = [], **kwargs):
     """Pin the requirements based on the src files.
