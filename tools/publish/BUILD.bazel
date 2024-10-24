@@ -28,7 +28,7 @@ filegroup(
     visibility = ["//tools:__subpackages__"],
 )
 
-# Run bazel run //tools/private:requirements.update to update the outs
+# Run bazel run //private:requirements.update to update the outs
 publish_deps(
     name = "requirements",
     srcs = ["requirements.in"],
