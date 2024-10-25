@@ -117,7 +117,9 @@ def _test_copy(env):
         filegroups = {},
         copy_files = {"file_src": "file_dest"},
         copy_executables = {"exec_src": "exec_dest"},
-        copy_file_rule = lambda **kwargs: calls.append(kwargs),
+        rules = struct(
+            copy_file = lambda **kwargs: calls.append(kwargs),
+        ),
     )
 
     env.expect.that_collection(calls).contains_exactly([
@@ -147,7 +149,9 @@ def _test_entrypoints(env):
         entry_points = {
             "fizz": "buzz.py",
         },
-        py_binary_rule = lambda **kwargs: calls.append(kwargs),
+        rules = struct(
+            py_binary = lambda **kwargs: calls.append(kwargs),
+        ),
     )
 
     env.expect.that_collection(calls).contains_exactly([

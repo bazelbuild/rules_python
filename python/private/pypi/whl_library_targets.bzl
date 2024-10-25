@@ -36,8 +36,10 @@ def whl_library_targets(
         copy_executables = {},
         entry_points = {},
         native = native,
-        copy_file_rule = copy_file,
-        py_binary_rule = py_binary):
+        rules = struct(
+            copy_file = copy_file,
+            py_binary = py_binary,
+        )):
     """Create all of the whl_library targets.
 
     Args:
@@ -53,8 +55,7 @@ def whl_library_targets(
         entry_points: {type}`dict[str, str]` The mapping between the script
             name and the python file to use.
         native: {type}`native` The native struct for overriding in tests.
-        copy_file_rule: {type}`rule` The rule to declare copy targets.
-        py_binary_rule: {type}`rule` The rule to declare py_binary targets.
+        rules: {type}`struct` A struct with references to rules for creating targets.
     """
     _ = name  # buildifier: @unused
     for name, glob in filegroups.items():
@@ -64,16 +65,20 @@ def whl_library_targets(
         )
 
     for src, dest in copy_files.items():
-        _copy_file(src, dest, rule = copy_file_rule)
+        _copy_file(src, dest, rule = rules.copy_file)
     for src, dest in copy_executables.items():
-        _copy_file(src, dest, is_executable = True, rule = copy_file_rule)
+        _copy_file(src, dest, is_executable = True, rule = rules.copy_file)
 
     _config_settings(dependencies_by_platform.keys(), native = native)
 
     # TODO @aignas 2024-10-25: remove the entry_point generation once
     # `py_console_script_binary` is the only way to use entry points.
     for entry_point, entry_point_script_name in entry_points.items():
-        _entry_point(name = entry_point, script_name = entry_point_script_name, rule = py_binary_rule)
+        _entry_point(
+            name = entry_point,
+            script_name = entry_point_script_name,
+            rule = rules.py_binary,
+        )
 
 def _config_settings(dependencies_by_platform, native = native):
     """Generate config settings for the targets.
