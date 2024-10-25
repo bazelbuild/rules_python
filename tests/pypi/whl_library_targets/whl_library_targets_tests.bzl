@@ -28,6 +28,8 @@ def _test_filegroups(env):
 
     whl_library_targets(
         name = "dummy",
+        whl = "",
+        dep_template = "",
         native = struct(
             filegroup = lambda **kwargs: calls.append(kwargs),
             glob = glob,
@@ -47,9 +49,12 @@ def _test_filegroups(env):
             "visibility": ["//visibility:public"],
         },
         {
-            "name": "TODO",
+            "name": "whl",
+            "srcs": [""],
+            "data": [],
+            "visibility": ["//visibility:public"],
         },
-    ])
+    ])  # buildifier: @unsorted-dict-items
 
 _tests.append(_test_filegroups)
 
@@ -58,6 +63,8 @@ def _test_platforms(env):
 
     whl_library_targets(
         name = "dummy",
+        whl = None,
+        dep_template = None,
         dependencies_by_platform = {
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
             "@platforms//cpu:aarch64": ["arm_dep"],
@@ -119,6 +126,8 @@ def _test_copy(env):
 
     whl_library_targets(
         name = "dummy",
+        whl = None,
+        dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
         copy_files = {"file_src": "file_dest"},
@@ -152,6 +161,8 @@ def _test_entrypoints(env):
 
     whl_library_targets(
         name = "dummy",
+        whl = None,
+        dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
         entry_points = {
@@ -174,6 +185,110 @@ def _test_entrypoints(env):
     ])  # buildifier: @unsorted-dict-items
 
 _tests.append(_test_entrypoints)
+
+def _test_whl_and_library_deps(env):
+    filegroup_calls = []
+    py_library_calls = []
+
+    whl_library_targets(
+        name = "dummy",
+        whl = "foo.whl",
+        dep_template = "@pypi_{name}//:{target}",
+        dependencies = ["foo", "bar-baz"],
+        dependencies_by_platform = {
+            "@//python/config_settings:is_python_3.9": ["py39_dep"],
+            "@platforms//cpu:aarch64": ["arm_dep"],
+            "@platforms//os:windows": ["win_dep"],
+            "cp310_linux_ppc": ["py310_linux_ppc_dep"],
+            "cp39_anyos_aarch64": ["py39_arm_dep"],
+            "cp39_linux_anyarch": ["py39_linux_dep"],
+            "linux_x86_64": ["linux_intel_dep"],
+        },
+        data_exclude = [],
+        tags = ["tag1", "tag2"],
+        # Overrides for testing
+        filegroups = {},
+        native = struct(
+            filegroup = lambda **kwargs: filegroup_calls.append(kwargs),
+            config_setting = lambda **_: None,
+            glob = _glob,
+            select = select,
+        ),
+        rules = struct(
+            py_library = lambda **kwargs: py_library_calls.append(kwargs),
+        ),
+    )
+
+    env.expect.that_collection(filegroup_calls).contains_exactly([
+        {
+            "name": "whl",
+            "srcs": ["foo.whl"],
+            "data": [
+                # TODO @aignas 2024-10-25:
+                "@pypi_bar-baz//:whl",
+                "@pypi_foo//:whl",
+            ] + select(
+                {
+                    Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:whl"],
+                    "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
+                    "@platforms//os:windows": ["@pypi_win_dep//:whl"],
+                    ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:whl"],
+                    ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:whl"],
+                    ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:whl"],
+                    ":is_linux_x86_64": ["@pypi_linux_intel_dep//:whl"],
+                    "//conditions:default": [],
+                },
+            ),
+            "visibility": ["//visibility:public"],
+        },
+    ])  # buildifier: @unsorted-dict-items
+    env.expect.that_collection(py_library_calls).contains_exactly([
+        {
+            "name": "pkg",
+            "srcs": _glob(
+                ["site-packages/**/*.py"],
+                exclude = [],
+                allow_empty = True,
+            ),
+            "data": [] + _glob(
+                ["site-packages/**/*"],
+                exclude = ["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+            ),
+            "imports": ["site-packages"],
+            "deps": [
+                # TODO @aignas 2024-10-25:
+                "@pypi_bar-baz//:pkg",
+                "@pypi_foo//:pkg",
+            ] + select(
+                {
+                    Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:pkg"],
+                    "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
+                    "@platforms//os:windows": ["@pypi_win_dep//:pkg"],
+                    ":is_python_3.10_linux_ppc": ["@pypi_py310_linux_ppc_dep//:pkg"],
+                    ":is_python_3.9_anyos_aarch64": ["@pypi_py39_arm_dep//:pkg"],
+                    ":is_python_3.9_linux_anyarch": ["@pypi_py39_linux_dep//:pkg"],
+                    ":is_linux_x86_64": ["@pypi_linux_intel_dep//:pkg"],
+                    "//conditions:default": [],
+                },
+            ),
+            "tags": ["tag1", "tag2"],
+            "visibility": ["//visibility:public"],
+        },
+    ])  # buildifier: @unsorted-dict-items
+
+_tests.append(_test_whl_and_library_deps)
+
+def _glob(*args, **kwargs):
+    return [struct(
+        glob = args,
+        kwargs = kwargs,
+    )]
+
+def _select(*args, **kwargs):
+    return [struct(
+        select = args,
+        kwargs = kwargs,
+    )]
 
 def whl_library_targets_test_suite(name):
     """create the test suite.

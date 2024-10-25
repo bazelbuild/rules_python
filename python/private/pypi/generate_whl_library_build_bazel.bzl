@@ -36,69 +36,7 @@ whl_library_targets(
     copy_executables = {copy_executables},
     entry_points = {entry_points},
 )
-
-filegroup(
-    name = "{whl_file_label}",
-    srcs = ["{whl_name}"],
-    data = {whl_file_deps},
-    visibility = {impl_vis},
-)
-
-py_library(
-    name = "{py_library_label}",
-    srcs = glob(
-        ["site-packages/**/*.py"],
-        exclude={srcs_exclude},
-        # Empty sources are allowed to support wheels that don't have any
-        # pure-Python code, e.g. pymssql, which is written in Cython.
-        allow_empty = True,
-    ),
-    data = {data} + glob(
-        ["site-packages/**/*"],
-        exclude={data_exclude},
-    ),
-    # This makes this directory a top-level in the python import
-    # search path for anything that depends on this.
-    imports = ["site-packages"],
-    deps = {dependencies},
-    tags = {tags},
-    visibility = {impl_vis},
-)
 """
-
-def _plat_label(plat):
-    if plat.endswith("default"):
-        return plat
-    if plat.startswith("@//"):
-        return "@@" + str(Label("//:BUILD.bazel")).partition("//")[0].strip("@") + plat.strip("@")
-    elif plat.startswith("@"):
-        return str(Label(plat))
-    else:
-        return ":is_" + plat.replace("cp3", "python_3.")
-
-def _render_list_and_select(deps, deps_by_platform, tmpl):
-    deps = render.list([tmpl.format(d) for d in sorted(deps)])
-
-    if not deps_by_platform:
-        return deps
-
-    deps_by_platform = {
-        _plat_label(p): [
-            tmpl.format(d)
-            for d in sorted(deps)
-        ]
-        for p, deps in sorted(deps_by_platform.items())
-    }
-
-    # Add the default, which means that we will be just using the dependencies in
-    # `deps` for platforms that are not handled in a special way by the packages
-    deps_by_platform.setdefault("//conditions:default", [])
-    deps_by_platform = render.select(deps_by_platform, value_repr = render.list)
-
-    if deps == "[]":
-        return deps_by_platform
-    else:
-        return "{} + {}".format(deps, deps_by_platform)
 
 def generate_whl_library_build_bazel(
         *,
