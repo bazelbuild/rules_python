@@ -66,18 +66,18 @@ def whl_library_targets(
         )
 
     for src, dest in copy_files.items():
-        _copy_file(
-            src,
-            dest,
-            rule = rules.copy_file,
+        rules.copy_file(
+            name = dest + ".copy",
+            src = src,
+            out = dest,
             visibility = ["//visibility:public"],
         )
     for src, dest in copy_executables.items():
-        _copy_file(
-            src,
-            dest,
+        rules.copy_file(
+            name = dest + ".copy",
+            src = src,
+            out = dest,
             is_executable = True,
-            rule = rules.copy_file,
             visibility = ["//visibility:public"],
         )
 
@@ -90,10 +90,14 @@ def whl_library_targets(
     # TODO @aignas 2024-10-25: remove the entry_point generation once
     # `py_console_script_binary` is the only way to use entry points.
     for entry_point, entry_point_script_name in entry_points.items():
-        _entry_point(
-            name = entry_point,
-            script_name = entry_point_script_name,
-            rule = rules.py_binary,
+        rules.py_binary(
+            name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, entry_point),
+            # Ensure that this works on Windows as well - script may have Windows path separators.
+            srcs = [entry_point_script_name.replace("\\", "/")],
+            # This makes this directory a top-level in the python import
+            # search path for anything that depends on this.
+            imports = ["."],
+            deps = [":" + PY_LIBRARY_PUBLIC_LABEL],
             visibility = ["//visibility:public"],
         )
 
@@ -144,47 +148,3 @@ def _config_settings(dependencies_by_platform, native = native, **kwargs):
             ),
             **_kwargs
         )
-
-def _copy_file(src, dest, *, rule, **kwargs):
-    """Generate a [@bazel_skylib//rules:copy_file.bzl%copy_file][cf] target
-
-    [cf]: https://github.com/bazelbuild/bazel-skylib/blob/1.1.1/docs/copy_file_doc.md
-
-    Args:
-        src:{type}`str` The label for the `src` attribute of [copy_file][cf]
-        dest: {type}`str` The label for the `out` attribute of [copy_file][cf]
-        rule: The rule to use.
-        **kwargs: Extra kwargs to pass to the rule.
-    """
-    rule(
-        name = dest + ".copy",
-        src = src,
-        out = dest,
-        **kwargs
-    )
-
-def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule, **kwargs):
-    """Generate a Bazel `py_binary` rule for an entry point script.
-
-    Note that the script is used to determine the name of the target. The name of
-    entry point targets should be unique to avoid conflicts with existing sources or
-    directories within a wheel.
-
-    Args:
-        name: {type}`str` The name of the generated py_binary.
-        script_name: {type}`str` The path to the entry point's python file.
-        pkg: {type}`str` The package owning the entry point. This is expected to
-            match up with the `py_library` defined for each repository.
-        rule: The rule to use.
-        **kwargs: Extra kwargs to pass to the rule.
-    """
-    rule(
-        name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, name),
-        # Ensure that this works on Windows as well - script may have Windows path separators.
-        srcs = [script_name.replace("\\", "/")],
-        # This makes this directory a top-level in the python import
-        # search path for anything that depends on this.
-        imports = ["."],
-        deps = [pkg],
-        **kwargs
-    )
