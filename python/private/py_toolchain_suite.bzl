@@ -15,11 +15,13 @@
 """Create the toolchain defs in a BUILD.bazel file."""
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load(":py_test_toolchain.bzl", "py_test_toolchain_repo")
 load(":text_util.bzl", "render")
 load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "PY_CC_TOOLCHAIN_TYPE",
+    "PY_TEST_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )
 
@@ -177,3 +179,13 @@ def define_local_toolchain_suites(name, version_aware_repo_names, version_unawar
             target_settings = [],
             target_compatible_with = ["@{}//:os".format(repo)],
         )
+
+def register_py_test_toolchain(name, coverage_rc, register_toolchains = True):
+    # Need to create a repository rule for this to work.
+    py_test_toolchain_repo(
+        name = "{}_py_test_toolchain".format(name),
+        coverage_rc = coverage_rc,
+        toolchain_type = str(PY_TEST_TOOLCHAIN_TYPE),
+    )
+    if register_toolchains:
+        native.toolchain(name = "{}_py_test_toolchain".format(name))

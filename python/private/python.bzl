@@ -16,6 +16,7 @@
 
 load("@bazel_features//:features.bzl", "bazel_features")
 load("//python:versions.bzl", "DEFAULT_RELEASE_BASE_URL", "PLATFORMS", "TOOL_VERSIONS")
+load("//python/private:py_toolchain_suite.bzl", "register_py_test_toolchain")
 load(":auth.bzl", "AUTH_ATTRS")
 load(":full_version.bzl", "full_version")
 load(":python_register_toolchains.bzl", "python_register_toolchains")
@@ -80,6 +81,12 @@ def parse_modules(*, module_ctx, _fail = fail):
 
     seen_versions = {}
     for mod in module_ctx.modules:
+        for tag in mod.tags.converage:
+            register_py_test_toolchain(
+                name = tag.name,
+                coverage_rc = tag.coveragerc,
+                register_toolchains = False,
+            )
         module_toolchain_versions = []
         toolchain_attr_structs = _create_toolchain_attr_structs(
             mod = mod,
@@ -850,6 +857,19 @@ The coverage tool to be used for a particular Python interpreter. This can overr
         ),
     },
 )
+_converage = tag_class(
+    doc = """Tag class used to register Python toolchains.""",
+    attrs = {
+        "name": attr.string(
+            mandatory = True,
+            doc = "Whether or not to configure the default coverage tool for the toolchains.",
+        ),
+        "coveragerc": attr.label(
+            doc = """ """,
+            mandatory = True,
+        ),
+    },
+)
 
 python = module_extension(
     doc = """Bzlmod extension that is used to register Python toolchains.
@@ -860,6 +880,7 @@ python = module_extension(
         "single_version_override": _single_version_override,
         "single_version_platform_override": _single_version_platform_override,
         "toolchain": _toolchain,
+        "converage": _converage,
     },
     **_get_bazel_version_specific_kwargs()
 )
