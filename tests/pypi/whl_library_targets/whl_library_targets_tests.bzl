@@ -38,10 +38,12 @@ def _test_filegroups(env):
         {
             "name": "dist_info",
             "srcs": ["site-packages/*.dist-info/**"],
+            "visibility": ["//visibility:public"],
         },
         {
             "name": "data",
             "srcs": ["data/**"],
+            "visibility": ["//visibility:public"],
         },
     ])
 
@@ -124,16 +126,17 @@ def _test_copy(env):
 
     env.expect.that_collection(calls).contains_exactly([
         {
-            "is_executable": False,
             "name": "file_dest.copy",
             "out": "file_dest",
             "src": "file_src",
+            "visibility": ["//visibility:public"],
         },
         {
             "is_executable": True,
             "name": "exec_dest.copy",
             "out": "exec_dest",
             "src": "exec_src",
+            "visibility": ["//visibility:public"],
         },
     ])
 
@@ -149,18 +152,20 @@ def _test_entrypoints(env):
         entry_points = {
             "fizz": "buzz.py",
         },
+        native = struct(),
         rules = struct(
             py_binary = lambda **kwargs: calls.append(kwargs),
         ),
     )
 
     env.expect.that_collection(calls).contains_exactly([
-        dict(
-            name = "rules_python_wheel_entry_point_fizz",
-            srcs = ["buzz.py"],
-            imports = ["."],
-            deps = [":pkg"],
-        ),
+        {
+            "deps": [":pkg"],
+            "imports": ["."],
+            "name": "rules_python_wheel_entry_point_fizz",
+            "srcs": ["buzz.py"],
+            "visibility": ["//visibility:public"],
+        },
     ])
 
 _tests.append(_test_entrypoints)

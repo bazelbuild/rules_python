@@ -62,12 +62,24 @@ def whl_library_targets(
         native.filegroup(
             name = name,
             srcs = native.glob(glob, allow_empty = True),
+            visibility = ["//visibility:public"],
         )
 
     for src, dest in copy_files.items():
-        _copy_file(src, dest, rule = rules.copy_file)
+        _copy_file(
+            src,
+            dest,
+            rule = rules.copy_file,
+            visibility = ["//visibility:public"],
+        )
     for src, dest in copy_executables.items():
-        _copy_file(src, dest, is_executable = True, rule = rules.copy_file)
+        _copy_file(
+            src,
+            dest,
+            is_executable = True,
+            rule = rules.copy_file,
+            visibility = ["//visibility:public"],
+        )
 
     _config_settings(dependencies_by_platform.keys(), native = native)
 
@@ -78,6 +90,7 @@ def whl_library_targets(
             name = entry_point,
             script_name = entry_point_script_name,
             rule = rules.py_binary,
+            visibility = ["//visibility:public"],
         )
 
 def _config_settings(dependencies_by_platform, native = native):
@@ -131,7 +144,7 @@ def _config_settings(dependencies_by_platform, native = native):
             visibility = ["//visibility:private"],
         )
 
-def _copy_file(src, dest, *, is_executable = False, rule):
+def _copy_file(src, dest, *, rule, **kwargs):
     """Generate a [@bazel_skylib//rules:copy_file.bzl%copy_file][cf] target
 
     [cf]: https://github.com/bazelbuild/bazel-skylib/blob/1.1.1/docs/copy_file_doc.md
@@ -139,18 +152,17 @@ def _copy_file(src, dest, *, is_executable = False, rule):
     Args:
         src:{type}`str` The label for the `src` attribute of [copy_file][cf]
         dest: {type}`str` The label for the `out` attribute of [copy_file][cf]
-        is_executable: {type}`bool` Whether or not the file being copied is executable.
-            sets `is_executable` for [copy_file][cf]. Defaults to `False`.
         rule: The rule to use.
+        **kwargs: Extra kwargs to pass to the rule.
     """
     rule(
         name = dest + ".copy",
         src = src,
         out = dest,
-        is_executable = is_executable,
+        **kwargs
     )
 
-def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule):
+def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule, **kwargs):
     """Generate a Bazel `py_binary` rule for an entry point script.
 
     Note that the script is used to determine the name of the target. The name of
@@ -163,6 +175,7 @@ def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule
         pkg: {type}`str` The package owning the entry point. This is expected to
             match up with the `py_library` defined for each repository.
         rule: The rule to use.
+        **kwargs: Extra kwargs to pass to the rule.
     """
     rule(
         name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, name),
@@ -172,4 +185,5 @@ def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule
         # search path for anything that depends on this.
         imports = ["."],
         deps = [pkg],
+        **kwargs
     )
