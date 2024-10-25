@@ -24,6 +24,12 @@ def _test_all(env):
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 
 whl_library_targets(
+    copy_executables = {
+        "exec_src": "exec_dest",
+    },
+    copy_files = {
+        "file_src": "file_dest",
+    },
     data = ["extra_target"],
     data_exclude = [
         "exclude_via_attr",

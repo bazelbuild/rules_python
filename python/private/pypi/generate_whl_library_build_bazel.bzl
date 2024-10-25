@@ -17,6 +17,8 @@
 load("//python/private:text_util.bzl", "render")
 
 _RENDER = {
+    "copy_executables": render.dict,
+    "copy_files": render.dict,
     "data": render.list,
     "data_exclude": render.list,
     "dependencies": render.list,
@@ -46,6 +48,8 @@ def generate_whl_library_build_bazel(
     additional_content = []
     if annotation:
         kwargs["data"] = annotation.data
+        kwargs["copy_files"] = annotation.copy_files
+        kwargs["copy_executables"] = annotation.copy_executables
         kwargs["data_exclude"] = kwargs.get("data_exclude", []) + annotation.data_exclude_glob
         kwargs["srcs_exclude"] = annotation.srcs_exclude_glob
         if annotation.additive_build_content:
