@@ -28,7 +28,7 @@ def _test_filegroups(env):
 
     whl_library_targets(
         name = "dummy",
-        whl = "",
+        whl_name = "",
         dep_template = "",
         native = struct(
             filegroup = lambda **kwargs: calls.append(kwargs),
@@ -63,7 +63,7 @@ def _test_platforms(env):
 
     whl_library_targets(
         name = "dummy",
-        whl = None,
+        whl_name = None,
         dep_template = None,
         dependencies_by_platform = {
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
@@ -126,7 +126,7 @@ def _test_copy(env):
 
     whl_library_targets(
         name = "dummy",
-        whl = None,
+        whl_name = None,
         dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
@@ -161,7 +161,7 @@ def _test_entrypoints(env):
 
     whl_library_targets(
         name = "dummy",
-        whl = None,
+        whl_name = None,
         dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
@@ -192,7 +192,7 @@ def _test_whl_and_library_deps(env):
 
     whl_library_targets(
         name = "dummy",
-        whl = "foo.whl",
+        whl_name = "foo.whl",
         dep_template = "@pypi_{name}//:{target}",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {
@@ -212,7 +212,6 @@ def _test_whl_and_library_deps(env):
             filegroup = lambda **kwargs: filegroup_calls.append(kwargs),
             config_setting = lambda **_: None,
             glob = _glob,
-            select = select,
         ),
         rules = struct(
             py_library = lambda **kwargs: py_library_calls.append(kwargs),
@@ -276,15 +275,65 @@ def _test_whl_and_library_deps(env):
 
 _tests.append(_test_whl_and_library_deps)
 
+def _test_group(env):
+    alias_calls = []
+    py_library_calls = []
+
+    whl_library_targets(
+        name = "dummy",
+        whl_name = "foo.whl",
+        dep_template = "@pypi_{name}//:{target}",
+        dependencies = ["foo", "bar-baz", "qux"],
+        dependencies_by_platform = {
+            "linux_x86_64": ["box", "box-amd64"],
+            "windows_x86_64": ["fox"],
+            "@platforms//os:linux": ["box"],  # buildifier: disable=unsorted-dict-items to check that we sort inside the test
+        },
+        tags = [],
+        entry_points = {},
+        data_exclude = [],
+        group_name = "qux",
+        group_deps = ["foo", "fox", "qux"],
+        # Overrides for testing
+        filegroups = {},
+        native = struct(
+            config_setting = lambda **_: None,
+            glob = _glob,
+            alias = lambda **kwargs: alias_calls.append(kwargs),
+        ),
+        rules = struct(
+            py_library = lambda **kwargs: py_library_calls.append(kwargs),
+        ),
+    )
+
+    env.expect.that_collection(alias_calls).contains_exactly([
+        {"name": "pkg", "actual": "@pypi__groups//:qux_pkg", "visibility": ["//visibility:public"]},
+        {"name": "whl", "actual": "@pypi__groups//:qux_whl", "visibility": ["//visibility:public"]},
+    ])  # buildifier: @unsorted-dict-items
+    env.expect.that_collection(py_library_calls).contains_exactly([
+        {
+            "name": "_pkg",
+            "srcs": _glob(["site-packages/**/*.py"], exclude = [], allow_empty = True),
+            "data": [] + _glob(
+                ["site-packages/**/*"],
+                exclude = ["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+            ),
+            "imports": ["site-packages"],
+            "deps": ["@pypi_bar_baz//:pkg"] + select({
+                "@platforms//os:linux": ["@pypi_box//:pkg"],
+                ":is_linux_x86_64": ["@pypi_box//:pkg", "@pypi_box_amd64//:pkg"],
+                "//conditions:default": [],
+            }),
+            "tags": [],
+            "visibility": ["@pypi__groups//:__pkg__"],
+        },
+    ])  # buildifier: @unsorted-dict-items
+
+_tests.append(_test_group)
+
 def _glob(*args, **kwargs):
     return [struct(
         glob = args,
-        kwargs = kwargs,
-    )]
-
-def _select(*args, **kwargs):
-    return [struct(
-        select = args,
         kwargs = kwargs,
     )]
 
