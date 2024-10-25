@@ -137,6 +137,30 @@ def _test_copy(env):
 
 _tests.append(_test_copy)
 
+def _test_entrypoints(env):
+    calls = []
+
+    whl_library_targets(
+        name = "dummy",
+        dependencies_by_platform = {},
+        filegroups = {},
+        entry_points = {
+            "fizz": "buzz.py",
+        },
+        py_binary_rule = lambda **kwargs: calls.append(kwargs),
+    )
+
+    env.expect.that_collection(calls).contains_exactly([
+        dict(
+            name = "rules_python_wheel_entry_point_fizz",
+            srcs = ["buzz.py"],
+            imports = ["."],
+            deps = [":pkg"],
+        ),
+    ])
+
+_tests.append(_test_entrypoints)
+
 def whl_library_targets_test_suite(name):
     """create the test suite.
 

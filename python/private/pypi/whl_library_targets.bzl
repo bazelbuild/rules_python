@@ -15,10 +15,13 @@
 """Macro to generate all of the targets present in a {obj}`whl_library`."""
 
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("//python:py_binary.bzl", "py_binary")
 load(
     ":labels.bzl",
     "DATA_LABEL",
     "DIST_INFO_LABEL",
+    "PY_LIBRARY_PUBLIC_LABEL",
+    "WHEEL_ENTRY_POINT_PREFIX",
 )
 
 def whl_library_targets(
@@ -31,8 +34,10 @@ def whl_library_targets(
         dependencies_by_platform = {},
         copy_files = {},
         copy_executables = {},
+        entry_points = {},
         native = native,
-        copy_file_rule = copy_file):
+        copy_file_rule = copy_file,
+        py_binary_rule = py_binary):
     """Create all of the whl_library targets.
 
     Args:
@@ -45,8 +50,11 @@ def whl_library_targets(
             dest locations for the targets.
         copy_files: {type}`dict[str, str]` The mapping between src and
             dest locations for the targets.
+        entry_points: {type}`dict[str, str]` The mapping between the script
+            name and the python file to use.
         native: {type}`native` The native struct for overriding in tests.
         copy_file_rule: {type}`rule` The rule to declare copy targets.
+        py_binary_rule: {type}`rule` The rule to declare py_binary targets.
     """
     _ = name  # buildifier: @unused
     for name, glob in filegroups.items():
@@ -61,6 +69,11 @@ def whl_library_targets(
         _copy_file(src, dest, is_executable = True, rule = copy_file_rule)
 
     _config_settings(dependencies_by_platform.keys(), native = native)
+
+    # TODO @aignas 2024-10-25: remove the entry_point generation once
+    # `py_console_script_binary` is the only way to use entry points.
+    for entry_point, entry_point_script_name in entry_points.items():
+        _entry_point(name = entry_point, script_name = entry_point_script_name, rule = py_binary_rule)
 
 def _config_settings(dependencies_by_platform, native = native):
     """Generate config settings for the targets.
@@ -113,10 +126,45 @@ def _config_settings(dependencies_by_platform, native = native):
             visibility = ["//visibility:private"],
         )
 
-def _copy_file(src, dest, *, is_executable = False, rule = copy_file):
+def _copy_file(src, dest, *, is_executable = False, rule):
+    """Generate a [@bazel_skylib//rules:copy_file.bzl%copy_file][cf] target
+
+    [cf]: https://github.com/bazelbuild/bazel-skylib/blob/1.1.1/docs/copy_file_doc.md
+
+    Args:
+        src:{type}`str` The label for the `src` attribute of [copy_file][cf]
+        dest: {type}`str` The label for the `out` attribute of [copy_file][cf]
+        is_executable: {type}`bool` Whether or not the file being copied is executable.
+            sets `is_executable` for [copy_file][cf]. Defaults to `False`.
+        rule: The rule to use.
+    """
     rule(
         name = dest + ".copy",
         src = src,
         out = dest,
         is_executable = is_executable,
+    )
+
+def _entry_point(*, name, script_name, pkg = ":" + PY_LIBRARY_PUBLIC_LABEL, rule):
+    """Generate a Bazel `py_binary` rule for an entry point script.
+
+    Note that the script is used to determine the name of the target. The name of
+    entry point targets should be unique to avoid conflicts with existing sources or
+    directories within a wheel.
+
+    Args:
+        name: {type}`str` The name of the generated py_binary.
+        script_name: {type}`str` The path to the entry point's python file.
+        pkg: {type}`str` The package owning the entry point. This is expected to
+            match up with the `py_library` defined for each repository.
+        rule: The rule to use.
+    """
+    rule(
+        name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, name),
+        # Ensure that this works on Windows as well - script may have Windows path separators.
+        srcs = [script_name.replace("\\", "/")],
+        # This makes this directory a top-level in the python import
+        # search path for anything that depends on this.
+        imports = ["."],
+        deps = [pkg],
     )

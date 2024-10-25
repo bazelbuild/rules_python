@@ -20,21 +20,9 @@ load(
     ":labels.bzl",
     "PY_LIBRARY_IMPL_LABEL",
     "PY_LIBRARY_PUBLIC_LABEL",
-    "WHEEL_ENTRY_POINT_PREFIX",
     "WHEEL_FILE_IMPL_LABEL",
     "WHEEL_FILE_PUBLIC_LABEL",
 )
-
-_ENTRY_POINT_RULE_TEMPLATE = """\
-py_binary(
-    name = "{name}",
-    srcs = ["{src}"],
-    # This makes this directory a top-level in the python import
-    # search path for anything that depends on this.
-    imports = ["."],
-    deps = ["{pkg}"],
-)
-"""
 
 _BUILD_TEMPLATE = """\
 {loads}
@@ -46,6 +34,7 @@ whl_library_targets(
     dependencies_by_platform = {dependencies_by_platform},
     copy_files = {copy_files},
     copy_executables = {copy_executables},
+    entry_points = {entry_points},
 )
 
 filegroup(
@@ -156,15 +145,6 @@ def generate_whl_library_build_bazel(
     }
     tags = sorted(tags)
 
-    for entry_point, entry_point_script_name in entry_points.items():
-        additional_content.append(
-            _generate_entry_point_rule(
-                name = "{}_{}".format(WHEEL_ENTRY_POINT_PREFIX, entry_point),
-                script = entry_point_script_name,
-                pkg = ":" + PY_LIBRARY_PUBLIC_LABEL,
-            ),
-        )
-
     if annotation:
         for dest in annotation.copy_files.values():
             data.append(dest)
@@ -210,7 +190,7 @@ def generate_whl_library_build_bazel(
     }
 
     loads = [
-        """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
+        """load("@rules_python//python:defs.bzl", "py_library")""",
         """load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")""",
     ]
 
@@ -280,12 +260,12 @@ def generate_whl_library_build_bazel(
                 copy_executables = render.indent(
                     render.dict(annotation.copy_executables or {} if annotation else {}),
                 ).lstrip(),
+                entry_points = render.indent(render.dict(entry_points)).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
                 whl_file_label = whl_file_label,
                 tags = repr(tags),
-                entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),
                 impl_vis = repr(impl_vis),
@@ -295,25 +275,3 @@ def generate_whl_library_build_bazel(
 
     # NOTE: Ensure that we terminate with a new line
     return contents.rstrip() + "\n"
-
-def _generate_entry_point_rule(*, name, script, pkg):
-    """Generate a Bazel `py_binary` rule for an entry point script.
-
-    Note that the script is used to determine the name of the target. The name of
-    entry point targets should be uniuqe to avoid conflicts with existing sources or
-    directories within a wheel.
-
-    Args:
-        name (str): The name of the generated py_binary.
-        script (str): The path to the entry point's python file.
-        pkg (str): The package owning the entry point. This is expected to
-            match up with the `py_library` defined for each repository.
-
-    Returns:
-        str: A `py_binary` instantiation.
-    """
-    return _ENTRY_POINT_RULE_TEMPLATE.format(
-        name = name,
-        src = script.replace("\\", "/"),
-        pkg = pkg,
-    )

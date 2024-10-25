@@ -22,7 +22,7 @@ _tests = []
 def _test_simple(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -31,6 +31,7 @@ whl_library_targets(
     dependencies_by_platform = {},
     copy_files = {},
     copy_executables = {},
+    entry_points = {},
 )
 
 filegroup(
@@ -84,7 +85,7 @@ _tests.append(_test_simple)
 def _test_dep_selects(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -101,6 +102,7 @@ whl_library_targets(
     },
     copy_files = {},
     copy_executables = {},
+    entry_points = {},
 )
 
 filegroup(
@@ -184,7 +186,7 @@ _tests.append(_test_dep_selects)
 def _test_with_annotation(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -197,6 +199,7 @@ whl_library_targets(
     copy_executables = {
         "exec_src": "exec_dest",
     },
+    entry_points = {},
 )
 
 filegroup(
@@ -259,7 +262,7 @@ _tests.append(_test_with_annotation)
 def _test_with_entry_points(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -268,6 +271,9 @@ whl_library_targets(
     dependencies_by_platform = {},
     copy_files = {},
     copy_executables = {},
+    entry_points = {
+        "fizz": "buzz.py",
+    },
 )
 
 filegroup(
@@ -303,15 +309,6 @@ py_library(
     tags = ["tag1", "tag2"],
     visibility = ["//visibility:public"],
 )
-
-py_binary(
-    name = "rules_python_wheel_entry_point_fizz",
-    srcs = ["buzz.py"],
-    # This makes this directory a top-level in the python import
-    # search path for anything that depends on this.
-    imports = ["."],
-    deps = [":pkg"],
-)
 """
     actual = generate_whl_library_build_bazel(
         dep_template = "@pypi_{name}//:{target}",
@@ -330,7 +327,7 @@ _tests.append(_test_with_entry_points)
 def _test_group_member(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -345,6 +342,7 @@ whl_library_targets(
     },
     copy_files = {},
     copy_executables = {},
+    entry_points = {},
 )
 
 filegroup(
@@ -426,7 +424,7 @@ _tests.append(_test_group_member)
 def _test_group_member_deps_to_hub(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
-load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_python//python:defs.bzl", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -441,6 +439,7 @@ whl_library_targets(
     },
     copy_files = {},
     copy_executables = {},
+    entry_points = {},
 )
 
 filegroup(
