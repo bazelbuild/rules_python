@@ -58,6 +58,7 @@ py_binary(
         "REQUIREMENTS_TXT": "$(rlocationpath //python/private/pypi:requirements_txt)",
     },
     imports = ["../../.."],
+    visibility = ["//private:__pkg__"],
     deps = [
         ":args",
         ":update_file",
