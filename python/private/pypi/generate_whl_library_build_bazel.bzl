@@ -25,15 +25,6 @@ load(
     "WHEEL_FILE_PUBLIC_LABEL",
 )
 
-_COPY_FILE_TEMPLATE = """\
-copy_file(
-    name = "{dest}.copy",
-    src = "{src}",
-    out = "{dest}",
-    is_executable = {is_executable},
-)
-"""
-
 _ENTRY_POINT_RULE_TEMPLATE = """\
 py_binary(
     name = "{name}",
@@ -53,6 +44,8 @@ package(default_visibility = ["//visibility:public"])
 whl_library_targets(
     name = "unused",
     dependencies_by_platform = {dependencies_by_platform},
+    copy_files = {copy_files},
+    copy_executables = {copy_executables},
 )
 
 filegroup(
@@ -173,14 +166,10 @@ def generate_whl_library_build_bazel(
         )
 
     if annotation:
-        for src, dest in annotation.copy_files.items():
+        for dest in annotation.copy_files.values():
             data.append(dest)
-            additional_content.append(_generate_copy_commands(src, dest))
-        for src, dest in annotation.copy_executables.items():
+        for dest in annotation.copy_executables.values():
             data.append(dest)
-            additional_content.append(
-                _generate_copy_commands(src, dest, is_executable = True),
-            )
         data.extend(annotation.data)
         data_exclude.extend(annotation.data_exclude_glob)
         srcs_exclude.extend(annotation.srcs_exclude_glob)
@@ -223,7 +212,6 @@ def generate_whl_library_build_bazel(
     loads = [
         """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
         """load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")""",
-        """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
     ]
 
     lib_dependencies = _render_list_and_select(
@@ -286,6 +274,12 @@ def generate_whl_library_build_bazel(
                     render.dict(dependencies_by_platform, value_repr = render.list),
                     " " * 4,
                 ).lstrip(),
+                copy_files = render.indent(
+                    render.dict(annotation.copy_files or {} if annotation else {}),
+                ).lstrip(),
+                copy_executables = render.indent(
+                    render.dict(annotation.copy_executables or {} if annotation else {}),
+                ).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,
@@ -301,26 +295,6 @@ def generate_whl_library_build_bazel(
 
     # NOTE: Ensure that we terminate with a new line
     return contents.rstrip() + "\n"
-
-def _generate_copy_commands(src, dest, is_executable = False):
-    """Generate a [@bazel_skylib//rules:copy_file.bzl%copy_file][cf] target
-
-    [cf]: https://github.com/bazelbuild/bazel-skylib/blob/1.1.1/docs/copy_file_doc.md
-
-    Args:
-        src (str): The label for the `src` attribute of [copy_file][cf]
-        dest (str): The label for the `out` attribute of [copy_file][cf]
-        is_executable (bool, optional): Whether or not the file being copied is executable.
-            sets `is_executable` for [copy_file][cf]
-
-    Returns:
-        str: A `copy_file` instantiation.
-    """
-    return _COPY_FILE_TEMPLATE.format(
-        src = src,
-        dest = dest,
-        is_executable = is_executable,
-    )
 
 def _generate_entry_point_rule(*, name, script, pkg):
     """Generate a Bazel `py_binary` rule for an entry point script.

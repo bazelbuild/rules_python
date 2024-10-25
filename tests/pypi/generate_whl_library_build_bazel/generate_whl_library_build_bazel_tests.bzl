@@ -21,7 +21,6 @@ _tests = []
 
 def _test_simple(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -30,6 +29,8 @@ package(default_visibility = ["//visibility:public"])
 whl_library_targets(
     name = "unused",
     dependencies_by_platform = {},
+    copy_files = {},
+    copy_executables = {},
 )
 
 filegroup(
@@ -82,7 +83,6 @@ _tests.append(_test_simple)
 
 def _test_dep_selects(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -99,6 +99,8 @@ whl_library_targets(
         "cp39_linux_anyarch": ["py39_linux_dep"],
         "linux_x86_64": ["linux_intel_dep"],
     },
+    copy_files = {},
+    copy_executables = {},
 )
 
 filegroup(
@@ -181,7 +183,6 @@ _tests.append(_test_dep_selects)
 
 def _test_with_annotation(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -190,6 +191,12 @@ package(default_visibility = ["//visibility:public"])
 whl_library_targets(
     name = "unused",
     dependencies_by_platform = {},
+    copy_files = {
+        "file_src": "file_dest",
+    },
+    copy_executables = {
+        "exec_src": "exec_dest",
+    },
 )
 
 filegroup(
@@ -226,20 +233,6 @@ py_library(
     visibility = ["//visibility:public"],
 )
 
-copy_file(
-    name = "file_dest.copy",
-    src = "file_src",
-    out = "file_dest",
-    is_executable = False,
-)
-
-copy_file(
-    name = "exec_dest.copy",
-    src = "exec_src",
-    out = "exec_dest",
-    is_executable = True,
-)
-
 # SOMETHING SPECIAL AT THE END
 """
     actual = generate_whl_library_build_bazel(
@@ -265,7 +258,6 @@ _tests.append(_test_with_annotation)
 
 def _test_with_entry_points(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -274,6 +266,8 @@ package(default_visibility = ["//visibility:public"])
 whl_library_targets(
     name = "unused",
     dependencies_by_platform = {},
+    copy_files = {},
+    copy_executables = {},
 )
 
 filegroup(
@@ -335,7 +329,6 @@ _tests.append(_test_with_entry_points)
 
 def _test_group_member(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -350,6 +343,8 @@ whl_library_targets(
         ],
         "@platforms//os:linux": ["box"],
     },
+    copy_files = {},
+    copy_executables = {},
 )
 
 filegroup(
@@ -430,7 +425,6 @@ _tests.append(_test_group_member)
 
 def _test_group_member_deps_to_hub(env):
     want = """\
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
@@ -445,6 +439,8 @@ whl_library_targets(
         ],
         "@platforms//os:linux": ["box"],
     },
+    copy_files = {},
+    copy_executables = {},
 )
 
 filegroup(

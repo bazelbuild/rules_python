@@ -14,6 +14,7 @@
 
 """Macro to generate all of the targets present in a {obj}`whl_library`."""
 
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load(
     ":labels.bzl",
     "DATA_LABEL",
@@ -23,12 +24,15 @@ load(
 def whl_library_targets(
         name,
         *,
-        dependencies_by_platform = {},
         filegroups = {
             DIST_INFO_LABEL: ["site-packages/*.dist-info/**"],
             DATA_LABEL: ["data/**"],
         },
-        native = native):
+        dependencies_by_platform = {},
+        copy_files = {},
+        copy_executables = {},
+        native = native,
+        copy_file_rule = copy_file):
     """Create all of the whl_library targets.
 
     Args:
@@ -37,7 +41,12 @@ def whl_library_targets(
             names and the glob matches.
         dependencies_by_platform: {type}`dict[str, list[str]]` A list of
             dependencies by platform key.
+        copy_executables: {type}`dict[str, str]` The mapping between src and
+            dest locations for the targets.
+        copy_files: {type}`dict[str, str]` The mapping between src and
+            dest locations for the targets.
         native: {type}`native` The native struct for overriding in tests.
+        copy_file_rule: {type}`rule` The rule to declare copy targets.
     """
     _ = name  # buildifier: @unused
     for name, glob in filegroups.items():
@@ -45,6 +54,11 @@ def whl_library_targets(
             name = name,
             srcs = native.glob(glob, allow_empty = True),
         )
+
+    for src, dest in copy_files.items():
+        _copy_file(src, dest, rule = copy_file_rule)
+    for src, dest in copy_executables.items():
+        _copy_file(src, dest, is_executable = True, rule = copy_file_rule)
 
     _config_settings(dependencies_by_platform.keys(), native = native)
 
@@ -98,3 +112,11 @@ def _config_settings(dependencies_by_platform, native = native):
             constraint_values = constraint_values,
             visibility = ["//visibility:private"],
         )
+
+def _copy_file(src, dest, *, is_executable = False, rule = copy_file):
+    rule(
+        name = dest + ".copy",
+        src = src,
+        out = dest,
+        is_executable = is_executable,
+    )

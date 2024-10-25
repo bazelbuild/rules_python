@@ -61,9 +61,8 @@ def _test_platforms(env):
             "cp39_linux_anyarch": ["py39_linux_dep"],
             "linux_x86_64": ["linux_intel_dep"],
         },
+        filegroups = {},
         native = struct(
-            filegroup = lambda **kwargs: kwargs,
-            glob = lambda *args, **kwargs: (args, kwargs),
             config_setting = lambda **kwargs: calls.append(kwargs),
         ),
     )
@@ -108,6 +107,35 @@ def _test_platforms(env):
     ])
 
 _tests.append(_test_platforms)
+
+def _test_copy(env):
+    calls = []
+
+    whl_library_targets(
+        name = "dummy",
+        dependencies_by_platform = {},
+        filegroups = {},
+        copy_files = {"file_src": "file_dest"},
+        copy_executables = {"exec_src": "exec_dest"},
+        copy_file_rule = lambda **kwargs: calls.append(kwargs),
+    )
+
+    env.expect.that_collection(calls).contains_exactly([
+        {
+            "is_executable": False,
+            "name": "file_dest.copy",
+            "out": "file_dest",
+            "src": "file_src",
+        },
+        {
+            "is_executable": True,
+            "name": "exec_dest.copy",
+            "out": "exec_dest",
+            "src": "exec_src",
+        },
+    ])
+
+_tests.append(_test_copy)
 
 def whl_library_targets_test_suite(name):
     """create the test suite.
