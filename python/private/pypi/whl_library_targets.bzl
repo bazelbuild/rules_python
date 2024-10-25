@@ -81,7 +81,11 @@ def whl_library_targets(
             visibility = ["//visibility:public"],
         )
 
-    _config_settings(dependencies_by_platform.keys(), native = native)
+    _config_settings(
+        dependencies_by_platform.keys(),
+        native = native,
+        visibility = ["//visibility:private"],
+    )
 
     # TODO @aignas 2024-10-25: remove the entry_point generation once
     # `py_console_script_binary` is the only way to use entry points.
@@ -93,7 +97,7 @@ def whl_library_targets(
             visibility = ["//visibility:public"],
         )
 
-def _config_settings(dependencies_by_platform, native = native):
+def _config_settings(dependencies_by_platform, native = native, **kwargs):
     """Generate config settings for the targets.
 
     Args:
@@ -106,6 +110,7 @@ def _config_settings(dependencies_by_platform, native = native):
             * `{os}_{cpu}`
             * `cp3{minor_version}_{os}_{cpu}`
         native: {type}`native` The native struct for overriding in tests.
+        **kwargs: Extra kwargs to pass to the rule.
     """
     for p in dependencies_by_platform:
         if p.startswith("@") or p.endswith("default"):
@@ -120,28 +125,24 @@ def _config_settings(dependencies_by_platform, native = native):
         os = "" if os == "anyos" else os
         arch = "" if arch == "anyarch" else arch
 
-        constraint_values = []
+        _kwargs = dict(kwargs)
         if arch:
-            constraint_values.append("@platforms//cpu:{}".format(arch))
+            _kwargs.setdefault("constraint_values", []).append("@platforms//cpu:{}".format(arch))
         if os:
-            constraint_values.append("@platforms//os:{}".format(os))
+            _kwargs.setdefault("constraint_values", []).append("@platforms//os:{}".format(os))
 
         if abi:
-            flag_values = {
+            _kwargs["flag_values"] = {
                 "@rules_python//python/config_settings:python_version_major_minor": "3.{minor_version}".format(
                     minor_version = abi[len("cp3"):],
                 ),
             }
-        else:
-            flag_values = None
 
         native.config_setting(
             name = "is_{name}".format(
                 name = p.replace("cp3", "python_3."),
             ),
-            flag_values = flag_values,
-            constraint_values = constraint_values,
-            visibility = ["//visibility:private"],
+            **_kwargs
         )
 
 def _copy_file(src, dest, *, rule, **kwargs):

@@ -70,43 +70,42 @@ def _test_platforms(env):
     )
 
     env.expect.that_collection(calls).contains_exactly([
-        dict(
-            name = "is_python_3.10_linux_ppc",
-            flag_values = {
+        {
+            "name": "is_python_3.10_linux_ppc",
+            "flag_values": {
                 "@rules_python//python/config_settings:python_version_major_minor": "3.10",
             },
-            constraint_values = [
+            "constraint_values": [
                 "@platforms//cpu:ppc",
                 "@platforms//os:linux",
             ],
-            visibility = ["//visibility:private"],
-        ),
-        dict(
-            name = "is_python_3.9_anyos_aarch64",
-            flag_values = {
+            "visibility": ["//visibility:private"],
+        },
+        {
+            "name": "is_python_3.9_anyos_aarch64",
+            "flag_values": {
                 "@rules_python//python/config_settings:python_version_major_minor": "3.9",
             },
-            constraint_values = ["@platforms//cpu:aarch64"],
-            visibility = ["//visibility:private"],
-        ),
-        dict(
-            name = "is_python_3.9_linux_anyarch",
-            flag_values = {
+            "constraint_values": ["@platforms//cpu:aarch64"],
+            "visibility": ["//visibility:private"],
+        },
+        {
+            "name": "is_python_3.9_linux_anyarch",
+            "flag_values": {
                 "@rules_python//python/config_settings:python_version_major_minor": "3.9",
             },
-            constraint_values = ["@platforms//os:linux"],
-            visibility = ["//visibility:private"],
-        ),
-        dict(
-            name = "is_linux_x86_64",
-            flag_values = None,
-            constraint_values = [
+            "constraint_values": ["@platforms//os:linux"],
+            "visibility": ["//visibility:private"],
+        },
+        {
+            "name": "is_linux_x86_64",
+            "constraint_values": [
                 "@platforms//cpu:x86_64",
                 "@platforms//os:linux",
             ],
-            visibility = ["//visibility:private"],
-        ),
-    ])
+            "visibility": ["//visibility:private"],
+        },
+    ])  # buildifier: @unsorted-dict-items
 
 _tests.append(_test_platforms)
 
@@ -160,13 +159,13 @@ def _test_entrypoints(env):
 
     env.expect.that_collection(calls).contains_exactly([
         {
-            "deps": [":pkg"],
-            "imports": ["."],
             "name": "rules_python_wheel_entry_point_fizz",
             "srcs": ["buzz.py"],
+            "deps": [":pkg"],
+            "imports": ["."],
             "visibility": ["//visibility:public"],
         },
-    ])
+    ])  # buildifier: @unsorted-dict-items
 
 _tests.append(_test_entrypoints)
 
