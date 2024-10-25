@@ -212,6 +212,7 @@ def _test_whl_and_library_deps(env):
             filegroup = lambda **kwargs: filegroup_calls.append(kwargs),
             config_setting = lambda **_: None,
             glob = _glob,
+            select = _select,
         ),
         rules = struct(
             py_library = lambda **kwargs: py_library_calls.append(kwargs),
@@ -225,7 +226,7 @@ def _test_whl_and_library_deps(env):
             "data": [
                 "@pypi_bar_baz//:whl",
                 "@pypi_foo//:whl",
-            ] + select(
+            ] + _select(
                 {
                     Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:whl"],
                     "@platforms//cpu:aarch64": ["@pypi_arm_dep//:whl"],
@@ -256,7 +257,7 @@ def _test_whl_and_library_deps(env):
             "deps": [
                 "@pypi_bar_baz//:pkg",
                 "@pypi_foo//:pkg",
-            ] + select(
+            ] + _select(
                 {
                     Label("//python/config_settings:is_python_3.9"): ["@pypi_py39_dep//:pkg"],
                     "@platforms//cpu:aarch64": ["@pypi_arm_dep//:pkg"],
@@ -300,6 +301,7 @@ def _test_group(env):
             config_setting = lambda **_: None,
             glob = _glob,
             alias = lambda **kwargs: alias_calls.append(kwargs),
+            select = _select,
         ),
         rules = struct(
             py_library = lambda **kwargs: py_library_calls.append(kwargs),
@@ -319,7 +321,7 @@ def _test_group(env):
                 exclude = ["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
             ),
             "imports": ["site-packages"],
-            "deps": ["@pypi_bar_baz//:pkg"] + select({
+            "deps": ["@pypi_bar_baz//:pkg"] + _select({
                 "@platforms//os:linux": ["@pypi_box//:pkg"],
                 ":is_linux_x86_64": ["@pypi_box//:pkg", "@pypi_box_amd64//:pkg"],
                 "//conditions:default": [],
@@ -334,6 +336,13 @@ _tests.append(_test_group)
 def _glob(*args, **kwargs):
     return [struct(
         glob = args,
+        kwargs = kwargs,
+    )]
+
+def _select(*args, **kwargs):
+    """We need to have this mock select because we still need to support bazel 6."""
+    return [struct(
+        select = args,
         kwargs = kwargs,
     )]
 

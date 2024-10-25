@@ -211,6 +211,7 @@ def whl_library_targets(
                 deps = dependencies,
                 deps_by_platform = dependencies_by_platform,
                 tmpl = dep_template.format(name = "{}", target = WHEEL_FILE_PUBLIC_LABEL),
+                select = getattr(native, "select", select),
             ),
             visibility = impl_vis,
         )
@@ -250,6 +251,7 @@ def whl_library_targets(
                 deps = dependencies,
                 deps_by_platform = dependencies_by_platform,
                 tmpl = dep_template.format(name = "{}", target = PY_LIBRARY_PUBLIC_LABEL),
+                select = getattr(native, "select", select),
             ),
             tags = tags,
             visibility = impl_vis,
@@ -313,7 +315,7 @@ def _plat_label(plat):
     else:
         return ":is_" + plat.replace("cp3", "python_3.")
 
-def _deps(deps, deps_by_platform, tmpl):
+def _deps(deps, deps_by_platform, tmpl, select = select):
     deps = [tmpl.format(d) for d in sorted(deps)]
 
     if not deps_by_platform:
