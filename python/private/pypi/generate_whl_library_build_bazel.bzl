@@ -52,6 +52,7 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {dependencies_by_platform},
 )
 
 filegroup(
@@ -116,68 +117,6 @@ def _render_list_and_select(deps, deps_by_platform, tmpl):
         return deps_by_platform
     else:
         return "{} + {}".format(deps, deps_by_platform)
-
-def _render_config_settings(dependencies_by_platform):
-    loads = []
-    additional_content = []
-    for p in dependencies_by_platform:
-        # p can be one of the following formats:
-        # * //conditions:default
-        # * @platforms//os:{value}
-        # * @platforms//cpu:{value}
-        # * @//python/config_settings:is_python_3.{minor_version}
-        # * {os}_{cpu}
-        # * cp3{minor_version}_{os}_{cpu}
-        if p.startswith("@") or p.endswith("default"):
-            continue
-
-        abi, _, tail = p.partition("_")
-        if not abi.startswith("cp"):
-            tail = p
-            abi = ""
-
-        os, _, arch = tail.partition("_")
-        os = "" if os == "anyos" else os
-        arch = "" if arch == "anyarch" else arch
-
-        constraint_values = []
-        if arch:
-            constraint_values.append("@platforms//cpu:{}".format(arch))
-        if os:
-            constraint_values.append("@platforms//os:{}".format(os))
-
-        constraint_values_str = render.indent(render.list(constraint_values)).lstrip()
-
-        if abi:
-            additional_content.append(
-                """\
-config_setting(
-    name = "is_{name}",
-    flag_values = {{
-        "@rules_python//python/config_settings:python_version_major_minor": "3.{minor_version}",
-    }},
-    constraint_values = {constraint_values},
-    visibility = ["//visibility:private"],
-)""".format(
-                    name = p.replace("cp3", "python_3."),
-                    minor_version = abi[len("cp3"):],
-                    constraint_values = constraint_values_str,
-                ),
-            )
-        else:
-            additional_content.append(
-                """\
-config_setting(
-    name = "is_{name}",
-    constraint_values = {constraint_values},
-    visibility = ["//visibility:private"],
-)""".format(
-                    name = p.replace("cp3", "python_3."),
-                    constraint_values = constraint_values_str,
-                ),
-            )
-
-    return loads, "\n\n".join(additional_content)
 
 def generate_whl_library_build_bazel(
         *,
@@ -287,13 +226,6 @@ def generate_whl_library_build_bazel(
         """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
     ]
 
-    loads_, config_settings_content = _render_config_settings(dependencies_by_platform)
-    if config_settings_content:
-        for line in loads_:
-            if line not in loads:
-                loads.append(line)
-        additional_content.append(config_settings_content)
-
     lib_dependencies = _render_list_and_select(
         deps = dependencies,
         deps_by_platform = dependencies_by_platform,
@@ -321,7 +253,6 @@ def generate_whl_library_build_bazel(
             target = "__pkg__",
         )]
         additional_content.extend([
-            "",
             render.alias(
                 name = PY_LIBRARY_PUBLIC_LABEL,
                 actual = repr(label_tmpl.format(PY_LIBRARY_PUBLIC_LABEL)),
@@ -351,6 +282,10 @@ def generate_whl_library_build_bazel(
                 loads = "\n".join(sorted(loads)),
                 py_library_label = py_library_label,
                 dependencies = render.indent(lib_dependencies, " " * 4).lstrip(),
+                dependencies_by_platform = render.indent(
+                    render.dict(dependencies_by_platform, value_repr = render.list),
+                    " " * 4,
+                ).lstrip(),
                 whl_file_deps = render.indent(whl_file_deps, " " * 4).lstrip(),
                 data_exclude = repr(_data_exclude),
                 whl_name = whl_name,

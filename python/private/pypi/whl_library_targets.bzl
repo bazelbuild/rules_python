@@ -23,6 +23,7 @@ load(
 def whl_library_targets(
         name,
         *,
+        dependencies_by_platform = {},
         filegroups = {
             DIST_INFO_LABEL: ["site-packages/*.dist-info/**"],
             DATA_LABEL: ["data/**"],
@@ -34,6 +35,8 @@ def whl_library_targets(
         name: {type}`str` Currently unused.
         filegroups: {type}`dict[str, list[str]]` A dictionary of the target
             names and the glob matches.
+        dependencies_by_platform: {type}`dict[str, list[str]]` A list of
+            dependencies by platform key.
         native: {type}`native` The native struct for overriding in tests.
     """
     _ = name  # buildifier: @unused
@@ -41,4 +44,57 @@ def whl_library_targets(
         native.filegroup(
             name = name,
             srcs = native.glob(glob, allow_empty = True),
+        )
+
+    _config_settings(dependencies_by_platform.keys(), native = native)
+
+def _config_settings(dependencies_by_platform, native = native):
+    """Generate config settings for the targets.
+
+    Args:
+        dependencies_by_platform: {type}`list[str]` platform keys, can be
+            one of the following formats:
+            * `//conditions:default`
+            * `@platforms//os:{value}`
+            * `@platforms//cpu:{value}`
+            * `@//python/config_settings:is_python_3.{minor_version}`
+            * `{os}_{cpu}`
+            * `cp3{minor_version}_{os}_{cpu}`
+        native: {type}`native` The native struct for overriding in tests.
+    """
+    for p in dependencies_by_platform:
+        if p.startswith("@") or p.endswith("default"):
+            continue
+
+        abi, _, tail = p.partition("_")
+        if not abi.startswith("cp"):
+            tail = p
+            abi = ""
+
+        os, _, arch = tail.partition("_")
+        os = "" if os == "anyos" else os
+        arch = "" if arch == "anyarch" else arch
+
+        constraint_values = []
+        if arch:
+            constraint_values.append("@platforms//cpu:{}".format(arch))
+        if os:
+            constraint_values.append("@platforms//os:{}".format(os))
+
+        if abi:
+            flag_values = {
+                "@rules_python//python/config_settings:python_version_major_minor": "3.{minor_version}".format(
+                    minor_version = abi[len("cp3"):],
+                ),
+            }
+        else:
+            flag_values = None
+
+        native.config_setting(
+            name = "is_{name}".format(
+                name = p.replace("cp3", "python_3."),
+            ),
+            flag_values = flag_values,
+            constraint_values = constraint_values,
+            visibility = ["//visibility:private"],
         )

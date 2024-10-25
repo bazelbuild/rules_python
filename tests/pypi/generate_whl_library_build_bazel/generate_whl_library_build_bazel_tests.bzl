@@ -29,6 +29,7 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {},
 )
 
 filegroup(
@@ -89,6 +90,15 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {
+        "@//python/config_settings:is_python_3.9": ["py39_dep"],
+        "@platforms//cpu:aarch64": ["arm_dep"],
+        "@platforms//os:windows": ["win_dep"],
+        "cp310_linux_ppc": ["py310_linux_ppc_dep"],
+        "cp39_anyos_aarch64": ["py39_arm_dep"],
+        "cp39_linux_anyarch": ["py39_linux_dep"],
+        "linux_x86_64": ["linux_intel_dep"],
+    },
 )
 
 filegroup(
@@ -146,45 +156,6 @@ py_library(
     tags = ["tag1", "tag2"],
     visibility = ["//visibility:public"],
 )
-
-config_setting(
-    name = "is_python_3.10_linux_ppc",
-    flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.10",
-    },
-    constraint_values = [
-        "@platforms//cpu:ppc",
-        "@platforms//os:linux",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-config_setting(
-    name = "is_python_3.9_anyos_aarch64",
-    flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.9",
-    },
-    constraint_values = ["@platforms//cpu:aarch64"],
-    visibility = ["//visibility:private"],
-)
-
-config_setting(
-    name = "is_python_3.9_linux_anyarch",
-    flag_values = {
-        "@rules_python//python/config_settings:python_version_major_minor": "3.9",
-    },
-    constraint_values = ["@platforms//os:linux"],
-    visibility = ["//visibility:private"],
-)
-
-config_setting(
-    name = "is_linux_x86_64",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
-    ],
-    visibility = ["//visibility:private"],
-)
 """
     actual = generate_whl_library_build_bazel(
         dep_template = "@pypi_{name}//:{target}",
@@ -218,6 +189,7 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {},
 )
 
 filegroup(
@@ -301,6 +273,7 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {},
 )
 
 filegroup(
@@ -370,6 +343,13 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {
+        "linux_x86_64": [
+            "box",
+            "box_amd64",
+        ],
+        "@platforms//os:linux": ["box"],
+    },
 )
 
 filegroup(
@@ -418,15 +398,6 @@ py_library(
     visibility = ["@pypi__groups//:__pkg__"],
 )
 
-config_setting(
-    name = "is_linux_x86_64",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
-    ],
-    visibility = ["//visibility:private"],
-)
-
 alias(
     name = "pkg",
     actual = "@pypi__groups//:qux_pkg",
@@ -467,6 +438,13 @@ package(default_visibility = ["//visibility:public"])
 
 whl_library_targets(
     name = "unused",
+    dependencies_by_platform = {
+        "linux_x86_64": [
+            "box",
+            "box_amd64",
+        ],
+        "@platforms//os:linux": ["box"],
+    },
 )
 
 filegroup(
@@ -513,15 +491,6 @@ py_library(
     ),
     tags = [],
     visibility = ["@pypi//:__subpackages__"],
-)
-
-config_setting(
-    name = "is_linux_x86_64",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
-    ],
-    visibility = ["//visibility:private"],
 )
 """
     actual = generate_whl_library_build_bazel(

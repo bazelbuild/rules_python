@@ -47,6 +47,68 @@ def _test_filegroups(env):
 
 _tests.append(_test_filegroups)
 
+def _test_platforms(env):
+    calls = []
+
+    whl_library_targets(
+        name = "dummy",
+        dependencies_by_platform = {
+            "@//python/config_settings:is_python_3.9": ["py39_dep"],
+            "@platforms//cpu:aarch64": ["arm_dep"],
+            "@platforms//os:windows": ["win_dep"],
+            "cp310_linux_ppc": ["py310_linux_ppc_dep"],
+            "cp39_anyos_aarch64": ["py39_arm_dep"],
+            "cp39_linux_anyarch": ["py39_linux_dep"],
+            "linux_x86_64": ["linux_intel_dep"],
+        },
+        native = struct(
+            filegroup = lambda **kwargs: kwargs,
+            glob = lambda *args, **kwargs: (args, kwargs),
+            config_setting = lambda **kwargs: calls.append(kwargs),
+        ),
+    )
+
+    env.expect.that_collection(calls).contains_exactly([
+        dict(
+            name = "is_python_3.10_linux_ppc",
+            flag_values = {
+                "@rules_python//python/config_settings:python_version_major_minor": "3.10",
+            },
+            constraint_values = [
+                "@platforms//cpu:ppc",
+                "@platforms//os:linux",
+            ],
+            visibility = ["//visibility:private"],
+        ),
+        dict(
+            name = "is_python_3.9_anyos_aarch64",
+            flag_values = {
+                "@rules_python//python/config_settings:python_version_major_minor": "3.9",
+            },
+            constraint_values = ["@platforms//cpu:aarch64"],
+            visibility = ["//visibility:private"],
+        ),
+        dict(
+            name = "is_python_3.9_linux_anyarch",
+            flag_values = {
+                "@rules_python//python/config_settings:python_version_major_minor": "3.9",
+            },
+            constraint_values = ["@platforms//os:linux"],
+            visibility = ["//visibility:private"],
+        ),
+        dict(
+            name = "is_linux_x86_64",
+            flag_values = None,
+            constraint_values = [
+                "@platforms//cpu:x86_64",
+                "@platforms//os:linux",
+            ],
+            visibility = ["//visibility:private"],
+        ),
+    ])
+
+_tests.append(_test_platforms)
+
 def whl_library_targets_test_suite(name):
     """create the test suite.
 
