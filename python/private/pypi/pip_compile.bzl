@@ -67,6 +67,7 @@ def pip_compile(
               [PEP621](https://peps.python.org/pep-0621/).
         extra_args: passed to pip-compile.
         extra_deps: extra dependencies passed to pip-compile.
+        extra_data: extra data passed to pip-compile.
         generate_hashes: whether to put hashes in the requirements_txt file.
         py_binary: the py_binary rule to be used.
         py_test: the py_test rule to be used.
