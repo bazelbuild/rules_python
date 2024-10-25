@@ -153,6 +153,7 @@ def generate_whl_library_build_bazel(
         data.extend(annotation.data)
         data_exclude.extend(annotation.data_exclude_glob)
         srcs_exclude.extend(annotation.srcs_exclude_glob)
+
         if annotation.additive_build_content:
             additional_content.append(annotation.additive_build_content)
 

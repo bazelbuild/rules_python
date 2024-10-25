@@ -32,6 +32,7 @@ def _test_filegroups(env):
             filegroup = lambda **kwargs: calls.append(kwargs),
             glob = glob,
         ),
+        rules = struct(),
     )
 
     env.expect.that_collection(calls).contains_exactly([
@@ -44,6 +45,9 @@ def _test_filegroups(env):
             "name": "data",
             "srcs": ["data/**"],
             "visibility": ["//visibility:public"],
+        },
+        {
+            "name": "TODO",
         },
     ])
 
@@ -67,6 +71,7 @@ def _test_platforms(env):
         native = struct(
             config_setting = lambda **kwargs: calls.append(kwargs),
         ),
+        rules = struct(),
     )
 
     env.expect.that_collection(calls).contains_exactly([
@@ -118,6 +123,7 @@ def _test_copy(env):
         filegroups = {},
         copy_files = {"file_src": "file_dest"},
         copy_executables = {"exec_src": "exec_dest"},
+        native = struct(),
         rules = struct(
             copy_file = lambda **kwargs: calls.append(kwargs),
         ),

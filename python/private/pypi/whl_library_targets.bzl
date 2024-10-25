@@ -16,6 +16,7 @@
 
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("//python:py_binary.bzl", "py_binary")
+load("//python:py_library.bzl", "py_library")
 load(
     ":labels.bzl",
     "DATA_LABEL",
@@ -39,6 +40,7 @@ def whl_library_targets(
         rules = struct(
             copy_file = copy_file,
             py_binary = py_binary,
+            py_library = py_library,
         )):
     """Create all of the whl_library targets.
 
@@ -99,6 +101,16 @@ def whl_library_targets(
             imports = ["."],
             deps = [":" + PY_LIBRARY_PUBLIC_LABEL],
             visibility = ["//visibility:public"],
+        )
+
+    if hasattr(native, "filegroup"):
+        native.filegroup(
+            name = "TODO",
+        )
+
+    if hasattr(rules, "py_library"):
+        rules.py_library(
+            name = "TODO",
         )
 
 def _config_settings(dependencies_by_platform, native = native, **kwargs):
