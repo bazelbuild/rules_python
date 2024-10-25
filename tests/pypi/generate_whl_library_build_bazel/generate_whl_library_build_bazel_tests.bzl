@@ -23,6 +23,8 @@ def _test_all(env):
     want = """\
 load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 
+package(default_visibility = ["//visibility:public"])
+
 whl_library_targets(
     copy_executables = {
         "exec_src": "exec_dest",

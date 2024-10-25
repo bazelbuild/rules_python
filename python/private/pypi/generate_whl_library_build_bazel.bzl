@@ -59,6 +59,11 @@ def generate_whl_library_build_bazel(
         [
             """load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")""",
             "",
+            # NOTE @aignas 2024-10-25: We have to keep this so that files in
+            # this repository can be publicly visible without the need for
+            # export_files
+            """package(default_visibility = ["//visibility:public"])""",
+            "",
             "whl_library_targets(",
         ] + [
             render.indent("{} = {},".format(k, _RENDER.get(k, repr)(v)))
