@@ -18,8 +18,6 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load("//python/private:text_util.bzl", "render")
 load(
     ":labels.bzl",
-    "DATA_LABEL",
-    "DIST_INFO_LABEL",
     "PY_LIBRARY_IMPL_LABEL",
     "PY_LIBRARY_PUBLIC_LABEL",
     "WHEEL_ENTRY_POINT_PREFIX",
@@ -52,14 +50,8 @@ _BUILD_TEMPLATE = """\
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "{dist_info_label}",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "{data_label}",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -291,6 +283,7 @@ def generate_whl_library_build_bazel(
 
     loads = [
         """load("@rules_python//python:defs.bzl", "py_library", "py_binary")""",
+        """load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")""",
         """load("@bazel_skylib//rules:copy_file.bzl", "copy_file")""",
     ]
 
@@ -363,8 +356,6 @@ def generate_whl_library_build_bazel(
                 whl_name = whl_name,
                 whl_file_label = whl_file_label,
                 tags = repr(tags),
-                data_label = DATA_LABEL,
-                dist_info_label = DIST_INFO_LABEL,
                 entry_point_prefix = WHEEL_ENTRY_POINT_PREFIX,
                 srcs_exclude = repr(srcs_exclude),
                 data = repr(data),

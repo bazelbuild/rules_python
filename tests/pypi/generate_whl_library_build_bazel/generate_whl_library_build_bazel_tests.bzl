@@ -22,18 +22,13 @@ _tests = []
 def _test_simple(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -87,18 +82,13 @@ _tests.append(_test_simple)
 def _test_dep_selects(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -221,18 +211,13 @@ _tests.append(_test_dep_selects)
 def _test_with_annotation(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -309,18 +294,13 @@ _tests.append(_test_with_annotation)
 def _test_with_entry_points(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -383,18 +363,13 @@ _tests.append(_test_with_entry_points)
 def _test_group_member(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
@@ -485,18 +460,13 @@ _tests.append(_test_group_member)
 def _test_group_member_deps_to_hub(env):
     want = """\
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "dist_info",
-    srcs = glob(["site-packages/*.dist-info/**"], allow_empty = True),
-)
-
-filegroup(
-    name = "data",
-    srcs = glob(["data/**"], allow_empty = True),
+whl_library_targets(
+    name = "unused",
 )
 
 filegroup(
