@@ -35,7 +35,7 @@ def _get_annotation(requirement):
     name = requirement.split(" ")[0].split("=")[0].split("[")[0]
     return _annotations.get(name)
 
-def install_deps(**whl_library_kwargs):
+def install_deps(whl_files = {}, **whl_library_kwargs):
     """Repository rule macro. Install dependencies from `pip_parse`.
 
     Args:
@@ -61,12 +61,23 @@ def install_deps(**whl_library_kwargs):
     for name, requirement in _packages:
         group_name = requirement_group_mapping.get(name.replace("%%NAME%%_", ""))
         group_deps = all_requirement_groups.get(group_name, [])
-
-        whl_library(
-            name = name,
-            requirement = requirement,
-            group_name = group_name,
-            group_deps = group_deps,
-            annotation = _get_annotation(requirement),
-            **whl_config
-        )
+        if "@ file://" in requirement:
+          whl_file = whl_files[name]
+          whl_library(
+              name = name,
+              requirement = requirement,
+              group_name = group_name,
+              group_deps = group_deps,
+              annotation = _get_annotation(requirement),
+              whl_file = whl_file,
+              **whl_config
+          )
+        else:
+            whl_library(
+                name = name,
+                requirement = requirement,
+                group_name = group_name,
+                group_deps = group_deps,
+                annotation = _get_annotation(requirement),
+                **whl_config
+            )
