@@ -162,8 +162,6 @@ py_library(
 )
 """
     actual = generate_whl_library_build_bazel(
-        dep_template = "@pypi_{name}//:{target}",
-        whl_name = "foo.whl",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
@@ -174,6 +172,8 @@ py_library(
             "cp39_linux_anyarch": ["py39_linux_dep"],
             "linux_x86_64": ["linux_intel_dep"],
         },
+        dep_template = "@pypi_{name}//:{target}",
+        whl_name = "foo.whl",
         data_exclude = [],
         tags = ["tag1", "tag2"],
         entry_points = {},

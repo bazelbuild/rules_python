@@ -17,6 +17,7 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_library.bzl", "py_library")
+load("//python/private:normalize_name.bzl", "normalize_name")
 load(
     ":labels.bzl",
     "DATA_LABEL",
@@ -67,6 +68,13 @@ def whl_library_targets(
         rules: {type}`struct` A struct with references to rules for creating targets.
     """
     _ = name  # buildifier: @unused
+
+    dependencies = sorted([normalize_name(d) for d in dependencies])
+    dependencies_by_platform = {
+        platform: sorted([normalize_name(d) for d in deps])
+        for platform, deps in dependencies_by_platform.items()
+    }
+
     for name, glob in filegroups.items():
         native.filegroup(
             name = name,

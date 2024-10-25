@@ -224,8 +224,7 @@ def _test_whl_and_library_deps(env):
             "name": "whl",
             "srcs": ["foo.whl"],
             "data": [
-                # TODO @aignas 2024-10-25:
-                "@pypi_bar-baz//:whl",
+                "@pypi_bar_baz//:whl",
                 "@pypi_foo//:whl",
             ] + select(
                 {
@@ -256,8 +255,7 @@ def _test_whl_and_library_deps(env):
             ),
             "imports": ["site-packages"],
             "deps": [
-                # TODO @aignas 2024-10-25:
-                "@pypi_bar-baz//:pkg",
+                "@pypi_bar_baz//:pkg",
                 "@pypi_foo//:pkg",
             ] + select(
                 {
