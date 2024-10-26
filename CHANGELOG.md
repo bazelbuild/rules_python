@@ -27,19 +27,28 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-- Nothing yet
+* (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
+  version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
+  and no protobuf version specified)
+  ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
+* (publish) The dependencies have been updated to the latest available versions
+  for the `twine` publishing rule.
 
 {#v0-0-0-fixed}
 ### Fixed
-- Nothing yet
+* Nothing yet
 
 {#v0-0-0-added}
 ### Added
-- Nothing yet
+* (publish) The requirements file for the `twine` publishing rules have been
+  updated to have a new convention: `requirements_darwin.txt`,
+  `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
+  and one extra file `requirements_universal.txt` if you prefer a single file.
+  The `requirements.txt` file may be removed in the future.
 
 {#v0-0-0-removed}
 ### Removed
-- Nothing yet
+* Nothing yet
 
 {#v0-37-1}
 ## [0.37.1] - 2024-10-22
