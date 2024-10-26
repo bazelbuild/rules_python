@@ -183,7 +183,7 @@ bzl_library(
     name = "glob_excludes_bzl",
     srcs = ["glob_excludes.bzl"],
     deps = [
-        "@bazel_features//:features",
+        "@bazel_features//:features.bzl",
     ],
 )
 
