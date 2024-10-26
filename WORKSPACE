@@ -21,6 +21,10 @@ load("//:internal_deps.bzl", "rules_python_internal_deps")
 
 rules_python_internal_deps()
 
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
 rules_jvm_external_deps()
