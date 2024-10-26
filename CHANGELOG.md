@@ -23,27 +23,6 @@ A brief description of the categories of changes:
 {#v0-0-0}
 ## Unreleased
 
-### Changed
-- (bzlmod) `pip.parse` spoke repository naming has changed in places where the
-  users specify different package versions per platform in the same hub repository.
-  We advise the users to use the `hub` repository directly to avoid such breakage in
-  the future.
-
-### Added
-- (bzlmod) `pip.parse` now supports `whl-only` setup using 
-  `download_only = True` where users can specify multiple requirements files
-  and use the `pip` backend to do the downloading. This was only available for
-  users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
-  more options whilst we continue to work on stabilizing the experimental feature.
-
-### Fixed
-- (bzlmod) The extension evaluation has been adjusted to always generate the
-  same lock file irrespective if `experimental_index_url` is set by any module
-  or not. Fixes
-  [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
-  issue is that it may break `bazel query` and in these use cases it is
-  advisable to use `cquery` or switch to `download_only = True`
-
 [0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
 
 {#v0-0-0-changed}
@@ -54,10 +33,19 @@ A brief description of the categories of changes:
   ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
 * (publish) The dependencies have been updated to the latest available versions
   for the `twine` publishing rule.
+- (bzlmod) `pip.parse` spoke repository naming has changed in places where the
+  users specify different package versions per platform in the same hub repository.
+  We advise the users to use the `hub` repository directly to avoid such breakage in
+  the future.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet
+- (bzlmod) The extension evaluation has been adjusted to always generate the
+  same lock file irrespective if `experimental_index_url` is set by any module
+  or not. Fixes
+  [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
+  issue is that it may break `bazel query` and in these use cases it is
+  advisable to use `cquery` or switch to `download_only = True`
 
 {#v0-0-0-added}
 ### Added
@@ -66,6 +54,11 @@ A brief description of the categories of changes:
   `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
+- (bzlmod) `pip.parse` now supports `whl-only` setup using 
+  `download_only = True` where users can specify multiple requirements files
+  and use the `pip` backend to do the downloading. This was only available for
+  users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
+  more options whilst we continue to work on stabilizing the experimental feature.
 
 {#v0-0-0-removed}
 ### Removed
