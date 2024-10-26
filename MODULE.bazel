@@ -56,7 +56,9 @@ register_toolchains("@pythons_hub//:all")
 
 pip = use_extension("//python/extensions:pip.bzl", "pip")
 pip.parse(
-    download_only = True,
+    # NOTE @aignas 2024-10-26: We have an integration test that depends on us
+    # being able to build sdists for this hub, so explicitly set this to False.
+    download_only = False,
     experimental_index_url = "https://pypi.org/simple",
     hub_name = "rules_python_publish_deps",
     python_version = "3.11",
