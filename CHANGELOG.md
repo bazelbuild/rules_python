@@ -20,7 +20,10 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+{#v0-0-0}
 ## Unreleased
+
+[0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
 
 ### Changed
 - Nothing yet
@@ -33,6 +36,17 @@ A brief description of the categories of changes:
 
 ### Removed
 - Nothing yet
+
+{#v0-37-2}
+## [0.37.2] - 2024-10-27
+
+[0.37.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.2
+
+{#v0-37-2-fixed}
+### Fixed
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
 
 {#v0-37-1}
 ## [0.37.1] - 2024-10-22
