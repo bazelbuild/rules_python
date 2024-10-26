@@ -241,6 +241,7 @@ def _python_impl(module_ctx):
         # Last toolchain is default
         default_python_version = py.default_python_version,
         minor_mapping = py.config.minor_mapping,
+        python_versions = list(py.config.default["tool_versions"].keys()),
         toolchain_prefixes = [
             render.toolchain_prefix(index, toolchain.name, _TOOLCHAIN_INDEX_PAD_LENGTH)
             for index, toolchain in enumerate(py.toolchains)
