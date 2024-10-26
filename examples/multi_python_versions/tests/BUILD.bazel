@@ -1,9 +1,14 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@python//3.10:defs.bzl", py_binary_3_10 = "py_binary", py_test_3_10 = "py_test")
 load("@python//3.11:defs.bzl", py_binary_3_11 = "py_binary", py_test_3_11 = "py_test")
 load("@python//3.8:defs.bzl", py_binary_3_8 = "py_binary", py_test_3_8 = "py_test")
 load("@python//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 = "py_test")
+load("@pythons_hub//:versions.bzl", "MINOR_MAPPING", "PYTHON_VERSIONS")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+load("@rules_python//python:versions.bzl", DEFAULT_MINOR_MAPPING = "MINOR_MAPPING", DEFAULT_TOOL_VERSIONS = "TOOL_VERSIONS")
+load("@rules_python//python/private:text_util.bzl", "render")  # buildifier: disable=bzl-visibility
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 copy_file(
@@ -182,4 +187,38 @@ sh_test(
         "VERSION_CHECK": "3.10",
         "VERSION_PY_BINARY": "$(rootpath :version_3_10)",
     },
+)
+
+# The following test ensures that default toolchain versions are the same as in
+# the TOOL_VERSIONS array.
+
+# NOTE @aignas 2024-10-26: This test here is to do a sanity check and not
+# include extra dependencies - if rules_testing is included here, we can
+# potentially uses `rules_testing` for a more lightweight test.
+write_file(
+    name = "default_python_versions",
+    out = "default_python_versions.txt",
+    content = [
+        "MINOR_MAPPING:",
+        render.dict(dict(sorted(DEFAULT_MINOR_MAPPING.items()))),
+        "PYTHON_VERSIONS:",
+        render.list(sorted(DEFAULT_TOOL_VERSIONS)),
+    ],
+)
+
+write_file(
+    name = "pythons_hub_versions",
+    out = "pythons_hub_versions.txt",
+    content = [
+        "MINOR_MAPPING:",
+        render.dict(dict(sorted(MINOR_MAPPING.items()))),
+        "PYTHON_VERSIONS:",
+        render.list(sorted(PYTHON_VERSIONS)),
+    ],
+)
+
+diff_test(
+    name = "test_versions",
+    file1 = "default_python_versions",
+    file2 = "pythons_hub_versions",
 )
