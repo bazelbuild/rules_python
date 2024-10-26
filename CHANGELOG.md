@@ -36,7 +36,9 @@ A brief description of the categories of changes:
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
 
 {#v0-0-0-added}
 ### Added
