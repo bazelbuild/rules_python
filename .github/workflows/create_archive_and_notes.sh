@@ -25,9 +25,10 @@ git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip > $ARCHIVE
 SHA=$(shasum -a 256 $ARCHIVE | awk '{print $1}')
 
 cat > release_notes.txt << EOF
-## Using Bzlmod with Bazel 6
 
-**NOTE: bzlmod support is still beta. APIs subject to change.**
+For more detailed setup instructions, see https://rules-python.readthedocs.io/en/latest/getting-started.html
+
+## Using Bzlmod
 
 Add to your \`MODULE.bazel\` file:
 

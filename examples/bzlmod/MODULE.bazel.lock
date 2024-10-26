@@ -7654,8 +7654,8 @@
     },
     "@@rules_python~//python/uv:extensions.bzl%uv": {
       "general": {
-        "bzlTransitiveDigest": "erdJbm7V7XAkG+eWOTPQdxCJy8aKLXh7jWB5ZQm63fo=",
-        "usagesDigest": "uLdEsM0i3cqtN+HXzxfaiFko1ilKeu6F8NWoY1IjdBw=",
+        "bzlTransitiveDigest": "umgu1yR4Wmqb1pJa+9hAcs9dPbeqBsPLceKiaEg3DdQ=",
+        "usagesDigest": "+2swUSSDNmjk5bxS7cNIRrfF+M/iuc8Zc7vI5xUBcRs=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -7664,7 +7664,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "aarch64-unknown-linux-gnu"
             }
           },
@@ -7672,7 +7672,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "aarch64-apple-darwin"
             }
           },
@@ -7680,7 +7680,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "s390x-unknown-linux-gnu"
             }
           },
@@ -7688,7 +7688,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "powerpc64le-unknown-linux-gnu"
             }
           },
@@ -7696,7 +7696,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "x86_64-unknown-linux-gnu"
             }
           },
@@ -7759,7 +7759,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "x86_64-apple-darwin"
             }
           },
@@ -7767,7 +7767,7 @@
             "bzlFile": "@@rules_python~//python/uv:repositories.bzl",
             "ruleClassName": "uv_repository",
             "attributes": {
-              "uv_version": "0.2.23",
+              "uv_version": "0.4.25",
               "platform": "x86_64-pc-windows-msvc"
             }
           }

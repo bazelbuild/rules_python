@@ -231,3 +231,9 @@ def rules_python_internal_deps():
         strip_prefix = "rules_cc-0.0.9",
         urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
     )
+
+    http_archive(
+        name = "rules_multirun",
+        sha256 = "0e124567fa85287874eff33a791c3bbdcc5343329a56faa828ef624380d4607c",
+        url = "https://github.com/keith/rules_multirun/releases/download/0.9.0/rules_multirun.0.9.0.tar.gz",
+    )
