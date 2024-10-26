@@ -68,27 +68,27 @@ UV_PLATFORMS = {
 
 # From: https://github.com/astral-sh/uv/releases
 UV_TOOL_VERSIONS = {
-    "0.2.23": {
+    "0.4.25": {
         "aarch64-apple-darwin": struct(
-            sha256 = "1d41beb151ace9621a0e729d661cfb04d6375bffdaaf0e366d1653576ce3a687",
+            sha256 = "35786030f926e3d34d186edc0ea3989698e57755852af9ae4b39da5109abcbfa",
         ),
         "aarch64-unknown-linux-gnu": struct(
-            sha256 = "c35042255239b75d29b9fd4b0845894b91284ed3ff90c2595d0518b4c8902329",
+            sha256 = "4485852eb8013530c4275cd222c0056ce123f92742321f012610f1b241463f39",
         ),
         "powerpc64le-unknown-linux-gnu": struct(
-            sha256 = "ca16c9456d297e623164e3089d76259c6d70ac40c037dd2068accc3bb1b09d5e",
+            sha256 = "32421c61e8d497243171b28c7efd74f039251256ae9e57ce4a457fdd7d045e24",
         ),
         "s390x-unknown-linux-gnu": struct(
-            sha256 = "55f8c2aa089f382645fce9eed3ee002f2cd48de4696568e7fd63105a02da568c",
+            sha256 = "9afa342d87256f5178a592d3eeb44ece8a93e9359db37e31be1b092226338469",
         ),
         "x86_64-apple-darwin": struct(
-            sha256 = "960d2ae6ec31bcf5da3f66083dedc527712115b97ee43eae903d74a43874fa72",
+            sha256 = "f0ec1f79f4791294382bff242691c6502e95853acef080ae3f7c367a8e1beb6f",
         ),
         "x86_64-pc-windows-msvc": struct(
-            sha256 = "66f80537301c686a801b91468a43dbeb0881bd6d51857078c24f29e5dca8ecf1",
+            sha256 = "c5c7fa084ae4e8ac9e3b0b6c4c7b61e9355eb0c86801c4c7728c0cb142701f38",
         ),
         "x86_64-unknown-linux-gnu": struct(
-            sha256 = "4384db514959beb4de1dcdf7f1f2d5faf664f7180820b0e7a521ef2147e33d1d",
+            sha256 = "6cb6eaf711cd7ce5fb1efaa539c5906374c762af547707a2041c9f6fd207769a",
         ),
     },
 }

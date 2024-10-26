@@ -30,6 +30,7 @@ python.toolchain(
 )
 use_repo(
     python,
+    "pythons_hub",
     python = "python_versions",
 )
 
