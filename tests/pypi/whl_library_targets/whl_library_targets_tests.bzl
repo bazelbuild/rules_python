@@ -27,8 +27,7 @@ def _test_filegroups(env):
         return match
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = "",
+        name = "",
         dep_template = "",
         native = struct(
             filegroup = lambda **kwargs: calls.append(kwargs),
@@ -62,8 +61,7 @@ def _test_platforms(env):
     calls = []
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = None,
+        name = "",
         dep_template = None,
         dependencies_by_platform = {
             "@//python/config_settings:is_python_3.9": ["py39_dep"],
@@ -125,8 +123,7 @@ def _test_copy(env):
     calls = []
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = None,
+        name = "",
         dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
@@ -160,8 +157,7 @@ def _test_entrypoints(env):
     calls = []
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = None,
+        name = "",
         dep_template = None,
         dependencies_by_platform = {},
         filegroups = {},
@@ -191,8 +187,7 @@ def _test_whl_and_library_deps(env):
     py_library_calls = []
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = "foo.whl",
+        name = "foo.whl",
         dep_template = "@pypi_{name}//:{target}",
         dependencies = ["foo", "bar-baz"],
         dependencies_by_platform = {
@@ -281,8 +276,7 @@ def _test_group(env):
     py_library_calls = []
 
     whl_library_targets(
-        name = "dummy",
-        whl_name = "foo.whl",
+        name = "foo.whl",
         dep_template = "@pypi_{name}//:{target}",
         dependencies = ["foo", "bar-baz", "qux"],
         dependencies_by_platform = {

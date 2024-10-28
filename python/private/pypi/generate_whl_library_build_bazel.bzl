@@ -44,7 +44,6 @@ def generate_whl_library_build_bazel(
         A complete BUILD file as a string
     """
 
-    kwargs["name"] = "unused"
     additional_content = []
     if annotation:
         kwargs["data"] = annotation.data

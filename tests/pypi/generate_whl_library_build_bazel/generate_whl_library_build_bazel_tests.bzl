@@ -60,19 +60,18 @@ whl_library_targets(
         "qux",
     ],
     group_name = "qux",
-    name = "unused",
+    name = "foo.whl",
     srcs_exclude = ["srcs_exclude_all"],
     tags = [
         "tag2",
         "tag1",
     ],
-    whl_name = "foo.whl",
 )
 # SOMETHING SPECIAL AT THE END
 """
     actual = generate_whl_library_build_bazel(
         dep_template = "@pypi//{name}:{target}",
-        whl_name = "foo.whl",
+        name = "foo.whl",
         dependencies = ["foo", "bar-baz", "qux"],
         dependencies_by_platform = {
             "linux_x86_64": ["box", "box-amd64"],

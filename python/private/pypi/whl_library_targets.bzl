@@ -30,9 +30,8 @@ load(
 )
 
 def whl_library_targets(
-        name,
         *,
-        whl_name,
+        name,
         dep_template,
         data_exclude = [],
         srcs_exclude = [],
@@ -58,9 +57,8 @@ def whl_library_targets(
     """Create all of the whl_library targets.
 
     Args:
-        name: {type}`str` Currently unused.
-        whl_name: {type}`str` The file to match for including it into the `whl`
-            filegroup.
+        name: {type}`str` The file to match for including it into the `whl`
+            filegroup. This may be also parsed to generate extra metadata.
         dep_template: {type}`str` The dep_template to use for dependency
             interpolation.
         tags: {type}`list[str]` The tags set on the `py_library`.
@@ -101,9 +99,9 @@ def whl_library_targets(
     tags = sorted(tags)
     data = [] + data
 
-    for name, glob in filegroups.items():
+    for filegroup_name, glob in filegroups.items():
         native.filegroup(
-            name = name,
+            name = filegroup_name,
             srcs = native.glob(glob, allow_empty = True),
             visibility = ["//visibility:public"],
         )
@@ -206,7 +204,7 @@ def whl_library_targets(
     if hasattr(native, "filegroup"):
         native.filegroup(
             name = whl_file_label,
-            srcs = [whl_name],
+            srcs = [name],
             data = _deps(
                 deps = dependencies,
                 deps_by_platform = dependencies_by_platform,
