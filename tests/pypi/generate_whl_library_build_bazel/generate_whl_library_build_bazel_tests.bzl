@@ -67,6 +67,7 @@ whl_library_targets(
         "tag1",
     ],
 )
+
 # SOMETHING SPECIAL AT THE END
 """
     actual = generate_whl_library_build_bazel(

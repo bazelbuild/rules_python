@@ -29,6 +29,19 @@ _RENDER = {
     "tags": render.list,
 }
 
+# NOTE @aignas 2024-10-25: We have to keep this so that files in
+# this repository can be publicly visible without the need for
+# export_files
+_TEMPLATE = """\
+load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")
+
+package(default_visibility = ["//visibility:public"])
+
+whl_library_targets(
+{kwargs}
+)
+"""
+
 def generate_whl_library_build_bazel(
         *,
         annotation = None,
@@ -56,19 +69,12 @@ def generate_whl_library_build_bazel(
 
     contents = "\n".join(
         [
-            """load("@rules_python//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")""",
-            "",
-            # NOTE @aignas 2024-10-25: We have to keep this so that files in
-            # this repository can be publicly visible without the need for
-            # export_files
-            """package(default_visibility = ["//visibility:public"])""",
-            "",
-            "whl_library_targets(",
-        ] + [
-            render.indent("{} = {},".format(k, _RENDER.get(k, repr)(v)))
-            for k, v in sorted(kwargs.items())
-        ] + [
-            ")",
+            _TEMPLATE.format(
+                kwargs = render.indent("\n".join([
+                    "{} = {},".format(k, _RENDER.get(k, repr)(v))
+                    for k, v in sorted(kwargs.items())
+                ])),
+            ),
         ] + additional_content,
     )
 
