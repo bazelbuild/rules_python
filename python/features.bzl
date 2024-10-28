@@ -13,6 +13,9 @@
 # limitations under the License.
 """Allows detecting of rules_python features that aren't easily detected."""
 
+_VERSION_PRIVATE = "$Format:%(describe:tags=true)$"
+
 features = struct(
+    version = _VERSION_PRIVATE if '$Format' not in _VERSION_PRIVATE else ''
     precompile = True,
 )
