@@ -14,7 +14,7 @@
 
 "Utilities for glob exclusions."
 
-load("@bazel_features//:features.bzl", "bazel_features")
+load(":util.bzl", "IS_BAZEL_7_4_OR_GREATER")
 
 def _version_dependent_exclusions():
     """Returns glob exclusions that are sensitive to Bazel version.
@@ -22,10 +22,10 @@ def _version_dependent_exclusions():
     Returns:
         a list of glob exclusion patterns
     """
-    if bazel_features.rules.all_characters_allowed_in_runfiles:
-        return []
-    else:
+    if IS_BAZEL_7_4_OR_GREATER:
         return ["**/* *"]
+    else:
+        return []
 
 glob_excludes = struct(
     version_dependent_exclusions = _version_dependent_exclusions,

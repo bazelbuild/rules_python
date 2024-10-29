@@ -99,6 +99,8 @@ def define_bazel_6_provider(doc, fields, **kwargs):
         return provider("Stub, not used", fields = []), None
     return provider(doc = doc, fields = fields, **kwargs)
 
+IS_BAZEL_7_4_OR_HIGHER = hasattr(native, "legacy_globals")
+
 IS_BAZEL_7_OR_HIGHER = hasattr(native, "starlark_doc_extract")
 
 # Bazel 5.4 has a bug where every access of testing.ExecutionInfo is a
