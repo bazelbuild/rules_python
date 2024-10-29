@@ -13,7 +13,9 @@
 # limitations under the License.
 """Implementation of macro-half of py_library rule."""
 
-load(":py_library_rule_bazel.bzl", py_library_rule = "py_library")
+load(":py_library_rule.bzl", py_library_rule = "py_library")
 
+# A wrapper macro is used to avoid any user-observable changes between a
+# rule and macro. It also makes generator_function look as expected.
 def py_library(**kwargs):
     py_library_rule(**kwargs)

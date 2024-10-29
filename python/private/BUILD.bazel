@@ -416,12 +416,12 @@ bzl_library(
 bzl_library(
     name = "py_library_macro_bzl",
     srcs = ["py_library_macro.bzl"],
-    deps = [":py_library_rule_bazel_bzl"],
+    deps = [":py_library_rule_bzl"],
 )
 
 bzl_library(
-    name = "py_library_rule_bazel_bzl",
-    srcs = ["py_library_rule_bazel.bzl"],
+    name = "py_library_rule_bzl",
+    srcs = ["py_library_rule.bzl"],
     deps = [
         ":common_bazel_bzl",
         ":common_bzl",

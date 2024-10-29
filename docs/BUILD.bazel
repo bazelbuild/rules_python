@@ -99,7 +99,7 @@ sphinx_stardocs(
         "//python/entry_points:py_console_script_binary_bzl",
         "//python/private:py_binary_rule_bazel_bzl",
         "//python/private:py_cc_toolchain_rule_bzl",
-        "//python/private:py_library_rule_bazel_bzl",
+        "//python/private:py_library_rule_bzl",
         "//python/private:py_runtime_rule_bzl",
         "//python/private:py_test_rule_bazel_bzl",
         "//python/private/api:py_common_api_bzl",
