@@ -15,7 +15,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
+load(":attributes.bzl", "IMPORTS_ATTRS")
 load(
     ":common.bzl",
     "create_binary_semantics_struct",

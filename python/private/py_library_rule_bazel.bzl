@@ -13,7 +13,7 @@
 # limitations under the License.
 """Implementation of py_library for Bazel."""
 
-load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
+load(":attributes.bzl", "IMPORTS_ATTRS")
 load(":common.bzl", "create_library_semantics_struct", "union_attrs")
 load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
 load(

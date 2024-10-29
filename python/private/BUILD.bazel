@@ -52,12 +52,6 @@ filegroup(
 )
 
 bzl_library(
-    name = "attributes_bazel_bzl",
-    srcs = ["attributes_bazel.bzl"],
-    deps = ["//python/private:rules_cc_srcs_bzl"],
-)
-
-bzl_library(
     name = "attributes_bzl",
     srcs = ["attributes.bzl"],
     deps = [
@@ -345,7 +339,7 @@ bzl_library(
     name = "py_executable_bazel_bzl",
     srcs = ["py_executable_bazel.bzl"],
     deps = [
-        ":attributes_bazel_bzl",
+        ":attributes_bzl",
         ":common_bazel_bzl",
         ":common_bzl",
         ":py_executable_bzl",
@@ -429,7 +423,6 @@ bzl_library(
     name = "py_library_rule_bazel_bzl",
     srcs = ["py_library_rule_bazel.bzl"],
     deps = [
-        ":attributes_bazel_bzl",
         ":common_bazel_bzl",
         ":common_bzl",
         ":py_library_bzl",
