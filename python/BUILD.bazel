@@ -124,7 +124,7 @@ bzl_library(
     name = "py_binary_bzl",
     srcs = ["py_binary.bzl"],
     deps = [
-        "//python/private:py_binary_macro_bazel_bzl",
+        "//python/private:py_binary_macro_bzl",
         "//python/private:register_extension_info_bzl",
         "//python/private:util_bzl",
         "@rules_python_internal//:rules_python_config_bzl",
