@@ -47,6 +47,7 @@ A brief description of the categories of changes:
   `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
+* The rules_python version is now reported in `//python/features.bzl#features.version`
 
 {#v0-0-0-removed}
 ### Removed
