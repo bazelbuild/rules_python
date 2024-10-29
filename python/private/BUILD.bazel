@@ -258,13 +258,13 @@ bzl_library(
     srcs = ["py_binary_macro.bzl"],
     deps = [
         ":common_bzl",
-        ":py_binary_rule_bazel_bzl",
+        ":py_binary_rule_bzl",
     ],
 )
 
 bzl_library(
-    name = "py_binary_rule_bazel_bzl",
-    srcs = ["py_binary_rule_bazel.bzl"],
+    name = "py_binary_rule_bzl",
+    srcs = ["py_binary_rule.bzl"],
     deps = [
         ":attributes_bzl",
         ":py_executable_bazel_bzl",
