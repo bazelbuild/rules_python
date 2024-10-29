@@ -14,7 +14,7 @@
 """Implementation of macro-half of py_test rule."""
 
 load(":common_bazel.bzl", "convert_legacy_create_init_to_int")
-load(":py_test_rule_bazel.bzl", py_test_rule = "py_test")
+load(":py_test_rule.bzl", py_test_rule = "py_test")
 
 def py_test(**kwargs):
     convert_legacy_create_init_to_int(kwargs)

@@ -499,13 +499,13 @@ bzl_library(
     srcs = ["py_test_macro.bzl"],
     deps = [
         ":common_bazel_bzl",
-        ":py_test_rule_bazel_bzl",
+        ":py_test_rule_bzl",
     ],
 )
 
 bzl_library(
-    name = "py_test_rule_bazel_bzl",
-    srcs = ["py_test_rule_bazel.bzl"],
+    name = "py_test_rule_bzl",
+    srcs = ["py_test_rule.bzl"],
     deps = [
         ":attributes_bzl",
         ":common_bzl",
