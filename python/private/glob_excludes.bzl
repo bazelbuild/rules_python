@@ -23,9 +23,9 @@ def _version_dependent_exclusions():
         a list of glob exclusion patterns
     """
     if IS_BAZEL_7_4_OR_HIGHER:
-        return ["**/* *"]
-    else:
         return []
+    else:
+        return ["**/* *"]
 
 glob_excludes = struct(
     version_dependent_exclusions = _version_dependent_exclusions,
