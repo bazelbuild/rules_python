@@ -62,22 +62,15 @@ def install_deps(whl_files = {}, **whl_library_kwargs):
         group_name = requirement_group_mapping.get(name.replace("%%NAME%%_", ""))
         group_deps = all_requirement_groups.get(group_name, [])
         if "@ file://" in requirement:
-          whl_file = whl_files[name]
-          whl_library(
-              name = name,
-              requirement = requirement,
-              group_name = group_name,
-              group_deps = group_deps,
-              annotation = _get_annotation(requirement),
-              whl_file = whl_file,
-              **whl_config
-          )
+            whl_file = whl_files[name]
         else:
-            whl_library(
-                name = name,
-                requirement = requirement,
-                group_name = group_name,
-                group_deps = group_deps,
-                annotation = _get_annotation(requirement),
-                **whl_config
-            )
+            whl_file = None
+        whl_library(
+            name = name,
+            requirement = requirement,
+            group_name = group_name,
+            group_deps = group_deps,
+            annotation = _get_annotation(requirement),
+            whl_file = whl_file,
+            **whl_config
+        )
