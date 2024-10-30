@@ -15,7 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:glob_excludes.bzl", "glob_excludes")
+load("//python/private:glob_excludes.bzl", "glob_excludes")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")  # buildifier: disable=bzl-visibility
 
 _tests = []
