@@ -14,7 +14,7 @@
 """Implementation of macro-half of py_binary rule."""
 
 load(":common_bazel.bzl", "convert_legacy_create_init_to_int")
-load(":py_binary_rule_bazel.bzl", py_binary_rule = "py_binary")
+load(":py_binary_rule.bzl", py_binary_rule = "py_binary")
 
 def py_binary(**kwargs):
     convert_legacy_create_init_to_int(kwargs)

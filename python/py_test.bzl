@@ -15,7 +15,7 @@
 """Public entry point for py_test."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
-load("//python/private:py_test_macro_bazel.bzl", _starlark_py_test = "py_test")
+load("//python/private:py_test_macro.bzl", _starlark_py_test = "py_test")
 load("//python/private:register_extension_info.bzl", "register_extension_info")
 load("//python/private:util.bzl", "add_migration_tag")
 
