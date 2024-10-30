@@ -230,7 +230,7 @@ def _whl_library_impl(rctx):
             # and, allow getting build dependencies from PYTHONPATH, which we
             # setup in this repository rule, but still download any necessary
             # build deps from PyPI (e.g. `flit_core`) if they are missing.
-            extra_pip_args.extend(["--no-build-isolation", "--find-links", "."])
+            extra_pip_args.extend(["--find-links", "."])
 
     args = _parse_optional_attrs(rctx, args, extra_pip_args)
 

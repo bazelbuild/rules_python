@@ -33,6 +33,10 @@ A brief description of the categories of changes:
   ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
 * (publish) The dependencies have been updated to the latest available versions
   for the `twine` publishing rule.
+* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
+  by default. Users wishing to keep this argument and to enforce more hermetic
+  builds can do so by passing the argument in
+  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 
 {#v0-0-0-fixed}
 ### Fixed
