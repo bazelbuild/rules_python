@@ -15,6 +15,7 @@
 ""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
+load("//python/private:glob_excludes.bzl", "glob_excludes")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:whl_library_targets.bzl", "whl_library_targets")  # buildifier: disable=bzl-visibility
 
 _tests = []
@@ -246,7 +247,12 @@ def _test_whl_and_library_deps(env):
             ),
             "data": [] + _glob(
                 ["site-packages/**/*"],
-                exclude = ["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+                exclude = [
+                    "**/*.py",
+                    "**/*.pyc",
+                    "**/*.pyc.*",
+                    "**/*.dist-info/RECORD",
+                ] + glob_excludes.version_dependent_exclusions(),
             ),
             "imports": ["site-packages"],
             "deps": [
@@ -312,7 +318,12 @@ def _test_group(env):
             "srcs": _glob(["site-packages/**/*.py"], exclude = [], allow_empty = True),
             "data": [] + _glob(
                 ["site-packages/**/*"],
-                exclude = ["**/* *", "**/*.py", "**/*.pyc", "**/*.pyc.*", "**/*.dist-info/RECORD"],
+                exclude = [
+                    "**/*.py",
+                    "**/*.pyc",
+                    "**/*.pyc.*",
+                    "**/*.dist-info/RECORD",
+                ] + glob_excludes.version_dependent_exclusions(),
             ),
             "imports": ["site-packages"],
             "deps": ["@pypi_bar_baz//:pkg"] + _select({

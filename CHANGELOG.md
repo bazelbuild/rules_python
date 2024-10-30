@@ -39,6 +39,8 @@ A brief description of the categories of changes:
 * (bzlmod) Generate `config_setting` values for all available toolchains instead
   of only the registered toolchains, which restores the previous behaviour that
   `bzlmod` users would have observed.
+* (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
+  ([617](https://github.com/bazelbuild/rules_python/issues/617)).
 
 {#v0-0-0-added}
 ### Added
