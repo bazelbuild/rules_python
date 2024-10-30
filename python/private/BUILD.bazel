@@ -702,6 +702,14 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "site_init_template",
+    srcs = ["site_init_template.py"],
+    # Not actually public. Only public because it's an implicit dependency of
+    # py_runtime.
+    visibility = ["//visibility:public"],
+)
+
 # NOTE: Windows builds don't use this bootstrap. Instead, a native Windows
 # program locates some Python exe and runs `python.exe foo.zip` which
 # runs the __main__.py in the zip file.

@@ -24,12 +24,6 @@ import uuid
 
 # Runfiles-relative path to the main Python source file.
 MAIN = "%main%"
-# Colon-delimited string of runfiles-relative import paths to add
-IMPORTS_STR = "%imports%"
-WORKSPACE_NAME = "%workspace_name%"
-# Though the import all value is the correct literal, we quote it
-# so this file is parsable by tools.
-IMPORT_ALL = True if "%import_all%" == "True" else False
 # Runfiles-relative path to the coverage tool entry point, if any.
 COVERAGE_TOOL = "%coverage_tool%"
 
@@ -120,17 +114,17 @@ def is_verbose_coverage():
     return os.environ.get("VERBOSE_COVERAGE") or is_verbose()
 
 
-def find_coverage_entry_point(module_space):
-    cov_tool = COVERAGE_TOOL
-    if cov_tool:
-        print_verbose_coverage("Using toolchain coverage_tool %r" % cov_tool)
-    else:
-        cov_tool = os.environ.get("PYTHON_COVERAGE")
-        if cov_tool:
-            print_verbose_coverage("PYTHON_COVERAGE: %r" % cov_tool)
-    if cov_tool:
-        return find_binary(module_space, cov_tool)
-    return None
+##def find_coverage_entry_point(module_space):
+##    cov_tool = COVERAGE_TOOL
+##    if cov_tool:
+##        print_verbose_coverage("Using toolchain coverage_tool %r" % cov_tool)
+##    else:
+##        cov_tool = os.environ.get("PYTHON_COVERAGE")
+##        if cov_tool:
+##            print_verbose_coverage("PYTHON_COVERAGE: %r" % cov_tool)
+##    if cov_tool:
+##        return find_binary(module_space, cov_tool)
+##    return None
 
 
 def find_binary(module_space, bin_name):
@@ -154,9 +148,9 @@ def find_binary(module_space, bin_name):
         return search_path(bin_name)
 
 
-def create_python_path_entries(python_imports, module_space):
-    parts = python_imports.split(":")
-    return [module_space] + ["%s/%s" % (module_space, path) for path in parts]
+##def create_python_path_entries(python_imports, module_space):
+##    parts = python_imports.split(":")
+##    return [module_space] + ["%s/%s" % (module_space, path) for path in parts]
 
 
 def find_runfiles_root(main_rel_path):
@@ -204,12 +198,12 @@ def find_runfiles_root(main_rel_path):
 
 
 # Returns repository roots to add to the import path.
-def get_repositories_imports(module_space, import_all):
-    if import_all:
-        repo_dirs = [os.path.join(module_space, d) for d in os.listdir(module_space)]
-        repo_dirs.sort()
-        return [d for d in repo_dirs if os.path.isdir(d)]
-    return [os.path.join(module_space, WORKSPACE_NAME)]
+##def get_repositories_imports(module_space, import_all):
+##    if import_all:
+##        repo_dirs = [os.path.join(module_space, d) for d in os.listdir(module_space)]
+##        repo_dirs.sort()
+##        return [d for d in repo_dirs if os.path.isdir(d)]
+##    return [os.path.join(module_space, WORKSPACE_NAME)]
 
 
 def runfiles_envvar(module_space):
@@ -430,31 +424,30 @@ def main():
     #
     # To replicate this behavior, we add main's directory within the runfiles
     # when safe path isn't enabled.
+    python_path_entries = []
+    prepend_path_entries = []
     if not getattr(sys.flags, "safe_path", False):
         prepend_path_entries = [
             os.path.join(module_space, os.path.dirname(main_rel_path))
         ]
     else:
         prepend_path_entries = []
-    python_path_entries = create_python_path_entries(IMPORTS_STR, module_space)
-    python_path_entries += get_repositories_imports(module_space, IMPORT_ALL)
+    ##python_path_entries = create_python_path_entries(IMPORTS_STR, module_space)
+    ##python_path_entries += get_repositories_imports(module_space, IMPORT_ALL)
     python_path_entries = [
         get_windows_path_with_unc_prefix(d) for d in python_path_entries
     ]
 
     # Remove duplicates to avoid overly long PYTHONPATH (#10977). Preserve order,
     # keep first occurrence only.
-    python_path_entries = deduplicate(python_path_entries)
+    python_path_entries = list(deduplicate(python_path_entries))
 
-    if is_windows():
-        python_path_entries = [p.replace("/", os.sep) for p in python_path_entries]
-    else:
-        # deduplicate returns a generator, but we need a list after this.
-        python_path_entries = list(python_path_entries)
+    ##if is_windows():
+    ##    python_path_entries = [p.replace("/", os.sep) for p in python_path_entries]
+    ##else:
+    ##    # deduplicate returns a generator, but we need a list after this.
+    ##    python_path_entries = list(python_path_entries)
 
-    # We're emulating PYTHONPATH being set, so we insert at the start
-    # This isn't a great idea (it can shadow the stdlib), but is the historical
-    # behavior.
     runfiles_envkey, runfiles_envvalue = runfiles_envvar(module_space)
     if runfiles_envkey:
         os.environ[runfiles_envkey] = runfiles_envvalue
@@ -467,43 +460,6 @@ def main():
     assert os.access(main_filename, os.R_OK), (
         "Cannot exec() %r: file not readable." % main_filename
     )
-
-    # COVERAGE_DIR is set if coverage is enabled and instrumentation is configured
-    # for something, though it could be another program executing this one or
-    # one executed by this one (e.g. an extension module).
-    if os.environ.get("COVERAGE_DIR"):
-        cov_tool = find_coverage_entry_point(module_space)
-        if cov_tool is None:
-            print_verbose_coverage(
-                "Coverage was enabled, but python coverage tool was not configured."
-                + "To enable coverage, consult the docs at "
-                + "https://rules-python.readthedocs.io/en/latest/coverage.html"
-            )
-        else:
-            # Inhibit infinite recursion:
-            if "PYTHON_COVERAGE" in os.environ:
-                del os.environ["PYTHON_COVERAGE"]
-
-            if not os.path.exists(cov_tool):
-                raise EnvironmentError(
-                    "Python coverage tool %r not found. "
-                    "Try running with VERBOSE_COVERAGE=1 to collect more information."
-                    % cov_tool
-                )
-
-            # coverage library expects sys.path[0] to contain the library, and replaces
-            # it with the directory of the program it starts. Our actual sys.path[0] is
-            # the runfiles directory, which must not be replaced.
-            # CoverageScript.do_execute() undoes this sys.path[0] setting.
-            #
-            # Update sys.path such that python finds the coverage package. The coverage
-            # entry point is coverage.coverage_main, so we need to do twice the dirname.
-            coverage_dir = os.path.dirname(os.path.dirname(cov_tool))
-            print_verbose("coverage: adding to sys.path:", coverage_dir)
-            python_path_entries.append(coverage_dir)
-            python_path_entries = deduplicate(python_path_entries)
-    else:
-        cov_tool = None
 
     sys.stdout.flush()
 
@@ -529,7 +485,9 @@ def main():
     # user import accidentally triggering the site-packages logic above.
     sys.path[0:0] = prepend_path_entries
 
-    with _maybe_collect_coverage(enable=cov_tool is not None):
+    import _bazel_site_init
+
+    with _maybe_collect_coverage(enable=_bazel_site_init.COVERAGE_SETUP):
         # The first arg is this bootstrap, so drop that for the re-invocation.
         _run_py(main_filename, args=sys.argv[1:])
         sys.exit(0)

@@ -129,6 +129,7 @@ def _py_runtime_impl(ctx):
         stage2_bootstrap_template = ctx.file.stage2_bootstrap_template,
         zip_main_template = ctx.file.zip_main_template,
         abi_flags = abi_flags,
+        site_init_template = ctx.file.site_init_template,
     ))
 
     if not IS_BAZEL_7_OR_HIGHER:
@@ -315,6 +316,17 @@ The default value is controlled by the `--incompatible_py3_is_default` flag.
 However, in the future this attribute will be mandatory and have no default
 value.
             """,
+        ),
+        "site_init_template": attr.label(
+            allow_single_file = True,
+            default = "//python/private:site_init_template",
+            doc = """
+The template to use for the binary-specific site-init hook run by the
+interpreter at startup.
+
+:::{versionadded} VERSION_NEXT_FEATURE
+:::
+""",
         ),
         "stage2_bootstrap_template": attr.label(
             default = "//python/private:stage2_bootstrap_template",
