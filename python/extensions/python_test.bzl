@@ -26,12 +26,6 @@ python_test.configure(
 use_repo(python_test, "py_test_toolchain")
 register_toolchains("@py_test_toolchain//:all")
 ```
-
-:::{seealso}
-For more in-depth documentation see the {obj}`python.toolchain`.
-:::
-::::
-
 """
 
 load("//python/private:python_test.bzl", _python_test = "python_test")

@@ -14,8 +14,8 @@
 
 "Python test toolchain module extensions for use with bzlmod."
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("//python/private:py_test_toolchain.bzl", "register_py_test_toolchain")
-load(":text_util.bzl", "render")
 
 def _python_test_impl(module_ctx):
     """Implementation of the `coverage` extension.
@@ -26,35 +26,21 @@ def _python_test_impl(module_ctx):
     for mod in module_ctx.modules:
         for tag in mod.tags.configure:
             register_py_test_toolchain(
+                name = "py_test_toolchain",
                 coverage_rc = tag.coveragerc,
                 register_toolchains = False,
             )
+    if bazel_features.external_deps.extension_metadata_has_reproducible:
+        return module_ctx.extension_metadata(reproducible = True)
+    else:
+        return None
 
 configure = tag_class(
     doc = """Tag class used to register Python toolchains.""",
     attrs = {
         # TODO: Add testrunner and potentially coverage_tool
         "coveragerc": attr.label(
-            doc = """Tag class used to register Python toolchains.
-
-:::{topic} Toolchains in the Root Module
-
-:::{tip}
-In order to use a different name than the above, you can use the following `MODULE.bazel`
-syntax:
-```starlark
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    is_default = True,
-    python_version = "3.11",
-)
-
-use_repo(python, my_python_name = "python_3_11")
-```
-
-Then the python interpreter will be available as `my_python_name`.
-:::
-""",
+            doc = """Tag class used to register Python toolchains.""",
             mandatory = True,
         ),
     },

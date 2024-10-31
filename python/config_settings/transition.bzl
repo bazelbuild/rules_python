@@ -81,6 +81,10 @@ def _transition_py_impl(ctx):
     for k, v in ctx.attr.env.items():
         env[k] = ctx.expand_location(v)
 
+    # Add the environment from the target if it has RunEnvironmentInfo.
+    # RunEnvironmentInfo contains environment variables configured by exec_group toolchain
+    if RunEnvironmentInfo in target:
+        env.update(target[RunEnvironmentInfo].environment)
     providers = [
         DefaultInfo(
             executable = executable,
