@@ -22,7 +22,8 @@ load(
     "PY_TEST_TOOLCHAIN_TYPE",
 )
 
-PytestProvider = provider(
+PyTestProviderInfo = provider(
+    doc = "Information about the pytest toolchain",
     fields = [
         "coverage_rc",
     ],
@@ -31,7 +32,7 @@ PytestProvider = provider(
 def _py_test_toolchain_impl(ctx):
     return [
         platform_common.ToolchainInfo(
-            py_test_info = PytestProvider(
+            py_test_info = PyTestProviderInfo(
                 coverage_rc = ctx.attr.coverage_rc,
             ),
         ),
@@ -56,6 +57,10 @@ py_test_toolchain_macro(
 def py_test_toolchain_macro(*, name, coverage_rc, toolchain_type):
     """
     Macro to create a py_test_toolchain rule and a native toolchain rule.
+
+    name: The name of the toolchain.
+    coverage_rc: The coverage rc file.
+    toolchain_type: The toolchain type.
     """
     py_test_toolchain(
         name = "{}_toolchain".format(name),
@@ -73,7 +78,7 @@ def _toolchains_repo_impl(repository_ctx):
     kwargs = dict(
         name = repository_ctx.name,
         coverage_rc = str(repository_ctx.attr.coverage_rc),
-        toolchain_type = repository_ctx.attr.toolchain_type,
+        toolchain_type = str(repository_ctx.attr.toolchain_type),
     )
 
     build_content = _TOOLCHAIN_TEMPLATE.format(
@@ -88,21 +93,27 @@ py_test_toolchain_repo = repository_rule(
     _toolchains_repo_impl,
     doc = "Generates a toolchain hub repository",
     attrs = {
-        "toolchain_type": attr.string(doc = "Toolchain type", mandatory = True),
         "coverage_rc": attr.label(
             allow_single_file = True,
             doc = "The coverage rc file",
             mandatory = True,
         ),
+        "toolchain_type": attr.label(doc = "Toolchain type", mandatory = True),
     },
 )
 
-def register_py_test_toolchain(coverage_rc, register_toolchains = True):
-    # Need to create a repository rule for this to work.
+def register_py_test_toolchain(name, coverage_rc, register_toolchains = True):
+    """ Register the py_test_toolchain and native toolchain rules.
+
+    name: The name of the toolchain.
+    coverage_rc: The coverage rc file.
+    register_toolchains: Whether to register the toolchains.
+
+    """
     py_test_toolchain_repo(
-        name = "py_test_toolchain",
+        name = name,
         coverage_rc = coverage_rc,
-        toolchain_type = str(PY_TEST_TOOLCHAIN_TYPE),
+        toolchain_type = PY_TEST_TOOLCHAIN_TYPE,
     )
     if register_toolchains:
         native.toolchain(name = "py_test_toolchain")

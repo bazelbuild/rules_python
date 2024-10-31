@@ -20,9 +20,11 @@ class TestEnvironmentVariables(unittest.TestCase):
     def test_coverage_rc_file_exists(self):
         # Assert that the environment variable is set and points to a valid file
         coverage_rc_path = os.environ.get("COVERAGE_RC")
+        if coverage_rc_path:
+            coverage_rc_path = os.path.abspath(coverage_rc_path)
         self.assertTrue(
             os.path.isfile(coverage_rc_path),
-            "COVERAGE_RC does not point to a valid file",
+            f"COVERAGE_RC does not point to a valid file, {coverage_rc_path}",
         )
 
         # Read the content of the file and assert it matches the expected content

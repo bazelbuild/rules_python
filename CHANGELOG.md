@@ -363,6 +363,9 @@ Other changes:
 
 {#v0-38-0-added}
 ### Added
+* (toolchain) Using testing toolchain to configure py_test coverage.
+   This opens the potential to configure differnt test runners.
+  ([#2246](https://github.com/bazelbuild/rules_python/pull/2246)).
 * (publish) The requirements file for the `twine` publishing rules have been
   updated to have a new convention: `requirements_darwin.txt`,
   `requirements_linux.txt`, `requirements_windows.txt` for each respective OS

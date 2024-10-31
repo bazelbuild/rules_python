@@ -20,7 +20,6 @@ load(
     ":toolchain_types.bzl",
     "EXEC_TOOLS_TOOLCHAIN_TYPE",
     "PY_CC_TOOLCHAIN_TYPE",
-    "PY_TEST_TOOLCHAIN_TYPE",
     "TARGET_TOOLCHAIN_TYPE",
 )
 

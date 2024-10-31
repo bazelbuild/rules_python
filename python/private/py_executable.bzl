@@ -1613,6 +1613,7 @@ def _create_providers(
         runtime_details: struct of runtime information; see _get_runtime_details()
         output_groups: dict[str, depset[File]]; used to create OutputGroupInfo
         semantics: BinarySemantics struct; see create_binary_semantics()
+        is_test: bool; True if the rule is a test rule,
 
     Returns:
         A list of modern providers.
