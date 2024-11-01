@@ -327,16 +327,24 @@ def _create_whl_repos(
             args["requirement"] = requirement.requirement_line
             if requirement.extra_pip_args:
                 args["extra_pip_args"] = requirement.extra_pip_args
+
             if pip_attr.download_only:
                 args.setdefault("experimental_target_platforms", requirement.target_platforms)
 
-            repo_name = pypi_repo_name(pip_name, requirement.srcs.requirement, requirement.srcs.version)
+            target_platforms = requirement.target_platforms if len(requirements) > 1 else []
+            repo_name = pypi_repo_name(
+                pip_name,
+                requirement.srcs.requirement,
+                requirement.srcs.version,
+                # Strip the leading cp3x prefix
+                "_".join([p.partition("_")[-1] for p in target_platforms]),
+            )
             whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
                     repo = repo_name,
                     version = major_minor,
-                    target_platforms = requirement.target_platforms if len(requirements) > 1 else None,
+                    target_platforms = target_platforms or None,
                 ),
             )
 
