@@ -33,14 +33,23 @@ A brief description of the categories of changes:
   ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
 * (publish) The dependencies have been updated to the latest available versions
   for the `twine` publishing rule.
-- (bzlmod) `pip.parse` spoke repository naming has changed in places where the
+* (bzlmod) `pip.parse` spoke repository naming has changed in places where the
   users specify different package versions per platform in the same hub repository.
   We advise the users to use the `hub` repository directly to avoid such breakage in
   the future.
 
 {#v0-0-0-fixed}
 ### Fixed
-- (bzlmod) The extension evaluation has been adjusted to always generate the
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
+* (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
+  ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
+  by default. Users wishing to keep this argument and to enforce more hermetic
+  builds can do so by passing the argument in
+  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
@@ -54,11 +63,12 @@ A brief description of the categories of changes:
   `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
-- (bzlmod) `pip.parse` now supports `whl-only` setup using 
+* (bzlmod) `pip.parse` now supports `whl-only` setup using 
   `download_only = True` where users can specify multiple requirements files
   and use the `pip` backend to do the downloading. This was only available for
   users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
   more options whilst we continue to work on stabilizing the experimental feature.
+* The rules_python version is now reported in `//python/features.bzl#features.version`
 
 {#v0-0-0-removed}
 ### Removed

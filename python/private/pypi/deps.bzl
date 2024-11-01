@@ -101,6 +101,7 @@ _GENERIC_WHEEL = """\
 package(default_visibility = ["//visibility:public"])
 
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python/private:glob_excludes.bzl", "glob_excludes")
 
 py_library(
     name = "lib",
@@ -111,11 +112,10 @@ py_library(
         "**/*.py",
         "**/*.pyc",
         "**/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
-        "**/* *",
         "**/*.dist-info/RECORD",
         "BUILD",
         "WORKSPACE",
-    ]),
+    ] + glob_excludes.version_dependent_exclusions()),
     # This makes this directory a top-level in the python import
     # search path for anything that depends on this.
     imports = ["."],

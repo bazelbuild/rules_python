@@ -86,6 +86,7 @@ bzl_library(
     srcs = ["deps.bzl"],
     deps = [
         "//python/private:bazel_tools_bzl",
+        "//python/private:glob_excludes_bzl",
     ],
 )
 
@@ -110,8 +111,7 @@ bzl_library(
     name = "generate_whl_library_build_bazel_bzl",
     srcs = ["generate_whl_library_build_bazel.bzl"],
     deps = [
-        ":labels_bzl",
-        "//python/private:normalize_name_bzl",
+        "//python/private:text_util_bzl",
     ],
 )
 

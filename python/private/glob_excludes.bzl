@@ -4,20 +4,29 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Allows detecting of rules_python features that aren't easily detected."""
 
-# This is a magic string expanded by `git archive`, as set by `.gitattributes`
-# See https://git-scm.com/docs/git-archive/2.29.0#Documentation/git-archive.txt-export-subst
-_VERSION_PRIVATE = "$Format:%(describe:tags=true)$"
+"Utilities for glob exclusions."
 
-features = struct(
-    version = _VERSION_PRIVATE if "$Format" not in _VERSION_PRIVATE else "",
-    precompile = True,
+load(":util.bzl", "IS_BAZEL_7_4_OR_HIGHER")
+
+def _version_dependent_exclusions():
+    """Returns glob exclusions that are sensitive to Bazel version.
+
+    Returns:
+        a list of glob exclusion patterns
+    """
+    if IS_BAZEL_7_4_OR_HIGHER:
+        return []
+    else:
+        return ["**/* *"]
+
+glob_excludes = struct(
+    version_dependent_exclusions = _version_dependent_exclusions,
 )

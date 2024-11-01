@@ -454,7 +454,7 @@ def _get_base_runfiles_for_binary(
         common_runfiles.files.add(implicit_pyc_source_files)
 
     for dep in (ctx.attr.deps + extra_deps):
-        if not (PyInfo in dep or BuiltinPyInfo in dep):
+        if not (PyInfo in dep or (BuiltinPyInfo != None and BuiltinPyInfo in dep)):
             continue
         info = dep[PyInfo] if PyInfo in dep else dep[BuiltinPyInfo]
         common_runfiles.files.add(info.transitive_sources)
@@ -471,7 +471,7 @@ def _get_base_runfiles_for_binary(
 
     common_runfiles.runfiles.append(collect_runfiles(ctx))
     if extra_deps:
-        common_runfiles.add_runfiles(targets = extra_deps)
+        common_runfiles.add_targets(extra_deps)
     common_runfiles.add(extra_common_runfiles)
 
     common_runfiles = common_runfiles.build(ctx)
