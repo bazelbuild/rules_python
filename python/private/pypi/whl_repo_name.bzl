@@ -19,7 +19,7 @@ load("//python/private:normalize_name.bzl", "normalize_name")
 load(":parse_whl_name.bzl", "parse_whl_name")
 
 def _normalize_version(version):
-    version = version.replace("-", ".")
+    version = version.replace("-", "_")
     version = version.replace("+", "_")
     return version
 
@@ -54,4 +54,4 @@ def whl_repo_name(prefix, filename):
         parts.append(abi_tag)
         parts.append(platform_tag)
 
-    return "_".join(parts)
+    return "_".join(parts).replace(".", "_")
