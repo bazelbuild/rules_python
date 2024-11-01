@@ -37,6 +37,8 @@ A brief description of the categories of changes:
   by default. Users wishing to keep this argument and to enforce more hermetic
   builds can do so by passing the argument in
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (pypi, bzlmod) Change the repo naming when `experimental_index_url` is enabled
+  to include the version number in the external repository names.
 
 {#v0-0-0-fixed}
 ### Fixed

@@ -290,7 +290,7 @@ def _create_whl_repos(
                     # This is no-op because pip is not used to download the wheel.
                     whl_library_args.pop("download_only", None)
 
-                    repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
+                    repo_name = whl_repo_name(pip_name, distribution.filename)
                     whl_library_args["requirement"] = requirement.srcs.requirement
                     whl_library_args["urls"] = [distribution.url]
                     whl_library_args["sha256"] = distribution.sha256

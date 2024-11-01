@@ -18,13 +18,17 @@
 load("//python/private:normalize_name.bzl", "normalize_name")
 load(":parse_whl_name.bzl", "parse_whl_name")
 
-def whl_repo_name(prefix, filename, sha256):
+def _normalize_version(version):
+    version = version.replace("-", ".")
+    version = version.replace("+", "_")
+    return version
+
+def whl_repo_name(prefix, filename):
     """Return a valid whl_library repo name given a distribution filename.
 
     Args:
         prefix: str, the prefix of the whl_library.
         filename: str, the filename of the distribution.
-        sha256: str, the sha256 of the distribution.
 
     Returns:
         a string that can be used in `whl_library`.
@@ -33,20 +37,21 @@ def whl_repo_name(prefix, filename, sha256):
 
     if not filename.endswith(".whl"):
         # Then the filename is basically foo-3.2.1.<ext>
-        parts.append(normalize_name(filename.rpartition("-")[0]))
-        parts.append("sdist")
+        name, _, version_with_ext = filename.rpartition("-")
+        parts.append(normalize_name(name))
+        parts.append(_normalize_version(version_with_ext))
     else:
         parsed = parse_whl_name(filename)
         name = normalize_name(parsed.distribution)
+        version = _normalize_version(parsed.version)
         python_tag, _, _ = parsed.python_tag.partition(".")
         abi_tag, _, _ = parsed.abi_tag.partition(".")
         platform_tag, _, _ = parsed.platform_tag.partition(".")
 
         parts.append(name)
+        parts.append(version)
         parts.append(python_tag)
         parts.append(abi_tag)
         parts.append(platform_tag)
-
-    parts.append(sha256[:8])
 
     return "_".join(parts)
