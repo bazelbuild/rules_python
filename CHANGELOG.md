@@ -45,6 +45,8 @@ A brief description of the categories of changes:
   `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (pypi) The patched wheel filenames from now on are using local version specifiers
+  which fixes usage of the said wheels using standard package managers.
 
 {#v0-0-0-added}
 ### Added

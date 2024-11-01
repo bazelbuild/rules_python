@@ -32,6 +32,38 @@ load(":parse_whl_name.bzl", "parse_whl_name")
 
 _rules_python_root = Label("//:BUILD.bazel")
 
+def patched_whl_name(original_whl_name):
+    """Return the new filename to output the patched wheel.
+
+    Args:
+        original_whl_name: {type}`str` the whl name of the original file.
+
+    Returns:
+        {type}`str` an output name to write the patched wheel to.
+    """
+    parsed_whl = parse_whl_name(original_whl_name)
+    version = parsed_whl.version
+    suffix = "patched"
+    if "+" in version:
+        # We comply with the spec and mark the file as patched by adding a
+        # local version identifier at the end.
+        #
+        # By doing this we can still install the package using most of the package
+        # managers
+        #
+        # See https://packaging.python.org/en/latest/specifications/version-specifiers/#local-version-identifiers
+        version = "{}.{}".format(version, suffix)
+    else:
+        version = "{}+{}".format(version, suffix)
+
+    return "{distribution}-{version}-{python_tag}-{abi_tag}-{platform_tag}.whl".format(
+        distribution = parsed_whl.distribution,
+        version = version,
+        python_tag = parsed_whl.python_tag,
+        abi_tag = parsed_whl.abi_tag,
+        platform_tag = parsed_whl.platform_tag,
+    )
+
 def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
     """Patch a whl file and repack it to ensure that the RECORD metadata stays correct.
 
@@ -66,18 +98,8 @@ def patch_whl(rctx, *, python_interpreter, whl_path, patches, **kwargs):
     for patch_file, patch_strip in patches.items():
         rctx.patch(patch_file, strip = patch_strip)
 
-    # Generate an output filename, which we will be returning
-    parsed_whl = parse_whl_name(whl_input.basename)
-    whl_patched = "{}.whl".format("-".join([
-        parsed_whl.distribution,
-        parsed_whl.version,
-        (parsed_whl.build_tag or "") + "patched",
-        parsed_whl.python_tag,
-        parsed_whl.abi_tag,
-        parsed_whl.platform_tag,
-    ]))
-
     record_patch = rctx.path("RECORD.patch")
+    whl_patched = patched_whl_name(whl_input.basename)
 
     repo_utils.execute_checked(
         rctx,
