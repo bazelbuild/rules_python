@@ -31,7 +31,7 @@ load(":render_pkg_aliases.bzl", "whl_alias")
 load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_library.bzl", "whl_library")
-load(":whl_repo_name.bzl", "whl_repo_name")
+load(":whl_repo_name.bzl", "pypi_repo_name", "whl_repo_name")
 
 def _major_minor_version(version):
     version = semver(version)
@@ -330,13 +330,7 @@ def _create_whl_repos(
             if pip_attr.download_only:
                 args.setdefault("experimental_target_platforms", requirement.target_platforms)
 
-            repo_name = "{}_{}".format(pip_name, whl_name)
-            if len(requirements) > 1:
-                repo_name = "{}__{}".format(repo_name, "_".join(sorted([
-                    p.partition("_")[-1]
-                    for p in requirement.target_platforms
-                ])))
-
+            repo_name = pypi_repo_name(pip_name, requirement.requirement_line)
             whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
