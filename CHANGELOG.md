@@ -33,6 +33,10 @@ A brief description of the categories of changes:
   ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
 * (publish) The dependencies have been updated to the latest available versions
   for the `twine` publishing rule.
+* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
+  by default. Users wishing to keep this argument and to enforce more hermetic
+  builds can do so by passing the argument in
+  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 * (bzlmod) `pip.parse` spoke repository naming has changed in places where the
   users specify different package versions per platform in the same hub repository.
   We advise the users to use the `hub` repository directly to avoid such breakage in
@@ -45,10 +49,6 @@ A brief description of the categories of changes:
   `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
-* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
-  by default. Users wishing to keep this argument and to enforce more hermetic
-  builds can do so by passing the argument in
-  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. Fixes
