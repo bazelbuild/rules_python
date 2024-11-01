@@ -330,7 +330,7 @@ def _create_whl_repos(
             if pip_attr.download_only:
                 args.setdefault("experimental_target_platforms", requirement.target_platforms)
 
-            repo_name = pypi_repo_name(pip_name, requirement.requirement_line)
+            repo_name = pypi_repo_name(pip_name, requirement.srcs.requirement, requirement.srcs.version)
             whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
