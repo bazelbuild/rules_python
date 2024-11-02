@@ -129,11 +129,14 @@ to always include these files, as the originating target expects them to exist.
         "transitive_sources": """\
 :type: depset[File]
 
-A (`postorder`-compatible) depset of `.py` files appearing in the target's
-`srcs` and the `srcs` of the target's transitive `deps`.
+A (`postorder`-compatible) depset of `.py` files that are considered required
+and downstream binaries (or equivalent) **must** include in their outputs
+to have a functioning program.
 
-These are `.py` source files that are considered required and downstream
-binaries (or equivalent) must include in their outputs.
+Normally, these are the `.py` files in the appearing in the target's `srcs` and
+the `srcs` of the target's transitive `deps`, **however**, precompile settings
+may cause `.py` files to be omitted. In particular, pyc-only builds may result
+in this depset being **empty**.
 
 ::::{versionchanged} 0.37.0
 The files are considered necessary for downstream binaries to function;
