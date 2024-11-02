@@ -323,7 +323,7 @@ def _create_whl_repos(
             if get_index_urls:
                 logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
-            args = dict(whl_library_args.items())  # make a copy
+            args = dict(whl_library_args)  # make a copy
             args["requirement"] = requirement.requirement_line
             if requirement.extra_pip_args:
                 args["extra_pip_args"] = requirement.extra_pip_args
