@@ -54,7 +54,7 @@ register_toolchains("@pythons_hub//:all")
 #####################
 # Install twine for our own runfiles wheel publishing and allow bzlmod users to use it.
 
-pip = use_extension("//python/extensions:pip.bzl", "pip")
+pip = use_extension("//python/private/pypi:pip.bzl", "pip_internal")
 pip.parse(
     # NOTE @aignas 2024-10-26: We have an integration test that depends on us
     # being able to build sdists for this hub, so explicitly set this to False.

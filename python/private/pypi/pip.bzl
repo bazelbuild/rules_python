@@ -14,6 +14,7 @@
 
 "pip module extensions for use with bzlmod."
 
-load("//python/private/pypi:extension.bzl", "pypi")
+load("//python/private/pypi:extension.bzl", "pypi", "pypi_internal")
 
 pip = pypi
+pip_internal = pypi_internal

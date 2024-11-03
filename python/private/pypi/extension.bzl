@@ -624,6 +624,13 @@ def _pip_impl(module_ctx):
     else:
         return None
 
+def _pip_non_reproducible(module_ctx):
+    _pip_impl(module_ctx)
+
+    # We default to calling the PyPI index and that will go into the
+    # MODULE.bazel.lock file, hence return nothing here.
+    return None
+
 def _pip_parse_ext_attrs(**kwargs):
     """Get the attributes for the pip extension.
 
@@ -863,6 +870,53 @@ the BUILD files for wheels.
             attrs = _pip_parse_ext_attrs(),
             doc = """\
 This tag class is used to create a pip hub and all of the spokes that are part of that hub.
+This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
+The exception is it does not use the arg 'repo_prefix'.  We set the repository
+prefix for the user and the alias arg is always True in bzlmod.
+""",
+        ),
+        "whl_mods": tag_class(
+            attrs = _whl_mod_attrs(),
+            doc = """\
+This tag class is used to create JSON file that are used when calling wheel_builder.py.  These
+JSON files contain instructions on how to modify a wheel's project.  Each of the attributes
+create different modifications based on the type of attribute. Previously to bzlmod these
+JSON files where referred to as annotations, and were renamed to whl_modifications in this
+extension.
+""",
+        ),
+    },
+)
+
+pypi_internal = module_extension(
+    doc = """\
+This extension is used to make dependencies from pypi available.
+For now this is intended to be used internally so that usage of the `pip`
+extension in `rules_python` does not affect the evaluations of the extension
+for the consumers.
+pip.parse:
+To use, call `pip.parse()` and specify `hub_name` and your requirements file.
+Dependencies will be downloaded and made available in a repo named after the
+`hub_name` argument.
+Each `pip.parse()` call configures a particular Python version. Multiple calls
+can be made to configure different Python versions, and will be grouped by
+the `hub_name` argument. This allows the same logical name, e.g. `@pypi//numpy`
+to automatically resolve to different, Python version-specific, libraries.
+pip.whl_mods:
+This tag class is used to help create JSON files to describe modifications to
+the BUILD files for wheels.
+
+TODO: will be removed before 1.0.
+""",
+    implementation = _pip_non_reproducible,
+    tag_classes = {
+        "override": _override_tag,
+        "parse": tag_class(
+            attrs = _pip_parse_ext_attrs(
+                experimental_index_url = "https://pypi.org/simple",
+            ),
+            doc = """\
+This tag class is used to create a pypi hub and all of the spokes that are part of that hub.
 This tag class reuses most of the attributes found in {bzl:obj}`pip_parse`.
 The exception is it does not use the arg 'repo_prefix'.  We set the repository
 prefix for the user and the alias arg is always True in bzlmod.
