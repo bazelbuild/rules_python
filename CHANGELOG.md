@@ -49,6 +49,8 @@ A brief description of the categories of changes:
   `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
+  pass the `extra_pip_args` value when building an `sdist`.
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
   or not. Fixes

@@ -360,11 +360,11 @@ def _test_simple_get_index(env):
         return {
             "simple": struct(
                 whls = {
-                    "deadbaaf": struct(
+                    "deadb00f": struct(
                         yanked = False,
                         filename = "simple-0.0.1-py3-none-any.whl",
-                        sha256 = "deadbaaf",
-                        url = "example.org/whl",
+                        sha256 = "deadb00f",
+                        url = "example2.org",
                     ),
                 },
                 sdists = {
@@ -389,14 +389,18 @@ def _test_simple_get_index(env):
                         python_version = "3.15",
                         requirements_lock = "requirements.txt",
                         experimental_index_url = "pypi.org",
+                        extra_pip_args = [
+                            "--extra-args-for-sdist-building",
+                        ],
                     ),
                 ],
             ),
-            read = lambda _: """\
-# Keep sorted
-simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadbaaf
+            read = lambda x: {
+                "requirements.txt": """
+simple==0.0.1 --hash=sha256:deadbeef --hash=sha256:deadb00f
 some_pkg==0.0.1
 """,
+            }[x],
         ),
         available_interpreters = {
             "python_3_15_host": "unit_test_interpreter_target",
@@ -413,7 +417,7 @@ some_pkg==0.0.1
                 struct(
                     config_setting = "//_config:is_python_3.15",
                     filename = "simple-0.0.1-py3-none-any.whl",
-                    repo = "pypi_315_simple_py3_none_any_deadbaaf",
+                    repo = "pypi_315_simple_py3_none_any_deadb00f",
                     target_platforms = None,
                     version = "3.15",
                 ),
@@ -437,7 +441,7 @@ some_pkg==0.0.1
         },
     })
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_simple_py3_none_any_deadbaaf": {
+        "pypi_315_simple_py3_none_any_deadb00f": {
             "dep_template": "@pypi//{name}:{target}",
             "experimental_target_platforms": [
                 "cp315_linux_aarch64",
@@ -453,8 +457,8 @@ some_pkg==0.0.1
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
             "requirement": "simple==0.0.1",
-            "sha256": "deadbaaf",
-            "urls": ["example.org/whl"],
+            "sha256": "deadb00f",
+            "urls": ["example2.org"],
         },
         "pypi_315_simple_sdist_deadbeef": {
             "dep_template": "@pypi//{name}:{target}",
@@ -468,6 +472,7 @@ some_pkg==0.0.1
                 "cp315_osx_x86_64",
                 "cp315_windows_x86_64",
             ],
+            "extra_pip_args": ["--extra-args-for-sdist-building"],
             "filename": "simple-0.0.1.tar.gz",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
@@ -478,6 +483,7 @@ some_pkg==0.0.1
         # We are falling back to regular `pip`
         "pypi_315_some_pkg_v0_0_1": {
             "dep_template": "@pypi//{name}:{target}",
+            "extra_pip_args": ["--extra-args-for-sdist-building"],
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
             "requirement": "some_pkg==0.0.1",
