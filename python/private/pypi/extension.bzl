@@ -274,28 +274,28 @@ def _create_whl_repos(
                     found_something = True
                     is_reproducible = False
 
+                    args = dict(whl_library_args)
                     if pip_attr.netrc:
-                        whl_library_args["netrc"] = pip_attr.netrc
+                        args["netrc"] = pip_attr.netrc
                     if pip_attr.auth_patterns:
-                        whl_library_args["auth_patterns"] = pip_attr.auth_patterns
+                        args["auth_patterns"] = pip_attr.auth_patterns
 
-                    if distribution.filename.endswith(".whl"):
-                        # pip is not used to download wheels and the python `whl_library` helpers are only extracting things
-                        whl_library_args.pop("extra_pip_args", None)
-                    else:
-                        # For sdists, they will be built by `pip`, so we still
+                    if not distribution.filename.endswith(".whl"):
+                        # pip is not used to download wheels and the python
+                        # `whl_library` helpers are only extracting things, however
+                        # for sdists, they will be built by `pip`, so we still
                         # need to pass the extra args there.
-                        pass
+                        args["extra_pip_args"] = requirement.extra_pip_args
 
                     # This is no-op because pip is not used to download the wheel.
-                    whl_library_args.pop("download_only", None)
+                    args.pop("download_only", None)
 
                     repo_name = whl_repo_name(pip_name, distribution.filename, distribution.sha256)
-                    whl_library_args["requirement"] = requirement.srcs.requirement
-                    whl_library_args["urls"] = [distribution.url]
-                    whl_library_args["sha256"] = distribution.sha256
-                    whl_library_args["filename"] = distribution.filename
-                    whl_library_args["experimental_target_platforms"] = requirement.target_platforms
+                    args["requirement"] = requirement.srcs.requirement
+                    args["urls"] = [distribution.url]
+                    args["sha256"] = distribution.sha256
+                    args["filename"] = distribution.filename
+                    args["experimental_target_platforms"] = requirement.target_platforms
 
                     # Pure python wheels or sdists may need to have a platform here
                     target_platforms = None
@@ -303,7 +303,7 @@ def _create_whl_repos(
                         if len(requirements) > 1:
                             target_platforms = requirement.target_platforms
 
-                    whl_libraries[repo_name] = dict(whl_library_args.items())
+                    whl_libraries[repo_name] = args
 
                     whl_map.setdefault(whl_name, []).append(
                         whl_alias(

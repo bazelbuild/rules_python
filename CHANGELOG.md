@@ -45,6 +45,8 @@ A brief description of the categories of changes:
   `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
+  pass the `extra_pip_args` value when building an `sdist`.
 
 {#v0-0-0-added}
 ### Added
