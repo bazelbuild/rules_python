@@ -45,8 +45,9 @@ def patched_whl_name(original_whl_name):
     version = parsed_whl.version
     suffix = "patched"
     if "+" in version:
-        # We comply with the spec and mark the file as patched by adding a
-        # local version identifier at the end.
+        # This already has some local version, so we just append one more
+        # identifier here. We comply with the spec and mark the file as patched
+        # by adding a local version identifier at the end.
         #
         # By doing this we can still install the package using most of the package
         # managers
