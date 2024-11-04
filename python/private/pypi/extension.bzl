@@ -372,7 +372,7 @@ def _create_whl_repos(
                 requirement.srcs.version,
                 # Strip the leading cp3x prefix
                 "_".join([p.partition("_")[-1] for p in target_platforms]),
-            )
+            ) if target_platforms else "{}_{}".format(pip_name, whl_name)
             whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(

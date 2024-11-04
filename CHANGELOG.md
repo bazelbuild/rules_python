@@ -37,10 +37,10 @@ A brief description of the categories of changes:
   by default. Users wishing to keep this argument and to enforce more hermetic
   builds can do so by passing the argument in
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
-* (bzlmod) `pip.parse` spoke repository naming has changed in places where the
-  users specify different package versions per platform in the same hub repository.
-  We advise the users to use the `hub` repository directly to avoid such breakage in
-  the future.
+* (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
+  release in places where the users specify different package versions per
+  platform in the same hub repository. We advise the users to use the `hub`
+  repository directly to avoid such breakage in the future.
 
 {#v0-0-0-fixed}
 ### Fixed
