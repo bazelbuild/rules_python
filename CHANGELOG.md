@@ -37,6 +37,8 @@ A brief description of the categories of changes:
   by default. Users wishing to keep this argument and to enforce more hermetic
   builds can do so by passing the argument in
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
+  and now `pyyaml` and `PyYAML` will both work.
 
 {#v0-0-0-fixed}
 ### Fixed
