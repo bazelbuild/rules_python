@@ -159,14 +159,14 @@ def _test_simple(env):
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple_v0_0_1",
+                repo = "pypi_315_simple",
                 target_platforms = None,
                 version = "3.15",
             ),
         ],
     }})
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_simple_v0_0_1": {
+        "pypi_315_simple": {
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
@@ -297,7 +297,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_extra_v0_0_1",
+                repo = "pypi_315_extra",
                 target_platforms = None,
                 version = "3.15",
             ),
@@ -320,7 +320,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
         ],
     }})
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_extra_v0_0_1": {
+        "pypi_315_extra": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
             "experimental_target_platforms": ["cp315_linux_x86_64"],
@@ -435,7 +435,7 @@ some_pkg==0.0.1
                 struct(
                     config_setting = "//_config:is_python_3.15",
                     filename = None,
-                    repo = "pypi_315_some_pkg_v0_0_1",
+                    repo = "pypi_315_some_pkg",
                     target_platforms = None,
                     version = "3.15",
                 ),
@@ -483,7 +483,7 @@ some_pkg==0.0.1
             "urls": ["example.org"],
         },
         # We are falling back to regular `pip`
-        "pypi_315_some_pkg_v0_0_1": {
+        "pypi_315_some_pkg": {
             "dep_template": "@pypi//{name}:{target}",
             "extra_pip_args": ["--extra-args-for-sdist-building"],
             "python_interpreter_target": "unit_test_interpreter_target",
