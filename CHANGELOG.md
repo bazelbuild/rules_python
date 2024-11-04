@@ -47,6 +47,8 @@ A brief description of the categories of changes:
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
 * (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
   pass the `extra_pip_args` value when building an `sdist`.
+* (pypi) The patched wheel filenames from now on are using local version specifiers
+  which fixes usage of the said wheels using standard package managers.
 
 {#v0-0-0-added}
 ### Added
