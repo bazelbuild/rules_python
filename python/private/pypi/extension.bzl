@@ -68,6 +68,7 @@ def _create_whl_repos(
         pip_attr,
         whl_overrides,
         simpleapi_cache,
+        whl_mods,
         available_interpreters = INTERPRETER_LABELS,
         simpleapi_download = simpleapi_download):
     """create all of the whl repositories
@@ -104,6 +105,7 @@ def _create_whl_repos(
     # containers to aggregate outputs from this function
     whl_map = {}
     exposed_packages = {}
+    extra_aliases = {}
     whl_libraries = {}
 
     # if we do not have the python_interpreter set in the attributes
@@ -137,6 +139,14 @@ def _create_whl_repos(
     if pip_attr.whl_modifications != None:
         for mod, whl_name in pip_attr.whl_modifications.items():
             whl_modifications[normalize_name(whl_name)] = mod
+
+            annotation = json.decode(module_ctx.read(mod))
+            if annotation.additive_build_content:
+                extra_aliases.setdefault(whl_name, {}).update({
+                    line.partition("name = ")[-1].strip("\"',"): True
+                    for line in annotation.build_content.split("\n")
+                    if line.lstrip().beginswith("name = ")
+                })
 
     if pip_attr.experimental_requirement_cycles:
         requirement_cycles = {
@@ -349,6 +359,7 @@ def _create_whl_repos(
         is_reproducible = is_reproducible,
         whl_map = whl_map,
         exposed_packages = exposed_packages,
+        extra_aliases = extra_aliases,
         whl_libraries = whl_libraries,
     )
 
@@ -433,6 +444,7 @@ You cannot use both the additive_build_content and additive_build_content_file a
     hub_whl_map = {}
     hub_group_map = {}
     exposed_packages = {}
+    extra_aliases = {}
     whl_libraries = {}
 
     is_reproducible = True
@@ -477,11 +489,15 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 pip_attr = pip_attr,
                 simpleapi_cache = simpleapi_cache,
                 whl_overrides = whl_overrides,
+                whl_mods = whl_mods,
                 **kwargs
             )
             hub_whl_map.setdefault(hub_name, {})
             for key, settings in out.whl_map.items():
                 hub_whl_map[hub_name].setdefault(key, []).extend(settings)
+            extra_aliases.setdefault(hub_name, {})
+            for whl_name, extra_aliases in out.extra_aliases.items():
+                extra_aliases[hub_name].setdefault(whl_name, {}).update(extra_aliases)
             exposed_packages.setdefault(hub_name, {}).update(out.exposed_packages)
             whl_libraries.update(out.whl_libraries)
             is_reproducible = is_reproducible and out.is_reproducible
@@ -510,6 +526,13 @@ You cannot use both the additive_build_content and additive_build_content_file a
             for hub_name, group_map in sorted(hub_group_map.items())
         },
         exposed_packages = {k: sorted(v) for k, v in sorted(exposed_packages.items())},
+        extra_aliases = {
+            hub_name: {
+                whl_name: sorted(aliases)
+                for whl_name, aliases in extra_whl_aliases.items()
+            }
+            for hub_name, extra_whl_aliases in extra_aliases.items()
+        },
         whl_libraries = dict(sorted(whl_libraries.items())),
         is_reproducible = is_reproducible,
     )

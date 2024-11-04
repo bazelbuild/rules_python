@@ -61,11 +61,35 @@ def _parse_modules(env, **kwargs):
         attrs = dict(
             is_reproducible = subjects.bool,
             exposed_packages = subjects.dict,
+            extra_aliases = subjects.dict,
             hub_group_map = subjects.dict,
             hub_whl_map = subjects.dict,
             whl_libraries = subjects.dict,
             whl_mods = subjects.dict,
         ),
+    )
+
+def _whl_mods(
+        *,
+        whl_name,
+        hub_name,
+        additive_build_content = None,
+        additive_build_content_file = None,
+        copy_executables = {},
+        copy_files = {},
+        data = [],
+        data_exclude_glob = [],
+        srcs_exclude_glob = []):
+    return struct(
+        additive_build_content = additive_build_content,
+        additive_build_content_file = additive_build_content_file,
+        copy_executables = copy_executables,
+        copy_files = copy_files,
+        data = data,
+        data_exclude_glob = data_exclude_glob,
+        hub_name = hub_name,
+        srcs_exclude_glob = srcs_exclude_glob,
+        whl_name = whl_name,
     )
 
 def _parse(
@@ -164,11 +188,25 @@ def _test_simple_with_whl_mods(env):
         module_ctx = _mock_mctx(
             _mod(
                 name = "rules_python",
+                whl_mods = [
+                    _whl_mods(
+                        additive_build_content = """\
+filegroup(
+    name = "foo",
+    srcs = ["all"],
+)""",
+                        hub_name = "whl_mods_hub",
+                        whl_name = "simple",
+                    ),
+                ],
                 parse = [
                     _parse(
                         hub_name = "pypi",
                         python_version = "3.15",
                         requirements_lock = "requirements.txt",
+                        whl_modifications = {
+                            "@whl_mods_hub//:simple.json": "simple",
+                        },
                     ),
                 ],
             ),
@@ -182,6 +220,11 @@ def _test_simple_with_whl_mods(env):
 
     pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": []})
+    pypi.extra_aliases().contains_exactly({
+        "pypi": {
+            "simple": "foo",
+        }
+    })
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
         "simple": [
@@ -196,13 +239,25 @@ def _test_simple_with_whl_mods(env):
     }})
     pypi.whl_libraries().contains_exactly({
         "pypi_315_simple": {
+            "annotation": "@whl_mods_hub//:simple.json",
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
             "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
         },
     })
-    pypi.whl_mods().contains_exactly({})
+    pypi.whl_mods().contains_exactly({
+        "whl_mods_hub": {
+            "simple": struct(
+                build_content = "filegroup(\n    name = \"foo\",\n    srcs = [\"all\"],\n)",
+                copy_executables = {},
+                copy_files = {},
+                data = [],
+                data_exclude_glob = [],
+                srcs_exclude_glob = [],
+            ),
+        },
+    })
 
 _tests.append(_test_simple_with_whl_mods)
 
