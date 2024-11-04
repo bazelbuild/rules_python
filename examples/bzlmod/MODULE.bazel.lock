@@ -1392,8 +1392,8 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "ehVfaAFR8qnzGgRJHHc5Wl+1AwqFgfC+GUj9cVBHAhI=",
-        "usagesDigest": "MChlcSw99EuW3K7OOoMcXQIdcJnEh6YmfyjJm+9mxIg=",
+        "bzlTransitiveDigest": "5dOA88F/sTcX7ob2rCKgbHdeA5TLdkfJHnA5o0/yAME=",
+        "usagesDigest": "PyEq15H+BV0Lm7Fqv4YXYpEORLiTbACstvsKJJItves=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
           "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
@@ -2894,6 +2894,16 @@
               ]
             }
           },
+          "other_module_pip_311_absl_py": {
+            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@other_module_pip//{name}:{target}",
+              "python_interpreter_target": "@@rules_python~~python~python_3_11_host//:python",
+              "repo": "other_module_pip_311",
+              "requirement": "absl-py==1.4.0     --hash=sha256:0d3fe606adfa4f7db64792dd4c7aee4ee0c38ab75dfd353b7a83ed3e957fcb47     --hash=sha256:d2c244d01048ba476e7c080bd2c6df5e141d211de80223460d5b3b8a2a58433d"
+            }
+          },
           "pip_310_mccabe_v0_7_0": {
             "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
             "ruleClassName": "whl_library",
@@ -3257,11 +3267,9 @@
             "attributes": {
               "repo_name": "other_module_pip",
               "whl_map": {
-                "absl_py": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"other_module_pip_311_absl_py_v1_4_0\",\"target_platforms\":null,\"version\":\"3.11\"}]"
+                "absl_py": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"other_module_pip_311_absl_py\",\"target_platforms\":null,\"version\":\"3.11\"}]"
               },
-              "packages": [
-                "absl_py"
-              ],
+              "packages": [],
               "groups": {}
             }
           },
@@ -4960,16 +4968,6 @@
               ]
             }
           },
-          "other_module_pip_311_absl_py_v1_4_0": {
-            "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@other_module_pip//{name}:{target}",
-              "python_interpreter_target": "@@rules_python~~python~python_3_11_host//:python",
-              "repo": "other_module_pip_311",
-              "requirement": "absl-py==1.4.0     --hash=sha256:0d3fe606adfa4f7db64792dd4c7aee4ee0c38ab75dfd353b7a83ed3e957fcb47     --hash=sha256:d2c244d01048ba476e7c080bd2c6df5e141d211de80223460d5b3b8a2a58433d"
-            }
-          },
           "pip_310_six_v1_16_0": {
             "bzlFile": "@@rules_python~//python/private/pypi:whl_library.bzl",
             "ruleClassName": "whl_library",
@@ -6583,7 +6581,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "RDI1eUTHeXhjojxjfCocrarEPulAUOpdR+JT2G7c4qc=",
+        "bzlTransitiveDigest": "NyxHDLQnw8+c8rGtmfDLONtoRJwDz/NOraQfB4068GI=",
         "usagesDigest": "O2O2oBIbKEglN2K3FECsRxUKVS/zg/6a86F3MO1ZtmY=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",

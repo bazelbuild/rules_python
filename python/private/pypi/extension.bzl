@@ -24,7 +24,7 @@ load("//python/private:version_label.bzl", "version_label")
 load(":attrs.bzl", "use_isolated")
 load(":evaluate_markers.bzl", "evaluate_markers", EVALUATE_MARKERS_SRCS = "SRCS")
 load(":hub_repository.bzl", "hub_repository")
-load(":parse_requirements.bzl", "parse_requirements")
+load(":parse_requirements.bzl", "host_platform", "parse_requirements", "select_requirement")
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":pip_repository_attrs.bzl", "ATTRS")
 load(":render_pkg_aliases.bzl", "whl_alias")
@@ -212,6 +212,7 @@ def _create_whl_repos(
         logger = logger,
     )
 
+    repository_platform = host_platform(module_ctx)
     for whl_name, requirements in requirements_by_platform.items():
         # We are not using the "sanitized name" because the user
         # would need to guess what name we modified the whl name
@@ -317,6 +318,38 @@ def _create_whl_repos(
                 if is_exposed:
                     exposed_packages[whl_name] = None
                 continue
+
+        if not pip_attr.parse_all_requirements_files:
+            requirement = select_requirement(
+                requirements,
+                platform = None if pip_attr.download_only else repository_platform,
+            )
+            if not requirement:
+                # Sometimes the package is not present for host platform if there
+                # are whls specified only in particular requirements files, in that
+                # case just continue, however, if the download_only flag is set up,
+                # then the user can also specify the target platform of the wheel
+                # packages they want to download, in that case there will be always
+                # a requirement here, so we will not be in this code branch.
+                continue
+            elif get_index_urls:
+                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
+
+            whl_library_args["requirement"] = requirement.requirement_line
+            if requirement.extra_pip_args:
+                whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+
+            # We sort so that the lock-file remains the same no matter the order of how the
+            # args are manipulated in the code going before.
+            repo_name = "{}_{}".format(pip_name, whl_name)
+            whl_libraries[repo_name] = dict(whl_library_args.items())
+            whl_map.setdefault(whl_name, []).append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                ),
+            )
+            continue
 
         for requirement in requirements:
             is_exposed = is_exposed or requirement.is_exposed
@@ -729,6 +762,20 @@ If we are in synchronous mode, then we will use the first result that we
 find in case extra indexes are specified.
 """,
             default = True,
+        ),
+        "parse_all_requirements_files": attr.bool(
+            default = False,
+            doc = """\
+A temporary flag to enable users to make `pip` extension result always
+the same independent of the whether transitive dependencies use {bzl:attr}`experimental_index_url` or not.
+
+This enables users to migrate to a solution that fixes
+[#2268](https://github.com/bazelbuild/rules_python/issues/2268).
+
+::::{deprecated} 0.38.0
+This is a transition flag and will be removed in a subsequent release.
+::::
+""",
         ),
         "python_version": attr.string(
             mandatory = True,
