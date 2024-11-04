@@ -35,6 +35,7 @@ def _impl(rctx):
             key: [whl_alias(**v) for v in json.decode(values)]
             for key, values in rctx.attr.whl_map.items()
         },
+        extra_hub_aliases = rctx.attr.extra_hub_aliases,
         requirement_cycles = rctx.attr.groups,
     )
     for path, contents in aliases.items():
@@ -65,6 +66,10 @@ def _impl(rctx):
 
 hub_repository = repository_rule(
     attrs = {
+        "extra_hub_aliases": attr.string_list_dict(
+            doc = "Extra aliases to make for specific wheels in the hub repo.",
+            mandatory = True,
+        ),
         "groups": attr.string_list_dict(
             mandatory = False,
         ),

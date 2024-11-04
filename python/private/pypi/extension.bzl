@@ -68,7 +68,6 @@ def _create_whl_repos(
         pip_attr,
         whl_overrides,
         simpleapi_cache,
-        whl_mods,
         available_interpreters = INTERPRETER_LABELS,
         simpleapi_download = simpleapi_download):
     """create all of the whl repositories
@@ -105,7 +104,10 @@ def _create_whl_repos(
     # containers to aggregate outputs from this function
     whl_map = {}
     exposed_packages = {}
-    extra_aliases = {}
+    extra_aliases = {
+        whl_name: {alias: True for alias in aliases}
+        for whl_name, aliases in pip_attr.extra_hub_aliases.items()
+    }
     whl_libraries = {}
 
     # if we do not have the python_interpreter set in the attributes
@@ -139,14 +141,6 @@ def _create_whl_repos(
     if pip_attr.whl_modifications != None:
         for mod, whl_name in pip_attr.whl_modifications.items():
             whl_modifications[normalize_name(whl_name)] = mod
-
-            annotation = json.decode(module_ctx.read(mod))
-            if annotation.additive_build_content:
-                extra_aliases.setdefault(whl_name, {}).update({
-                    line.partition("name = ")[-1].strip("\"',"): True
-                    for line in annotation.build_content.split("\n")
-                    if line.lstrip().beginswith("name = ")
-                })
 
     if pip_attr.experimental_requirement_cycles:
         requirement_cycles = {
@@ -489,15 +483,14 @@ You cannot use both the additive_build_content and additive_build_content_file a
                 pip_attr = pip_attr,
                 simpleapi_cache = simpleapi_cache,
                 whl_overrides = whl_overrides,
-                whl_mods = whl_mods,
                 **kwargs
             )
             hub_whl_map.setdefault(hub_name, {})
             for key, settings in out.whl_map.items():
                 hub_whl_map[hub_name].setdefault(key, []).extend(settings)
             extra_aliases.setdefault(hub_name, {})
-            for whl_name, extra_aliases in out.extra_aliases.items():
-                extra_aliases[hub_name].setdefault(whl_name, {}).update(extra_aliases)
+            for whl_name, aliases in out.extra_aliases.items():
+                extra_aliases[hub_name].setdefault(whl_name, {}).update(aliases)
             exposed_packages.setdefault(hub_name, {}).update(out.exposed_packages)
             whl_libraries.update(out.whl_libraries)
             is_reproducible = is_reproducible and out.is_reproducible
@@ -617,6 +610,7 @@ def _pip_impl(module_ctx):
         hub_repository(
             name = hub_name,
             repo_name = hub_name,
+            extra_hub_aliases = mods.extra_aliases.get(hub_name, {}),
             whl_map = {
                 key: json.encode(value)
                 for key, value in whl_map.items()
@@ -702,6 +696,16 @@ https://pytorch.org/blog/compromised-nightly-dependency/.
 The indexes must support Simple API as described here:
 https://packaging.python.org/en/latest/specifications/simple-repository-api/
 """,
+        ),
+        "extra_hub_aliases": attr.string_list_dict(
+            doc = """\
+Extra aliases to make for specific wheels in the hub repo. This is useful when
+paired with the {attr}`whl_modifications`.
+
+:::{versionadded} 0.38.0
+:::
+""",
+            mandatory = False,
         ),
         "hub_name": attr.string(
             mandatory = True,

@@ -105,6 +105,7 @@ def _parse(
         experimental_index_url = "",
         experimental_requirement_cycles = {},
         experimental_target_platforms = [],
+        extra_hub_aliases = {},
         extra_pip_args = [],
         isolated = True,
         netrc = None,
@@ -130,6 +131,7 @@ def _parse(
         experimental_index_url = experimental_index_url,
         experimental_requirement_cycles = experimental_requirement_cycles,
         experimental_target_platforms = experimental_target_platforms,
+        extra_hub_aliases = extra_hub_aliases,
         extra_pip_args = extra_pip_args,
         hub_name = hub_name,
         isolated = isolated,
@@ -204,6 +206,9 @@ filegroup(
                         hub_name = "pypi",
                         python_version = "3.15",
                         requirements_lock = "requirements.txt",
+                        extra_hub_aliases = {
+                            "simple": ["foo"],
+                        },
                         whl_modifications = {
                             "@whl_mods_hub//:simple.json": "simple",
                         },
@@ -221,9 +226,7 @@ filegroup(
     pypi.is_reproducible().equals(True)
     pypi.exposed_packages().contains_exactly({"pypi": []})
     pypi.extra_aliases().contains_exactly({
-        "pypi": {
-            "simple": "foo",
-        }
+        "pypi": {"simple": ["foo"]},
     })
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
