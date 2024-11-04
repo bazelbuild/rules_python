@@ -39,8 +39,10 @@ A brief description of the categories of changes:
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 * (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
   release in places where the users specify different package versions per
-  platform in the same hub repository. We advise the users to use the `hub`
-  repository directly to avoid such breakage in the future.
+  platform in the same hub repository. The naming of the spoke repos is considered
+  an implementation detail and we advise the users to use the `hub` repository
+  directly to avoid such breakage in the future. If `rules_python` is missing
+  features to allow one to do that, please raise tickets.
 
 {#v0-0-0-fixed}
 ### Fixed
