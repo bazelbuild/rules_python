@@ -20,12 +20,12 @@ load("//python/private/pypi:extension.bzl", "parse_modules")  # buildifier: disa
 
 _tests = []
 
-def _mock_mctx(*modules, environ = {}, read = None):
+def _mock_mctx(*modules, environ = {}, read = None, os_name = "unittest", os_arch = "exotic"):
     return struct(
-        os = struct(
+        os = os or struct(
             environ = environ,
-            name = "unittest",
-            arch = "exotic",
+            name = os_name,
+            arch = os_arch,
         ),
         read = read or (lambda _: "simple==0.0.1 --hash=sha256:deadbeef"),
         modules = [
@@ -157,6 +157,37 @@ def _test_simple(env):
     pypi.whl_mods().contains_exactly({})
 
 _tests.append(_test_simple)
+
+def _test_simple_with_whl_mods(env):
+    pypi = _parse_modules(
+        env,
+        module_ctx = _mock_mctx(
+            _mod(
+                name = "rules_python",
+                parse = [
+                    _parse(
+                        hub_name = "pypi",
+                        python_version = "3.15",
+                        requirements_lock = "requirements.txt",
+                    ),
+                ],
+            ),
+            os_name = "linux",
+            os_arch = "aarch64",
+        ),
+        available_interpreters = {
+            "python_3_15_host": "unit_test_interpreter_target",
+        },
+    )
+
+    pypi.is_reproducible().equals(True)
+    pypi.exposed_packages().contains_exactly({"pypi": []})
+    pypi.hub_group_map().contains_exactly({"pypi": {}})
+    pypi.hub_whl_map().contains_exactly({"pypi": {}})
+    pypi.whl_libraries().contains_exactly({})
+    pypi.whl_mods().contains_exactly({})
+
+_tests.append(_test_simple_with_whl_mods)
 
 def _test_simple_get_index(env):
     got_simpleapi_download_args = []
