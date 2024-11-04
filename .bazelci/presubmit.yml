@@ -264,7 +264,7 @@ tasks:
     platform: ubuntu2004
     shell_commands:
     # Update the lockfiles and fail if it is different.
-    - "./tools/private/update_bzlmod_lockfiles.sh"
+    - "../../tools/private/update_bzlmod_lockfiles.sh"
     - "git diff --exit-code"
   integration_test_bzlmod_macos_lockfile:
     <<: *reusable_build_test_all
@@ -274,7 +274,7 @@ tasks:
     platform: macos
     shell_commands:
     # Update the lockfiles and fail if it is different.
-    - "./tools/private/update_bzlmod_lockfiles.sh"
+    - "../../tools/private/update_bzlmod_lockfiles.sh"
     - "git diff --exit-code"
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
