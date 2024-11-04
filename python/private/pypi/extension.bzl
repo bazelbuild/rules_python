@@ -351,6 +351,7 @@ def _create_whl_repos(
             )
             continue
 
+        is_exposed = False
         for requirement in requirements:
             is_exposed = is_exposed or requirement.is_exposed
             if get_index_urls:
