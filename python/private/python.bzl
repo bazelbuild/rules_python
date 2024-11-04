@@ -464,7 +464,7 @@ def _get_toolchain_config(*, modules, _fail = fail):
             "url": {
                 platform: [item["url"]]
                 for platform in item["sha256"]
-            },
+            } if type(item["url"]) == type("") else item["url"],
         }
         for version, item in TOOL_VERSIONS.items()
     }
