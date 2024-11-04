@@ -184,7 +184,15 @@ def _test_simple_with_whl_mods(env):
     pypi.exposed_packages().contains_exactly({"pypi": []})
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
-        "simple": [struct(config_setting = "//_config:is_python_3.15", filename = None, repo = "pypi_315_simple", target_platforms = None, version = "3.15")],
+        "simple": [
+            struct(
+                config_setting = "//_config:is_python_3.15",
+                filename = None,
+                repo = "pypi_315_simple",
+                target_platforms = None,
+                version = "3.15",
+            ),
+        ],
     }})
     pypi.whl_libraries().contains_exactly({
         "pypi_315_simple": {
