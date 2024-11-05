@@ -117,7 +117,7 @@ def _render_whl_library_alias(
         **kwargs
     )
 
-def _render_common_aliases(*, name, aliases, group_name = None):
+def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     lines = [
         """load("@bazel_skylib//lib:selects.bzl", "selects")""",
         """package(default_visibility = ["//visibility:public"])""",
@@ -153,12 +153,17 @@ def _render_common_aliases(*, name, aliases, group_name = None):
                 target_name = target_name,
                 visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
             )
-            for target_name, name in {
-                PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
-                WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-                DATA_LABEL: DATA_LABEL,
-                DIST_INFO_LABEL: DIST_INFO_LABEL,
-            }.items()
+            for target_name, name in (
+                {
+                    PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
+                    WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
+                    DATA_LABEL: DATA_LABEL,
+                    DIST_INFO_LABEL: DIST_INFO_LABEL,
+                } | {
+                    x: x
+                    for x in extra_aliases
+                }
+            ).items()
         ],
     )
     if group_name:
@@ -177,7 +182,7 @@ def _render_common_aliases(*, name, aliases, group_name = None):
 
     return "\n\n".join(lines)
 
-def render_pkg_aliases(*, aliases, requirement_cycles = None):
+def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases = {}):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -188,6 +193,8 @@ def render_pkg_aliases(*, aliases, requirement_cycles = None):
         aliases: dict, the keys are normalized distribution names and values are the
             whl_alias instances.
         requirement_cycles: any package groups to also add.
+        extra_hub_aliases: The list of extra aliases for each whl to be added
+          in addition to the default ones.
 
     Returns:
         A dict of file paths and their contents.
@@ -215,6 +222,7 @@ def render_pkg_aliases(*, aliases, requirement_cycles = None):
         "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
             name = normalize_name(name),
             aliases = pkg_aliases,
+            extra_aliases = extra_hub_aliases.get(name, []),
             group_name = whl_group_mapping.get(normalize_name(name)),
         ).strip()
         for name, pkg_aliases in aliases.items()

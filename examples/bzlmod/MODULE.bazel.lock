@@ -1392,8 +1392,8 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "nkgkn6nS/nUD81u40E1jXC7ev6ODlhGKSQh+AVACXpE=",
-        "usagesDigest": "PyEq15H+BV0Lm7Fqv4YXYpEORLiTbACstvsKJJItves=",
+        "bzlTransitiveDigest": "WgU6cOhsU0rGo08wIJd6Pvdf7o/t0Kc2hJKjG5q1gwA=",
+        "usagesDigest": "GGeczTmsfE4YHAy32dV/jfOfbYmpyu/QGe35drFuZ5E=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
           "@@rules_python~//python/private/pypi/whl_installer/platform.py": "b944b908b25a2f97d6d9f491504ad5d2507402d7e37c802ee878783f87f2aa11",
@@ -3239,6 +3239,7 @@
             "ruleClassName": "hub_repository",
             "attributes": {
               "repo_name": "other_module_pip",
+              "extra_hub_aliases": {},
               "whl_map": {
                 "absl_py": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"other_module_pip_311_absl_py\",\"target_platforms\":null,\"version\":\"3.11\"}]"
               },
@@ -4564,6 +4565,11 @@
             "ruleClassName": "hub_repository",
             "attributes": {
               "repo_name": "pip",
+              "extra_hub_aliases": {
+                "wheel": [
+                  "generated_file"
+                ]
+              },
               "whl_map": {
                 "alabaster": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_alabaster\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"alabaster-0.7.13-py3-none-any.whl\",\"repo\":\"pip_39_alabaster_py3_none_any_1ee19aca\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"alabaster-0.7.13.tar.gz\",\"repo\":\"pip_39_alabaster_sdist_a27a4a08\",\"target_platforms\":null,\"version\":\"3.9\"}]",
                 "astroid": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_310_astroid\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"astroid-2.12.13-py3-none-any.whl\",\"repo\":\"pip_39_astroid_py3_none_any_10e0ad5f\",\"target_platforms\":null,\"version\":\"3.9\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":\"astroid-2.12.13.tar.gz\",\"repo\":\"pip_39_astroid_sdist_1493fe8b\",\"target_platforms\":null,\"version\":\"3.9\"}]",
@@ -6581,7 +6587,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "p/gCXbS2A8jkp1e7AdZCd82yEcs4hWqUcMwos9K6AKU=",
+        "bzlTransitiveDigest": "qS9rZZp99wp9LPIN7GRxHTVe/hEdnch7nRpQnWRCRkA=",
         "usagesDigest": "O2O2oBIbKEglN2K3FECsRxUKVS/zg/6a86F3MO1ZtmY=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",
@@ -8765,6 +8771,7 @@
             "ruleClassName": "hub_repository",
             "attributes": {
               "repo_name": "rules_python_publish_deps",
+              "extra_hub_aliases": {},
               "whl_map": {
                 "backports_tarfile": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"backports.tarfile-1.2.0-py3-none-any.whl\",\"repo\":\"rules_python_publish_deps_311_backports_tarfile_py3_none_any_77e284d7\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"backports_tarfile-1.2.0.tar.gz\",\"repo\":\"rules_python_publish_deps_311_backports_tarfile_sdist_d75e02c2\",\"target_platforms\":null,\"version\":\"3.11\"}]",
                 "certifi": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"certifi-2024.8.30-py3-none-any.whl\",\"repo\":\"rules_python_publish_deps_311_certifi_py3_none_any_922820b5\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":\"certifi-2024.8.30.tar.gz\",\"repo\":\"rules_python_publish_deps_311_certifi_sdist_bec941d2\",\"target_platforms\":null,\"version\":\"3.11\"}]",

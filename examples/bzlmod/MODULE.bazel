@@ -183,6 +183,9 @@ pip.parse(
         "cp39_linux_*",
         "cp39_*",
     ],
+    extra_hub_aliases = {
+        "wheel": ["generated_file"],
+    },
     hub_name = "pip",
     python_version = "3.9",
     requirements_lock = "requirements_lock_3_9.txt",
