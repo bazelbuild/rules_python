@@ -67,7 +67,7 @@ def _python_repository_impl(rctx):
     version_suffix = "t" if "freethreaded" in release_filename else ""
     python_short_version = "{0}.{1}{suffix}".format(
         suffix = version_suffix,
-        *python_version_info,
+        *python_version_info
     )
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
