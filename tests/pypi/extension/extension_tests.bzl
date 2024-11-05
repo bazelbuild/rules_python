@@ -81,6 +81,7 @@ def _parse(
         experimental_index_url = "",
         experimental_requirement_cycles = {},
         experimental_target_platforms = [],
+        extra_hub_aliases = {},
         extra_pip_args = [],
         isolated = True,
         netrc = None,
@@ -107,6 +108,7 @@ def _parse(
         experimental_index_url = experimental_index_url,
         experimental_requirement_cycles = experimental_requirement_cycles,
         experimental_target_platforms = experimental_target_platforms,
+        extra_hub_aliases = extra_hub_aliases,
         extra_pip_args = extra_pip_args,
         hub_name = hub_name,
         isolated = isolated,
@@ -210,7 +212,7 @@ def _test_simple_multiple_requirements(env):
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple_v0_0_1_windows_x86_64",
+                repo = "pypi_315_simple_windows_x86_64",
                 target_platforms = [
                     "cp315_windows_x86_64",
                 ],
@@ -219,7 +221,7 @@ def _test_simple_multiple_requirements(env):
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple_v0_0_2_osx_aarch64_osx_x86_64",
+                repo = "pypi_315_simple_osx_aarch64_osx_x86_64",
                 target_platforms = [
                     "cp315_osx_aarch64",
                     "cp315_osx_x86_64",
@@ -229,17 +231,17 @@ def _test_simple_multiple_requirements(env):
         ],
     }})
     pypi.whl_libraries().contains_exactly({
-        "pypi_315_simple_v0_0_1_windows_x86_64": {
-            "dep_template": "@pypi//{name}:{target}",
-            "python_interpreter_target": "unit_test_interpreter_target",
-            "repo": "pypi_315",
-            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
-        },
-        "pypi_315_simple_v0_0_2_osx_aarch64_osx_x86_64": {
+        "pypi_315_simple_osx_aarch64_osx_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "python_interpreter_target": "unit_test_interpreter_target",
             "repo": "pypi_315",
             "requirement": "simple==0.0.2 --hash=sha256:deadb00f",
+        },
+        "pypi_315_simple_windows_x86_64": {
+            "dep_template": "@pypi//{name}:{target}",
+            "python_interpreter_target": "unit_test_interpreter_target",
+            "repo": "pypi_315",
+            "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
         },
     })
     pypi.whl_mods().contains_exactly({})
@@ -306,14 +308,14 @@ simple==0.0.3 --hash=sha256:deadbaaf
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple_v0_0_1_linux_x86_64",
+                repo = "pypi_315_simple_linux_x86_64",
                 target_platforms = ["cp315_linux_x86_64"],
                 version = "3.15",
             ),
             struct(
                 config_setting = "//_config:is_python_3.15",
                 filename = None,
-                repo = "pypi_315_simple_v0_0_3_osx_aarch64",
+                repo = "pypi_315_simple_osx_aarch64",
                 target_platforms = ["cp315_osx_aarch64"],
                 version = "3.15",
             ),
@@ -329,7 +331,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
             "repo": "pypi_315",
             "requirement": "extra==0.0.1 --hash=sha256:deadb00f",
         },
-        "pypi_315_simple_v0_0_1_linux_x86_64": {
+        "pypi_315_simple_linux_x86_64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
             "experimental_target_platforms": ["cp315_linux_x86_64"],
@@ -338,7 +340,7 @@ simple==0.0.3 --hash=sha256:deadbaaf
             "repo": "pypi_315",
             "requirement": "simple==0.0.1 --hash=sha256:deadbeef",
         },
-        "pypi_315_simple_v0_0_3_osx_aarch64": {
+        "pypi_315_simple_osx_aarch64": {
             "dep_template": "@pypi//{name}:{target}",
             "download_only": True,
             "experimental_target_platforms": ["cp315_osx_aarch64"],

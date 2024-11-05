@@ -51,28 +51,21 @@ def whl_repo_name(prefix, filename, sha256):
 
     return "_".join(parts)
 
-def pypi_repo_name(prefix, requirement, version, platform_suffix = ""):
+def pypi_repo_name(prefix, whl_name, *target_platforms):
     """Return a valid whl_library given a requirement line.
 
     Args:
         prefix: {type}`str` the prefix of the whl_library.
-        requirement: {type}`str` the requirement to extract the name.
-        version: {type}`str` the requirement to extract the name.
-        platform_suffix: {type}`str` the platform to use in the name.
+        whl_name: {type}`str` the whl_name to use.
+        *target_platforms: {type}`list[str]` the target platforms to use in the name.
 
     Returns:
         {type}`str` that can be used in {obj}`whl_library`.
     """
-    suffix, _, _ = requirement.partition("=")
-    suffix, _, _ = suffix.partition("]")
-    suffix = normalize_name(suffix.replace("[", "_").replace(",", "_"))
-    version = version.replace("-", "_").replace("+", "_").replace(".", "_")
     parts = [
         prefix,
-        normalize_name(suffix),
-        "v" + version,
+        normalize_name(whl_name),
     ]
-    if platform_suffix:
-        parts.append(platform_suffix)
+    parts.extend([p.partition("_")[-1] for p in target_platforms])
 
     return "_".join(parts)

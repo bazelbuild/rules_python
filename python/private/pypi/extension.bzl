@@ -368,11 +368,9 @@ def _create_whl_repos(
             target_platforms = requirement.target_platforms if len(requirements) > 1 else []
             repo_name = pypi_repo_name(
                 pip_name,
-                requirement.srcs.requirement,
-                requirement.srcs.version,
-                # Strip the leading cp3x prefix
-                "_".join([p.partition("_")[-1] for p in target_platforms]),
-            ) if target_platforms else "{}_{}".format(pip_name, whl_name)
+                whl_name,
+                *target_platforms
+            )
             whl_libraries[repo_name] = args
             whl_map.setdefault(whl_name, []).append(
                 whl_alias(
