@@ -284,7 +284,7 @@ def _maybe_collect_coverage(enable):
 
     # We need for coveragepy to use relative paths.  This can only be configured
     if os.environ.get("COVERAGE_RC"):
-        rcfile_name = os.path.abspath(os.environ["COVERAGE_RC"])
+        rcfile_name = (os.environ["COVERAGE_RC"])
         assert (
             os.path.exists(rcfile_name) == True
         ), f"Coverage rc {rcfile_name} file does not exist"

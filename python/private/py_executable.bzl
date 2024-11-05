@@ -940,7 +940,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
 
     imports = collect_imports(ctx, semantics)
 
-    runtime_details = _get_runtime_details(ctx, semantics)
+    runtime_details = _get_runtime_details(ctx, semantics, is_test)
     if ctx.configuration.coverage_enabled:
         extra_deps = semantics.get_coverage_deps(ctx, runtime_details)
     else:
@@ -1016,7 +1016,6 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
         inherited_environment = inherited_environment,
         semantics = semantics,
         output_groups = exec_result.output_groups,
-        is_test = is_test,
     )
 
 def _get_build_info(ctx, cc_toolchain):
@@ -1041,7 +1040,7 @@ def _declare_executable_file(ctx):
 
     return executable
 
-def _get_runtime_details(ctx, semantics):
+def _get_runtime_details(ctx, semantics, is_test):
     """Gets various information about the Python runtime to use.
 
     While most information comes from the toolchain, various legacy and
@@ -1050,6 +1049,7 @@ def _get_runtime_details(ctx, semantics):
     Args:
         ctx: Rule ctx
         semantics: A `BinarySemantics` struct; see `create_binary_semantics_struct`
+        is_test: bool; True if the rule is a test rule (has `test=True`), False if not
 
     Returns:
         A struct; see inline-field comments of the return value for details.
@@ -1078,6 +1078,7 @@ def _get_runtime_details(ctx, semantics):
         if not effective_runtime:
             fail("Unable to find Python runtime")
 
+    extra_test_env = {}
     if effective_runtime:
         direct = []  # List of files
         transitive = []  # List of depsets
@@ -1090,6 +1091,12 @@ def _get_runtime_details(ctx, semantics):
                 direct.append(effective_runtime.coverage_tool)
             if effective_runtime.coverage_files:
                 transitive.append(effective_runtime.coverage_files)
+        if is_test:
+            py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
+            if py_test_toolchain:
+                coverage_rc = py_test_toolchain.py_test_info.coverage_rc
+                extra_test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].short_path}
+                direct.extend(coverage_rc.files.to_list())
         runtime_files = depset(direct = direct, transitive = transitive)
     else:
         runtime_files = depset()
@@ -1121,6 +1128,9 @@ def _get_runtime_details(ctx, semantics):
         # be included. For in-build runtimes, this shold include the interpreter
         # and any supporting files.
         runfiles = ctx.runfiles(transitive_files = runtime_files),
+        # extra_test_env: dict[str, str]; Additional environment variables to
+        # set when running the test.
+        extra_test_env = extra_test_env,
     )
 
 def _maybe_get_runtime_from_ctx(ctx):
@@ -1582,8 +1592,7 @@ def _create_providers(
         inherited_environment,
         runtime_details,
         output_groups,
-        semantics,
-        is_test):
+        semantics):
     """Creates the providers an executable should return.
 
     Args:
@@ -1613,21 +1622,10 @@ def _create_providers(
         runtime_details: struct of runtime information; see _get_runtime_details()
         output_groups: dict[str, depset[File]]; used to create OutputGroupInfo
         semantics: BinarySemantics struct; see create_binary_semantics()
-        is_test: bool; True if the rule is a test rule,
 
     Returns:
         A list of modern providers.
     """
-
-    default_runfiles = runfiles_details.default_runfiles
-    extra_test_env = {}
-
-    if is_test:
-        py_test_toolchain = ctx.exec_groups["test"].toolchains[PY_TEST_TOOLCHAIN_TYPE]
-        if py_test_toolchain:
-            coverage_rc = py_test_toolchain.py_test_info.coverage_rc
-            extra_test_env = {"COVERAGE_RC": coverage_rc.files.to_list()[0].path}
-            default_runfiles = default_runfiles.merge(ctx.runfiles(files = coverage_rc.files.to_list()))
 
     providers = [
         DefaultInfo(
@@ -1635,7 +1633,7 @@ def _create_providers(
             files = default_outputs,
             default_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
                 ctx,
-                default_runfiles,
+                runfiles_details.default_runfiles,
             ),
             data_runfiles = _py_builtins.make_runfiles_respect_legacy_external_runfiles(
                 ctx,
@@ -1643,7 +1641,7 @@ def _create_providers(
             ),
         ),
         create_instrumented_files_info(ctx),
-        _create_run_environment_info(ctx, inherited_environment, extra_test_env),
+        _create_run_environment_info(ctx, inherited_environment, runtime_details.extra_test_env),
         PyExecutableInfo(
             main = main_py,
             runfiles_without_exe = runfiles_details.runfiles_without_exe,
