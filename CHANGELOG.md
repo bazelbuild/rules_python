@@ -68,13 +68,10 @@ A brief description of the categories of changes:
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
 * The rules_python version is now reported in `//python/features.bzl#features.version`
-<<<<<<< HEAD
-* (toolchain) The support for freethreaded Python toolchains is now available.
-=======
 * (pip.parse) {attr}`pip.parse.extra_hub_aliases` can now be used to expose extra
   targets created by annotations in whl repositories.
   Fixes [#2187](https://github.com/bazelbuild/rules_python/issues/2187).
->>>>>>> main
+* (toolchain) The support for freethreaded Python toolchains is now available.
 
 {#v0-0-0-removed}
 ### Removed
