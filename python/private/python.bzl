@@ -213,6 +213,7 @@ def parse_modules(*, module_ctx, _fail = fail):
 def _python_impl(module_ctx):
     py = parse_modules(module_ctx = module_ctx)
 
+    loaded_platforms = {}
     for toolchain_info in py.toolchains:
         # Ensure that we pass the full version here.
         full_python_version = full_version(
@@ -228,7 +229,7 @@ def _python_impl(module_ctx):
         kwargs.update(py.config.kwargs.get(toolchain_info.python_version, {}))
         kwargs.update(py.config.kwargs.get(full_python_version, {}))
         kwargs.update(py.config.default)
-        python_register_toolchains(
+        loaded_platforms[full_python_version] = python_register_toolchains(
             name = toolchain_info.name,
             _internal_bzlmod_toolchain_call = True,
             **kwargs
@@ -257,6 +258,7 @@ def _python_impl(module_ctx):
             for i in range(len(py.toolchains))
         ],
         toolchain_user_repository_names = [t.name for t in py.toolchains],
+        loaded_platforms = loaded_platforms,
     )
 
     # This is require in order to support multiple version py_test

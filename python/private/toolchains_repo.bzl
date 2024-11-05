@@ -41,7 +41,8 @@ def python_toolchain_build_file_content(
         prefix,
         python_version,
         set_python_version_constraint,
-        user_repository_name):
+        user_repository_name,
+        loaded_platforms):
     """Creates the content for toolchain definitions for a build file.
 
     Args:
@@ -51,6 +52,8 @@ def python_toolchain_build_file_content(
             have the Python version constraint added as a requirement for
             matching the toolchain, "False" if not.
         user_repository_name: names for the user repos
+        loaded_platforms: the list of platform identifiers for which to generate
+            the toolchain targets.
 
     Returns:
         build_content: Text containing toolchain definitions
@@ -78,6 +81,7 @@ py_toolchain_suite(
             python_version = python_version,
         )
         for platform, meta in PLATFORMS.items()
+        if platform in loaded_platforms
     ])
 
 def _toolchains_repo_impl(rctx):
@@ -100,6 +104,7 @@ load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_sui
         python_version = rctx.attr.python_version,
         set_python_version_constraint = str(rctx.attr.set_python_version_constraint),
         user_repository_name = rctx.attr.user_repository_name,
+        loaded_platforms = rctx.attr.platforms,
     )
 
     rctx.file("BUILD.bazel", build_content + toolchains)
@@ -109,6 +114,7 @@ toolchains_repo = repository_rule(
     doc = "Creates a repository with toolchain definitions for all known platforms " +
           "which can be registered or selected.",
     attrs = {
+        "platforms": attr.string_list(doc = "List of platforms for which the toolchain definitions shall be created"),
         "python_version": attr.string(doc = "The Python version."),
         "set_python_version_constraint": attr.bool(doc = "if target_compatible_with for the toolchain should set the version constraint"),
         "user_repository_name": attr.string(doc = "what the user chose for the base name"),
