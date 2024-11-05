@@ -37,6 +37,8 @@ A brief description of the categories of changes:
   by default. Users wishing to keep this argument and to enforce more hermetic
   builds can do so by passing the argument in
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
+  and now `pyyaml` and `PyYAML` will both work.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -58,6 +60,9 @@ A brief description of the categories of changes:
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
 * The rules_python version is now reported in `//python/features.bzl#features.version`
+* (pip.parse) {attr}`pip.parse.extra_hub_aliases` can now be used to expose extra
+  targets created by annotations in whl repositories.
+  Fixes [#2187](https://github.com/bazelbuild/rules_python/issues/2187).
 
 {#v0-0-0-removed}
 ### Removed
