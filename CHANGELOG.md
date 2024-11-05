@@ -37,6 +37,9 @@ A brief description of the categories of changes:
   by default. Users wishing to keep this argument and to enforce more hermetic
   builds can do so by passing the argument in
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (toolchains) Use the latest indygreg toolchain release [20241016].
+
+[20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -58,6 +61,7 @@ A brief description of the categories of changes:
   and one extra file `requirements_universal.txt` if you prefer a single file.
   The `requirements.txt` file may be removed in the future.
 * The rules_python version is now reported in `//python/features.bzl#features.version`
+* (toolchain) The support for freethreaded Python toolchains is now available.
 
 {#v0-0-0-removed}
 ### Removed

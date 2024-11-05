@@ -24,7 +24,7 @@ DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/
 
 # When updating the versions and releases, run the following command to get
 # the hashes:
-#   bazel run //python/private:print_toolchains_checksums
+#   bazel run //python/private:print_toolchains_checksums --//python/config_settings:python_version={major}.{minor}.{patch}
 #
 # Note, to users looking at how to specify their tool versions, coverage_tool version for each
 # interpreter can be specified by:
@@ -562,7 +562,7 @@ TOOL_VERSIONS = {
     },
     "3.13.0": {
         "url": {
-            platform + suffix: "20241008/cpython-{python_version}+20241008-" + build
+            platform + suffix: "20241016/cpython-{python_version}+20241016-" + build
             for platform, opt in {
                 "aarch64-apple-darwin": "pgo+lto",
                 "aarch64-unknown-linux-gnu": "lto",
@@ -583,21 +583,20 @@ TOOL_VERSIONS = {
             }.items()
         },
         "sha256": {
-            "aarch64-apple-darwin": "5d3cb8d7ca4cfbbe7ae1f118f26be112ee417d982fab8c6d85cfd8ccccf70718",
-            "aarch64-unknown-linux-gnu": "c1142af8f2c85923d2ba8201a35b913bb903a5d15f052c38bbecf2f49e2342dc",
-            "ppc64le-unknown-linux-gnu": "1be64a330499fed4e1f864b97eef5445b0e4abc0559ae45df3108981800cf998",
-            "s390x-unknown-linux-gnu": "c0b1cc51426feadaa932fdd9afd9a9af789916e128e48ac8909f9a269bbbd749",
-            "x86_64-apple-darwin": "b58ca12d9ae14bbd79f9e5cf4b748211ff1953e59abeac63b0f4e8e49845669f",
-            "x86_64-pc-windows-msvc": "c7651a7a575104f47c808902b020168057f3ad80f277e54cecfaf79a9ff50e22",
-            "x86_64-unknown-linux-gnu": "455200e1a202e9d9ef4b630c04af701c0a91dcaa6462022efc76893fc762ec95",
-            # Add freethreaded variants
-            "aarch64-apple-darwin-freethreaded": "8cc1586c4ee730bb33b7e6d39f1b6388f895075fadb1771e3c27b0561abb9242",
-            "aarch64-unknown-linux-gnu-freethreaded": "56b11e29095e7c183ae191bf9f5ec4e7a71ac41e9c759786faf16c707b83b6b0",
-            "ppc64le-unknown-linux-gnu-freethreaded": "abac77abeb3c39c355fbc2cd74216254c46bcb28dda10b525daf821bf1d364dc",
-            "s390x-unknown-linux-gnu-freethreaded": "9adab574543ab8c5fc0ad9e313050030dbdae85160629b1dcbbc3e9d9515a0da",
-            "x86_64-apple-darwin-freethreaded": "117528b68096379b1303faee1f4f9e32ef3d255207ec92fb063f1bd0b942549d",
-            "x86_64-pc-windows-msvc-freethreaded": "fc665561556f4dc843cd3eeba4d482f716aec65d5b89a657316829cfbdc9462a",
-            "x86_64-unknown-linux-gnu-freethreaded": "00a159a64640ce614bdac064b270a9854d86d40d1d8387a822daf1fe0881e64b",
+            "aarch64-apple-darwin": "31397953849d275aa2506580f3fa1cb5a85b6a3d392e495f8030e8b6412f5556",
+            "aarch64-unknown-linux-gnu": "e8378c0162b2e0e4cc1f62b29443a3305d116d09583304dbb0149fecaff6347b",
+            "ppc64le-unknown-linux-gnu": "fc4b7f27c4e84c78f3c8e6c7f8e4023e4638d11f1b36b6b5ce457b1926cebb53",
+            "s390x-unknown-linux-gnu": "66b19e6a07717f6cfcd3a8ca953f0a2eaa232291142f3d26a8d17c979ec0f467",
+            "x86_64-apple-darwin": "cff1b7e7cd26f2d47acac1ad6590e27d29829776f77e8afa067e9419f2f6ce77",
+            "x86_64-pc-windows-msvc": "b25926e8ce4164cf103bacc4f4d154894ea53e07dd3fdd5ebb16fb1a82a7b1a0",
+            "x86_64-unknown-linux-gnu": "2c8cb15c6a2caadaa98af51df6fe78a8155b8471cb3dd7b9836038e0d3657fb4",
+            "aarch64-apple-darwin-freethreaded": "efc2e71c0e05bc5bedb7a846e05f28dd26491b1744ded35ed82f8b49ccfa684b",
+            "aarch64-unknown-linux-gnu-freethreaded": "59b50df9826475d24bb7eff781fa3949112b5e9c92adb29e96a09cdf1216d5bd",
+            "ppc64le-unknown-linux-gnu-freethreaded": "1217efa5f4ce67fcc9f7eb64165b1bd0912b2a21bc25c1a7e2cb174a21a5df7e",
+            "s390x-unknown-linux-gnu-freethreaded": "6c3e1e4f19d2b018b65a7e3ef4cd4225c5b9adfbc490218628466e636d5c4b8c",
+            "x86_64-apple-darwin-freethreaded": "2e07dfea62fe2215738551a179c87dbed1cc79d1b3654f4d7559889a6d5ce4eb",
+            "x86_64-pc-windows-msvc-freethreaded": "bfd89f9acf866463bc4baf01733da5e767d13f5d0112175a4f57ba91f1541310",
+            "x86_64-unknown-linux-gnu-freethreaded": "a73adeda301ad843cce05f31a2d3e76222b656984535a7b87696a24a098b216c",
         },
         "strip_prefix": "python",
     },
@@ -807,15 +806,13 @@ def print_toolchains_checksums(name):
     Args:
         name: {type}`str`: the name of the runnable target.
     """
-    commands = []
+    all_commands = []
+    by_version = {}
     for python_version in TOOL_VERSIONS.keys():
-        commands.append(_commands_for_version(python_version))
+        by_version[python_version] = _commands_for_version(python_version)
+        all_commands.append(_commands_for_version(python_version))
 
-    native.genrule(
-        name = name,
-        srcs = [],
-        outs = ["print_toolchains_checksums.sh"],
-        cmd = """\
+    template = """\
 cat > "$@" <<'EOF'
 #!/bin/bash
 
@@ -825,9 +822,20 @@ echo "Fetching hashes..."
 
 {commands}
 EOF
-        """.format(
-            commands = "\n".join(commands),
-        ),
+    """
+
+    native.genrule(
+        name = name,
+        srcs = [],
+        outs = ["print_toolchains_checksums.sh"],
+        cmd = select({
+            "//python/config_settings:is_python_{}".format(version): template.format(
+                commands = commands,
+            )
+            for version, commands in by_version.items()
+        } | {
+            "//conditions:default": template.format(commands = "\n".join(all_commands)),
+        }),
         executable = True,
     )
 

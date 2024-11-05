@@ -45,7 +45,7 @@ def define_hermetic_runtime_toolchain_impl(
         python_version: {type}`str` The Python version, in `major.minor.micro`
             format.
         python_bin: {type}`str` The path to the Python binary within the
-            repositoroy.
+            repository.
         coverage_tool: {type}`str` optional target to the coverage tool to
             use.
     """
