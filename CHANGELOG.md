@@ -39,7 +39,12 @@ A brief description of the categories of changes:
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 * (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
   and now `pyyaml` and `PyYAML` will both work.
-* (toolchains) Use the latest indygreg toolchain release [20241016].
+* (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
+    * 3.9.20
+    * 3.10.15
+    * 3.11.10
+    * 3.12.7
+    * 3.13.0
 
 [20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
 
