@@ -46,10 +46,7 @@ python.toolchain(
     is_default = True,
     python_version = "3.11",
 )
-python.toolchain(
-    python_version = "3.13",
-)
-use_repo(python, "python_3_11", "python_3_13", "python_versions", "pythons_hub")
+use_repo(python, "python_3_11", "python_versions", "pythons_hub")
 
 # This call registers the Python toolchains.
 register_toolchains("@pythons_hub//:all")
