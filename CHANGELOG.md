@@ -103,6 +103,9 @@ Other changes:
 ### Fixed
 * (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
   ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
+* (pypi): Correctly handle multiple versions of the same package in the requirements
+  files which is useful when including different PyTorch builds (e.g. <pytorch+cpu> vs <pytorch+cu118> ) for different target platforms.
+  Fixes ([2337](https://github.com/bazelbuild/rules_python/issues/2337)).
 
 {#v0-40-added}
 ### Added

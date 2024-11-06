@@ -32,6 +32,20 @@ load(":index_sources.bzl", "index_sources")
 load(":parse_requirements_txt.bzl", "parse_requirements_txt")
 load(":whl_target_platforms.bzl", "select_whls")
 
+def _extract_version(entry):
+    """Extract the version part from the requirement string.
+
+
+    Args:
+        entry: {type}`str` The requirement string.
+    """
+    version_start = entry.find("==")
+    if version_start != -1:
+        # Extract everything after '==' until the next space or end of the string
+        version, _, _ = entry[version_start + 2:].partition(" ")
+        return version
+    return None
+
 def parse_requirements(
         ctx,
         *,
@@ -92,7 +106,7 @@ def parse_requirements(
         # are returned as just the base package name. e.g., `foo[bar]` results
         # in an entry like `("foo", "foo[bar] == 1.0 ...")`.
         requirements_dict = {
-            normalize_name(entry[0]): entry
+            (normalize_name(entry[0]), _extract_version(entry[1])): entry
             for entry in sorted(
                 parse_result.requirements,
                 # Get the longest match and fallback to original WORKSPACE sorting,
