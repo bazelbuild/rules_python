@@ -67,18 +67,16 @@ def define_hermetic_runtime_toolchain_impl(
             # Platform-agnostic filegroup can't match on all patterns.
             allow_empty = True,
             exclude = [
-                # static libraries
-                "lib/**/*.a",
-                # During pyc creation, temp files named *.pyc.NNN are created
-                "**/__pycache__/*.pyc.*",
-                # Do exclusions for all known ABIs
                 # Unused shared libraries. `python` executable and the `:libpython` target
                 # depend on `libpython{python_version}.so.1.0`.
                 "lib/libpython{major}.{minor}*.so".format(**version_dict),
-                "lib/libpython{major}.{minor}*.so".format(**version_dict),
+                # static libraries
+                "lib/**/*.a",
                 # tests for the standard libraries.
                 "lib/python{major}.{minor}*/**/test/**".format(**version_dict),
                 "lib/python{major}.{minor}*/**/tests/**".format(**version_dict),
+                # During pyc creation, temp files named *.pyc.NNN are created
+                "**/__pycache__/*.pyc.*",
             ] + glob_excludes.version_dependent_exclusions() + extra_files_glob_exclude,
         ),
     )
