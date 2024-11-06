@@ -21,6 +21,8 @@ load(":glob_excludes.bzl", "glob_excludes")
 load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load(":semver.bzl", "semver")
 
+_IS_FREETHREADED = Label("//python/config_settings:is_py_freethreaded")
+
 def define_hermetic_runtime_toolchain_impl(
         *,
         name,
@@ -50,7 +52,6 @@ def define_hermetic_runtime_toolchain_impl(
             use.
     """
     _ = name  # @unused
-    is_freethreaded = Label("//python/config_settings:is_py_freethreaded")
     version_info = semver(python_version)
     version_dict = version_info.to_dict()
     native.filegroup(
@@ -84,7 +85,7 @@ def define_hermetic_runtime_toolchain_impl(
     cc_import(
         name = "interface",
         interface_library = select({
-            is_freethreaded: "libs/python{major}{minor}t.lib".format(**version_dict),
+            _IS_FREETHREADED: "libs/python{major}{minor}t.lib".format(**version_dict),
             "//conditions:default": "libs/python{major}{minor}.lib".format(**version_dict),
         }),
         system_provided = True,
@@ -104,7 +105,7 @@ def define_hermetic_runtime_toolchain_impl(
         includes = [
             "include",
         ] + select({
-            is_freethreaded: [
+            _IS_FREETHREADED: [
                 "include/python{major}.{minor}t".format(**version_dict),
                 # FIXME @aignas 2024-11-05: the following looks fishy - should
                 # we have a config setting for `m` (i.e. DEBUG builds)?
@@ -196,7 +197,7 @@ def define_hermetic_runtime_toolchain_impl(
         implementation_name = "cpython",
         # See https://peps.python.org/pep-3147/ for pyc tag infix format
         pyc_tag = select({
-            is_freethreaded: "cpython-{major}{minor}t".format(**version_dict),
+            _IS_FREETHREADED: "cpython-{major}{minor}t".format(**version_dict),
             "//conditions:default": "cpython-{major}{minor}".format(**version_dict),
         }),
     )
