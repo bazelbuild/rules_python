@@ -189,8 +189,11 @@ def define_hermetic_runtime_toolchain_impl(
             "micro": str(version_info.patch),
             "minor": str(version_info.minor),
         },
-        # Convert empty string to None
-        coverage_tool = coverage_tool or None,
+        coverage_tool = select({
+            # Convert empty string to None
+            ":coverage_enabled": coverage_tool or None,
+            "//conditions:default": None,
+        }),
         python_version = "PY3",
         implementation_name = "cpython",
         # See https://peps.python.org/pep-3147/ for pyc tag infix format
