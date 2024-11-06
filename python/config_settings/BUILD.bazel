@@ -5,6 +5,7 @@ load(
     "AddSrcsToRunfilesFlag",
     "BootstrapImplFlag",
     "ExecToolsToolchainFlag",
+    "FreeThreadedFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
 )
@@ -94,19 +95,14 @@ string_flag(
 
 string_flag(
     name = "py_freethreaded",
-    build_setting_default = "no",
-    values = [
-        "yes",
-        "no",
-    ],
+    build_setting_default = FreeThreadedFlag.NO,
+    values = sorted(FreeThreadedFlag.__members__.values()),
     visibility = ["//visibility:public"],
 )
 
 config_setting(
     name = "is_py_freethreaded",
-    flag_values = {
-        ":py_freethreaded": "yes",
-    },
+    flag_values = {":py_freethreaded": FreeThreadedFlag.YES},
     visibility = ["//visibility:public"],
 )
 
