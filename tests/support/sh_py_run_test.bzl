@@ -158,7 +158,7 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
             "@bazel_tools//tools/bash/runfiles",
         ],
         env = {
-            "BIN_RLOCATION": "$(rlocationpath {})".format(bin_name),
+            "BIN_RLOCATION": "$(rlocationpaths {})".format(bin_name),
         },
     )
 

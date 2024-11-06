@@ -59,3 +59,6 @@ pip.parse(
 
 # example test dependencies
 bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)
+
+# Only needed to make rules_python's CI happy
+bazel_dep(name = "rules_java", version = "8.3.0")
