@@ -325,7 +325,12 @@ def _sphinx_source_tree_impl(ctx):
     def _relocate(source_file, dest_path = None):
         if not dest_path:
             dest_path = source_file.short_path.removeprefix(ctx.attr.strip_prefix)
-        dest_file = ctx.actions.declare_file(paths.join(source_prefix, dest_path))
+
+        dest_path = paths.join(source_prefix, dest_path)
+        if source_file.is_directory:
+            dest_file = ctx.actions.declare_directory(dest_path)
+        else:
+            dest_file = ctx.actions.declare_file(dest_path)
         ctx.actions.symlink(
             output = dest_file,
             target_file = source_file,
