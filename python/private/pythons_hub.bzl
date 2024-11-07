@@ -153,7 +153,7 @@ This rule also writes out the various toolchains for the different Python versio
             mandatory = True,
         ),
         "loaded_platforms": attr.string_list_dict(
-            doc = "The mapping from platform to version",
+            doc = "The list of loaded platforms keyed by the toolchain full python version",
         ),
         "minor_mapping": attr.string_dict(
             doc = "The minor mapping of the `X.Y` to `X.Y.Z` format that is used in config settings.",
