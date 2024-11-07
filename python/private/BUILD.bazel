@@ -256,6 +256,7 @@ bzl_library(
     deps = [
         ":py_toolchain_suite_bzl",
         ":text_util_bzl",
+        "//python:versions_bzl",
     ],
 )
 

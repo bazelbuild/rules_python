@@ -52,8 +52,8 @@ def python_toolchain_build_file_content(
             have the Python version constraint added as a requirement for
             matching the toolchain, "False" if not.
         user_repository_name: names for the user repos
-        loaded_platforms: the list of platform identifiers for which to generate
-            the toolchain targets.
+        loaded_platforms: {type}`struct` the list of platform structs defining the
+            loaded platforms. It is as they are defined in `//python:versions.bzl`.
 
     Returns:
         build_content: Text containing toolchain definitions
@@ -80,8 +80,7 @@ py_toolchain_suite(
             prefix = prefix,
             python_version = python_version,
         )
-        for platform, meta in PLATFORMS.items()
-        if platform in loaded_platforms
+        for platform, meta in loaded_platforms.items()
     ])
 
 def _toolchains_repo_impl(rctx):
@@ -104,7 +103,11 @@ load("@{rules_python}//python/private:py_toolchain_suite.bzl", "py_toolchain_sui
         python_version = rctx.attr.python_version,
         set_python_version_constraint = str(rctx.attr.set_python_version_constraint),
         user_repository_name = rctx.attr.user_repository_name,
-        loaded_platforms = rctx.attr.platforms,
+        loaded_platforms = {
+            k: v
+            for k, v in PLATFORMS.items()
+            if k in rctx.attr.platforms
+        },
     )
 
     rctx.file("BUILD.bazel", build_content + toolchains)

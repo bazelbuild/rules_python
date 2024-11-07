@@ -14,6 +14,7 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
+load("//python:versions.bzl", "PLATFORMS")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "python_toolchain_build_file_content")
 
@@ -66,7 +67,11 @@ def _hub_build_file_content(
                 python_version = python_versions[i],
                 set_python_version_constraint = set_python_version_constraints[i],
                 user_repository_name = user_repository_names[i],
-                loaded_platforms = loaded_platforms[python_versions[i]],
+                loaded_platforms = {
+                    k: v
+                    for k, v in PLATFORMS.items()
+                    if k in loaded_platforms[python_versions[i]]
+                },
             )
             for i in range(len(python_versions))
         ],
