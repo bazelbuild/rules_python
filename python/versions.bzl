@@ -19,6 +19,7 @@
 MACOS_NAME = "mac os"
 LINUX_NAME = "linux"
 WINDOWS_NAME = "windows"
+FREETHREADED = "freethreaded"
 
 DEFAULT_RELEASE_BASE_URL = "https://github.com/indygreg/python-build-standalone/releases/download"
 
@@ -612,16 +613,10 @@ MINOR_MAPPING = {
     "3.13": "3.13.0",
 }
 
-PLATFORMS = {
-    p + suffix: struct(
-        compatible_with = v.compatible_with,
-        flag_values = {
-            Label("//python/config_settings:py_freethreaded"): freethreaded,
-        } | v.flag_values,
-        os_name = v.os_name,
-        arch = v.arch,
-    )
-    for p, v in {
+def _generate_platforms():
+    libc = Label("//python/config_settings:py_linux_libc")
+
+    platforms = {
         "aarch64-apple-darwin": struct(
             compatible_with = [
                 "@platforms//os:macos",
@@ -639,7 +634,7 @@ PLATFORMS = {
                 "@platforms//cpu:aarch64",
             ],
             flag_values = {
-                Label("//python/config_settings:py_linux_libc"): "glibc",
+                libc: "glibc",
             },
             os_name = LINUX_NAME,
             # Note: this string differs between OSX and Linux
@@ -653,7 +648,7 @@ PLATFORMS = {
                 "@platforms//cpu:armv7",
             ],
             flag_values = {
-                Label("//python/config_settings:py_linux_libc"): "glibc",
+                libc: "glibc",
             },
             os_name = LINUX_NAME,
             arch = "armv7",
@@ -664,7 +659,7 @@ PLATFORMS = {
                 "@platforms//cpu:i386",
             ],
             flag_values = {
-                Label("//python/config_settings:py_linux_libc"): "glibc",
+                libc: "glibc",
             },
             os_name = LINUX_NAME,
             arch = "i386",
@@ -675,7 +670,7 @@ PLATFORMS = {
                 "@platforms//cpu:ppc",
             ],
             flag_values = {
-                Label("//python/config_settings:py_linux_libc"): "glibc",
+                libc: "glibc",
             },
             os_name = LINUX_NAME,
             # Note: this string differs between OSX and Linux
@@ -732,17 +727,32 @@ PLATFORMS = {
                 "@platforms//cpu:x86_64",
             ],
             flag_values = {
-                Label("//python/config_settings:py_linux_libc"): "glibc",
+                libc: "glibc",
             },
             os_name = LINUX_NAME,
             arch = "x86_64",
         ),
-    }.items()
-    for suffix, freethreaded in {
-        "": "no",
-        "-freethreaded": "yes",
-    }.items()
-}
+    }
+
+    freethreaded = Label("//python/config_settings:py_freethreaded")
+    return {
+        p + suffix: struct(
+            compatible_with = v.compatible_with,
+            flag_values = {
+                freethreaded: freethreaded_value,
+            } | v.flag_values,
+            os_name = v.os_name,
+            arch = v.arch,
+        )
+        for suffix, freethreaded_value in {
+            "": "no",
+            "-freethreaded": "yes",
+        }.items()
+        for p, v in platforms.items()
+    }
+
+PLATFORMS = _generate_platforms(
+)
 
 def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
     """Resolve the release URL for the requested interpreter version
