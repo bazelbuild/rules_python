@@ -39,6 +39,12 @@ A brief description of the categories of changes:
   [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
 * (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
   and now `pyyaml` and `PyYAML` will both work.
+* (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
+  release in places where the users specify different package versions per
+  platform in the same hub repository. The naming of the spoke repos is considered
+  an implementation detail and we advise the users to use the `hub` repository
+  directly to avoid such breakage in the future. If `rules_python` is missing
+  features to allow one to do that, please raise tickets.
 * (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
     * 3.9.20
     * 3.10.15
@@ -59,6 +65,12 @@ A brief description of the categories of changes:
   pass the `extra_pip_args` value when building an `sdist`.
 * (pypi) The patched wheel filenames from now on are using local version specifiers
   which fixes usage of the said wheels using standard package managers.
+* (bzlmod) The extension evaluation has been adjusted to always generate the
+  same lock file irrespective if `experimental_index_url` is set by any module
+  or not. Fixes
+  [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
+  issue is that it may break `bazel query` and in these use cases it is
+  advisable to use `cquery` or switch to `download_only = True`
 
 {#v0-0-0-added}
 ### Added
@@ -71,7 +83,12 @@ A brief description of the categories of changes:
 * (pip.parse) {attr}`pip.parse.extra_hub_aliases` can now be used to expose extra
   targets created by annotations in whl repositories.
   Fixes [#2187](https://github.com/bazelbuild/rules_python/issues/2187).
-* (toolchain) The support for freethreaded Python toolchains is now available.
+* (bzlmod) `pip.parse` now supports `whl-only` setup using
+  `download_only = True` where users can specify multiple requirements files
+  and use the `pip` backend to do the downloading. This was only available for
+  users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
+  more options whilst we continue to work on stabilizing the experimental feature.
+* (toolchain) The support for freethreaded Python toolchains is now available. 
 
 {#v0-0-0-removed}
 ### Removed
