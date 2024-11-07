@@ -31,7 +31,7 @@ load(":render_pkg_aliases.bzl", "whl_alias")
 load(":requirements_files_by_platform.bzl", "requirements_files_by_platform")
 load(":simpleapi_download.bzl", "simpleapi_download")
 load(":whl_library.bzl", "whl_library")
-load(":whl_repo_name.bzl", "whl_repo_name")
+load(":whl_repo_name.bzl", "pypi_repo_name", "whl_repo_name")
 
 def _major_minor_version(version):
     version = semver(version)
@@ -260,10 +260,10 @@ def _create_whl_repos(
             if v != default
         })
 
+        is_exposed = False
         if get_index_urls:
             # TODO @aignas 2024-05-26: move to a separate function
             found_something = False
-            is_exposed = False
             for requirement in requirements:
                 is_exposed = is_exposed or requirement.is_exposed
                 dists = requirement.whls
@@ -319,35 +319,69 @@ def _create_whl_repos(
                     exposed_packages[whl_name] = None
                 continue
 
-        requirement = select_requirement(
-            requirements,
-            platform = None if pip_attr.download_only else repository_platform,
-        )
-        if not requirement:
-            # Sometimes the package is not present for host platform if there
-            # are whls specified only in particular requirements files, in that
-            # case just continue, however, if the download_only flag is set up,
-            # then the user can also specify the target platform of the wheel
-            # packages they want to download, in that case there will be always
-            # a requirement here, so we will not be in this code branch.
+        if not pip_attr.parse_all_requirements_files:
+            requirement = select_requirement(
+                requirements,
+                platform = None if pip_attr.download_only else repository_platform,
+            )
+            if not requirement:
+                # Sometimes the package is not present for host platform if there
+                # are whls specified only in particular requirements files, in that
+                # case just continue, however, if the download_only flag is set up,
+                # then the user can also specify the target platform of the wheel
+                # packages they want to download, in that case there will be always
+                # a requirement here, so we will not be in this code branch.
+                continue
+            elif get_index_urls:
+                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
+
+            whl_library_args["requirement"] = requirement.requirement_line
+            if requirement.extra_pip_args:
+                whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+
+            # We sort so that the lock-file remains the same no matter the order of how the
+            # args are manipulated in the code going before.
+            repo_name = "{}_{}".format(pip_name, whl_name)
+            whl_libraries[repo_name] = dict(whl_library_args.items())
+            whl_map.setdefault(whl_name, []).append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                ),
+            )
             continue
-        elif get_index_urls:
-            logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
-        whl_library_args["requirement"] = requirement.requirement_line
-        if requirement.extra_pip_args:
-            whl_library_args["extra_pip_args"] = requirement.extra_pip_args
+        is_exposed = False
+        for requirement in requirements:
+            is_exposed = is_exposed or requirement.is_exposed
+            if get_index_urls:
+                logger.warn(lambda: "falling back to pip for installing the right file for {}".format(requirement.requirement_line))
 
-        # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before.
-        repo_name = "{}_{}".format(pip_name, whl_name)
-        whl_libraries[repo_name] = dict(whl_library_args.items())
-        whl_map.setdefault(whl_name, []).append(
-            whl_alias(
-                repo = repo_name,
-                version = major_minor,
-            ),
-        )
+            args = dict(whl_library_args)  # make a copy
+            args["requirement"] = requirement.requirement_line
+            if requirement.extra_pip_args:
+                args["extra_pip_args"] = requirement.extra_pip_args
+
+            if pip_attr.download_only:
+                args.setdefault("experimental_target_platforms", requirement.target_platforms)
+
+            target_platforms = requirement.target_platforms if len(requirements) > 1 else []
+            repo_name = pypi_repo_name(
+                pip_name,
+                whl_name,
+                *target_platforms
+            )
+            whl_libraries[repo_name] = args
+            whl_map.setdefault(whl_name, []).append(
+                whl_alias(
+                    repo = repo_name,
+                    version = major_minor,
+                    target_platforms = target_platforms or None,
+                ),
+            )
+
+        if is_exposed:
+            exposed_packages[whl_name] = None
 
     return struct(
         is_reproducible = is_reproducible,
@@ -502,7 +536,8 @@ You cannot use both the additive_build_content and additive_build_content_file a
             hub_group_map[hub_name] = pip_attr.experimental_requirement_cycles
 
     return struct(
-        # We sort the output here so that the lock file is sorted
+        # We sort so that the lock-file remains the same no matter the order of how the
+        # args are manipulated in the code going before.
         whl_mods = dict(sorted(whl_mods.items())),
         hub_whl_map = {
             hub_name: {
@@ -518,7 +553,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
             }
             for hub_name, group_map in sorted(hub_group_map.items())
         },
-        exposed_packages = {k: sorted(v) for k, v in sorted(exposed_packages.items())},
+        exposed_packages = {
+            k: sorted(v)
+            for k, v in sorted(exposed_packages.items())
+        },
         extra_aliases = {
             hub_name: {
                 whl_name: sorted(aliases)
@@ -526,7 +564,10 @@ You cannot use both the additive_build_content and additive_build_content_file a
             }
             for hub_name, extra_whl_aliases in extra_aliases.items()
         },
-        whl_libraries = dict(sorted(whl_libraries.items())),
+        whl_libraries = {
+            k: dict(sorted(args.items()))
+            for k, args in sorted(whl_libraries.items())
+        },
         is_reproducible = is_reproducible,
     )
 
@@ -601,10 +642,8 @@ def _pip_impl(module_ctx):
     # Build all of the wheel modifications if the tag class is called.
     _whl_mods_impl(mods.whl_mods)
 
-    for name, args in sorted(mods.whl_libraries.items()):
-        # We sort so that the lock-file remains the same no matter the order of how the
-        # args are manipulated in the code going before.
-        whl_library(name = name, **dict(sorted(args.items())))
+    for name, args in mods.whl_libraries.items():
+        whl_library(name = name, **args)
 
     for hub_name, whl_map in mods.hub_whl_map.items():
         hub_repository(
@@ -745,6 +784,20 @@ If we are in synchronous mode, then we will use the first result that we
 find in case extra indexes are specified.
 """,
             default = True,
+        ),
+        "parse_all_requirements_files": attr.bool(
+            default = False,
+            doc = """\
+A temporary flag to enable users to make `pip` extension result always
+the same independent of the whether transitive dependencies use {bzl:attr}`experimental_index_url` or not.
+
+This enables users to migrate to a solution that fixes
+[#2268](https://github.com/bazelbuild/rules_python/issues/2268).
+
+::::{deprecated} 0.38.0
+This is a transition flag and will be removed in a subsequent release.
+::::
+""",
         ),
         "python_version": attr.string(
             mandatory = True,
@@ -907,24 +960,22 @@ extension.
 pypi_internal = module_extension(
     doc = """\
 This extension is used to make dependencies from pypi available.
-
 For now this is intended to be used internally so that usage of the `pip`
 extension in `rules_python` does not affect the evaluations of the extension
 for the consumers.
-
 pip.parse:
 To use, call `pip.parse()` and specify `hub_name` and your requirements file.
 Dependencies will be downloaded and made available in a repo named after the
 `hub_name` argument.
-
 Each `pip.parse()` call configures a particular Python version. Multiple calls
 can be made to configure different Python versions, and will be grouped by
 the `hub_name` argument. This allows the same logical name, e.g. `@pypi//numpy`
 to automatically resolve to different, Python version-specific, libraries.
-
 pip.whl_mods:
 This tag class is used to help create JSON files to describe modifications to
 the BUILD files for wheels.
+
+TODO: will be removed before 1.0.
 """,
     implementation = _pip_non_reproducible,
     tag_classes = {

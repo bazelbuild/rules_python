@@ -221,6 +221,9 @@ pip.parse(
         "host",
     ],
     hub_name = "pip",
+    # Parse all requirements files for the same lock file on all OSes, this will
+    # become the default with 1.0 release
+    parse_all_requirements_files = True,
     python_version = "3.10",
     # The requirements files for each platform that we want to support.
     requirements_by_platform = {
