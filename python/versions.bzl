@@ -562,27 +562,7 @@ TOOL_VERSIONS = {
         "strip_prefix": "python",
     },
     "3.13.0": {
-        "url": {
-            platform + suffix: "20241016/cpython-{python_version}+20241016-" + build
-            for platform, opt in {
-                "aarch64-apple-darwin": "pgo+lto",
-                "aarch64-unknown-linux-gnu": "lto",
-                "ppc64le-unknown-linux-gnu": "lto",
-                "s390x-unknown-linux-gnu": "lto",
-                "x86_64-apple-darwin": "pgo+lto",
-                "x86_64-pc-windows-msvc": "pgo",
-                "x86_64-unknown-linux-gnu": "pgo+lto",
-            }.items()
-            for suffix, build in {
-                "": platform + "-{build}.tar.gz",
-                "-freethreaded": "".join([
-                    platform,
-                    "-shared" if "windows" in platform else "",
-                    "-freethreaded+" + opt,
-                    "-full.tar.zst",
-                ]),
-            }.items()
-        },
+        "url": "20241016/cpython-{python_version}+20241016-{platform}-{build}.{ext}",
         "sha256": {
             "aarch64-apple-darwin": "31397953849d275aa2506580f3fa1cb5a85b6a3d392e495f8030e8b6412f5556",
             "aarch64-unknown-linux-gnu": "e8378c0162b2e0e4cc1f62b29443a3305d116d09583304dbb0149fecaff6347b",
@@ -751,8 +731,7 @@ def _generate_platforms():
         for p, v in platforms.items()
     }
 
-PLATFORMS = _generate_platforms(
-)
+PLATFORMS = _generate_platforms()
 
 def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_URL, tool_versions = TOOL_VERSIONS):
     """Resolve the release URL for the requested interpreter version
@@ -782,10 +761,27 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     release_filename = None
     rendered_urls = []
     for u in url:
+        p, _, _ = platform.partition("-freethreaded")
+        if "freethreaded" in platform:
+            build = {
+                "aarch64-apple-darwin": "freethreaded+pgo+lto-full",
+                "aarch64-unknown-linux-gnu": "freethreaded+lto-full",
+                "ppc64le-unknown-linux-gnu": "freethreaded+lto-full",
+                "s390x-unknown-linux-gnu": "freethreaded+lto-full",
+                "x86_64-apple-darwin": "freethreaded+pgo+lto-full",
+                "x86_64-pc-windows-msvc": "shared-freethreaded+pgo-full",
+                "x86_64-unknown-linux-gnu": "freethreaded+pgo+lto-full",
+            }[p]
+            ext = "tar.zst"
+        else:
+            build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only"
+            ext = "tar.gz"
+
         release_filename = u.format(
-            platform = platform,
+            platform = p,
             python_version = python_version,
-            build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only",
+            build = build,
+            ext = ext,
         )
         if "://" in release_filename:  # is absolute url?
             rendered_urls.append(release_filename)
