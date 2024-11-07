@@ -724,11 +724,11 @@ def _generate_platforms():
             os_name = v.os_name,
             arch = v.arch,
         )
+        for p, v in platforms.items()
         for suffix, freethreaded_value in {
             "": "no",
-            "-freethreaded": "yes",
+            "-" + FREETHREADED: "yes",
         }.items()
-        for p, v in platforms.items()
     }
 
 PLATFORMS = _generate_platforms()
@@ -761,18 +761,21 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     release_filename = None
     rendered_urls = []
     for u in url:
-        p, _, _ = platform.partition("-freethreaded")
+        p, _, _ = platform.partition("-" + FREETHREADED)
 
-        if "freethreaded" in platform:
-            build = "freethreaded+{}-full".format({
-                "aarch64-apple-darwin": "pgo+lto",
-                "aarch64-unknown-linux-gnu": "lto",
-                "ppc64le-unknown-linux-gnu": "lto",
-                "s390x-unknown-linux-gnu": "lto",
-                "x86_64-apple-darwin": "pgo+lto",
-                "x86_64-pc-windows-msvc": "pgo",
-                "x86_64-unknown-linux-gnu": "pgo+lto",
-            }[p])
+        if FREETHREADED in platform:
+            build = "{}+{}-full".format(
+                FREETHREADED,
+                {
+                    "aarch64-apple-darwin": "pgo+lto",
+                    "aarch64-unknown-linux-gnu": "lto",
+                    "ppc64le-unknown-linux-gnu": "lto",
+                    "s390x-unknown-linux-gnu": "lto",
+                    "x86_64-apple-darwin": "pgo+lto",
+                    "x86_64-pc-windows-msvc": "pgo",
+                    "x86_64-unknown-linux-gnu": "pgo+lto",
+                }[p],
+            )
         else:
             build = "install_only"
 
