@@ -762,26 +762,28 @@ def get_release_info(platform, python_version, base_url = DEFAULT_RELEASE_BASE_U
     rendered_urls = []
     for u in url:
         p, _, _ = platform.partition("-freethreaded")
+
         if "freethreaded" in platform:
-            build = {
-                "aarch64-apple-darwin": "freethreaded+pgo+lto-full",
-                "aarch64-unknown-linux-gnu": "freethreaded+lto-full",
-                "ppc64le-unknown-linux-gnu": "freethreaded+lto-full",
-                "s390x-unknown-linux-gnu": "freethreaded+lto-full",
-                "x86_64-apple-darwin": "freethreaded+pgo+lto-full",
-                "x86_64-pc-windows-msvc": "shared-freethreaded+pgo-full",
-                "x86_64-unknown-linux-gnu": "freethreaded+pgo+lto-full",
-            }[p]
-            ext = "tar.zst"
+            build = "freethreaded+{}-full".format({
+                "aarch64-apple-darwin": "pgo+lto",
+                "aarch64-unknown-linux-gnu": "lto",
+                "ppc64le-unknown-linux-gnu": "lto",
+                "s390x-unknown-linux-gnu": "lto",
+                "x86_64-apple-darwin": "pgo+lto",
+                "x86_64-pc-windows-msvc": "pgo",
+                "x86_64-unknown-linux-gnu": "pgo+lto",
+            }[p])
         else:
-            build = "shared-install_only" if (WINDOWS_NAME in platform) else "install_only"
-            ext = "tar.gz"
+            build = "install_only"
+
+        if WINDOWS_NAME in platform:
+            build = "shared-" + build
 
         release_filename = u.format(
             platform = p,
             python_version = python_version,
             build = build,
-            ext = ext,
+            ext = "tar.zst" if build.endswith("full") else "tar.gz",
         )
         if "://" in release_filename:  # is absolute url?
             rendered_urls.append(release_filename)
