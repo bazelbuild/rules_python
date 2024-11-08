@@ -27,7 +27,7 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet
+* (deps) bazel_skylib 1.6.1 -> 1.7.1
 
 {#v0-0-0-fixed}
 ### Fixed
