@@ -301,7 +301,7 @@ tasks:
   integration_test_bzlmod_build_file_generation_debian:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod_build_file_generation
-    name: "examples/bzlmod_build_file_integration: Debian"
+    name: "examples/bzlmod_build_file_generation: Debian"
     working_directory: examples/bzlmod_build_file_generation
     platform: debian11
   integration_test_bzlmod_build_file_generation_macos:
