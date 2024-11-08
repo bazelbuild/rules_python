@@ -27,6 +27,27 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
+* Nothing yet
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet
+
+{#v0-0-0-added}
+### Added
+* Nothing yet
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet
+
+{#v0-38-0}
+## [0.38.0] - 2024-11-08
+
+[0.38.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.38.0
+
+{#v0-38-0-changed}
+### Changed
 * (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
   version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
   and no protobuf version specified)
@@ -46,11 +67,8 @@ A brief description of the categories of changes:
   directly to avoid such breakage in the future. If `rules_python` is missing
   features to allow one to do that, please raise tickets.
 
-{#v0-0-0-fixed}
+{#v0-38-0-fixed}
 ### Fixed
-* (bzlmod) Generate `config_setting` values for all available toolchains instead
-  of only the registered toolchains, which restores the previous behaviour that
-  `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
 * (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
@@ -64,7 +82,7 @@ A brief description of the categories of changes:
   issue is that it may break `bazel query` and in these use cases it is
   advisable to use `cquery` or switch to `download_only = True`
 
-{#v0-0-0-added}
+{#v0-38-0-added}
 ### Added
 * (publish) The requirements file for the `twine` publishing rules have been
   updated to have a new convention: `requirements_darwin.txt`,
@@ -81,9 +99,16 @@ A brief description of the categories of changes:
   users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
   more options whilst we continue to work on stabilizing the experimental feature.
 
-{#v0-0-0-removed}
-### Removed
-* Nothing yet
+{#v0-37-2}
+## [0.37.2] - 2024-10-27
+
+[0.37.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.2
+
+{#v0-37-2-fixed}
+### Fixed
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
 
 {#v0-37-1}
 ## [0.37.1] - 2024-10-22
