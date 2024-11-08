@@ -62,10 +62,10 @@ A brief description of the categories of changes:
   and now `pyyaml` and `PyYAML` will both work.
 * (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
   release in places where the users specify different package versions per
-  platform in the same hub repository. The naming of the spoke repos is considered
-  an implementation detail and we advise the users to use the `hub` repository
-  directly to avoid such breakage in the future. If `rules_python` is missing
-  features to allow one to do that, please raise tickets.
+  platform in the same hub repository. The naming of the spoke repos is
+  considered an implementation detail and we advise the users to use the `hub`
+  repository directly and make use of {bzl:obj}`pip.parse.extra_hub_aliases`
+  feature added in this release.
 
 {#v0-38-0-fixed}
 ### Fixed
@@ -77,7 +77,9 @@ A brief description of the categories of changes:
   which fixes usage of the said wheels using standard package managers.
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
-  or not. Fixes
+  or not. To opt into this behavior, set
+  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  default in future releases leading up to `1.0.0`. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
   issue is that it may break `bazel query` and in these use cases it is
   advisable to use `cquery` or switch to `download_only = True`
