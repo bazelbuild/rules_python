@@ -21,8 +21,8 @@ _RULE_DEPS = [
     # START: maintained by 'bazel run //tools/private:update_pip_deps'
     (
         "pypi__build",
-        "https://files.pythonhosted.org/packages/58/91/17b00d5fac63d3dca605f1b8269ba3c65e98059e1fd99d00283e42a454f0/build-0.10.0-py3-none-any.whl",
-        "af266720050a66c893a6096a2f410989eeac74ff9a68ba194b3f6473e8e26171",
+        "https://files.pythonhosted.org/packages/93/dd/b464b728b866aaa62785a609e0dd8c72201d62c5f7c53e7c20f4dceb085f/build-1.0.3-py3-none-any.whl",
+        "589bf99a67df7c9cf07ec0ac0e5e2ea5d4b37ac63301c4986d1acb126aa83f8f",
     ),
     (
         "pypi__click",
@@ -62,13 +62,13 @@ _RULE_DEPS = [
     (
         "pypi__pip",
         # Use a vendored pip which will retry HTTP 502s
-        "https://codeartifact-proxy.abnormal.dev/pip/22.1.2.post1+abnormal.03d64aee90f/pip-22.1.2.post1+abnormal.03d64aee90f-py3-none-any.whl",
-        "59791080b47583f47fc224132a28bc79f4b99e44b69993f0f298f2c816415b58",
+        "https://codeartifact-proxy.abnormal.dev/pip/23.3.2.post1+abnormal.c4b5c8f260f/pip-23.3.2.post1+abnormal.c4b5c8f260f-py3-none-any.whl",
+        "11332fe289235c7dcb50f1e86078087f26bd2e356a12db2f41b1ff43c7a22dae",
     ),
     (
         "pypi__pip_tools",
-        "https://files.pythonhosted.org/packages/e8/df/47e6267c6b5cdae867adbdd84b437393e6202ce4322de0a5e0b92960e1d6/pip_tools-7.3.0-py3-none-any.whl",
-        "8717693288720a8c6ebd07149c93ab0be1fced0b5191df9e9decd3263e20d85e",
+        "https://files.pythonhosted.org/packages/0d/dc/38f4ce065e92c66f058ea7a368a9c5de4e702272b479c0992059f7693941/pip_tools-7.4.1-py3-none-any.whl",
+        "4c690e5fbae2f21e87843e89c26191f0d9454f362d8acdbd695716493ec8b3a9",
     ),
     (
         "pypi__pyproject_hooks",
