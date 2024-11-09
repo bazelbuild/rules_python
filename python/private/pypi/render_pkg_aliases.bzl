@@ -117,7 +117,7 @@ def _render_whl_library_alias(
         **kwargs
     )
 
-def _render_common_aliases(*, name, aliases, group_name = None):
+def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     lines = [
         """load("@bazel_skylib//lib:selects.bzl", "selects")""",
         """package(default_visibility = ["//visibility:public"])""",
@@ -153,12 +153,17 @@ def _render_common_aliases(*, name, aliases, group_name = None):
                 target_name = target_name,
                 visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
             )
-            for target_name, name in {
-                PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
-                WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-                DATA_LABEL: DATA_LABEL,
-                DIST_INFO_LABEL: DIST_INFO_LABEL,
-            }.items()
+            for target_name, name in (
+                {
+                    PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
+                    WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
+                    DATA_LABEL: DATA_LABEL,
+                    DIST_INFO_LABEL: DIST_INFO_LABEL,
+                } | {
+                    x: x
+                    for x in extra_aliases
+                }
+            ).items()
         ],
     )
     if group_name:
@@ -177,7 +182,7 @@ def _render_common_aliases(*, name, aliases, group_name = None):
 
     return "\n\n".join(lines)
 
-def render_pkg_aliases(*, aliases, requirement_cycles = None):
+def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases = {}):
     """Create alias declarations for each PyPI package.
 
     The aliases should be appended to the pip_repository BUILD.bazel file. These aliases
@@ -188,6 +193,8 @@ def render_pkg_aliases(*, aliases, requirement_cycles = None):
         aliases: dict, the keys are normalized distribution names and values are the
             whl_alias instances.
         requirement_cycles: any package groups to also add.
+        extra_hub_aliases: The list of extra aliases for each whl to be added
+          in addition to the default ones.
 
     Returns:
         A dict of file paths and their contents.
@@ -215,6 +222,7 @@ def render_pkg_aliases(*, aliases, requirement_cycles = None):
         "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
             name = normalize_name(name),
             aliases = pkg_aliases,
+            extra_aliases = extra_hub_aliases.get(name, []),
             group_name = whl_group_mapping.get(normalize_name(name)),
         ).strip()
         for name, pkg_aliases in aliases.items()
@@ -318,16 +326,19 @@ def multiplatform_whl_aliases(*, aliases, **kwargs):
     ret = []
     versioned_additions = {}
     for alias in aliases:
-        if not alias.filename:
+        if not alias.filename and not alias.target_platforms:
             ret.append(alias)
             continue
 
         config_settings, all_versioned_settings = get_filename_config_settings(
             # TODO @aignas 2024-05-27: pass the parsed whl to reduce the
             # number of duplicate operations.
-            filename = alias.filename,
+            filename = alias.filename or "",
             target_platforms = alias.target_platforms,
             python_version = alias.version,
+            # If we have multiple platforms but no wheel filename, lets use different
+            # config settings.
+            non_whl_prefix = "sdist" if alias.filename else "",
             **kwargs
         )
 
@@ -429,10 +440,7 @@ def get_whl_flag_versions(aliases):
         if a.version:
             python_versions[a.version] = None
 
-        if not a.filename:
-            continue
-
-        if a.filename.endswith(".whl") and not a.filename.endswith("-any.whl"):
+        if a.filename and a.filename.endswith(".whl") and not a.filename.endswith("-any.whl"):
             parsed = parse_whl_name(a.filename)
         else:
             for plat in a.target_platforms or []:
@@ -491,10 +499,11 @@ def get_filename_config_settings(
         *,
         filename,
         target_platforms,
-        glibc_versions,
-        muslc_versions,
-        osx_versions,
-        python_version):
+        python_version,
+        glibc_versions = None,
+        muslc_versions = None,
+        osx_versions = None,
+        non_whl_prefix = "sdist"):
     """Get the filename config settings.
 
     Args:
@@ -504,6 +513,8 @@ def get_filename_config_settings(
         muslc_versions: list[tuple[int, int]], list of versions.
         osx_versions: list[tuple[int, int]], list of versions.
         python_version: the python version to generate the config_settings for.
+        non_whl_prefix: the prefix of the config setting when the whl we don't have
+            a filename ending with ".whl".
 
     Returns:
         A tuple:
@@ -512,19 +523,20 @@ def get_filename_config_settings(
     """
     prefixes = []
     suffixes = []
-    if (0, 0) in glibc_versions:
-        fail("Invalid version in 'glibc_versions': cannot specify (0, 0) as a value")
-    if (0, 0) in muslc_versions:
-        fail("Invalid version in 'muslc_versions': cannot specify (0, 0) as a value")
-    if (0, 0) in osx_versions:
-        fail("Invalid version in 'osx_versions': cannot specify (0, 0) as a value")
-
-    glibc_versions = sorted(glibc_versions)
-    muslc_versions = sorted(muslc_versions)
-    osx_versions = sorted(osx_versions)
     setting_supported_versions = {}
 
     if filename.endswith(".whl"):
+        if (0, 0) in glibc_versions:
+            fail("Invalid version in 'glibc_versions': cannot specify (0, 0) as a value")
+        if (0, 0) in muslc_versions:
+            fail("Invalid version in 'muslc_versions': cannot specify (0, 0) as a value")
+        if (0, 0) in osx_versions:
+            fail("Invalid version in 'osx_versions': cannot specify (0, 0) as a value")
+
+        glibc_versions = sorted(glibc_versions)
+        muslc_versions = sorted(muslc_versions)
+        osx_versions = sorted(osx_versions)
+
         parsed = parse_whl_name(filename)
         if parsed.python_tag == "py2.py3":
             py = "py"
@@ -539,10 +551,10 @@ def get_filename_config_settings(
             abi = parsed.abi_tag
 
         if parsed.platform_tag == "any":
-            prefixes = ["{}_{}_any".format(py, abi)]
+            prefixes = ["_{}_{}_any".format(py, abi)]
             suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
         else:
-            prefixes = ["{}_{}".format(py, abi)]
+            prefixes = ["_{}_{}".format(py, abi)]
             suffixes = _whl_config_setting_suffixes(
                 platform_tag = parsed.platform_tag,
                 glibc_versions = glibc_versions,
@@ -551,12 +563,12 @@ def get_filename_config_settings(
                 setting_supported_versions = setting_supported_versions,
             )
     else:
-        prefixes = ["sdist"]
+        prefixes = [""] if not non_whl_prefix else ["_" + non_whl_prefix]
         suffixes = [_non_versioned_platform(p) for p in target_platforms or []]
 
     versioned = {
-        ":is_cp{}_{}_{}".format(python_version, p, suffix): {
-            version: ":is_cp{}_{}_{}".format(python_version, p, setting)
+        ":is_cp{}{}_{}".format(python_version, p, suffix): {
+            version: ":is_cp{}{}_{}".format(python_version, p, setting)
             for version, setting in versions.items()
         }
         for p in prefixes
@@ -564,9 +576,9 @@ def get_filename_config_settings(
     }
 
     if suffixes or versioned:
-        return [":is_cp{}_{}_{}".format(python_version, p, s) for p in prefixes for s in suffixes], versioned
+        return [":is_cp{}{}_{}".format(python_version, p, s) for p in prefixes for s in suffixes], versioned
     else:
-        return [":is_cp{}_{}".format(python_version, p) for p in prefixes], setting_supported_versions
+        return [":is_cp{}{}".format(python_version, p) for p in prefixes], setting_supported_versions
 
 def _whl_config_setting_suffixes(
         platform_tag,

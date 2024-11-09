@@ -22,12 +22,12 @@ def whl_repo_name(prefix, filename, sha256):
     """Return a valid whl_library repo name given a distribution filename.
 
     Args:
-        prefix: str, the prefix of the whl_library.
-        filename: str, the filename of the distribution.
-        sha256: str, the sha256 of the distribution.
+        prefix: {type}`str` the prefix of the whl_library.
+        filename: {type}`str` the filename of the distribution.
+        sha256: {type}`str` the sha256 of the distribution.
 
     Returns:
-        a string that can be used in `whl_library`.
+        a string that can be used in {obj}`whl_library`.
     """
     parts = [prefix]
 
@@ -48,5 +48,24 @@ def whl_repo_name(prefix, filename, sha256):
         parts.append(platform_tag)
 
     parts.append(sha256[:8])
+
+    return "_".join(parts)
+
+def pypi_repo_name(prefix, whl_name, *target_platforms):
+    """Return a valid whl_library given a requirement line.
+
+    Args:
+        prefix: {type}`str` the prefix of the whl_library.
+        whl_name: {type}`str` the whl_name to use.
+        *target_platforms: {type}`list[str]` the target platforms to use in the name.
+
+    Returns:
+        {type}`str` that can be used in {obj}`whl_library`.
+    """
+    parts = [
+        prefix,
+        normalize_name(whl_name),
+    ]
+    parts.extend([p.partition("_")[-1] for p in target_platforms])
 
     return "_".join(parts)

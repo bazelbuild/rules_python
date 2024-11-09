@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 local_repository(
     name = "rules_python",
     path = "../../..",
@@ -12,8 +14,6 @@ python_register_toolchains(
     ignore_root_user_error = True,
     python_version = "3.9",
 )
-
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "bazel_skylib",

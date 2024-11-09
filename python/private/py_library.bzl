@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of py_library rule."""
+"""Common code for implementing py_library rules."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
+    "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
     "REQUIRED_EXEC_GROUPS",
@@ -28,7 +29,6 @@ load(
 load(":builders.bzl", "builders")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -51,6 +51,7 @@ _py_builtins = py_internal
 LIBRARY_ATTRS = union_attrs(
     COMMON_ATTRS,
     PY_SRCS_ATTRS,
+    IMPORTS_ATTRS,
     create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
     create_srcs_attr(mandatory = False),
     {
@@ -70,7 +71,6 @@ def py_library_impl(ctx, *, semantics):
     Returns:
         A list of modern providers to propagate.
     """
-    check_native_allowed(ctx)
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
 
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)

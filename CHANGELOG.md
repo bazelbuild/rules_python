@@ -27,19 +27,101 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
-- Nothing yet
+* (deps) bazel_skylib 1.6.1 -> 1.7.1
 
 {#v0-0-0-fixed}
 ### Fixed
-- Nothing yet
+* Nothing yet
 
 {#v0-0-0-added}
 ### Added
-- Nothing yet
+* Nothing yet
 
 {#v0-0-0-removed}
 ### Removed
-- Nothing yet
+* Nothing yet
+
+{#v0-38-0}
+## [0.38.0] - 2024-11-08
+
+[0.38.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.38.0
+
+{#v0-38-0-changed}
+### Changed
+* (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
+  version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
+  and no protobuf version specified)
+  ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
+* (publish) The dependencies have been updated to the latest available versions
+  for the `twine` publishing rule.
+* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
+  by default. Users wishing to keep this argument and to enforce more hermetic
+  builds can do so by passing the argument in
+  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
+  and now `pyyaml` and `PyYAML` will both work.
+* (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
+  release in places where the users specify different package versions per
+  platform in the same hub repository. The naming of the spoke repos is
+  considered an implementation detail and we advise the users to use the `hub`
+  repository directly and make use of {bzl:obj}`pip.parse.extra_hub_aliases`
+  feature added in this release.
+
+{#v0-38-0-fixed}
+### Fixed
+* (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
+  ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
+  pass the `extra_pip_args` value when building an `sdist`.
+* (pypi) The patched wheel filenames from now on are using local version specifiers
+  which fixes usage of the said wheels using standard package managers.
+* (bzlmod) The extension evaluation has been adjusted to always generate the
+  same lock file irrespective if `experimental_index_url` is set by any module
+  or not. To opt into this behavior, set
+  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  default in future releases leading up to `1.0.0`. Fixes
+  [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
+  issue is that it may break `bazel query` and in these use cases it is
+  advisable to use `cquery` or switch to `download_only = True`
+
+{#v0-38-0-added}
+### Added
+* (publish) The requirements file for the `twine` publishing rules have been
+  updated to have a new convention: `requirements_darwin.txt`,
+  `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
+  and one extra file `requirements_universal.txt` if you prefer a single file.
+  The `requirements.txt` file may be removed in the future.
+* The rules_python version is now reported in `//python/features.bzl#features.version`
+* (pip.parse) {attr}`pip.parse.extra_hub_aliases` can now be used to expose extra
+  targets created by annotations in whl repositories.
+  Fixes [#2187](https://github.com/bazelbuild/rules_python/issues/2187).
+* (bzlmod) `pip.parse` now supports `whl-only` setup using
+  `download_only = True` where users can specify multiple requirements files
+  and use the `pip` backend to do the downloading. This was only available for
+  users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
+  more options whilst we continue to work on stabilizing the experimental feature.
+
+{#v0-37-2}
+## [0.37.2] - 2024-10-27
+
+[0.37.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.2
+
+{#v0-37-2-fixed}
+### Fixed
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
+
+{#v0-37-1}
+## [0.37.1] - 2024-10-22
+
+[0.37.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.1
+
+{#v0-37-1-fixed}
+### Fixed
+* (rules) Setting `--incompatible_python_disallow_native_rules` no longer
+  causes rules_python rules to fail
+  ([#2326](https://github.com/bazelbuild/rules_python/issues/2326)).
 
 {#v0-37-0}
 ## [0.37.0] - 2024-10-18

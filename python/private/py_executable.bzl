@@ -33,7 +33,6 @@ load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -269,7 +268,6 @@ def _get_build_info(ctx, cc_toolchain):
 def _validate_executable(ctx):
     if ctx.attr.python_version != "PY3":
         fail("It is not allowed to use Python 2")
-    check_native_allowed(ctx)
 
 def _declare_executable_file(ctx):
     if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
@@ -456,7 +454,7 @@ def _get_base_runfiles_for_binary(
         common_runfiles.files.add(implicit_pyc_source_files)
 
     for dep in (ctx.attr.deps + extra_deps):
-        if not (PyInfo in dep or BuiltinPyInfo in dep):
+        if not (PyInfo in dep or (BuiltinPyInfo != None and BuiltinPyInfo in dep)):
             continue
         info = dep[PyInfo] if PyInfo in dep else dep[BuiltinPyInfo]
         common_runfiles.files.add(info.transitive_sources)
@@ -473,7 +471,7 @@ def _get_base_runfiles_for_binary(
 
     common_runfiles.runfiles.append(collect_runfiles(ctx))
     if extra_deps:
-        common_runfiles.add_runfiles(targets = extra_deps)
+        common_runfiles.add_targets(extra_deps)
     common_runfiles.add(extra_common_runfiles)
 
     common_runfiles = common_runfiles.build(ctx)

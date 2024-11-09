@@ -270,6 +270,22 @@ COMMON_ATTRS = union_attrs(
     allow_none = True,
 )
 
+IMPORTS_ATTRS = {
+    "imports": attr.string_list(
+        doc = """
+List of import directories to be added to the PYTHONPATH.
+
+Subject to "Make variable" substitution. These import directories will be added
+for this rule and all rules that depend on it (note: not the rules this rule
+depends on. Each directory will be added to `PYTHONPATH` by `py_binary` rules
+that depend on this rule. The strings are repo-runfiles-root relative,
+
+Absolute paths (paths that start with `/`) and paths that references a path
+above the execution root are not allowed and will result in an error.
+""",
+    ),
+}
+
 _MaybeBuiltinPyInfo = [[BuiltinPyInfo]] if BuiltinPyInfo != None else []
 
 # Attributes common to rules accepting Python sources and deps.
