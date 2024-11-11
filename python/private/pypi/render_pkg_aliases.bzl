@@ -22,15 +22,6 @@ load(
     ":generate_group_library_build_bazel.bzl",
     "generate_group_library_build_bazel",
 )  # buildifier: disable=bzl-visibility
-load(
-    ":labels.bzl",
-    "DATA_LABEL",
-    "DIST_INFO_LABEL",
-    "PY_LIBRARY_IMPL_LABEL",
-    "PY_LIBRARY_PUBLIC_LABEL",
-    "WHEEL_FILE_IMPL_LABEL",
-    "WHEEL_FILE_PUBLIC_LABEL",
-)
 load(":parse_whl_name.bzl", "parse_whl_name")
 load(":whl_target_platforms.bzl", "whl_target_platforms")
 
@@ -70,76 +61,26 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
-def _render_whl_library_alias(
-        *,
-        name,
-        aliases,
-        target_name,
-        **kwargs):
-    """Render an alias for common targets."""
-    if len(aliases) == 1 and not aliases[0].version:
-        return ""
+def _render_pkg_aliases(name, actual, group_name, extra_aliases):
+    if len(actual) == 1 and None in actual:
+        actual = repr(actual.values()[0])
+    else:
+        actual = render.indent(render.dict(actual)).lstrip()
 
-    # Create the alias repositories which contains different select
-    # statements  These select statements point to the different pip
-    # whls that are based on a specific version of Python.
-    selects = {}
-    no_match_error = "_NO_MATCH_ERROR"
-    for alias in sorted(aliases, key = lambda x: x.version):
-        actual = "@{repo}//:{name}".format(repo = alias.repo, name = target_name)
-        selects.setdefault(actual, []).append(alias.config_setting)
-
-    return render.alias(
-        name = name,
-        actual = render.select(
-            {
-                tuple(sorted(
-                    conditions,
-                    # Group `is_python` and other conditions for easier reading
-                    # when looking at the generated files.
-                    key = lambda condition: ("is_python" not in condition, condition),
-                )): target
-                for target, conditions in sorted(selects.items())
-            },
-            no_match_error = no_match_error,
-            # This key_repr is used to render selects.with_or keys
-            key_repr = lambda x: repr(x[0]) if len(x) == 1 else render.tuple(x),
-            name = "selects.with_or",
-        ),
-        **kwargs
-    )
-
-def _render_pkg_aliases(name, actual):
-    actual = actual.values()[0] if len(actual) == 1 and None in actual else ":pkg"
     return """\
 pkg_aliases(
     name = "{name}",
     actual = {actual},
-)""".format(name = name, actual = repr(actual))
+    group_name = {group_name},
+    extra_aliases = {extra_aliases},
+)""".format(name = name, actual = actual, group_name = repr(group_name), extra_aliases = repr(extra_aliases))
 
 def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     lines = [
         """\
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")""",
         """package(default_visibility = ["//visibility:public"])""",
     ]
-
-    config_settings = None
-    if aliases:
-        config_settings = sorted([v.config_setting for v in aliases if v.config_setting])
-
-    if config_settings:
-        error_msg = NO_MATCH_ERROR_MESSAGE_TEMPLATE_V2.format(
-            config_settings = render.indent(
-                "\n".join(config_settings),
-            ).lstrip(),
-            rules_python = "rules_python",
-        )
-
-        lines.append("_NO_MATCH_ERROR = \"\"\"\\\n{error_msg}\"\"\"".format(
-            error_msg = error_msg,
-        ))
 
     lines.append(
         _render_pkg_aliases(
@@ -148,46 +89,10 @@ load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")""",
                 a.config_setting: a.repo
                 for a in aliases
             },
+            group_name = group_name,
+            extra_aliases = extra_aliases,
         ),
     )
-    lines.extend(
-        [
-            line
-            for line in [
-                _render_whl_library_alias(
-                    name = name,
-                    aliases = aliases,
-                    target_name = target_name,
-                    visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
-                )
-                for target_name, name in (
-                    {
-                        PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
-                        WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-                        DATA_LABEL: DATA_LABEL,
-                        DIST_INFO_LABEL: DIST_INFO_LABEL,
-                    } | {
-                        x: x
-                        for x in extra_aliases
-                    }
-                ).items()
-            ]
-            if line
-        ],
-    )
-    if group_name:
-        lines.extend(
-            [
-                render.alias(
-                    name = "pkg",
-                    actual = repr("//_groups:{}_pkg".format(group_name)),
-                ),
-                render.alias(
-                    name = "whl",
-                    actual = repr("//_groups:{}_whl".format(group_name)),
-                ),
-            ],
-        )
 
     return "\n\n".join(lines)
 
