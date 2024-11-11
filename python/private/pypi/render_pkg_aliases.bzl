@@ -78,15 +78,7 @@ def _render_whl_library_alias(
         **kwargs):
     """Render an alias for common targets."""
     if len(aliases) == 1 and not aliases[0].version:
-        alias = aliases[0]
-        return render.alias(
-            name = name,
-            actual = repr("@{repo}//:{name}".format(
-                repo = alias.repo,
-                name = target_name,
-            )),
-            **kwargs
-        )
+        return ""
 
     # Create the alias repositories which contains different select
     # statements  These select statements point to the different pip
@@ -118,7 +110,9 @@ def _render_whl_library_alias(
     )
 
 def _render_pkg_aliases(name, actual):
-    return """pkg_aliases(
+    actual = actual.values()[0] if len(actual) == 1 and None in actual else ":pkg"
+    return """\
+pkg_aliases(
     name = "{name}",
     actual = {actual},
 )""".format(name = name, actual = repr(actual))
@@ -150,28 +144,35 @@ load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")""",
     lines.append(
         _render_pkg_aliases(
             name = name,
-            actual = ":pkg",
+            actual = {
+                a.config_setting: a.repo
+                for a in aliases
+            },
         ),
     )
     lines.extend(
         [
-            _render_whl_library_alias(
-                name = name,
-                aliases = aliases,
-                target_name = target_name,
-                visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
-            )
-            for target_name, name in (
-                {
-                    PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
-                    WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
-                    DATA_LABEL: DATA_LABEL,
-                    DIST_INFO_LABEL: DIST_INFO_LABEL,
-                } | {
-                    x: x
-                    for x in extra_aliases
-                }
-            ).items()
+            line
+            for line in [
+                _render_whl_library_alias(
+                    name = name,
+                    aliases = aliases,
+                    target_name = target_name,
+                    visibility = ["//_groups:__subpackages__"] if name.startswith("_") else None,
+                )
+                for target_name, name in (
+                    {
+                        PY_LIBRARY_PUBLIC_LABEL: PY_LIBRARY_IMPL_LABEL if group_name else PY_LIBRARY_PUBLIC_LABEL,
+                        WHEEL_FILE_PUBLIC_LABEL: WHEEL_FILE_IMPL_LABEL if group_name else WHEEL_FILE_PUBLIC_LABEL,
+                        DATA_LABEL: DATA_LABEL,
+                        DIST_INFO_LABEL: DIST_INFO_LABEL,
+                    } | {
+                        x: x
+                        for x in extra_aliases
+                    }
+                ).items()
+            ]
+            if line
         ],
     )
     if group_name:

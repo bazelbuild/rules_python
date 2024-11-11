@@ -18,12 +18,12 @@ This is used in bzlmod and non-bzlmod setups."""
 
 load(
     ":labels.bzl",
-    #"DATA_LABEL",
-    #"DIST_INFO_LABEL",
+    "DATA_LABEL",
+    "DIST_INFO_LABEL",
     #"PY_LIBRARY_IMPL_LABEL",
     "PY_LIBRARY_PUBLIC_LABEL",
     #"WHEEL_FILE_IMPL_LABEL",
-    #"WHEEL_FILE_PUBLIC_LABEL",
+    "WHEEL_FILE_PUBLIC_LABEL",
 )
 
 def pkg_aliases(
@@ -44,3 +44,27 @@ def pkg_aliases(
         name = name,
         actual = ":" + PY_LIBRARY_PUBLIC_LABEL,
     )
+
+    target_names = {
+        x: x
+        for x in [
+            PY_LIBRARY_PUBLIC_LABEL,
+            WHEEL_FILE_PUBLIC_LABEL,
+            DATA_LABEL,
+            DIST_INFO_LABEL,
+        ]
+    }
+
+    if type(actual) == type({}):
+        fail("TODO")
+
+    repo = actual
+
+    for name, target_name in target_names.items():
+        native.alias(
+            name = name,
+            actual = "@{repo}//:{target_name}".format(
+                repo = repo,
+                target_name = target_name,
+            ),
+        )

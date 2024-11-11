@@ -81,27 +81,7 @@ package(default_visibility = ["//visibility:public"])
 
 pkg_aliases(
     name = "foo",
-    actual = ":pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = "@pypi_foo//:pkg",
-)
-
-alias(
-    name = "whl",
-    actual = "@pypi_foo//:whl",
-)
-
-alias(
-    name = "data",
-    actual = "@pypi_foo//:data",
-)
-
-alias(
-    name = "dist_info",
-    actual = "@pypi_foo//:dist_info",
+    actual = "pypi_foo",
 )"""
 
     env.expect.that_dict(actual).contains_exactly({want_key: want_content})

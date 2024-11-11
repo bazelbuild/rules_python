@@ -32,11 +32,27 @@ def _test_empty(env):
         ),
     )
 
+    # buildifier: disable=unsorted-dict-items
     want = [
-        # buildifier: disable=unsorted-dict-items
         {
             "name": "foo",
             "actual": ":pkg",
+        },
+        {
+            "name": "pkg",
+            "actual": "@repo//:pkg",
+        },
+        {
+            "name": "whl",
+            "actual": "@repo//:whl",
+        },
+        {
+            "name": "data",
+            "actual": "@repo//:data",
+        },
+        {
+            "name": "dist_info",
+            "actual": "@repo//:dist_info",
         },
     ]
 
