@@ -5,7 +5,7 @@ module(
 )
 
 bazel_dep(name = "bazel_features", version = "1.9.1")
-bazel_dep(name = "bazel_skylib", version = "1.6.1")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.4")
 
@@ -74,15 +74,31 @@ use_repo(pip, "rules_python_publish_deps")
 bazel_dep(name = "stardoc", version = "0.6.2", repo_name = "io_bazel_stardoc")
 
 # ===== DEV ONLY DEPS AND SETUP BELOW HERE =====
-bazel_dep(name = "rules_bazel_integration_test", version = "0.20.0", dev_dependency = True)
+bazel_dep(name = "rules_bazel_integration_test", version = "0.26.1", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
-bazel_dep(name = "rules_shell", version = "0.2.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_multirun", version = "0.9.0", dev_dependency = True)
+bazel_dep(name = "bazel_ci_rules", version = "1.0.0", dev_dependency = True)
 
 # Extra gazelle plugin deps so that WORKSPACE.bzlmod can continue including it for e2e tests.
 # We use `WORKSPACE.bzlmod` because it is impossible to have dev-only local overrides.
 bazel_dep(name = "rules_go", version = "0.41.0", dev_dependency = True, repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.33.0", dev_dependency = True, repo_name = "bazel_gazelle")
+bazel_dep(name = "rules_python_gazelle_plugin", version = "0", dev_dependency = True)
+
+internal_dev_deps = use_extension(
+    "//python/private:internal_dev_deps.bzl",
+    "internal_dev_deps",
+    dev_dependency = True,
+)
+use_repo(internal_dev_deps, "buildkite_config", "wheel_for_testing")
+
+# Add gazelle plugin so that we can run the gazelle example as an e2e integration
+# test and include the distribution files.
+local_path_override(
+    module_name = "rules_python_gazelle_plugin",
+    path = "gazelle",
+)
 
 dev_python = use_extension(
     "//python/extensions:python.bzl",

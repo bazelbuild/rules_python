@@ -27,6 +27,35 @@ A brief description of the categories of changes:
 
 {#v0-0-0-changed}
 ### Changed
+* (deps) bazel_skylib 1.6.1 -> 1.7.1
+* (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
+    * 3.9.20
+    * 3.10.15
+    * 3.11.10
+    * 3.12.7
+    * 3.13.0
+
+[20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet
+
+{#v0-0-0-added}
+### Added
+* (toolchain) The support for freethreaded Python toolchains is now available. 
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet
+
+{#v0-38-0}
+## [0.38.0] - 2024-11-08
+
+[0.38.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.38.0
+
+{#v0-38-0-changed}
+### Changed
 * (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
   version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
   and no protobuf version specified)
@@ -41,24 +70,13 @@ A brief description of the categories of changes:
   and now `pyyaml` and `PyYAML` will both work.
 * (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
   release in places where the users specify different package versions per
-  platform in the same hub repository. The naming of the spoke repos is considered
-  an implementation detail and we advise the users to use the `hub` repository
-  directly to avoid such breakage in the future. If `rules_python` is missing
-  features to allow one to do that, please raise tickets.
-* (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
-    * 3.9.20
-    * 3.10.15
-    * 3.11.10
-    * 3.12.7
-    * 3.13.0
+  platform in the same hub repository. The naming of the spoke repos is
+  considered an implementation detail and we advise the users to use the `hub`
+  repository directly and make use of {bzl:obj}`pip.parse.extra_hub_aliases`
+  feature added in this release.
 
-[20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
-
-{#v0-0-0-fixed}
+{#v0-38-0-fixed}
 ### Fixed
-* (bzlmod) Generate `config_setting` values for all available toolchains instead
-  of only the registered toolchains, which restores the previous behaviour that
-  `bzlmod` users would have observed.
 * (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
   ([617](https://github.com/bazelbuild/rules_python/issues/617)).
 * (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
@@ -67,12 +85,14 @@ A brief description of the categories of changes:
   which fixes usage of the said wheels using standard package managers.
 * (bzlmod) The extension evaluation has been adjusted to always generate the
   same lock file irrespective if `experimental_index_url` is set by any module
-  or not. Fixes
+  or not. To opt into this behavior, set
+  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  default in future releases leading up to `1.0.0`. Fixes
   [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
   issue is that it may break `bazel query` and in these use cases it is
   advisable to use `cquery` or switch to `download_only = True`
 
-{#v0-0-0-added}
+{#v0-38-0-added}
 ### Added
 * (publish) The requirements file for the `twine` publishing rules have been
   updated to have a new convention: `requirements_darwin.txt`,
@@ -88,11 +108,17 @@ A brief description of the categories of changes:
   and use the `pip` backend to do the downloading. This was only available for
   users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
   more options whilst we continue to work on stabilizing the experimental feature.
-* (toolchain) The support for freethreaded Python toolchains is now available. 
 
-{#v0-0-0-removed}
-### Removed
-* Nothing yet
+{#v0-37-2}
+## [0.37.2] - 2024-10-27
+
+[0.37.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.2
+
+{#v0-37-2-fixed}
+### Fixed
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
 
 {#v0-37-1}
 ## [0.37.1] - 2024-10-22
