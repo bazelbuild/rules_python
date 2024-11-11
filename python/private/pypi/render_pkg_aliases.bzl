@@ -128,7 +128,7 @@ def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases 
         "{}/BUILD.bazel".format(normalize_name(name)): _render_common_aliases(
             name = normalize_name(name),
             aliases = pkg_aliases,
-            extra_aliases = extra_hub_aliases.get(name, []),
+            extra_aliases = extra_hub_aliases.get(normalize_name(name), []),
             group_name = whl_group_mapping.get(normalize_name(name)),
         ).strip()
         for name, pkg_aliases in aliases.items()
