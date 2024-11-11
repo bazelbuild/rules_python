@@ -1393,7 +1393,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "V0b+JF59twRuc1t2aujwxPmb29degf+X0HjTZzFI2lo=",
+        "bzlTransitiveDigest": "Fg91S0o4pgbdMEzge25vUjzaoHUbFXtOCaH6J/kI+VY=",
         "usagesDigest": "GGeczTmsfE4YHAy32dV/jfOfbYmpyu/QGe35drFuZ5E=",
         "recordedFileInputs": {
           "@@other_module~//requirements_lock_3_11.txt": "a7d0061366569043d5efcf80e34a32c732679367cb3c831c4cdc606adc36d314",
@@ -6590,7 +6590,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "9R8+CXzaV+FOv5NSr6mNrvF+hvnyouGXJh9E0JxC/7Q=",
+        "bzlTransitiveDigest": "9eTKZ0loBHXjnUN2bCe9tw/B80bL6P6e+Ljp+x/aMVI=",
         "usagesDigest": "O2O2oBIbKEglN2K3FECsRxUKVS/zg/6a86F3MO1ZtmY=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",

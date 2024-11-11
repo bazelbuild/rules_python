@@ -75,10 +75,11 @@ def _test_legacy_aliases(env):
     want_key = "foo/BUILD.bazel"
     want_content = """\
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 
 package(default_visibility = ["//visibility:public"])
 
-alias(
+pkg_aliases(
     name = "foo",
     actual = ":pkg",
 )
@@ -120,6 +121,7 @@ def _test_bzlmod_aliases(env):
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -140,7 +142,7 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 \"\"\"
 
-alias(
+pkg_aliases(
     name = "bar_baz",
     actual = ":pkg",
 )
@@ -222,6 +224,7 @@ def _test_bzlmod_aliases_with_no_default_version(env):
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -243,7 +246,7 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 \"\"\"
 
-alias(
+pkg_aliases(
     name = "bar_baz",
     actual = ":pkg",
 )

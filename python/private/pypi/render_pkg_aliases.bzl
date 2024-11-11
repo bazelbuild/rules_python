@@ -117,9 +117,17 @@ def _render_whl_library_alias(
         **kwargs
     )
 
+def _render_pkg_aliases(name, actual):
+    return """pkg_aliases(
+    name = "{name}",
+    actual = {actual},
+)""".format(name = name, actual = repr(actual))
+
 def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     lines = [
-        """load("@bazel_skylib//lib:selects.bzl", "selects")""",
+        """\
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")""",
         """package(default_visibility = ["//visibility:public"])""",
     ]
 
@@ -140,9 +148,9 @@ def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = No
         ))
 
     lines.append(
-        render.alias(
+        _render_pkg_aliases(
             name = name,
-            actual = repr(":pkg"),
+            actual = ":pkg",
         ),
     )
     lines.extend(
