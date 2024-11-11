@@ -21,6 +21,8 @@ load(":glob_excludes.bzl", "glob_excludes")
 load(":py_exec_tools_toolchain.bzl", "py_exec_tools_toolchain")
 load(":semver.bzl", "semver")
 
+_IS_FREETHREADED = Label("//python/config_settings:is_py_freethreaded")
+
 def define_hermetic_runtime_toolchain_impl(
         *,
         name,
@@ -45,7 +47,7 @@ def define_hermetic_runtime_toolchain_impl(
         python_version: {type}`str` The Python version, in `major.minor.micro`
             format.
         python_bin: {type}`str` The path to the Python binary within the
-            repositoroy.
+            repository.
         coverage_tool: {type}`str` optional target to the coverage tool to
             use.
     """
@@ -67,19 +69,23 @@ def define_hermetic_runtime_toolchain_impl(
             exclude = [
                 # Unused shared libraries. `python` executable and the `:libpython` target
                 # depend on `libpython{python_version}.so.1.0`.
-                "lib/libpython{major}.{minor}.so".format(**version_dict),
+                "lib/libpython{major}.{minor}*.so".format(**version_dict),
                 # static libraries
                 "lib/**/*.a",
                 # tests for the standard libraries.
-                "lib/python{major}.{minor}/**/test/**".format(**version_dict),
-                "lib/python{major}.{minor}/**/tests/**".format(**version_dict),
-                "**/__pycache__/*.pyc.*",  # During pyc creation, temp files named *.pyc.NNN are created
+                "lib/python{major}.{minor}*/**/test/**".format(**version_dict),
+                "lib/python{major}.{minor}*/**/tests/**".format(**version_dict),
+                # During pyc creation, temp files named *.pyc.NNN are created
+                "**/__pycache__/*.pyc.*",
             ] + glob_excludes.version_dependent_exclusions() + extra_files_glob_exclude,
         ),
     )
     cc_import(
         name = "interface",
-        interface_library = "libs/python{major}{minor}.lib".format(**version_dict),
+        interface_library = select({
+            _IS_FREETHREADED: "libs/python{major}{minor}t.lib".format(**version_dict),
+            "//conditions:default": "libs/python{major}{minor}.lib".format(**version_dict),
+        }),
         system_provided = True,
     )
 
@@ -96,14 +102,62 @@ def define_hermetic_runtime_toolchain_impl(
         hdrs = [":includes"],
         includes = [
             "include",
-            "include/python{major}.{minor}".format(**version_dict),
-            "include/python{major}.{minor}m".format(**version_dict),
-        ],
+        ] + select({
+            _IS_FREETHREADED: [
+                "include/python{major}.{minor}t".format(**version_dict),
+            ],
+            "//conditions:default": [
+                "include/python{major}.{minor}".format(**version_dict),
+                "include/python{major}.{minor}m".format(**version_dict),
+            ],
+        }),
     )
+    native.config_setting(
+        name = "is_freethreaded_linux",
+        flag_values = {
+            Label("//python/config_settings:py_freethreaded"): "yes",
+        },
+        constraint_values = [
+            "@platforms//os:linux",
+        ],
+        visibility = ["//visibility:private"],
+    )
+    native.config_setting(
+        name = "is_freethreaded_osx",
+        flag_values = {
+            Label("//python/config_settings:py_freethreaded"): "yes",
+        },
+        constraint_values = [
+            "@platforms//os:osx",
+        ],
+        visibility = ["//visibility:private"],
+    )
+    native.config_setting(
+        name = "is_freethreaded_windows",
+        flag_values = {
+            Label("//python/config_settings:py_freethreaded"): "yes",
+        },
+        constraint_values = [
+            "@platforms//os:windows",
+        ],
+        visibility = ["//visibility:private"],
+    )
+
     cc_library(
         name = "libpython",
         hdrs = [":includes"],
         srcs = select({
+            ":is_freethreaded_linux": [
+                "lib/libpython{major}.{minor}t.so".format(**version_dict),
+                "lib/libpython{major}.{minor}t.so.1.0".format(**version_dict),
+            ],
+            ":is_freethreaded_osx": [
+                "lib/libpython{major}.{minor}t.dylib".format(**version_dict),
+            ],
+            ":is_freethreaded_windows": [
+                "python3.dll",
+                "libs/python{major}{minor}t.lib".format(**version_dict),
+            ],
             "@platforms//os:linux": [
                 "lib/libpython{major}.{minor}.so".format(**version_dict),
                 "lib/libpython{major}.{minor}.so.1.0".format(**version_dict),
@@ -132,12 +186,18 @@ def define_hermetic_runtime_toolchain_impl(
             "micro": str(version_info.patch),
             "minor": str(version_info.minor),
         },
-        # Convert empty string to None
-        coverage_tool = coverage_tool or None,
+        coverage_tool = select({
+            # Convert empty string to None
+            ":coverage_enabled": coverage_tool or None,
+            "//conditions:default": None,
+        }),
         python_version = "PY3",
         implementation_name = "cpython",
         # See https://peps.python.org/pep-3147/ for pyc tag infix format
-        pyc_tag = "cpython-{major}{minor}".format(**version_dict),
+        pyc_tag = select({
+            _IS_FREETHREADED: "cpython-{major}{minor}t".format(**version_dict),
+            "//conditions:default": "cpython-{major}{minor}".format(**version_dict),
+        }),
     )
 
     py_runtime_pair(

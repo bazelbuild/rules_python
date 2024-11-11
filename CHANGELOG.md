@@ -28,11 +28,19 @@ A brief description of the categories of changes:
 {#v0-0-0-changed}
 ### Changed
 * (deps) bazel_skylib 1.6.1 -> 1.7.1
+* (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
+    * 3.9.20
+    * 3.10.15
+    * 3.11.10
+    * 3.12.7
+    * 3.13.0
 * (pypi) The naming scheme for the `bzlmod` spoke repositories have changed as
   all of the given `requirements.txt` files are now parsed by `default`, to
   temporarily restore the behavior, you can use
   {bzl:obj}`pip.parse.extra_hub_aliases`, which will be removed or made noop in
   the future.
+
+[20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -40,7 +48,9 @@ A brief description of the categories of changes:
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet
+* (toolchain) Support for freethreaded Python toolchains is now available. Use
+  the config flag `//python/config_settings:py_freethreaded` to toggle the
+  selection of the free-threaded toolchains.
 
 {#v0-0-0-removed}
 ### Removed
