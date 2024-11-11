@@ -43,7 +43,9 @@ A brief description of the categories of changes:
 
 {#v0-0-0-added}
 ### Added
-* (toolchain) The support for freethreaded Python toolchains is now available. 
+* (toolchain) Support for freethreaded Python toolchains is now available. Use
+  the config flag `//python/config_settings:py_freethreaded` to toggle the
+  selection of the free-threaded toolchains.
 
 {#v0-0-0-removed}
 ### Removed

@@ -75,7 +75,7 @@ def python_register_toolchains(
         **kwargs: passed to each {obj}`python_repository` call.
 
     Returns:
-        on bzlmod this returns the loaded platform labels.
+        On bzlmod this returns the loaded platform labels. Otherwise None.
     """
     bzlmod_toolchain_call = kwargs.pop("_internal_bzlmod_toolchain_call", False)
     if bzlmod_toolchain_call:

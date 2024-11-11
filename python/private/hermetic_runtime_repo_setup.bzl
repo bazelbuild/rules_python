@@ -105,9 +105,6 @@ def define_hermetic_runtime_toolchain_impl(
         ] + select({
             _IS_FREETHREADED: [
                 "include/python{major}.{minor}t".format(**version_dict),
-                # FIXME @aignas 2024-11-05: the following looks fishy - should
-                # we have a config setting for `m` (i.e. DEBUG builds)?
-                "include/python{major}.{minor}tm".format(**version_dict),
             ],
             "//conditions:default": [
                 "include/python{major}.{minor}".format(**version_dict),
