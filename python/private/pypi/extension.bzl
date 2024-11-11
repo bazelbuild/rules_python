@@ -786,7 +786,7 @@ find in case extra indexes are specified.
             default = True,
         ),
         "parse_all_requirements_files": attr.bool(
-            default = False,
+            default = True,
             doc = """\
 A temporary flag to enable users to make `pip` extension result always
 the same independent of the whether transitive dependencies use {bzl:attr}`experimental_index_url` or not.
