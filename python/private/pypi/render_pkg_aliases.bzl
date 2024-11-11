@@ -61,40 +61,32 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
-def _render_pkg_aliases(name, actual, group_name, extra_aliases):
+def _repr_actual(actual):
     if len(actual) == 1 and None in actual:
-        actual = repr(actual.values()[0])
+        return repr(actual.values()[0])
     else:
-        actual = render.indent(render.dict(actual)).lstrip()
+        return render.indent(render.dict(actual)).lstrip()
 
+def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     return """\
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
+
+package(default_visibility = ["//visibility:public"])
+
 pkg_aliases(
     name = "{name}",
     actual = {actual},
     group_name = {group_name},
     extra_aliases = {extra_aliases},
-)""".format(name = name, actual = actual, group_name = repr(group_name), extra_aliases = repr(extra_aliases))
-
-def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
-    lines = [
-        """\
-load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")""",
-        """package(default_visibility = ["//visibility:public"])""",
-    ]
-
-    lines.append(
-        _render_pkg_aliases(
-            name = name,
-            actual = {
-                a.config_setting: a.repo
-                for a in aliases
-            },
-            group_name = group_name,
-            extra_aliases = extra_aliases,
-        ),
+)""".format(
+        name = name,
+        actual = _repr_actual({
+            a.config_setting: a.repo
+            for a in aliases
+        }),
+        group_name = repr(group_name),
+        extra_aliases = repr(extra_aliases),
     )
-
-    return "\n\n".join(lines)
 
 def render_pkg_aliases(*, aliases, requirement_cycles = None, extra_hub_aliases = {}):
     """Create alias declarations for each PyPI package.
