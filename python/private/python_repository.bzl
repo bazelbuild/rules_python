@@ -15,7 +15,7 @@
 """This file contains repository rules and macros to support toolchain registration.
 """
 
-load("//python:versions.bzl", "PLATFORMS")
+load("//python:versions.bzl", "FREETHREADED", "PLATFORMS")
 load(":auth.bzl", "get_auth")
 load(":repo_utils.bzl", "REPO_DEBUG_ENV_VAR", "repo_utils")
 load(":text_util.bzl", "render")
@@ -63,8 +63,12 @@ def _python_repository_impl(rctx):
     platform = rctx.attr.platform
     python_version = rctx.attr.python_version
     python_version_info = python_version.split(".")
-    python_short_version = "{0}.{1}".format(*python_version_info)
     release_filename = rctx.attr.release_filename
+    version_suffix = "t" if FREETHREADED in release_filename else ""
+    python_short_version = "{0}.{1}{suffix}".format(
+        suffix = version_suffix,
+        *python_version_info
+    )
     urls = rctx.attr.urls or [rctx.attr.url]
     auth = get_auth(rctx, urls)
 
