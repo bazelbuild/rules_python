@@ -51,6 +51,8 @@ A brief description of the categories of changes:
 * (toolchain) Support for freethreaded Python toolchains is now available. Use
   the config flag `//python/config_settings:py_freethreaded` to toggle the
   selection of the free-threaded toolchains.
+* (toolchain) {obj}`py_runtime.abi_flags` attribute and
+  {obj}`PyRuntimeInfo.abi_flags` field added.
 
 {#v0-0-0-removed}
 ### Removed

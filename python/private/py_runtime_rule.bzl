@@ -17,6 +17,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load(":attributes.bzl", "NATIVE_RULES_ALLOWLIST_ATTRS")
+load(":flags.bzl", "FreeThreadedFlag")
 load(":py_internal.bzl", "py_internal")
 load(":py_runtime_info.bzl", "DEFAULT_BOOTSTRAP_TEMPLATE", "DEFAULT_STUB_SHEBANG", "PyRuntimeInfo")
 load(":reexports.bzl", "BuiltinPyRuntimeInfo")
@@ -101,6 +102,13 @@ def _py_runtime_impl(ctx):
             interpreter_version_info["minor"],
         )
 
+    abi_flags = ctx.attr.abi_flags
+    if abi_flags == "<AUTO>":
+        abi_flags = ""
+        if ctx.attr._py_freethreaded_flag[BuildSettingInfo].value == FreeThreadedFlag.YES:
+            abi_flags += "t"
+
+    # Args common to both BuiltinPyRuntimeInfo and PyRuntimeInfo
     py_runtime_info_kwargs = dict(
         interpreter_path = interpreter_path or None,
         interpreter = interpreter,
@@ -120,6 +128,7 @@ def _py_runtime_impl(ctx):
         pyc_tag = pyc_tag,
         stage2_bootstrap_template = ctx.file.stage2_bootstrap_template,
         zip_main_template = ctx.file.zip_main_template,
+        abi_flags = abi_flags,
     ))
 
     if not IS_BAZEL_7_OR_HIGHER:
@@ -179,6 +188,14 @@ py_runtime(
 """,
     fragments = ["py"],
     attrs = dicts.add(NATIVE_RULES_ALLOWLIST_ATTRS, {
+        "abi_flags": attr.string(
+            default = "<AUTO>",
+            doc = """
+The runtime's ABI flags, i.e. `sys.abiflags`.
+
+If not set, then it will be set based on flags.
+""",
+        ),
         "bootstrap_template": attr.label(
             allow_single_file = True,
             default = DEFAULT_BOOTSTRAP_TEMPLATE,
@@ -334,6 +351,9 @@ This becomes the entry point executed when `python foo.zip` is run.
 The {obj}`PyRuntimeInfo.zip_main_template` field.
 :::
 """,
+        ),
+        "_py_freethreaded_flag": attr.label(
+            default = "//python/config_settings:py_freethreaded",
         ),
         "_python_version_flag": attr.label(
             default = "//python/config_settings:python_version",

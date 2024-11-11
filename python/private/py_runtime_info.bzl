@@ -67,7 +67,8 @@ def _PyRuntimeInfo_init(
         bootstrap_template = None,
         interpreter_version_info = None,
         stage2_bootstrap_template = None,
-        zip_main_template = None):
+        zip_main_template = None,
+        abi_flags = ""):
     if (interpreter_path and interpreter) or (not interpreter_path and not interpreter):
         fail("exactly one of interpreter or interpreter_path must be specified")
 
@@ -105,6 +106,7 @@ def _PyRuntimeInfo_init(
         stub_shebang = DEFAULT_STUB_SHEBANG
 
     return {
+        "abi_flags": abi_flags,
         "bootstrap_template": bootstrap_template,
         "coverage_files": coverage_files,
         "coverage_tool": coverage_tool,
@@ -133,6 +135,11 @@ the same conventions as the standard CPython interpreter.
 """,
     init = _PyRuntimeInfo_init,
     fields = {
+        "abi_flags": """
+:type: str
+
+The runtime's ABI flags, i.e. `sys.abiflags`.
+""",
         "bootstrap_template": """
 :type: File
 
