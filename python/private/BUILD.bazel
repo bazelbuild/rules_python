@@ -633,8 +633,8 @@ bzl_library(
 bzl_library(
     name = "rules_cc_srcs_bzl",
     srcs = [
-        # It appears something in the CC rules loads cc_proto_library, but
-        # where isn't clear.
+        # rules_cc 0.0.13 and earlier load cc_proto_libary (and thus protobuf@),
+        # but their bzl srcs targets don't transitively refer to protobuf.
         "@com_google_protobuf//:bzl_srcs",
         # NOTE: As of rules_cc 0.10, cc:bzl_srcs no longer contains
         # everything and sub-targets must be used instead
