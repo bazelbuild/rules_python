@@ -122,3 +122,13 @@ PrecompileSourceRetentionFlag = enum(
     OMIT_SOURCE = "omit_source",
     get_effective_value = _precompile_source_retention_flag_get_effective_value,
 )
+
+# Used for matching freethreaded toolchains and would have to be used in wheels
+# as well.
+# buildifier: disable=name-conventions
+FreeThreadedFlag = enum(
+    # Use freethreaded python toolchain and wheels.
+    YES = "yes",
+    # Do not use freethreaded python toolchain and wheels.
+    NO = "no",
+)

@@ -1556,7 +1556,7 @@
     },
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
-        "bzlTransitiveDigest": "9u2vyCfATaJyExz/Y1HbERIQsXdRAhjB0zvtEfXIUoo=",
+        "bzlTransitiveDigest": "xgvC1bRYiqApsCOY56grTCQ0/8pBZNRALXbjn+4q/hE=",
         "usagesDigest": "WD9748KgKspkRhz/fkTXq6kGr6qsNVrz4O0oVeQ4Vgg=",
         "recordedFileInputs": {
           "@@//requirements_lock_3_10.txt": "5e7083982a7e60f34998579a0ae83b520d46ab8f2552cc51337217f024e6def5",
@@ -6728,7 +6728,9 @@
               "whl_map": {
                 "absl_py": "[{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"other_module_pip_311_absl_py\",\"target_platforms\":null,\"version\":\"3.11\"}]"
               },
-              "packages": [],
+              "packages": [
+                "absl_py"
+              ],
               "groups": {}
             }
           },
@@ -6862,7 +6864,10 @@
                 "numpy": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_deps_310_numpy\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"pip_deps_311_numpy\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.12\",\"filename\":null,\"repo\":\"pip_deps_312_numpy\",\"target_platforms\":null,\"version\":\"3.12\"},{\"config_setting\":\"//_config:is_python_3.8\",\"filename\":null,\"repo\":\"pip_deps_38_numpy\",\"target_platforms\":null,\"version\":\"3.8\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":null,\"repo\":\"pip_deps_39_numpy\",\"target_platforms\":null,\"version\":\"3.9\"}]",
                 "setuptools": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"pip_deps_310_setuptools\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"pip_deps_311_setuptools\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.12\",\"filename\":null,\"repo\":\"pip_deps_312_setuptools\",\"target_platforms\":null,\"version\":\"3.12\"},{\"config_setting\":\"//_config:is_python_3.8\",\"filename\":null,\"repo\":\"pip_deps_38_setuptools\",\"target_platforms\":null,\"version\":\"3.8\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":null,\"repo\":\"pip_deps_39_setuptools\",\"target_platforms\":null,\"version\":\"3.9\"}]"
               },
-              "packages": [],
+              "packages": [
+                "numpy",
+                "setuptools"
+              ],
               "groups": {}
             }
           },
@@ -6876,7 +6881,10 @@
                 "absl_py": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_310_absl_py\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_311_absl_py\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.12\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_312_absl_py\",\"target_platforms\":null,\"version\":\"3.12\"},{\"config_setting\":\"//_config:is_python_3.8\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_38_absl_py\",\"target_platforms\":null,\"version\":\"3.8\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_39_absl_py\",\"target_platforms\":null,\"version\":\"3.9\"}]",
                 "six": "[{\"config_setting\":\"//_config:is_python_3.10\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_310_six\",\"target_platforms\":null,\"version\":\"3.10\"},{\"config_setting\":\"//_config:is_python_3.11\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_311_six\",\"target_platforms\":null,\"version\":\"3.11\"},{\"config_setting\":\"//_config:is_python_3.12\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_312_six\",\"target_platforms\":null,\"version\":\"3.12\"},{\"config_setting\":\"//_config:is_python_3.8\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_38_six\",\"target_platforms\":null,\"version\":\"3.8\"},{\"config_setting\":\"//_config:is_python_3.9\",\"filename\":null,\"repo\":\"rules_fuzzing_py_deps_39_six\",\"target_platforms\":null,\"version\":\"3.9\"}]"
               },
-              "packages": [],
+              "packages": [
+                "absl_py",
+                "six"
+              ],
               "groups": {}
             }
           }
@@ -7021,7 +7029,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "qWjy4tbHBwJtP4zrA+O4DJnMcpKFsP08WRoAvIHKUFs=",
+        "bzlTransitiveDigest": "OoT+AuxNb9Ej3Cn/GFgSHa1NlVBY27sJhilKvy+3WJI=",
         "usagesDigest": "/lZXl/ZgP+u5PE8WkeWTyYBsvX9XQWFn1antj5qrBzQ=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",

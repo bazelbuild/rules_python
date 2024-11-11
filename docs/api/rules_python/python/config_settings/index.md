@@ -149,6 +149,16 @@ Values:
 :::
 ::::
 
+::::{bzl:flag} py_freethreaded
+Set whether to use an interpreter with the experimental freethreaded option set to true.
+
+Values:
+* `no`: Use regular Python toolchains, default.
+* `yes`: Use the experimental Python toolchain with freethreaded compile option enabled.
+:::{versionadded} 0.38.0
+:::
+::::
+
 ::::{bzl:flag} pip_whl
 Set what distributions are used in the `pip` integration.
 

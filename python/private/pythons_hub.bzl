@@ -14,6 +14,7 @@
 
 "Repo rule used by bzlmod extension to create a repo that has a map of Python interpreters and their labels"
 
+load("//python:versions.bzl", "PLATFORMS")
 load(":text_util.bzl", "render")
 load(":toolchains_repo.bzl", "python_toolchain_build_file_content")
 
@@ -46,7 +47,8 @@ def _hub_build_file_content(
         python_versions,
         set_python_version_constraints,
         user_repository_names,
-        workspace_location):
+        workspace_location,
+        loaded_platforms):
     """This macro iterates over each of the lists and returns the toolchain content.
 
     python_toolchain_build_file_content is called to generate each of the toolchain
@@ -65,6 +67,11 @@ def _hub_build_file_content(
                 python_version = python_versions[i],
                 set_python_version_constraint = set_python_version_constraints[i],
                 user_repository_name = user_repository_names[i],
+                loaded_platforms = {
+                    k: v
+                    for k, v in PLATFORMS.items()
+                    if k in loaded_platforms[python_versions[i]]
+                },
             )
             for i in range(len(python_versions))
         ],
@@ -103,6 +110,7 @@ def _hub_repo_impl(rctx):
             rctx.attr.toolchain_set_python_version_constraints,
             rctx.attr.toolchain_user_repository_names,
             rctx.attr._rules_python_workspace,
+            rctx.attr.loaded_platforms,
         ),
         executable = False,
     )
@@ -148,6 +156,9 @@ This rule also writes out the various toolchains for the different Python versio
         "default_python_version": attr.string(
             doc = "Default Python version for the build in `X.Y` or `X.Y.Z` format.",
             mandatory = True,
+        ),
+        "loaded_platforms": attr.string_list_dict(
+            doc = "The list of loaded platforms keyed by the toolchain full python version",
         ),
         "minor_mapping": attr.string_dict(
             doc = "The minor mapping of the `X.Y` to `X.Y.Z` format that is used in config settings.",

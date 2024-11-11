@@ -42,6 +42,10 @@ _supported_platforms = {
     "manylinux2014_aarch64": "aarch64-unknown-linux-gnu",
     "macosx_11_0_arm64": "aarch64-apple-darwin",
     "macosx_10_9_x86_64": "x86_64-apple-darwin",
+    ("t", "manylinux2014_x86_64"): "x86_64-unknown-linux-gnu-freethreaded",
+    ("t", "manylinux2014_aarch64"): "aarch64-unknown-linux-gnu-freethreaded",
+    ("t", "macosx_11_0_arm64"): "aarch64-apple-darwin-freethreaded",
+    ("t", "macosx_10_9_x86_64"): "x86_64-apple-darwin-freethreaded",
 }
 
 
@@ -87,10 +91,18 @@ class Deps:
         return "{{\n{}\n}}".format(textwrap.indent("\n".join(parts), prefix="    "))
 
 
-def _get_platforms(filename: str, name: str, version: str, python_version: str):
-    return filename[
-        len(f"{name}-{version}-{python_version}-{python_version}-") : -len(".whl")
-    ].split(".")
+def _get_platforms(filename: str, python_version: str):
+    name, _, tail = filename.partition("-")
+    version, _, tail = tail.partition("-")
+    got_python_version, _, tail = tail.partition("-")
+    if python_version != got_python_version:
+        return []
+    abi, _, tail = tail.partition("-")
+
+    platforms, _, tail = tail.rpartition(".")
+    platforms = platforms.split(".")
+
+    return [("t", p) for p in platforms] if abi.endswith("t") else platforms
 
 
 def _map(
@@ -172,8 +184,6 @@ def main():
 
         platforms = _get_platforms(
             u["filename"],
-            args.name,
-            args.version,
             u["python_version"],
         )
 
