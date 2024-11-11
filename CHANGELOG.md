@@ -34,6 +34,11 @@ A brief description of the categories of changes:
     * 3.11.10
     * 3.12.7
     * 3.13.0
+* (pypi) The naming scheme for the `bzlmod` spoke repositories have changed as
+  all of the given `requirements.txt` files are now parsed by `default`, to
+  temporarily restore the behavior, you can use
+  {bzl:obj}`pip.parse.extra_hub_aliases`, which will be removed or made noop in
+  the future.
 
 [20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
 
