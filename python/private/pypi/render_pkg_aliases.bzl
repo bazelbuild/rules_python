@@ -61,11 +61,14 @@ If the value is missing, then the "default" Python version is being used,
 which has a "null" version value and will not match version constraints.
 """
 
-def _repr_actual(actual):
-    if len(actual) == 1 and None in actual:
-        return repr(actual.values()[0])
-    else:
-        return render.indent(render.dict(actual)).lstrip()
+def _repr_actual(aliases):
+    if len(aliases) == 1 and not aliases[0].version and not aliases[0].config_setting:
+        return repr(aliases[0].repo)
+
+    actual = {}
+    for alias in aliases:
+        actual[alias.config_setting or ("//_config:is_python_" + alias.version)] = alias.repo
+    return render.indent(render.dict(actual)).lstrip()
 
 def _render_common_aliases(*, name, aliases, extra_aliases = [], group_name = None):
     return """\
@@ -80,10 +83,7 @@ pkg_aliases(
     extra_aliases = {extra_aliases},
 )""".format(
         name = name,
-        actual = _repr_actual({
-            a.config_setting: a.repo
-            for a in aliases
-        }),
+        actual = _repr_actual(aliases),
         group_name = repr(group_name),
         extra_aliases = repr(extra_aliases),
     )
