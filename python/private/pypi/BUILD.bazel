@@ -256,7 +256,6 @@ bzl_library(
     srcs = ["render_pkg_aliases.bzl"],
     deps = [
         ":generate_group_library_build_bazel_bzl",
-        ":labels_bzl",
         ":parse_whl_name_bzl",
         ":whl_target_platforms_bzl",
         "//python/private:normalize_name_bzl",
