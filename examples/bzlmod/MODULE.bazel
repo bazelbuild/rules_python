@@ -12,10 +12,20 @@ local_path_override(
 )
 
 # (py_proto_library specific) We are using rules_proto to define rules_proto targets to be consumed by py_proto_library.
-bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
+bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 
 # (py_proto_library specific) Add the protobuf library for well-known types (e.g. `Any`, `Timestamp`, etc)
-bazel_dep(name = "protobuf", version = "24.4", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "27.0", repo_name = "com_google_protobuf")
+
+# Only needed to make rules_python's CI happy. rules_java 8.3.0+ is needed so
+# that --java_runtime_version=remotejdk_11 works with Bazel 8.
+bazel_dep(name = "rules_java", version = "8.3.0")
+
+# Only needed to make rules_python's CI happy. A test verifies that
+# MODULE.bazel.lock is cross-platform friendly, and there are transitive
+# dependencies on rules_rust, so we need rules_rust 0.54.1+ where such issues
+# were fixed.
+bazel_dep(name = "rules_rust", version = "0.54.1")
 
 # We next initialize the python toolchain using the extension.
 # You can set different Python versions in this block.
