@@ -59,6 +59,7 @@ def py_repositories():
         strip_prefix = "rules_cc-0.0.13",
         urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.13/rules_cc-0.0.13.tar.gz"],
     )
+
     http_archive(
         name = "protobuf",
         sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
