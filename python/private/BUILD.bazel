@@ -631,7 +631,6 @@ bzl_library(
     ],
 )
 
-# @rules_cc does not offer a bzl_library target for @rules_cc//cc:defs.bzl
 bzl_library(
     name = "rules_cc_srcs_bzl",
     srcs = [
@@ -644,7 +643,10 @@ bzl_library(
         "@rules_cc//cc/common",
         "@rules_cc//cc/toolchains:toolchain_rules",
     ],
-    deps = [":bazel_tools_bzl"],
+    deps = [
+        ":bazel_tools_bzl",
+        "@rules_cc//cc/common",
+    ],
 )
 
 bzl_library(

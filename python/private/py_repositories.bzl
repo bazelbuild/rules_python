@@ -60,6 +60,7 @@ def py_repositories():
         urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.13/rules_cc-0.0.13.tar.gz"],
     )
 
+    # Needed by rules_cc, triggerred by @rules_java_prebuilt in Bazel by using @rules_cc//cc:defs.bzl
     http_archive(
         name = "protobuf",
         sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
