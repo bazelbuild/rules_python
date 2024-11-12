@@ -631,11 +631,22 @@ bzl_library(
     ],
 )
 
-# @rules_cc does not offer a bzl_library target for @rules_cc//cc:defs.bzl
 bzl_library(
     name = "rules_cc_srcs_bzl",
-    srcs = ["@rules_cc//cc:bzl_srcs"],
-    deps = [":bazel_tools_bzl"],
+    srcs = [
+        # rules_cc 0.0.13 and earlier load cc_proto_libary (and thus protobuf@),
+        # but their bzl srcs targets don't transitively refer to protobuf.
+        "@com_google_protobuf//:bzl_srcs",
+        # NOTE: As of rules_cc 0.10, cc:bzl_srcs no longer contains
+        # everything and sub-targets must be used instead
+        "@rules_cc//cc:bzl_srcs",
+        "@rules_cc//cc/common",
+        "@rules_cc//cc/toolchains:toolchain_rules",
+    ],
+    deps = [
+        ":bazel_tools_bzl",
+        "@rules_cc//cc/common",
+    ],
 )
 
 bzl_library(

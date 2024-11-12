@@ -14,7 +14,7 @@
 
 """Implementation of current_py_cc_headers rule."""
 
-load("@rules_cc//cc:defs.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def _current_py_cc_headers_impl(ctx):
     py_cc_toolchain = ctx.toolchains["//python/cc:toolchain_type"].py_cc_toolchain

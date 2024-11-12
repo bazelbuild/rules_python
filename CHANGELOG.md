@@ -28,6 +28,11 @@ A brief description of the categories of changes:
 {#v0-0-0-changed}
 ### Changed
 * (deps) bazel_skylib 1.6.1 -> 1.7.1
+* (deps) rules_cc 0.0.9 -> 0.0.14
+* (deps) protobuf 24.4 -> 29.0-rc2
+* (deps) rules_proto 6.0.0-rc1 -> 6.0.2
+* (deps) stardoc 0.6.2 -> 0.7.1
+* For bzlmod, Bazel 7.4 is now the minimum Bazel version.
 * (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
     * 3.9.20
     * 3.10.15
@@ -48,6 +53,7 @@ A brief description of the categories of changes:
 
 {#v0-0-0-added}
 ### Added
+* Bazel 8 is now supported.
 * (toolchain) Support for freethreaded Python toolchains is now available. Use
   the config flag `//python/config_settings:py_freethreaded` to toggle the
   selection of the free-threaded toolchains.
@@ -56,7 +62,7 @@ A brief description of the categories of changes:
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet
+* Support for Bazel 6 using bzlmod has been dropped.
 
 {#v0-38-0}
 ## [0.38.0] - 2024-11-08
