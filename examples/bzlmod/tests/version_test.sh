@@ -16,7 +16,11 @@
 
 set -o errexit -o nounset -o pipefail
 
-version_py_binary=$("${VERSION_PY_BINARY}")
+# VERSION_PY_BINARY is a space separate list of the executable and its main
+# py file. We just want the executable.
+bin=($VERSION_PY_BINARY)
+bin="${bin[@]//*.py}"
+version_py_binary=$($bin)
 
 if [[ "${version_py_binary}" != "${VERSION_CHECK}" ]]; then
     echo >&2 "expected version '${VERSION_CHECK}' is different than returned '${version_py_binary}'"
