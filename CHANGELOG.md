@@ -49,7 +49,9 @@ A brief description of the categories of changes:
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet
+* (precompiling) Skip precompiling (instead of erroring) if the legacy
+  `@bazel_tools//tools/python:autodetecting_toolchain` is being used
+  ([#2364](https://github.com/bazelbuild/rules_python/issues/2364)).
 
 {#v0-0-0-added}
 ### Added
