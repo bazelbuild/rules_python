@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
----
 fixedReleaser:
-  login: aignas
-  email: 240938+aignas@users.noreply.github.com
+  login: f0rmiga
+  email: 3149049+f0rmiga@users.noreply.github.com
 moduleRoots: [".", "gazelle"]
