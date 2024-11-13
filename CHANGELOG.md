@@ -64,7 +64,8 @@ Unreleased changes template.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
+  Please use `requirements_linux.txt` instead.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13

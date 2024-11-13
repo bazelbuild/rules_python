@@ -19,7 +19,6 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
-        "requirements.txt",
         "requirements_darwin.txt",
         "requirements_linux.txt",
         "requirements_universal.txt",
@@ -33,7 +32,6 @@ publish_deps(
     name = "requirements",
     srcs = ["requirements.in"],
     outs = {
-        "requirements.txt": "linux",  # TODO: maybe deprecate
         "requirements_darwin.txt": "macos",
         "requirements_linux.txt": "linux",
         "requirements_universal.txt": "",  # universal
