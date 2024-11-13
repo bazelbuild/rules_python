@@ -111,7 +111,7 @@ def pkg_aliases(
                 no_match_error = no_match_error,
             )
         else:
-            fail("BUG: should have a dictionary or a string")
+            fail("The `actual` arg must be a dictionary or a string")
 
         kwargs = {}
         if target_name.startswith("_"):
