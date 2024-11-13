@@ -20,12 +20,58 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+<!--
+Unreleased changes template.
+
 {#v0-0-0}
 ## Unreleased
 
 [0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
 
 {#v0-0-0-changed}
+### Changed
+* Nothing yet.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet.
+
+{#v0-0-0-added}
+### Added
+* Nothing yet.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet.
+-->
+
+{#v0-0-0}
+## Unreleased
+
+[0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
+
+{#v0-0-0-changed}
+### Changed
+* Nothing yet.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet.
+
+{#v0-0-0-added}
+### Added
+* Nothing yet.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet.
+
+{#v0-39-0}
+## [0.39.0] - 2024-11-13
+
+[0.39.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.39.0
+
+{#v0-39-0-changed}
 ### Changed
 * (deps) bazel_skylib 1.6.1 -> 1.7.1
 * (deps) rules_cc 0.0.9 -> 0.0.14
@@ -47,13 +93,13 @@ A brief description of the categories of changes:
 
 [20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
 
-{#v0-0-0-fixed}
+{#v0-39-0-fixed}
 ### Fixed
 * (precompiling) Skip precompiling (instead of erroring) if the legacy
   `@bazel_tools//tools/python:autodetecting_toolchain` is being used
   ([#2364](https://github.com/bazelbuild/rules_python/issues/2364)).
 
-{#v0-0-0-added}
+{#v0-39-0-added}
 ### Added
 * Bazel 8 is now supported.
 * (toolchain) Support for freethreaded Python toolchains is now available. Use
@@ -62,7 +108,7 @@ A brief description of the categories of changes:
 * (toolchain) {obj}`py_runtime.abi_flags` attribute and
   {obj}`PyRuntimeInfo.abi_flags` field added.
 
-{#v0-0-0-removed}
+{#v0-39-0-removed}
 ### Removed
 * Support for Bazel 6 using bzlmod has been dropped.
 
