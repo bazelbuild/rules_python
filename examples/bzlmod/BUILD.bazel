@@ -69,16 +69,24 @@ py_test_with_transition(
 # to run some of the tests.
 # See: https://github.com/bazelbuild/bazel-skylib/blob/main/docs/build_test_doc.md
 build_test(
-    name = "all_wheels",
+    name = "all_wheels_build_test",
     targets = all_whl_requirements,
 )
 
 build_test(
-    name = "all_data_requirements",
+    name = "all_data_requirements_build_test",
     targets = all_data_requirements,
 )
 
 build_test(
-    name = "all_requirements",
+    name = "all_requirements_build_test",
     targets = all_requirements,
+)
+
+# Check the annotations API
+build_test(
+    name = "extra_annotation_targets_build_test",
+    targets = [
+        "@pip//wheel:generated_file",
+    ],
 )

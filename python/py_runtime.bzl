@@ -14,8 +14,8 @@
 
 """Public entry point for py_runtime."""
 
+load("//python/private:py_runtime_macro.bzl", _starlark_py_runtime = "py_runtime")
 load("//python/private:util.bzl", "IS_BAZEL_6_OR_HIGHER", "add_migration_tag")
-load("//python/private/common:py_runtime_macro.bzl", _starlark_py_runtime = "py_runtime")
 
 # buildifier: disable=native-python
 _py_runtime_impl = _starlark_py_runtime if IS_BAZEL_6_OR_HIGHER else native.py_runtime
@@ -25,7 +25,7 @@ def py_runtime(**attrs):
 
     This is the public macro wrapping the underlying rule. Args are forwarded
     on as-is unless otherwise specified. See
-    {bzl:obj}`py_runtime <//python/private/common:py_runtime_rule.bzl%py_runtime>`
+    {rule}`py_runtime`
     for detailed attribute documentation.
 
     This macro affects the following args:
@@ -34,8 +34,7 @@ def py_runtime(**attrs):
     * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes forwarded onto
-          {bzl:obj}`py_runtime <//python/private/common:py_runtime_rule.bzl%py_runtime>`
+      **attrs: Rule attributes forwarded onto {rule}`py_runtime`.
     """
     if attrs.get("python_version") == "PY2":
         fail("Python 2 is no longer supported: see https://github.com/bazelbuild/rules_python/issues/886")

@@ -15,9 +15,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//python/private:flags.bzl", "BootstrapImplFlag")
-load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
-load(":attributes_bazel.bzl", "IMPORTS_ATTRS")
+load(":attributes.bzl", "IMPORTS_ATTRS")
 load(
     ":common.bzl",
     "create_binary_semantics_struct",
@@ -27,13 +25,15 @@ load(
     "union_attrs",
 )
 load(":common_bazel.bzl", "collect_cc_info", "get_imports", "maybe_precompile")
-load(":providers.bzl", "DEFAULT_STUB_SHEBANG")
+load(":flags.bzl", "BootstrapImplFlag")
 load(
     ":py_executable.bzl",
     "create_base_executable_rule",
     "py_executable_base_impl",
 )
 load(":py_internal.bzl", "py_internal")
+load(":py_runtime_info.bzl", "DEFAULT_STUB_SHEBANG")
+load(":toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")
 
 _py_builtins = py_internal
 _EXTERNAL_PATH_PREFIX = "external"

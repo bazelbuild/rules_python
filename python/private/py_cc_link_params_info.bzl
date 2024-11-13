@@ -13,8 +13,8 @@
 # limitations under the License.
 """Providers for Python rules."""
 
-load("@rules_cc//cc:defs.bzl", "CcInfo")
-load("//python/private:util.bzl", "define_bazel_6_provider")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load(":util.bzl", "define_bazel_6_provider")
 
 DEFAULT_STUB_SHEBANG = "#!/usr/bin/env python3"
 
@@ -300,17 +300,17 @@ The following substitutions are made during template expansion:
     },
 )
 
-def _PyCcLinkParamsProvider_init(cc_info):
+def _PyCcLinkParamsInfo_init(cc_info):
     return {
         "cc_info": CcInfo(linking_context = cc_info.linking_context),
     }
 
 # buildifier: disable=name-conventions
-PyCcLinkParamsProvider, _unused_raw_py_cc_link_params_provider_ctor = define_bazel_6_provider(
+PyCcLinkParamsInfo, _unused_raw_py_cc_link_params_provider_ctor = define_bazel_6_provider(
     doc = ("Python-wrapper to forward {obj}`CcInfo.linking_context`. This is to " +
            "allow Python targets to propagate C++ linking information, but " +
            "without the Python target appearing to be a valid C++ rule dependency"),
-    init = _PyCcLinkParamsProvider_init,
+    init = _PyCcLinkParamsInfo_init,
     fields = {
         "cc_info": """
 :type: CcInfo

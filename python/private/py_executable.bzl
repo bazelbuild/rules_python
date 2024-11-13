@@ -16,16 +16,7 @@
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc:defs.bzl", "cc_common")
-load("//python/private:builders.bzl", "builders")
-load("//python/private:py_executable_info.bzl", "PyExecutableInfo")
-load("//python/private:py_info.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
-load(
-    "//python/private:toolchain_types.bzl",
-    "EXEC_TOOLS_TOOLCHAIN_TYPE",
-    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
-)
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load(
     ":attributes.bzl",
     "AGNOSTIC_EXECUTABLE_ATTRS",
@@ -38,10 +29,10 @@ load(
     "create_srcs_attr",
     "create_srcs_version_attr",
 )
+load(":builders.bzl", "builders")
 load(":cc_helper.bzl", "cc_helper")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -52,18 +43,23 @@ load(
     "target_platform_has_any_constraint",
     "union_attrs",
 )
-load(
-    ":providers.bzl",
-    "PyCcLinkParamsProvider",
-    "PyRuntimeInfo",
-)
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
+load(":py_executable_info.bzl", "PyExecutableInfo")
+load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_runtime_info.bzl", "PyRuntimeInfo")
+load(":reexports.bzl", "BuiltinPyInfo", "BuiltinPyRuntimeInfo")
 load(
     ":semantics.bzl",
     "ALLOWED_MAIN_EXTENSIONS",
     "BUILD_DATA_SYMLINK_PATH",
     "IS_BAZEL",
     "PY_RUNTIME_ATTR_NAME",
+)
+load(
+    ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
 )
 
 _py_builtins = py_internal
@@ -178,7 +174,7 @@ def py_executable_base_impl(ctx, *, semantics, is_test, inherited_environment = 
     default_outputs = builders.DepsetBuilder()
     default_outputs.add(executable)
     default_outputs.add(precompile_result.keep_srcs)
-    default_outputs.add(precompile_result.pyc_files)
+    default_outputs.add(required_pyc_files)
 
     imports = collect_imports(ctx, semantics)
 
@@ -272,7 +268,6 @@ def _get_build_info(ctx, cc_toolchain):
 def _validate_executable(ctx):
     if ctx.attr.python_version != "PY3":
         fail("It is not allowed to use Python 2")
-    check_native_allowed(ctx)
 
 def _declare_executable_file(ctx):
     if target_platform_has_any_constraint(ctx, ctx.attr._windows_constraints):
@@ -459,7 +454,7 @@ def _get_base_runfiles_for_binary(
         common_runfiles.files.add(implicit_pyc_source_files)
 
     for dep in (ctx.attr.deps + extra_deps):
-        if not (PyInfo in dep or BuiltinPyInfo in dep):
+        if not (PyInfo in dep or (BuiltinPyInfo != None and BuiltinPyInfo in dep)):
             continue
         info = dep[PyInfo] if PyInfo in dep else dep[BuiltinPyInfo]
         common_runfiles.files.add(info.transitive_sources)
@@ -476,7 +471,7 @@ def _get_base_runfiles_for_binary(
 
     common_runfiles.runfiles.append(collect_runfiles(ctx))
     if extra_deps:
-        common_runfiles.add_runfiles(targets = extra_deps)
+        common_runfiles.add_targets(extra_deps)
     common_runfiles.add(extra_common_runfiles)
 
     common_runfiles = common_runfiles.build(ctx)
@@ -842,7 +837,7 @@ def _create_providers(
         runfiles_details: runfiles that will become the default  and data runfiles.
         imports: depset of strings; the import paths to propagate
         cc_info: optional CcInfo; Linking information to propagate as
-            PyCcLinkParamsProvider. Note that only the linking information
+            PyCcLinkParamsInfo. Note that only the linking information
             is propagated, not the whole CcInfo.
         inherited_environment: list of strings; Environment variable names
             that should be inherited from the environment the executuble
@@ -903,11 +898,11 @@ def _create_providers(
                 bootstrap_template = py_runtime_info.bootstrap_template,
             ))
 
-    # TODO(b/163083591): Remove the PyCcLinkParamsProvider once binaries-in-deps
+    # TODO(b/163083591): Remove the PyCcLinkParamsInfo once binaries-in-deps
     # are cleaned up.
     if cc_info:
         providers.append(
-            PyCcLinkParamsProvider(cc_info = cc_info),
+            PyCcLinkParamsInfo(cc_info = cc_info),
         )
 
     py_info, deps_transitive_sources, builtin_py_info = create_py_info(

@@ -20,10 +20,186 @@ A brief description of the categories of changes:
 * Particular sub-systems are identified using parentheses, e.g. `(bzlmod)` or
   `(docs)`.
 
+<!--
+Unreleased changes template.
+
+{#v0-0-0}
 ## Unreleased
 
-[x.x.x]: https://github.com/bazelbuild/rules_python/releases/tag/x.x.x
+[0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
 
+{#v0-0-0-changed}
+### Changed
+* Nothing yet.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet.
+
+{#v0-0-0-added}
+### Added
+* Nothing yet.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet.
+-->
+
+{#v0-0-0}
+## Unreleased
+
+[0.0.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.0.0
+
+{#v0-0-0-changed}
+### Changed
+* Nothing yet.
+
+{#v0-0-0-fixed}
+### Fixed
+* Nothing yet.
+
+{#v0-0-0-added}
+### Added
+* Nothing yet.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing yet.
+
+{#v0-39-0}
+## [0.39.0] - 2024-11-13
+
+[0.39.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.39.0
+
+{#v0-39-0-changed}
+### Changed
+* (deps) bazel_skylib 1.6.1 -> 1.7.1
+* (deps) rules_cc 0.0.9 -> 0.0.14
+* (deps) protobuf 24.4 -> 29.0-rc2
+* (deps) rules_proto 6.0.0-rc1 -> 6.0.2
+* (deps) stardoc 0.6.2 -> 0.7.1
+* For bzlmod, Bazel 7.4 is now the minimum Bazel version.
+* (toolchains) Use the latest indygreg toolchain release [20241016] for Python versions:
+    * 3.9.20
+    * 3.10.15
+    * 3.11.10
+    * 3.12.7
+    * 3.13.0
+* (pypi) The naming scheme for the `bzlmod` spoke repositories have changed as
+  all of the given `requirements.txt` files are now parsed by `default`, to
+  temporarily restore the behavior, you can use
+  {bzl:obj}`pip.parse.extra_hub_aliases`, which will be removed or made noop in
+  the future.
+
+[20241016]: https://github.com/indygreg/python-build-standalone/releases/tag/20241016
+
+{#v0-39-0-fixed}
+### Fixed
+* (precompiling) Skip precompiling (instead of erroring) if the legacy
+  `@bazel_tools//tools/python:autodetecting_toolchain` is being used
+  ([#2364](https://github.com/bazelbuild/rules_python/issues/2364)).
+
+{#v0-39-0-added}
+### Added
+* Bazel 8 is now supported.
+* (toolchain) Support for freethreaded Python toolchains is now available. Use
+  the config flag `//python/config_settings:py_freethreaded` to toggle the
+  selection of the free-threaded toolchains.
+* (toolchain) {obj}`py_runtime.abi_flags` attribute and
+  {obj}`PyRuntimeInfo.abi_flags` field added.
+
+{#v0-39-0-removed}
+### Removed
+* Support for Bazel 6 using bzlmod has been dropped.
+
+{#v0-38-0}
+## [0.38.0] - 2024-11-08
+
+[0.38.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.38.0
+
+{#v0-38-0-changed}
+### Changed
+* (deps) (WORKSPACE only) rules_cc 0.0.13 and protobuf 27.0 is now the default
+  version used; this for Bazel 8+ support (previously version was rules_cc 0.0.9
+  and no protobuf version specified)
+  ([2310](https://github.com/bazelbuild/rules_python/issues/2310)).
+* (publish) The dependencies have been updated to the latest available versions
+  for the `twine` publishing rule.
+* (whl_library) Remove `--no-build-isolation` to allow non-hermetic sdist builds
+  by default. Users wishing to keep this argument and to enforce more hermetic
+  builds can do so by passing the argument in
+  [`pip.parse#extra_pip_args`](https://rules-python.readthedocs.io/en/latest/api/rules_python/python/extensions/pip.html#pip.parse.extra_pip_args)
+* (pip.parse) {attr}`pip.parse.whl_modifications` now normalizes the given whl names
+  and now `pyyaml` and `PyYAML` will both work.
+* (bzlmod) `pip.parse` spoke repository naming will be changed in an upcoming
+  release in places where the users specify different package versions per
+  platform in the same hub repository. The naming of the spoke repos is
+  considered an implementation detail and we advise the users to use the `hub`
+  repository directly and make use of {bzl:obj}`pip.parse.extra_hub_aliases`
+  feature added in this release.
+
+{#v0-38-0-fixed}
+### Fixed
+* (pypi) (Bazel 7.4+) Allow spaces in filenames included in `whl_library`s
+  ([617](https://github.com/bazelbuild/rules_python/issues/617)).
+* (pypi) When {attr}`pip.parse.experimental_index_url` is set, we need to still
+  pass the `extra_pip_args` value when building an `sdist`.
+* (pypi) The patched wheel filenames from now on are using local version specifiers
+  which fixes usage of the said wheels using standard package managers.
+* (bzlmod) The extension evaluation has been adjusted to always generate the
+  same lock file irrespective if `experimental_index_url` is set by any module
+  or not. To opt into this behavior, set
+  {bzl:obj}`pip.parse.parse_all_requirements_files`, which will become the
+  default in future releases leading up to `1.0.0`. Fixes
+  [#2268](https://github.com/bazelbuild/rules_python/issues/2268). A known
+  issue is that it may break `bazel query` and in these use cases it is
+  advisable to use `cquery` or switch to `download_only = True`
+
+{#v0-38-0-added}
+### Added
+* (publish) The requirements file for the `twine` publishing rules have been
+  updated to have a new convention: `requirements_darwin.txt`,
+  `requirements_linux.txt`, `requirements_windows.txt` for each respective OS
+  and one extra file `requirements_universal.txt` if you prefer a single file.
+  The `requirements.txt` file may be removed in the future.
+* The rules_python version is now reported in `//python/features.bzl#features.version`
+* (pip.parse) {attr}`pip.parse.extra_hub_aliases` can now be used to expose extra
+  targets created by annotations in whl repositories.
+  Fixes [#2187](https://github.com/bazelbuild/rules_python/issues/2187).
+* (bzlmod) `pip.parse` now supports `whl-only` setup using
+  `download_only = True` where users can specify multiple requirements files
+  and use the `pip` backend to do the downloading. This was only available for
+  users setting {bzl:obj}`pip.parse.experimental_index_url`, but now users have
+  more options whilst we continue to work on stabilizing the experimental feature.
+
+{#v0-37-2}
+## [0.37.2] - 2024-10-27
+
+[0.37.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.2
+
+{#v0-37-2-fixed}
+### Fixed
+* (bzlmod) Generate `config_setting` values for all available toolchains instead
+  of only the registered toolchains, which restores the previous behaviour that
+  `bzlmod` users would have observed.
+
+{#v0-37-1}
+## [0.37.1] - 2024-10-22
+
+[0.37.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.1
+
+{#v0-37-1-fixed}
+### Fixed
+* (rules) Setting `--incompatible_python_disallow_native_rules` no longer
+  causes rules_python rules to fail
+  ([#2326](https://github.com/bazelbuild/rules_python/issues/2326)).
+
+{#v0-37-0}
+## [0.37.0] - 2024-10-18
+
+[0.37.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.37.0
+
+{#v0-37-0-changed}
 ### Changed
 * **BREAKING** `py_library` no longer puts its source files or generated pyc
   files in runfiles; it's the responsibility of consumers (e.g. binaries) to
@@ -35,7 +211,12 @@ A brief description of the categories of changes:
   (or equivalent).
 * (toolchains) `py_runtime.implementation_name` now defaults to `cpython`
   (previously it defaulted to None).
+* (toolchains) The exec tools toolchain is enabled by default. It can be
+  disabled by setting
+  {obj}`--@rules_python//python/config_settings:exec_tools_toolchain=disabled`.
+* (deps) stardoc 0.6.2 added as dependency.
 
+{#v0-37-0-fixed}
 ### Fixed
 * (bzlmod) The `python.override(minor_mapping)` now merges the default and the
   overridden versions ensuring that the resultant `minor_mapping` will always
@@ -62,7 +243,11 @@ A brief description of the categories of changes:
   enables (or disables) using pyc files from targets transitively
 * (pip) Skip patching wheels not matching `pip.override`'s `file`
   ([#2294](https://github.com/bazelbuild/rules_python/pull/2294)).
+* (chore): Add a `rules_shell` dev dependency and moved a `sh_test` target
+  outside of the `//:BUILD.bazel` file.
+  Fixes [#2299](https://github.com/bazelbuild/rules_python/issues/2299).
 
+{#v0-37-0-added}
 ### Added
 * (py_wheel) Now supports `compress = (True|False)` to allow disabling
   compression to speed up development.
@@ -86,6 +271,7 @@ A brief description of the categories of changes:
 
 [20241008]: https://github.com/indygreg/python-build-standalone/releases/tag/20241008
 
+{#v0-37-0-removed}
 ### Removed
 * (precompiling) {obj}`--precompile_add_to_runfiles` has been removed.
 * (precompiling) {obj}`--pyc_collection` has been removed. The `pyc_collection`
@@ -93,10 +279,12 @@ A brief description of the categories of changes:
 * (precompiling) The {obj}`precompile=if_generated_source` value has been removed.
 * (precompiling) The {obj}`precompile_source_retention=omit_if_generated_source` value has been removed.
 
+{#v0-36-0}
 ## [0.36.0] - 2024-09-24
 
 [0.36.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.36.0
 
+{#v0-36-0-changed}
 ### Changed
 * (gazelle): Update error messages when unable to resolve a dependency to be more human-friendly.
 * (flags) The {obj}`--python_version` flag now also returns
@@ -114,6 +302,7 @@ A brief description of the categories of changes:
   available.
 * (bazel) Minimum bazel 7 version that we test against has been bumped to `7.1`.
 
+{#v0-36-0-fixed}
 ### Fixed
 * (whl_library): Remove `--no-index` and add `--no-build-isolation` to the
   `pip install` command when installing a wheel from a local file, which happens
@@ -140,6 +329,7 @@ A brief description of the categories of changes:
 * (toolchain) The {bzl:obj}`gen_python_config_settings` has been fixed to include
   the flag_values from the platform definitions.
 
+{#v0-36-0-added}
 ### Added
 * (bzlmod): Toolchain overrides can now be done using the new
   {bzl:obj}`python.override`, {bzl:obj}`python.single_version_override` and
@@ -161,15 +351,18 @@ A brief description of the categories of changes:
 * (toolchains) Added `//python:none`, a special target for use with
   {obj}`py_exec_tools_toolchain.exec_interpreter` to treat the value as `None`.
 
+{#v0-36-0-removed}
 ### Removed
 * (toolchains): Removed accidentally exposed `http_archive` symbol from
   `python/repositories.bzl`.
 * (toolchains): An internal _is_python_config_setting_ macro has been removed.
 
+{#v0-35-0}
 ## [0.35.0] - 2024-08-15
 
 [0.35.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.35.0
 
+{#v0-35-0-changed}
 ### Changed
 * (whl_library) A better log message when the wheel is built from an sdist or
   when the wheel is downloaded using `download_only` feature to aid debugging.
@@ -183,6 +376,7 @@ A brief description of the categories of changes:
   disabling it (Requires {obj}`--bootstrap_impl=script`)
   ([#2060](https://github.com/bazelbuild/rules_python/issues/2060)).
 
+{#v0-35-0-fixed}
 ### Fixed
 * (rules) `compile_pip_requirements` now sets the `USERPROFILE` env variable on
   Windows to work around an issue where `setuptools` fails to locate the user's
@@ -224,6 +418,7 @@ A brief description of the categories of changes:
   in the same directory as the main file.
   Fixes [#1631](https://github.com/bazelbuild/rules_python/issues/1631).
 
+{#v0-35-0-added}
 ### Added
 * (rules) `compile_pip_requirements` supports multiple requirements input files as `srcs`.
 * (rules) `PYTHONSAFEPATH` is inherited from the calling environment to allow
@@ -247,10 +442,12 @@ A brief description of the categories of changes:
 [pytest_bazel]: https://pypi.org/project/pytest-bazel
 [20240726]: https://github.com/indygreg/python-build-standalone/releases/tag/20240726
 
+{#v0-34-0}
 ## [0.34.0] - 2024-07-04
 
 [0.34.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.34.0
 
+{#v0-34-0-changed}
 ### Changed
 * `protobuf`/`com_google_protobuf` dependency bumped to `v24.4`
 * (bzlmod): optimize the creation of config settings used in pip to
@@ -262,6 +459,7 @@ A brief description of the categories of changes:
   replaced by {obj}`//python/runtime_env_toolchains:all`. The old target will be
   removed in a future release.
 
+{#v0-34-0-fixed}
 ### Fixed
 * (bzlmod): When using `experimental_index_url` the `all_requirements`,
   `all_whl_requirements` and `all_data_requirements` will now only include
@@ -292,6 +490,7 @@ A brief description of the categories of changes:
 * (rules) The first element of the default outputs is now the executable again.
 * (pip) Fixed crash when pypi packages lacked a sha (e.g. yanked packages)
 
+{#v0-34-0-added}
 ### Added
 * (toolchains) {obj}`//python/runtime_env_toolchains:all`, which is a drop-in
   replacement for the "autodetecting" toolchain.
@@ -299,13 +498,16 @@ A brief description of the categories of changes:
   allows altering default Gazelle label format to third-party dependencies useful for re-using Gazelle plugin
   with other rules, including `rules_pycross`. See [#1939](https://github.com/bazelbuild/rules_python/issues/1939).
 
+{#v0-34-0-removed}
 ### Removed
 * (pip): Removes the `entrypoint` macro that was replaced by `py_console_script_binary` in 0.26.0.
 
+{#v0-33-2}
 ## [0.33.2] - 2024-06-13
 
 [0.33.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.2
 
+{#v0-33-2-fixed}
 ### Fixed
 * (toolchains) The {obj}`exec_tools_toolchain_type` is disabled by default.
   To enable it, set {obj}`--//python/config_settings:exec_tools_toolchain=enabled`.
@@ -313,18 +515,22 @@ A brief description of the categories of changes:
   be enabled by default in a future release.
   Fixes [#1967](https://github.com/bazelbuild/rules_python/issues/1967).
 
+{#v0-33-1}
 ## [0.33.1] - 2024-06-13
 
 [0.33.1]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.1
 
+{#v0-33-1-fixed}
 ### Fixed
 * (py_binary) Fix building of zip file when using `--build_python_zip`
   argument. Fixes [#1954](https://github.com/bazelbuild/rules_python/issues/1954).
 
+{#v0-33-0}
 ## [0.33.0] - 2024-06-12
 
 [0.33.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.33.0
 
+{#v0-33-0-changed}
 ### Changed
 * (deps) Upgrade the `pip_install` dependencies to pick up a new version of pip.
 * (toolchains) Optional toolchain dependency: `py_binary`, `py_test`, and
@@ -353,6 +559,7 @@ A brief description of the categories of changes:
   `python_{version}_host` keys if you would like to have access to a Python
   interpreter that can be used in a repository rule context.
 
+{#v0-33-0-fixed}
 ### Fixed
 * (gazelle) Remove `visibility` from `NonEmptyAttr`.
   Now empty(have no `deps/main/srcs/imports` attr) `py_library/test/binary` rules will
@@ -385,6 +592,7 @@ A brief description of the categories of changes:
 * (doc) Fix the `WORKSPACE` requirement vendoring example. Fixes
   [#1918](https://github.com/bazelbuild/rules_python/issues/1918).
 
+{#v0-33-0-added}
 ### Added
 * (rules) Precompiling Python source at build time is available. but is
   disabled by default, for now. Set
@@ -438,10 +646,12 @@ A brief description of the categories of changes:
 
 [precompile-docs]: /precompiling
 
+{#v0-32-2}
 ## [0.32.2] - 2024-05-14
 
 [0.32.2]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.2
 
+{#v0-32-2-fixed}
 ### Fixed
 
 * Workaround existence of infinite symlink loops on case insensitive filesystems when targeting linux platforms with recent Python toolchains. Works around an upstream [issue][indygreg-231]. Fixes [#1800][rules_python_1800].
@@ -449,10 +659,12 @@ A brief description of the categories of changes:
 [indygreg-231]: https://github.com/indygreg/python-build-standalone/issues/231
 [rules_python_1800]: https://github.com/bazelbuild/rules_python/issues/1800
 
+{#v0-32-0}
 ## [0.32.0] - 2024-05-12
 
 [0.32.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.32.0
 
+{#v0-32-0-changed}
 ### Changed
 
 * (bzlmod): The `MODULE.bazel.lock` `whl_library` rule attributes are now

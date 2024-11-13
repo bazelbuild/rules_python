@@ -14,13 +14,13 @@
 """Attributes for Python rules."""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc:defs.bzl", "CcInfo")
-load("//python/private:enum.bzl", "enum")
-load("//python/private:flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
-load("//python/private:py_info.bzl", "PyInfo")
-load("//python/private:reexports.bzl", "BuiltinPyInfo")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":common.bzl", "union_attrs")
+load(":enum.bzl", "enum")
+load(":flags.bzl", "PrecompileFlag", "PrecompileSourceRetentionFlag")
+load(":py_info.bzl", "PyInfo")
 load(":py_internal.bzl", "py_internal")
+load(":reexports.bzl", "BuiltinPyInfo")
 load(
     ":semantics.bzl",
     "DEPS_ATTR_ALLOW_RULES",
@@ -269,6 +269,22 @@ COMMON_ATTRS = union_attrs(
     },
     allow_none = True,
 )
+
+IMPORTS_ATTRS = {
+    "imports": attr.string_list(
+        doc = """
+List of import directories to be added to the PYTHONPATH.
+
+Subject to "Make variable" substitution. These import directories will be added
+for this rule and all rules that depend on it (note: not the rules this rule
+depends on. Each directory will be added to `PYTHONPATH` by `py_binary` rules
+that depend on this rule. The strings are repo-runfiles-root relative,
+
+Absolute paths (paths that start with `/`) and paths that references a path
+above the execution root are not allowed and will result in an error.
+""",
+    ),
+}
 
 _MaybeBuiltinPyInfo = [[BuiltinPyInfo]] if BuiltinPyInfo != None else []
 

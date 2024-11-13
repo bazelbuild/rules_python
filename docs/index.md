@@ -1,39 +1,73 @@
 # Python Rules for Bazel
 
-rules_python is the home of the core Python rules -- `py_library`,
-`py_binary`, `py_test`, `py_proto_library`, and related symbols that provide the basis for Python
-support in Bazel. It also contains package installation rules for integrating with PyPI and other indices.
+`rules_python` is the home for 4 major components with varying maturity levels.
 
-Documentation for rules_python lives here and in the
-[Bazel Build Encyclopedia](https://docs.bazel.build/versions/master/be/python.html).
+:::{topic} Core rules
 
-Examples are in the {gh-path}`examples` directory.
+The core Python rules -- `py_library`, `py_binary`, `py_test`,
+`py_proto_library`, and related symbols that provide the basis for Python
+support in Bazel.
 
-Currently, the core rules build into the Bazel binary, and the symbols in this
-repository are simple aliases. However, we are migrating the rules to Starlark and removing them from the Bazel binary. Therefore, the future-proof way to depend on Python rules is via this repository. See
-{ref}`Migrating from the Bundled Rules` below.
+When using Bazel 6 (or earlier), the core rules are bundled into the Bazel binary, and the symbols
+in this repository are simple aliases. On Bazel 7 and above `rules_python` uses
+a separate Starlark implementation,
+see {ref}`Migrating from the Bundled Rules` below.
 
-The core rules are stable. Their implementation in Bazel is subject to Bazel's
-[backward compatibility policy](https://docs.bazel.build/versions/master/backward-compatibility.html).
-Once migrated to rules_python, they may evolve at a different
-rate, but this repository will still follow [semantic versioning](https://semver.org).
+Once rules_python 1.0 is released, they will follow
+[semantic versioning](https://semver.org) and the breaking change policy
+outlined in the [support](support) page.
 
-The Bazel community maintains this repository. Neither Google nor the Bazel team provides support for the code. However, this repository is part of the test suite used to vet new Bazel releases. See
-{gh-path}`How to contribute <CONTRIBUTING.md>` for information on our development workflow.
+:::
 
-## Bzlmod support
+:::{topic} PyPI integration
 
-- Status: Beta
-- Full Feature Parity: No
+Package installation rules for integrating with PyPI and other SimpleAPI
+compatible indexes.
 
-See {gh-path}`Bzlmod support <BZLMOD_SUPPORT.md>` for more details
+These rules work and can be used in production, but the cross-platform building
+that supports pulling PyPI dependencies for a target platform that is different
+from the host platform is still in beta and the APIs that are subject to potential
+change are marked as `experimental`.
+
+:::
+
+:::{topic} Sphinxdocs
+
+`sphinxdocs` rules allow users to generate documentation using Sphinx powered by Bazel, with additional functionality for documenting
+Starlark and Bazel code.
+
+The functionality is exposed because other projects find it useful, but 
+it is available as is and **the semantic versioning and
+compatibility policy used by `rules_python` does not apply**. 
+
+:::
+
+:::{topic} Gazelle plugin
+
+`gazelle` plugin for generating `BUILD.bazel` files based on Python source
+code.
+
+This is available as is and the semantic versioning used by `rules_python` does
+not apply.
+
+:::
+
+The Bazel community maintains this repository. Neither Google nor the Bazel
+team provides support for the code. However, this repository is part of the
+test suite used to vet new Bazel releases. See {gh-path}`How to contribute
+<CONTRIBUTING.md>` for information on our development workflow.
+
+## Examples
+
+This documentation is an example of `sphinxdocs` rules and the rest of the
+components have examples in the {gh-path}`examples` directory.
 
 ## Migrating from the bundled rules
 
 The core rules are currently available in Bazel as built-in symbols, but this
 form is deprecated. Instead, you should depend on rules_python in your
-`WORKSPACE` file and load the Python rules from
-`@rules_python//python:defs.bzl`.
+`WORKSPACE` or `MODULE.bazel` file and load the Python rules from
+`@rules_python//python:defs.bzl` or load paths described in the API documentation.
 
 A [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
 fix is available to automatically migrate `BUILD` and `.bzl` files to add the
@@ -44,12 +78,17 @@ appropriate `load()` statements and rewrite uses of `native.py_*`.
 buildifier --lint=fix --warnings=native-py <files>
 ```
 
-Currently, the `WORKSPACE` file needs to be updated manually as per [Getting
-started](getting-started).
+Currently, the `WORKSPACE` file needs to be updated manually as per 
+[Getting started](getting-started).
 
 Note that Starlark-defined bundled symbols underneath
 `@bazel_tools//tools/python` are also deprecated. These are not yet rewritten
 by buildifier.
+
+## Migrating to bzlmod
+
+See {gh-path}`Bzlmod support <BZLMOD_SUPPORT.md>` for any behaviour differences between
+`bzlmod` and `WORKSPACE`.
 
 
 ```{toctree}

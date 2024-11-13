@@ -19,7 +19,7 @@ unnecessary files when all that are needed are flag definitions.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:enum.bzl", "enum")
+load(":enum.bzl", "enum")
 
 def _FlagEnum_flag_values(self):
     return sorted(self.__members__.values())
@@ -121,4 +121,14 @@ PrecompileSourceRetentionFlag = enum(
     # Don't include the original py source.
     OMIT_SOURCE = "omit_source",
     get_effective_value = _precompile_source_retention_flag_get_effective_value,
+)
+
+# Used for matching freethreaded toolchains and would have to be used in wheels
+# as well.
+# buildifier: disable=name-conventions
+FreeThreadedFlag = enum(
+    # Use freethreaded python toolchain and wheels.
+    YES = "yes",
+    # Do not use freethreaded python toolchain and wheels.
+    NO = "no",
 )

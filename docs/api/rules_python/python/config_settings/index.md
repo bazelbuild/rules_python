@@ -33,6 +33,44 @@ one of the values that `rules_python` maintains.
 Parses the value of the `python_version` and transforms it into a `X.Y` value.
 :::
 
+:::{bzl:target} is_python_*
+config_settings to match Python versions
+
+The name pattern is `is_python_X.Y` (to match major.minor) and `is_python_X.Y.Z`
+(to match major.minor.patch).
+
+Note that the set of available targets depends on the configured
+`TOOL_VERSIONS`. Versions may not always be available if the root module has
+customized them, or as older Python versions are removed from rules_python's set
+of builtin, known versions.
+
+If you need to match a version that isn't present, then you have two options:
+1. Manually define a `config_setting` and have it match {obj}`--python_version`
+   or {ob}`python_version_major_minor`. This works best when you don't control the
+   root module, or don't want to rely on the MODULE.bazel configuration. Such
+   a config settings would look like:
+   ```
+   # Match any 3.5 version
+   config_setting(
+       name = "is_python_3.5",
+       flag_values = {
+           "@rules_python//python/config_settings:python_version_major_minor": "3.5",
+       }
+   )
+   # Match exactly 3.5.1
+   config_setting(
+       name = "is_python_3.5.1",
+       flag_values = {
+           "@rules_python//python/config_settings:python_version": "3.5.1",
+       }
+   )
+   ```
+
+2. Use {obj}`python.single_override` to re-introduce the desired version so
+   that the corresponding `//python/config_setting:is_python_XXX` target is
+   generated.
+:::
+
 ::::{bzl:flag} exec_tools_toolchain
 Determines if the {obj}`exec_tools_toolchain_type` toolchain is enabled.
 
@@ -108,6 +146,16 @@ Values:
 * `glibc`: Use `glibc`, default.
 * `muslc`: Use `muslc`.
 :::{versionadded} 0.33.0
+:::
+::::
+
+::::{bzl:flag} py_freethreaded
+Set whether to use an interpreter with the experimental freethreaded option set to true.
+
+Values:
+* `no`: Use regular Python toolchains, default.
+* `yes`: Use the experimental Python toolchain with freethreaded compile option enabled.
+:::{versionadded} 0.38.0
 :::
 ::::
 

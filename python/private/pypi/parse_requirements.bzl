@@ -38,7 +38,7 @@ def parse_requirements(
         requirements_by_platform = {},
         extra_pip_args = [],
         get_index_urls = None,
-        evaluate_markers = lambda *_: {},
+        evaluate_markers = None,
         logger = None):
     """Get the requirements with platforms that the requirements apply to.
 
@@ -73,6 +73,7 @@ def parse_requirements(
 
         The second element is extra_pip_args should be passed to `whl_library`.
     """
+    evaluate_markers = evaluate_markers or (lambda *_: {})
     options = {}
     requirements = {}
     for file, plats in requirements_by_platform.items():
@@ -167,7 +168,7 @@ def parse_requirements(
         )
 
     ret = {}
-    for whl_name, reqs in requirements_by_platform.items():
+    for whl_name, reqs in sorted(requirements_by_platform.items()):
         requirement_target_platforms = {}
         for r in reqs.values():
             target_platforms = env_marker_target_platforms.get(r.requirement_line, r.target_platforms)
@@ -211,6 +212,8 @@ def parse_requirements(
 def select_requirement(requirements, *, platform):
     """A simple function to get a requirement for a particular platform.
 
+    Only used in WORKSPACE.
+
     Args:
         requirements (list[struct]): The list of requirements as returned by
             the `parse_requirements` function above.
@@ -241,6 +244,8 @@ def select_requirement(requirements, *, platform):
 
 def host_platform(ctx):
     """Return a string representation of the repository OS.
+
+    Only used in WORKSPACE.
 
     Args:
         ctx (struct): The `module_ctx` or `repository_ctx` attribute.

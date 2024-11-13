@@ -5,6 +5,7 @@ load(
     "AddSrcsToRunfilesFlag",
     "BootstrapImplFlag",
     "ExecToolsToolchainFlag",
+    "FreeThreadedFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
 )
@@ -42,7 +43,7 @@ string_flag(
 
 string_flag(
     name = "exec_tools_toolchain",
-    build_setting_default = ExecToolsToolchainFlag.DISABLED,
+    build_setting_default = ExecToolsToolchainFlag.ENABLED,
     values = sorted(ExecToolsToolchainFlag.__members__.values()),
     # NOTE: Only public because it is used in py_toolchain_suite from toolchain
     # repositories
@@ -89,6 +90,19 @@ string_flag(
     build_setting_default = WhlLibcFlag.GLIBC,
     values = sorted(WhlLibcFlag.__members__.values()),
     # NOTE: Only public because it is used in pip hub and toolchain repos.
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "py_freethreaded",
+    build_setting_default = FreeThreadedFlag.NO,
+    values = sorted(FreeThreadedFlag.__members__.values()),
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "is_py_freethreaded",
+    flag_values = {":py_freethreaded": FreeThreadedFlag.YES},
     visibility = ["//visibility:public"],
 )
 

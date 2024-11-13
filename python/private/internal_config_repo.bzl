@@ -68,7 +68,7 @@ def _internal_config_repo_impl(rctx):
     else:
         enable_pystar = False
 
-    if native.bazel_version.startswith("8."):
+    if not native.bazel_version or int(native.bazel_version.split(".")[0]) >= 8:
         builtin_py_info_symbol = "None"
         builtin_py_runtime_info_symbol = "None"
         builtin_py_cc_link_params_provider = "None"

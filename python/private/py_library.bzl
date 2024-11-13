@@ -11,20 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of py_library rule."""
+"""Common code for implementing py_library rules."""
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//python/private:builders.bzl", "builders")
-load("//python/private:flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
-load(
-    "//python/private:toolchain_types.bzl",
-    "EXEC_TOOLS_TOOLCHAIN_TYPE",
-    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
-)
 load(
     ":attributes.bzl",
     "COMMON_ATTRS",
+    "IMPORTS_ATTRS",
     "PY_SRCS_ATTRS",
     "PrecompileAttr",
     "REQUIRED_EXEC_GROUPS",
@@ -32,9 +26,9 @@ load(
     "create_srcs_attr",
     "create_srcs_version_attr",
 )
+load(":builders.bzl", "builders")
 load(
     ":common.bzl",
-    "check_native_allowed",
     "collect_imports",
     "collect_runfiles",
     "create_instrumented_files_info",
@@ -43,14 +37,21 @@ load(
     "filter_to_py_srcs",
     "union_attrs",
 )
-load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":flags.bzl", "AddSrcsToRunfilesFlag", "PrecompileFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(
+    ":toolchain_types.bzl",
+    "EXEC_TOOLS_TOOLCHAIN_TYPE",
+    TOOLCHAIN_TYPE = "TARGET_TOOLCHAIN_TYPE",
+)
 
 _py_builtins = py_internal
 
 LIBRARY_ATTRS = union_attrs(
     COMMON_ATTRS,
     PY_SRCS_ATTRS,
+    IMPORTS_ATTRS,
     create_srcs_version_attr(values = SRCS_VERSION_ALL_VALUES),
     create_srcs_attr(mandatory = False),
     {
@@ -70,7 +71,6 @@ def py_library_impl(ctx, *, semantics):
     Returns:
         A list of modern providers to propagate.
     """
-    check_native_allowed(ctx)
     direct_sources = filter_to_py_srcs(ctx.files.srcs)
 
     precompile_result = semantics.maybe_precompile(ctx, direct_sources)
@@ -121,7 +121,7 @@ def py_library_impl(ctx, *, semantics):
         DefaultInfo(files = default_outputs, runfiles = runfiles),
         py_info,
         create_instrumented_files_info(ctx),
-        PyCcLinkParamsProvider(cc_info = cc_info),
+        PyCcLinkParamsInfo(cc_info = cc_info),
         create_output_group_info(py_info.transitive_sources, extra_groups = {}),
     ]
     if builtins_py_info:

@@ -15,14 +15,15 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
-load("//python/private:flags.bzl", "PrecompileFlag")
-load("//python/private:py_interpreter_program.bzl", "PyInterpreterProgramInfo")
-load("//python/private:toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":attributes.bzl", "PrecompileAttr", "PrecompileInvalidationModeAttr", "PrecompileSourceRetentionAttr")
 load(":common.bzl", "is_bool")
-load(":providers.bzl", "PyCcLinkParamsProvider")
+load(":flags.bzl", "PrecompileFlag")
+load(":py_cc_link_params_info.bzl", "PyCcLinkParamsInfo")
 load(":py_internal.bzl", "py_internal")
+load(":py_interpreter_program.bzl", "PyInterpreterProgramInfo")
+load(":toolchain_types.bzl", "EXEC_TOOLS_TOOLCHAIN_TYPE", "TARGET_TOOLCHAIN_TYPE")
 
 _py_builtins = py_internal
 
@@ -45,8 +46,8 @@ def collect_cc_info(ctx, extra_deps = []):
         if CcInfo in dep:
             cc_infos.append(dep[CcInfo])
 
-        if PyCcLinkParamsProvider in dep:
-            cc_infos.append(dep[PyCcLinkParamsProvider].cc_info)
+        if PyCcLinkParamsInfo in dep:
+            cc_infos.append(dep[PyCcLinkParamsInfo].cc_info)
 
     return cc_common.merge_cc_infos(cc_infos = cc_infos)
 
@@ -165,10 +166,13 @@ def _precompile(ctx, src, *, use_pycache):
 
     stem = src.basename[:-(len(src.extension) + 1)]
     if use_pycache:
-        if not target_toolchain.pyc_tag:
-            # This is most likely because of a "runtime toolchain", i.e. the
-            # autodetecting toolchain, or some equivalent toolchain that can't
-            # assume to know the runtime Python version at build time.
+        if not hasattr(target_toolchain, "pyc_tag") or not target_toolchain.pyc_tag:
+            # This is likely one of two situations:
+            # 1. The pyc_tag attribute is missing because it's the Bazel-builtin
+            #    PyRuntimeInfo object.
+            # 2. It's a "runtime toolchain", i.e. the autodetecting toolchain,
+            #    or some equivalent toolchain that can't assume to know the
+            #    runtime Python version at build time.
             # Instead of failing, just don't generate any pyc.
             return None
         pyc_path = "__pycache__/{stem}.{tag}.pyc".format(

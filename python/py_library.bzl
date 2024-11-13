@@ -15,9 +15,9 @@
 """Public entry point for py_library."""
 
 load("@rules_python_internal//:rules_python_config.bzl", "config")
+load("//python/private:py_library_macro.bzl", _starlark_py_library = "py_library")
 load("//python/private:register_extension_info.bzl", "register_extension_info")
 load("//python/private:util.bzl", "add_migration_tag")
-load("//python/private/common:py_library_macro_bazel.bzl", _starlark_py_library = "py_library")
 
 # buildifier: disable=native-python
 _py_library_impl = _starlark_py_library if config.enable_pystar else native.py_library
@@ -27,16 +27,14 @@ def py_library(**attrs):
 
     This is the public macro wrapping the underlying rule. Args are forwarded
     on as-is unless otherwise specified. See
-    {bzl:obj}`py_library <//python/private/common:py_library_rule_bazel.bzl%py_library>`
-    for detailed attribute documentation.
+    {rule}`py_library` for detailed attribute documentation.
 
     This macro affects the following args:
     * `srcs_version`: cannot be `PY2` or `PY2ONLY`
     * `tags`: May have special marker values added, if not already present.
 
     Args:
-      **attrs: Rule attributes forwarded onto
-          {bzl:obj}`py_library <//python/private/common:py_library_rule_bazel.bzl%py_library>`
+      **attrs: Rule attributes forwarded onto {rule}`py_library`.
     """
     if attrs.get("srcs_version") in ("PY2", "PY2ONLY"):
         fail("Python 2 is no longer supported: https://github.com/bazelbuild/rules_python/issues/886")

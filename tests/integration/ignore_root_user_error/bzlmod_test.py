@@ -20,26 +20,20 @@ from python.runfiles import runfiles
 
 
 class BzlmodTest(unittest.TestCase):
-    def test_toolchains(self):
+    def test_ignore_root_user_error_true_for_all_toolchains(self):
         rf = runfiles.Create()
         debug_path = pathlib.Path(
             rf.Rlocation("rules_python_bzlmod_debug/debug_info.json")
         )
         debug_info = json.loads(debug_path.read_bytes())
-
-        expected = [
-            {
-                "ignore_root_user_error": True,
-                "module": {"is_root": False, "name": "submodule"},
-                "name": "python_3_10",
-            },
-            {
-                "ignore_root_user_error": True,
-                "module": {"is_root": True, "name": "ignore_root_user_error"},
-                "name": "python_3_11",
-            },
-        ]
-        self.assertCountEqual(debug_info["toolchains_registered"], expected)
+        actual = debug_info["toolchains_registered"]
+        # Because the root module set ignore_root_user_error=True, that should
+        # be the default for all other toolchains.
+        for entry in actual:
+            self.assertTrue(
+                entry["ignore_root_user_error"],
+                msg=f"Expected ignore_root_user_error=True, but got: {entry}",
+            )
 
 
 if __name__ == "__main__":

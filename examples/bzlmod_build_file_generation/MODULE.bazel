@@ -85,3 +85,6 @@ local_path_override(
     module_name = "other_module",
     path = "other_module",
 )
+
+# Only needed to make rules_python's CI happy
+bazel_dep(name = "rules_java", version = "8.3.0")

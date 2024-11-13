@@ -96,6 +96,15 @@ class _MySTRenderer:
         self._module = module
         self._out_stream = out_stream
         self._public_load_path = public_load_path
+        self._typedef_stack = []
+
+    def _get_colons(self):
+        # There's a weird behavior where increasing colon indents doesn't
+        # parse as nested objects correctly, so we have to reduce the
+        # number of colons based on the indent level
+        indent = 10 - len(self._typedef_stack)
+        assert indent >= 0
+        return ":::" + ":" * indent
 
     def render(self):
         self._render_module(self._module)
@@ -115,11 +124,10 @@ class _MySTRenderer:
             "\n\n",
         )
 
-        # Sort the objects by name
         objects = itertools.chain(
             ((r.rule_name, r, self._render_rule) for r in module.rule_info),
             ((p.provider_name, p, self._render_provider) for p in module.provider_info),
-            ((f.function_name, f, self._render_func) for f in module.func_info),
+            ((f.function_name, f, self._process_func_info) for f in module.func_info),
             ((a.aspect_name, a, self._render_aspect) for a in module.aspect_info),
             (
                 (m.extension_name, m, self._render_module_extension)
@@ -130,12 +138,30 @@ class _MySTRenderer:
                 for r in module.repository_rule_info
             ),
         )
+        # Sort by name, ignoring case. The `.TYPEDEF` string is removed so
+        # that the .TYPEDEF entries come before what is in the typedef.
+        objects = sorted(objects, key=lambda v: v[0].removesuffix(".TYPEDEF").lower())
 
-        objects = sorted(objects, key=lambda v: v[0].lower())
-
-        for _, obj, func in objects:
-            func(obj)
+        for name, obj, func in objects:
+            self._process_object(name, obj, func)
             self._write("\n")
+
+        # Close any typedefs
+        while self._typedef_stack:
+            self._typedef_stack.pop()
+            self._render_typedef_end()
+
+    def _process_object(self, name, obj, renderer):
+        # The trailing doc is added to prevent matching a common prefix
+        typedef_group = name.removesuffix(".TYPEDEF") + "."
+        while self._typedef_stack and not typedef_group.startswith(
+            self._typedef_stack[-1]
+        ):
+            self._typedef_stack.pop()
+            self._render_typedef_end()
+        renderer(obj)
+        if name.endswith(".TYPEDEF"):
+            self._typedef_stack.append(typedef_group)
 
     def _render_aspect(self, aspect: stardoc_output_pb2.AspectInfo):
         _sort_attributes_inplace(aspect.attribute)
@@ -156,7 +182,7 @@ class _MySTRenderer:
         for tag in mod_ext.tag_class:
             tag_name = f"{mod_ext.extension_name}.{tag.tag_name}"
             tag_name = f"{tag.tag_name}"
-            self._write(":::::{bzl:tag-class} ", tag_name, "\n\n")
+            self._write(":::::{bzl:tag-class} ")
 
             _sort_attributes_inplace(tag.attribute)
             self._render_signature(
@@ -166,7 +192,12 @@ class _MySTRenderer:
                 get_default=lambda a: a.default_value,
             )
 
-            self._write(tag.doc_string.strip(), "\n\n")
+            if doc_string := tag.doc_string.strip():
+                self._write(doc_string, "\n\n")
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string and tag.attribute:
+                self.write("\n")
             self._render_attributes(tag.attribute)
             self._write(":::::\n")
         self._write("::::::\n")
@@ -242,14 +273,39 @@ class _MySTRenderer:
             # Rather than error, give some somewhat understandable value.
             return _AttributeType.Name(attr.type)
 
+    def _process_func_info(self, func):
+        if func.function_name.endswith(".TYPEDEF"):
+            self._render_typedef_start(func)
+        else:
+            self._render_func(func)
+
+    def _render_typedef_start(self, func):
+        self._write(
+            self._get_colons(),
+            "{bzl:typedef} ",
+            func.function_name.removesuffix(".TYPEDEF"),
+            "\n",
+        )
+        if func.doc_string:
+            self._write(func.doc_string.strip(), "\n")
+
+    def _render_typedef_end(self):
+        self._write(self._get_colons(), "\n\n")
+
     def _render_func(self, func: stardoc_output_pb2.StarlarkFunctionInfo):
-        self._write("::::::{bzl:function} ")
+        self._write(self._get_colons(), "{bzl:function} ")
 
         parameters = self._render_func_signature(func)
 
-        self._write(func.doc_string.strip(), "\n\n")
+        doc_string = func.doc_string.strip()
+        if doc_string:
+            self._write(doc_string, "\n\n")
 
         if parameters:
+            # Ensure a newline between the directive and the doc fields,
+            # otherwise they get parsed as directive options instead.
+            if not doc_string:
+                self._write("\n")
             for param in parameters:
                 self._write(f":arg {param.name}:\n")
                 if param.default_value:
@@ -268,10 +324,13 @@ class _MySTRenderer:
             self._write(":::::{deprecated}: unknown\n")
             self._write("  ", _indent_block_text(func.deprecated.doc_string), "\n")
             self._write(":::::\n")
-        self._write("::::::\n")
+        self._write(self._get_colons(), "\n")
 
     def _render_func_signature(self, func):
-        self._write(f"{func.function_name}(")
+        func_name = func.function_name
+        if self._typedef_stack:
+            func_name = func.function_name.removeprefix(self._typedef_stack[-1])
+        self._write(f"{func_name}(")
         # TODO: Have an "is method" directive in the docstring to decide if
         # the self parameter should be removed.
         parameters = [param for param in func.parameter if param.name != "self"]

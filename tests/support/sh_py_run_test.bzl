@@ -17,6 +17,7 @@ This facilitates verify running binaries with different configuration settings
 without the overhead of a bazel-in-bazel integration test.
 """
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//python:py_binary.bzl", "py_binary")
 load("//python:py_test.bzl", "py_test")
 load("//python/private:toolchain_types.bzl", "TARGET_TOOLCHAIN_TYPE")  # buildifier: disable=bzl-visibility
@@ -149,7 +150,7 @@ def py_reconfig_test(*, name, **kwargs):
 
 def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
     bin_name = "_{}_bin".format(name)
-    native.sh_test(
+    sh_test(
         name = name,
         srcs = [sh_src],
         data = [bin_name],
@@ -157,7 +158,7 @@ def sh_py_run_test(*, name, sh_src, py_src, **kwargs):
             "@bazel_tools//tools/bash/runfiles",
         ],
         env = {
-            "BIN_RLOCATION": "$(rlocationpath {})".format(bin_name),
+            "BIN_RLOCATION": "$(rlocationpaths {})".format(bin_name),
         },
     )
 

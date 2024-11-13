@@ -27,7 +27,7 @@ An empty pattern will match all files.
 
 Example usage:
 ```starlark
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_python//python:pip.bzl", "whl_filegroup")
 
 whl_filegroup(

@@ -18,6 +18,7 @@ buildifier:
   # Use a specific version to avoid skew issues when new versions are released.
   version: 6.1.0
   warnings: "all"
+# NOTE: Minimum supported version is 6.x for workspace; 7.x for bzlmod
 .minimum_supported_version: &minimum_supported_version
   # For testing minimum supported version.
   # NOTE: Keep in sync with //:version.bzl
@@ -39,10 +40,12 @@ buildifier:
   test_flags:
     - "--test_tag_filters=-integration-test"
 .common_workspace_flags_min_bazel: &common_workspace_flags_min_bazel
-  test_flags:
-    - "--noenable_bzlmod"
   build_flags:
     - "--noenable_bzlmod"
+    - "--build_tag_filters=-integration-test"
+  test_flags:
+    - "--noenable_bzlmod"
+    - "--test_tag_filters=-integration-test"
 .common_workspace_flags: &common_workspace_flags
   test_flags:
     - "--noenable_bzlmod"
@@ -65,15 +68,6 @@ buildifier:
 .reusable_build_test_all: &reusable_build_test_all
   build_targets: ["..."]
   test_targets: ["..."]
-.lockfile_mode_error: &lockfile_mode_error
-  # For testing lockfile support
-  skip_in_bazel_downstream_pipeline: "Lockfile depends on the bazel version"
-  build_flags:
-    - "--lockfile_mode=error"
-  test_flags:
-    - "--lockfile_mode=error"
-  coverage_flags:
-    - "--lockfile_mode=error"
 .coverage_targets_example_bzlmod: &coverage_targets_example_bzlmod
   coverage_targets: ["..."]
 .coverage_targets_example_bzlmod_build_file_generation: &coverage_targets_example_bzlmod_build_file_generation
@@ -94,6 +88,8 @@ buildifier:
   bazel: "7.x"
   environment:
     RULES_PYTHON_ENABLE_PYSTAR: "1"
+  build_flags:
+    - "--config=bazel7.x"
   test_flags:
     # The doc check tests fail because the Starlark implementation makes the
     # PyInfo and PyRuntimeInfo symbols become documented.
@@ -127,16 +123,22 @@ tasks:
     <<: *common_workspace_flags_min_bazel
     name: "Default: Ubuntu, workspace, minimum Bazel"
     platform: ubuntu2004
+
   ubuntu_min_bzlmod:
     <<: *minimum_supported_version
     <<: *reusable_config
     name: "Default: Ubuntu, bzlmod, minimum Bazel"
     platform: ubuntu2004
+    bazel: 7.x
   ubuntu:
     <<: *reusable_config
     name: "Default: Ubuntu"
     platform: ubuntu2004
-
+  ubuntu_upcoming:
+    <<: *reusable_config
+    name: "Default: Ubuntu, upcoming Bazel"
+    platform: ubuntu2004
+    bazel: last_rc
   pystar_ubuntu_workspace:
     <<: *reusable_config
     <<: *pystar_base
@@ -177,7 +179,8 @@ tasks:
     <<: *minimum_supported_version
     <<: *reusable_config
     name: "RBE: Ubuntu, minimum Bazel"
-    platform: rbe_ubuntu1604
+    platform: rbe_ubuntu2004
+    bazel: 7.x
     build_flags:
       # BazelCI sets --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1,
       # which prevents cc toolchain autodetection from working correctly
@@ -195,7 +198,7 @@ tasks:
   rbe:
     <<: *reusable_config
     name: "RBE: Ubuntu"
-    platform: rbe_ubuntu1604
+    platform: rbe_ubuntu2004
     test_flags:
       - "--test_tag_filters=-integration-test,-acceptance-test"
       - "--extra_toolchains=@buildkite_config//config:cc-toolchain"
@@ -239,24 +242,28 @@ tasks:
     name: "examples/bzlmod: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod
     platform: ubuntu2004
+    bazel: 7.x
   integration_test_bzlmod_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: Ubuntu"
     working_directory: examples/bzlmod
     platform: ubuntu2004
+    bazel: 7.x
   integration_test_bzlmod_debian:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: Debian"
     working_directory: examples/bzlmod
     platform: debian11
+    bazel: 7.x
   integration_test_bzlmod_macos:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
     name: "examples/bzlmod: macOS"
     working_directory: examples/bzlmod
     platform: macos
+    bazel: 7.x
   integration_test_bzlmod_windows:
     <<: *reusable_build_test_all
     # coverage is not supported on Windows
@@ -266,17 +273,25 @@ tasks:
   integration_test_bzlmod_ubuntu_lockfile:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
-    <<: *lockfile_mode_error
     name: "examples/bzlmod: Ubuntu with lockfile"
     working_directory: examples/bzlmod
     platform: ubuntu2004
+    bazel: 7.x
+    shell_commands:
+    # Update the lockfiles and fail if it is different.
+    - "../../tools/private/update_bzlmod_lockfiles.sh"
+    - "git diff --exit-code"
   integration_test_bzlmod_macos_lockfile:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod
-    <<: *lockfile_mode_error
     name: "examples/bzlmod: macOS with lockfile"
     working_directory: examples/bzlmod
     platform: macos
+    bazel: 7.x
+    shell_commands:
+    # Update the lockfiles and fail if it is different.
+    - "../../tools/private/update_bzlmod_lockfiles.sh"
+    - "git diff --exit-code"
 
   integration_test_bzlmod_generate_build_file_generation_ubuntu_min:
     <<: *minimum_supported_version
@@ -285,6 +300,7 @@ tasks:
     name: "examples/bzlmod_build_file_generation: Ubuntu, minimum Bazel"
     working_directory: examples/bzlmod_build_file_generation
     platform: ubuntu2004
+    bazel: 7.x
   integration_test_bzlmod_generation_build_files_ubuntu:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod_build_file_generation
@@ -302,7 +318,7 @@ tasks:
   integration_test_bzlmod_build_file_generation_debian:
     <<: *reusable_build_test_all
     <<: *coverage_targets_example_bzlmod_build_file_generation
-    name: "examples/bzlmod_build_file_integration: Debian"
+    name: "examples/bzlmod_build_file_generation: Debian"
     working_directory: examples/bzlmod_build_file_generation
     platform: debian11
   integration_test_bzlmod_build_file_generation_macos:
@@ -351,15 +367,16 @@ tasks:
     <<: *minimum_supported_version
     <<: *common_workspace_flags_min_bazel
     <<: *reusable_build_test_all
-    name: "examples/pip_parse: Ubuntu, workspace, minimum supporte Bazel version"
+    name: "examples/pip_parse: Ubuntu, workspace, minimum supported Bazel version"
     working_directory: examples/pip_parse
     platform: ubuntu2004
   integration_test_pip_parse_ubuntu_min_bzlmod:
     <<: *minimum_supported_version
     <<: *reusable_build_test_all
-    name: "examples/pip_parse: Ubuntu, bzlmod, minimum supporte Bazel version"
+    name: "examples/pip_parse: Ubuntu, bzlmod, minimum supported Bazel version"
     working_directory: examples/pip_parse
     platform: ubuntu2004
+    bazel: 7.x
   integration_test_pip_parse_ubuntu:
     <<: *reusable_build_test_all
     name: "examples/pip_parse: Ubuntu"
@@ -394,6 +411,7 @@ tasks:
     name: "examples/pip_parse_vendored: Ubuntu, bzlmod, minimum Bazel"
     working_directory: examples/pip_parse_vendored
     platform: ubuntu2004
+    bazel: 7.x
   integration_test_pip_parse_vendored_ubuntu:
     <<: *reusable_build_test_all
     name: "examples/pip_parse_vendored: Ubuntu"
@@ -574,6 +592,7 @@ tasks:
     name: "compile_pip_requirements_test_from_external_repo: Ubuntu, bzlmod, minimum Bazel"
     working_directory: tests/integration/compile_pip_requirements_test_from_external_repo
     platform: ubuntu2004
+    bazel: 7.x
     shell_commands:
     # Assert that @compile_pip_requirements//:requirements_test does the right thing.
     - "bazel test @compile_pip_requirements//..."

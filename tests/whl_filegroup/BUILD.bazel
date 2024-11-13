@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//python:defs.bzl", "py_library", "py_test")
 load("//python:packaging.bzl", "py_package", "py_wheel")
 load("//python:pip.bzl", "whl_filegroup")

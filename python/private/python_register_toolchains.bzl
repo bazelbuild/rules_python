@@ -73,6 +73,9 @@ def python_register_toolchains(
         minor_mapping: {type}`dict[str, str]` contains a mapping from `X.Y` to `X.Y.Z`
             version.
         **kwargs: passed to each {obj}`python_repository` call.
+
+    Returns:
+        On bzlmod this returns the loaded platform labels. Otherwise None.
     """
     bzlmod_toolchain_call = kwargs.pop("_internal_bzlmod_toolchain_call", False)
     if bzlmod_toolchain_call:
@@ -168,11 +171,13 @@ def python_register_toolchains(
 
     # in bzlmod we write out our own toolchain repos
     if bzlmod_toolchain_call:
-        return
+        return loaded_platforms
 
     toolchains_repo(
         name = toolchain_repo_name,
         python_version = python_version,
         set_python_version_constraint = set_python_version_constraint,
         user_repository_name = name,
+        platforms = loaded_platforms,
     )
+    return None

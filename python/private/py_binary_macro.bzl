@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of macro-half of py_library rule."""
+"""Implementation of macro-half of py_binary rule."""
 
-load(":py_library_rule_bazel.bzl", py_library_rule = "py_library")
+load(":common_bazel.bzl", "convert_legacy_create_init_to_int")
+load(":py_binary_rule.bzl", py_binary_rule = "py_binary")
 
-def py_library(**kwargs):
-    py_library_rule(**kwargs)
+def py_binary(**kwargs):
+    convert_legacy_create_init_to_int(kwargs)
+    py_binary_rule(**kwargs)

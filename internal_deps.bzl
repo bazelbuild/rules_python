@@ -34,16 +34,21 @@ def http_file(name, **kwargs):
 def rules_python_internal_deps():
     """Fetches all required dependencies for rules_python tests and tools."""
 
-    # This version is also used in python/tests/toolchains/workspace_template/WORKSPACE.tmpl
-    # and tests/ignore_root_user_error/WORKSPACE.
-    # If you update this dependency, please update the tests as well.
     http_archive(
         name = "bazel_skylib",
-        sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
+        sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
         urls = [
-            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.1.1/bazel-skylib-1.1.1.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.7.1/bazel-skylib-1.7.1.tar.gz",
+            "https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.1/bazel-skylib-1.7.1.tar.gz",
         ],
+    )
+
+    # See https://github.com/bazelbuild/rules_shell/releases/tag/v0.2.0
+    http_archive(
+        name = "rules_shell",
+        sha256 = "410e8ff32e018b9efd2743507e7595c26e2628567c42224411ff533b57d27c28",
+        strip_prefix = "rules_shell-0.2.0",
+        url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.2.0/rules_shell-v0.2.0.tar.gz",
     )
 
     http_archive(
@@ -173,10 +178,10 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "com_google_protobuf",
-        sha256 = "616bb3536ac1fff3fb1a141450fa28b875e985712170ea7f1bfe5e5fc41e2cd8",
-        strip_prefix = "protobuf-24.4",
+        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
+        strip_prefix = "protobuf-27.0",
         urls = [
-            "https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protobuf-24.4.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
         ],
     )
 
@@ -219,7 +224,13 @@ def rules_python_internal_deps():
 
     http_archive(
         name = "rules_cc",
-        sha256 = "2037875b9a4456dce4a79d112a8ae885bbc4aad968e6587dca6e64f3a0900cdf",
-        strip_prefix = "rules_cc-0.0.9",
-        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.9/rules_cc-0.0.9.tar.gz"],
+        urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.14/rules_cc-0.0.14.tar.gz"],
+        sha256 = "906e89286acc67c20819c3c88b3283de0d5868afda33635d70acae0de9777bb7",
+        strip_prefix = "rules_cc-0.0.14",
+    )
+
+    http_archive(
+        name = "rules_multirun",
+        sha256 = "0e124567fa85287874eff33a791c3bbdcc5343329a56faa828ef624380d4607c",
+        url = "https://github.com/keith/rules_multirun/releases/download/0.9.0/rules_multirun.0.9.0.tar.gz",
     )

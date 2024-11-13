@@ -14,7 +14,7 @@
 
 """Fake for providing CcToolchainConfigInfo."""
 
-load("@rules_cc//cc:defs.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 
 def _impl(ctx):
     return cc_common.create_cc_toolchain_config_info(

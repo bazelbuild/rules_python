@@ -308,6 +308,59 @@ perhaps `apache-airflow-providers-common-sql`.
 
 
 (bazel-downloader)=
+### Multi-platform support
+
+Multi-platform support of cross-building the wheels can be done in two ways - either
+using {bzl:attr}`experimental_index_url` for the {bzl:obj}`pip.parse` bzlmod tag class
+or by using the {bzl:attr}`pip.parse.download_only` setting. In this section we
+are going to outline quickly how one can use the latter option.
+
+Let's say you have 2 requirements files:
+```
+# requirements.linux_x86_64.txt
+--platform=manylinux_2_17_x86_64
+--python-version=39
+--implementation=cp
+--abi=cp39
+
+foo==0.0.1 --hash=sha256:deadbeef
+bar==0.0.1 --hash=sha256:deadb00f
+```
+
+```
+# requirements.osx_aarch64.txt contents
+--platform=macosx_10_9_arm64
+--python-version=39
+--implementation=cp
+--abi=cp39
+
+foo==0.0.3 --hash=sha256:deadbaaf
+```
+
+With these 2 files your {bzl:obj}`pip.parse` could look like:
+```
+pip.parse(
+    hub_name = "pip",
+    python_version = "3.9",
+    # Tell `pip` to ignore sdists
+    download_only = True,
+    requirements_by_platform = {
+        "requirements.linux_x86_64.txt": "linux_x86_64",
+        "requirements.osx_aarch64.txt": "osx_aarch64",
+    },
+)
+```
+
+With this, the `pip.parse` will create a hub repository that is going to
+support only two platforms - `cp39_osx_aarch64` and `cp39_linux_x86_64` and it
+will only use `wheels` and ignore any sdists that it may find on the PyPI
+compatible indexes.
+
+```{note}
+This is only supported on `bzlmd`.
+```
+
+(bazel-downloader)=
 ### Bazel downloader and multi-platform wheel hub repository.
 
 The `bzlmod` `pip.parse` call supports pulling information from `PyPI` (or a

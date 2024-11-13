@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"pip module extension for use with bzlmod"
+"""
+This is the successor to {bzl:obj}`pip_parse` for including third party PyPI dependencies into your bazel module using `bzlmod`.
+
+:::{seealso}
+For user documentation see the [PyPI dependencies section](pypi-dependencies).
+:::
+"""
 
 load("//python/private/pypi:pip.bzl", _pip = "pip")
 

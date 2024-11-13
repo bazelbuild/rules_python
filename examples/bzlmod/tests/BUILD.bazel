@@ -4,6 +4,7 @@ load("@python_versions//3.9:defs.bzl", py_binary_3_9 = "py_binary", py_test_3_9 
 load("@pythons_hub//:versions.bzl", "MINOR_MAPPING")
 load("@rules_python//python:defs.bzl", "py_binary", "py_test")
 load("@rules_python//python/config_settings:transition.bzl", py_versioned_binary = "py_binary", py_versioned_test = "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 py_binary(
     name = "version_default",
@@ -162,7 +163,7 @@ sh_test(
     data = [":version_default"],
     env = {
         "VERSION_CHECK": "3.9",  # The default defined in the WORKSPACE.
-        "VERSION_PY_BINARY": "$(rootpath :version_default)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_default)",
     },
 )
 
@@ -172,7 +173,7 @@ sh_test(
     data = [":version_3_9"],
     env = {
         "VERSION_CHECK": "3.9",
-        "VERSION_PY_BINARY": "$(rootpath :version_3_9)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_9)",
     },
 )
 
@@ -182,6 +183,6 @@ sh_test(
     data = [":version_3_10"],
     env = {
         "VERSION_CHECK": "3.10",
-        "VERSION_PY_BINARY": "$(rootpath :version_3_10)",
+        "VERSION_PY_BINARY": "$(rootpaths :version_3_10)",
     },
 )
