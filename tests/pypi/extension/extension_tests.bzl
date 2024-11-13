@@ -17,6 +17,7 @@
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
 load("@rules_testing//lib:truth.bzl", "subjects")
 load("//python/private/pypi:extension.bzl", "parse_modules")  # buildifier: disable=bzl-visibility
+load("//python/private/pypi:render_pkg_aliases.bzl", "whl_alias")  # buildifier: disable=bzl-visibility
 
 _tests = []
 
@@ -158,11 +159,8 @@ def _test_simple(env):
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
         "simple": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_simple",
-                target_platforms = None,
                 version = "3.15",
             ),
         ],
@@ -209,18 +207,14 @@ def _test_simple_multiple_requirements(env):
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
         "simple": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_simple_windows_x86_64",
                 target_platforms = [
                     "cp315_windows_x86_64",
                 ],
                 version = "3.15",
             ),
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_simple_osx_aarch64_osx_x86_64",
                 target_platforms = [
                     "cp315_osx_aarch64",
@@ -296,25 +290,18 @@ simple==0.0.3 --hash=sha256:deadbaaf
     pypi.hub_group_map().contains_exactly({"pypi": {}})
     pypi.hub_whl_map().contains_exactly({"pypi": {
         "extra": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_extra",
-                target_platforms = None,
                 version = "3.15",
             ),
         ],
         "simple": [
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_simple_linux_x86_64",
                 target_platforms = ["cp315_linux_x86_64"],
                 version = "3.15",
             ),
-            struct(
-                config_setting = "//_config:is_python_3.15",
-                filename = None,
+            whl_alias(
                 repo = "pypi_315_simple_osx_aarch64",
                 target_platforms = ["cp315_osx_aarch64"],
                 version = "3.15",
@@ -418,27 +405,20 @@ some_pkg==0.0.1
     pypi.hub_whl_map().contains_exactly({
         "pypi": {
             "simple": [
-                struct(
-                    config_setting = "//_config:is_python_3.15",
+                whl_alias(
                     filename = "simple-0.0.1-py3-none-any.whl",
                     repo = "pypi_315_simple_py3_none_any_deadb00f",
-                    target_platforms = None,
                     version = "3.15",
                 ),
-                struct(
-                    config_setting = "//_config:is_python_3.15",
+                whl_alias(
                     filename = "simple-0.0.1.tar.gz",
                     repo = "pypi_315_simple_sdist_deadbeef",
-                    target_platforms = None,
                     version = "3.15",
                 ),
             ],
             "some_pkg": [
-                struct(
-                    config_setting = "//_config:is_python_3.15",
-                    filename = None,
+                whl_alias(
                     repo = "pypi_315_some_pkg",
-                    target_platforms = None,
                     version = "3.15",
                 ),
             ],
