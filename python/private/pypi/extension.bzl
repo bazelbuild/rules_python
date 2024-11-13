@@ -571,6 +571,20 @@ You cannot use both the additive_build_content and additive_build_content_file a
         is_reproducible = is_reproducible,
     )
 
+def _alias_dict(a):
+    ret = {
+        "repo": a.repo,
+    }
+    if a.config_setting:
+        ret["config_setting"] = a.config_setting
+    if a.filename:
+        ret["filename"] = a.filename
+    if a.target_platforms:
+        ret["target_platforms"] = a.target_platforms
+    if a.version:
+        ret["version"] = a.version
+    return ret
+
 def _pip_impl(module_ctx):
     """Implementation of a class tag that creates the pip hub and corresponding pip spoke whl repositories.
 
@@ -651,8 +665,8 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             extra_hub_aliases = mods.extra_aliases.get(hub_name, {}),
             whl_map = {
-                key: json.encode(value)
-                for key, value in whl_map.items()
+                key: json.encode([_alias_dict(a) for a in aliases])
+                for key, aliases in whl_map.items()
             },
             packages = mods.exposed_packages.get(hub_name, []),
             groups = mods.hub_group_map.get(hub_name),
