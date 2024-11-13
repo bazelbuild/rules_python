@@ -167,16 +167,27 @@ def whl_alias(*, repo, version = None, config_setting = None, filename = None, t
             if not p.startswith("cp"):
                 fail("target_platform should start with 'cp' denoting the python version, got: " + p)
 
-    kwargs = {
-        "config_setting": config_setting,
-        "filename": filename,
-        "repo": repo,
-        "target_platforms": target_platforms,
-        "version": version,
-    }
+    def as_dict():
+        ret = {
+            "repo": repo,
+        }
+        if config_setting:
+            ret["config_setting"] = config_setting
+        if filename:
+            ret["filename"] = filename
+        if target_platforms:
+            ret["target_platforms"] = target_platforms
+        if version:
+            ret["version"] = version
+        return ret
+
     return struct(
-        as_dict = lambda: {k: v for k, v in kwargs.items() if v},
-        **kwargs
+        config_setting = config_setting,
+        filename = filename,
+        repo = repo,
+        target_platforms = target_platforms,
+        version = version,
+        as_dict = as_dict,
     )
 
 def render_multiplatform_pkg_aliases(*, aliases, **kwargs):
