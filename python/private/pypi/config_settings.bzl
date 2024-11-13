@@ -39,7 +39,8 @@ Note, that here the specialization of musl vs manylinux wheels is the same in
 order to ensure that the matching fails if the user requests for `musl` and we don't have it or vice versa.
 """
 
-load(":flags.bzl", "INTERNAL_FLAGS", "UniversalWhlFlag", "WhlLibcFlag")
+load("//python/private:flags.bzl", "LibcFlag")
+load(":flags.bzl", "INTERNAL_FLAGS", "UniversalWhlFlag")
 
 FLAGS = struct(
     **{
@@ -251,14 +252,14 @@ def _plat_flag_values(os, cpu, osx_versions, glibc_versions, muslc_versions):
 
     elif os == "linux":
         for os_prefix, linux_libc in {
-            os: WhlLibcFlag.GLIBC,
-            "many" + os: WhlLibcFlag.GLIBC,
-            "musl" + os: WhlLibcFlag.MUSL,
+            os: LibcFlag.GLIBC,
+            "many" + os: LibcFlag.GLIBC,
+            "musl" + os: LibcFlag.MUSL,
         }.items():
-            if linux_libc == WhlLibcFlag.GLIBC:
+            if linux_libc == LibcFlag.GLIBC:
                 libc_versions = glibc_versions
                 libc_flag = FLAGS.pip_whl_glibc_version
-            elif linux_libc == WhlLibcFlag.MUSL:
+            elif linux_libc == LibcFlag.MUSL:
                 libc_versions = muslc_versions
                 libc_flag = FLAGS.pip_whl_muslc_version
             else:

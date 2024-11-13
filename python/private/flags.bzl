@@ -132,3 +132,14 @@ FreeThreadedFlag = enum(
     # Do not use freethreaded python toolchain and wheels.
     NO = "no",
 )
+
+# Determines which libc flavor is preferred when selecting the toolchain and
+# linux whl distributions.
+#
+# buildifier: disable=name-conventions
+LibcFlag = enum(
+    # Prefer glibc wheels (e.g. manylinux_2_17_x86_64 or linux_x86_64)
+    GLIBC = "glibc",
+    # Prefer musl wheels (e.g. musllinux_2_17_x86_64)
+    MUSL = "musl",
+)

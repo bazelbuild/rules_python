@@ -60,7 +60,10 @@ Unreleased changes template.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* (toolchain) The python interpreters targeting `muslc` libc have been added
+  for the latest toolchain versions for each minor Python version. You can control
+  the toolchain selection by using the
+  {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
 
 {#v0-0-0-removed}
 ### Removed
