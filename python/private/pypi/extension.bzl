@@ -651,8 +651,11 @@ def _pip_impl(module_ctx):
             repo_name = hub_name,
             extra_hub_aliases = mods.extra_aliases.get(hub_name, {}),
             whl_map = {
-                key: json.encode(value)
-                for key, value in whl_map.items()
+                key: json.encode([
+                    a.as_dict()
+                    for a in aliases
+                ])
+                for key, aliases in whl_map.items()
             },
             packages = mods.exposed_packages.get(hub_name, []),
             groups = mods.hub_group_map.get(hub_name),
