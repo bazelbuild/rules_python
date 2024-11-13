@@ -77,7 +77,6 @@ def pkg_aliases(
         native: {type}`struct` used in unit tests.
         select: {type}`select` used in unit tests.
     """
-    _ = actual  # buildifier: @unused
     native.alias(
         name = name,
         actual = ":" + PY_LIBRARY_PUBLIC_LABEL,
