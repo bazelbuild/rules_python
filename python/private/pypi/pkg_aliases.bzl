@@ -70,7 +70,7 @@ def pkg_aliases(
 
     Args:
         name: {type}`str` The name of the package.
-        actual: {type}`dict[Label, str] | str` The config settings for the package
+        actual: {type}`dict[Label, str] | str` The name of the repo the aliases point to, or a dict of select conditions to repo names for the aliases to point to
             mapping to repositories.
         group_name: {type}`str` The group name that the pkg belongs to.
         extra_aliases: {type}`list[str]` The extra aliases to be created.
