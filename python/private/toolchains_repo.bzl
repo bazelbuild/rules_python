@@ -181,7 +181,6 @@ load(
 )
 load("{rules_python}//python:pip.bzl", _compile_pip_requirements = "compile_pip_requirements")
 
-host_platform = "{host_platform}"
 interpreter = "@{py_repository}_{host_platform}//:{python3_binary_path}"
 
 def py_binary(name, **kwargs):
