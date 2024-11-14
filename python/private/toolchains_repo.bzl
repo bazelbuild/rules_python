@@ -132,7 +132,6 @@ def _toolchain_aliases_impl(rctx):
     host_platform = _get_host_platform(os_name, arch)
 
     is_windows = (os_name == WINDOWS_NAME)
-    python3_binary_path = "python.exe" if is_windows else "bin/python3"
 
     # Base BUILD file for this repository.
     build_contents = """\
@@ -181,8 +180,6 @@ load(
 )
 load("{rules_python}//python:pip.bzl", _compile_pip_requirements = "compile_pip_requirements")
 
-interpreter = "@{py_repository}_{host_platform}//:{python3_binary_path}"
-
 def py_binary(name, **kwargs):
     return _py_binary(
         name = name,
@@ -213,10 +210,7 @@ def compile_pip_requirements(name, **kwargs):
     )
 
 """.format(
-        host_platform = host_platform,
-        py_repository = rctx.attr.user_repository_name,
         python_version = rctx.attr.python_version,
-        python3_binary_path = python3_binary_path,
         rules_python = get_repository_name(rctx.attr._rules_python_workspace),
     ))
 
