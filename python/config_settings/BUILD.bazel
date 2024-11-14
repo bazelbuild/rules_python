@@ -6,9 +6,9 @@ load(
     "BootstrapImplFlag",
     "ExecToolsToolchainFlag",
     "FreeThreadedFlag",
+    "LibcFlag",
     "PrecompileFlag",
     "PrecompileSourceRetentionFlag",
-    "LibcFlag",
 )
 load(
     "//python/private/pypi:flags.bzl",
