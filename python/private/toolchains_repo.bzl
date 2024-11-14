@@ -127,9 +127,7 @@ toolchains_repo = repository_rule(
 
 def _toolchain_aliases_impl(rctx):
     logger = repo_utils.logger(rctx)
-    (os_name, arch) = _get_host_os_arch(rctx, logger)
-
-    host_platform = _get_host_platform(os_name, arch)
+    (os_name, _) = _get_host_os_arch(rctx, logger)
 
     is_windows = (os_name == WINDOWS_NAME)
 
@@ -160,7 +158,6 @@ alias(name = "python3",         actual = select({{":" + item: "@{py_repository}_
 alias(name = "pip",             actual = select({{":" + item: "@{py_repository}_" + item + "//:python_runtimes" for item in PLATFORMS if "windows" not in item}}))
 """.format(
             py_repository = rctx.attr.user_repository_name,
-            host_platform = host_platform,
         )
     rctx.file("BUILD.bazel", build_contents)
 
