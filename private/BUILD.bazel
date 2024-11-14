@@ -8,7 +8,6 @@ multirun(
         "//tools/publish:{}.update".format(r)
         for r in [
             "requirements_universal",
-            "requirements",
             "requirements_darwin",
             "requirements_windows",
             "requirements_linux",

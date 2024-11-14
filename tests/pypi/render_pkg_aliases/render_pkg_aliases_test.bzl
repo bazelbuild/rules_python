@@ -15,7 +15,6 @@
 """render_pkg_aliases tests"""
 
 load("@rules_testing//lib:test_suite.bzl", "test_suite")
-load("//python/private:bzlmod_enabled.bzl", "BZLMOD_ENABLED")  # buildifier: disable=bzl-visibility
 load("//python/private/pypi:config_settings.bzl", "config_settings")  # buildifier: disable=bzl-visibility
 load(
     "//python/private/pypi:render_pkg_aliases.bzl",
@@ -26,29 +25,6 @@ load(
     "render_pkg_aliases",
     "whl_alias",
 )  # buildifier: disable=bzl-visibility
-
-def _normalize_label_strings(want):
-    """normalize expected strings.
-
-    This function ensures that the desired `render_pkg_aliases` outputs are
-    normalized from `bzlmod` to `WORKSPACE` values so that we don't have to
-    have to sets of expected strings. The main difference is that under
-    `bzlmod` the `str(Label("//my_label"))` results in `"@@//my_label"` whereas
-    under `non-bzlmod` we have `"@//my_label"`. This function does
-    `string.replace("@@", "@")` to normalize the strings.
-
-    NOTE, in tests, we should only use keep `@@` usage in expectation values
-    for the test cases where the whl_alias has the `config_setting` constructed
-    from a `Label` instance.
-    """
-    if "@@" not in want:
-        fail("The expected string does not have '@@' labels, consider not using the function")
-
-    if BZLMOD_ENABLED:
-        # our expectations are already with double @
-        return want
-
-    return want.replace("@@", "@")
 
 _tests = []
 
@@ -74,33 +50,15 @@ def _test_legacy_aliases(env):
 
     want_key = "foo/BUILD.bazel"
     want_content = """\
-load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 
 package(default_visibility = ["//visibility:public"])
 
-alias(
+pkg_aliases(
     name = "foo",
-    actual = ":pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = "@pypi_foo//:pkg",
-)
-
-alias(
-    name = "whl",
-    actual = "@pypi_foo//:whl",
-)
-
-alias(
-    name = "data",
-    actual = "@pypi_foo//:data",
-)
-
-alias(
-    name = "dist_info",
-    actual = "@pypi_foo//:dist_info",
+    actual = "pypi_foo",
+    group_name = None,
+    extra_aliases = [],
 )"""
 
     env.expect.that_dict(actual).contains_exactly({want_key: want_content})
@@ -119,70 +77,17 @@ def _test_bzlmod_aliases(env):
 
     want_key = "bar_baz/BUILD.bazel"
     want_content = """\
-load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python/private/pypi:pkg_aliases.bzl", "pkg_aliases")
 
 package(default_visibility = ["//visibility:public"])
 
-_NO_MATCH_ERROR = \"\"\"\\
-No matching wheel for current configuration's Python version.
-
-The current build configuration's Python version doesn't match any of the Python
-wheels available for this wheel. This wheel supports the following Python
-configuration settings:
-    //:my_config_setting
-
-To determine the current configuration's Python version, run:
-    `bazel config <config id>` (shown further below)
-and look for
-    rules_python//python/config_settings:python_version
-
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-\"\"\"
-
-alias(
+pkg_aliases(
     name = "bar_baz",
-    actual = ":pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = selects.with_or(
-        {
-            "//:my_config_setting": "@pypi_32_bar_baz//:pkg",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "whl",
-    actual = selects.with_or(
-        {
-            "//:my_config_setting": "@pypi_32_bar_baz//:whl",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "data",
-    actual = selects.with_or(
-        {
-            "//:my_config_setting": "@pypi_32_bar_baz//:data",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "dist_info",
-    actual = selects.with_or(
-        {
-            "//:my_config_setting": "@pypi_32_bar_baz//:dist_info",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
+    actual = {
+        "//:my_config_setting": "pypi_32_bar_baz",
+    },
+    group_name = None,
+    extra_aliases = [],
 )"""
 
     env.expect.that_str(actual.pop("_config/BUILD.bazel")).equals(
@@ -203,100 +108,6 @@ config_settings(
     env.expect.that_str(actual[want_key]).equals(want_content)
 
 _tests.append(_test_bzlmod_aliases)
-
-def _test_bzlmod_aliases_with_no_default_version(env):
-    actual = render_multiplatform_pkg_aliases(
-        aliases = {
-            "bar-baz": [
-                whl_alias(
-                    version = "3.2",
-                    repo = "pypi_32_bar_baz",
-                    # pass the label to ensure that it gets converted to string
-                    config_setting = Label("//python/config_settings:is_python_3.2"),
-                ),
-                whl_alias(version = "3.1", repo = "pypi_31_bar_baz"),
-            ],
-        },
-    )
-
-    want_key = "bar_baz/BUILD.bazel"
-    want_content = """\
-load("@bazel_skylib//lib:selects.bzl", "selects")
-
-package(default_visibility = ["//visibility:public"])
-
-_NO_MATCH_ERROR = \"\"\"\\
-No matching wheel for current configuration's Python version.
-
-The current build configuration's Python version doesn't match any of the Python
-wheels available for this wheel. This wheel supports the following Python
-configuration settings:
-    //_config:is_python_3.1
-    @@//python/config_settings:is_python_3.2
-
-To determine the current configuration's Python version, run:
-    `bazel config <config id>` (shown further below)
-and look for
-    rules_python//python/config_settings:python_version
-
-If the value is missing, then the "default" Python version is being used,
-which has a "null" version value and will not match version constraints.
-\"\"\"
-
-alias(
-    name = "bar_baz",
-    actual = ":pkg",
-)
-
-alias(
-    name = "pkg",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:pkg",
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:pkg",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "whl",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:whl",
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:whl",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "data",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:data",
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:data",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)
-
-alias(
-    name = "dist_info",
-    actual = selects.with_or(
-        {
-            "//_config:is_python_3.1": "@pypi_31_bar_baz//:dist_info",
-            "@@//python/config_settings:is_python_3.2": "@pypi_32_bar_baz//:dist_info",
-        },
-        no_match_error = _NO_MATCH_ERROR,
-    ),
-)"""
-
-    actual.pop("_config/BUILD.bazel")
-    env.expect.that_collection(actual.keys()).contains_exactly([want_key])
-    env.expect.that_str(actual[want_key]).equals(_normalize_label_strings(want_content))
-
-_tests.append(_test_bzlmod_aliases_with_no_default_version)
 
 def _test_aliases_are_created_for_all_wheels(env):
     actual = render_pkg_aliases(
@@ -357,10 +168,8 @@ def _test_aliases_with_groups(env):
 
     want_key = "bar/BUILD.bazel"
 
-    # Just check that it contains a private whl
-    env.expect.that_str(actual[want_key]).contains("name = \"_whl\"")
-    env.expect.that_str(actual[want_key]).contains("name = \"whl\"")
-    env.expect.that_str(actual[want_key]).contains("\"//_groups:group_whl\"")
+    # Just check that we pass the group name
+    env.expect.that_str(actual[want_key]).contains("group_name = \"group\"")
 
 _tests.append(_test_aliases_with_groups)
 
