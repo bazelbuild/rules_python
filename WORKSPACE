@@ -98,7 +98,7 @@ pip_parse(
     name = "rules_python_publish_deps",
     python_interpreter_target = interpreter,
     requirements_darwin = "//tools/publish:requirements_darwin.txt",
-    requirements_lock = "//tools/publish:requirements.txt",
+    requirements_lock = "//tools/publish:requirements_linux.txt",
     requirements_windows = "//tools/publish:requirements_windows.txt",
 )
 
