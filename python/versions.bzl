@@ -15,8 +15,8 @@
 """The Python versions we use for the toolchains.
 """
 
-# Values returned by https://bazel.build/rules/lib/repository_os.
-MACOS_NAME = "mac os"
+# Values present in the @platforms//os package
+MACOS_NAME = "osx"
 LINUX_NAME = "linux"
 WINDOWS_NAME = "windows"
 FREETHREADED = "freethreaded"
@@ -609,9 +609,8 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = MACOS_NAME,
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-            arch = "arm64",
+            # Matches the value in @platforms//cpu package
+            arch = "aarch64",
         ),
         "aarch64-unknown-linux-gnu": struct(
             compatible_with = [
@@ -622,9 +621,7 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            # Matches the value in @platforms//cpu package
             arch = "aarch64",
         ),
         "armv7-unknown-linux-gnu": struct(
@@ -636,7 +633,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            arch = "armv7",
+            # Matches the value in @platforms//cpu package
+            arch = "arm",
         ),
         "i386-unknown-linux-gnu": struct(
             compatible_with = [
@@ -647,7 +645,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            arch = "i386",
+            # Matches the value in @platforms//cpu package
+            arch = "x86_32",
         ),
         "ppc64le-unknown-linux-gnu": struct(
             compatible_with = [
@@ -658,10 +657,8 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
-            arch = "ppc64le",
+            # Matches the value in @platforms//cpu package
+            arch = "ppc",
         ),
         "riscv64-unknown-linux-gnu": struct(
             compatible_with = [
@@ -672,6 +669,7 @@ def _generate_platforms():
                 Label("//python/config_settings:py_linux_libc"): "glibc",
             },
             os_name = LINUX_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "riscv64",
         ),
         "s390x-unknown-linux-gnu": struct(
@@ -683,9 +681,7 @@ def _generate_platforms():
                 Label("//python/config_settings:py_linux_libc"): "glibc",
             },
             os_name = LINUX_NAME,
-            # Note: this string differs between OSX and Linux
-            # Matches the value returned from:
-            # repository_ctx.execute(["uname", "-m"]).stdout.strip()
+            # Matches the value in @platforms//cpu package
             arch = "s390x",
         ),
         "x86_64-apple-darwin": struct(
@@ -695,6 +691,7 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = MACOS_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
         "x86_64-pc-windows-msvc": struct(
@@ -704,6 +701,7 @@ def _generate_platforms():
             ],
             flag_values = {},
             os_name = WINDOWS_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
         "x86_64-unknown-linux-gnu": struct(
@@ -715,6 +713,7 @@ def _generate_platforms():
                 libc: "glibc",
             },
             os_name = LINUX_NAME,
+            # Matches the value in @platforms//cpu package
             arch = "x86_64",
         ),
         "x86_64-unknown-linux-musl": struct(

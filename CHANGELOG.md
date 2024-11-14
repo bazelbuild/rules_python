@@ -52,14 +52,37 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+
+**Breaking**:
+* (toolchains) stop exposing config settings in python toolchain alias repos.
+  Please consider depending on the flags defined in
+  `//python/config_setting/...` and the `@platforms` package instead.
+* (toolchains) consumers who were depending on the `MACOS_NAME` and the `arch`
+  attribute in the `PLATFORMS` list, please update your code to respect the new
+  values. The values now correspond to the values available in the
+  `@platforms//` package constraint values.
+* (toolchains) `host_platform` and `interpreter` constants are no longer created
+  in the `toolchain` generated alias `.bzl` files. If you need to access the
+  host interpreter during the `repository_rule` evaluation, please use the
+  `@python_{version}_host//:python` targets created by
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
+  bzlmod extension.
+
+Other changes:
+* Nothing yet
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* (toolchains) stop depending on `uname` to get the value of the host platform.
 
 {#v0-0-0-added}
 ### Added
+* (toolchains) allow users to select which variant of the support host toolchain
+  they would like to use through
+  `RULES_PYTHON_REPO_TOOLCHAIN_{VERSION}_{OS}_{ARCH}` env variable setting. For
+  example, this allows one to use `freethreaded` python interpreter in the
+  `repository_rule` to build a wheel from `sdist`.
 * (toolchain) The python interpreters targeting `muslc` libc have been added
   for the latest toolchain versions for each minor Python version. You can control
   the toolchain selection by using the
@@ -67,7 +90,8 @@ Unreleased changes template.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
+  Please use `requirements_linux.txt` instead.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13
