@@ -129,10 +129,11 @@ if [[ "$IS_ZIPFILE" == "1" ]]; then
   mkdir -p "$(dirname $python_exe)"
   ln -s "$symlink_to" "$python_exe"
 else
-  set -x
-  stat "$python_exe"
-  ls -l $(dirname $python_exe)
-  set +x
+  :
+  #set -x
+  #stat "$python_exe"
+  #ls -l $(dirname $python_exe)
+  #set +x
 fi
 
 # At this point, we should have a valid reference to the interpreter.

@@ -35,7 +35,7 @@ class SysPathOrderTest(unittest.TestCase):
         for i, value in enumerate(sys.path):
             # The runtime's root repo may be added to sys.path, but it
             # counts as a user directory, not stdlib directory.
-            if value == sys.prefix:
+            if value in (sys.prefix, sys.base_prefix):
                 category = "user"
             elif value.startswith(sys.base_prefix):
                 # The runtime's site-package directory might be called

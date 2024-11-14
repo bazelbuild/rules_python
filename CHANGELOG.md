@@ -100,6 +100,9 @@ Other changes:
   for the latest toolchain versions for each minor Python version. You can control
   the toolchain selection by using the
   {bzl:obj}`//python/config_settings:py_linux_libc` build flag.
+* (providers) Added {obj}`py_runtime_info.site_init_template` and
+  {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
+  initialize the interpreter via venv startup hooks.
 
 {#v0-0-0-removed}
 ### Removed
@@ -124,13 +127,7 @@ Other changes:
 
 {#v0-40-added}
 ### Added
-<<<<<<< HEAD
 * Nothing added.
-=======
-* (providers) Added {obj}`py_runtime_info.site_init_template` and
-  {obj}`PyRuntimeInfo.site_init_template` for specifying the template to use to
-  initialize the interpreter via venv startup hooks.
->>>>>>> a057e85e (wip: make sys.executable work with script bootstrap)
 
 {#v0-40-removed}
 ### Removed
@@ -174,9 +171,6 @@ Other changes:
 * (precompiling) Skip precompiling (instead of erroring) if the legacy
   `@bazel_tools//tools/python:autodetecting_toolchain` is being used
   ([#2364](https://github.com/bazelbuild/rules_python/issues/2364)).
-* (bzlmod) Generate `config_setting` values for all available toolchains instead
-  of only the registered toolchains, which restores the previous behaviour that
-  `bzlmod` users would have observed.
 
 {#v0-39-0-added}
 ### Added

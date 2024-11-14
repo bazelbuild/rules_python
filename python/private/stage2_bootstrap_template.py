@@ -16,7 +16,6 @@ import contextlib
 import os
 import re
 import runpy
-import subprocess
 import uuid
 
 # ===== Template substitutions start =====
@@ -24,8 +23,6 @@ import uuid
 
 # Runfiles-relative path to the main Python source file.
 MAIN = "%main%"
-# Runfiles-relative path to the coverage tool entry point, if any.
-COVERAGE_TOOL = "%coverage_tool%"
 
 # ===== Template substitutions end =====
 
@@ -114,45 +111,6 @@ def is_verbose_coverage():
     return os.environ.get("VERBOSE_COVERAGE") or is_verbose()
 
 
-##def find_coverage_entry_point(module_space):
-##    cov_tool = COVERAGE_TOOL
-##    if cov_tool:
-##        print_verbose_coverage("Using toolchain coverage_tool %r" % cov_tool)
-##    else:
-##        cov_tool = os.environ.get("PYTHON_COVERAGE")
-##        if cov_tool:
-##            print_verbose_coverage("PYTHON_COVERAGE: %r" % cov_tool)
-##    if cov_tool:
-##        return find_binary(module_space, cov_tool)
-##    return None
-
-
-def find_binary(module_space, bin_name):
-    """Finds the real binary if it's not a normal absolute path."""
-    if not bin_name:
-        return None
-    if bin_name.startswith("//"):
-        # Case 1: Path is a label. Not supported yet.
-        raise AssertionError(
-            "Bazel does not support execution of Python interpreters via labels yet"
-        )
-    elif os.path.isabs(bin_name):
-        # Case 2: Absolute path.
-        return bin_name
-    # Use normpath() to convert slashes to os.sep on Windows.
-    elif os.sep in os.path.normpath(bin_name):
-        # Case 3: Path is relative to the repo root.
-        return os.path.join(module_space, bin_name)
-    else:
-        # Case 4: Path has to be looked up in the search path.
-        return search_path(bin_name)
-
-
-##def create_python_path_entries(python_imports, module_space):
-##    parts = python_imports.split(":")
-##    return [module_space] + ["%s/%s" % (module_space, path) for path in parts]
-
-
 def find_runfiles_root(main_rel_path):
     """Finds the runfiles tree."""
     # When the calling process used the runfiles manifest to resolve the
@@ -197,15 +155,6 @@ def find_runfiles_root(main_rel_path):
     raise AssertionError("Cannot find .runfiles directory for %s" % sys.argv[0])
 
 
-# Returns repository roots to add to the import path.
-##def get_repositories_imports(module_space, import_all):
-##    if import_all:
-##        repo_dirs = [os.path.join(module_space, d) for d in os.listdir(module_space)]
-##        repo_dirs.sort()
-##        return [d for d in repo_dirs if os.path.isdir(d)]
-##    return [os.path.join(module_space, WORKSPACE_NAME)]
-
-
 def runfiles_envvar(module_space):
     """Finds the runfiles manifest or the runfiles directory.
 
@@ -243,15 +192,6 @@ def runfiles_envvar(module_space):
         return ("RUNFILES_DIR", module_space)
 
     return (None, None)
-
-
-def deduplicate(items):
-    """Efficiently filter out duplicates, keeping the first element only."""
-    seen = set()
-    for it in items:
-        if it not in seen:
-            seen.add(it)
-            yield it
 
 
 def instrumented_file_paths():
@@ -424,29 +364,12 @@ def main():
     #
     # To replicate this behavior, we add main's directory within the runfiles
     # when safe path isn't enabled.
-    python_path_entries = []
-    prepend_path_entries = []
     if not getattr(sys.flags, "safe_path", False):
         prepend_path_entries = [
             os.path.join(module_space, os.path.dirname(main_rel_path))
         ]
     else:
         prepend_path_entries = []
-    ##python_path_entries = create_python_path_entries(IMPORTS_STR, module_space)
-    ##python_path_entries += get_repositories_imports(module_space, IMPORT_ALL)
-    python_path_entries = [
-        get_windows_path_with_unc_prefix(d) for d in python_path_entries
-    ]
-
-    # Remove duplicates to avoid overly long PYTHONPATH (#10977). Preserve order,
-    # keep first occurrence only.
-    python_path_entries = list(deduplicate(python_path_entries))
-
-    ##if is_windows():
-    ##    python_path_entries = [p.replace("/", os.sep) for p in python_path_entries]
-    ##else:
-    ##    # deduplicate returns a generator, but we need a list after this.
-    ##    python_path_entries = list(python_path_entries)
 
     runfiles_envkey, runfiles_envvalue = runfiles_envvar(module_space)
     if runfiles_envkey:
@@ -463,28 +386,12 @@ def main():
 
     sys.stdout.flush()
 
-    # Add the user imports after the stdlib, but before the runtime's
-    # site-packages directory. This gives the stdlib precedence, while allowing
-    # users to override non-stdlib packages that may have been bundled with
-    # the runtime (usually pip).
-    # NOTE: There isn't a good way to identify the stdlib paths, so we just
-    # expect site-packages comes after it, per
-    # https://docs.python.org/3/library/sys_path_init.html#sys-path-init
-    for i, path in enumerate(sys.path):
-        # dist-packages is a debian convention, see
-        # https://wiki.debian.org/Python#Deviations_from_upstream
-        if os.path.basename(path) in ("site-packages", "dist-packages"):
-            sys.path[i:i] = python_path_entries
-            break
-    else:
-        # Otherwise, no site-packages directory was found, which is odd but ok.
-        sys.path.extend(python_path_entries)
-
     # NOTE: The sys.path must be modified before coverage is imported/activated
     # NOTE: Perform this after the user imports are appended. This avoids a
     # user import accidentally triggering the site-packages logic above.
     sys.path[0:0] = prepend_path_entries
 
+    # todo: also check COVERAGE_DIR env var
     import _bazel_site_init
 
     with _maybe_collect_coverage(enable=_bazel_site_init.COVERAGE_SETUP):

@@ -362,9 +362,14 @@ def _create_venv(ctx, output_prefix, imports, runtime_details):
     runtime = runtime_details.effective_runtime
     if runtime.interpreter:
         py_exe_basename = paths.basename(runtime.interpreter.short_path)
-        interpreter = ctx.actions.declare_file("{}/bin/{}".format(venv, py_exe_basename))
-        ctx.actions.symlink(output = interpreter, target_file = runtime.interpreter)
+
+        # A real symlink is required to support RBE. RBE may materialize what
+        # ctx.actions.symlink() points to.
+        interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))
         interpreter_actual_path = runtime.interpreter.short_path
+        parent = "/".join([".."] * (interpreter_actual_path.count("/") + 1))
+        rel_path = parent + "/" + interpreter_actual_path
+        ctx.actions.symlink(output = interpreter, target_path = rel_path)
     else:
         py_exe_basename = paths.basename(runtime.interpreter_path)
         interpreter = ctx.actions.declare_symlink("{}/bin/{}".format(venv, py_exe_basename))

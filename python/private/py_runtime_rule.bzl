@@ -324,7 +324,7 @@ value.
 The template to use for the binary-specific site-init hook run by the
 interpreter at startup.
 
-:::{versionadded} VERSION_NEXT_FEATURE
+:::{versionadded} 0.41.0
 :::
 """,
         ),
