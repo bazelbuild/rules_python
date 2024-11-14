@@ -395,20 +395,19 @@ def _get_host_platform(*, rctx, logger, python_version, os_name, cpu_name, platf
         return candidates[0]
 
     if candidates:
-        env_var = "RULES_PYTHON_HERMETIC_PYTHON_{}_{}_{}".format(
+        env_var = "RULES_PYTHON_REPO_TOOLCHAIN_{}_{}_{}".format(
             python_version.replace(".", "_"),
             os_name.upper(),
             cpu_name.upper(),
         )
-        logger.warn("Please use '{}' to select one of the candidates: {}".format(
-            env_var,
-            candidates,
-        ))
         preference = repo_utils.getenv(rctx, env_var)
         if preference == None:
-            candidates = sorted(candidates, lambda k: ("freethreaded" in k, k))
+            logger.info("Consider using '{}' to select from one of the platforms: {}".format(
+                env_var,
+                candidates,
+            ))
         elif preference not in candidates:
-            logger.fail("Please choose a prefrered interpreter out of the following platforms: {}".format(candidates))
+            logger.fail("Please choose a preferred interpreter out of the following platforms: {}".format(candidates))
             return None
         else:
             candidates = [preference]
