@@ -12,7 +12,7 @@ local_path_override(
 )
 
 # (py_proto_library specific) We are using rules_proto to define rules_proto targets to be consumed by py_proto_library.
-bazel_dep(name = "rules_proto", version = "6.0.2")
+bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
 
 # (py_proto_library specific) Add the protobuf library for well-known types (e.g. `Any`, `Timestamp`, etc)
 bazel_dep(name = "protobuf", version = "27.0", repo_name = "com_google_protobuf")

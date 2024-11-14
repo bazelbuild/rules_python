@@ -185,6 +185,14 @@ def rules_python_internal_deps():
         ],
     )
 
+    # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
+    http_archive(
+        name = "protobuf",
+        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
+        strip_prefix = "protobuf-27.0",
+        url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
+    )
+
     # Needed for stardoc
     http_archive(
         name = "rules_java",
@@ -233,12 +241,4 @@ def rules_python_internal_deps():
         name = "rules_multirun",
         sha256 = "0e124567fa85287874eff33a791c3bbdcc5343329a56faa828ef624380d4607c",
         url = "https://github.com/keith/rules_multirun/releases/download/0.9.0/rules_multirun.0.9.0.tar.gz",
-    )
-
-    # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
-    http_archive(
-        name = "protobuf",
-        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
-        strip_prefix = "protobuf-27.0",
-        url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
     )
