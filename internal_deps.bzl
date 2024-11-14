@@ -186,12 +186,12 @@ def rules_python_internal_deps():
     )
 
     # Needed by rules_cc, triggered by @rules_java_builtins from Bazel
-    http_archive(
-        name = "protobuf",
-        sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
-        strip_prefix = "protobuf-27.0",
-        url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
-    )
+    ##http_archive(
+    ##    name = "protobuf",
+    ##    sha256 = "da288bf1daa6c04d03a9051781caa52aceb9163586bff9aa6cfb12f69b9395aa",
+    ##    strip_prefix = "protobuf-27.0",
+    ##    url = "https://github.com/protocolbuffers/protobuf/releases/download/v27.0/protobuf-27.0.tar.gz",
+    ##)
 
     # Needed for stardoc
     http_archive(
