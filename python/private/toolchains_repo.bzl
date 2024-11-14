@@ -225,8 +225,14 @@ exports_files(["python"], visibility = ["//visibility:public"])
 """)
 
     os_name = repo_utils.get_platforms_os_name(rctx)
-    cpu_name = repo_utils.get_platforms_cpu_name(rctx)
-    host_platform = _get_host_platform(rctx, os_name, cpu_name, rctx.attr.platforms)
+    host_platform = _get_host_platform(
+        rctx = rctx,
+        logger = repo_utils.logger(rctx),
+        python_version = rctx.attr.python_version,
+        os_name = os_name,
+        cpu_name = repo_utils.get_platforms_cpu_name(rctx),
+        platforms = rctx.attr.platforms,
+    )
     repo = "@@{py_repository}_{host_platform}".format(
         py_repository = rctx.attr.name[:-len("_host")],
         host_platform = host_platform,
@@ -296,6 +302,7 @@ this repo causes an eager fetch of the toolchain for the host platform.
     """,
     attrs = {
         "platforms": attr.string_list(mandatory = True),
+        "python_version": attr.string(mandatory = True),
         "_rule_name": attr.string(default = "host_toolchain"),
         "_rules_python_workspace": attr.label(default = Label("//:WORKSPACE")),
     },
@@ -364,11 +371,13 @@ multi_toolchain_aliases = repository_rule(
 def sanitize_platform_name(platform):
     return platform.replace("-", "_")
 
-def _get_host_platform(rctx, os_name, cpu_name, platforms):
+def _get_host_platform(*, rctx, logger, python_version, os_name, cpu_name, platforms):
     """Gets the host platform.
 
     Args:
         rctx: {type}`repository_ctx`.
+        logger: {type}`struct`.
+        python_version: {type}`string`.
         os_name: {type}`str` the host OS name.
         cpu_name: {type}`str` the host CPU name.
         platforms: {type}`list[str]` the list of loaded platforms.
@@ -386,25 +395,30 @@ def _get_host_platform(rctx, os_name, cpu_name, platforms):
         return candidates[0]
 
     if candidates:
-        preference = repo_utils.getenv(
-            rctx,
-            "RULES_PYTHON_{}_{}_USE_HOST_PYTHON".format(
-                os_name.upper(),
-                cpu_name.upper(),
-            ),
+        env_var = "RULES_PYTHON_HERMETIC_PYTHON_{}_{}_{}".format(
+            python_version.replace(".", "_"),
+            os_name.upper(),
+            cpu_name.upper(),
         )
+        logger.warn("Please use '{}' to select one of the candidates: {}".format(
+            env_var,
+            candidates,
+        ))
+        preference = repo_utils.getenv(rctx, env_var)
         if preference == None:
             candidates = sorted(candidates, lambda k: ("freethreaded" in k, k))
         elif preference not in candidates:
-            fail("Please choose a prefrered interpreter out of the following platforms: {}".format(candidates))
+            logger.fail("Please choose a prefrered interpreter out of the following platforms: {}".format(candidates))
+            return None
         else:
             candidates = [preference]
 
     if candidates:
         return candidates[0]
 
-    fail("Could not find a compatible 'host' python for '{os_name}', '{cpu_name}' from the loaded platforms: {platforms}".format(
+    logger.fail("Could not find a compatible 'host' python for '{os_name}', '{cpu_name}' from the loaded platforms: {platforms}".format(
         os_name = os_name,
         cpu_name = cpu_name,
         platforms = platforms,
     ))
+    return None
