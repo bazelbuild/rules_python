@@ -319,16 +319,12 @@ def _multi_toolchain_aliases_impl(rctx):
 load(
     "@{repository_name}//:defs.bzl",
     _compile_pip_requirements = "compile_pip_requirements",
-    _host_platform = "host_platform",
-    _interpreter = "interpreter",
     _py_binary = "py_binary",
     _py_console_script_binary = "py_console_script_binary",
     _py_test = "py_test",
 )
 
 compile_pip_requirements = _compile_pip_requirements
-host_platform = _host_platform
-interpreter = _interpreter
 py_binary = _py_binary
 py_console_script_binary = _py_console_script_binary
 py_test = _py_test

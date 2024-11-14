@@ -55,10 +55,19 @@ Unreleased changes template.
 
 **Breaking**:
 * (toolchains) stop exposing config settings in python toolchain alias repos.
+  Please consider depending on the flags defined in
+  `//python/config_setting/...` and the `@platforms` package instead.
 * (toolchains) consumers who were depending on the `MACOS_NAME` and the `arch`
   attribute in the `PLATFORMS` list, please update your code to respect the new
   values. The values now correspond to the values available in the
   `@platforms//` package constraint values.
+* (toolchains) `host_platform` and `interpreter` constants are no longer created
+  in the `toolchain` generated alias `.bzl` files. If you need to access the
+  host interpreter during the `repository_rule` evaluation, please use the
+  `@python_{version}_host//:python` targets created by
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` macros or the {bzl:obj}`python`
+  bzlmod extension.
 
 Other changes:
 * Nothing yet
