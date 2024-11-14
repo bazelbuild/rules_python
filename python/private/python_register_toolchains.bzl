@@ -160,7 +160,10 @@ def python_register_toolchains(
                 platform = platform,
             ))
 
-    host_toolchain(name = name + "_host")
+    host_toolchain(
+        name = name + "_host",
+        platforms = loaded_platforms,
+    )
 
     toolchain_aliases(
         name = name,
