@@ -16,13 +16,14 @@
 
 load("@rules_python//python:versions.bzl", "PLATFORMS")
 
-def toolchain_aliases(*, name, platforms, native = native):
+def toolchain_aliases(*, name, platforms, visibility = None, native = native):
     """Cretae toolchain aliases for the python toolchains.
 
     Args:
         name: {type}`str` The name of the current repository.
         platforms: {type}`platforms` The list of platforms that are supported
             for the current toolchain repository.
+        visibility: {type}`list[Target] | None` The visibility of the aliases.
         native: The native struct used in the macro, useful for testing.
     """
     for platform in PLATFORMS.keys():
@@ -36,10 +37,38 @@ def toolchain_aliases(*, name, platforms, native = native):
             visibility = ["//visibility:private"],
         )
 
-    native.alias(name = "files", actual = select({{":" + item: "@" + name + "_" + item + "//:files" for item in platforms}}))
-    native.alias(name = "includes", actual = select({{":" + item: "@" + name + "_" + item + "//:includes" for item in platforms}}))
-    native.alias(name = "libpython", actual = select({{":" + item: "@" + name + "_" + item + "//:libpython" for item in platforms}}))
-    native.alias(name = "py3_runtime", actual = select({{":" + item: "@" + name + "_" + item + "//:py3_runtime" for item in platforms}}))
-    native.alias(name = "python_headers", actual = select({{":" + item: "@" + name + "_" + item + "//:python_headers" for item in platforms}}))
-    native.alias(name = "python_runtimes", actual = select({{":" + item: "@" + name + "_" + item + "//:python_runtimes" for item in platforms}}))
-    native.alias(name = "python3", actual = select({{":" + item: "@" + name + "_" + item + "//:" + ("python.exe" if "windows" in item else "bin/python3") for item in platforms}}))
+    prefix = name
+    for name in [
+        "files",
+        "includes",
+        "libpython",
+        "py3_runtime",
+        "python_headers",
+        "python_runtimes",
+    ]:
+        native.alias(
+            name = name,
+            actual = select({
+                ":" + platform: "@{}_{}//:{}".format(prefix, platform, name)
+                for platform in platforms
+            }),
+            visibility = visibility,
+        )
+
+    native.alias(
+        name = "python3",
+        actual = select({
+            ":" + platform: "@{}_{}//:{}".format(prefix, platform, "python.exe" if "windows" in platform else "bin/python3")
+            for platform in platforms
+        }),
+        visibility = visibility,
+    )
+    native.alias(
+        name = "pip",
+        actual = select({
+            ":" + platform: "@{}_{}//:python_runtimes".format(prefix, platform)
+            for platform in platforms
+            if "windows" not in platform
+        }),
+        visibility = visibility,
+    )
