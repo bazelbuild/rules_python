@@ -52,7 +52,7 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* (python_repository) Start honouring the `strip_prefix` field for `zstd` archives.
 
 {#v0-0-0-fixed}
 ### Fixed
@@ -66,6 +66,11 @@ Unreleased changes template.
 ### Removed
 * (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
   Please use `requirements_linux.txt` instead.
+* (python_repository) Use bazel's built in `zstd` support and remove attributes
+  for customizing the `zstd` binary to be used for `zstd` archives in the
+  {bzl:obj}`python_repository` repository_rule. This affects the
+  {bzl:obj}`python_register_toolchains` and
+  {bzl:obj}`python_register_multi_toolchains` callers in the `WORKSPACE`.
 
 {#v0-39-0}
 ## [0.39.0] - 2024-11-13
