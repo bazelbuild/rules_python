@@ -4,13 +4,17 @@
 
 import sys
 
-# The Python interpreter unconditionally prepends the directory containing this
+# By default the Python interpreter prepends the directory containing this
 # script (following symlinks) to the import path. This is the cause of #9239,
-# and is a special case of #7091. We therefore explicitly delete that entry.
-# TODO(#7091): Remove this hack when no longer necessary.
-# TODO: Use sys.flags.safe_path to determine whether this removal should be
-# performed
-del sys.path[0]
+# and is a special case of #7091.
+#
+# Python 3.11 introduced an PYTHONSAFEPATH (-P) option that disables this
+# behaviour, which we set in the stage 1 bootstrap.
+# So the prepended entry needs to be removed only if the above option is either
+# unset or not supported by the interpreter.
+# TODO(#7091): Remove this hack when we drop support for Python 3.10 and below
+if not getattr(sys.flags, "safe_path", False):
+    del sys.path[0]
 
 import contextlib
 import os
