@@ -30,19 +30,19 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* Nothing changed.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* Nothing fixed.
 
 {#v0-0-0-added}
 ### Added
-* Nothing yet.
+* Nothing added.
 
 {#v0-0-0-removed}
 ### Removed
-* Nothing yet.
+* Nothing removed.
 -->
 
 {#v0-0-0}
@@ -52,18 +52,39 @@ Unreleased changes template.
 
 {#v0-0-0-changed}
 ### Changed
-* Nothing yet.
+* Nothing changed.
 
 {#v0-0-0-fixed}
+### Fixed
+* Nothing fixed.
+
+{#v0-0-0-added}
+### Added
+* Nothing added.
+
+{#v0-0-0-removed}
+### Removed
+* Nothing removed.
+
+{#v0-40-0}
+## [0.40.0] - 2024-11-17
+
+[0.40.0]: https://github.com/bazelbuild/rules_python/releases/tag/0.40.0
+
+{#v0-40-changed}
+### Changed
+* Nothing changed.
+
+{#v0-40-fixed}
 ### Fixed
 * (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
   ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
 
-{#v0-0-0-added}
+{#v0-40-added}
 ### Added
-* Nothing yet.
+* Nothing added.
 
-{#v0-0-0-removed}
+{#v0-40-removed}
 ### Removed
 * (publish) Remove deprecated `requirements.txt` for the `twine` dependencies.
   Please use `requirements_linux.txt` instead.
