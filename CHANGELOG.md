@@ -56,7 +56,8 @@ Unreleased changes template.
 
 {#v0-0-0-fixed}
 ### Fixed
-* Nothing yet.
+* (rules) Don't drop custom import paths if Bazel-builtin PyInfo is removed.
+  ([2414](https://github.com/bazelbuild/rules_python/issues/2414)).
 
 {#v0-0-0-added}
 ### Added
